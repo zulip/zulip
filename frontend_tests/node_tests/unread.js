@@ -420,11 +420,11 @@ test("private_messages", () => {
     };
     people.add_active_user(bob);
 
-    assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 0);
-    assert.equal(unread.num_unread_for_user_ids_string(bob.user_id.toString()), 0);
-    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(), []);
+    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
+    assert.equal(unread.num_unread_for_person(bob.user_id.toString()), 0);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
 
     const message = {
@@ -439,22 +439,20 @@ test("private_messages", () => {
         flags: ["read"],
     };
     unread.process_loaded_messages([message, read_message]);
-    assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 1);
+    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 1);
 
-    assert.equal(unread.num_unread_for_user_ids_string(""), 0);
+    assert.equal(unread.num_unread_for_person(""), 0);
 
-    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), [
-        message.id,
-    ]);
-    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), [message.id]);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
     unread.mark_as_read(message.id);
-    assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 0);
-    assert.equal(unread.num_unread_for_user_ids_string(""), 0);
-    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
+    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
+    assert.equal(unread.num_unread_for_person(""), 0);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
     assert.deepEqual(unread.get_all_msg_ids(), []);
     const counts = unread.get_counts();
@@ -725,9 +723,9 @@ test("server_counts", () => {
 
     unread.initialize();
 
-    assert.equal(unread.num_unread_for_user_ids_string("101"), 6);
-    assert.equal(unread.num_unread_for_user_ids_string("4,6,101"), 2);
-    assert.equal(unread.num_unread_for_user_ids_string("30"), 0);
+    assert.equal(unread.num_unread_for_person("101"), 6);
+    assert.equal(unread.num_unread_for_person("4,6,101"), 2);
+    assert.equal(unread.num_unread_for_person("30"), 0);
 
     assert.equal(unread.num_unread_for_topic(0, "bogus"), 0);
     assert.equal(unread.num_unread_for_topic(1, "bogus"), 0);
@@ -742,7 +740,7 @@ test("server_counts", () => {
     assert.equal(unread.num_unread_for_topic(1, "test"), 2);
 
     unread.mark_as_read(34);
-    assert.equal(unread.num_unread_for_user_ids_string("4,6,101"), 1);
+    assert.equal(unread.num_unread_for_person("4,6,101"), 1);
 });
 
 test("empty_cases", () => {

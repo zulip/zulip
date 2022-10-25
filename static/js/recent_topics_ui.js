@@ -69,8 +69,8 @@ let col_focus = 1;
 export const COLUMNS = {
     stream: 0,
     topic: 1,
-    read: 2,
-    mute: 3,
+    mute: 2,
+    read: 3,
 };
 
 // The number of selectable actions in a recent_topics.  Used to
@@ -78,7 +78,7 @@ export const COLUMNS = {
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
 const MAX_SELECTABLE_TOPIC_COLS = 4;
-const MAX_SELECTABLE_PM_COLS = 3;
+const MAX_SELECTABLE_PM_COLS = 2;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
@@ -302,7 +302,7 @@ export function process_messages(messages) {
 
 function message_to_conversation_unread_count(msg) {
     if (msg.type === "private") {
-        return unread.num_unread_for_user_ids_string(msg.to_user_ids);
+        return unread.num_unread_for_person(msg.to_user_ids);
     }
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
 }
@@ -357,7 +357,6 @@ function format_conversation(conversation_data) {
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     } else if (type === "private") {
         // Private message info
-        context.user_ids_string = last_msg.to_user_ids;
         context.pm_with = last_msg.display_reply_to;
         context.recipient_id = last_msg.recipient_id;
         context.pm_url = last_msg.pm_with_url;
@@ -813,10 +812,7 @@ function is_focus_at_last_table_row() {
 function has_unread(row) {
     const last_msg_id = topics_widget.get_current_list()[row].last_msg_id;
     const last_msg = message_store.get(last_msg_id);
-    if (last_msg.type === "stream") {
-        return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;
-    }
-    return unread.num_unread_for_user_ids_string(last_msg.to_user_ids) > 0;
+    return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;
 }
 
 export function focus_clicked_element(topic_row_index, col, topic_key) {
@@ -874,7 +870,8 @@ function down_arrow_navigation(row, col) {
     if (is_focus_at_last_table_row()) {
         return;
     }
-    if (col === 2 && !has_unread(row + 1)) {
+    const type = get_row_type(row);
+    if (type === "stream" && col === 2 && !has_unread(row + 1)) {
         col_focus = 1;
     }
     row_focus += 1;

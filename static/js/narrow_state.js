@@ -247,7 +247,7 @@ export function _possible_unread_message_ids() {
         if (current_filter_pm_string === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_user_ids_string(current_filter_pm_string);
+        return unread.get_msg_ids_for_person(current_filter_pm_string);
     }
 
     if (current_filter.can_bucket_by("is-private")) {

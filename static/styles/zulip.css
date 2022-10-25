@@ -197,7 +197,7 @@ p.n-margin {
     min-height: 28px;
     font-size: 16px;
     margin: 0 auto 12px;
-    padding: 10px;
+    padding: 5px;
 
     i {
         margin: 0 3px 0 1px;
@@ -1504,20 +1504,6 @@ td.pointer {
     &:hover {
         cursor: pointer;
         opacity: 0.7;
-    }
-}
-
-/* Make the action icon on the message row
-   always visible while the popover is open */
-.has_actions_popover .actions_hover {
-    visibility: visible !important;
-    pointer-events: all !important;
-    opacity: 1 !important;
-
-    i:focus {
-        /* Avoid displaying a focus outline outside the popover on the \vdots
-           icon when opened via the mouse. */
-        outline: 0 !important;
     }
 }
 

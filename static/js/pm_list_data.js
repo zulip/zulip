@@ -40,7 +40,7 @@ export function get_conversations() {
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         const recipients_string = people.get_recipients(user_ids_string);
 
-        const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
+        const num_unread = unread.num_unread_for_person(user_ids_string);
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
 

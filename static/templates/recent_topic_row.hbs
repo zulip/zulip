@@ -37,11 +37,7 @@
             </div>
             <div class="right_part">
                 {{#if is_private}}
-                <div class="recent_topic_actions">
-                    <div class="recent_topics_focusable single_action_button">
-                        <span class="unread_count unread_count_pm {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
-                    </div>
-                </div>
+                <span class="unread_count unread_count_pm {{#unless unread_count}}unread_hidden{{/unless}}">{{unread_count}}</span>
                 {{else}}
                 <span class="unread_mention_info {{#unless mention_in_unread}}unread_hidden{{/unless}}">@</span>
                 <div class="recent_topic_actions">

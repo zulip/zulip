@@ -163,6 +163,13 @@
             background-color: hsl(105, 2%, 50%);
         }
 
+        .unread_count_pm {
+            /* 10px of unread count + 23px for bell icon */
+            margin-right: 33px;
+            /* match the opacity with topic unread count without hover */
+            opacity: 0.7;
+        }
+
         .unread_mention_info:not(:empty) {
             margin-right: -5px;
         }
@@ -213,12 +220,6 @@
         .recent_topic_actions .recent_topics_focusable {
             display: flex;
             align-items: center;
-            padding-bottom: 3px;
-
-            &.single_action_button {
-                /* 10px of unread count + 23px for bell icon */
-                margin-right: 33px;
-            }
         }
 
         .recent_topics_participants {

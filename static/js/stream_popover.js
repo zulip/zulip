@@ -49,16 +49,6 @@ let drafts_sidebar_elem;
 let stream_widget;
 let $stream_header_colorblock;
 
-// Keep the menu icon over which the popover is based off visible.
-function show_left_sidebar_menu_icon(element) {
-    $(element).closest("[class*='-sidebar-menu-icon']").addClass("left_sidebar_menu_icon_visible");
-}
-
-// Remove the class from element when popover is closed
-function hide_left_sidebar_menu_icon() {
-    $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
-}
-
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
@@ -130,7 +120,6 @@ export function drafts_popped() {
 export function hide_stream_popover() {
     if (stream_popped()) {
         $(current_stream_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
         current_stream_sidebar_elem = undefined;
     }
 }
@@ -138,7 +127,6 @@ export function hide_stream_popover() {
 export function hide_topic_popover() {
     if (topic_popped()) {
         $(current_topic_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
         current_topic_sidebar_elem = undefined;
     }
 }
@@ -146,7 +134,6 @@ export function hide_topic_popover() {
 export function hide_all_messages_popover() {
     if (all_messages_popped()) {
         $(all_messages_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
         all_messages_sidebar_elem = undefined;
     }
 }
@@ -154,7 +141,6 @@ export function hide_all_messages_popover() {
 export function hide_starred_messages_popover() {
     if (starred_messages_popped()) {
         $(starred_messages_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
         starred_messages_sidebar_elem = undefined;
     }
 }
@@ -162,7 +148,6 @@ export function hide_starred_messages_popover() {
 export function hide_drafts_popover() {
     if (drafts_popped()) {
         $(drafts_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
         drafts_sidebar_elem = undefined;
     }
 }
@@ -272,7 +257,6 @@ function build_stream_popover(opts) {
     });
 
     current_stream_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
 }
 
 function build_topic_popover(opts) {
@@ -323,7 +307,6 @@ function build_topic_popover(opts) {
     $(elt).popover("show");
 
     current_topic_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
 }
 
 function build_all_messages_popover(e) {
@@ -349,7 +332,6 @@ function build_all_messages_popover(e) {
 
     $(elt).popover("show");
     all_messages_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
     e.stopPropagation();
 }
 
@@ -380,7 +362,6 @@ function build_starred_messages_popover(e) {
 
     $(elt).popover("show");
     starred_messages_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
     e.stopPropagation();
 }
 
@@ -405,7 +386,6 @@ function build_drafts_popover(e) {
 
     $(elt).popover("show");
     drafts_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
     e.stopPropagation();
 }
 

@@ -109,8 +109,8 @@ function get_list_info(zoomed) {
 test("get_conversations", ({override}) => {
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
     pm_conversations.recent.insert([me.user_id], 2);
-    let num_unread_for_user_ids_string = 1;
-    override(unread, "num_unread_for_user_ids_string", () => num_unread_for_user_ids_string);
+    let num_unread_for_person = 1;
+    override(unread, "num_unread_for_person", () => num_unread_for_person);
 
     assert.equal(narrow_state.filter(), undefined);
 
@@ -144,7 +144,7 @@ test("get_conversations", ({override}) => {
     let pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 
-    num_unread_for_user_ids_string = 0;
+    num_unread_for_person = 0;
 
     pm_data = pm_list_data.get_conversations();
     expected_data[0].unread = 0;
@@ -161,7 +161,7 @@ test("get_conversations bot", ({override}) => {
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
     pm_conversations.recent.insert([bot_test.user_id], 2);
 
-    override(unread, "num_unread_for_user_ids_string", () => 1);
+    override(unread, "num_unread_for_person", () => 1);
 
     assert.equal(narrow_state.filter(), undefined);
 
@@ -258,8 +258,8 @@ test("get_list_info", ({override}) => {
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     // Mock to arrange that each user has exactly 1 unread.
-    const num_unread_for_user_ids_string = 1;
-    override(unread, "num_unread_for_user_ids_string", () => num_unread_for_user_ids_string);
+    const num_unread_for_person = 1;
+    override(unread, "num_unread_for_person", () => num_unread_for_person);
 
     // Initially, we append 2 conversations and check for the
     // `conversations_to_be_shown` returned in list_info.
@@ -401,7 +401,7 @@ test("get_list_info", ({override}) => {
     );
 
     // We now test some no unreads cases.
-    override(unread, "num_unread_for_user_ids_string", () => 0);
+    override(unread, "num_unread_for_person", () => 0);
     pm_conversations.clear_for_testing();
     pm_conversations.recent.insert([alice.user_id], 1);
     pm_conversations.recent.insert([bob.user_id], 2);

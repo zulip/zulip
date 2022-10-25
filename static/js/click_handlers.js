@@ -447,20 +447,11 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
-        const $elt = $(e.currentTarget);
-        const topic_row_index = $elt.closest("tr").index();
+        const topic_row_index = $(e.target).closest("tr").index();
         recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.read);
-        const user_ids_string = $elt.attr("data-user-ids-string");
-        if (user_ids_string) {
-            // PM row
-            unread_ops.mark_pm_as_read(user_ids_string);
-        } else {
-            // Stream row
-            const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
-            const topic = $elt.attr("data-topic-name");
-            unread_ops.mark_topic_as_read(stream_id, topic);
-        }
-        recent_topics_ui.change_focused_element($elt, "down_arrow");
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const topic = $(e.currentTarget).attr("data-topic-name");
+        unread_ops.mark_topic_as_read(stream_id, topic);
     });
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);

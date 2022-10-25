@@ -227,11 +227,3 @@ export function mark_topic_as_read(stream_id, topic, cont) {
         success: cont,
     });
 }
-
-export function mark_pm_as_read(user_ids_string) {
-    // user_ids_string is a stringified list of user ids which are
-    // participants in the conversation other than the current
-    // user. Eg: "123,124" or "123"
-    const unread_msg_ids = unread.get_msg_ids_for_user_ids_string(user_ids_string);
-    message_flags.mark_as_read(unread_msg_ids);
-}

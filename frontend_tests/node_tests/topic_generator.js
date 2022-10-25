@@ -123,7 +123,7 @@ run_test("topics", ({override}) => {
 run_test("get_next_unread_pm_string", ({override}) => {
     pm_conversations.recent.get_strings = () => ["1", "read", "2,3", "4", "unk"];
 
-    override(unread, "num_unread_for_user_ids_string", (user_ids_string) => {
+    override(unread, "num_unread_for_person", (user_ids_string) => {
         if (user_ids_string === "unk") {
             return undefined;
         }
@@ -143,7 +143,7 @@ run_test("get_next_unread_pm_string", ({override}) => {
     assert.equal(tg.get_next_unread_pm_string("read"), "2,3");
     assert.equal(tg.get_next_unread_pm_string("2,3"), "4");
 
-    override(unread, "num_unread_for_user_ids_string", () => 0);
+    override(unread, "num_unread_for_person", () => 0);
 
     assert.equal(tg.get_next_unread_pm_string("2,3"), undefined);
 });

@@ -56,10 +56,6 @@ export const editability_types = {
 };
 
 export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
-    if (!is_message_editable_ignoring_permissions(message)) {
-        return false;
-    }
-
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
         return false;
@@ -102,9 +98,12 @@ function is_widget_message(message) {
     return false;
 }
 
-export function is_message_editable_ignoring_permissions(message) {
+export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!message) {
-        return false;
+        return editability_types.NO;
+    }
+    if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
+        return editability_types.NO;
     }
 
     if (message.failed_request) {
@@ -113,29 +112,12 @@ export function is_message_editable_ignoring_permissions(message) {
         //       other message updates.  This commit changed the result
         //       from FULL to NO, since the prior implementation was
         //       buggy.
-        return false;
+        return editability_types.NO;
     }
 
     // Locally echoed messages are not editable, since the message hasn't
     // finished being sent yet.
     if (message.locally_echoed) {
-        return false;
-    }
-
-    // Messages where we're currently locally echoing an edit not yet acknowledged
-    // by the server.
-    if (currently_echoing_messages.has(message.id)) {
-        return false;
-    }
-    return true;
-}
-
-export function get_editability(message, edit_limit_seconds_buffer = 0) {
-    if (!is_message_editable_ignoring_permissions(message)) {
-        return editability_types.NO;
-    }
-
-    if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
         return editability_types.NO;
     }
 
@@ -149,6 +131,10 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
         !is_widget_message(message)
     ) {
         return editability_types.FULL;
+    }
+
+    if (currently_echoing_messages.has(message.id)) {
+        return editability_types.NO;
     }
 
     if (
@@ -205,10 +191,6 @@ export function can_move_message(message) {
     }
 
     if (!message.is_stream) {
-        return false;
-    }
-
-    if (!is_message_editable_ignoring_permissions(message)) {
         return false;
     }
 
@@ -458,6 +440,7 @@ function edit_message($row, raw_content) {
     }
 
     const is_editable = editability === editability_types.FULL;
+    // current message's stream has been already been added and selected in Handlebars
 
     const $form = $(
         render_message_edit_form({

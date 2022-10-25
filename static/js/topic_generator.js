@@ -84,13 +84,13 @@ export function get_next_unread_pm_string(curr_pm) {
     const curr_pm_index = my_pm_strings.indexOf(curr_pm); // -1 if not found
 
     for (let i = curr_pm_index + 1; i < my_pm_strings.length; i += 1) {
-        if (unread.num_unread_for_user_ids_string(my_pm_strings[i]) > 0) {
+        if (unread.num_unread_for_person(my_pm_strings[i]) > 0) {
             return my_pm_strings[i];
         }
     }
 
     for (let i = 0; i < curr_pm_index; i += 1) {
-        if (unread.num_unread_for_user_ids_string(my_pm_strings[i]) > 0) {
+        if (unread.num_unread_for_person(my_pm_strings[i]) > 0) {
             return my_pm_strings[i];
         }
     }
