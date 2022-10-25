@@ -148,6 +148,7 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 - Avoid issues with the "difficult" label unless you
   understand why it is difficult and are highly confident you can resolve the
   issue correctly and completely.
+- Look for issues labled as "good first issue" as these are typically lower difficulty
 
 ### Claiming an issue
 
