@@ -226,7 +226,7 @@ function create_stream() {
     let message_retention_selection = $(
         "#stream_creation_form select[name=stream_message_retention_setting]",
     ).val();
-    if (message_retention_selection === "retain_for_period") {
+    if (message_retention_selection === "custom_period") {
         message_retention_selection = Number.parseInt(
             $("#stream_creation_form input[name=stream-message-retention-days]").val(),
             10,
@@ -323,7 +323,7 @@ export function show_new_stream_modal() {
 
     // Add listener to .show stream-message-retention-days-input that we've hidden above
     $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
-        if (e.target.value === "retain_for_period") {
+        if (e.target.value === "custom_period") {
             $("#stream_creation_form .stream-message-retention-days-input").show();
         } else {
             $("#stream_creation_form .stream-message-retention-days-input").hide();
