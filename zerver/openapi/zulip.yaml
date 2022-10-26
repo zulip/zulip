@@ -13321,14 +13321,14 @@ paths:
                             {
                               "name": "google",
                               "display_name": "Google",
-                              "display_icon": "/static/images/landing-page/logos/googl_e-icon.png",
+                              "display_icon": "/static/images/authentication_backends/googl_e-icon.png",
                               "login_url": "/accounts/login/social/google",
                               "signup_url": "/accounts/register/social/google",
                             },
                             {
                               "name": "github",
                               "display_name": "GitHub",
-                              "display_icon": "/static/images/landing-page/logos/github-icon.png",
+                              "display_icon": "/static/images/authentication_backends/github-icon.png",
                               "login_url": "/accounts/login/social/github",
                               "signup_url": "/accounts/register/social/github",
                             },
