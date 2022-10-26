@@ -268,8 +268,8 @@ export function update_placeholder_text() {
 
     const opts = {
         message_type: compose_state.get_message_type(),
-        stream: $("#stream_message_recipient_stream").val(),
-        topic: $("#stream_message_recipient_topic").val(),
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
         private_message_recipient: compose_pm_pill.get_emails(),
     };
 

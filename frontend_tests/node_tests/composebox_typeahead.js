@@ -735,7 +735,7 @@ test("initialize", ({override, mock_template}) => {
             return topics;
         };
 
-        $("#stream_message_recipient_stream").val("Sweden");
+        compose_state.set_stream_name("Sweden");
         let actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
         let expected_value = topics;
@@ -792,7 +792,7 @@ test("initialize", ({override, mock_template}) => {
         topic_typeahead_called = true;
 
         // Unset the stream name.
-        $("#stream_message_recipient_stream").val("");
+        compose_state.set_stream_name("");
     };
 
     let pm_recipient_typeahead_called = false;
