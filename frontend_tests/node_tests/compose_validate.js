@@ -254,7 +254,7 @@ test_ui("validate", ({override, mock_template}) => {
 
     // test validating stream messages
     compose_state.set_message_type("stream");
-    compose_state.stream_name("");
+    compose_state.set_stream_name("");
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
@@ -264,7 +264,7 @@ test_ui("validate", ({override, mock_template}) => {
     assert.ok(!compose_validate.validate());
     assert.ok(empty_stream_error_rendered);
 
-    compose_state.stream_name("Denmark");
+    compose_state.set_stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
     let missing_topic_error_rendered = false;
@@ -372,7 +372,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         subscribed: true,
     };
     stream_data.add_sub(sub);
-    compose_state.stream_name("social");
+    compose_state.set_stream_name("social");
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
     assert.ok(!$("#compose-send-status").visible());
@@ -427,7 +427,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
     };
 
     compose_state.topic("topic102");
-    compose_state.stream_name("stream102");
+    compose_state.set_stream_name("stream102");
     stream_data.add_sub(sub);
 
     let banner_rendered = false;
@@ -445,13 +445,13 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
     assert.ok(banner_rendered);
 
     // Reset error message.
-    compose_state.stream_name("social");
+    compose_state.set_stream_name("social");
 
     page_params.is_admin = false;
     page_params.is_guest = true;
 
     compose_state.topic("topic102");
-    compose_state.stream_name("stream102");
+    compose_state.set_stream_name("stream102");
     banner_rendered = false;
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
@@ -471,7 +471,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
     };
 
     compose_state.topic("topic104");
-    compose_state.stream_name("stream104");
+    compose_state.set_stream_name("stream104");
     stream_data.add_sub(sub);
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -487,7 +487,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
     // Reset error message.
-    compose_state.stream_name("social");
+    compose_state.set_stream_name("social");
 
     page_params.is_guest = true;
     assert.ok(!compose_validate.validate());
@@ -506,7 +506,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
     };
 
     compose_state.topic("topic103");
-    compose_state.stream_name("stream103");
+    compose_state.set_stream_name("stream103");
     stream_data.add_sub(sub);
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -697,7 +697,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
     assert.ok(!new_banner_rendered);
 
-    compose_state.stream_name("random");
+    compose_state.set_stream_name("random");
     const sub = {
         stream_id: 111,
         name: "random",
@@ -765,7 +765,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     stream_data.add_sub(sub);
 
     compose_state.set_message_type("stream");
-    compose_state.stream_name("Do not exist");
+    compose_state.set_stream_name("Do not exist");
     compose_state.topic(resolved_topic.resolve_name("hello"));
     compose_state.message_content("content");
 
@@ -773,7 +773,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     compose_validate.warn_if_topic_resolved(true);
     assert.ok(!error_shown);
 
-    compose_state.stream_name("random");
+    compose_state.set_stream_name("random");
 
     // Show the warning now as stream also exists
     error_shown = false;

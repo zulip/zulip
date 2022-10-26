@@ -329,7 +329,7 @@ export function start(msg_type, opts) {
     //
     // TODO: Move these into a conditional on message_type, using an
     // explicit "clear" function for compose_state.
-    compose_state.stream_name(opts.stream);
+    compose_state.set_stream_name(opts.stream);
     compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.

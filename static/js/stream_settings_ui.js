@@ -184,7 +184,7 @@ export function update_stream_name(sub, new_name) {
 
     // Update compose_state if needed
     if (compose_state.stream_name() === old_name) {
-        compose_state.stream_name(new_name);
+        compose_state.set_stream_name(new_name);
     }
 
     // Update navbar if needed
