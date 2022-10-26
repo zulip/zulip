@@ -458,8 +458,8 @@ export function initialize() {
     $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {
         event.preventDefault();
 
-        const stream_name = $("#stream_message_recipient_stream").val();
-        if (stream_name === undefined) {
+        const stream_name = compose_state.stream_name();
+        if (stream_name === "") {
             return;
         }
         const sub = stream_data.get_sub(stream_name);
