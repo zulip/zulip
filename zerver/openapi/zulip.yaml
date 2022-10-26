@@ -5031,19 +5031,20 @@ paths:
       summary: Get messages
       tags: ["messages"]
       description: |
-        Fetch message history from a Zulip server.
+        Fetch user's message history from a Zulip server.
 
-        This `GET /api/v1/messages` endpoint is the primary way to fetch
-        message history from a Zulip server. It is useful both for Zulip
-        clients (e.g. the web, desktop, mobile, and terminal clients) as well
-        as bots, API clients, backup scripts, etc.
+        This endpoint is the primary way to fetch a user's message history
+        from a Zulip server. It is useful both for Zulip clients (e.g. the
+        web, desktop, mobile, and terminal clients) as well as bots, API
+        clients, backup scripts, etc.
 
-        By specifying a [narrow filter](/api/construct-narrow), you can use
-        this endpoint to fetch the messages matching any search query that is
-        supported by Zulip's powerful full-text search backend.
+        Note that a user's message history does not contain messages sent to
+        streams before they [subscribe](/api/subscribe), and newly created
+        bot users are not usually subscribed to any streams.
 
-        When a narrow is not specified, it can be used to fetch a user's
-        message history. (We recommend paginating to 1000 messages at a time.)
+        By specifying a [narrow filter](/api/get-messages#parameter-narrow),
+        you can use this endpoint to fetch the messages matching any search
+        query that is supported by Zulip's powerful full-text search backend.
 
         In either case, you specify an `anchor` message (or ask the server to
         calculate the first unread message for you and use that as the
@@ -5117,6 +5118,22 @@ paths:
           description: |
             The narrow where you want to fetch the messages from. See how to
             [construct a narrow](/api/construct-narrow).
+
+            Note that many narrows, including all that lack a `stream`
+            or `streams` operator, search the user's personal message
+            history. See [searching shared
+            history](/help/search-for-messages#searching-shared-history)
+            for details.
+
+            For example, if you would like to fetch messages from all public streams instead
+            of only the user's message history, then a specific narrow for
+            messages sent to all public streams can be used:
+            `{"operator": "streams", "operand": "public"}`.
+
+            Newly created bot users are not usually subscribed to any
+            streams, so bots using this API should either be
+            subscribed to appropriate streams or use a shared history
+            search narrow with this endpoint.
 
             **Changes**: In Zulip 2.1.0, added support for using user/stream IDs
             when constructing narrows for a message's sender, its stream and/or
@@ -5985,19 +6002,20 @@ paths:
       description: |
         Check whether a set of messages match a [narrow](/api/construct-narrow).
 
-        For many common narrows (E.g. a topic), clients can write an
-        efficient client-side check to determine whether a
-        newly arrived message belongs in the view.
+        For many common narrows (e.g. a topic), clients can write an efficient
+        client-side check to determine whether a newly arrived message belongs
+        in the view.
 
         This endpoint is designed to allow clients to handle more complex narrows
-        for which the client does not (or in the case of full-text search,
-        cannot) implement this check.
+        for which the client does not (or in the case of full-text search, cannot)
+        implement this check.
 
-        The format of the `match_subject` and `match_content` objects is designed to match
-        those of `GET /messages`, so that a client can splice these fields into a
-        `message` object received from `GET /events` and end up with an extended message
-        object identical to how a `GET /messages` for the current narrow would have
-        returned the message.
+        The format of the `match_subject` and `match_content` objects is designed
+        to match those returned by the [`GET /messages`](/api/get-messages#response)
+        endpoint, so that a client can splice these fields into a `message` object
+        received from [`GET /events`](/api/get-events#message) and end up with an
+        extended message object identical to how a [`GET /messages`](/api/get-messages)
+        request for the current narrow would have returned the message.
       parameters:
         - name: msg_ids
           in: query
@@ -17029,11 +17047,33 @@ components:
       in: query
       description: |
         A JSON-encoded array of arrays of length 2 indicating the
-        narrow for which you'd like to receive events for. For
-        instance, to receive events for the stream `Denmark`, you
-        would specify `narrow=[['stream', 'Denmark']]`. Another
-        example is `narrow=[['is', 'private']]` for private messages.
-        Default is `[]`.
+        [narrow filter(s)](/api/construct-narrow) for which you'd
+        like to receive events for.
+
+        For example, to receive events for private messages (including
+        group private messages) received by the user, one can use
+        `narrow=[["is", "private"]]`.
+
+        Unlike the API for [fetching messages](/api/get-messages),
+        this narrow parameter is simply a filter on messages that the
+        user receives through their stream subscriptions (or because
+        they are a recipient of a private message).
+
+        This means that a client that requests a `narrow` filter of
+        `[["stream", "Denmark"]]` will receive events for new messages
+        sent to that stream while the user is subscribed to that
+        stream. The client will not receive any message events at all
+        if the user is not subscribed to `"Denmark"`.
+
+        Newly created bot users are not usually subscribed to any
+        streams, so bots using this API need to be
+        [subscribed](/api/subscribe) to any streams whose messages
+        you'd like them to process using this endpoint.
+
+        See the `all_public_streams` parameter for how to process all
+        public stream messages in an organization.
+
+        Defaults to `[]`.
       content:
         application/json:
           schema:
