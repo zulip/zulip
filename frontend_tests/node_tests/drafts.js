@@ -161,7 +161,7 @@ test("snapshot_message", ({override_rewire}) => {
     function set_compose_state() {
         compose_state.set_message_type(curr_draft.type);
         compose_state.message_content(curr_draft.content);
-        compose_state.stream_name(curr_draft.stream);
+        compose_state.set_stream_name(curr_draft.stream);
         compose_state.topic(curr_draft.topic);
         compose_state.private_message_recipient(curr_draft.private_message_recipient);
     }

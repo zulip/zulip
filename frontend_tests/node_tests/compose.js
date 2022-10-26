@@ -296,7 +296,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");
-    compose_state.stream_name("social");
+    compose_state.set_stream_name("social");
 
     $("#compose-textarea").val("message me");
     $("#compose-textarea").hide();
@@ -390,7 +390,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("stream");
-        compose_state.stream_name("social");
+        compose_state.set_stream_name("social");
         override_rewire(people, "get_by_user_id", () => []);
         compose_finished_event_checked = false;
         let schedule_message = false;
