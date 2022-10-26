@@ -50,12 +50,12 @@
           {{#if disable_message_retention_setting}}disabled{{/if}}>
             <option value="realm_default">{{#tr}}Use organization level settings {org_level_message_retention_setting}{{/tr}}</option>
             <option value="unlimited">{{t 'Retain forever' }}</option>
-            <option value="retain_for_period">{{t 'Retain for N days after posting' }}</option>
+            <option value="custom_period">{{t 'Custom' }}</option>
         </select>
 
-        <div class="dependent-inline-block stream-message-retention-days-input">
+        <div class="dependent-settings-block stream-message-retention-days-input">
             <label class="inline-block">
-                {{t 'N' }}:
+                {{t 'Retention period (days)' }}:
             </label>
             <input type="text" autocomplete="off"
               name="stream-message-retention-days"
