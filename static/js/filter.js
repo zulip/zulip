@@ -662,7 +662,10 @@ export class Filter {
     get_title() {
         // Nice explanatory titles for common views.
         const term_types = this.sorted_term_types();
-        if (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"])) {
+        if (
+            (term_types.length === 3 && _.isEqual(term_types, ["stream", "topic", "near"])) ||
+            (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"]))
+        ) {
             if (!this._sub) {
                 const search_text = this.operands("stream")[0];
                 return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
