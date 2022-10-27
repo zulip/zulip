@@ -118,6 +118,10 @@ li.show-more-topics {
 
                 &.filter-topics {
                     padding-bottom: 0;
+                    position: sticky;
+                    top: 43px;
+                    z-index: 2;
+                    background-color: hsl(0, 0%, 100%);
                 }
 
                 .input-append.topic_search_section {
@@ -373,6 +377,13 @@ li.active-sub-filter {
     border-radius: 4px;
 }
 
+#stream_filters .narrow-filter.active-filter {
+    .topic-list .filter-topics,
+    > .bottom_left_row {
+        background-color: hsl(202, 56%, 91%);
+    }
+}
+
 #global_filters {
     margin-bottom: $sections_vertical_gutter;
 
@@ -611,6 +622,10 @@ li.topic-list-item {
 }
 
 #topics_header {
+    position: sticky;
+    top: 0;
+    background-color: hsl(0, 0%, 100%);
+    z-index: 2;
     margin-right: 10px;
     color: hsl(0, 0%, 43%);
 
@@ -702,6 +717,14 @@ li.topic-list-item {
 }
 
 .zoom-in {
+    .narrow-filter > .bottom_left_row {
+        position: sticky;
+        top: 20px;
+        z-index: 2;
+        padding-bottom: 1px;
+        background-color: hsl(0, 0%, 100%);
+    }
+
     .show-more-topics {
         display: none;
     }
