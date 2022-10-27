@@ -517,6 +517,10 @@ export function get_unread_messages(messages) {
     return messages.filter((message) => unread_messages.has(message.id));
 }
 
+export function get_unread_message_count() {
+    return unread_messages.size;
+}
+
 export function update_unread_topics(msg, event) {
     const new_topic = util.get_edit_event_topic(event);
     const {new_stream_id} = event;
