@@ -1183,6 +1183,21 @@ class TestMissedMessages(ZulipTestCase):
             msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
         )
 
+    def test_pm_link_in_missed_message_header(self) -> None:
+        cordelia = self.example_user("cordelia")
+        msg_id = self.send_personal_message(
+            cordelia,
+            self.example_user("hamlet"),
+            "Let's test PM link in email notifications",
+        )
+
+        encoded_name = "Cordelia,-Lear's-daughter"
+        verify_body_include = [
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/pm-with/{cordelia.id}-{encoded_name}"
+        ]
+        email_subject = "PMs with Cordelia, Lear's daughter"
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False)
+
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
         msg_id_1 = self.send_stream_message(
