@@ -42,7 +42,7 @@ warn_unreachable = true
 # with this behavior.
 local_partial_types = true
 
-plugins = ["mypy_django_plugin.main"]
+plugins = ["mypy_django_plugin.main", "pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = ["zproject.configured_settings", "zproject.settings", "zproject.default_settings"]
@@ -89,6 +89,12 @@ ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "zproject.settings"
+
+[tool.pydantic-mypy]
+# See https://docs.pydantic.dev/latest/integrations/mypy/#mypy-plugin-capabilities for the effects of these options.
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true 
 
 [tool.ruff]
 # See https://github.com/charliermarsh/ruff#rules for error code definitions.
