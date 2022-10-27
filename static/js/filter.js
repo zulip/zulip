@@ -672,6 +672,23 @@ export class Filter {
             }
             return this._sub.name;
         }
+        if (
+            (term_types.length === 2 && _.isEqual(term_types, ["pm-with", "near"])) ||
+            (term_types.length === 1 && _.isEqual(term_types, ["pm-with"]))
+        ) {
+            const emails = this.operands("pm-with")[0].split(",");
+            const names = emails.map((email) => {
+                if (!people.get_by_email(email)) {
+                    return email;
+                }
+                return people.get_by_email(email).full_name;
+            });
+
+            // We use join to handle the addition of a comma and space after every name
+            // and also to ensure that we return a string and not an array so that we
+            // can have the same return type as other cases.
+            return names.join(", ");
+        }
         if (term_types.length === 1) {
             switch (term_types[0]) {
                 case "in-home":
@@ -692,20 +709,6 @@ export class Filter {
                     return $t({defaultMessage: "Mentions"});
                 case "is-private":
                     return $t({defaultMessage: "Private messages"});
-                case "pm-with": {
-                    const emails = this.operands("pm-with")[0].split(",");
-                    const names = emails.map((email) => {
-                        if (!people.get_by_email(email)) {
-                            return email;
-                        }
-                        return people.get_by_email(email).full_name;
-                    });
-
-                    // We use join to handle the addition of a comma and space after every name
-                    // and also to ensure that we return a string and not an array so that we
-                    // can have the same return type as other cases.
-                    return names.join(", ");
-                }
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
                 // These cases return false for is_common_narrow, and therefore are not

@@ -1481,6 +1481,15 @@ test("navbar_helpers", () => {
     // not common narrows, but used for browser title updates
     const is_alerted = [{operator: "is", operand: "alerted"}];
     const is_unread = [{operator: "is", operand: "unread"}];
+    const stream_topic_near = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "near", operand: "12"},
+    ];
+    const pm_with_near = [
+        {operator: "pm-with", operand: "joe@example.com"},
+        {operator: "near", operand: "12"},
+    ];
 
     const test_cases = [
         {
@@ -1613,6 +1622,20 @@ test("navbar_helpers", () => {
             is_common_narrow: false,
             icon: undefined,
             title: "translated: Unread messages",
+            redirect_url_with_search: "#",
+        },
+        {
+            operator: stream_topic_near,
+            is_common_narrow: false,
+            icon: "hashtag",
+            title: "Foo",
+            redirect_url_with_search: "#",
+        },
+        {
+            operator: pm_with_near,
+            is_common_narrow: false,
+            icon: "envelope",
+            title: properly_separated_names([joe.full_name]),
             redirect_url_with_search: "#",
         },
     ];
