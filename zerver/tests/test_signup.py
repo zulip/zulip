@@ -1049,7 +1049,7 @@ class LoginTest(ZulipTestCase):
         """
         self.login("cordelia")
         response = self.client_get("/login/")
-        self.assertEqual(response["Location"], "http://zulip.testserver")
+        self.assertEqual(response["Location"], "http://zulip.testserver/")
 
     def test_options_request_to_login_page(self) -> None:
         response = self.client_options("/login/")
@@ -1067,7 +1067,7 @@ class LoginTest(ZulipTestCase):
         self.login_2fa(user_profile)
 
         response = self.client_get("/login/")
-        self.assertEqual(response["Location"], "http://zulip.testserver")
+        self.assertEqual(response["Location"], "http://zulip.testserver/")
 
     def test_start_two_factor_auth(self) -> None:
         request = HostRequestMock()
@@ -3962,6 +3962,14 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "/accounts/go/?next=%2Fupgrade%2F")
 
+    def test_login_page_redirects_using_next_when_already_authenticated(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        result = self.client_get("/login/", {"next": "/upgrade/"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{hamlet.realm.uri}/upgrade/")
+
     @patch("django.http.HttpRequest.get_host")
     def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
         mock_get_host.return_value = "www.testserver"
@@ -4227,7 +4235,7 @@ class TwoFactorAuthTest(ZulipTestCase):
             # Going to login page should redirect to '/' if user is already
             # logged in.
             result = self.client_get("/accounts/login/")
-            self.assertEqual(result["Location"], "http://zulip.testserver")
+            self.assertEqual(result["Location"], "http://zulip.testserver/")
 
 
 class NameRestrictionsTest(ZulipTestCase):
@@ -4242,7 +4250,7 @@ class RealmRedirectTest(ZulipTestCase):
 
         result = self.client_post("/accounts/go/", {"subdomain": "zephyr"})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://zephyr.testserver")
+        self.assertEqual(result["Location"], "http://zephyr.testserver/login/")
 
         result = self.client_post("/accounts/go/", {"subdomain": "invalid"})
         self.assert_in_success_response(["We couldn&#39;t find that Zulip organization."], result)
@@ -4255,4 +4263,4 @@ class RealmRedirectTest(ZulipTestCase):
 
         result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://lear.testserver/billing")
+        self.assertEqual(result["Location"], "http://lear.testserver/login/?next=billing")

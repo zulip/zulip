@@ -420,7 +420,7 @@ class AuthBackendTest(ZulipTestCase):
 
         result = self.client_get("/login/")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://zulip.testserver")
+        self.assertEqual(result["Location"], "http://zulip.testserver/")
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipDummyBackend",))
     def test_no_backend_enabled(self) -> None:
@@ -4988,7 +4988,7 @@ class TestTwoFactor(ZulipTestCase):
             # already logged in.
             result = self.client_get("/accounts/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "http://zulip.testserver")
+            self.assertEqual(result["Location"], "http://zulip.testserver/")
 
 
 class TestDevAuthBackend(ZulipTestCase):
