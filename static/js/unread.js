@@ -1,7 +1,6 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
@@ -25,6 +24,7 @@ import * as util from "./util";
 // for more details on how this system is designed.
 
 export let messages_read_in_narrow = false;
+export let old_unreads_missing = false;
 
 export function set_messages_read_in_narrow(value) {
     messages_read_in_narrow = value;
@@ -560,7 +560,7 @@ export function process_loaded_messages(messages, expect_no_new_unreads = false)
                 continue;
             }
 
-            if (expect_no_new_unreads && !page_params.unread_msgs.old_unreads_missing) {
+            if (expect_no_new_unreads && !old_unreads_missing) {
                 // This may happen due to races, where someone narrows
                 // to a view and the message_fetch request returns
                 // before server_events system delivers the message to
@@ -796,6 +796,7 @@ export function get_msg_ids_for_starred() {
 export function initialize(params) {
     const unread_msgs = params.unread_msgs;
 
+    old_unreads_missing = unread_msgs.old_unreads_missing;
     unread_pm_counter.set_huddles(unread_msgs.huddles);
     unread_pm_counter.set_pms(unread_msgs.pms);
     unread_topic_counter.set_streams(unread_msgs.streams);
