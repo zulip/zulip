@@ -331,17 +331,23 @@
         .recent_topic_stream {
             width: 25%;
             padding: 8px 0 8px 8px;
-            word-break: break-word;
-            hyphens: auto;
+
+            a {
+                word-break: break-word;
+                hyphens: auto;
+            }
         }
 
         .recent_topic_name {
             width: 40%;
-            word-break: break-word;
-            /* No hyphes for word break since it caused hyphens to appear before
-               the ellipsis `longText-...` which is not desirable. Ellipsis appears due
-               to the line clamp applied below.
-            */
+
+            a {
+                word-break: break-word;
+                /* No hyphes for word break since it caused hyphens to appear before
+                   the ellipsis `longText-...` which is not desirable. Ellipsis appears due
+                   to the line clamp applied below.
+                */
+            }
 
             .line_clamp {
                 /* This -webkit-box display property is webkit-specific, but
