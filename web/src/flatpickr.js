@@ -30,6 +30,13 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         formatDate: (date) => formatISO(date),
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
+        // onKeyDown event handler is responsible for handling the tab and shift_tab hotkeys,
+        // allowing users to navigate through the various time elements in the date picker.
+        // If a numeric key is pressed, it is ignored, since it is not considered a hotkey.
+        // If a hotkey is pressed but its name is not recognized, the function simply returns.
+        // If a tab or shift_tab hotkey is pressed, the handler calculates the next element to focus on,
+        // based on the current target element and the direction of navigation, and then calls
+        // preventDefault and stopPropagation on the event, before focusing on the new target element.
         onKeyDown(selectedDates, dateStr, instance, event) {
             if (is_numeric_key(event.key)) {
                 // Don't attempt to get_keydown_hotkey for numeric inputs
@@ -38,6 +45,10 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
             }
 
             const hotkey = get_keydown_hotkey(event);
+
+            if (!hotkey) {
+                return;
+            }
 
             if (["tab", "shift_tab"].includes(hotkey.name)) {
                 const elems = [
