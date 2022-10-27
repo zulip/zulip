@@ -2,10 +2,10 @@ import logging
 import urllib
 from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
-from django.contrib.auth import authenticate, get_backends
+from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
 from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -89,7 +89,6 @@ from zerver.views.auth import (
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
-    get_safe_redirect_to,
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
@@ -1016,7 +1015,13 @@ def realm_redirect(request: HttpRequest, next: str = REQ(default="")) -> HttpRes
         if form.is_valid():
             subdomain = form.cleaned_data["subdomain"]
             realm = get_realm(subdomain)
-            redirect_to = get_safe_redirect_to(next, realm.uri)
+            redirect_to = urljoin(realm.uri, settings.HOME_NOT_LOGGED_IN)
+
+            if next:
+                redirect_to = append_url_query_string(
+                    redirect_to, urlencode({REDIRECT_FIELD_NAME: next})
+                )
+
             return HttpResponseRedirect(redirect_to)
     else:
         form = RealmRedirectForm()

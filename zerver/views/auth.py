@@ -796,9 +796,11 @@ def login_page(
     is_preview = "preview" in request.GET
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         if request.user.is_authenticated and is_2fa_verified(request.user):
-            return HttpResponseRedirect(request.user.realm.uri)
+            redirect_to = get_safe_redirect_to(next, request.user.realm.uri)
+            return HttpResponseRedirect(redirect_to)
     elif request.user.is_authenticated and not is_preview:
-        return HttpResponseRedirect(request.user.realm.uri)
+        redirect_to = get_safe_redirect_to(next, request.user.realm.uri)
+        return HttpResponseRedirect(redirect_to)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse("realm_redirect")
         if request.GET:
