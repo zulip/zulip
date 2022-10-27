@@ -14,6 +14,7 @@ import * as compose_ui from "./compose_ui";
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
+import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
@@ -172,7 +173,7 @@ export function initialize() {
             rendered_alert_content_html: render_desktop_notifications_alert_content(),
         });
     } else if (unread_ui.should_display_bankruptcy_banner()) {
-        const unread_msgs_count = page_params.unread_msgs.count;
+        const unread_msgs_count = unread.get_unread_message_count();
         open({
             data_process: "bankruptcy",
             custom_class: "bankruptcy",
