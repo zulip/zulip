@@ -615,6 +615,21 @@ body.dark-theme {
         }
     }
 
+    #stream_filters .narrow-filter.active-filter {
+        .topic-list .filter-topics,
+        > .bottom_left_row {
+            background-color: hsl(208, 31%, 24%);
+        }
+    }
+
+    .zoom-in {
+        #topics_header,
+        .narrow-filter > .bottom_left_row,
+        #stream_filters .topic-list .filter-topics {
+            background-color: hsl(212, 28%, 18%);
+        }
+    }
+
     #user_presences li:hover,
     #user_presences li.highlighted_user {
         background-color: hsla(136, 25%, 73%, 0.2);
