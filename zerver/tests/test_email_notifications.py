@@ -1051,6 +1051,13 @@ class TestMissedMessages(ZulipTestCase):
     def test_extra_context_in_missed_stream_messages_email_notify(self) -> None:
         self._extra_context_in_missed_stream_messages_email_notify(False)
 
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_resolved_topic_missed_stream_messages_thread_friendly_as_user(self) -> None:
+        self._resolved_topic_missed_stream_messages_thread_friendly(True)
+
+    def test_resolved_topic_missed_stream_messages_thread_friendly(self) -> None:
+        self._resolved_topic_missed_stream_messages_thread_friendly(False)
+
     @override_settings(EMAIL_GATEWAY_PATTERN="")
     def test_reply_warning_in_missed_personal_messages(self) -> None:
         self._reply_warning_in_missed_personal_messages(False)

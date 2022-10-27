@@ -27,6 +27,7 @@ from zerver.lib.notification_data import get_mentioned_user_group_name
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.topic import get_topic_resolution_and_bare_name
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.url_encoding import (
     huddle_narrow_url,
@@ -481,10 +482,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             )
         message = missed_messages[0]["message"]
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
-        topic_name = message.topic_name()
+        topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())
         context.update(
             stream_name=stream.name,
             topic_name=topic_name,
+            topic_resolved=topic_resolved,
         )
     else:
         raise AssertionError("Invalid messages!")
