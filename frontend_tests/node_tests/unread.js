@@ -699,32 +699,34 @@ test("message_unread", () => {
 test("server_counts", () => {
     // note that user_id 30 is "me"
 
-    page_params.unread_msgs = {
-        pms: [
-            {
-                other_user_id: 101,
-                // sender_id is deprecated.
-                sender_id: 101,
-                unread_message_ids: [31, 32, 60, 61, 62, 63],
-            },
-        ],
-        huddles: [
-            {
-                user_ids_string: "4,6,30,101",
-                unread_message_ids: [34, 50],
-            },
-        ],
-        streams: [
-            {
-                stream_id: 1,
-                topic: "test",
-                unread_message_ids: [33, 35, 36],
-            },
-        ],
-        mentions: [31, 34, 40, 41],
+    const unread_params = {
+        unread_msgs: {
+            pms: [
+                {
+                    other_user_id: 101,
+                    // sender_id is deprecated.
+                    sender_id: 101,
+                    unread_message_ids: [31, 32, 60, 61, 62, 63],
+                },
+            ],
+            huddles: [
+                {
+                    user_ids_string: "4,6,30,101",
+                    unread_message_ids: [34, 50],
+                },
+            ],
+            streams: [
+                {
+                    stream_id: 1,
+                    topic: "test",
+                    unread_message_ids: [33, 35, 36],
+                },
+            ],
+            mentions: [31, 34, 40, 41],
+        },
     };
 
-    unread.initialize();
+    unread.initialize(unread_params);
 
     assert.equal(unread.num_unread_for_user_ids_string("101"), 6);
     assert.equal(unread.num_unread_for_user_ids_string("4,6,101"), 2);
