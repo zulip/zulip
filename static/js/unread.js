@@ -793,8 +793,8 @@ export function get_msg_ids_for_starred() {
     return [];
 }
 
-export function initialize() {
-    const unread_msgs = page_params.unread_msgs;
+export function initialize(params) {
+    const unread_msgs = params.unread_msgs;
 
     unread_pm_counter.set_huddles(unread_msgs.huddles);
     unread_pm_counter.set_pms(unread_msgs.pms);
