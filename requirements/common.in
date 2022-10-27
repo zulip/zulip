@@ -197,3 +197,7 @@ circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
 django-stubs-ext
+
+# Structured data representation with parsing.
+pydantic
+annotated_types
