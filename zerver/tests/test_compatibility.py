@@ -1,6 +1,11 @@
 from unittest import mock
 
-from zerver.lib.compatibility import find_mobile_os, is_outdated_desktop_app, version_lt
+from zerver.lib.compatibility import (
+    find_mobile_os,
+    is_outdated_desktop_app,
+    is_pronouns_field_type_supported,
+    version_lt,
+)
 from zerver.lib.test_classes import ZulipTestCase
 
 
@@ -160,3 +165,26 @@ class CompatibilityTest(ZulipTestCase):
         )
 
         self.assertEqual(is_outdated_desktop_app(""), (False, False, False))
+
+    def test_is_pronouns_field_type_supported(self) -> None:
+        self.assertEqual(
+            is_pronouns_field_type_supported("ZulipMobile/20.0.103 (Android 6.0.1)"), False
+        )
+        self.assertEqual(is_pronouns_field_type_supported("ZulipMobile/20.0.103 (iOS 12.0)"), False)
+
+        self.assertEqual(
+            is_pronouns_field_type_supported("ZulipMobile/27.191 (Android 6.0.1)"), False
+        )
+        self.assertEqual(is_pronouns_field_type_supported("ZulipMobile/27.191 (iOS 12.0)"), False)
+
+        self.assertEqual(
+            is_pronouns_field_type_supported("ZulipMobile/27.192 (Android 6.0.1)"), True
+        )
+        self.assertEqual(is_pronouns_field_type_supported("ZulipMobile/27.192 (iOS 12.0)"), True)
+
+        self.assertEqual(
+            is_pronouns_field_type_supported(
+                "ZulipElectron/5.2.0 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/5.2.0 Chrome/80.0.3987.165 Electron/8.2.5 Safari/537.36"
+            ),
+            True,
+        )

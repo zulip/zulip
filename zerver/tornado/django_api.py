@@ -75,6 +75,7 @@ def request_event_queue(
     bulk_message_deletion: bool = False,
     stream_typing_notifications: bool = False,
     user_settings_object: bool = False,
+    pronouns_field_type_supported: bool = True,
 ) -> Optional[str]:
 
     if not settings.USING_TORNADO:
@@ -96,6 +97,7 @@ def request_event_queue(
         "bulk_message_deletion": orjson.dumps(bulk_message_deletion),
         "stream_typing_notifications": orjson.dumps(stream_typing_notifications),
         "user_settings_object": orjson.dumps(user_settings_object),
+        "pronouns_field_type_supported": orjson.dumps(pronouns_field_type_supported),
     }
 
     if event_types is not None:
