@@ -257,11 +257,16 @@ export class MessageListView {
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
             const today = new Date();
-            return (
-                timerender.render_date(last_edit_time, undefined, today)[0].textContent +
-                " at " +
-                timerender.stringify_time(last_edit_time)
-            );
+
+            let last_edit_date = timerender.render_date(last_edit_time, undefined, today)[0]
+                .textContent;
+
+            if (last_edit_date === "Today") {
+                last_edit_date = "today";
+            } else if (last_edit_date === "Yesterday") {
+                last_edit_date = "yesterday";
+            }
+            return `${last_edit_date} at ${timerender.stringify_time(last_edit_time)}`;
         }
         return undefined;
     }

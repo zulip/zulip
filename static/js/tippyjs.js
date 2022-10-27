@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import tippy, {delegate} from "tippy.js";
 
+import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
@@ -10,6 +11,7 @@ import * as compose_state from "./compose_state";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as recent_topics_util from "./recent_topics_util";
@@ -196,6 +198,24 @@ export function initialize() {
             const message = message_lists.current.get(rows.id($row));
             const time = new Date(message.timestamp * 1000);
             instance.setContent(timerender.get_full_datetime(time));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: ".message_edit_notice",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+
+            const edited_notice_str = $elem.attr("data-tippy-content");
+            const realm_allow_edit_history = page_params.realm_allow_edit_history;
+            const content = parse_html(
+                render_message_edit_notice_tooltip({edited_notice_str, realm_allow_edit_history}),
+            );
+            instance.setContent(content);
         },
         onHidden(instance) {
             instance.destroy();

@@ -1,13 +1,13 @@
 {{#if msg/local_edit_timestamp}}
-<div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
+<div class="message_edit_notice auto-select" data-tippy-content="{{#tr}}Last edited {last_edit_timestr}{{/tr}}" aria-label="{{#tr}}Last edited {last_edit_timestr}{{/tr}}">
     {{t "SAVING" }}
 </div>
 {{else if moved}}
-<div class="message_edit_notice auto-select" title="{{#tr}}Moved ({last_edit_timestr}){{/tr}}">
+<div class="message_edit_notice auto-select" data-tippy-content="{{#tr}}Last moved {last_edit_timestr}{{/tr}}" aria-label="{{#tr}}Last moved {last_edit_timestr}{{/tr}}">
     {{t "MOVED" }}
 </div>
 {{else}}
-<div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
+<div class="message_edit_notice auto-select" data-tippy-content="{{#tr}}Last edited {last_edit_timestr}{{/tr}}" aria-label="{{#tr}}Last edited {last_edit_timestr}{{/tr}}">
     {{t "EDITED" }}
 </div>
 {{/if}}
