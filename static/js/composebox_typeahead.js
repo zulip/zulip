@@ -1094,19 +1094,19 @@ export function initialize() {
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
-        source() {
-            return stream_data.subscribed_streams();
+        source(query) {
+            const items = stream_data.subscribed_streams();
+            const q = query.trim().toLowerCase();
+            const filteredItems = items.filter(i => i.toLowerCase().startsWith(q));
+            return filteredItems.length ? filteredItems : ['New'];
         },
         items: 3,
         fixed: true,
         highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        matcher(item) {
-            // The matcher for "stream" is strictly prefix-based,
-            // because we want to avoid mixing up streams.
-            const q = this.query.trim().toLowerCase();
-            return item.toLowerCase().startsWith(q);
+        matcher() {
+            return true;
         },
     });
 
