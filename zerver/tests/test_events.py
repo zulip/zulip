@@ -262,6 +262,7 @@ class BaseAction(ZulipTestCase):
         bulk_message_deletion: bool = True,
         stream_typing_notifications: bool = True,
         user_settings_object: bool = False,
+        pronouns_field_type_supported: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -289,6 +290,7 @@ class BaseAction(ZulipTestCase):
                 bulk_message_deletion=bulk_message_deletion,
                 stream_typing_notifications=stream_typing_notifications,
                 user_settings_object=user_settings_object,
+                pronouns_field_type_supported=pronouns_field_type_supported,
             )
         )
 
@@ -302,6 +304,7 @@ class BaseAction(ZulipTestCase):
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
 
         # We want even those `send_event` calls which have been hooked to
@@ -357,6 +360,7 @@ class BaseAction(ZulipTestCase):
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -996,6 +1000,33 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(lambda: do_remove_realm_custom_profile_field(realm, field))
         check_custom_profile_fields("events[0]", events[0])
+
+    def test_pronouns_type_support_in_custom_profile_fields_events(self) -> None:
+        realm = self.user_profile.realm
+        field = CustomProfileField.objects.get(realm=realm, name="Pronouns")
+        name = field.name
+        hint = "What pronouns should people use for you?"
+
+        events = self.verify_action(
+            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint),
+            pronouns_field_type_supported=True,
+        )
+        check_custom_profile_fields("events[0]", events[0])
+        pronouns_field = [
+            field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
+        ][0]
+        self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
+
+        hint = "What pronouns should people use to refer you?"
+        events = self.verify_action(
+            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint),
+            pronouns_field_type_supported=False,
+        )
+        check_custom_profile_fields("events[0]", events[0])
+        pronouns_field = [
+            field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
+        ][0]
+        self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
 
     def test_custom_profile_field_data_events(self) -> None:
         field_id = self.user_profile.realm.customprofilefield_set.get(
