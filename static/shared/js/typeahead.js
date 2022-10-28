@@ -34,7 +34,11 @@ export function remove_diacritics(s) {
     return s.normalize("NFKD").replace(unicode_marks, "");
 }
 
-function query_matches_string(query, source_str, split_char) {
+// This function attempts to match a query with a source text.
+// * query is the user-entered search query
+// * source_str is the string we're matching in, e.g. a user's name
+// * split_char is the separator for this syntax (e.g. ' ').
+export function query_matches_string(query, source_str, split_char) {
     source_str = source_str.toLowerCase();
     source_str = remove_diacritics(source_str);
 
@@ -49,19 +53,6 @@ function query_matches_string(query, source_str, split_char) {
     // (E.g. for 'ab cd ef', query could be 'ab c' or 'cd ef',
     // but not 'b cd ef'.)
     return source_str.startsWith(query) || source_str.includes(split_char + query);
-}
-
-// This function attempts to match a query with source's attributes.
-// * query is the user-entered search query
-// * Source is the object we're matching from, e.g. a user object
-// * match_attrs are the values associated with the target object that
-// the entered string might be trying to match, e.g. for a user
-// account, there might be 2 attrs: their full name and their email.
-// * split_char is the separator for this syntax (e.g. ' ').
-export function query_matches_source_attrs(query, source, match_attrs, split_char) {
-    return match_attrs.some((attr) => {
-        return query_matches_string(query, source[attr], split_char);
-    });
 }
 
 function clean_query(query) {
@@ -98,9 +89,7 @@ export function get_emoji_matcher(query) {
     return function (emoji) {
         const matches_emoji_literal =
             is_unicode_emoji(emoji) && parse_unicode_emoji_code(emoji.emoji_code) === query;
-        return (
-            matches_emoji_literal || query_matches_source_attrs(query, emoji, ["emoji_name"], "_")
-        );
+        return matches_emoji_literal || query_matches_string(query, emoji.emoji_name, "_");
     };
 }
 

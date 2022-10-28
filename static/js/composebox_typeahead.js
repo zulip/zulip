@@ -87,17 +87,20 @@ function get_language_matcher(query) {
 
 export function query_matches_person(query, person) {
     if (!settings_data.show_email()) {
-        return typeahead.query_matches_source_attrs(query, person, ["full_name"], " ");
+        return typeahead.query_matches_string(query, person.full_name, " ");
     }
     let email_attr = "email";
     if (person.delivery_email) {
         email_attr = "delivery_email";
     }
-    return typeahead.query_matches_source_attrs(query, person, ["full_name", email_attr], " ");
+    return (
+        typeahead.query_matches_string(query, person.full_name, " ") ||
+        typeahead.query_matches_string(query, person[email_attr], " ")
+    );
 }
 
 export function query_matches_name(query, user_group_or_stream) {
-    return typeahead.query_matches_source_attrs(query, user_group_or_stream, ["name"], " ");
+    return typeahead.query_matches_string(query, user_group_or_stream.name, " ");
 }
 
 function get_stream_or_user_group_matcher(query) {
@@ -113,7 +116,10 @@ function get_slash_matcher(query) {
     query = typeahead.clean_query_lowercase(query);
 
     return function (item) {
-        return typeahead.query_matches_source_attrs(query, item, ["name", "aliases"], " ");
+        return (
+            typeahead.query_matches_string(query, item.name, " ") ||
+            typeahead.query_matches_string(query, item.aliases, " ")
+        );
     };
 }
 
@@ -125,7 +131,7 @@ function get_topic_matcher(query) {
             topic,
         };
 
-        return typeahead.query_matches_source_attrs(query, obj, ["topic"], " ");
+        return typeahead.query_matches_string(query, obj.topic, " ");
     };
 }
 

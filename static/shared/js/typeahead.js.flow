@@ -6,7 +6,11 @@ export type Emoji = {emoji_name: string, emoji_code: string, ...};
 
 declare export function remove_diacritics(s: string): string;
 
-// declare export function query_matches_source_attrs
+declare export function query_matches_string(
+    query: string,
+    source_str: string,
+    split_char: string,
+): boolean;
 
 // declare export function clean_query_lowercase
 
