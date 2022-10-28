@@ -189,7 +189,6 @@ def move_expired_messages_to_archive_by_recipient(
 ) -> int:
     assert message_retention_days != -1
 
-    # This function will archive appropriate messages and their related objects.
     query = SQL(
         """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
@@ -222,7 +221,6 @@ def move_expired_personal_and_huddle_messages_to_archive(
     assert message_retention_days != -1
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
-    # This function will archive appropriate messages and their related objects.
     recipient_types = (Recipient.PERSONAL, Recipient.HUDDLE)
 
     # Archive expired personal and huddle Messages in the realm, including cross-realm messages.
