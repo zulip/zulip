@@ -1437,7 +1437,7 @@ def update_first_visible_message_id(realm: Realm) -> None:
     else:
         try:
             first_visible_message_id = (
-                Message.objects.filter(sender__realm=realm)
+                Message.objects.filter(realm=realm)
                 .values("id")
                 .order_by("-id")[realm.message_visibility_limit - 1]["id"]
             )
