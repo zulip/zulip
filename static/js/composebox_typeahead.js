@@ -86,12 +86,10 @@ function get_language_matcher(query) {
 }
 
 export function query_matches_person(query, person) {
-    if (!settings_data.show_email()) {
-        return typeahead.query_matches_string(query, person.full_name, " ");
-    }
     return (
         typeahead.query_matches_string(query, person.full_name, " ") ||
-        typeahead.query_matches_string(query, people.get_visible_email(person), " ")
+        (settings_data.show_email() &&
+            typeahead.query_matches_string(query, people.get_visible_email(person), " "))
     );
 }
 
