@@ -147,6 +147,19 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         assert msg_id is not None
         return msg_id
 
+    def _send_personal_message_to_cross_realm_bot(self) -> int:
+        # Send message from bot to users from different realm.
+        bot_email = "notification-bot@zulip.com"
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        zulip_user = self.example_user("hamlet")
+        msg_id = internal_send_private_message(
+            sender=zulip_user,
+            recipient_user=get_system_bot(bot_email, internal_realm.id),
+            content="test message",
+        )
+        assert msg_id is not None
+        return msg_id
+
     def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
         msg_ids = list(
             Message.objects.order_by("id")
@@ -298,9 +311,13 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
     def test_cross_realm_personal_message_archiving(self) -> None:
         """Check that cross-realm personal messages get correctly archived."""
+
+        # We want to test on a set of cross-realm messages of both kinds -
+        # from a bot to a user, and from a user to a bot.
         msg_ids = [self._send_cross_realm_personal_message() for i in range(1, 7)]
+        msg_ids += [self._send_personal_message_to_cross_realm_bot() for i in range(1, 7)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
-        # Make the message expired on the recipient's realm:
+        # Make the message expired in the Zulip realm.:
         self._change_messages_date_sent(msg_ids, timezone_now() - timedelta(ZULIP_REALM_DAYS + 1))
 
         archive_messages()

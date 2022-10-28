@@ -53,8 +53,6 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
-    get_realm,
-    get_user_including_cross_realm,
 )
 
 logger = logging.getLogger("zulip.retention")
@@ -225,24 +223,16 @@ def move_expired_personal_and_huddle_messages_to_archive(
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
     # This function will archive appropriate messages and their related objects.
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    cross_realm_bot_ids = [
-        get_user_including_cross_realm(email, internal_realm).id
-        for email in settings.CROSS_REALM_BOT_EMAILS
-    ]
     recipient_types = (Recipient.PERSONAL, Recipient.HUDDLE)
 
-    # Archive expired personal and huddle Messages in the realm, except cross-realm messages.
-    # The condition zerver_userprofile.realm_id = {realm_id} assures the row won't be
-    # a message sent by a cross-realm bot, because cross-realm bots have their own separate realm.
+    # Archive expired personal and huddle Messages in the realm, including cross-realm messages.
     query = SQL(
         """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
         FROM zerver_message
         INNER JOIN zerver_recipient ON zerver_recipient.id = zerver_message.recipient_id
-        INNER JOIN zerver_userprofile ON zerver_userprofile.id = zerver_message.sender_id
-        WHERE zerver_userprofile.realm_id = {realm_id}
+        WHERE zerver_message.realm_id = {realm_id}
             AND zerver_recipient.type in {recipient_types}
             AND zerver_message.date_sent < {check_date}
         LIMIT {chunk_size}
@@ -255,38 +245,8 @@ def move_expired_personal_and_huddle_messages_to_archive(
         query,
         type=ArchiveTransaction.RETENTION_POLICY_BASED,
         realm=realm,
-        cross_realm_bot_ids=Literal(tuple(cross_realm_bot_ids)),
         realm_id=Literal(realm.id),
         recipient_types=Literal(recipient_types),
-        check_date=Literal(check_date.isoformat()),
-        chunk_size=chunk_size,
-    )
-
-    # Archive cross-realm personal messages to users in the realm.  We
-    # don't archive cross-realm huddle messages via retention policy,
-    # as we don't support them as a feature in Zulip, and the query to
-    # find and delete them would be a lot of complexity and potential
-    # performance work for a case that doesn't actually happen.
-    query = SQL(
-        """
-    INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
-        SELECT {src_fields}, {archive_transaction_id}
-        FROM zerver_message
-        INNER JOIN zerver_userprofile recipient_profile ON recipient_profile.recipient_id = zerver_message.recipient_id
-        WHERE zerver_message.sender_id IN {cross_realm_bot_ids}
-            AND recipient_profile.realm_id = {realm_id}
-            AND zerver_message.date_sent < {check_date}
-        LIMIT {chunk_size}
-    ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
-    RETURNING id
-    """
-    )
-    message_count += run_archiving_in_chunks(
-        query,
-        type=ArchiveTransaction.RETENTION_POLICY_BASED,
-        realm=realm,
-        cross_realm_bot_ids=Literal(tuple(cross_realm_bot_ids)),
-        realm_id=Literal(realm.id),
         check_date=Literal(check_date.isoformat()),
         chunk_size=chunk_size,
     )
