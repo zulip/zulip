@@ -254,7 +254,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
-    AUTHENTICATION_FLAGS = [
+    AUTHENTICATION_FLAGS = (
         "Google",
         "Email",
         "GitHub",
@@ -266,7 +266,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "GitLab",
         "Apple",
         "OpenID Connect",
-    ]
+    )
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
 
@@ -332,38 +332,38 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     POLICY_NOBODY = 6
     POLICY_OWNERS_ONLY = 7
 
-    COMMON_POLICY_TYPES = [
+    COMMON_POLICY_TYPES = (
         POLICY_MEMBERS_ONLY,
         POLICY_ADMINS_ONLY,
         POLICY_FULL_MEMBERS_ONLY,
         POLICY_MODERATORS_ONLY,
-    ]
+    )
 
-    COMMON_MESSAGE_POLICY_TYPES = [
+    COMMON_MESSAGE_POLICY_TYPES = (
         POLICY_MEMBERS_ONLY,
         POLICY_ADMINS_ONLY,
         POLICY_FULL_MEMBERS_ONLY,
         POLICY_MODERATORS_ONLY,
         POLICY_EVERYONE,
-    ]
+    )
 
-    INVITE_TO_REALM_POLICY_TYPES = [
+    INVITE_TO_REALM_POLICY_TYPES = (
         POLICY_MEMBERS_ONLY,
         POLICY_ADMINS_ONLY,
         POLICY_FULL_MEMBERS_ONLY,
         POLICY_MODERATORS_ONLY,
         POLICY_NOBODY,
-    ]
+    )
 
     # We don't allow granting roles less than Moderator access to
     # create web-public streams, since it's a sensitive feature that
     # can be used to send spam.
-    CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
+    CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = (
         POLICY_ADMINS_ONLY,
         POLICY_MODERATORS_ONLY,
         POLICY_OWNERS_ONLY,
         POLICY_NOBODY,
-    ]
+    )
 
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
@@ -399,10 +399,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     private_message_policy = models.PositiveSmallIntegerField(
         default=PRIVATE_MESSAGE_POLICY_UNLIMITED
     )
-    PRIVATE_MESSAGE_POLICY_TYPES = [
+    PRIVATE_MESSAGE_POLICY_TYPES = (
         PRIVATE_MESSAGE_POLICY_UNLIMITED,
         PRIVATE_MESSAGE_POLICY_DISABLED,
-    ]
+    )
 
     # Global policy for who is allowed to use wildcard mentions in
     # streams with a large number of subscribers.  Anyone can use
@@ -416,14 +416,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     wildcard_mention_policy = models.PositiveSmallIntegerField(
         default=WILDCARD_MENTION_POLICY_ADMINS,
     )
-    WILDCARD_MENTION_POLICY_TYPES = [
+    WILDCARD_MENTION_POLICY_TYPES = (
         WILDCARD_MENTION_POLICY_EVERYONE,
         WILDCARD_MENTION_POLICY_MEMBERS,
         WILDCARD_MENTION_POLICY_FULL_MEMBERS,
         WILDCARD_MENTION_POLICY_ADMINS,
         WILDCARD_MENTION_POLICY_NOBODY,
         WILDCARD_MENTION_POLICY_MODERATORS,
-    ]
+    )
 
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
@@ -436,14 +436,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     email_address_visibility = models.PositiveSmallIntegerField(
         default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
     )
-    EMAIL_ADDRESS_VISIBILITY_TYPES = [
+    EMAIL_ADDRESS_VISIBILITY_TYPES = (
         EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         # The MEMBERS level is not yet implemented on the backend.
         ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
         EMAIL_ADDRESS_VISIBILITY_ADMINS,
         EMAIL_ADDRESS_VISIBILITY_NOBODY,
         EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-    ]
+    )
 
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
@@ -608,11 +608,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     BOT_CREATION_LIMIT_GENERIC_BOTS = 2
     BOT_CREATION_ADMINS_ONLY = 3
     bot_creation_policy = models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE)
-    BOT_CREATION_POLICY_TYPES = [
+    BOT_CREATION_POLICY_TYPES = (
         BOT_CREATION_EVERYONE,
         BOT_CREATION_LIMIT_GENERIC_BOTS,
         BOT_CREATION_ADMINS_ONLY,
-    ]
+    )
 
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     UPLOAD_QUOTA_LIMITED = 5
@@ -729,7 +729,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         wildcard_mention_policy=int,
     )
 
-    DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
+    DIGEST_WEEKDAY_VALUES = (0, 1, 2, 3, 4, 5, 6)
 
     # Icon is the square mobile icon.
     ICON_FROM_GRAVATAR = "G"
@@ -1505,7 +1505,7 @@ class UserBaseSettings(models.Model):
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_NIGHT = 2
     COLOR_SCHEME_LIGHT = 3
-    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
+    COLOR_SCHEME_CHOICES = (COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT)
     color_scheme = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
     # UI setting controlling Zulip's behavior of demoting in the sort
@@ -1515,11 +1515,11 @@ class UserBaseSettings(models.Model):
     DEMOTE_STREAMS_AUTOMATIC = 1
     DEMOTE_STREAMS_ALWAYS = 2
     DEMOTE_STREAMS_NEVER = 3
-    DEMOTE_STREAMS_CHOICES = [
+    DEMOTE_STREAMS_CHOICES = (
         DEMOTE_STREAMS_AUTOMATIC,
         DEMOTE_STREAMS_ALWAYS,
         DEMOTE_STREAMS_NEVER,
-    ]
+    )
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
     # Emoji sets
@@ -1539,11 +1539,11 @@ class UserBaseSettings(models.Model):
     USER_LIST_STYLE_COMPACT = 1
     USER_LIST_STYLE_WITH_STATUS = 2
     USER_LIST_STYLE_WITH_AVATAR = 3
-    USER_LIST_STYLE_CHOICES = [
+    USER_LIST_STYLE_CHOICES = (
         USER_LIST_STYLE_COMPACT,
         USER_LIST_STYLE_WITH_STATUS,
         USER_LIST_STYLE_WITH_AVATAR,
-    ]
+    )
     user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_STATUS)
 
     ### Notifications settings. ###
@@ -1570,11 +1570,11 @@ class UserBaseSettings(models.Model):
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
     DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
     DESKTOP_ICON_COUNT_DISPLAY_NONE = 3
-    DESKTOP_ICON_COUNT_DISPLAY_CHOICES = [
+    DESKTOP_ICON_COUNT_DISPLAY_CHOICES = (
         DESKTOP_ICON_COUNT_DISPLAY_MESSAGES,
         DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE,
         DESKTOP_ICON_COUNT_DISPLAY_NONE,
-    ]
+    )
     desktop_icon_count_display = models.PositiveSmallIntegerField(
         default=DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
     )
@@ -1686,7 +1686,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
-    NAME_INVALID_CHARS = ["*", "`", "\\", ">", '"', "@"]
+    NAME_INVALID_CHARS = ("*", "`", "\\", ">", '"', "@")
 
     DEFAULT_BOT = 1
     """
@@ -1711,10 +1711,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         EMBEDDED_BOT: "Embedded bot",
     }
 
-    SERVICE_BOT_TYPES = [
+    SERVICE_BOT_TYPES = (
         OUTGOING_WEBHOOK_BOT,
         EMBEDDED_BOT,
-    ]
+    )
 
     # For historical reasons, Zulip has two email fields.  The
     # `delivery_email` field is the user's email address, where all
@@ -1785,13 +1785,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     ROLE_GUEST = 600
     role = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
-    ROLE_TYPES = [
+    ROLE_TYPES = (
         ROLE_REALM_OWNER,
         ROLE_REALM_ADMINISTRATOR,
         ROLE_MODERATOR,
         ROLE_MEMBER,
         ROLE_GUEST,
-    ]
+    )
 
     # Whether the user has been "soft-deactivated" due to weeks of inactivity.
     # For these users we avoid doing UserMessage table work, as an optimization
@@ -2530,7 +2530,7 @@ class Stream(models.Model):
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
-    API_FIELDS = [
+    API_FIELDS = (
         "date_created",
         "description",
         "first_message_id",
@@ -2543,7 +2543,7 @@ class Stream(models.Model):
         "rendered_description",
         "stream_post_policy",
         "can_remove_subscribers_group_id",
-    ]
+    )
 
     @staticmethod
     def get_client_data(query: QuerySet["Stream"]) -> List[APIStreamDict]:
@@ -3179,7 +3179,7 @@ class AbstractUserMessage(models.Model):
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     # The order here is important!  It's the order of fields in the bitfield.
-    ALL_FLAGS = [
+    ALL_FLAGS = (
         "read",
         "starred",
         "collapsed",
@@ -3204,7 +3204,7 @@ class AbstractUserMessage(models.Model):
         # Whether we've sent a push notification to the user's mobile
         # devices for this message that has not been revoked.
         "active_mobile_push_notification",
-    ]
+    )
     # Certain flags are used only for internal accounting within the
     # Zulip backend, and don't make sense to expose to the API.
     NON_API_FLAGS = {"is_private", "active_mobile_push_notification"}
@@ -3672,7 +3672,7 @@ class Subscription(models.Model):
     # * "active" is often excluded in API use cases where it is implied.
     # * "is_muted" often needs to be copied to not "in_home_view" for
     #   backwards-compatibility.
-    API_FIELDS = [
+    API_FIELDS = (
         "audible_notifications",
         "color",
         "desktop_notifications",
@@ -3681,7 +3681,7 @@ class Subscription(models.Model):
         "pin_to_top",
         "push_notifications",
         "wildcard_mentions_notify",
-    ]
+    )
 
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
@@ -4191,12 +4191,12 @@ class ScheduledMessageNotificationEmail(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
-    EMAIL_NOTIFICATION_TRIGGER_CHOICES = [
+    EMAIL_NOTIFICATION_TRIGGER_CHOICES = (
         (NotificationTriggers.PRIVATE_MESSAGE, "Private message"),
         (NotificationTriggers.MENTION, "Mention"),
         (NotificationTriggers.WILDCARD_MENTION, "Wildcard mention"),
         (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
-    ]
+    )
 
     trigger = models.TextField(choices=EMAIL_NOTIFICATION_TRIGGER_CHOICES)
     mentioned_user_group = models.ForeignKey(UserGroup, null=True, on_delete=CASCADE)
@@ -4357,7 +4357,7 @@ class AbstractRealmAuditLog(models.Model):
     # event_types synced from on-prem installations to Zulip Cloud when
     # billing for mobile push notifications is enabled.  Every billing
     # event_type should have ROLE_COUNT populated in extra_data.
-    SYNCED_BILLING_EVENTS = [
+    SYNCED_BILLING_EVENTS = (
         USER_CREATED,
         USER_ACTIVATED,
         USER_DEACTIVATED,
@@ -4365,7 +4365,7 @@ class AbstractRealmAuditLog(models.Model):
         USER_ROLE_CHANGED,
         REALM_DEACTIVATED,
         REALM_REACTIVATED,
-    ]
+    )
 
     class Meta:
         abstract = True
@@ -4516,7 +4516,7 @@ class CustomProfileField(models.Model):
         (PRONOUNS, gettext_lazy("Pronouns"), check_short_string, str, "PRONOUNS"),
     ]
 
-    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
+    ALL_FIELD_TYPES = (*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA)
 
     FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
@@ -4622,10 +4622,10 @@ class Service(models.Model):
     GENERIC = 1
     SLACK = 2
 
-    ALLOWED_INTERFACE_TYPES = [
+    ALLOWED_INTERFACE_TYPES = (
         GENERIC,
         SLACK,
-    ]
+    )
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _interfaces: Dict[int, str] = {
         GENERIC: GENERIC_INTERFACE,

@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             model_name="archivedusermessage",
             name="flags",
             field=bitfield.models.BitField(
-                [
+                (
                     "read",
                     "starred",
                     "collapsed",
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                     "historical",
                     "is_private",
                     "active_mobile_push_notification",
-                ],
+                ),
                 default=0,
             ),
         ),
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
             model_name="usermessage",
             name="flags",
             field=bitfield.models.BitField(
-                [
+                (
                     "read",
                     "starred",
                     "collapsed",
@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                     "historical",
                     "is_private",
                     "active_mobile_push_notification",
-                ],
+                ),
                 default=0,
             ),
         ),

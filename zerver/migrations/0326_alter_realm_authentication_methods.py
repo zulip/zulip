@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             model_name="realm",
             name="authentication_methods",
             field=bitfield.models.BitField(
-                [
+                (
                     "Google",
                     "Email",
                     "GitHub",
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                     "GitLab",
                     "Apple",
                     "OpenID Connect",
-                ],
+                ),
                 default=2147483647,
             ),
         ),
