@@ -1095,10 +1095,7 @@ export function initialize() {
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
         source(query) {
-            const items = stream_data.subscribed_streams();
-            const q = query.trim().toLowerCase();
-            const filteredItems = items.filter(i => i.toLowerCase().startsWith(q));
-            return filteredItems.length ? filteredItems : ['New'];
+            return stream_data.subscribed_streams();
         },
         items: 3,
         fixed: true,
