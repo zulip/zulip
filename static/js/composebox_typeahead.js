@@ -89,13 +89,9 @@ export function query_matches_person(query, person) {
     if (!settings_data.show_email()) {
         return typeahead.query_matches_string(query, person.full_name, " ");
     }
-    let email_attr = "email";
-    if (person.delivery_email) {
-        email_attr = "delivery_email";
-    }
     return (
         typeahead.query_matches_string(query, person.full_name, " ") ||
-        typeahead.query_matches_string(query, person[email_attr], " ")
+        typeahead.query_matches_string(query, people.get_visible_email(person), " ")
     );
 }
 
