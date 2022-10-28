@@ -85,6 +85,7 @@ from zerver.models import (
     get_stream_by_id_in_realm,
     get_system_bot,
     get_user_by_delivery_email,
+    is_cross_realm_bot_email,
     query_for_ids,
 )
 from zerver.tornado.django_api import send_event
@@ -1602,7 +1603,10 @@ def internal_prep_private_message(
     See _internal_prep_message for details of how this works.
     """
     addressee = Addressee.for_user_profile(recipient_user)
-    realm = recipient_user.realm
+    if not is_cross_realm_bot_email(recipient_user.delivery_email):
+        realm = recipient_user.realm
+    else:
+        realm = sender.realm
 
     return _internal_prep_message(
         realm=realm,
