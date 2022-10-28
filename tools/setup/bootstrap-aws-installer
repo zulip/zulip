@@ -8,7 +8,7 @@
 #BRANCH=
 #SSH_SECRET_ID=
 
-if ! curl -fLs -m 5 http://169.254.169.254/latest/dynamic/instance-identity/document | grep instanceId; then
+if ! curl -fLs -m 5 -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 10" >/dev/null; then
     echo "This should be run on AWS instances, not locally."
     exit 1
 fi
