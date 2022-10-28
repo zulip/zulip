@@ -124,6 +124,19 @@
                 opacity: 1;
             }
         }
+
+        #stream_message_recipient_topic.recipient_box_right_padded {
+            padding-right: 32px;
+            width: 149px;
+        }
+
+        .new_topic_label {
+            display: none;
+            font-style: italic;
+            margin-left: -30px;
+            opacity: 0.5;
+            user-select: none;
+        }
     }
 
     .pm_recipient {

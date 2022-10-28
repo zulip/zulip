@@ -1105,8 +1105,11 @@ export function initialize() {
         highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        matcher() {
-            return true;
+        matcher(item) {
+            // The matcher for "stream" is strictly prefix-based,
+            // because we want to avoid mixing up streams.
+            const q = this.query.trim().toLowerCase();
+            return item.toLowerCase().startsWith(q);
         },
     });
 
@@ -1127,6 +1130,25 @@ export function initialize() {
             }
             return sorted;
         },
+    });
+
+    $("#stream_message_recipient_topic").on('input',function(e){
+        const inputValue = e.target.value;
+        if (!inputValue) {
+            $("#stream_message_recipient_topic").removeClass("recipient_box_right_padded");
+            $("#stream_message_recipient_new_label").hide();
+            return
+        }
+        const stream_name = compose_state.stream_name();
+        const stream_topics = topics_seen_for(stream_name);
+        const match = stream_topics.some(t => t.toLowerCase().startsWith(inputValue.toLowerCase()))
+        if (match) {
+            $("#stream_message_recipient_topic").removeClass("recipient_box_right_padded");
+            $("#stream_message_recipient_new_label").hide();
+            return
+        }
+        $("#stream_message_recipient_topic").addClass("recipient_box_right_padded");
+        $("#stream_message_recipient_new_label").show();
     });
 
     $("#private_message_recipient").typeahead({
