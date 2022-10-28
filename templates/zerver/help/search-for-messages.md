@@ -29,13 +29,14 @@ Here is the **full list of search operators**.
 * `stream:design topic:emoji+picker`: Search within the topic `emoji picker`.
 * `is:private`: Search all your private messages.
 * `pm-with:ada@zulip.com`: Search 1-on-1 private messages between you and Ada.
+* `pm-with:ada@zulip.com,bob@zulip.com`: Search group private messages
+  between you, Bob, and Ada.
+* `group-pm-with:ada@zulip.com`: Search all group private message
+  conversations that include you and Ada, as well as any other users.
 * `sender:ada@zulip.com`: Search messages sent by Ada.
 * `sender:me`: [Search messages you've sent](/help/view-messages-sent-by-a-user#view-messages-youve-sent).
 * `near:12345`: Show messages around the message with ID `12345`.
 * `id:12345`: Show only message `12345`.
-* `streams:public`: Search the history of all [public
-  streams](/help/change-the-privacy-of-a-stream) in the organization.
-
 * `is:alerted`: See [alert words](/help/pm-mention-alert-notifications#alert-words).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
@@ -45,10 +46,9 @@ Here is the **full list of search operators**.
 * `has:link`
 * `has:image`
 * `has:attachment`
-* `pm-with:ada@zulip.com,bob@zulip.com`: Search private message conversation
-  between you, Bob, and Ada.
-* `group-pm-with:ada@zulip.com,bob@zulip.com`: Search all group
-  private messages that include Ada and Bob.
+* `streams:public`: Search the history of all [public
+  streams](/help/change-the-privacy-of-a-stream) in the organization,
+  including streams you are not subscribed to.
 
 ### Excluding messages
 
