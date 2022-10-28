@@ -676,12 +676,14 @@ for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
 # Add integrations that don't have automated screenshots here
-NO_SCREENSHOT_WEBHOOKS = {
-    "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
-    "ifttt",  # Docs don't have a screenshot
-    "slack_incoming",  # Docs don't have a screenshot
-    "zapier",  # Docs don't have a screenshot
-}
+NO_SCREENSHOT_WEBHOOKS = frozenset(
+    (
+        "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
+        "ifttt",  # Docs don't have a screenshot
+        "slack_incoming",  # Docs don't have a screenshot
+        "zapier",  # Docs don't have a screenshot
+    )
+)
 
 
 DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {

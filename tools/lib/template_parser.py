@@ -248,48 +248,52 @@ def tokenize(text: str) -> List[Token]:
     return tokens
 
 
-HTML_VOID_TAGS = {
-    "area",
-    "base",
-    "br",
-    "col",
-    "command",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "keygen",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr",
-}
+HTML_VOID_TAGS = frozenset(
+    (
+        "area",
+        "base",
+        "br",
+        "col",
+        "command",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "keygen",
+        "link",
+        "meta",
+        "param",
+        "source",
+        "track",
+        "wbr",
+    )
+)
 
 # The following excludes some obscure tags that are never used
 # in Zulip code.
-HTML_INLINE_TAGS = {
-    "a",
-    "b",
-    "br",
-    "button",
-    "cite",
-    "code",
-    "em",
-    "i",
-    "img",
-    "input",
-    "kbd",
-    "label",
-    "object",
-    "script",
-    "select",
-    "small",
-    "span",
-    "strong",
-    "textarea",
-}
+HTML_INLINE_TAGS = frozenset(
+    (
+        "a",
+        "b",
+        "br",
+        "button",
+        "cite",
+        "code",
+        "em",
+        "i",
+        "img",
+        "input",
+        "kbd",
+        "label",
+        "object",
+        "script",
+        "select",
+        "small",
+        "span",
+        "strong",
+        "textarea",
+    )
+)
 
 
 def tag_flavor(token: Token) -> Optional[str]:

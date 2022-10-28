@@ -3207,21 +3207,23 @@ class AbstractUserMessage(models.Model):
     )
     # Certain flags are used only for internal accounting within the
     # Zulip backend, and don't make sense to expose to the API.
-    NON_API_FLAGS = {"is_private", "active_mobile_push_notification"}
+    NON_API_FLAGS = frozenset(("is_private", "active_mobile_push_notification"))
     # Certain additional flags are just set once when the UserMessage
     # row is created.
-    NON_EDITABLE_FLAGS = {
-        # These flags are bookkeeping and don't make sense to edit.
-        "has_alert_word",
-        "mentioned",
-        "wildcard_mentioned",
-        "historical",
-        # Unused flags can't be edited.
-        "force_expand",
-        "force_collapse",
-        "summarize_in_home",
-        "summarize_in_stream",
-    }
+    NON_EDITABLE_FLAGS = frozenset(
+        (
+            # These flags are bookkeeping and don't make sense to edit.
+            "has_alert_word",
+            "mentioned",
+            "wildcard_mentioned",
+            "historical",
+            # Unused flags can't be edited.
+            "force_expand",
+            "force_collapse",
+            "summarize_in_home",
+            "summarize_in_stream",
+        )
+    )
     flags: BitHandler = BitField(flags=ALL_FLAGS, default=0)
 
     class Meta:
