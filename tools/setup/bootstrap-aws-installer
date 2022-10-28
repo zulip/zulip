@@ -41,13 +41,13 @@ export DEBIAN_FRONTEND=noninteractive
 # The following line gets subbed in with the contents of bootstrap-awscli.sh
 AWS=
 
-# Set up AWS so we can use the role credentials we were started with, which give secrets access
+# Set up a bare-bones AWS configuration
 mkdir -p /root/.aws
 cat >/root/.aws/config <<EOF
 [default]
 region = us-east-1
 output = text
-credential_source = Ec2InstanceMetadata
+# Credentials are from the IAM role attached to the EC2 instance
 EOF
 
 # Set up public keys for root, so we can fetch the repo; this is a
