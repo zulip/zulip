@@ -481,10 +481,10 @@ def do_send_missedmessage_events_reply_in_zulip(
             )
         message = missed_messages[0]["message"]
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
-        stream_header = f"{stream.name} > {message.topic_name()}"
+        topic_name = message.topic_name()
         context.update(
             stream_name=stream.name,
-            stream_header=stream_header,
+            topic_name=topic_name,
         )
     else:
         raise AssertionError("Invalid messages!")
