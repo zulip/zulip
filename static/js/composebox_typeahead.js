@@ -1094,7 +1094,7 @@ export function initialize() {
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
-        source(query) {
+        source() {
             return stream_data.subscribed_streams();
         },
         items: 3,
