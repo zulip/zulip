@@ -1,1 +1,1 @@
-deb https://deb.releases.teleport.dev/ stable main
+deb https://apt.releases.teleport.dev/ubuntu focal stable/v11
