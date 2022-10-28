@@ -160,7 +160,7 @@ def check_int(var_name: str, val: object) -> int:
     return val
 
 
-def check_int_in(possible_values: List[int]) -> Validator[int]:
+def check_int_in(possible_values: Collection[int]) -> Validator[int]:
     def validator(var_name: str, val: object) -> int:
         n = check_int(var_name, val)
         if n not in possible_values:
