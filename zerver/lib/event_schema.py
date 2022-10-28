@@ -27,7 +27,9 @@
 # See check_delete_message and check_presence for examples of this
 # paradigm.
 
-from typing import Dict, List, Sequence, Set, Tuple, Union
+from typing import Dict, List, Literal, Sequence, Set, Tuple, Union
+
+from attrs import define
 
 from zerver.lib.data_types import (
     DictType,
@@ -113,54 +115,51 @@ alert_words_event = event_dict_type(
 )
 check_alert_words = make_checker(alert_words_event)
 
-attachment_message_type = DictType(
-    required_keys=[
-        # force vertical
-        ("id", int),
-        ("date_sent", int),
-    ]
-)
 
-attachment_type = DictType(
-    required_keys=[
-        ("id", int),
-        ("name", str),
-        ("size", int),
-        ("path_id", str),
-        ("create_time", int),
-        ("messages", ListType(attachment_message_type)),
-    ]
-)
+@define
+class IdDict:
+    id: int
 
-attachment_add_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("attachment")),
-        ("op", Equals("add")),
-        ("attachment", attachment_type),
-        ("upload_space_used", int),
-    ]
-)
-check_attachment_add = make_checker(attachment_add_event)
 
-attachment_remove_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("attachment")),
-        ("op", Equals("remove")),
-        ("attachment", DictType([("id", int)])),
-        ("upload_space_used", int),
-    ]
-)
-check_attachment_remove = make_checker(attachment_remove_event)
+@define
+class AttachmentMessageType:
+    id: int
+    date_sent: str
 
-attachment_update_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("attachment")),
-        ("op", Equals("update")),
-        ("attachment", attachment_type),
-        ("upload_space_used", int),
-    ]
-)
-check_attachment_update = make_checker(attachment_update_event)
+
+@define
+class AttachmentType:
+    id: int
+    name: str
+    size: int
+    path_id: str
+    create_time: int
+    messages: List[AttachmentMessageType]
+
+
+@define
+class AttachmentAddEvent:
+    type: Literal["attachment"]
+    op: Literal["add"]
+    attachment: AttachmentType
+    upload_space_used: int
+
+
+@define
+class AttachmentRemoveEvent:
+    type: Literal["attachment"]
+    op: Literal["remove"]
+    attachment: IdDict
+    upload_space_used: int
+
+
+@define
+class AttachmentUpdateEvent:
+    type: Literal["attachment"]
+    op: Literal["update"]
+    attachment: AttachmentType
+    upload_space_used: int
+
 
 custom_profile_field_type = DictType(
     required_keys=[

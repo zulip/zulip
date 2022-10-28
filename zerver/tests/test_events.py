@@ -10,6 +10,7 @@ from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
 from unittest import mock
 
+import cattrs
 import orjson
 from django.utils.timezone import now as timezone_now
 
@@ -117,10 +118,10 @@ from zerver.actions.users import (
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
+    AttachmentAddEvent,
+    AttachmentRemoveEvent,
+    AttachmentUpdateEvent,
     check_alert_words,
-    check_attachment_add,
-    check_attachment_remove,
-    check_attachment_update,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
@@ -2335,8 +2336,8 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(lambda: do_upload(), num_events=1, state_change_expected=False)
 
-        check_attachment_add("events[0]", events[0])
-        self.assertEqual(events[0]["upload_space_used"], 6)
+        add_event = cattrs.structure(events[0], AttachmentAddEvent)
+        self.assertEqual(add_event.upload_space_used, 6)
 
         # Verify that the DB has the attachment marked as unclaimed
         entry = Attachment.objects.get(file_name="zulip.txt")
@@ -2351,8 +2352,8 @@ class NormalActionsTest(BaseAction):
             num_events=2,
         )
 
-        check_attachment_update("events[0]", events[0])
-        self.assertEqual(events[0]["upload_space_used"], 6)
+        update_event = cattrs.structure(events[0], AttachmentUpdateEvent)
+        self.assertEqual(update_event.upload_space_used, 6)
 
         # Now remove the attachment
         events = self.verify_action(
@@ -2361,8 +2362,8 @@ class NormalActionsTest(BaseAction):
             state_change_expected=False,
         )
 
-        check_attachment_remove("events[0]", events[0])
-        self.assertEqual(events[0]["upload_space_used"], 0)
+        remove_event = cattrs.structure(events[0], AttachmentRemoveEvent)
+        self.assertEqual(remove_event.upload_space_used, 0)
 
     def test_notify_realm_export(self) -> None:
         do_change_user_role(
