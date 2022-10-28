@@ -1,11 +1,11 @@
 # Mobile notifications
 
-In Zulip, you can customize whether [stream
-messages](/help/stream-notifications), [private
-messages](/help/pm-mention-alert-notifications) and
-[mentions][notifications-wildcard-mentions] trigger mobile
-notifications. You can also adjust whether notifications will be sent
-while you are online.
+You can customize whether [stream messages](/help/stream-notifications),
+[private messages](/help/pm-mention-alert-notifications) and
+[mentions][notifications-wildcard-mentions] trigger notifications in Zulip's
+[Android](https://zulip.com/apps/ios) and [iOS](https://zulip.com/apps/ios)
+apps. You can also adjust whether notifications will be sent while you are
+online.
 
 [notifications-wildcard-mentions]: /help/pm-mention-alert-notifications#wildcard-mentions
 
