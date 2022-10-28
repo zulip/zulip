@@ -35,6 +35,7 @@ export function remove_diacritics(s) {
 }
 
 function query_matches_string(query, source_str, split_char) {
+    source_str = source_str.toLowerCase();
     source_str = remove_diacritics(source_str);
 
     if (!query.includes(split_char)) {
@@ -59,8 +60,7 @@ function query_matches_string(query, source_str, split_char) {
 // * split_char is the separator for this syntax (e.g. ' ').
 export function query_matches_source_attrs(query, source, match_attrs, split_char) {
     return match_attrs.some((attr) => {
-        const source_str = source[attr].toLowerCase();
-        return query_matches_string(query, source_str, split_char);
+        return query_matches_string(query, source[attr], split_char);
     });
 }
 
