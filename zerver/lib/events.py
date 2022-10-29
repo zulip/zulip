@@ -1095,7 +1095,7 @@ def apply_event(
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) | user_ids
-                            sub["subscribers"] = sorted(list(subscribers))
+                            sub["subscribers"] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
@@ -1109,7 +1109,7 @@ def apply_event(
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) - user_ids
-                            sub["subscribers"] = sorted(list(subscribers))
+                            sub["subscribers"] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
