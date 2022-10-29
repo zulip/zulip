@@ -33,6 +33,7 @@ package-lock.json
 !/var/puppeteer/test_credentials.d.ts
 
 /.dmypy.json
+/.ruff_cache
 
 # Generated i18n data
 /locale/en
