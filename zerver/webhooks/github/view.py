@@ -358,7 +358,7 @@ def get_team_body(helper: Helper) -> str:
         new_visibility = payload["team"]["privacy"].tame(check_string)
         return f"Team visibility changed to `{new_visibility}`"
 
-    missing_keys = "/".join(sorted(list(changes.keys())))
+    missing_keys = "/".join(sorted(changes.keys()))
     helper.log_unsupported(f"team/edited (changes: {missing_keys})")
 
     # Do our best to give useful info to the customer--at least
