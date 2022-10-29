@@ -306,7 +306,7 @@ def bulk_get_digest_context(
     # Get all the recent topics for all the users.  This does the heavy
     # lifting of making an expensive query to the Message table.  Then
     # for each user, we filter to just the streams they care about.
-    recent_topics = get_recent_topics(sorted(list(all_stream_ids)), cutoff_date)
+    recent_topics = get_recent_topics(sorted(all_stream_ids), cutoff_date)
 
     stream_map = get_slim_stream_map(all_stream_ids)
 

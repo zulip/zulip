@@ -721,7 +721,7 @@ def do_update_message(
                 )
                 subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
-            users_to_be_notified += list(map(subscriber_info, sorted(list(subscriber_ids))))
+            users_to_be_notified += list(map(subscriber_info, sorted(subscriber_ids)))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
