@@ -25,7 +25,7 @@ realms used for testing; consider using deactivate_realm instead."""
             is_bot=False,
         ).count()
 
-        message_count = Message.objects.filter(sender__realm=realm).count()
+        message_count = Message.objects.filter(realm=realm).count()
 
         print(f"This realm has {user_count} users and {message_count} messages.\n")
 
