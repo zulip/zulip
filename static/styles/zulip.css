@@ -194,10 +194,13 @@ p.n-margin {
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
-    height: 28px;
     font-size: 16px;
     margin: 0 auto 12px;
     padding: 5px;
+    /* Difference should be 16px to accommodate the icon. */
+    /* This emulates hanging indent. */
+    padding-left: 26px;
+    text-indent: -10px;
 
     i {
         margin: 0 3px 0 1px;
