@@ -114,7 +114,7 @@
     "nyc": "^15.0.0",
     "openapi-examples-validator": "^4.0.0",
     "openapi-types": "^12.0.0",
-    "prettier": "^2.0.5",
+    "prettier": "^3.0.0-alpha.4",
     "puppeteer": "^17.1.0",
     "source-map": "https://codeload.github.com/benthemonkey/source-map/tar.gz/d95423f77edef6cbb9e21d2d6014c7de85ae220a",
     "stylelint": "^14.0.1",
