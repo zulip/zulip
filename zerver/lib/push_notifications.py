@@ -1002,7 +1002,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     # space consume 12 bytes, and 12 x 200 = 2400 bytes is still well
     # below the 4KB limit (leaving plenty of space for metadata).
     MAX_APNS_MESSAGE_IDS = 200
-    truncated_message_ids = list(sorted(message_ids))[-MAX_APNS_MESSAGE_IDS:]
+    truncated_message_ids = sorted(message_ids)[-MAX_APNS_MESSAGE_IDS:]
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
