@@ -96,3 +96,12 @@ ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "zproject.settings"
+
+[tool.ruff]
+# See https://github.com/charliermarsh/ruff#rules for error code definitions.
+ignore = [
+    "E402", # Module level import not at top of file
+    "E501", # Line too long
+    "E731", # Do not assign a lambda expression, use a def
+]
+line-length = 100

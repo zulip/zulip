@@ -1,1 +1,1 @@
-from .prod_settings_template import *
+from .prod_settings_template import *  # noqa: F403

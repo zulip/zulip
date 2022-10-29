@@ -29,14 +29,11 @@ isort
 # For doing highly usable Python profiling
 line-profiler
 
-# for pep8 linter
-pycodestyle
-
 # Python reformatter
 black
 
-# Needed to run pyflakes linter
-pyflakes
+# Python linter
+ruff
 
 # Needed for watching file changes
 pyinotify

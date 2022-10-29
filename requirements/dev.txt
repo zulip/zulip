@@ -1423,9 +1423,7 @@ pyasn1-modules==0.2.8 \
 pycodestyle==2.9.1 \
     --hash=sha256:2c9607871d58c76354b697b42f5d57e1ada7d261c261efac224b664affdc5785 \
     --hash=sha256:d1735fc58b418fd7c5f658d28d943854f8a849b01a5d0a1e6f3f3fdd0166804b
-    # via
-    #   -r requirements/dev.in
-    #   zulint
+    # via zulint
 pycparser==2.21 \
     --hash=sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9 \
     --hash=sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206
@@ -1436,9 +1434,7 @@ pydispatcher==2.0.6 \
 pyflakes==2.5.0 \
     --hash=sha256:4579f67d887f804e67edb544428f264b7b24f435b263c4614f384135cea553d2 \
     --hash=sha256:491feb020dca48ccc562a8c0cbe8df07ee13078df59813b83959cbdada312ea3
-    # via
-    #   -r requirements/dev.in
-    #   zulint
+    # via zulint
 pygments==2.13.0 \
     --hash=sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1 \
     --hash=sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42
@@ -1869,6 +1865,24 @@ ruamel.yaml.clib==0.2.6 \
     --hash=sha256:dc6a613d6c74eef5a14a214d433d06291526145431c3b964f5e16529b1842bed \
     --hash=sha256:de9c6b8a1ba52919ae919f3ae96abb72b994dd0350226e28f3686cb4f142165c
     # via ruamel.yaml
+ruff==0.0.99 \
+    --hash=sha256:0dfe9104092f4e2a9ac6af8328702bba7c725f037ed3ff83a3bab37de1edce1b \
+    --hash=sha256:1047ee9b65b5ec700bf7a803e4cfc8b22755e69de73058f65fedf4859fecf52a \
+    --hash=sha256:11992bc96095bfa9af49ad33b47c4612cc4e27e84052f707a8cd4cf39f0f71fd \
+    --hash=sha256:21ea89b56d3042c12d727d83d17b62dfb55acfe3a1f515b87b805554e7a3bb88 \
+    --hash=sha256:331ad9d419faaa47c13a540b704d8c7dc84883c6e682c167a86726c4d1a9fcab \
+    --hash=sha256:347d46a6e793bf7ca28c04f043054efdb27945ee4fc76561da19387b70e0646c \
+    --hash=sha256:3e2986309ccfddf43d0517ef5d6da6e3b50a32eac227f8307acf7d90f581373b \
+    --hash=sha256:44a6967bce6696e602132ea2a1f5e14ae7d072ddb7bbb8c453d6f552794cc21b \
+    --hash=sha256:60695d481e0091cb4fe67a1a9f0aeaca5a27a3cda45cc46b5bcfd0a4e17bc8dc \
+    --hash=sha256:74ceb85fb2466646a8e87eb4eb66201569ad773cc4ec66384af6728eb2d21416 \
+    --hash=sha256:897b4336118c3c980951381bdfcbf21c0eab941c3ce2eee1082fe480c64483a2 \
+    --hash=sha256:8d4f215a1d337601f7f30facc51ee0db9eb97b9c8d21071d9910e42583c65df7 \
+    --hash=sha256:9ceb8819b4f36fbcfc50810371951950189883f4c510ce0c7603eee7999f37a8 \
+    --hash=sha256:a83fce30d1030b0621a03e5a94316ef909510ac5c56eba8bda664d16ad67cf79 \
+    --hash=sha256:b0ae12b517aee0827548092d31222e1fae4b149514414c76e4d8697cf984d80f \
+    --hash=sha256:c82bb07d05018a7c7d58175331b2d73d45570b73c74fa16dc0b6b8828d243c5d
+    # via -r requirements/dev.in
 s3transfer==0.6.0 \
     --hash=sha256:06176b74f3a15f61f1b4f25a1fc29a4429040b7647133a463da8fa5bd28d5ecd \
     --hash=sha256:2ed07d3866f523cc561bf4a00fc5535827981b117dd7876f036b0c1aca42c947
