@@ -174,7 +174,7 @@ def run() -> None:
     )
     linter_config.external_linter(
         "prettier",
-        ["node_modules/.bin/prettier", "--check", "--loglevel=warn"],
+        ["node_modules/.bin/prettier", "--check", "--log-level=warn"],
         ["css", "flow", "js", "json", "md", "ts", "yaml", "yml"],
         fix_arg=["--write"],
         description="Formats CSS, JavaScript, YAML",
