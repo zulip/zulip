@@ -121,7 +121,7 @@ function test_ui(label, f) {
 
 function initialize_handlers({override}) {
     override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
-    override(page_params, "realm_video_chat_provider", 0);
+    override(page_params, "realm_video_chat_provider", [0]);
     override(upload, "setup_upload", () => undefined);
     override(upload, "feature_check", () => {});
     override(resize, "watch_manual_resize", () => {});
@@ -467,7 +467,7 @@ test_ui("initialize", ({override}) => {
     // done in subsequent tests directly below this test.
 
     override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
-    override(page_params, "realm_video_chat_provider", 0);
+    override(page_params, "realm_video_chat_provider", [0]);
 
     let resize_watch_manual_resize_checked = false;
     override(resize, "watch_manual_resize", (elem) => {
