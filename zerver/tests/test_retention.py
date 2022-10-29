@@ -330,8 +330,10 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
         # Insert an exception near the end of the archiving process of a chunk:
-        with mock.patch("zerver.lib.retention.delete_messages", side_effect=Exception):
-            with self.assertRaises(Exception):
+        with mock.patch(
+            "zerver.lib.retention.delete_messages", side_effect=Exception("delete_messages error")
+        ):
+            with self.assertRaisesRegex(Exception, r"^delete_messages error$"):
                 # Specify large chunk_size to ensure things happen in a single batch
                 archive_messages(chunk_size=1000)
 
