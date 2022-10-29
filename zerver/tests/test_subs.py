@@ -4223,7 +4223,7 @@ class SubscriptionAPITest(ZulipTestCase):
         events: List[Mapping[str, Any]] = []
         flush_per_request_caches()
         with self.tornado_redirected_to_list(events, expected_num_events=5):
-            with self.assert_database_query_count(37):
+            with self.assert_database_query_count(36):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -5095,7 +5095,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(36):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5103,7 +5103,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(35):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5115,7 +5115,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notifications_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(44):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],

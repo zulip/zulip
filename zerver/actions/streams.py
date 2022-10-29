@@ -1190,7 +1190,7 @@ def do_change_stream_description(
 
     with transaction.atomic():
         stream.description = new_description
-        stream.rendered_description = render_stream_description(new_description)
+        stream.rendered_description = render_stream_description(new_description, stream.realm)
         stream.save(update_fields=["description", "rendered_description"])
         RealmAuditLog.objects.create(
             realm=stream.realm,
