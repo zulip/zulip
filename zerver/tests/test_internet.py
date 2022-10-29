@@ -7,7 +7,10 @@ from zerver.lib.test_classes import ZulipTestCase
 class ResponsesTest(ZulipTestCase):
     def test_responses(self) -> None:
         # With our test setup, accessing the internet should be blocked.
-        with self.assertRaises(Exception):
+        with self.assertRaisesRegex(
+            Exception,
+            r"^Outgoing network requests are not allowed in the Zulip tests\.",
+        ):
             result = requests.request("GET", "https://www.google.com")
 
         # A test can invoke its own responses.RequestsMock context manager
