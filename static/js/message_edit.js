@@ -317,49 +317,44 @@ export function end_if_focused_on_message_row_edit() {
 }
 
 function handle_message_row_edit_keydown(e) {
-    switch (e.key) {
-        case "Enter":
-            if ($(e.target).hasClass("message_edit_content")) {
-                // Pressing Enter to save edits is coupled with Enter to send
-                if (composebox_typeahead.should_enter_send(e)) {
-                    const $row = $(".message_edit_content:focus").closest(".message_row");
-                    const $message_edit_save_button = $row.find(".message_edit_save");
-                    if ($message_edit_save_button.prop("disabled")) {
-                        // In cases when the save button is disabled
-                        // we need to disable save on pressing Enter
-                        // Prevent default to avoid new-line on pressing
-                        // Enter inside the textarea in this case
-                        e.preventDefault();
-                        return;
-                    }
-                    save_message_row_edit($row);
-                    e.stopPropagation();
+    if (keydown_util.is_enter_event(e)) {
+        if ($(e.target).hasClass("message_edit_content")) {
+            // Pressing Enter to save edits is coupled with Enter to send
+            if (composebox_typeahead.should_enter_send(e)) {
+                const $row = $(".message_edit_content:focus").closest(".message_row");
+                const $message_edit_save_button = $row.find(".message_edit_save");
+                if ($message_edit_save_button.prop("disabled")) {
+                    // In cases when the save button is disabled
+                    // we need to disable save on pressing Enter
+                    // Prevent default to avoid new-line on pressing
+                    // Enter inside the textarea in this case
                     e.preventDefault();
-                } else {
-                    composebox_typeahead.handle_enter($(e.target), e);
                     return;
                 }
-            } else if ($(".typeahead:visible").length > 0) {
-                // Accepting typeahead is handled by the typeahead library.
-                return;
-            } else if (
-                $(e.target).hasClass("message_edit_topic") ||
-                $(e.target).hasClass("message_edit_topic_propagate")
-            ) {
-                // Enter should save the topic edit, as long as it's
-                // not being used to accept typeahead.
-                const $row = $(e.target).closest(".message_row");
                 save_message_row_edit($row);
                 e.stopPropagation();
+                e.preventDefault();
+            } else {
+                composebox_typeahead.handle_enter($(e.target), e);
+                return;
             }
+        } else if ($(".typeahead:visible").length > 0) {
+            // Accepting typeahead is handled by the typeahead library.
             return;
-        case "Escape": // Handle escape keys in the message_edit form.
-            end_if_focused_on_message_row_edit();
+        } else if (
+            $(e.target).hasClass("message_edit_topic") ||
+            $(e.target).hasClass("message_edit_topic_propagate")
+        ) {
+            // Enter should save the topic edit, as long as it's
+            // not being used to accept typeahead.
+            const $row = $(e.target).closest(".message_row");
+            save_message_row_edit($row);
             e.stopPropagation();
-            e.preventDefault();
-            return;
-        default:
-            return;
+        }
+    } else if (e.key === "Escape") {
+        end_if_focused_on_message_row_edit();
+        e.stopPropagation();
+        e.preventDefault();
     }
 }
 
