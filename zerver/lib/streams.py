@@ -106,8 +106,8 @@ def get_default_value_for_history_public_to_subscribers(
     return history_public_to_subscribers
 
 
-def render_stream_description(text: str) -> str:
-    return markdown_convert(text, no_previews=True).rendered_content
+def render_stream_description(text: str, realm: Realm) -> str:
+    return markdown_convert(text, message_realm=realm, no_previews=True).rendered_content
 
 
 def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:
@@ -155,7 +155,7 @@ def create_stream_if_needed(
             recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
 
             stream.recipient = recipient
-            stream.rendered_description = render_stream_description(stream_description)
+            stream.rendered_description = render_stream_description(stream_description, realm)
             stream.save(update_fields=["recipient", "rendered_description"])
 
             event_time = timezone_now()
