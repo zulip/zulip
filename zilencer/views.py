@@ -261,7 +261,7 @@ def remote_server_notify_push(
         MAX_MESSAGE_IDS = 200
         if payload and payload.get("event") == "remove" and payload.get("zulip_message_ids"):
             ids = [int(id) for id in payload["zulip_message_ids"].split(",")]
-            truncated_ids = list(sorted(ids))[-MAX_MESSAGE_IDS:]
+            truncated_ids = sorted(ids)[-MAX_MESSAGE_IDS:]
             payload["zulip_message_ids"] = ",".join(str(id) for id in truncated_ids)
         return payload
 
