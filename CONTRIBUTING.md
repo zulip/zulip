@@ -2,16 +2,35 @@
 
 Welcome to the Zulip community!
 
-## Community
+## Zulip development community
 
-The
-[Zulip community server](https://zulip.com/development-community/)
-is the primary communication forum for the Zulip community. It is a good
-place to start whether you have a question, are a new contributor, are a new
-user, or anything else. Please review our
-[community norms](https://zulip.com/development-community/#community-norms)
-before posting. The Zulip community is also governed by a
-[code of conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
+The primary communication forum for the Zulip community is the Zulip
+server hosted at [chat.zulip.org](https://chat.zulip.org/):
+
+- **Users** and **administrators** of Zulip organizations stop by to
+  ask questions, offer feedback, and participate in product design
+  discussions.
+- **Contributors to the project**, including the **core Zulip
+  development team**, discuss ongoing and future projects, brainstorm
+  ideas, and generally help each other out.
+
+Everyone is welcome to [sign up](https://chat.zulip.org/) and
+participate — we love hearing from our users! Public streams in the
+community receive thousands of messages a week. We recommend signing
+up using the special invite links for
+[users](https://chat.zulip.org/join/t5crtoe62bpcxyisiyglmtvb/),
+[self-hosters](https://chat.zulip.org/join/wnhv3jzm6afa4raenedanfno/)
+and
+[contributors](https://chat.zulip.org/join/npzwak7vpmaknrhxthna3c7p/)
+to get a curated list of initial stream subscriptions.
+
+To learn how to get started participating in the community, including [community
+norms](https://zulip.com/development-community/#community-norms) and [where to
+post](https://zulip.com/development-community/#where-do-i-send-my-message),
+check out our [Zulip development community
+guide](https://zulip.com/development-community/). The Zulip community is
+governed by a [code of
+conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
 ## Ways to contribute
 
