@@ -17,6 +17,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
@@ -363,26 +364,22 @@ function handle_message_row_edit_keydown(e) {
 }
 
 function handle_inline_topic_edit_keydown(e) {
-    let $row;
-    switch (e.key) {
-        case "Enter": // Handle Enter key in the recipient bar/inline topic edit form
-            if ($(".typeahead:visible").length > 0) {
-                // Accepting typeahead should not trigger a save.
-                e.preventDefault();
-                return;
-            }
-            $row = $(e.target).closest(".recipient_row");
-            save_inline_topic_edit($row);
-            e.stopPropagation();
+    if (keydown_util.is_enter_event(e)) {
+        // Handle Enter key in the recipient bar/inline topic edit form
+        if ($(".typeahead:visible").length > 0) {
+            // Accepting typeahead should not trigger a save.
             e.preventDefault();
             return;
-        case "Escape": // handle Esc
-            end_if_focused_on_inline_topic_edit();
-            e.stopPropagation();
-            e.preventDefault();
-            return;
-        default:
-            return;
+        }
+        const $row = $(e.target).closest(".recipient_row");
+        save_inline_topic_edit($row);
+        e.stopPropagation();
+        e.preventDefault();
+    } else if (e.key === "Escape") {
+        // Handle Esc
+        end_if_focused_on_inline_topic_edit();
+        e.stopPropagation();
+        e.preventDefault();
     }
 }
 
