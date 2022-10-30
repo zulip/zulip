@@ -164,6 +164,10 @@ function set_table_focus(row, col, using_keyboard) {
         return true;
     }
 
+    if (col === 2 && !has_unread(row)) {
+        col = 1;
+        col_focus = 1;
+    }
     const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
@@ -911,13 +915,7 @@ function up_arrow_navigation(row, col) {
     }
 }
 
-function down_arrow_navigation(row, col) {
-    if (is_focus_at_last_table_row()) {
-        return;
-    }
-    if (col === 2 && !has_unread(row + 1)) {
-        col_focus = 1;
-    }
+function down_arrow_navigation() {
     row_focus += 1;
 }
 
@@ -1103,6 +1101,7 @@ export function change_focused_element($elt, input_key) {
             case "right_arrow":
                 right_arrow_navigation(row_focus, col_focus);
                 break;
+            case "down_arrow":
             case "vim_down":
                 // We stop user at last table row
                 // so that user doesn't end up in
@@ -1114,10 +1113,7 @@ export function change_focused_element($elt, input_key) {
                 if (is_focus_at_last_table_row()) {
                     return true;
                 }
-                down_arrow_navigation(row_focus, col_focus);
-                break;
-            case "down_arrow":
-                down_arrow_navigation(row_focus, col_focus);
+                down_arrow_navigation();
                 break;
             case "vim_up":
                 // See comment on vim_down.
