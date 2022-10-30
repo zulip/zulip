@@ -5700,8 +5700,8 @@ class GetSubscribersTest(ZulipTestCase):
 
             # It's +1 because of the stream Rome.
             self.assert_length(never_sub, len(web_public_streams) + 1)
-            sub_ids = list(map(lambda stream: stream["stream_id"], sub))
-            unsub_ids = list(map(lambda stream: stream["stream_id"], unsub))
+            sub_ids = [stream["stream_id"] for stream in sub]
+            unsub_ids = [stream["stream_id"] for stream in unsub]
 
             for stream_dict in never_sub:
                 self.assertTrue(stream_dict["is_web_public"])
