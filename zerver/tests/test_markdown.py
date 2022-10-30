@@ -235,7 +235,7 @@ class MarkdownMiscTest(ZulipTestCase):
         lst = get_possible_mentions_info(
             mention_backend, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
         )
-        set_of_names = set(map(lambda x: x.full_name.lower(), lst))
+        set_of_names = {x.full_name.lower() for x in lst}
         self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
 
         by_id = {row.id: row for row in lst}

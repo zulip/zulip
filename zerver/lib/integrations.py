@@ -94,7 +94,7 @@ class Integration:
                     + category
                     + "' is not a key in CATEGORIES.",
                 )
-        self.categories = list(map((lambda c: CATEGORIES[c]), categories))
+        self.categories = [CATEGORIES[c] for c in categories]
 
         self.logo_path = logo if logo is not None else self.get_logo_path()
         # TODO: Enforce that all integrations have logo_url with an assertion.
