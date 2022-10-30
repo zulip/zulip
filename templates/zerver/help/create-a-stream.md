@@ -36,11 +36,10 @@ There are several parameters you can set while creating a stream. All but
 * **Stream description**: Helps users decide whether to subscribe when they
   are browsing streams.
 
-* **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).
+* **Announce new stream in #<stream configured by your organization\>**: Posts an automated
+  notice that the stream was created in the [new stream announcements stream](/#organization/organization-settings).
 
-* **Announce stream**: Posts a message to `#general` advertising the new
-  stream. Organization administrators can change the stream used for [stream
-  creation announcements](/help/configure-notification-bot#new-stream-announcements).
+* **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).
 
 * **Who can post to the stream?**: See [Stream permissions](/help/stream-permissions).
 
