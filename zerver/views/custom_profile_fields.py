@@ -33,7 +33,7 @@ from zerver.lib.validator import (
     check_union,
     validate_select_field_data,
 )
-from zerver.models import CustomProfileField, UserProfile, custom_profile_fields_for_realm
+from zerver.models import CustomProfileField, Realm, UserProfile, custom_profile_fields_for_realm
 
 
 def list_realm_custom_profile_fields(
@@ -135,8 +135,10 @@ def update_only_display_in_profile_summary(
     return True
 
 
-def display_in_profile_summary_limit_reached(profile_field_id: Optional[int] = None) -> bool:
-    query = CustomProfileField.objects.filter(display_in_profile_summary=True)
+def display_in_profile_summary_limit_reached(
+    realm: Realm, profile_field_id: Optional[int] = None
+) -> bool:
+    query = CustomProfileField.objects.filter(realm=realm, display_in_profile_summary=True)
     if profile_field_id is not None:
         query = query.exclude(id=profile_field_id)
     return query.count() >= CustomProfileField.MAX_DISPLAY_IN_PROFILE_SUMMARY_FIELDS
@@ -153,7 +155,7 @@ def create_realm_custom_profile_field(
     field_type: int = REQ(json_validator=check_int),
     display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
-    if display_in_profile_summary and display_in_profile_summary_limit_reached():
+    if display_in_profile_summary and display_in_profile_summary_limit_reached(user_profile.realm):
         raise JsonableError(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
         )
@@ -213,7 +215,9 @@ def update_realm_custom_profile_field(
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
-    if display_in_profile_summary and display_in_profile_summary_limit_reached(field.id):
+    if display_in_profile_summary and display_in_profile_summary_limit_reached(
+        user_profile.realm, field.id
+    ):
         raise JsonableError(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
         )
