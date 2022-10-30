@@ -260,7 +260,7 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
-    return {user_profile_id for user_profile_id in mentioned_user_ids}
+    return set(mentioned_user_ids)
 
 
 def update_user_message_flags(
