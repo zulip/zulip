@@ -5,6 +5,7 @@ import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 
@@ -186,6 +187,17 @@ function pick_empty_narrow_banner() {
                     };
                 case "private":
                     // You have no private messages.
+                    if (
+                        page_params.realm_private_message_policy ===
+                        settings_config.private_message_policy_values.disabled.code
+                    ) {
+                        return {
+                            title: $t({
+                                defaultMessage:
+                                    "You are not allowed to send private messages in this organization.",
+                            }),
+                        };
+                    }
                     return {
                         title: $t({defaultMessage: "You have no private messages yet!"}),
                         html: $t_html(
@@ -280,6 +292,17 @@ function pick_empty_narrow_banner() {
                     title: $t({defaultMessage: "One or more of these users do not exist!"}),
                 };
             }
+            if (
+                page_params.realm_private_message_policy ===
+                settings_config.private_message_policy_values.disabled.code
+            ) {
+                return {
+                    title: $t({
+                        defaultMessage:
+                            "You are not allowed to send private messages in this organization.",
+                    }),
+                };
+            }
             if (!first_operand.includes(",")) {
                 // You have no private messages with this person
                 if (people.is_current_user(first_operand)) {
@@ -345,26 +368,35 @@ function pick_empty_narrow_banner() {
                 title: $t({defaultMessage: "This user does not exist!"}),
             };
         case "group-pm-with":
-            if (people.get_by_email(first_operand)) {
+            if (!people.get_by_email(first_operand)) {
+                return {
+                    title: $t({defaultMessage: "This user does not exist!"}),
+                };
+            }
+            if (
+                page_params.realm_private_message_policy ===
+                settings_config.private_message_policy_values.disabled.code
+            ) {
                 return {
                     title: $t({
-                        defaultMessage: "You have no group private messages with this person yet!",
+                        defaultMessage:
+                            "You are not allowed to send group private messages in this organization.",
                     }),
-                    html: $t_html(
-                        {
-                            defaultMessage: "Why not <z-link>start the conversation</z-link>?",
-                        },
-                        {
-                            "z-link": (content_html) =>
-                                `<a href="#" class="empty_feed_compose_private">${content_html.join(
-                                    "",
-                                )}</a>`,
-                        },
-                    ),
                 };
             }
             return {
-                title: $t({defaultMessage: "This user does not exist!"}),
+                title: $t({
+                    defaultMessage: "You have no group private messages with this person yet!",
+                }),
+                html: $t_html(
+                    {
+                        defaultMessage: "Why not <z-link>start the conversation</z-link>?",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                    },
+                ),
             };
     }
     return default_banner;
