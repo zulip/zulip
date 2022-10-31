@@ -330,19 +330,24 @@ function pick_empty_narrow_banner() {
                 title: $t({defaultMessage: "This user does not exist!"}),
             };
         case "group-pm-with":
+            if (people.get_by_email(first_operand)) {
+                return {
+                    title: $t({
+                        defaultMessage: "You have no group private messages with this person yet!",
+                    }),
+                    html: $t_html(
+                        {
+                            defaultMessage: "Why not <z-link>start the conversation</z-link>?",
+                        },
+                        {
+                            "z-link": (content_html) =>
+                                `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                        },
+                    ),
+                };
+            }
             return {
-                title: $t({
-                    defaultMessage: "You have no group private messages with this person yet!",
-                }),
-                html: $t_html(
-                    {
-                        defaultMessage: "Why not <z-link>start the conversation</z-link>?",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
-                    },
-                ),
+                title: $t({defaultMessage: "This user does not exist!"}),
             };
     }
     return default_banner;

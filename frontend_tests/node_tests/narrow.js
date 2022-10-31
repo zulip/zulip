@@ -386,6 +386,14 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    set_filter([["group-pm-with", ["Yo"]]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
+    );
+
     set_filter([["sender", "ray@example.com"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
