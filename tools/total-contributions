@@ -171,7 +171,13 @@ for (full_repository, branch) in [
 ]:
     repository = os.path.basename(full_repository)
 
-    if not os.path.exists(find_path(repository)):
+    if os.path.exists(find_path(repository)):
+        # Update the checkout for the project in question.
+        subprocess.check_call(
+            ["git", "pull", "--rebase", "-q"],
+            cwd=find_path(repository),
+        )
+    else:
         subprocess.check_call(
             ["git", "clone", f"git@github.com:{full_repository}.git"],
             cwd=os.path.dirname(find_path(repository)),
