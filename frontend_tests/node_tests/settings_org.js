@@ -169,7 +169,6 @@ function test_submit_settings_form(override, submit_form) {
     $invite_to_realm_policy_elem.data = () => "number";
 
     let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.closest = () => $subsection_elem;
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
         $email_address_visibility_elem,
@@ -207,7 +206,6 @@ function test_submit_settings_form(override, submit_form) {
     $realm_default_language_elem.data = () => "string";
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.closest = () => $subsection_elem;
     $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
 
     submit_form(ev);
