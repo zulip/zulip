@@ -380,7 +380,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     with transaction.atomic():
         Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
         prereg_user.delete()
-    clear_scheduled_invitation_emails(email)
+        clear_scheduled_invitation_emails(email)
     notify_invites_changed(realm)
 
 
