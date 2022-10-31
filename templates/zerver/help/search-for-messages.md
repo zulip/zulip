@@ -3,40 +3,54 @@
 Zulip has a powerful search engine under its hood. Search for messages using
 the search bar at the top of the app.
 
-## Example
+## Basics
 
-* `stream:design has:link -is:starred new logo`
+Here's an example of a search query in the app:
+`stream:design has:link -is:starred new logo`
 
-Searches for messages in `#design` that have a link, that you haven't
-starred, and that contain the words `new` and `logo`.
+It searches for messages in the stream `#design` that have a link, that
+you haven't starred, and that contain the words `new` and `logo`.
 
 The permalink for that search (web only) will look something like
 this:
 
 `https://your-zulip-url/#narrow/stream/123-design/has/link/-is/starred/search/new.20logo`.
 
-## List of operators
-
 As you start typing, Zulip will suggest possible operator completions.
 Operators can be used with keywords, or on their own. For example,
 
-* `stream:design logo` will search for the word `logo` within `#design`
-* `stream:design` will navigate to `#design`
+* `stream:design logo` will search for the word `logo` within the stream
+  `#design`
+* `stream:design` will navigate to the stream `#design`
 
-Here is the **full list of search operators**.
+## List of search operators
+
+### Searching stream messages
 
 * `stream:design`: Search within the stream `#design`.
 * `stream:design topic:emoji+picker`: Search within the topic `emoji picker`.
+* `streams:public`: Search the history of all [public
+  streams](/help/change-the-privacy-of-a-stream) in the organization,
+  including streams you are not subscribed to.
+
+### Searching private messages
+
 * `is:private`: Search all your private messages.
 * `pm-with:ada@zulip.com`: Search 1-on-1 private messages between you and Ada.
 * `pm-with:ada@zulip.com,bob@zulip.com`: Search group private messages
   between you, Bob, and Ada.
 * `group-pm-with:ada@zulip.com`: Search all group private message
   conversations that include you and Ada, as well as any other users.
+
+### Searching by message sender or message ID
+
 * `sender:ada@zulip.com`: Search messages sent by Ada.
 * `sender:me`: [Search messages you've sent](/help/view-messages-sent-by-a-user#view-messages-youve-sent).
 * `near:12345`: Show messages around the message with ID `12345`.
 * `id:12345`: Show only message `12345`.
+
+### Searching by message characteristics and flags
+
 * `is:alerted`: See [alert words](/help/pm-mention-alert-notifications#alert-words).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
@@ -46,11 +60,8 @@ Here is the **full list of search operators**.
 * `has:link`
 * `has:image`
 * `has:attachment`
-* `streams:public`: Search the history of all [public
-  streams](/help/change-the-privacy-of-a-stream) in the organization,
-  including streams you are not subscribed to.
 
-### Excluding messages
+## Excluding messages
 
 Zulip's search operators can be negated, to exclude messages matching
 the rule.  For example, `stream:design -is:resolved -has:image` will
