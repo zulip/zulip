@@ -246,10 +246,14 @@ body.dark-theme {
     :disabled,
     input:not([type="radio"]):read-only,
     textarea:read-only,
-    .sidebar-title,
     .recipient_row_date {
         color: inherit;
         opacity: 0.5;
+    }
+
+    .sidebar-title {
+        color: inherit;
+        opacity: 0.75;
     }
 
     .rendered_markdown button,
