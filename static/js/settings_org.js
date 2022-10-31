@@ -197,9 +197,8 @@ export function extract_property_name($elem, for_realm_default_settings) {
     return /^id_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
 }
 
-function get_subsection_property_elements(element) {
-    const $subsection = $(element).closest(".org-subsection-parent");
-    return Array.from($subsection.find(".prop-element"));
+function get_subsection_property_elements(subsection) {
+    return Array.from($(subsection).find(".prop-element"));
 }
 
 const simple_dropdown_properties = [
@@ -957,7 +956,8 @@ export function register_save_discard_widget_handlers(
     $container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        for (const elem of get_subsection_property_elements(e.target)) {
+        const $subsection = $(e.target).closest(".org-subsection-parent");
+        for (const elem of get_subsection_property_elements($subsection)) {
             discard_property_element_changes(elem, for_realm_default_settings);
         }
         const $save_btn_controls = $(e.target).closest(".save-button-controls");
