@@ -3043,12 +3043,9 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_error(result, "Nothing to change")
 
         resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "topic": resolved_topic,
-                "propagate_mode": "change_all",
-            },
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id1,
             HTTP_ACCEPT_LANGUAGE="de",
         )
 
