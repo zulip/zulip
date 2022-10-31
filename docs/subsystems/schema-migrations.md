@@ -70,6 +70,14 @@ migrations.
   the entire migration in a transaction. This should make it possible
   to use the batch update tools in `zerver/lib/migrate.py` (originally
   written to work with South) for doing larger database migrations.
+- **No-op migrations**. Django detects model changes that does not
+  necessarily lead to a schema change in the database.
+  For example, field validators are a part of the Django ORM, but they
+  are not stored in the database. When removing such validators from
+  an existing model, nothing gets dropped from the database, but Django
+  would still generate a migration for that. We prefer to avoid adding
+  this kind of no-op migrations. Instead of generating a new migration,
+  you'll want to modify the latest migration affecting the field.
 
 - **Accessing code and models in RunPython migrations**. When writing
   a migration that includes custom python code (aka `RunPython`), you
