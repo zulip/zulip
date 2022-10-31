@@ -9,6 +9,9 @@ from typing import Dict, List
 
 bot_commits = 0
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(ZULIP_PATH)
+
 
 def add_log(committer_dict: Dict[str, int], input: List[str]) -> None:
     for dataset in input:
@@ -33,7 +36,7 @@ def retrieve_log(repo: str, lower_version: str, upper_version: str) -> List[str]
 
 
 def find_path(repository: str) -> str:
-    return os.path.dirname((pathlib.Path().resolve()).parents[0]) + "/" + repository
+    return str(pathlib.Path().resolve().parents[0] / repository)
 
 
 def find_last_commit_before_time(repository: str, branch: str, time: str) -> str:
@@ -174,7 +177,7 @@ for (full_repository, branch) in [
             cwd=os.path.dirname(find_path(repository)),
         )
 
-    subprocess.check_call(["git", "fetch"], cwd=find_path(repository))
+    subprocess.check_call(["git", "fetch", "-a"], cwd=find_path(repository))
     lower_repo_version = find_last_commit_before_time(repository, branch, lower_time)
     upper_repo_version = find_last_commit_before_time(repository, branch, upper_time)
     commit_count = len(
