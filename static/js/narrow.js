@@ -158,19 +158,6 @@ function update_narrow_title(filter) {
         } else {
             set_narrow_title(filter_title);
         }
-    } else if (filter.has_operator("group-pm-with")) {
-        const emails = filter.operands("group-pm-with")[0];
-        const user_ids = people.emails_strings_to_user_ids_string(emails);
-        if (user_ids !== undefined) {
-            const names = people.get_recipients(user_ids);
-            set_narrow_title(names + " and others");
-        } else {
-            if (emails.includes(",")) {
-                set_narrow_title("Invalid users");
-            } else {
-                set_narrow_title("Invalid user");
-            }
-        }
     } else {
         set_narrow_title(search_default);
     }
