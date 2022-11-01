@@ -42,29 +42,6 @@ const unread_messages = new Set();
 // for how we can refresh it efficiently.
 export const unread_mention_topics = new Map();
 
-function add_message_to_unread_mention_topics(message_id) {
-    const message = message_store.get(message_id);
-    if (message.type !== "stream") {
-        return;
-    }
-    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
-    if (unread_mention_topics.has(topic_key)) {
-        unread_mention_topics.get(topic_key).add(message_id);
-    }
-    unread_mention_topics.set(topic_key, new Set([message_id]));
-}
-
-function remove_message_from_unread_mention_topics(message_id) {
-    const message = message_store.get(message_id);
-    if (message.type !== "stream") {
-        return;
-    }
-    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
-    if (unread_mention_topics.has(topic_key)) {
-        unread_mention_topics.get(topic_key).delete(message_id);
-    }
-}
-
 class Bucketer {
     // Maps item_id => bucket_key for items present in a bucket.
     reverse_lookup = new Map();
@@ -467,6 +444,29 @@ class UnreadTopicCounter {
     }
 }
 const unread_topic_counter = new UnreadTopicCounter();
+
+function add_message_to_unread_mention_topics(message_id) {
+    const message = message_store.get(message_id);
+    if (message.type !== "stream") {
+        return;
+    }
+    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
+    if (unread_mention_topics.has(topic_key)) {
+        unread_mention_topics.get(topic_key).add(message_id);
+    }
+    unread_mention_topics.set(topic_key, new Set([message_id]));
+}
+
+function remove_message_from_unread_mention_topics(message_id) {
+    const message = message_store.get(message_id);
+    if (message.type !== "stream") {
+        return;
+    }
+    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
+    if (unread_mention_topics.has(topic_key)) {
+        unread_mention_topics.get(topic_key).delete(message_id);
+    }
+}
 
 export function clear_and_populate_unread_mention_topics() {
     // The unread_mention_topics is an important data structure for
