@@ -15,6 +15,10 @@ $bottom_scrolling_buffer: 25px;
 #left-sidebar {
     #user-list {
         padding-left: 8.5px;
+
+        #userlist-header {
+            padding-left: 3px;
+        }
     }
 }
 
@@ -228,7 +232,7 @@ li.show-more-topics {
 
     #private_messages_section_header {
         cursor: pointer;
-        padding: 0 10px 1px 4px;
+        padding: 0 10px 1px 6px;
         white-space: nowrap;
 
         #show_all_private_messages {
@@ -645,7 +649,7 @@ li.topic-list-item {
 #streams_header {
     margin-right: 12px;
     cursor: pointer;
-    padding: $sections_vertical_gutter 0 3px $far_left_gutter_size;
+    padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
     position: sticky;
     top: 0;
     background: hsl(0, 0%, 100%);
