@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union
 
 import orjson
 from django.conf import settings
@@ -54,7 +54,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_partial_success, json_success
 from zerver.lib.retention import STREAM_MESSAGE_BATCH_SIZE as RETENTION_STREAM_MESSAGE_BATCH_SIZE
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import (
@@ -72,6 +72,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.subscription_info import gather_subscriptions
+from zerver.lib.timeout import TimeoutExpired, timeout
 from zerver.lib.topic import (
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
@@ -867,20 +868,29 @@ def delete_in_topic(
         ).values_list("message_id", flat=True)
         messages = messages.filter(id__in=deletable_message_ids)
 
-    # Topics can be large enough that this request will inevitably time out.
-    # In such a case, it's good for some progress to be accomplished, so that
-    # full deletion can be achieved by repeating the request. For that purpose,
-    # we delete messages in atomic batches, committing after each batch.
-    # TODO: Ideally this should be moved to the deferred_work queue.
-    batch_size = RETENTION_STREAM_MESSAGE_BATCH_SIZE
-    while True:
-        with transaction.atomic(durable=True):
-            messages_to_delete = messages.order_by("-id")[0:batch_size].select_for_update(
-                of=("self",)
-            )
-            if not messages_to_delete:
-                break
-            do_delete_messages(user_profile.realm, messages_to_delete)
+    def delete_in_batches() -> Literal[True]:
+        # Topics can be large enough that this request will inevitably time out.
+        # In such a case, it's good for some progress to be accomplished, so that
+        # full deletion can be achieved by repeating the request. For that purpose,
+        # we delete messages in atomic batches, committing after each batch.
+        # TODO: Ideally this should be moved to the deferred_work queue.
+        batch_size = RETENTION_STREAM_MESSAGE_BATCH_SIZE
+        while True:
+            with transaction.atomic(durable=True):
+                messages_to_delete = messages.order_by("-id")[0:batch_size].select_for_update(
+                    of=("self",)
+                )
+                if not messages_to_delete:
+                    break
+                do_delete_messages(user_profile.realm, messages_to_delete)
+
+        # timeout() in which we call this function requires non-None return value.
+        return True
+
+    try:
+        timeout(50, delete_in_batches)
+    except TimeoutExpired:
+        return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
 
     return json_success(request)
 

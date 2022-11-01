@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 154**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
+  When the process of deleting messages times out, a success response
+  with "partially_completed" result will now be returned by the server,
+  analogically to the `/mark_all_as_read` endpoint.
+
 **Feature level 153**
 
 * [`POST /mark_all_as_read`](/api/mark-all-as-read): Messages are now
