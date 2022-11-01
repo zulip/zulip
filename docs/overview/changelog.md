@@ -27,6 +27,18 @@ log][commit-log] for an up-to-date list of raw changes.
 - Redesigned the left sidebar to better organize pinned and inactive
   streams, highlight topics where the user was mentioned, and better
   advertise streams that the current user can subscribe to.
+- Redesigned the private messages experience in the left sidebar to
+  make browsing conversations more ergonomic, with a similar usage
+  pattern to browsing the topics within a stream.
+- Improved "Recent topics" and renamed it to "Recent conversations"
+  with the addition of including private messages in the view. The
+  timestamp links now go to the latest message in the topic, arrow key
+  navigation was improved, topics containing unread mentions are now
+  highlighted, as well as many other bug fixes or subtle improvements.
+- Messages containing 3 or fewer emoji reactions now display the names
+  of reacting users alongside the emoji. This eliminates the need to
+  mouse over emoji reactions to find out who reacted in the vast
+  majority of cases.
 - Replaced the previous "Unavailable" status with a "Go invisible" feature
   that is more useful and intuitive.
 - The right sidebar now displays user status messages by default, with
@@ -55,6 +67,8 @@ log][commit-log] for an up-to-date list of raw changes.
   display user IDs, which can be important when using the API. Users
   can now administer bot stream subscriptions from the bot's full
   profile.
+- Redesigned the gear menu to display basic details about the Zulip
+  organization, server, and its version.
 - Redesigned several organization settings pages to have more
   consistent design.
 - Redesigned the footer for self-hosted Zulip servers. The footer now has just a
@@ -64,10 +78,6 @@ log][commit-log] for an up-to-date list of raw changes.
   clearer and link to the Zulip server troubleshooting guide.
 - Redesigned the interface for configuring message editing and
   deletion permissions to be easier to understand.
-- Improved "Recent topics" and renamed to "Recent conversations" with
-  the addition of including private messages in the view. The timestamp
-  links now go to the latest message in the topic, arrow key navigation
-  was improved, and many other bug fixes or subtle improvements.
 - Added support for emoji added in unicode versions since 2017, which
   had previously been unavailable in Zulip. Users using the deprecated
   "Google blobs" emoji set are automatically migrated to the modern
@@ -125,8 +135,10 @@ log][commit-log] for an up-to-date list of raw changes.
   Slack compatible incoming webhook.
 - Improved mention typeahead and rendering for cases where mention
   syntax appears next to symbols.
-- Improve the language in message notification emails explaining
+- Improved browser window titles used by the app to be clearer.
+- Improved the language in message notification emails explaining
   why the notification was sent.
+- Reordered the organization settings panels to be more intuitive.
 - Increased timeout for processing slow requests from 20s to 60s.
 - Removed limits that prevented replying to Zulip email notifications multiple
   times or, several days after receiving them.
