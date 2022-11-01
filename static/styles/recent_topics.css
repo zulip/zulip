@@ -165,6 +165,8 @@
 
         .unread_mention_info:not(:empty) {
             margin-right: -5px;
+            /* Match with its font-size. */
+            line-height: 14px;
         }
 
         .unread_hidden {
