@@ -14388,6 +14388,9 @@ paths:
         for very large topics. It now deletes messages in batches,
         starting with the newest messages, so that progress will be
         made even if the request times out.
+
+        As of feature level 154, in case of timeout, a success response
+        with "partially_completed" result will now be returned.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: topic_name
@@ -14400,7 +14403,26 @@ paths:
           required: true
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success or partial success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonSuccess"
+                      - $ref: "#/components/schemas/SuccessDescription"
+                  - allOf:
+                      - $ref: "#/components/schemas/PartiallyCompleted"
+                      - example:
+                          {
+                            "code": "REQUEST_TIMEOUT",
+                            "msg": "",
+                            "result": "partially_completed",
+                          }
+                        description: |
+                          If the request exceeds its processing time limit after having
+                          successfully marked some messages as read, response code 200
+                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
         "400":
           description: Bad request.
           content:

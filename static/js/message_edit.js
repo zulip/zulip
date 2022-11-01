@@ -976,13 +976,14 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
         data: {
             topic_name,
         },
-        success() {},
-        error(xhr) {
-            if (failures >= 9) {
-                // Don't keep retrying indefinitely to avoid DoSing the server.
-                return;
-            }
-            if (xhr.status === 502) {
+        success(data) {
+            if (data.result === "partially_completed") {
+                if (failures >= 9) {
+                    // Don't keep retrying indefinitely to avoid DoSing the server.
+                    return;
+                }
+
+                failures += 1;
                 /* When trying to delete a very large topic, it's
                    possible for the request to the server to
                    time out after making some progress. Retry the
@@ -991,7 +992,6 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
 
                    TODO: Show a nice loading indicator experience.
                 */
-                failures += 1;
                 delete_topic(stream_id, topic_name, failures);
             }
         },
