@@ -458,11 +458,21 @@ function add_message_to_unread_mention_topics(message_id) {
 }
 
 function remove_message_from_unread_mention_topics(message_id) {
-    const message = message_store.get(message_id);
-    if (message.type !== "stream") {
+    const stream_id = unread_topic_counter.bucketer.reverse_lookup.get(message_id);
+    if (!stream_id) {
+        // Private messages and messages that were already not unread
+        // exit here.
         return;
     }
-    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
+
+    const per_stream_bucketer = unread_topic_counter.bucketer.get_bucket(stream_id);
+    if (!per_stream_bucketer) {
+        blueslip.error(`Could not find per_stream_bucketer for ${message_id}.`);
+        return;
+    }
+
+    const topic = per_stream_bucketer.reverse_lookup.get(message_id);
+    const topic_key = recent_topics_util.get_topic_key(stream_id, topic);
     if (unread_mention_topics.has(topic_key)) {
         unread_mention_topics.get(topic_key).delete(message_id);
     }
@@ -648,10 +658,14 @@ export function mark_as_read(message_id) {
     // the following methods are cheap and work fine even if message_id
     // was never set to unread.
     unread_pm_counter.delete(message_id);
+
+    // Important: This function uses `unread_topic_counter` to look up
+    // the stream/topic for this previously unread message, so much
+    // happen before the message is removed from that data structure.
+    remove_message_from_unread_mention_topics(message_id);
     unread_topic_counter.delete(message_id);
     unread_mentions_counter.delete(message_id);
     unread_messages.delete(message_id);
-    remove_message_from_unread_mention_topics(message_id);
 
     const message = message_store.get(message_id);
     if (message) {
