@@ -50,6 +50,7 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
+import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
 import * as unread_ops from "./unread_ops";
@@ -559,18 +560,32 @@ export function toggle_actions_popover(element, id) {
             view_source_menu_item = $t({defaultMessage: "View message source"});
         }
 
-        // Theoretically, it could be useful to offer this even for a
-        // message that is already unread, so you can mark those below
-        // it as unread; but that's an unlikely situation, and showing
-        // it can be a confusing source of clutter.
+        // We do not offer "Mark as unread" on messages in streams
+        // that the user is not currently subscribed to. Zulip has an
+        // invariant that all unread messages must be in streams the
+        // user is subscribed to, and so the server will ignore any
+        // messages in such streams; it's better to hint this is not
+        // useful by not offering the option.
+        //
+        // We also require that the message is currently marked as
+        // read. Theoretically, it could be useful to offer this even
+        // for a message that is already unread, so you can mark those
+        // below it as unread; but that's an unlikely situation, and
+        // showing it can be a confusing source of clutter. We may
+        // want to revise this algorithm specifically in the context
+        // of interleaved views.
         //
         // To work around #22893, we also only offer the option if the
         // fetch_status data structure means we'll be able to mark
         // everything below the current message as read correctly.
+        const not_stream_message = message.type !== "stream";
+        const subscribed_to_stream =
+            message.type === "stream" && stream_data.is_subscribed(message.stream_id);
         const should_display_mark_as_unread =
             message_lists.current.data.fetch_status.has_found_newest() &&
             !message.unread &&
-            not_spectator;
+            not_spectator &&
+            (not_stream_message || subscribed_to_stream);
 
         const should_display_edit_history_option =
             message.edit_history &&
