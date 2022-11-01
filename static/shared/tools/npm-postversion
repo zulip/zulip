@@ -23,7 +23,7 @@ Next steps:
 
   \$ ${bold}git log --stat -p upstream..${reset}  # check your work!
 
-  \$ ${bold}git push upstream main shared-${npm_package_version}${reset}
+  \$ ${bold}git push --atomic upstream main shared-${npm_package_version}${reset}
 
   \$ ${bold}npm publish${reset}  # should prompt for an OTP, from your 2FA setup
 "
