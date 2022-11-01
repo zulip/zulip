@@ -634,6 +634,13 @@ body.dark-theme {
         }
     }
 
+    #topics_header {
+        .show-all-streams {
+            color: hsl(236, 33%, 90%);
+            opacity: 0.75;
+        }
+    }
+
     #user_presences li:hover,
     #user_presences li.highlighted_user {
         background-color: hsla(136, 25%, 73%, 0.2);
