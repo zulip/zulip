@@ -576,16 +576,6 @@ li.topic-list-item {
     padding-right: 5px;
 }
 
-.show-all-streams {
-    a {
-        color: hsl(0, 0%, 20%);
-    }
-
-    .fa-chevron-left {
-        text-decoration: none;
-    }
-}
-
 .pm-box,
 .topic-box {
     display: flex;
@@ -633,10 +623,11 @@ li.topic-list-item {
     margin-right: 10px;
     color: hsl(0, 0%, 43%);
 
-    a {
+    .show-all-streams {
         color: inherit;
         text-decoration: none;
         text-transform: uppercase;
+        margin-left: -2px;
 
         i {
             margin: 0 6px 0 13px;
