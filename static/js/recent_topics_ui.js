@@ -164,10 +164,17 @@ function set_table_focus(row, col, using_keyboard) {
         return true;
     }
 
-    if (col === 2 && !has_unread(row)) {
+    const unread = has_unread(row);
+    if (col === 2 && !unread) {
         col = 1;
         col_focus = 1;
     }
+    const type = get_row_type(row);
+    if (col === 3 && type === "private") {
+        col = unread ? 2 : 1;
+        col_focus = col;
+    }
+
     const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
@@ -193,7 +200,6 @@ function set_table_focus(row, col, using_keyboard) {
     // TODO: This fake "message" object is designed to allow using the
     // get_recipient_label helper inside compose_closed_ui. Surely
     // there's a more readable way to write this code.
-    const type = get_row_type(row);
     let message;
     if (type === "private") {
         message = {
@@ -770,7 +776,7 @@ export function complete_rerender() {
         },
         html_selector: get_topic_row,
         $simplebar_container: $("#recent_topics_table .table_fix_head"),
-        callback_after_render: revive_current_focus,
+        callback_after_render: () => setTimeout(revive_current_focus, 0),
         is_scroll_position_for_render,
         post_scroll__pre_render_callback: set_focus_to_element_in_center,
         get_min_load_count,
