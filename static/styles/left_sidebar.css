@@ -101,6 +101,16 @@ li.show-more-topics {
     padding: 0;
     font-weight: normal;
 
+    .input-append.topic_search_section {
+        padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
+        margin-bottom: 3px;
+        margin-left: 3px;
+
+        input {
+            width: calc(100% - 50px);
+        }
+    }
+
     li {
         a {
             padding: 1px 0;
@@ -122,16 +132,6 @@ li.show-more-topics {
                     top: 43px;
                     z-index: 2;
                     background-color: hsl(0, 0%, 100%);
-                }
-
-                .input-append.topic_search_section {
-                    margin-bottom: 3px;
-                    margin-left: 3px;
-
-                    input {
-                        padding-right: 20px;
-                        width: calc(100% - 50px);
-                    }
                 }
             }
         }
