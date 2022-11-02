@@ -382,9 +382,7 @@ test("rename_stream_recipient", ({override_rewire}) => {
 // There were some buggy drafts that had their topics
 // renamed to `undefined` in #23238.
 // TODO/compatibility: The next two tests can be deleted
-// in 2023 since all relevant drafts will have either
-// been run through this code or else been deleted after
-// 30 days.
+// when we get to delete drafts.fix_drafts_with_undefined_topics.
 test("catch_buggy_draft_error", () => {
     const stream_A = {
         subscribed: false,
@@ -426,6 +424,30 @@ test("catch_buggy_draft_error", () => {
     const draft = draft_model.getDraft("id1");
     assert.equal(draft.stream, stream_B.name);
     assert.equal(draft.topic, undefined);
+});
+
+test("fix_buggy_draft", ({override_rewire}) => {
+    override_rewire(drafts, "set_count", noop);
+
+    const buggy_draft = {
+        stream: "stream name",
+        stream_id: 1,
+        // This is the bug: topic never be undefined for a stream
+        // message draft.
+        topic: undefined,
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const data = {id1: buggy_draft};
+    const ls = localstorage();
+    ls.set("drafts", data);
+    const draft_model = drafts.draft_model;
+
+    drafts.fix_drafts_with_undefined_topics();
+    const draft = draft_model.getDraft("id1");
+    assert.equal(draft.stream, "stream name");
+    assert.equal(draft.topic, "");
 });
 
 test("delete_all_drafts", () => {
