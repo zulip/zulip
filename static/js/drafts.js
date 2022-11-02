@@ -106,6 +106,32 @@ export const draft_model = (function () {
     return exports;
 })();
 
+// A one-time fix for buggy drafts that had their topics renamed to
+// `undefined` when the topic was moved to another stream without
+// changing the topic. The bug was introduced in
+// 4c8079c49a81b08b29871f9f1625c6149f48b579 and fixed in
+// aebdf6af8c6675fbd2792888d701d582c4a1110a; but servers running
+// intermediate versions may have generated some bugged drafts with
+// this invalid topic value.
+//
+// TODO/compatibility: This can be deleted once servers can no longer
+// directly upgrade from Zulip 6.0beta1 and earlier development branch where the bug was present,
+// since we expect bugged drafts will have either been run through
+// this code or else been deleted after 30 (DRAFT_LIFETIME) days.
+let fixed_buggy_drafts = false;
+export function fix_drafts_with_undefined_topics() {
+    const data = draft_model.get();
+    for (const draft_id of Object.keys(data)) {
+        const draft = data[draft_id];
+        if (draft.type === "stream" && draft.topic === undefined) {
+            const draft = data[draft_id];
+            draft.topic = "";
+            draft_model.editDraft(draft_id, draft, false);
+        }
+    }
+    fixed_buggy_drafts = true;
+}
+
 export function sync_count() {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
@@ -772,6 +798,10 @@ export function set_initial_element(drafts) {
 
 export function initialize() {
     remove_old_drafts();
+
+    if (!fixed_buggy_drafts) {
+        fix_drafts_with_undefined_topics();
+    }
 
     window.addEventListener("beforeunload", () => {
         update_draft();
