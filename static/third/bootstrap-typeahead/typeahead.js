@@ -53,9 +53,9 @@
  *
  * 4. Escape hooks:
  *
- *  You can set an on_escape hook to take extra actions when the user hits
- *  the `Esc` key.  We use this in our navbar code to close the navbar when
- *  a user hits escape while in the typeahead.
+ *   You can set an on_escape hook to take extra actions when the user hits
+ *   the `Esc` key.  We use this in our navbar code to close the navbar when
+ *   a user hits escape while in the typeahead.
  *
  * 5. Help on empty strings:
  *
@@ -71,8 +71,15 @@
  *   Our custom changes include all mentions of `helpOnEmptyStrings` and `hideOnEmpty`.
  *
  * 6. Prevent typeahead going off top of screen:
+ *
  *   If typeahead would go off the top of the screen, we set its top to 0 instead.
  *   This patch should be replaced with something more flexible.
+ *
+ * 7. Ignore IME Enter events:
+ *
+ *   See #22062 for details. Enter keypress that are part of IME composing are
+ *   treated as a separate/invalid -13 key, to prevent them from being incorrectly
+ *   processed as a bonus Enter press.
  *
  * ============================================================ */
 
@@ -80,6 +87,14 @@
 
   "use strict"; // jshint ;_;
 
+  function get_pseudo_keycode(e) {
+      const isComposing = (event.originalEvent && event.originalEvent.isComposing) || false;
+      /* We treat IME compose enter keypresses as a separate -13 key. */
+      if (e.keyCode === 13 && isComposing) {
+          return -13;
+      }
+      return e.keyCode;
+  }
 
  /* TYPEAHEAD PUBLIC CLASS DEFINITION
   * ================================= */
@@ -354,8 +369,9 @@
 
   , move: function (e) {
       if (!this.shown) return
+      const pseudo_keycode = get_pseudo_keycode(e);
 
-      switch(e.keyCode) {
+      switch(pseudo_keycode) {
         case 9: // tab
         case 13: // enter
         case 27: // escape
@@ -373,7 +389,7 @@
           break
       }
 
-      if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
+      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
           && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
           e.stopPropagation()
       }
@@ -389,12 +405,13 @@
     }
 
   , keydown: function (e) {
+    const pseudo_keycode = get_pseudo_keycode(e);
     if (this.trigger_selection(e)) {
       if (!this.shown) return;
       e.preventDefault();
       this.select(e);
     }
-      this.suppressKeyPressRepeat = !~$.inArray(e.keyCode, [40,38,9,13,27])
+      this.suppressKeyPressRepeat = !~$.inArray(pseudo_keycode, [40,38,9,13,27]);
       this.move(e)
     }
 
@@ -404,7 +421,9 @@
     }
 
   , keyup: function (e) {
-      switch(e.keyCode) {
+      const pseudo_keycode = get_pseudo_keycode(e);
+
+      switch(pseudo_keycode) {
         case 40: // down arrow
         case 38: // up arrow
           break
@@ -431,7 +450,7 @@
           this.lookup(hideOnEmpty)
       }
 
-      if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
+      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
           && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
           e.stopPropagation()
       }
