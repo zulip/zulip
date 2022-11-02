@@ -7,6 +7,7 @@
 <div>
     <label for="change_stream_description">
         {{t 'Description' }}
+        {{> ../help_link_widget link="/help/change-the-stream-description" }}
     </label>
     <textarea id="change_stream_description" maxlength="{{ max_stream_description_length }}">{{ stream_description }}</textarea>
 </div>
