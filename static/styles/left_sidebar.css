@@ -133,7 +133,7 @@ li.show-more-topics {
                 &.filter-topics {
                     padding-bottom: 0;
                     position: sticky;
-                    top: 43px;
+                    top: calc($sections_vertical_gutter + 43px);
                     z-index: 2;
                     background-color: hsl(0, 0%, 100%);
                 }
@@ -621,6 +621,7 @@ li.topic-list-item {
     background-color: hsl(0, 0%, 100%);
     z-index: 2;
     margin-right: 10px;
+    padding-top: $sections_vertical_gutter;
     color: hsl(0, 0%, 43%);
 
     .show-all-streams {
@@ -714,7 +715,7 @@ li.topic-list-item {
 .zoom-in {
     .narrow-filter > .bottom_left_row {
         position: sticky;
-        top: 20px;
+        top: calc($sections_vertical_gutter + 20px);
         z-index: 2;
         padding-bottom: 1px;
         background-color: hsl(0, 0%, 100%);

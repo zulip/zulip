@@ -274,16 +274,9 @@ export function zoom_in_topics(options) {
             $elt.hide();
         }
     });
-
-    // we also need to hide the PM section and allow
-    // stream list to take complete left-sidebar in zoomedIn view.
-    $(".private_messages_container").hide();
 }
 
 export function zoom_out_topics() {
-    // Show PM section
-    $(".private_messages_container").show();
-
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
