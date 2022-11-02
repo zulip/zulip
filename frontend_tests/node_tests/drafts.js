@@ -7,12 +7,14 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {user_settings} = require("../zjsunit/zpage_params");
 
+const blueslip = zrequire("blueslip");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const user_pill = zrequire("user_pill");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
+
 const aaron = {
     email: "aaron@zulip.com",
     user_id: 6,
@@ -375,6 +377,55 @@ test("rename_stream_recipient", ({override_rewire}) => {
     assert_draft("id2", "A", "b");
     assert_draft("id3", "B", "e");
     assert_draft("id4", "B", "e");
+});
+
+// There were some buggy drafts that had their topics
+// renamed to `undefined` in #23238.
+// TODO/compatibility: The next two tests can be deleted
+// in 2023 since all relevant drafts will have either
+// been run through this code or else been deleted after
+// 30 days.
+test("catch_buggy_draft_error", () => {
+    const stream_A = {
+        subscribed: false,
+        name: "A",
+        stream_id: 1,
+    };
+    stream_data.add_sub(stream_A);
+    const stream_B = {
+        subscribed: false,
+        name: "B",
+        stream_id: 2,
+    };
+    stream_data.add_sub(stream_B);
+
+    const buggy_draft = {
+        stream: stream_B.name,
+        stream_id: stream_B.stream_id,
+        topic: undefined,
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const data = {id1: buggy_draft};
+    const ls = localstorage();
+    ls.set("drafts", data);
+    const draft_model = drafts.draft_model;
+
+    // An error is logged but the draft isn't fixed in this codepath.
+    blueslip.expect(
+        "error",
+        "Cannot compare strings; at least one value is undefined: undefined, old_topic",
+    );
+    drafts.rename_stream_recipient(
+        stream_B.stream_id,
+        "old_topic",
+        stream_A.stream_id,
+        "new_topic",
+    );
+    const draft = draft_model.getDraft("id1");
+    assert.equal(draft.stream, stream_B.name);
+    assert.equal(draft.topic, undefined);
 });
 
 test("delete_all_drafts", () => {
