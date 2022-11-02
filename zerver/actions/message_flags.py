@@ -12,9 +12,10 @@ from zerver.actions.create_user import create_historical_user_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, format_unread_message_details, get_raw_unread_data
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.utils import log_statsd_event
-from zerver.models import Message, UserMessage, UserProfile
+from zerver.models import Message, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event
 
 
@@ -262,6 +263,28 @@ def do_update_message_flags(
     flagattr = getattr(UserMessage.flags, flag)
 
     with transaction.atomic(savepoint=False):
+        if flag == "read" and operation == "remove":
+            # We have an invariant that all stream messages marked as
+            # unread must be in streams the user is subscribed to.
+            #
+            # When marking as unread, we enforce this invariant by
+            # ignoring any messages in streams the user is not
+            # currently subscribed to.
+            subscribed_recipient_ids = get_subscribed_stream_recipient_ids_for_user(user_profile)
+
+            message_ids_in_unsubscribed_streams = (
+                Message.objects.select_related("recipient")
+                .filter(id__in=messages, recipient__type=Recipient.STREAM)
+                .exclude(recipient_id__in=subscribed_recipient_ids)
+                .values_list("id", flat=True)
+            )
+
+            messages = [
+                message_id
+                for message_id in messages
+                if message_id not in set(message_ids_in_unsubscribed_streams)
+            ]
+
         query = UserMessage.select_for_update_query().filter(
             user_profile=user_profile, message_id__in=messages
         )
