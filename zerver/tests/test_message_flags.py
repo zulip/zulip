@@ -1783,6 +1783,166 @@ class MarkUnreadTest(ZulipTestCase):
             )
             self.assertTrue(um.flags.read)
 
+    def test_unsubscribed_stream_messages_unread(self) -> None:
+        """An extended test verifying that the `update_message_flags` endpoint
+        correctly preserves the invariant that messages cannot be
+        marked unread in streams a user is not currently subscribed
+        to.
+        """
+        sender = self.example_user("cordelia")
+        receiver = self.example_user("hamlet")
+        stream_name = "Denmark"
+        self.subscribe(receiver, stream_name)
+        self.subscribe(sender, stream_name)
+        topic_name = "test"
+        subscribed_stream_message_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream_name,
+                topic_name=topic_name,
+            )
+            for i in range(2)
+        ]
+        stream_name = "Verona"
+        sub = get_subscription(stream_name, receiver)
+        self.assertTrue(sub.active)
+        unsubscribed_stream_message_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream_name,
+                topic_name=topic_name,
+            )
+            for i in range(2)
+        ]
+        # Unsubscribing generates an event in the deferred_work queue
+        # that marks the above messages as read.
+        self.unsubscribe(receiver, stream_name)
+        after_unsubscribe_stream_message_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream_name,
+                topic_name=topic_name,
+            )
+            for i in range(2)
+        ]
+
+        stream_name = "New-stream"
+        self.subscribe(sender, stream_name)
+        never_subscribed_stream_message_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream_name,
+                topic_name=topic_name,
+            )
+            for i in range(2)
+        ]
+
+        message_ids = (
+            subscribed_stream_message_ids
+            + unsubscribed_stream_message_ids
+            + after_unsubscribe_stream_message_ids
+            + never_subscribed_stream_message_ids
+        )
+        # Before doing anything, verify the state of each message's flags.
+        for message_id in subscribed_stream_message_ids + unsubscribed_stream_message_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertEqual(um.flags.read, message_id in unsubscribed_stream_message_ids)
+        for message_id in (
+            never_subscribed_stream_message_ids + after_unsubscribe_stream_message_ids
+        ):
+            self.assertFalse(
+                UserMessage.objects.filter(
+                    user_profile_id=receiver.id,
+                    message_id=message_id,
+                ).exists()
+            )
+
+        # First, try marking them all as unread; should be a noop. The
+        # ones that already have UserMessage rows are already unread,
+        # and the others don't have UserMessage rows and cannot be
+        # marked as unread without first subscribing.
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=0):
+            result = self.client_post(
+                "/json/messages/flags",
+                {"messages": orjson.dumps(message_ids).decode(), "op": "remove", "flag": "read"},
+            )
+        for message_id in subscribed_stream_message_ids + unsubscribed_stream_message_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertEqual(um.flags.read, message_id in unsubscribed_stream_message_ids)
+        for message_id in (
+            never_subscribed_stream_message_ids + after_unsubscribe_stream_message_ids
+        ):
+            self.assertFalse(
+                UserMessage.objects.filter(
+                    user_profile_id=receiver.id,
+                    message_id=message_id,
+                ).exists()
+            )
+
+        # Now, explicitly mark them all as read. This will create new
+        # 'historical' UserMessage rows created for the ones that
+        # didn't have them previously.
+        #
+        # It's not clear that creating these `historical` UserMessage
+        # rows is useful, like it is for starring messages. But it
+        # should also be harmless.
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages/flags",
+            {"messages": orjson.dumps(message_ids).decode(), "op": "add", "flag": "read"},
+        )
+        self.assert_json_success(result)
+
+        for message_id in message_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertTrue(um.flags.read)
+            self.assertEqual(
+                message_id
+                in never_subscribed_stream_message_ids + after_unsubscribe_stream_message_ids,
+                bool(um.flags.historical),
+            )
+
+        # Now, request marking them all as unread. Since we haven't
+        # resubscribed to any of the streams, we expect this to not
+        # modify the messages in streams we're not subscribed to.
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            result = self.client_post(
+                "/json/messages/flags",
+                {"messages": orjson.dumps(message_ids).decode(), "op": "remove", "flag": "read"},
+            )
+        event = events[0]["event"]
+        self.assertEqual(event["messages"], subscribed_stream_message_ids)
+        unread_message_ids = {str(message_id) for message_id in subscribed_stream_message_ids}
+        self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
+
+        for message_id in subscribed_stream_message_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertFalse(um.flags.read)
+
+        for message_id in (
+            unsubscribed_stream_message_ids
+            + after_unsubscribe_stream_message_ids
+            + never_subscribed_stream_message_ids
+        ):
+            um = UserMessage.objects.get(
+                user_profile_id=receiver.id,
+                message_id=message_id,
+            )
+            self.assertTrue(um.flags.read)
+
     def test_pm_messages_unread(self) -> None:
         sender = self.example_user("cordelia")
         receiver = self.example_user("hamlet")
