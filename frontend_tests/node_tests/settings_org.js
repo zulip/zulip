@@ -14,7 +14,6 @@ const noop = () => {};
 const realm_icon = mock_esm("../../static/js/realm_icon");
 
 const channel = mock_esm("../../static/js/channel");
-const overlays = mock_esm("../../static/js/overlays");
 
 mock_esm("../../static/js/csrf", {csrf_token: "token-stub"});
 mock_esm("../../static/js/list_widget", {
@@ -309,8 +308,6 @@ function test_extract_property_name() {
 }
 
 function test_sync_realm_settings() {
-    overlays.settings_open = () => true;
-
     {
         /* Test invalid settings property sync */
         const $property_elem = $("#id_realm_invalid_settings_property");

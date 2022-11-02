@@ -11,7 +11,6 @@ import {csrf_token} from "./csrf";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
@@ -590,7 +589,7 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
 }
 
 export function sync_realm_settings(property) {
-    if (!overlays.settings_open()) {
+    if (!meta.loaded) {
         return;
     }
 
