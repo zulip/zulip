@@ -575,9 +575,7 @@ export function process_loaded_messages(messages, expect_no_new_unreads = false)
                 // to a view and the message_fetch request returns
                 // before server_events system delivers the message to
                 // the client.
-                //
-                // For now, log it as a blueslip error so we can learn its prevalence.
-                blueslip.error("New unread discovered in process_loaded_messages.");
+                blueslip.log(`New unread ${message.id} discovered in process_loaded_messages.`);
             }
 
             const user_ids_string =
