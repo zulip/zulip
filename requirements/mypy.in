@@ -9,10 +9,7 @@ lxml-stubs
 SQLAlchemy[mypy]
 types-beautifulsoup4
 types-boto
-types-certifi
 types-chardet
-types-commonmark
-types-dataclasses
 types-decorator
 types-jsonschema
 types-Markdown
@@ -27,7 +24,6 @@ types-pytz
 types-PyYAML
 types-redis
 types-requests
-types-six
 types-stripe
 types-zxcvbn
 
