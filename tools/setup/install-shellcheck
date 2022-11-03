@@ -10,12 +10,12 @@ declare -A sha256=(
 )
 
 check_version() {
-    out="$(shellcheck --version 2>/dev/null)" && [[ "$out" = *"
+    out="$(shellcheck --version)" && [[ "$out" = *"
 version: $version
 "* ]]
 }
 
-if ! check_version; then
+if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
