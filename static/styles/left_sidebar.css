@@ -628,7 +628,7 @@ li.topic-list-item {
         color: inherit;
         text-decoration: none;
         text-transform: uppercase;
-        margin-left: -2px;
+        margin-left: calc($far_left_gutter_size + 2px);
 
         i {
             margin: 0 6px 0 13px;
