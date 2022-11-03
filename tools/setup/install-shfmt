@@ -17,10 +17,10 @@ case $arch in
 esac
 
 check_version() {
-    out="$(shfmt --version 2>/dev/null)" && [ "$out" = "v$version" ]
+    out="$(shfmt --version)" && [ "$out" = "v$version" ]
 }
 
-if ! check_version; then
+if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"

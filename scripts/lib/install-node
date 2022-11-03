@@ -20,7 +20,7 @@ check_version() {
     out="$(node --version)" && [ "$out" = "v$version" ]
 }
 
-if ! check_version; then
+if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
