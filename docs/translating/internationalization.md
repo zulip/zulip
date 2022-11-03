@@ -247,7 +247,7 @@ locally to the translation:
 ```js
 $t_html(
     {defaultMessage: "<b>HTML</b> linking to the <z-link>login page</z-link>"},
-    {"z-link": (content_html) => `<a href="/login/">${content_html}</a>`},
+    {"z-link": (content_html) => `<a href="/login/">${content_html.join("")}</a>`},
 )
 ```
 

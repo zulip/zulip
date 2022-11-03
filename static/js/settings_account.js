@@ -714,7 +714,9 @@ export function set_up() {
                         },
                         {
                             "z-link": (content_html) =>
-                                `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
+                                `<a target="_blank" href="/#organization/organization-profile">${content_html.join(
+                                    "",
+                                )}</a>`,
                         },
                     );
                     let rendered_error_msg;

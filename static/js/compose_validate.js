@@ -392,7 +392,8 @@ export function validation_error(error_type, stream_name) {
                 },
                 {
                     stream_name,
-                    "z-link": (content_html) => `<a href='#streams/all'>${content_html}</a>`,
+                    "z-link": (content_html) =>
+                        `<a href='#streams/all'>${content_html.join("")}</a>`,
                 },
             );
             compose_error.show(response, $("#stream_message_recipient_stream"));

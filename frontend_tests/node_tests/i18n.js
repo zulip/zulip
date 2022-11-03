@@ -60,7 +60,7 @@ run_test("$tr", () => {
             },
             {
                 stream_name: "l'abonnement",
-                "z-link": (content_html) => `<a href='#streams/all'>${content_html}</a>`,
+                "z-link": (content_html) => `<a href='#streams/all'>${content_html.join("")}</a>`,
             },
         ),
         "<p>Le canal <b>l&#39;abonnement</b> n'existe pas.</p><p>Gérez vos abonnements <a href='#streams/all'>sur votre page canaux</a>.</p>",

@@ -15,7 +15,8 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
             defaultMessage: "This is not a <z-link>publicly accessible</z-link> conversation.",
         },
         {
-            "z-link": (content_html) => `<a href="/help/public-access-option">${content_html}</a>`,
+            "z-link": (content_html) =>
+                `<a href="/help/public-access-option">${content_html.join("")}</a>`,
         },
     ),
 };
@@ -74,7 +75,9 @@ function pick_empty_narrow_banner() {
                   },
                   {
                       "z-link": (content_html) =>
-                          `<a href="#" class="empty_feed_compose_stream">${content_html}</a>`,
+                          `<a href="#" class="empty_feed_compose_stream">${content_html.join(
+                              "",
+                          )}</a>`,
                   },
               ),
     };
@@ -162,7 +165,7 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="/help/star-a-message">${content_html}</a>`,
+                                    `<a href="/help/star-a-message">${content_html.join("")}</a>`,
                             },
                         ),
                     };
@@ -175,7 +178,9 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="/help/mention-a-user-or-group">${content_html}</a>`,
+                                    `<a href="/help/mention-a-user-or-group">${content_html.join(
+                                        "",
+                                    )}</a>`,
                             },
                         ),
                     };
@@ -191,7 +196,9 @@ function pick_empty_narrow_banner() {
                                 // TODO: The href here is a bit weird; we probably want to migrate
                                 // this to a button element down the line.
                                 "z-link": (content_html) =>
-                                    `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                                    `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                        "",
+                                    )}</a>`,
                             },
                         ),
                     };
@@ -241,7 +248,9 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-button": (content_html) =>
-                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html}</button>`,
+                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html.join(
+                                        "",
+                                    )}</button>`,
                             },
                         ),
                     };
@@ -286,7 +295,9 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                                    `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                        "",
+                                    )}</a>`,
                             },
                         ),
                     };
@@ -301,7 +312,9 @@ function pick_empty_narrow_banner() {
                         },
                         {
                             "z-link": (content_html) =>
-                                `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                                `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                    "",
+                                )}</a>`,
                         },
                     ),
                 };
@@ -314,7 +327,9 @@ function pick_empty_narrow_banner() {
                     },
                     {
                         "z-link": (content_html) =>
-                            `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                            `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                "",
+                            )}</a>`,
                     },
                 ),
             };
@@ -341,7 +356,9 @@ function pick_empty_narrow_banner() {
                         },
                         {
                             "z-link": (content_html) =>
-                                `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                                `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                    "",
+                                )}</a>`,
                         },
                     ),
                 };
