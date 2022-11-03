@@ -1,5 +1,5 @@
 <form class="notification-settings-form">
-    <div class="general_notifications {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header inline-block">
             <h3>{{t "Notification triggers" }}</h3>
             {{> settings_save_discard_widget section_name="general-notifiy-settings" show_only_indicator=(not for_realm_settings) }}
@@ -48,7 +48,7 @@
         </table>
     </div>
 
-    <div class="desktop_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Desktop message notifications" }}
@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    <div class="mobile_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Mobile message notifications" }}
@@ -115,7 +115,7 @@
         {{/each}}
     </div>
 
-    <div class="email_message_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="email_message_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Email message notifications" }}
@@ -156,7 +156,7 @@
         {{/each}}
     </div>
 
-    <div class="other_email_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="other_email_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Other emails" }}</h3>
