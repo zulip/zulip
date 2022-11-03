@@ -272,7 +272,7 @@ def do_update_message_flags(
             # currently subscribed to.
             subscribed_recipient_ids = get_subscribed_stream_recipient_ids_for_user(user_profile)
 
-            message_ids_in_unsubscribed_streams = (
+            message_ids_in_unsubscribed_streams = set(
                 Message.objects.select_related("recipient")
                 .filter(id__in=messages, recipient__type=Recipient.STREAM)
                 .exclude(recipient_id__in=subscribed_recipient_ids)
@@ -282,7 +282,7 @@ def do_update_message_flags(
             messages = [
                 message_id
                 for message_id in messages
-                if message_id not in set(message_ids_in_unsubscribed_streams)
+                if message_id not in message_ids_in_unsubscribed_streams
             ]
 
         query = UserMessage.select_for_update_query().filter(
