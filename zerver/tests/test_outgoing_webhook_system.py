@@ -17,7 +17,14 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.users import add_service
-from zerver.models import Recipient, Service, UserProfile, get_display_recipient, get_realm
+from zerver.models import (
+    Recipient,
+    Service,
+    UserProfile,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+)
 
 
 class ResponseMock:
@@ -545,6 +552,61 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
+        self.assertEqual(display_recipient, "Denmark")
+
+    @responses.activate
+    def test_stream_message_failure_to_outgoing_webhook_bot(self) -> None:
+        realm = get_realm("zulip")
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            body=requests.exceptions.Timeout("Time is up!"),
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            sent_message_id = self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assert_length(responses.calls, 4)
+        self.assert_length(logs.output, 5)
+        self.assertEqual(
+            [
+                "INFO:root:Trigger event @**Outgoing Webhook bot** foo on foo-service timed out. Retrying",
+                f"INFO:root:Trigger event @**{bot.full_name}** foo on foo-service timed out. Retrying",
+                f"INFO:root:Trigger event @**{bot.full_name}** foo on foo-service timed out. Retrying",
+                f"INFO:root:Trigger event @**{bot.full_name}** foo on foo-service timed out. Retrying",
+                f"WARNING:root:Maximum retries exceeded for trigger:outgoing-webhook-bot@zulip.testserver event:@**{bot.full_name}** foo",
+            ],
+            logs.output,
+        )
+
+        last_message = self.get_last_message()
+        message_dict = {
+            "stream_id": get_stream("Denmark", realm).id,
+            "display_recipient": "Denmark",
+            TOPIC_NAME: "bar",
+            "id": sent_message_id,
+            "type": "stream",
+        }
+        message_url = near_message_url(realm, message_dict)
+        self.assertEqual(
+            last_message.content,
+            f"[A message]({message_url}) to your bot @_**{bot.full_name}** triggered an outgoing webhook.\n"
+            "Request timed out after 10 seconds.",
+        )
+        self.assertEqual(last_message.sender_id, bot.id)
+        assert bot.bot_owner is not None
+        self.assertEqual(last_message.recipient_id, bot.bot_owner.recipient_id)
+
+        stream_message = self.get_second_to_last_message()
+        self.assertEqual(stream_message.content, "Failure! Bot is unavailable")
+        self.assertEqual(stream_message.sender_id, bot.id)
+        self.assertEqual(stream_message.topic_name(), "bar")
+        display_recipient = get_display_recipient(stream_message.recipient)
         self.assertEqual(display_recipient, "Denmark")
 
     @responses.activate
