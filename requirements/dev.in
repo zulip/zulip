@@ -21,7 +21,7 @@ coverage<6.4.3  # undiagnosed bug
 fakeldap
 
 # For testing mock http requests
-responses
+responses<0.22.0  # https://github.com/getsentry/responses/pull/593
 
 # For sorting imports
 isort
@@ -65,7 +65,7 @@ https://github.com/zulip/zulint/archive/80a613cca5ec35bc5add7f3c70916ce269a9d27c
 cairosvg
 
 # Needed for tools/check-thirdparty
-python-debian<0.1.45  # https://salsa.debian.org/python-debian-team/python-debian/-/merge_requests/106
+python-debian
 
 # Pattern-based lint tool
 semgrep
