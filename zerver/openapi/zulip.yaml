@@ -1168,7 +1168,7 @@ paths:
                                 streams:
                                   type: array
                                   description: |
-                                    Array of stream objects, each contatining
+                                    Array of stream objects, each containing
                                     details about a stream that was deleted.
                                   items:
                                     $ref: "#/components/schemas/BasicStream"
