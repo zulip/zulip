@@ -141,7 +141,9 @@ def zulip():
             },
             {
                 "z-link": (content_html) =>
-                    `<a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">${content_html}</a>`,
+                    `<a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">${content_html.join(
+                        "",
+                    )}</a>`,
             },
         ),
     },
@@ -177,7 +179,9 @@ This text won't be visible until the user clicks.
             },
             {
                 "z-link": (content_html) =>
-                    `<a target="_blank" rel="noopener noreferrer" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables">${content_html}</a>`,
+                    `<a target="_blank" rel="noopener noreferrer" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables">${content_html.join(
+                        "",
+                    )}</a>`,
             },
         ),
     },

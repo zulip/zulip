@@ -104,7 +104,10 @@ function user_default_language_modal_post_render() {
                         defaultMessage:
                             "Saved. Please <z-link>reload</z-link> for the change to take effect.",
                     },
-                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                    {
+                        "z-link": (content_html) =>
+                            `<a class='reload_link'>${content_html.join("")}</a>`,
+                    },
                 ),
                 true,
             );
@@ -196,7 +199,10 @@ export function set_up(settings_panel) {
                         defaultMessage:
                             "Saved. Please <z-link>reload</z-link> for the change to take effect.",
                     },
-                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                    {
+                        "z-link": (content_html) =>
+                            `<a class='reload_link'>${content_html.join("")}</a>`,
+                    },
                 ),
                 true,
             );
