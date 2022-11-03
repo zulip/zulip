@@ -1,7 +1,7 @@
 <div id="organization-permissions" data-name="organization-permissions" class="settings-section">
     <form class="form-horizontal admin-realm-form org-permissions-form">
 
-        <div id="org-join" class="org-subsection-parent">
+        <div id="org-join" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Joining the organization" }}</h3>
                 <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <div id="org-user-identity" class="org-subsection-parent">
+        <div id="org-user-identity" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "User identity" }}</h3>
                 {{> settings_save_discard_widget section_name="user-identity" }}
@@ -91,7 +91,7 @@
             </div>
         </div>
 
-        <div id="org-stream-permissions" class="org-subsection-parent">
+        <div id="org-stream-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Stream permissions" }}</h3>
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
@@ -140,7 +140,7 @@
             </div>
         </div>
 
-        <div id="org-msg-editing" class="org-subsection-parent">
+        <div id="org-msg-editing" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message and topic editing" }}
                     {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
@@ -197,7 +197,7 @@
             </div>
         </div>
 
-        <div id="org-msg-deletion" class="org-subsection-parent">
+        <div id="org-msg-deletion" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message deletion" }}
                     {{> ../help_link_widget link="/help/edit-or-delete-a-message#delete-a-message" }}
@@ -240,7 +240,7 @@
             </div>
         </div>
 
-        <div id="org-other-permissions" class="org-subsection-parent">
+        <div id="org-other-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other permissions" }}</h3>
                 {{> settings_save_discard_widget section_name="other-permissions" }}

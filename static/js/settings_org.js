@@ -628,7 +628,7 @@ export function change_save_button_state($element, state) {
 
     if (state === "discarded") {
         show_hide_element($element, false, 0, () =>
-            enable_or_disable_save_button($element.closest(".org-subsection-parent")),
+            enable_or_disable_save_button($element.closest(".settings-subsection-parent")),
         );
         return;
     }
@@ -672,13 +672,13 @@ export function change_save_button_state($element, state) {
     $textEl.text(button_text);
     $saveBtn.attr("data-status", data_status);
     if (state === "unsaved") {
-        enable_or_disable_save_button($element.closest(".org-subsection-parent"));
+        enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
     }
     show_hide_element($element, is_show, 800);
 }
 
 export function save_organization_settings(data, $save_button, patch_url) {
-    const $subsection_parent = $save_button.closest(".org-subsection-parent");
+    const $subsection_parent = $save_button.closest(".settings-subsection-parent");
     const $save_btn_container = $subsection_parent.find(".save-button-controls");
     const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
     change_save_button_state($save_btn_container, "saving");
@@ -948,7 +948,7 @@ export function register_save_discard_widget_handlers(
             );
         }
 
-        const $subsection = $(e.target).closest(".org-subsection-parent");
+        const $subsection = $(e.target).closest(".settings-subsection-parent");
         save_discard_widget_status_handler($subsection, for_realm_default_settings);
         return undefined;
     });
@@ -956,7 +956,7 @@ export function register_save_discard_widget_handlers(
     $container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const $subsection = $(e.target).closest(".org-subsection-parent");
+        const $subsection = $(e.target).closest(".settings-subsection-parent");
         for (const elem of get_subsection_property_elements($subsection)) {
             discard_property_element_changes(elem, for_realm_default_settings);
         }
@@ -1072,7 +1072,7 @@ export function register_save_discard_widget_handlers(
         e.preventDefault();
         e.stopPropagation();
         const $save_button = $(e.currentTarget);
-        const $subsection_elem = $save_button.closest(".org-subsection-parent");
+        const $subsection_elem = $save_button.closest(".settings-subsection-parent");
         let extra_data = {};
 
         if (!for_realm_default_settings) {
@@ -1123,12 +1123,12 @@ export function build_page() {
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
-    $(".org-subsection-parent").on("keydown", "input", (e) => {
+    $(".settings-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
         if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             $(e.target)
-                .closest(".org-subsection-parent")
+                .closest(".settings-subsection-parent")
                 .find(".subsection-changes-save button")
                 .trigger("click");
         }
