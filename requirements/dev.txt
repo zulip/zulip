@@ -495,11 +495,13 @@ django-statsd-mozilla==0.4.0 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
     # via -r requirements/common.in
-https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs==1.12.0+git \
-    --hash=sha256:28a308876bd36375e93335f39f84d95ba9607fe659f537d4d307343c33323304
+django-stubs==1.13.0 \
+    --hash=sha256:424fdd1935f859a802365056f9ccf4db12d1d93a5ab3de6d5633dddba0c5fc76 \
+    --hash=sha256:eaecc1fc71532c1148f0c9687556651d880165476d7629bf318ff86a903a150c
     # via -r requirements/mypy.in
-https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs-ext==0.5.0+git&subdirectory=django_stubs_ext \
-    --hash=sha256:28a308876bd36375e93335f39f84d95ba9607fe659f537d4d307343c33323304
+django-stubs-ext==0.7.0 \
+    --hash=sha256:4fd8cdbc68d1a421f21bb7e0d9e76d50f6a4b504d350ba786405daf536e90c21 \
+    --hash=sha256:d729fbc7fe8970a7e26b35956c35b48502516f011d523c0577bdfb02ed956284
     # via
     #   -r requirements/common.in
     #   django-stubs

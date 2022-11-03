@@ -195,4 +195,4 @@ soupsieve
 circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
-https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs-ext==0.5.0+git&subdirectory=django_stubs_ext
+django-stubs-ext
