@@ -40,15 +40,15 @@ if settings.ZILENCER_ENABLED:
 
 @dataclass
 class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
-    """This class contains extra metadata that Zulip associated with a
-    Django HttpRequest object. See the docstring for BaseNotes for
-    details on how it works.
+    """This class contains extra metadata that Zulip associated with a Django
+    HttpRequest object. See the docstring for BaseNotes for details on how it
+    works.
 
     Note that most Optional fields will be definitely not None once
     middleware has run. In the future, we may want to express that in
-    the types by having different types EarlyRequestNotes and
-    post-middleware RequestNotes types, but for now we have a lot
-    of `assert request_notes.foo is not None` when accessing them.
+    the types by having different types EarlyRequestNotes and post-
+    middleware RequestNotes types, but for now we have a lot of `assert
+    request_notes.foo is not None` when accessing them.
     """
 
     client: Optional[Client] = None
@@ -465,10 +465,10 @@ local = threading.local()
 
 def get_current_request() -> Optional[HttpRequest]:
     """Returns the current HttpRequest object; this should only be used by
-    logging frameworks, which have no other access to the current
-    request.  All other codepaths should pass through the current
-    request object, rather than rely on this thread-local global.
+    logging frameworks, which have no other access to the current request.
 
+    All other codepaths should pass through the current request object,
+    rather than rely on this thread-local global.
     """
     return getattr(local, "request", None)
 

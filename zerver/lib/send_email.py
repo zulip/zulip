@@ -424,8 +424,8 @@ def send_email_to_billing_admins_and_realm_owners(
 
 
 def clear_scheduled_invitation_emails(email: str) -> None:
-    """Unlike most scheduled emails, invitation emails don't have an
-    existing user object to key off of, so we filter by address here."""
+    """Unlike most scheduled emails, invitation emails don't have an existing
+    user object to key off of, so we filter by address here."""
     items = ScheduledEmail.objects.filter(
         address__iexact=email, type=ScheduledEmail.INVITATION_REMINDER
     )
@@ -497,8 +497,7 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
 def send_custom_email(
     users: Iterable[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
 ) -> None:
-    """
-    Helper for `manage.py send_custom_email`.
+    """Helper for `manage.py send_custom_email`.
 
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
@@ -590,10 +589,8 @@ def send_custom_email(
 
 
 def log_email_config_errors() -> None:
-    """
-    The purpose of this function is to log (potential) config errors,
-    but without raising an exception.
-    """
+    """The purpose of this function is to log (potential) config errors, but
+    without raising an exception."""
     if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD is None:
         logger.error(
             "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD)."

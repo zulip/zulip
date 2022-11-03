@@ -154,8 +154,8 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
             self.connection.close()
 
     def ensure_queue(self, queue_name: str, callback: Callable[[BlockingChannel], object]) -> None:
-        """Ensure that a given queue has been declared, and then call
-        the callback with no arguments."""
+        """Ensure that a given queue has been declared, and then call the
+        callback with no arguments."""
         if self.connection is None or not self.connection.is_open:
             self._connect()
 

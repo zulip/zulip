@@ -31,10 +31,8 @@ where we'll want to support "subject" for a while.
 
 
 def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
-    """
-    Use this where you are getting dicts that are based off of messages
-    that may come from the outside world, especially from third party
-    APIs and bots.
+    """Use this where you are getting dicts that are based off of messages that
+    may come from the outside world, especially from third party APIs and bots.
 
     We prefer 'topic' to 'subject' here.  We expect at least one field
     to be present (or the caller must know how to handle KeyError).

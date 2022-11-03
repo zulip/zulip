@@ -113,10 +113,8 @@ def is_missed_message_address(address: str) -> bool:
 
 
 def is_mm_32_format(msg_string: Optional[str]) -> bool:
-    """
-    Missed message strings are formatted with a little "mm" prefix
-    followed by a randomly generated 32-character string.
-    """
+    """Missed message strings are formatted with a little "mm" prefix followed
+    by a randomly generated 32-character string."""
     return msg_string is not None and msg_string.startswith("mm") and len(msg_string) == 34
 
 

@@ -11,9 +11,7 @@ from zerver.models import get_realm, get_stream, get_system_bot
 
 
 def format_email_subject(email_subject: str) -> str:
-    """
-    Escape CR and LF characters.
-    """
+    """Escape CR and LF characters."""
     return email_subject.replace("\n", "\\n").replace("\r", "\\r")
 
 

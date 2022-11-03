@@ -171,13 +171,13 @@ server via `ps -ef` or reading bash history. Prefer
             raise CommandError(f"This Zulip server does not contain a user with email '{email}'")
 
     def get_client(self) -> Client:
-        """Returns a Zulip Client object to be used for things done in management commands"""
+        """Returns a Zulip Client object to be used for things done in
+        management commands."""
         return get_client("ZulipServer")
 
     def get_create_user_params(self, options: Dict[str, Any]) -> CreateUserParameters:  # nocoverage
-        """
-        Parses parameters for user creation defined in add_create_user_args.
-        """
+        """Parses parameters for user creation defined in
+        add_create_user_args."""
         if options["email"] is None:
             email = input("Email: ")
         else:

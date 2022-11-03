@@ -139,10 +139,11 @@ def cache_with_key(
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
-    Decorator argument is a function which computes a cache key
-    from the original function's arguments.  You are responsible
-    for avoiding collisions with other uses of this decorator or
-    other uses of caching."""
+    Decorator argument is a function which computes a cache key from the
+    original function's arguments.  You are responsible for avoiding
+    collisions with other uses of this decorator or other uses of
+    caching.
+    """
 
     def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         @wraps(func)
@@ -254,9 +255,8 @@ def cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[st
 
 
 def safe_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[str, Any]:
-    """Variant of cache_get_many that drops any keys that fail
-    validation, rather than throwing an exception visible to the
-    caller."""
+    """Variant of cache_get_many that drops any keys that fail validation,
+    rather than throwing an exception visible to the caller."""
     try:
         # Almost always the keys will all be correct, so we just try
         # to do normal cache_get_many to avoid the overhead of
@@ -288,8 +288,7 @@ def safe_cache_set_many(
     items: Dict[str, Any], cache_name: Optional[str] = None, timeout: Optional[int] = None
 ) -> None:
     """Variant of cache_set_many that drops saving any keys that fail
-    validation, rather than throwing an exception visible to the
-    caller."""
+    validation, rather than throwing an exception visible to the caller."""
     try:
         # Almost always the keys will all be correct, so we just try
         # to do normal cache_set_many to avoid the overhead of
@@ -780,12 +779,11 @@ class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
 def ignore_unhashable_lru_cache(
     maxsize: int = 128, typed: bool = False
 ) -> Callable[[Callable[ParamT, ReturnT]], IgnoreUnhashableLruCacheWrapper[ParamT, ReturnT]]:
-    """
-    This is a wrapper over lru_cache function. It adds following features on
+    """This is a wrapper over lru_cache function. It adds following features on
     top of lru_cache:
 
-        * It will not cache result of functions with unhashable arguments.
-        * It will clear cache whenever zerver.lib.cache.KEY_PREFIX changes.
+    * It will not cache result of functions with unhashable arguments.
+    * It will clear cache whenever zerver.lib.cache.KEY_PREFIX changes.
     """
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 

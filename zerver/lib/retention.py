@@ -99,7 +99,8 @@ def move_rows(
     returning_id: bool = False,
     **kwargs: Composable,
 ) -> List[int]:
-    """Core helper for bulk moving rows between a table and its archive table"""
+    """Core helper for bulk moving rows between a table and its archive
+    table."""
     if src_db_table is None:
         # Use base_model's db_table unless otherwise specified.
         src_db_table = base_model._meta.db_table
@@ -400,10 +401,10 @@ def archive_messages(chunk_size: int = MESSAGE_BATCH_SIZE) -> None:
 
 
 def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
-    """
-    This function constructs a list of (realm, streams_of_the_realm) tuples
-    where each realm is a Realm that requires calling the archiving functions on it,
-    and streams_of_the_realm is a list of streams of the realm to call archive_stream_messages with.
+    """This function constructs a list of (realm, streams_of_the_realm) tuples
+    where each realm is a Realm that requires calling the archiving functions
+    on it, and streams_of_the_realm is a list of streams of the realm to call
+    archive_stream_messages with.
 
     The purpose of this is performance - for servers with thousands of realms, it is important
     to fetch all this data in bulk.
@@ -618,11 +619,9 @@ def restore_all_data_from_archive(restore_manual_transactions: bool = True) -> N
 
 
 def restore_retention_policy_deletions_for_stream(stream: Stream) -> None:
-    """
-    Utility function for calling in the Django shell if a stream's policy was
-    set to something too aggressive and the administrator wants to restore
-    the messages deleted as a result.
-    """
+    """Utility function for calling in the Django shell if a stream's policy
+    was set to something too aggressive and the administrator wants to restore
+    the messages deleted as a result."""
     relevant_transactions = ArchiveTransaction.objects.filter(
         archivedmessage__recipient=stream.recipient, type=ArchiveTransaction.RETENTION_POLICY_BASED
     ).distinct("id")

@@ -8,8 +8,8 @@ _DataT = TypeVar("_DataT")
 
 class BaseNotes(Generic[_KeyT, _DataT], metaclass=ABCMeta):
     """This class defines a generic type-safe mechanism for associating
-    additional data with an object (without modifying the original
-    object via subclassing or monkey-patching).
+    additional data with an object (without modifying the original object via
+    subclassing or monkey-patching).
 
     It was originally designed to avoid monkey-patching the Django
     HttpRequest object, to which we want to associate computed state

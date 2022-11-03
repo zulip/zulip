@@ -72,12 +72,13 @@ def session_cache_items(
 
 
 def get_active_realm_ids() -> ValuesQuerySet[RealmCount, int]:
-    """For installations like Zulip Cloud hosting a lot of realms, it only makes
-    sense to do cache-filling work for realms that have any currently
-    active users/clients.  Otherwise, we end up with every single-user
-    trial organization that has ever been created costing us N streams
-    worth of cache work (where N is the number of default streams for
-    a new organization).
+    """For installations like Zulip Cloud hosting a lot of realms, it only
+    makes sense to do cache-filling work for realms that have any currently
+    active users/clients.
+
+    Otherwise, we end up with every single-user trial organization that
+    has ever been created costing us N streams worth of cache work
+    (where N is the number of default streams for a new organization).
     """
     date = timezone_now() - datetime.timedelta(days=2)
     return (

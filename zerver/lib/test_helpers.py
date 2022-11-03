@@ -140,10 +140,8 @@ class CapturedQueryDict(TypedDict):
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
 ) -> Iterator[List[CapturedQueryDict]]:
-    """
-    Allow a user to capture just the queries executed during
-    the with statement.
-    """
+    """Allow a user to capture just the queries executed during the with
+    statement."""
 
     queries: List[CapturedQueryDict] = []
 
@@ -298,8 +296,10 @@ dummy_handler = DummyHandler()
 
 
 class HostRequestMock(HttpRequest):
-    """A mock request object where get_host() works.  Useful for testing
-    routes that use Zulip's subdomains feature"""
+    """A mock request object where get_host() works.
+
+    Useful for testing routes that use Zulip's subdomains feature
+    """
 
     # The base class HttpRequest declares GET and POST as immutable
     # QueryDict objects. The implementation of HostRequestMock

@@ -40,16 +40,12 @@ def and_n_others(values: List[str], limit: int) -> str:
 
 @register.filter(name="display_list", is_safe=True)
 def display_list(values: List[str], display_limit: int) -> str:
-    """
-    Given a list of values, return a string nicely formatting those values,
+    """Given a list of values, return a string nicely formatting those values,
     summarizing when you have more than `display_limit`. Eg, for a
     `display_limit` of 3 we get the following possible cases:
 
-    Jessica
-    Jessica and Waseem
-    Jessica, Waseem, and Tim
-    Jessica, Waseem, Tim, and 1 other
-    Jessica, Waseem, Tim, and 2 others
+    Jessica Jessica and Waseem Jessica, Waseem, and Tim Jessica, Waseem,
+    Tim, and 1 other Jessica, Waseem, Tim, and 2 others
     """
     if len(values) == 1:
         # One value, show it.
@@ -88,8 +84,8 @@ def render_markdown_path(
     """Given a path to a Markdown file, return the rendered HTML.
 
     Note that this assumes that any HTML in the Markdown file is
-    trusted; it is intended to be used for documentation, not user
-    data."""
+    trusted; it is intended to be used for documentation, not user data.
+    """
     if context is None:
         context = {}
 

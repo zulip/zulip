@@ -79,10 +79,9 @@ def bulk_get_user_profile_by_id(uids: List[int]) -> Dict[int, UserDisplayRecipie
 def bulk_fetch_display_recipients(
     recipient_tuples: Set[Tuple[int, int, int]],
 ) -> Dict[int, DisplayRecipientT]:
-    """
-    Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
-    Returns dict mapping recipient_id to corresponding display_recipient
-    """
+    """Takes set of tuples of the form (recipient_id, recipient_type,
+    recipient_type_id) Returns dict mapping recipient_id to corresponding
+    display_recipient."""
 
     # Build dict mapping recipient id to (type, type_id) of the corresponding recipient:
     recipient_id_to_type_pair_dict = {
@@ -127,10 +126,10 @@ def bulk_fetch_display_recipients(
     def personal_and_huddle_query_function(
         recipient_ids: List[int],
     ) -> List[Tuple[int, List[UserDisplayRecipient]]]:
-        """
-        Return a list of tuples of the form (recipient_id, [list of UserProfiles])
-        where [list of UserProfiles] has users corresponding to the recipient,
-        so the receiving userin Recipient.PERSONAL case,
+        """Return a list of tuples of the form (recipient_id, [list of
+        UserProfiles]) where [list of UserProfiles] has users corresponding to
+        the recipient, so the receiving userin Recipient.PERSONAL case,
+
         or in Personal.HUDDLE case - users in the huddle.
         This is a pretty hacky return value, but it needs to be in this form,
         for this function to work as the query_function in generic_bulk_cached_fetch.
@@ -180,10 +179,8 @@ def bulk_fetch_display_recipients(
     def personal_and_huddle_cache_transformer(
         db_object: Tuple[int, List[UserDisplayRecipient]],
     ) -> List[UserDisplayRecipient]:
-        """
-        Takes an element of the list returned by the query_function, maps it to the final
-        display_recipient list.
-        """
+        """Takes an element of the list returned by the query_function, maps it
+        to the final display_recipient list."""
         user_profile_list = db_object[1]
         display_recipient = user_profile_list
 

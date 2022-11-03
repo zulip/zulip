@@ -6,8 +6,8 @@ from django.conf import settings
 
 
 def initial_password(email: str) -> Optional[str]:
-    """Given an email address, returns the initial password for that account, as
-    created by populate_db."""
+    """Given an email address, returns the initial password for that account,
+    as created by populate_db."""
 
     if settings.INITIAL_PASSWORD_SALT is not None:
         # We check settings.DEVELOPMENT, not settings.PRODUCTION,

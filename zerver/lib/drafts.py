@@ -47,10 +47,13 @@ draft_dict_validator = check_dict_only(
 def further_validated_draft_dict(
     draft_dict: Dict[str, Any], user_profile: UserProfile
 ) -> Dict[str, Any]:
-    """Take a draft_dict that was already validated by draft_dict_validator then
-    further sanitize, validate, and transform it. Ultimately return this "further
-    validated" draft dict. It will have a slightly different set of keys the values
-    for which can be used to directly create a Draft object."""
+    """Take a draft_dict that was already validated by draft_dict_validator
+    then further sanitize, validate, and transform it.
+
+    Ultimately return this "further validated" draft dict. It will have
+    a slightly different set of keys the values for which can be used to
+    directly create a Draft object.
+    """
 
     content = normalize_body(draft_dict["content"])
 
@@ -107,10 +110,13 @@ def draft_endpoint(
 
 
 def do_create_drafts(draft_dicts: List[Dict[str, Any]], user_profile: UserProfile) -> List[Draft]:
-    """Create drafts in bulk for a given user based on the draft dicts. Since
-    currently, the only place this method is being used (apart from tests) is from
-    the create_draft view, we assume that the drafts_dicts are syntactically valid
-    (i.e. they satisfy the draft_dict_validator)."""
+    """Create drafts in bulk for a given user based on the draft dicts.
+
+    Since currently, the only place this method is being used (apart
+    from tests) is from the create_draft view, we assume that the
+    drafts_dicts are syntactically valid (i.e. they satisfy the
+    draft_dict_validator).
+    """
     draft_objects = []
     for draft_dict in draft_dicts:
         valid_draft_dict = further_validated_draft_dict(draft_dict, user_profile)
@@ -137,9 +143,12 @@ def do_create_drafts(draft_dicts: List[Dict[str, Any]], user_profile: UserProfil
 
 
 def do_edit_draft(draft_id: int, draft_dict: Dict[str, Any], user_profile: UserProfile) -> None:
-    """Edit/update a single draft for a given user. Since the only place this method is being
-    used from (apart from tests) is the edit_draft view, we assume that the drafts_dict is
-    syntactically valid (i.e. it satisfies the draft_dict_validator)."""
+    """Edit/update a single draft for a given user.
+
+    Since the only place this method is being used from (apart from
+    tests) is the edit_draft view, we assume that the drafts_dict is
+    syntactically valid (i.e. it satisfies the draft_dict_validator).
+    """
     try:
         draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)
     except Draft.DoesNotExist:

@@ -406,17 +406,16 @@ def bulk_write_realm_audit_logs(users: List[UserProfile]) -> None:
 def get_modified_streams(
     user_ids: List[int], cutoff_date: datetime.datetime
 ) -> Dict[int, Set[int]]:
-    """Skipping streams where the user's subscription status has changed
-    when constructing digests is critical to ensure correctness for
-    streams without shared history, guest users, and long-term idle
-    users, because it means that every user has the same view of the
-    history of a given stream whose message history is being included
-    (and thus we can share a lot of work).
+    """Skipping streams where the user's subscription status has changed when
+    constructing digests is critical to ensure correctness for streams without
+    shared history, guest users, and long-term idle users, because it means
+    that every user has the same view of the history of a given stream whose
+    message history is being included (and thus we can share a lot of work).
 
-    The downside is that newly created streams are never included in
-    the first digest email after their creation.  Should we wish to
-    change that, we will need to be very careful to avoid creating
-    bugs for any of those classes of users.
+    The downside is that newly created streams are never included in the
+    first digest email after their creation.  Should we wish to change
+    that, we will need to be very careful to avoid creating bugs for any
+    of those classes of users.
     """
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,

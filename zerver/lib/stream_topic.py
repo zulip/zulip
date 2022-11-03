@@ -4,11 +4,11 @@ from zerver.models import UserTopic
 
 
 class StreamTopicTarget:
-    """
-    This class is designed to help us move to a
-    StreamTopic table or something similar.  It isolates
-    places where we are still using `topic_name` as
-    a key into tables.
+    """This class is designed to help us move to a StreamTopic table or
+    something similar.
+
+    It isolates places where we are still using `topic_name` as a key
+    into tables.
     """
 
     def __init__(self, stream_id: int, topic_name: str) -> None:

@@ -24,10 +24,9 @@ from zerver.models import (
 
 
 class ZulipSCIMUser(SCIMUser):
-    """With django-scim2, the core of a project's SCIM implementation is
-    this user adapter class, which defines how to translate between the
-    concepts of users in the SCIM specification and the Zulip users.
-    """
+    """With django-scim2, the core of a project's SCIM implementation is this
+    user adapter class, which defines how to translate between the concepts of
+    users in the SCIM specification and the Zulip users."""
 
     id_field = "id"
 
@@ -61,8 +60,7 @@ class ZulipSCIMUser(SCIMUser):
 
     @property
     def display_name(self) -> str:
-        """
-        Return the displayName of the user per the SCIM spec.
+        """Return the displayName of the user per the SCIM spec.
 
         Overridden because UserProfile uses the .full_name attribute,
         while the superclass expects .first_name and .last_name.
@@ -70,9 +68,8 @@ class ZulipSCIMUser(SCIMUser):
         return self.obj.full_name
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Return a ``dict`` conforming to the SCIM User Schema,
-        ready for conversion to a JSON object.
+        """Return a ``dict`` conforming to the SCIM User Schema, ready for
+        conversion to a JSON object.
 
         The attribute names appearing in the dict are those defined in the SCIM User Schema:
         https://datatracker.ietf.org/doc/html/rfc7643#section-4.1
@@ -118,11 +115,11 @@ class ZulipSCIMUser(SCIMUser):
 
     def from_dict(self, d: Dict[str, Any]) -> None:
         """Consume a dictionary conforming to the SCIM User Schema. The
-        dictionary was originally submitted as JSON by the client in
-        PUT (update a user) and POST (create a new user) requests.  A
-        PUT request tells us to update User attributes to match those
-        passed in the dict.  A POST request tells us to create a new
-        User with attributes as specified in the dict.
+        dictionary was originally submitted as JSON by the client in PUT
+        (update a user) and POST (create a new user) requests.  A PUT request
+        tells us to update User attributes to match those passed in the dict.
+        A POST request tells us to create a new User with attributes as
+        specified in the dict.
 
         The superclass implements some very basic default behavior,
         that doesn't support changing attributes via our actions.py
@@ -190,14 +187,15 @@ class ZulipSCIMUser(SCIMUser):
         value: Union[str, List[object], Dict[AttrPath, object]],
         operation: Any,
     ) -> None:
-        """
-        PATCH requests specify a list of operations of types "add", "remove", "replace".
-        So far we only implement "replace" as that should be sufficient.
+        """PATCH requests specify a list of operations of types "add",
+        "remove", "replace". So far we only implement "replace" as that should
+        be sufficient.
 
-        This method is forked from the superclass and is called to handle "replace"
-        PATCH operations. Such an operation tells us to change the values
-        of a User's attributes as specified. The superclass implements a very basic
-        behavior in this method and is meant to be overridden, since this is an adapter class.
+        This method is forked from the superclass and is called to
+        handle "replace" PATCH operations. Such an operation tells us to
+        change the values of a User's attributes as specified. The
+        superclass implements a very basic behavior in this method and
+        is meant to be overridden, since this is an adapter class.
         """
         if not isinstance(value, dict):
             # Restructure for use in loop below. Taken from the
@@ -224,11 +222,9 @@ class ZulipSCIMUser(SCIMUser):
         self.save()
 
     def save(self) -> None:
-        """
-        This method is called at the end of operations modifying a user,
-        and is responsible for actually applying the requested changes,
-        writing them to the database.
-        """
+        """This method is called at the end of operations modifying a user, and
+        is responsible for actually applying the requested changes, writing
+        them to the database."""
         realm = RequestNotes.get_notes(self._request).realm
         assert realm is not None
 
@@ -307,8 +303,8 @@ class ZulipSCIMUser(SCIMUser):
 def get_extra_model_filter_kwargs_getter(
     model: Type[models.Model],
 ) -> Callable[[HttpRequest, Any, Any], Dict[str, object]]:
-    """Registered as GET_EXTRA_MODEL_FILTER_KWARGS_GETTER in our
-    SCIM configuration.
+    """Registered as GET_EXTRA_MODEL_FILTER_KWARGS_GETTER in our SCIM
+    configuration.
 
     Returns a function which generates additional kwargs
     to add to QuerySet's .filter() when fetching a UserProfile
@@ -337,8 +333,8 @@ def get_extra_model_filter_kwargs_getter(
 def base_scim_location_getter(request: HttpRequest, *args: Any, **kwargs: Any) -> str:
     """Used as the base url for constructing the Location of a SCIM resource.
 
-    Since SCIM synchronization is scoped to an individual realm, we
-    need these locations to be namespaced within the realm's domain
+    Since SCIM synchronization is scoped to an individual realm, we need
+    these locations to be namespaced within the realm's domain
     namespace, which is conveniently accessed via realm.uri.
     """
 
@@ -349,8 +345,7 @@ def base_scim_location_getter(request: HttpRequest, *args: Any, **kwargs: Any) -
 
 
 class ConflictError(scim_exceptions.IntegrityError):
-    """
-    Per https://datatracker.ietf.org/doc/html/rfc7644#section-3.3
+    """Per https://datatracker.ietf.org/doc/html/rfc7644#section-3.3.
 
     If the service provider determines that the creation of the requested
     resource conflicts with existing resources (e.g., a "User" resource

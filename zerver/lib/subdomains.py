@@ -10,7 +10,6 @@ from zerver.models import Realm, UserProfile
 
 
 def get_subdomain(request: HttpRequest) -> str:
-
     # The HTTP spec allows, but doesn't require, a client to omit the
     # port in the `Host` header if it's "the default port for the
     # service requested", i.e. typically either 443 or 80; and

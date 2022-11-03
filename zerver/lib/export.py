@@ -403,10 +403,8 @@ def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> N
 
 
 def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
-    """
-    Takes a Django query and returns a JSONable list
-    of dictionaries corresponding to the database rows.
-    """
+    """Takes a Django query and returns a JSONable list of dictionaries
+    corresponding to the database rows."""
     rows = []
     for instance in query:
         data = model_to_dict(instance, exclude=exclude)
@@ -450,10 +448,9 @@ def listify_bithandler_fields(data: TableData, table: TableName) -> None:
 
 
 class Config:
-    """A Config object configures a single table for exporting (and, maybe
-    some day importing as well.  This configuration defines what
-    process needs to be followed to correctly extract the set of
-    objects to export.
+    """A Config object configures a single table for exporting (and, maybe some
+    day importing as well.  This configuration defines what process needs to be
+    followed to correctly extract the set of objects to export.
 
     You should never mutate Config objects as part of the export;
     instead use the data to determine how you populate other
@@ -462,7 +459,6 @@ class Config:
     There are parent/children relationships between Config objects.
     The parent should be instantiated first.  The child will
     append itself to the parent's list of children.
-
     """
 
     def __init__(
@@ -902,10 +898,8 @@ def get_realm_config() -> Config:
 
 
 def add_user_profile_child_configs(user_profile_config: Config) -> None:
-    """
-    We add tables here that are keyed by user, and for which
-    we fetch rows using the same scheme whether we are
-    exporting a realm or a single user.
+    """We add tables here that are keyed by user, and for which we fetch rows
+    using the same scheme whether we are exporting a realm or a single user.
 
     For any table where there is nuance between how you
     fetch for realms vs. single users, it's best to just
@@ -1073,9 +1067,10 @@ def fetch_attachment_data(
 
 
 def custom_fetch_realm_audit_logs_for_user(response: TableData, context: Context) -> None:
-    """To be expansive, we include audit log entries for events that
-    either modified the target user or where the target user modified
-    something (E.g. if they changed the settings for a stream).
+    """To be expansive, we include audit log entries for events that either
+    modified the target user or where the target user modified something (E.g.
+
+    if they changed the settings for a stream).
     """
     user = context["user"]
     query = RealmAuditLog.objects.filter(Q(modified_user_id=user.id) | Q(acting_user_id=user.id))
@@ -1089,7 +1084,6 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
 
 
 def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
-
     realm = context["realm"]
     user_profile_ids = {r["id"] for r in response["zerver_userprofile"]}
 
@@ -1158,12 +1152,12 @@ def fetch_usermessages(
 def export_usermessages_batch(
     input_path: Path, output_path: Path, consent_message_id: Optional[int] = None
 ) -> None:
-    """As part of the system for doing parallel exports, this runs on one
-    batch of Message objects and adds the corresponding UserMessage
-    objects. (This is called by the export_usermessage_batch
-    management command).
+    """As part of the system for doing parallel exports, this runs on one batch
+    of Message objects and adds the corresponding UserMessage objects. (This is
+    called by the export_usermessage_batch management command).
 
-    See write_message_partial_for_query for more context."""
+    See write_message_partial_for_query for more context.
+    """
     assert input_path.endswith(".partial") or input_path.endswith(".locked")
     assert output_path.endswith(".json")
 
@@ -2002,7 +1996,6 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
 
 
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
-
     config = get_single_user_config()
     export_from_config(
         response=response,
@@ -2088,13 +2081,11 @@ def get_single_user_config() -> Config:
 
 
 def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> List[int]:
-    """
-    Use this function if you need a HUGE number of ids from
-    the database, and you don't mind a few extra trips.  Particularly
-    for exports, we don't really care about a little extra time
-    to finish the export--the much bigger concern is that we don't
-    want to overload our database all at once, nor do we want to
-    keep a whole bunch of Django objects around in memory.
+    """Use this function if you need a HUGE number of ids from the database,
+    and you don't mind a few extra trips.  Particularly for exports, we don't
+    really care about a little extra time to finish the export--the much bigger
+    concern is that we don't want to overload our database all at once, nor do
+    we want to keep a whole bunch of Django objects around in memory.
 
     So our general process is to call this function first, and then
     we call chunkify to break our ids into small chunks for "fat query"

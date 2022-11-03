@@ -308,10 +308,8 @@ class HubotIntegration(Integration):
 
 
 class EmbeddedBotIntegration(Integration):
-    """
-    This class acts as a registry for bots verified as safe
-    and valid such that these are capable of being deployed on the server.
-    """
+    """This class acts as a registry for bots verified as safe and valid such
+    that these are capable of being deployed on the server."""
 
     DEFAULT_CLIENT_NAME = "Zulip{name}EmbeddedBot"
 

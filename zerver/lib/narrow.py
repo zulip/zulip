@@ -214,9 +214,7 @@ def ts_locs_array(
 
 
 class NarrowBuilder:
-    """
-    Build up a SQLAlchemy query to find messages matching a narrow.
-    """
+    """Build up a SQLAlchemy query to find messages matching a narrow."""
 
     # This class has an important security invariant:
     #
@@ -248,13 +246,14 @@ class NarrowBuilder:
         self.is_web_public_query = is_web_public_query
 
     def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
-        """
-        Extend the given query to one narrowed by the given term, and return the result.
+        """Extend the given query to one narrowed by the given term, and return
+        the result.
 
-        This method satisfies an important security property: the returned
-        query never includes a message that the given query didn't.  In
-        particular, if the given query will only find messages that a given
-        user can legitimately see, then so will the returned query.
+        This method satisfies an important security property: the
+        returned query never includes a message that the given query
+        didn't.  In particular, if the given query will only find
+        messages that a given user can legitimately see, then so will
+        the returned query.
         """
         # To maintain the security property, we hold all the `by_*`
         # methods to the same criterion.  See the class's block comment
@@ -330,12 +329,11 @@ class NarrowBuilder:
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
     def _pg_re_escape(self, pattern: str) -> str:
-        """
-        Escape user input to place in a regex
+        """Escape user input to place in a regex.
 
-        Python's re.escape escapes Unicode characters in a way which PostgreSQL
-        fails on, '\u03bb' to '\\\u03bb'. This function will correctly escape
-        them for PostgreSQL, '\u03bb' to '\\u03bb'.
+        Python's re.escape escapes Unicode characters in a way which
+        PostgreSQL fails on, '\u03bb' to '\\\u03bb'. This function will
+        correctly escape them for PostgreSQL, '\u03bb' to '\\u03bb'.
         """
         s = list(pattern)
         for i, c in enumerate(s):
@@ -490,10 +488,8 @@ class NarrowBuilder:
                     realm=self.realm,
                 )
             else:
-                """
-                This is where we handle passing a list of user IDs for the narrow, which is the
-                preferred/cleaner API.
-                """
+                """This is where we handle passing a list of user IDs for the
+                narrow, which is the preferred/cleaner API."""
                 user_profiles = get_user_profiles_by_ids(
                     user_ids=operand,
                     realm=self.realm,
@@ -642,7 +638,6 @@ class NarrowBuilder:
 
 
 def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
-
     data = orjson.loads(json)
     if not isinstance(data, list):
         raise ValueError("argument is not a list")

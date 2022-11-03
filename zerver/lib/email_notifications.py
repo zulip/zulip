@@ -171,10 +171,8 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
 
 
 def add_quote_prefix_in_text(content: str) -> str:
-    """
-    We add quote prefix ">" to each line of the message in plain text
-    format, such that email clients render the message as quote.
-    """
+    """We add quote prefix ">" to each line of the message in plain text
+    format, such that email clients render the message as quote."""
     lines = content.split("\n")
     output = []
     for line in lines:
@@ -188,10 +186,11 @@ def build_message_list(
     messages: List[Message],
     stream_map: Dict[int, Stream],  # only needs id, name
 ) -> List[Dict[str, Any]]:
-    """
-    Builds the message list object for the message notification email template.
-    The messages are collapsed into per-recipient and per-sender blocks, like
-    our web interface
+    """Builds the message list object for the message notification email
+    template.
+
+    The messages are collapsed into per-recipient and per-sender blocks,
+    like our web interface
     """
     messages_to_render: List[Dict[str, Any]] = []
 
@@ -333,9 +332,10 @@ def get_narrow_url(
     display_recipient: Optional[DisplayRecipientT] = None,
     stream: Optional[Stream] = None,
 ) -> str:
-    """The display_recipient and stream arguments are optional.  If not
-    provided, we'll compute them from the message; they exist as a
-    performance optimization for cases where the caller needs those
+    """The display_recipient and stream arguments are optional.
+
+    If not provided, we'll compute them from the message; they exist as
+    a performance optimization for cases where the caller needs those
     data too.
     """
     if message.recipient.type == Recipient.PERSONAL:
@@ -374,8 +374,8 @@ def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -
 def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: List[Dict[str, Any]], message_count: int
 ) -> None:
-    """
-    Send a reminder email to a user if she's missed some PMs by being offline.
+    """Send a reminder email to a user if she's missed some PMs by being
+    offline.
 
     The email will have its reply to address set to a limited used email
     address that will send a Zulip message to the correct recipient. This

@@ -8,10 +8,10 @@ from zerver.models import UserMessage
 
 
 class UserMessageLite:
-    """
-    The Django ORM is too slow for bulk operations.  This class
-    is optimized for the simple use case of inserting a bunch of
-    rows into zerver_usermessage.
+    """The Django ORM is too slow for bulk operations.
+
+    This class is optimized for the simple use case of inserting a bunch
+    of rows into zerver_usermessage.
     """
 
     def __init__(self, user_profile_id: int, message_id: int, flags: int) -> None:
@@ -24,11 +24,11 @@ class UserMessageLite:
 
 
 def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
-    """
-    Doing bulk inserts this way is much faster than using Django,
-    since we don't have any ORM overhead.  Profiling with 1000
-    users shows a speedup of 0.436 -> 0.027 seconds, so we're
-    talking about a 15x speedup.
+    """Doing bulk inserts this way is much faster than using Django, since we
+    don't have any ORM overhead.
+
+    Profiling with 1000 users shows a speedup of 0.436 -> 0.027 seconds,
+    so we're talking about a 15x speedup.
     """
     if not ums:
         return

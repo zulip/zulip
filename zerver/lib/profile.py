@@ -9,11 +9,10 @@ ReturnT = TypeVar("ReturnT")
 
 
 def profiled(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
-    """
-    This decorator should obviously be used only in a dev environment.
-    It works best when surrounding a function that you expect to be
-    called once.  One strategy is to write a backend test and wrap the
-    test case with the profiled decorator.
+    """This decorator should obviously be used only in a dev environment. It
+    works best when surrounding a function that you expect to be called once.
+    One strategy is to write a backend test and wrap the test case with the
+    profiled decorator.
 
     You can run a single test case like this:
 
@@ -23,7 +22,6 @@ def profiled(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
     Then view the results like this:
 
         ./tools/show-profile-results test_ratelimit_decrease.profile
-
     """
 
     @wraps(func)

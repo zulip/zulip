@@ -20,9 +20,8 @@ ResultT = TypeVar("ResultT")
 
 
 def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
-    """Call the function in a separate thread.
-    Return its return value, or raise an exception,
-    within approximately 'timeout' seconds.
+    """Call the function in a separate thread. Return its return value, or
+    raise an exception, within approximately 'timeout' seconds.
 
     The function may receive a TimeoutExpired exception
     anywhere in its code, which could have arbitrary
@@ -33,7 +32,8 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
 
     This may also fail to interrupt functions which are
     stuck in a long-running primitive interpreter
-    operation."""
+    operation.
+    """
 
     class TimeoutThread(threading.Thread):
         def __init__(self) -> None:

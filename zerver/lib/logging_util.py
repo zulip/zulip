@@ -15,18 +15,17 @@ from django.utils.timezone import now as timezone_now
 
 class _RateLimitFilter:
     """This class is designed to rate-limit Django error reporting
-    notifications so that it won't send thousands of emails if the
-    database or cache is completely down.  It uses a remote shared
-    cache (shared by all Django processes) for its default behavior
-    (so that the deduplication is global, not per-process), and a
-    local in-process cache for when it can't access the remote cache.
+    notifications so that it won't send thousands of emails if the database or
+    cache is completely down.  It uses a remote shared cache (shared by all
+    Django processes) for its default behavior (so that the deduplication is
+    global, not per-process), and a local in-process cache for when it can't
+    access the remote cache.
 
     This is critical code because it is called every time
     `logging.error` or `logging.exception` (or an exception) happens
     in the codebase.
 
     Adapted from https://djangosnippets.org/snippets/2242/.
-
     """
 
     last_error = datetime.min.replace(tzinfo=timezone.utc)

@@ -54,14 +54,12 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def make_request(
         self, base_url: str, event: Dict[str, Any], realm: Realm
     ) -> Optional[Response]:
-        """
-        We send a simple version of the message to outgoing
-        webhooks, since most of them really only need
-        `content` and a few other fields.  We may eventually
-        allow certain bots to get more information, but
-        that's not a high priority.  We do send the gravatar
-        info to the clients (so they don't have to compute
-        it themselves).
+        """We send a simple version of the message to outgoing webhooks, since
+        most of them really only need `content` and a few other fields.
+
+        We may eventually allow certain bots to get more information,
+        but that's not a high priority.  We do send the gravatar info to
+        the clients (so they don't have to compute it themselves).
         """
         message_dict = MessageDict.finalize_payload(
             event["message"],
@@ -164,7 +162,6 @@ def get_service_interface_class(interface: str) -> Any:
 
 
 def get_outgoing_webhook_service_handler(service: Service) -> Any:
-
     service_interface_class = get_service_interface_class(service.interface_name())
     service_interface = service_interface_class(
         token=service.token, user_profile=service.user_profile, service_name=service.name
@@ -175,8 +172,7 @@ def get_outgoing_webhook_service_handler(service: Service) -> Any:
 def send_response_message(
     bot_id: int, message_info: Dict[str, Any], response_data: Dict[str, Any]
 ) -> None:
-    """
-    bot_id is the user_id of the bot sending the response
+    """bot_id is the user_id of the bot sending the response.
 
     message_info is used to address the message and should have these fields:
         type - "stream" or "private"
@@ -289,10 +285,11 @@ def notify_bot_owner(
 
 def request_retry(event: Dict[str, Any], failure_message: Optional[str] = None) -> None:
     def failure_processor(event: Dict[str, Any]) -> None:
-        """
-        The name of the argument is 'event' on purpose. This argument will hide
-        the 'event' argument of the request_retry function. Keeping the same name
-        results in a smaller diff.
+        """The name of the argument is 'event' on purpose.
+
+        This argument will hide the 'event' argument of the
+        request_retry function. Keeping the same name results in a
+        smaller diff.
         """
         bot_user = get_user_profile_by_id(event["user_profile_id"])
         fail_with_message(event, "Bot is unavailable")

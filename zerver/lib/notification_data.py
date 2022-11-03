@@ -194,8 +194,8 @@ def get_user_group_mentions_data(
 def get_mentioned_user_group_name(
     messages: List[Dict[str, Any]], user_profile: UserProfile
 ) -> Optional[str]:
-    """Returns the user group name to display in the email notification
-    if user group(s) are mentioned.
+    """Returns the user group name to display in the email notification if user
+    group(s) are mentioned.
 
     This implements the same algorithm as get_user_group_mentions_data
     in zerver/lib/notification_data.py, but we're passed a list of

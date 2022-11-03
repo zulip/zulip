@@ -1,7 +1,6 @@
-"""
-This module sets up a scheme for validating that arbitrary Python
-objects are correctly typed.  It is totally decoupled from Django,
-composable, easily wrapped, and easily extended.
+"""This module sets up a scheme for validating that arbitrary Python objects
+are correctly typed.  It is totally decoupled from Django, composable, easily
+wrapped, and easily extended.
 
 A validator takes two parameters--var_name and val--and raises an
 error if val is not the correct type.  The var_name parameter is used
@@ -25,7 +24,6 @@ A simple example of composition is this:
 
 To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
-
 """
 import re
 import sys
@@ -324,8 +322,7 @@ def check_dict_only(
 
 
 def check_union(allowed_type_funcs: Collection[Validator[ResultT]]) -> Validator[ResultT]:
-    """
-    Use this validator if an argument is of a variable type (e.g. processing
+    """Use this validator if an argument is of a variable type (e.g. processing
     properties that might be strings or booleans).
 
     `allowed_type_funcs`: the check_* validator functions for the possible data
@@ -389,10 +386,8 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
 
 
 def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[str, str]]:
-    """
-    This function is used to validate the data sent to the server while
-    creating/editing choices of the choice field in Organization settings.
-    """
+    """This function is used to validate the data sent to the server while
+    creating/editing choices of the choice field in Organization settings."""
     validator = check_dict_only(
         [
             ("text", check_required_string),
@@ -420,9 +415,10 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
 
 
 def validate_select_field(var_name: str, field_data: str, value: object) -> str:
-    """
-    This function is used to validate the value selected by the user against a
-    choice field. This is not used to validate admin data.
+    """This function is used to validate the value selected by the user against
+    a choice field.
+
+    This is not used to validate admin data.
     """
     s = check_string(var_name, value)
     field_data_dict = orjson.loads(field_data)

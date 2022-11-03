@@ -77,9 +77,7 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
 class RestartEventException(Exception):
-    """
-    Special error for handling restart events in apply_events.
-    """
+    """Special error for handling restart events in apply_events."""
 
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
@@ -91,12 +89,11 @@ def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
 
 
 def always_want(msg_type: str) -> bool:
-    """
-    This function is used as a helper in
-    fetch_initial_state_data, when the user passes
-    in None for event_types, and we want to fetch
-    info for every event type.  Defining this at module
-    level makes it easier to mock.
+    """This function is used as a helper in fetch_initial_state_data, when the
+    user passes in None for event_types, and we want to fetch info for every
+    event type.
+
+    Defining this at module level makes it easier to mock.
     """
     return True
 
@@ -115,9 +112,9 @@ def fetch_initial_state_data(
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """When `event_types` is None, fetches the core data powering the
-    web app's `page_params` and `/api/v1/register` (for mobile/terminal
-    apps).  Can also fetch a subset as determined by `event_types`.
+    """When `event_types` is None, fetches the core data powering the web app's
+    `page_params` and `/api/v1/register` (for mobile/terminal apps).  Can also
+    fetch a subset as determined by `event_types`.
 
     The user_profile=None code path is used for logged-out public
     access to streams with is_web_public=True.

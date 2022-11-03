@@ -136,9 +136,10 @@ def check_send_webhook_message(
 
 
 def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
-    """This method can be used to standardize a dictionary of headers with
-    the standard format that Django expects. For reference, refer to:
-    https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpRequest.headers
+    """This method can be used to standardize a dictionary of headers with the
+    standard format that Django expects. For reference, refer to:
+    https://docs.djangoproject.com/en/3.2/ref/request-
+    response/#django.http.HttpRequest.headers.
 
     NOTE: Historically, Django's headers were not case-insensitive. We're still
     capitalizing our headers to make it easier to compare/search later if required.
@@ -182,11 +183,10 @@ def validate_extract_webhook_http_header(
 
 
 def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["str", "str"]:
-    """For integrations that require custom HTTP headers for some (or all)
-    of their test fixtures, this method will call a specially named
-    function from the target integration module to determine what set
-    of HTTP headers goes with the given test fixture.
-    """
+    """For integrations that require custom HTTP headers for some (or all) of
+    their test fixtures, this method will call a specially named function from
+    the target integration module to determine what set of HTTP headers goes
+    with the given test fixture."""
     view_module_name = f"zerver.webhooks.{integration_name}.view"
     try:
         # TODO: We may want to migrate to a more explicit registration
@@ -200,8 +200,8 @@ def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["
 
 def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict[str, str]]:
     """If an integration requires an event type kind of HTTP header which can
-    be easily (statically) determined, then name the fixtures in the format
-    of "header_value__other_details" or even "header_value" and the use this
+    be easily (statically) determined, then name the fixtures in the format of
+    "header_value__other_details" or even "header_value" and the use this
     method in the headers.py file for the integration."""
 
     def fixture_to_headers(filename: str) -> Dict[str, str]:
@@ -218,7 +218,9 @@ def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
     """If an integration requires time input in unix milliseconds, this helper
     checks to ensure correct type and will catch any errors related to type or
     value and raise a JsonableError.
-    Returns a datetime representing the time."""
+
+    Returns a datetime representing the time.
+    """
     try:
         # timestamps are in milliseconds so divide by 1000
         seconds = milliseconds / 1000

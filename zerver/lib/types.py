@@ -79,9 +79,7 @@ class UnspecifiedValue:
 
 
 class EditHistoryEvent(TypedDict, total=False):
-    """
-    Database format for edit history events.
-    """
+    """Database format for edit history events."""
 
     # user_id is null for precisely those edit history events
     # predating March 2017, when we started tracking the person who
@@ -99,9 +97,7 @@ class EditHistoryEvent(TypedDict, total=False):
 
 
 class FormattedEditHistoryEvent(TypedDict, total=False):
-    """
-    Extended format used in the edit history endpoint.
-    """
+    """Extended format used in the edit history endpoint."""
 
     # See EditHistoryEvent for details on when this can be null.
     user_id: Optional[int]
@@ -118,9 +114,8 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
 
 
 class UserTopicDict(TypedDict, total=False):
-    """Dictionary containing fields fetched from the UserTopic model that
-    are needed to encode the UserTopic object for the API.
-    """
+    """Dictionary containing fields fetched from the UserTopic model that are
+    needed to encode the UserTopic object for the API."""
 
     stream_id: int
     stream__name: str
@@ -131,9 +126,8 @@ class UserTopicDict(TypedDict, total=False):
 
 # This next batch of types is for Stream/Subscription objects.
 class RawStreamDict(TypedDict):
-    """Dictionary containing fields fetched from the Stream model that
-    are needed to encode the stream for the API.
-    """
+    """Dictionary containing fields fetched from the Stream model that are
+    needed to encode the stream for the API."""
 
     can_remove_subscribers_group_id: int
     date_created: datetime.datetime
@@ -151,9 +145,8 @@ class RawStreamDict(TypedDict):
 
 
 class RawSubscriptionDict(TypedDict):
-    """Dictionary containing fields fetched from the Subscription model
-    that are needed to encode the subscription for the API.
-    """
+    """Dictionary containing fields fetched from the Subscription model that
+    are needed to encode the subscription for the API."""
 
     active: bool
     audible_notifications: Optional[bool]
@@ -168,11 +161,9 @@ class RawSubscriptionDict(TypedDict):
 
 
 class SubscriptionStreamDict(TypedDict):
-    """Conceptually, the union of RawSubscriptionDict and RawStreamDict
-    (i.e. containing all the user's personal settings for the stream
-    as well as the stream's global settings), with a few additional
-    computed fields.
-    """
+    """Conceptually, the union of RawSubscriptionDict and RawStreamDict (i.e.
+    containing all the user's personal settings for the stream as well as the
+    stream's global settings), with a few additional computed fields."""
 
     audible_notifications: Optional[bool]
     can_remove_subscribers_group_id: int
@@ -221,8 +212,10 @@ class NeverSubscribedStreamDict(TypedDict):
 
 class APIStreamDict(TypedDict):
     """Stream information provided to Zulip clients as a dictionary via API.
-    It should contain all the fields specified in `zerver.models.Stream.API_FIELDS`
-    with few exceptions and possible additional fields.
+
+    It should contain all the fields specified in
+    `zerver.models.Stream.API_FIELDS` with few exceptions and possible
+    additional fields.
     """
 
     can_remove_subscribers_group_id: int
@@ -243,9 +236,9 @@ class APIStreamDict(TypedDict):
 
 
 class APISubscriptionDict(APIStreamDict):
-    """Similar to StreamClientDict, it should contain all the fields specified in
-    `zerver.models.Subscription.API_FIELDS` and several additional fields.
-    """
+    """Similar to StreamClientDict, it should contain all the fields specified
+    in `zerver.models.Subscription.API_FIELDS` and several additional
+    fields."""
 
     audible_notifications: Optional[bool]
     color: str

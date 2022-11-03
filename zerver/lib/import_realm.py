@@ -164,12 +164,10 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
 
 
 def fix_upload_links(data: TableData, message_table: TableName) -> None:
-    """
-    Because the URLs for uploaded files encode the realm ID of the
-    organization being imported (which is only determined at import
-    time), we need to rewrite the URLs of links to uploaded files
-    during the import process.
-    """
+    """Because the URLs for uploaded files encode the realm ID of the
+    organization being imported (which is only determined at import time), we
+    need to rewrite the URLs of links to uploaded files during the import
+    process."""
     for message in data[message_table]:
         if message["has_attachment"] is True:
             for key, value in path_maps["attachment_path"].items():
@@ -191,15 +189,14 @@ def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Real
 
 
 def create_subscription_events(data: TableData, realm_id: int) -> None:
-    """
-    When the export data doesn't contain the table `zerver_realmauditlog`,
-    this function creates RealmAuditLog objects for `subscription_created`
-    type event for all the existing Stream subscriptions.
+    """When the export data doesn't contain the table `zerver_realmauditlog`,
+    this function creates RealmAuditLog objects for `subscription_created` type
+    event for all the existing Stream subscriptions.
 
     This is needed for all the export tools which do not include the
-    table `zerver_realmauditlog` (Slack, Gitter, etc.) because the appropriate
-    data about when a user was subscribed is not exported by the third-party
-    service.
+    table `zerver_realmauditlog` (Slack, Gitter, etc.) because the
+    appropriate data about when a user was subscribed is not exported by
+    the third-party service.
     """
     all_subscription_logs = []
 
@@ -234,8 +231,8 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
 
 
 def fix_service_tokens(data: TableData, table: TableName) -> None:
-    """
-    The tokens in the services are created by 'generate_api_key'.
+    """The tokens in the services are created by 'generate_api_key'.
+
     As the tokens are unique, they should be re-created for the imports.
     """
     for item in data[table]:
@@ -243,19 +240,16 @@ def fix_service_tokens(data: TableData, table: TableName) -> None:
 
 
 def process_huddle_hash(data: TableData, table: TableName) -> None:
-    """
-    Build new huddle hashes with the updated ids of the users
-    """
+    """Build new huddle hashes with the updated ids of the users."""
     for huddle in data[table]:
         user_id_list = id_map_to_list["huddle_to_user_list"][huddle["id"]]
         huddle["huddle_hash"] = get_huddle_hash(user_id_list)
 
 
 def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
-    """
-    Extract the IDs of the user_profiles involved in a huddle from the subscription object
-    This helps to generate a unique huddle hash from the updated user_profile ids
-    """
+    """Extract the IDs of the user_profiles involved in a huddle from the
+    subscription object This helps to generate a unique huddle hash from the
+    updated user_profile ids."""
     id_map_to_list["huddle_to_user_list"] = {
         value: [] for value in ID_MAP["recipient_to_huddle_map"].values()
     }
@@ -267,10 +261,8 @@ def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
 
 
 def fix_customprofilefield(data: TableData) -> None:
-    """
-    In CustomProfileField with 'field_type' like 'USER', the IDs need to be
-    re-mapped.
-    """
+    """In CustomProfileField with 'field_type' like 'USER', the IDs need to be
+    re-mapped."""
     field_type_USER_id_list = []
     for item in data["zerver_customprofilefield"]:
         if item["field_type"] == CustomProfileField.USER:
@@ -292,10 +284,8 @@ def fix_customprofilefield(data: TableData) -> None:
 def fix_message_rendered_content(
     realm: Realm, sender_map: Dict[int, Record], messages: List[Record]
 ) -> None:
-    """
-    This function sets the rendered_content of all the messages
-    after the messages have been imported from a non-Zulip platform.
-    """
+    """This function sets the rendered_content of all the messages after the
+    messages have been imported from a non-Zulip platform."""
     for message in messages:
         if message["rendered_content"] is not None:
             # For Zulip->Zulip imports, we use the original rendered
@@ -379,9 +369,7 @@ def fix_message_rendered_content(
 
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
-    """
-    Returns the ids present in the current table
-    """
+    """Returns the ids present in the current table."""
     id_list = []
     for item in data[table]:
         id_list.append(item["id"])
@@ -403,10 +391,11 @@ def idseq(model_class: Any) -> str:
 
 
 def allocate_ids(model_class: Any, count: int) -> List[int]:
-    """
-    Increases the sequence number for a given table by the amount of objects being
-    imported into that table. Hence, this gives a reserved range of IDs to import the
-    converted Slack objects into the tables.
+    """Increases the sequence number for a given table by the amount of objects
+    being imported into that table.
+
+    Hence, this gives a reserved range of IDs to import the converted
+    Slack objects into the tables.
     """
     conn = connection.cursor()
     sequence = idseq(model_class)
@@ -418,12 +407,12 @@ def allocate_ids(model_class: Any, count: int) -> List[int]:
 
 
 def convert_to_id_fields(data: TableData, table: TableName, field_name: Field) -> None:
-    """
-    When Django gives us dict objects via model_to_dict, the foreign
-    key fields are `foo`, but we want `foo_id` for the bulk insert.
-    This function handles the simple case where we simply rename
-    the fields.  For cases where we need to munge ids in the
-    database, see re_map_foreign_keys.
+    """When Django gives us dict objects via model_to_dict, the foreign key
+    fields are `foo`, but we want `foo_id` for the bulk insert.
+
+    This function handles the simple case where we simply rename the
+    fields.  For cases where we need to munge ids in the database, see
+    re_map_foreign_keys.
     """
     for item in data[table]:
         item[field_name + "_id"] = item[field_name]
@@ -439,12 +428,11 @@ def re_map_foreign_keys(
     id_field: bool = False,
     recipient_field: bool = False,
 ) -> None:
-    """
-    This is a wrapper function for all the realm data tables
-    and only avatar and attachment records need to be passed through the internal function
-    because of the difference in data format (TableData corresponding to realm data tables
-    and List[Record] corresponding to the avatar and attachment records)
-    """
+    """This is a wrapper function for all the realm data tables and only avatar
+    and attachment records need to be passed through the internal function
+    because of the difference in data format (TableData corresponding to realm
+    data tables and List[Record] corresponding to the avatar and attachment
+    records)"""
 
     # See comments in bulk_import_user_message_data.
     assert "usermessage" not in related_table
@@ -469,14 +457,13 @@ def re_map_foreign_keys_internal(
     id_field: bool = False,
     recipient_field: bool = False,
 ) -> None:
-    """
-    We occasionally need to assign new ids to rows during the
-    import/export process, to accommodate things like existing rows
-    already being in tables.  See bulk_import_client for more context.
+    """We occasionally need to assign new ids to rows during the import/export
+    process, to accommodate things like existing rows already being in tables.
+    See bulk_import_client for more context.
 
-    The tricky part is making sure that foreign key references
-    are in sync with the new ids, and this fixer function does
-    the re-mapping.  (It also appends `_id` to the field.)
+    The tricky part is making sure that foreign key references are in
+    sync with the new ids, and this fixer function does the re-mapping.
+    (It also appends `_id` to the field.)
     """
     lookup_table = ID_MAP[related_table]
     for item in data_table:
@@ -511,13 +498,12 @@ def re_map_foreign_keys_internal(
 
 
 def re_map_realm_emoji_codes(data: TableData, *, table_name: str) -> None:
-    """
-    Some tables, including Reaction and UserStatus, contain a form of
+    """Some tables, including Reaction and UserStatus, contain a form of
     foreign key reference to the RealmEmoji table in the form of
     `str(realm_emoji.id)` when `reaction_type="realm_emoji"`.
 
-    See the block comment for emoji_code in the AbstractEmoji
-    definition for more details.
+    See the block comment for emoji_code in the AbstractEmoji definition
+    for more details.
     """
     realm_emoji_dct = {}
 
@@ -546,13 +532,11 @@ def re_map_foreign_keys_many_to_many(
     related_table: TableName,
     verbose: bool = False,
 ) -> None:
-    """
-    We need to assign new ids to rows during the import/export
-    process.
+    """We need to assign new ids to rows during the import/export process.
 
-    The tricky part is making sure that foreign key references
-    are in sync with the new ids, and this wrapper function does
-    the re-mapping only for ManyToMany fields.
+    The tricky part is making sure that foreign key references are in
+    sync with the new ids, and this wrapper function does the re-mapping
+    only for ManyToMany fields.
     """
     for item in data[table]:
         old_id_list = item[field_name]
@@ -570,11 +554,9 @@ def re_map_foreign_keys_many_to_many_internal(
     old_id_list: List[int],
     verbose: bool = False,
 ) -> List[int]:
-    """
-    This is an internal function for tables with ManyToMany fields,
-    which takes the old ID list of the ManyToMany relation and returns the
-    new updated ID list.
-    """
+    """This is an internal function for tables with ManyToMany fields, which
+    takes the old ID list of the ManyToMany relation and returns the new
+    updated ID list."""
     lookup_table = ID_MAP[related_table]
     new_id_list = []
     for old_id in old_id_list:
@@ -610,10 +592,8 @@ def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_n
 
 
 def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
-    """
-    The recipient column shouldn't be imported, we'll set the correct values
-    when Recipient table gets imported.
-    """
+    """The recipient column shouldn't be imported, we'll set the correct values
+    when Recipient table gets imported."""
     for stream_dict in data["zerver_stream"]:
         if "recipient" in stream_dict:
             del stream_dict["recipient"]
@@ -628,7 +608,10 @@ def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
 
 
 def get_db_table(model_class: Any) -> str:
-    """E.g. (RealmDomain -> 'zerver_realmdomain')"""
+    """E.g.
+
+    (RealmDomain -> 'zerver_realmdomain')
+    """
     return model_class._meta.db_table
 
 
@@ -1396,15 +1379,14 @@ def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
 
 
 def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> List[int]:
-    """
-    This function reads in our entire collection of message
-    ids, which can be millions of integers for some installations.
-    And then we sort the list.  This is necessary to ensure
-    that the sort order of incoming ids matches the sort order
-    of date_sent, which isn't always guaranteed by our
-    utilities that convert third party chat data.  We also
-    need to move our ids to a new range if we're dealing
-    with a server that has data for other realms.
+    """This function reads in our entire collection of message ids, which can
+    be millions of integers for some installations.
+
+    And then we sort the list.  This is necessary to ensure that the
+    sort order of incoming ids matches the sort order of date_sent,
+    which isn't always guaranteed by our utilities that convert third
+    party chat data.  We also need to move our ids to a new range if
+    we're dealing with a server that has data for other realms.
     """
 
     if sort_by_date:
@@ -1508,7 +1490,6 @@ def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir:
 
 
 def import_attachments(data: TableData) -> None:
-
     # Clean up the data in zerver_attachment that is not
     # relevant to our many-to-many import.
     fix_datetime_fields(data, "zerver_attachment")

@@ -287,11 +287,9 @@ def access_user_by_id(
     allow_bots: bool = False,
     for_admin: bool,
 ) -> UserProfile:
-    """Master function for accessing another user by ID in API code;
-    verifies the user ID is in the same realm, and if requested checks
-    for administrative privileges, with flags for various special
-    cases.
-    """
+    """Master function for accessing another user by ID in API code; verifies
+    the user ID is in the same realm, and if requested checks for
+    administrative privileges, with flags for various special cases."""
     try:
         target = get_user_profile_by_id_in_realm(target_user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -419,10 +417,11 @@ def format_user_row(
     user_avatar_url_field_optional: bool,
     custom_profile_field_data: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Formats a user row returned by a database fetch using
-    .values(*realm_user_dict_fields) into a dictionary representation
-    of that user for API delivery to clients.  The acting_user
-    argument is used for permissions checks.
+    """Formats a user row returned by a database fetch using.
+
+    .values(*realm_user_dict_fields) into a dictionary representation of
+    that user for API delivery to clients.  The acting_user argument is
+    used for permissions checks.
     """
 
     is_admin = is_administrator_role(row["role"])
@@ -583,8 +582,9 @@ def get_raw_user_data(
     include_custom_profile_fields: bool = True,
 ) -> Dict[int, Dict[str, str]]:
     """Fetches data about the target user(s) appropriate for sending to
-    acting_user via the standard format for the Zulip API.  If
-    target_user is None, we fetch all users in the realm.
+    acting_user via the standard format for the Zulip API.
+
+    If target_user is None, we fetch all users in the realm.
     """
     profiles_by_user_id = None
     custom_profile_field_data = None
@@ -625,12 +625,12 @@ def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet[UserPro
 
 
 def is_2fa_verified(user: UserProfile) -> bool:
-    """
-    It is generally unsafe to call is_verified directly on `request.user` since
-    the attribute `otp_device` does not exist on an `AnonymousUser`, and `is_verified`
-    does not make sense without 2FA being enabled.
+    """It is generally unsafe to call is_verified directly on `request.user`
+    since the attribute `otp_device` does not exist on an `AnonymousUser`, and
+    `is_verified` does not make sense without 2FA being enabled.
 
-    This wraps the checks for all these assumptions to make sure the call is safe.
+    This wraps the checks for all these assumptions to make sure the
+    call is safe.
     """
     # Explicitly require the caller to ensure that settings.TWO_FACTOR_AUTHENTICATION_ENABLED
     # is True before calling `is_2fa_verified`.

@@ -78,10 +78,12 @@ def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet[Sub
 
 def get_used_colors_for_user_ids(user_ids: List[int]) -> Dict[int, Set[str]]:
     """Fetch which stream colors have already been used for each user in
-    user_ids. Uses an optimized query designed to support picking
-    colors when bulk-adding users to streams, which requires
-    inspecting all Subscription objects for the users, which can often
-    end up being all Subscription objects in the realm.
+    user_ids.
+
+    Uses an optimized query designed to support picking colors when
+    bulk-adding users to streams, which requires inspecting all
+    Subscription objects for the users, which can often end up being all
+    Subscription objects in the realm.
     """
     query = (
         Subscription.objects.filter(
@@ -279,9 +281,9 @@ def handle_stream_notifications_compatibility(
 
 
 def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
-    """Returns the set of active user IDs who can access any message
-    history on this stream (regardless of whether they have a
-    UserMessage) based on the stream's configuration.
+    """Returns the set of active user IDs who can access any message history on
+    this stream (regardless of whether they have a UserMessage) based on the
+    stream's configuration.
 
     1. if !history_public_to_subscribers:
           History is not available to anyone
@@ -290,7 +292,6 @@ def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
 
     The results of this function need to be kept consistent with
     what can_access_stream_history would dictate.
-
     """
 
     if not stream.is_history_public_to_subscribers():
@@ -310,12 +311,11 @@ def get_subscriptions_for_send_message(
     possible_wildcard_mention: bool,
     possibly_mentioned_user_ids: AbstractSet[int],
 ) -> QuerySet[Subscription]:
-    """This function optimizes an important use case for large
-    streams. Open realms often have many long_term_idle users, which
-    can result in 10,000s of long_term_idle recipients in default
-    streams. do_send_messages has an optimization to avoid doing work
-    for long_term_idle unless message flags or notifications should be
-    generated.
+    """This function optimizes an important use case for large streams. Open
+    realms often have many long_term_idle users, which can result in 10,000s of
+    long_term_idle recipients in default streams. do_send_messages has an
+    optimization to avoid doing work for long_term_idle unless message flags or
+    notifications should be generated.
 
     However, it's expensive even to fetch and process them all in
     Python at all. This function returns all recipients of a stream

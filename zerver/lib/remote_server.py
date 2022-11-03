@@ -35,10 +35,10 @@ def send_to_push_bouncer(
     post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
     extra_headers: Mapping[str, str] = {},
 ) -> Dict[str, object]:
-    """While it does actually send the notice, this function has a lot of
-    code and comments around error handling for the push notifications
-    bouncer.  There are several classes of failures, each with its own
-    potential solution:
+    """While it does actually send the notice, this function has a lot of code
+    and comments around error handling for the push notifications bouncer.
+    There are several classes of failures, each with its own potential
+    solution:
 
     * Network errors with requests.request.  We raise an exception to signal
       it to the callers.
@@ -49,7 +49,6 @@ def send_to_push_bouncer(
     * 400 errors from the push bouncer.  Here there are 2 categories:
       Our server failed to connect to the push bouncer (should throw)
       vs. client-side errors like an invalid token.
-
     """
     assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
     url = urllib.parse.urljoin(

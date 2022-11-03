@@ -55,10 +55,8 @@ def get_avatar_field(
     medium: bool,
     client_gravatar: bool,
 ) -> Optional[str]:
-    """
-    Most of the parameters to this function map to fields
-    by the same name in UserProfile (avatar_source, realm_id,
-    email, etc.).
+    """Most of the parameters to this function map to fields by the same name
+    in UserProfile (avatar_source, realm_id, email, etc.).
 
     Then there are these:
 
@@ -73,11 +71,8 @@ def get_avatar_field(
     """
 
     if client_gravatar:
-        """
-        If our client knows how to calculate gravatar hashes, we
-        will return None and let the client compute the gravatar
-        url.
-        """
+        """If our client knows how to calculate gravatar hashes, we will return
+        None and let the client compute the gravatar url."""
         if settings.ENABLE_GRAVATAR:
             if avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
                 return None
@@ -125,10 +120,8 @@ def _get_unversioned_avatar_url(
 
 
 def absolute_avatar_url(user_profile: UserProfile) -> str:
-    """
-    Absolute URLs are used to simplify logic for applications that
-    won't be served by browsers, such as rendering GCM notifications.
-    """
+    """Absolute URLs are used to simplify logic for applications that won't be
+    served by browsers, such as rendering GCM notifications."""
     avatar = avatar_url(user_profile)
     # avatar_url can return None if client_gravatar=True, however here we use the default value of False
     assert avatar is not None

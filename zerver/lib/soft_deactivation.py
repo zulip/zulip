@@ -115,11 +115,11 @@ def filter_by_subscription_history(
 
 
 def add_missing_messages(user_profile: UserProfile) -> None:
-    """This function takes a soft-deactivated user, and computes and adds
-    to the database any UserMessage rows that were not created while
-    the user was soft-deactivated.  The end result is that from the
-    perspective of the message database, it should be impossible to
-    tell that the user was soft-deactivated at all.
+    """This function takes a soft-deactivated user, and computes and adds to
+    the database any UserMessage rows that were not created while the user was
+    soft-deactivated.  The end result is that from the perspective of the
+    message database, it should be impossible to tell that the user was soft-
+    deactivated at all.
 
     At a high level, the algorithm is as follows:
 
@@ -151,7 +151,6 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     For further documentation, see:
 
       https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
-
     """
     assert user_profile.last_active_message_id is not None
     all_stream_subs = list(
@@ -396,17 +395,16 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
 def soft_reactivate_if_personal_notification(
     user_profile: UserProfile, unique_triggers: Set[str], mentioned_user_group_name: Optional[str]
 ) -> None:
-    """When we're about to send an email/push notification to a
-    long_term_idle user, it's very likely that the user will try to
-    return to Zulip. As a result, it makes sense to optimistically
-    soft-reactivate that user, to give them a good return experience.
+    """When we're about to send an email/push notification to a long_term_idle
+    user, it's very likely that the user will try to return to Zulip. As a
+    result, it makes sense to optimistically soft-reactivate that user, to give
+    them a good return experience.
 
     It's important that we do nothing for wildcard or group mentions,
     because soft-reactivating an entire realm would be very expensive
     (and we can't easily check the group's size). The caller is
-    responsible for passing a mentioned_user_group_name that is None
-    for messages that contain both a personal mention and a group
-    mention.
+    responsible for passing a mentioned_user_group_name that is None for
+    messages that contain both a personal mention and a group mention.
     """
     if not user_profile.long_term_idle:
         return

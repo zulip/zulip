@@ -21,8 +21,8 @@ logger = logging.getLogger("zulip.debug")
 # setup, which we might want if we move Tornado to run in a daemon
 # rather than via screen).
 def interactive_debug(sig: int, frame: Optional[FrameType]) -> None:
-    """Interrupt running process, and provide a python prompt for
-    interactive debugging."""
+    """Interrupt running process, and provide a python prompt for interactive
+    debugging."""
     d = {"_frame": frame}  # Allow access to frame object.
     if frame is not None:
         d.update(frame.f_globals)  # Unless shadowed by global
@@ -106,7 +106,6 @@ def maybe_tracemalloc_listen() -> None:
     To enable in other contexts: see upstream docs
     https://docs.python.org/3/library/tracemalloc .
     You may also have to add a call to this function somewhere.
-
     """
     if os.environ.get("PYTHONTRACEMALLOC"):
         # If the server was started with `tracemalloc` tracing on, then

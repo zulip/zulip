@@ -61,11 +61,12 @@ def hex_to_b64(data: str) -> str:
 
 class UserPushIndentityCompat:
     """Compatibility class for supporting the transition from remote servers
-    sending their UserProfile ids to the bouncer to sending UserProfile uuids instead.
+    sending their UserProfile ids to the bouncer to sending UserProfile uuids
+    instead.
 
-    Until we can drop support for receiving user_id, we need this
-    class, because a user's identity in the push notification context
-    may be represented either by an id or uuid.
+    Until we can drop support for receiving user_id, we need this class,
+    because a user's identity in the push notification context may be
+    represented either by an id or uuid.
     """
 
     def __init__(self, user_id: Optional[int] = None, user_uuid: Optional[str] = None) -> None:
@@ -74,10 +75,11 @@ class UserPushIndentityCompat:
         self.user_uuid = user_uuid
 
     def filter_q(self) -> Q:
-        """
-        This aims to support correctly querying for RemotePushDeviceToken.
-        If only one of (user_id, user_uuid) is provided, the situation is trivial,
-        If both are provided, we want to query for tokens matching EITHER the
+        """This aims to support correctly querying for RemotePushDeviceToken.
+        If only one of (user_id, user_uuid) is provided, the situation is
+        trivial, If both are provided, we want to query for tokens matching
+        EITHER the.
+
         uuid or the id - because the user may have devices with old registrations,
         so user_id-based, as well as new registration with uuid. Notifications
         naturally should be sent to both.
@@ -151,7 +153,8 @@ def apns_enabled() -> bool:
 
 
 def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
-    """Take a payload in an unknown Zulip version's format, and return in current format."""
+    """Take a payload in an unknown Zulip version's format, and return in
+    current format."""
     # TODO this isn't super robust as is -- if a buggy remote server
     # sends a malformed payload, we are likely to raise an exception.
     if "message_ids" in data:
@@ -312,8 +315,7 @@ def send_android_push_notification_to_user(
 
 
 def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
-    """
-    Parse GCM options, supplying defaults, and raising an error if invalid.
+    """Parse GCM options, supplying defaults, and raising an error if invalid.
 
     The options permitted here form part of the Zulip notification
     bouncer's API.  They are:
@@ -364,8 +366,7 @@ def send_android_push_notification(
     options: Dict[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
-    """
-    Send a GCM message to the given devices.
+    """Send a GCM message to the given devices.
 
     See https://firebase.google.com/docs/cloud-messaging/http-server-ref
     for the GCM upstream API which this talks to.
@@ -613,7 +614,8 @@ def clear_push_device_tokens(user_profile_id: int) -> None:
 
 
 def push_notifications_enabled() -> bool:
-    """True just if this server has configured a way to send push notifications."""
+    """True just if this server has configured a way to send push
+    notifications."""
     if (
         uses_notification_bouncer()
         and settings.ZULIP_ORG_KEY is not None
@@ -651,9 +653,7 @@ def initialize_push_notifications() -> None:
 def get_gcm_alert(
     message: Message, trigger: str, mentioned_user_group_name: Optional[str] = None
 ) -> str:
-    """
-    Determine what alert string to display based on the missed messages.
-    """
+    """Determine what alert string to display based on the missed messages."""
     sender_str = message.sender.full_name
     display_recipient = get_display_recipient(message.recipient)
     if (
@@ -807,9 +807,7 @@ def get_message_payload(
 
 
 def get_apns_alert_title(message: Message) -> str:
-    """
-    On an iOS notification, this is the first bolded line.
-    """
+    """On an iOS notification, this is the first bolded line."""
     if message.recipient.type == Recipient.HUDDLE:
         recipients = get_display_recipient(message.recipient)
         assert isinstance(recipients, list)
@@ -826,9 +824,7 @@ def get_apns_alert_subtitle(
     trigger: str,
     mentioned_user_group_name: Optional[str] = None,
 ) -> str:
-    """
-    On an iOS notification, this is the second bolded line.
-    """
+    """On an iOS notification, this is the second bolded line."""
     if trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is not None:
             return _("{full_name} mentioned @{user_group_name}:").format(
@@ -964,10 +960,11 @@ def get_remove_payload_apns(user_profile: UserProfile, message_ids: List[int]) -
 
 
 def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]) -> None:
-    """This should be called when a message that previously had a
-    mobile push notification executed is read.  This triggers a push to the
-    mobile app, when the message is read on the server, to remove the
-    message from the notification.
+    """This should be called when a message that previously had a mobile push
+    notification executed is read.
+
+    This triggers a push to the mobile app, when the message is read on
+    the server, to remove the message from the notification.
     """
     if not push_notifications_enabled():
         return
@@ -1034,10 +1031,8 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
-    """
-    missed_message is the event received by the
-    zerver.worker.queue_processors.PushNotificationWorker.consume function.
-    """
+    """missed_message is the event received by the
+    zerver.worker.queue_processors.PushNotificationWorker.consume function."""
     if not push_notifications_enabled():
         return
     user_profile = get_user_profile_by_id(user_profile_id)

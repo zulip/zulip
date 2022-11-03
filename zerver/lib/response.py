@@ -50,12 +50,11 @@ def json_partial_success(request: HttpRequest, data: Mapping[str, Any] = {}) -> 
 
 
 def json_response_from_error(exception: JsonableError) -> HttpResponse:
-    """
-    This should only be needed in middleware; in app code, just raise.
+    """This should only be needed in middleware; in app code, just raise.
 
     When app code raises a JsonableError, the JsonErrorHandler
-    middleware takes care of transforming it into a response by
-    calling this function.
+    middleware takes care of transforming it into a response by calling
+    this function.
     """
     response = json_response(
         "error", msg=exception.msg, data=exception.data, status=exception.http_status_code
@@ -68,9 +67,7 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
 
 
 class AsynchronousResponse(HttpResponse):
-    """
-    This response is just a sentinel to be discarded by Tornado and replaced
-    with a real response later; see zulip_finish.
-    """
+    """This response is just a sentinel to be discarded by Tornado and replaced
+    with a real response later; see zulip_finish."""
 
     status_code = 399

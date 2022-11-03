@@ -126,8 +126,7 @@ def build_page_params_for_home_page_load(
     prompt_for_invites: bool,
     needs_tutorial: bool,
 ) -> Tuple[int, Dict[str, object]]:
-    """
-    This function computes page_params for when we load the home page.
+    """This function computes page_params for when we load the home page.
 
     The page_params data structure gets sent to the client.
     """

@@ -226,11 +226,11 @@ class MentionData:
         return self.user_id_info.get(id, None)
 
     def get_user_ids(self) -> Set[int]:
-        """
-        Returns the user IDs that might have been mentioned by this
-        content.  Note that because this data structure has not parsed
-        the message and does not know about escaping/code blocks, this
-        will overestimate the list of user ids.
+        """Returns the user IDs that might have been mentioned by this content.
+
+        Note that because this data structure has not parsed the message
+        and does not know about escaping/code blocks, this will
+        overestimate the list of user ids.
         """
         return set(self.user_id_info.keys())
 

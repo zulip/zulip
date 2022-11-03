@@ -56,8 +56,7 @@ def pop_numerals(ver: str) -> Tuple[List[int], str]:
 
 
 def version_lt(ver1: str, ver2: str) -> Optional[bool]:
-    """
-    Compare two Zulip-style version strings.
+    """Compare two Zulip-style version strings.
 
     Versions are dot-separated sequences of decimal integers,
     followed by arbitrary trailing decoration.  Comparison is

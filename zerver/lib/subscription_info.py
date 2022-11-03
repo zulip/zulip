@@ -227,7 +227,9 @@ def build_stream_dict_for_never_sub(
 def validate_user_access_to_subscribers(
     user_profile: Optional[UserProfile], stream: Stream
 ) -> None:
-    """Validates whether the user can view the subscribers of a stream.  Raises a JsonableError if:
+    """Validates whether the user can view the subscribers of a stream.  Raises
+    a JsonableError if:
+
     * The user and the stream are in different realms
     * The realm is MIT and the stream is not invite only.
     * The stream is invite only, requesting_user is passed, and that user
@@ -251,10 +253,9 @@ def validate_user_access_to_subscribers_helper(
     stream_dict: Mapping[str, Any],
     check_user_subscribed: Callable[[UserProfile], bool],
 ) -> None:
-    """Helper for validate_user_access_to_subscribers that doesn't require
-    a full stream object.  This function is a bit hard to read,
-    because it is carefully optimized for performance in the two code
-    paths we call it from:
+    """Helper for validate_user_access_to_subscribers that doesn't require a
+    full stream object.  This function is a bit hard to read, because it is
+    carefully optimized for performance in the two code paths we call it from:
 
     * In `bulk_get_subscriber_user_ids`, we already know whether the
     user was subscribed via `sub_dict`, and so we want to avoid a
@@ -308,7 +309,8 @@ def bulk_get_subscriber_user_ids(
     user_profile: UserProfile,
     subscribed_stream_ids: Set[int],
 ) -> Dict[int, List[int]]:
-    """sub_dict maps stream_id => whether the user is subscribed to that stream."""
+    """sub_dict maps stream_id => whether the user is subscribed to that
+    stream."""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
         stream_id = stream_dict["id"]
@@ -375,7 +377,8 @@ def bulk_get_subscriber_user_ids(
 def get_subscribers_query(
     stream: Stream, requesting_user: Optional[UserProfile]
 ) -> QuerySet[Subscription]:
-    """Build a query to get the subscribers list for a stream, raising a JsonableError if:
+    """Build a query to get the subscribers list for a stream, raising a
+    JsonableError if:
 
     'realm' is optional in stream.
 

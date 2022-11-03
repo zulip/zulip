@@ -57,7 +57,6 @@ def generate_topics(num_topics: int) -> List[str]:
 
 
 def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
-
     results = {}
     cfg = config["gen_fodder"]
 
@@ -81,7 +80,6 @@ def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[str]:
-
     # First, load the entire file into a dictionary,
     # then apply our custom filters to it as needed.
 
@@ -96,7 +94,6 @@ def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -
 
 
 def get_flair_gen(length: int) -> List[str]:
-
     # Grab the percentages from the config file
     # create a list that we can consume that will guarantee the distribution
     result = []
@@ -111,7 +108,6 @@ def get_flair_gen(length: int) -> List[str]:
 
 
 def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
-
     # roll the dice and see what kind of flair we should add, if any
     results = []
 
@@ -158,7 +154,6 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
 
 
 def add_md(mode: str, text: str) -> str:
-
     # mode means: bold, italic, etc.
     # to add a list at the end of a paragraph, * item one\n * item two
 
@@ -174,7 +169,6 @@ def add_md(mode: str, text: str) -> str:
 
 
 def add_emoji(text: str, emoji: str) -> str:
-
     vals = text.split()
     start = random.randrange(len(vals))
 
@@ -183,7 +177,6 @@ def add_emoji(text: str, emoji: str) -> str:
 
 
 def add_link(text: str, link: str) -> str:
-
     vals = text.split()
     start = random.randrange(len(vals))
 
@@ -193,7 +186,6 @@ def add_link(text: str, link: str) -> str:
 
 
 def remove_line_breaks(fh: Any) -> List[str]:
-
     # We're going to remove line breaks from paragraphs
     results = []  # save the dialogs as tuples with (author, dialog)
 
@@ -215,13 +207,11 @@ def remove_line_breaks(fh: Any) -> List[str]:
 
 
 def write_file(paragraphs: List[str], filename: str) -> None:
-
     with open(filename, "wb") as outfile:
         outfile.write(orjson.dumps(paragraphs))
 
 
 def create_test_data() -> None:
-
     gens = load_generators(config)  # returns a dictionary of generators
 
     paragraphs = parse_file(config, gens, config["corpus"]["filename"])

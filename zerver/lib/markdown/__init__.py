@@ -103,11 +103,10 @@ allowed_schemes = ("http", "https", "ftp", "file") + html_safelisted_schemes
 
 
 def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
-    """
-    Use this decorator with extreme caution.
-    The function you wrap should have no dependency
-    on any arguments (no args, no kwargs) nor should
-    it depend on any global state.
+    """Use this decorator with extreme caution.
+
+    The function you wrap should have no dependency on any arguments (no
+    args, no kwargs) nor should it depend on any global state.
     """
     val = None
 
@@ -286,9 +285,8 @@ markdown_logger = logging.getLogger()
 
 
 def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str:
-    """If the link points to a local destination (e.g. #narrow/...),
-    generate a relative link that will open it in the current window.
-    """
+    """If the link points to a local destination (e.g. #narrow/...), generate a
+    relative link that will open it in the current window."""
 
     if db_data:
         realm_uri_prefix = db_data.realm_uri + "/"
@@ -577,16 +575,15 @@ def get_tweet_id(url: str) -> Optional[str]:
 
 
 class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
-    """
-    Rewrite inline img tags to serve external content via Camo.
+    """Rewrite inline img tags to serve external content via Camo.
 
-    This rewrites all images, except ones that are served from the current
-    realm or global STATIC_URL. This is to ensure that each realm only loads
-    images that are hosted on that realm or by the global installation,
-    avoiding information leakage to external domains or between realms. We need
-    to disable proxying of images hosted on the same realm, because otherwise
-    we will break images in /user_uploads/, which require authorization to
-    view.
+    This rewrites all images, except ones that are served from the
+    current realm or global STATIC_URL. This is to ensure that each
+    realm only loads images that are hosted on that realm or by the
+    global installation, avoiding information leakage to external
+    domains or between realms. We need to disable proxying of images
+    hosted on the same realm, because otherwise we will break images in
+    /user_uploads/, which require authorization to view.
     """
 
     def __init__(self, zmd: "ZulipMarkdown") -> None:
@@ -904,9 +901,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         user_mentions: List[Dict[str, Any]],
         media: List[Dict[str, Any]],
     ) -> Element:
-        """
-        Use data from the Twitter API to turn links, mentions and media into A
-        tags. Also convert Unicode emojis to images.
+        """Use data from the Twitter API to turn links, mentions and media into
+        A tags. Also convert Unicode emojis to images.
 
         This works by using the URLs, user_mentions and media data from
         the twitter API and searching for Unicode emojis in the text using
@@ -988,9 +984,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         p = current_node = Element("p")
 
         def set_text(text: str) -> None:
-            """
-            Helper to set the text or the tail of the current_node
-            """
+            """Helper to set the text or the tail of the current_node."""
             if current_node == p:
                 current_node.text = text
             else:
@@ -1559,9 +1553,10 @@ class Tex(markdown.inlinepatterns.Pattern):
 
 
 def sanitize_url(url: str) -> Optional[str]:
-    """
-    Sanitize a URL against XSS attacks.
-    See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
+    """Sanitize a URL against XSS attacks.
+
+    See the docstring on
+    markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
     try:
         parts = urllib.parse.urlparse(url.replace(" ", "%20"))
@@ -1651,7 +1646,7 @@ class OListProcessor(sane_lists.SaneOListProcessor):
 
 
 class UListProcessor(sane_lists.SaneUListProcessor):
-    """Unordered lists, but with 2-space indent"""
+    """Unordered lists, but with 2-space indent."""
 
     def __init__(self, parser: BlockParser) -> None:
         parser.md.tab_length = 2
@@ -1662,7 +1657,8 @@ class UListProcessor(sane_lists.SaneUListProcessor):
 class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     """Process unordered list blocks.
 
-    Based on markdown.blockprocessors.ListIndentProcessor, but with 2-space indent
+    Based on markdown.blockprocessors.ListIndentProcessor, but with
+    2-space indent
     """
 
     def __init__(self, parser: BlockParser) -> None:
@@ -1678,7 +1674,8 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
 class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
     """Process hash headers.
 
-    Based on markdown.blockprocessors.HashHeaderProcessor, but requires space for heading.
+    Based on markdown.blockprocessors.HashHeaderProcessor, but requires
+    space for heading.
     """
 
     # Original regex for hashheader is
@@ -1689,7 +1686,8 @@ class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
 class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     """Process block quotes.
 
-    Based on markdown.blockprocessors.BlockQuoteProcessor, but with 2-space indent
+    Based on markdown.blockprocessors.BlockQuoteProcessor, but with
+    2-space indent
     """
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
@@ -1738,17 +1736,18 @@ class Fence:
 
 
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
-    """Allows list blocks that come directly after another block
-    to be rendered as a list.
+    """Allows list blocks that come directly after another block to be rendered
+    as a list.
 
     Detects paragraphs that have a matching list item that comes
-    directly after a line of text, and inserts a newline between
-    to satisfy Markdown"""
+    directly after a line of text, and inserts a newline between to
+    satisfy Markdown
+    """
 
     LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
 
     def run(self, lines: List[str]) -> List[str]:
-        """Insert a newline between a paragraph and ulist if missing"""
+        """Insert a newline between a paragraph and ulist if missing."""
         inserts = 0
         in_code_fence: bool = False
         open_fences: List[Fence] = []
@@ -1798,16 +1797,15 @@ AFTER_CAPTURE_GROUP = "linkifier_after_match"
 
 def prepare_linkifier_pattern(source: str) -> str:
     """Augment a linkifier so it only matches after start-of-string,
-    whitespace, or opening delimiters, won't match if there are word
-    characters directly after, and saves what was matched as
-    OUTER_CAPTURE_GROUP."""
+    whitespace, or opening delimiters, won't match if there are word characters
+    directly after, and saves what was matched as OUTER_CAPTURE_GROUP."""
     return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
 class LinkifierPattern(CompiledInlineProcessor):
-    """Applied a given linkifier to the input"""
+    """Applied a given linkifier to the input."""
 
     def __init__(
         self,

@@ -52,11 +52,8 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
     allowed_subdomains = {r["domain"] for r in rows if r["allow_subdomains"]}
 
     def validate(email: str) -> None:
-        """
-        We don't have to do a "disposable" check for restricted
-        domains, since the realm is already giving us
-        a small whitelist.
-        """
+        """We don't have to do a "disposable" check for restricted domains,
+        since the realm is already giving us a small whitelist."""
 
         address = Address(addr_spec=email)
         if "+" in address.username:
@@ -82,10 +79,9 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
 # So for invite-only realms, this is the test for whether a user can be invited,
 # not whether the user can sign up currently.)
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
-    """
-    Avoid calling this in a loop!
-    Instead, call get_realm_email_validator()
-    outside of the loop.
+    """Avoid calling this in a loop!
+
+    Instead, call get_realm_email_validator() outside of the loop.
     """
     get_realm_email_validator(realm)(email)
 
@@ -121,12 +117,11 @@ def get_existing_user_errors(
     emails: Set[str],
     verbose: bool = False,
 ) -> Dict[str, Tuple[str, bool]]:
-    """
-    We use this function even for a list of one emails.
+    """We use this function even for a list of one emails.
 
-    It checks "new" emails to make sure that they don't
-    already exist.  There's a bit of fiddly logic related
-    to cross-realm bots and mirror dummies too.
+    It checks "new" emails to make sure that they don't already exist.
+    There's a bit of fiddly logic related to cross-realm bots and mirror
+    dummies too.
     """
 
     errors: Dict[str, Tuple[str, bool]] = {}

@@ -60,9 +60,11 @@ def access_user_groups_as_potential_subgroups(
 
 def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     """This function is used in do_events_register code path so this code
-    should be performant.  We need to do 2 database queries because
-    Django's ORM doesn't properly support the left join between
-    UserGroup and UserGroupMembership that we need.
+    should be performant.
+
+    We need to do 2 database queries because Django's ORM doesn't
+    properly support the left join between UserGroup and
+    UserGroupMembership that we need.
     """
     realm_groups = UserGroup.objects.filter(realm=realm)
     group_dicts: Dict[int, UserGroupDict] = {}
@@ -210,8 +212,10 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
 
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     """Any changes to this function likely require a migration to adjust
-    existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
-    which is a copy of this function from when we introduced system groups.
+    existing realms.
+
+    See e.g. migration 0382_create_role_based_system_groups.py, which is
+    a copy of this function from when we introduced system groups.
     """
     role_system_groups_dict: Dict[int, UserGroup] = {}
     for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP.keys():

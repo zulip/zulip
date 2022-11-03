@@ -40,12 +40,12 @@ def get_mute_object(user_profile: UserProfile, muted_user: UserProfile) -> Optio
 
 @cache_with_key(get_muting_users_cache_key, timeout=3600 * 24 * 7)
 def get_muting_users(muted_user_id: int) -> Set[int]:
-    """
-    This is kind of the inverse of `get_user_mutes` above.
-    While `get_user_mutes` is mainly used for event system work,
-    this is used in the message send codepath, to get a list
-    of IDs of users who have muted a particular user.
-    The result will also include deactivated users.
+    """This is kind of the inverse of `get_user_mutes` above.
+
+    While `get_user_mutes` is mainly used for event system work, this is
+    used in the message send codepath, to get a list of IDs of users who
+    have muted a particular user. The result will also include
+    deactivated users.
     """
     rows = MutedUser.objects.filter(
         muted_user_id=muted_user_id,

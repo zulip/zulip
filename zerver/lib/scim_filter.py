@@ -9,8 +9,9 @@ from zerver.lib.request import RequestNotes
 # This is in a separate file due to circular import issues django-scim2 runs into
 # when this is placed in zerver.lib.scim.
 class ZulipUserFilterQuery(UserFilterQuery):
-    """This class implements the filter functionality of SCIM2.
-    E.g. requests such as
+    """This class implements the filter functionality of SCIM2. E.g. requests
+    such as.
+
     /scim/v2/Users?filter=userName eq "hamlet@zulip.com"
     can be made to refer to resources via their properties.
     This gets fairly complicated in its full scope
@@ -46,14 +47,15 @@ class ZulipUserFilterQuery(UserFilterQuery):
 
     @classmethod
     def get_extras(cls, q: str, request: Optional[HttpRequest] = None) -> Tuple[str, List[object]]:
-        """
-        Return extra SQL and params to be attached to end of current Query's
-        SQL and params. The return format matches the format that should be used
-        for providing raw SQL with params to Django's .raw():
-        https://docs.djangoproject.com/en/3.2/topics/db/sql/#passing-parameters-into-raw
+        """Return extra SQL and params to be attached to end of current Query's
+        SQL and params. The return format matches the format that should be
+        used for providing raw SQL with params to Django's .raw():
+        https://docs.djangoproject.com/en/3.2/topics/db/sql/#passing-
+        parameters-into-raw.
 
-        Here we ensure that results are limited to the subdomain of the request
-        and also exclude bots, as we currently don't want them to be managed by SCIM2.
+        Here we ensure that results are limited to the subdomain of the
+        request and also exclude bots, as we currently don't want them
+        to be managed by SCIM2.
         """
         assert request is not None
         realm = RequestNotes.get_notes(request).realm

@@ -240,9 +240,8 @@ def messages_for_ids(
 def sew_messages_and_reactions(
     messages: List[Dict[str, Any]], reactions: List[Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
-    """Given a iterable of messages and reactions stitch reactions
-    into messages.
-    """
+    """Given a iterable of messages and reactions stitch reactions into
+    messages."""
     # Add all messages with empty reaction item
     for message in messages:
         message["reactions"] = []
@@ -298,10 +297,10 @@ def save_message_rendered_content(message: Message, content: str) -> str:
 
 class MessageDict:
     """MessageDict is the core class responsible for marshalling Message
-    objects obtained from the database into a format that can be sent
-    to clients via the Zulip API, whether via `GET /messages`,
-    outgoing webhooks, or other code paths.  There are two core flows through
-    which this class is used:
+    objects obtained from the database into a format that can be sent to
+    clients via the Zulip API, whether via `GET /messages`, outgoing webhooks,
+    or other code paths.  There are two core flows through which this class is
+    used:
 
     * For just-sent messages, we construct a single `wide_dict` object
       containing all the data for the message and the related
@@ -315,16 +314,12 @@ class MessageDict:
       interface for fetching hundreds of thousands of messages from
       the database and then turning them into API-format JSON
       dictionaries.
-
     """
 
     @staticmethod
     def wide_dict(message: Message, realm_id: Optional[int] = None) -> Dict[str, Any]:
-        """
-        The next two lines get the cacheable field related
-        to our message object, with the side effect of
-        populating the cache.
-        """
+        """The next two lines get the cacheable field related to our message
+        object, with the side effect of populating the cache."""
         json = message_to_dict_json(message, realm_id)
         obj = extract_message_dict(json)
 
@@ -365,10 +360,11 @@ class MessageDict:
         keep_rendered_content: bool = False,
         skip_copy: bool = False,
     ) -> Dict[str, Any]:
-        """
-        By default, we make a shallow copy of the incoming dict to avoid
-        mutation-related bugs.  Code paths that are passing a unique object
-        can pass skip_copy=True to avoid this extra work.
+        """By default, we make a shallow copy of the incoming dict to avoid
+        mutation-related bugs.
+
+        Code paths that are passing a unique object can pass
+        skip_copy=True to avoid this extra work.
         """
         if not skip_copy:
             obj = copy.copy(obj)
@@ -477,10 +473,8 @@ class MessageDict:
 
     @staticmethod
     def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        row is a row from a .values() call, and it needs to have
-        all the relevant fields populated
-        """
+        """row is a row from a .values() call, and it needs to have all the
+        relevant fields populated."""
         return MessageDict.build_message_dict(
             message_id=row["id"],
             last_edit_time=row["last_edit_time"],
@@ -622,10 +616,10 @@ class MessageDict:
 
     @staticmethod
     def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientT) -> None:
-        """
-        This method hyrdrates recipient info with things
-        like full names and emails of senders.  Eventually
-        our clients should be able to hyrdrate these fields
+        """This method hyrdrates recipient info with things like full names and
+        emails of senders.
+
+        Eventually our clients should be able to hyrdrate these fields
         themselves with info they already have on users.
         """
 
@@ -724,9 +718,8 @@ def access_message(
     message_id: int,
     lock_message: bool = False,
 ) -> Tuple[Message, Optional[UserMessage]]:
-    """You can access a message by ID in our APIs that either:
-    (1) You received or have previously accessed via starring
-        (aka have a UserMessage row for).
+    """You can access a message by ID in our APIs that either: (1) You received
+    or have previously accessed via starring (aka have a UserMessage row for).
     (2) Was sent to a public stream in your realm.
 
     We produce consistent, boring error messages to avoid leaking any
@@ -760,9 +753,8 @@ def access_web_public_message(
     realm: Realm,
     message_id: int,
 ) -> Message:
-    """Access control method for unauthenticated requests interacting
-    with a message in web-public streams.
-    """
+    """Access control method for unauthenticated requests interacting with a
+    message in web-public streams."""
 
     # We throw a MissingAuthenticationError for all errors in this
     # code path, to avoid potentially leaking information on whether a
@@ -806,8 +798,7 @@ def has_message_access(
     stream: Optional[Stream] = None,
     is_subscribed: Optional[bool] = None,
 ) -> bool:
-    """
-    Returns whether a user has access to a given message.
+    """Returns whether a user has access to a given message.
 
     * The user_message parameter must be provided if the user has a UserMessage
       row for the target message.
@@ -851,13 +842,12 @@ def has_message_access(
 def bulk_access_messages(
     user_profile: UserProfile, messages: Collection[Message], *, stream: Optional[Stream] = None
 ) -> List[Message]:
-    """This function does the full has_message_access check for each
-    message.  If stream is provided, it is used to avoid unnecessary
-    database queries, and will use exactly 2 bulk queries instead.
+    """This function does the full has_message_access check for each message.
+    If stream is provided, it is used to avoid unnecessary database queries,
+    and will use exactly 2 bulk queries instead.
 
     Throws AssertionError if stream is passed and any of the messages
     were not sent to that stream.
-
     """
     filtered_messages = []
 
@@ -889,8 +879,7 @@ def bulk_access_messages(
 def bulk_access_messages_expect_usermessage(
     user_profile_id: int, message_ids: Sequence[int]
 ) -> ValuesQuerySet[UserMessage, int]:
-    """
-    Like bulk_access_messages, but faster and potentially stricter.
+    """Like bulk_access_messages, but faster and potentially stricter.
 
     Returns a subset of `message_ids` containing only messages the
     user can access.  Makes O(1) database queries.
@@ -917,9 +906,7 @@ def render_markdown(
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
-    """
-    This is basically just a wrapper for do_render_markdown.
-    """
+    """This is basically just a wrapper for do_render_markdown."""
 
     if realm is None:
         realm = message.get_realm()
@@ -1225,7 +1212,6 @@ def aggregate_huddles(*, input_dict: Dict[int, RawUnreadHuddleDict]) -> List[Unr
 
 
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
-
     pm_dict = raw_data["pm_dict"]
     stream_dict = raw_data["stream_dict"]
     unmuted_stream_msgs = raw_data["unmuted_stream_msgs"]
@@ -1464,9 +1450,8 @@ def get_recent_conversations_recipient_id(
     user_profile: UserProfile, recipient_id: int, sender_id: int
 ) -> int:
     """Helper for doing lookups of the recipient_id that
-    get_recent_private_conversations would have used to record that
-    message in its data structure.
-    """
+    get_recent_private_conversations would have used to record that message in
+    its data structure."""
     my_recipient_id = user_profile.recipient_id
     if recipient_id == my_recipient_id:
         return UserProfile.objects.values_list("recipient_id", flat=True).get(id=sender_id)
@@ -1474,14 +1459,13 @@ def get_recent_conversations_recipient_id(
 
 
 def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dict[str, Any]]:
-    """This function uses some carefully optimized SQL queries, designed
-    to use the UserMessage index on private_messages.  It is
-    significantly complicated by the fact that for 1:1 private
-    messages, we store the message against a recipient_id of whichever
-    user was the recipient, and thus for 1:1 private messages sent
-    directly to us, we need to look up the other user from the
-    sender_id on those messages.  You'll see that pattern repeated
-    both here and also in zerver/lib/events.py.
+    """This function uses some carefully optimized SQL queries, designed to use
+    the UserMessage index on private_messages.  It is significantly complicated
+    by the fact that for 1:1 private messages, we store the message against a
+    recipient_id of whichever user was the recipient, and thus for 1:1 private
+    messages sent directly to us, we need to look up the other user from the
+    sender_id on those messages.  You'll see that pattern repeated both here
+    and also in zerver/lib/events.py.
 
     Ideally, we would write these queries using Django, but even
     without the UNION ALL, that seems to not be possible, because the
@@ -1499,7 +1483,6 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     We return a dictionary structure for convenient modification
     below; this structure is converted into its final form by
     post_process.
-
     """
     RECENT_CONVERSATIONS_LIMIT = 1000
 

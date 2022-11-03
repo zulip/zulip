@@ -22,11 +22,9 @@ logger.setLevel(logging.WARNING)
 def build_topic_mute_checker(
     cursor: CursorWrapper, user_profile: UserProfile
 ) -> Callable[[int, str], bool]:
-    """
-    This function is similar to the function of the same name
-    in zerver/lib/topic_mutes.py, but it works without the ORM,
-    so that we can use it in migrations.
-    """
+    """This function is similar to the function of the same name in
+    zerver/lib/topic_mutes.py, but it works without the ORM, so that we can use
+    it in migrations."""
     query = SQL(
         """
         SELECT
@@ -70,7 +68,6 @@ def get_timing(message: str, f: Callable[[], None]) -> None:
 
 
 def fix_unsubscribed(cursor: CursorWrapper, user_profile: UserProfile) -> None:
-
     recipient_ids = []
 
     def find_recipients() -> None:

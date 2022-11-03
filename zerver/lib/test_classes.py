@@ -119,12 +119,13 @@ class EmptyResponseError(Exception):
 
 
 class UploadSerializeMixin(SerializeMixin):
-    """
-    We cannot use override_settings to change upload directory because
-    because settings.LOCAL_UPLOADS_DIR is used in URL pattern and URLs
-    are compiled only once. Otherwise using a different upload directory
-    for conflicting test cases would have provided better performance
-    while providing the required isolation.
+    """We cannot use override_settings to change upload directory because
+    because settings.LOCAL_UPLOADS_DIR is used in URL pattern and URLs are
+    compiled only once.
+
+    Otherwise using a different upload directory for conflicting test
+    cases would have provided better performance while providing the
+    required isolation.
     """
 
     lockfile = "var/upload_lock"
@@ -236,10 +237,8 @@ Output:
             extra["HTTP_USER_AGENT"] = default_user_agent
 
     def extract_api_suffix_url(self, url: str) -> Tuple[str, Dict[str, List[str]]]:
-        """
-        Function that extracts the URL after `/api/v1` or `/json` and also
-        returns the query data in the URL, if there is any.
-        """
+        """Function that extracts the URL after `/api/v1` or `/json` and also
+        returns the query data in the URL, if there is any."""
         url_split = url.split("?")
         data = {}
         if len(url_split) == 2:
@@ -257,10 +256,11 @@ Output:
         extra: Dict[str, str],
         intentionally_undocumented: bool = False,
     ) -> None:
-        """
-        Validates all API responses received by this test against Zulip's API documentation,
-        declared in zerver/openapi/zulip.yaml.  This powerful test lets us use Zulip's
-        extensive test coverage of corner cases in the API to ensure that we've properly
+        """Validates all API responses received by this test against Zulip's
+        API documentation, declared in zerver/openapi/zulip.yaml.
+
+        This powerful test lets us use Zulip's extensive test coverage
+        of corner cases in the API to ensure that we've properly
         documented those corner cases.
         """
         if not (url.startswith("/json") or url.startswith("/api/v1")):
@@ -303,9 +303,7 @@ Output:
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        """
-        We need to urlencode, since Django's function won't do it for us.
-        """
+        """We need to urlencode, since Django's function won't do it for us."""
         encoded = urllib.parse.urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
@@ -332,11 +330,11 @@ Output:
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        """
-        Use this for patch requests that have file uploads or
-        that need some sort of multi-part content.  In the future
-        Django's test client may become a bit more flexible,
-        so we can hopefully eliminate this.  (When you post
+        """Use this for patch requests that have file uploads or that need some
+        sort of multi-part content.
+
+        In the future Django's test client may become a bit more
+        flexible, so we can hopefully eliminate this.  (When you post
         with the Django test client, it deals with MULTIPART_CONTENT
         automatically, but not patch.)
         """
@@ -484,13 +482,12 @@ Output:
 
     @instrument_url
     def client_post_request(self, url: str, req: Any) -> "TestHttpResponse":
-        """
-        We simulate hitting an endpoint here, although we
-        actually resolve the URL manually and hit the view
-        directly.  We have this helper method to allow our
-        instrumentation to work for /notify_tornado and
-        future similar methods that require doing funny
-        things to a request object.
+        """We simulate hitting an endpoint here, although we actually resolve
+        the URL manually and hit the view directly.
+
+        We have this helper method to allow our instrumentation to work
+        for /notify_tornado and future similar methods that require
+        doing funny things to a request object.
         """
 
         match = resolve(url)
@@ -625,7 +622,8 @@ Output:
         self.assert_json_error(result, assert_json_error_msg)
 
     def _get_page_params(self, result: "TestHttpResponse") -> Dict[str, Any]:
-        """Helper for parsing page_params after fetching the web app's home view."""
+        """Helper for parsing page_params after fetching the web app's home
+        view."""
         doc = lxml.html.document_fromstring(result.content)
         div = cast(lxml.html.HtmlMixin, doc).get_element_by_id("page-params")
         assert div is not None
@@ -635,8 +633,8 @@ Output:
         return page_params
 
     def check_rendered_logged_in_app(self, result: "TestHttpResponse") -> None:
-        """Verifies that a visit of / was a 200 that rendered page_params
-        and not for a (logged-out) spectator."""
+        """Verifies that a visit of / was a 200 that rendered page_params and
+        not for a (logged-out) spectator."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
         # It is important to check `is_spectator` to verify
@@ -662,11 +660,9 @@ Output:
         return result
 
     def login(self, name: str) -> None:
-        """
-        Use this for really simple tests where you just need
-        to be logged in as some user, but don't need the actual
-        user object for anything else.  Try to use 'hamlet' for
-        non-admins and 'iago' for admins:
+        """Use this for really simple tests where you just need to be logged in
+        as some user, but don't need the actual user object for anything else.
+        Try to use 'hamlet' for non-admins and 'iago' for admins:
 
             self.login('hamlet')
 
@@ -713,12 +709,12 @@ Output:
         )
 
     def login_2fa(self, user_profile: UserProfile) -> None:
-        """
-        We need this function to call request.session.save().
-        do_two_factor_login doesn't save session; in normal request-response
-        cycle this doesn't matter because middleware will save the session
-        when it finds it dirty; however,in tests we will have to do that
-        explicitly.
+        """We need this function to call request.session.save().
+
+        do_two_factor_login doesn't save session; in normal request-
+        response cycle this doesn't matter because middleware will save
+        the session when it finds it dirty; however,in tests we will
+        have to do that explicitly.
         """
         request = HttpRequest()
         request.session = self.client.session
@@ -755,8 +751,7 @@ Output:
         is_demo_organization: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        """
-        Stage two of the two-step registration process.
+        """Stage two of the two-step registration process.
 
         If things are working correctly the account should be fully
         registered after this call.
@@ -951,9 +946,7 @@ Output:
         )
 
     def get_streams(self, user_profile: UserProfile) -> List[str]:
-        """
-        Helper function to get the stream names for a user
-        """
+        """Helper function to get the stream names for a user."""
         subs = get_stream_subscriptions_for_user(user_profile).filter(
             active=True,
         )
@@ -1108,8 +1101,8 @@ Output:
     def assert_json_error(
         self, result: "TestHttpResponse", msg: str, status_code: int = 400
     ) -> None:
-        """
-        Invalid POSTs return an error status code and JSON of the form
+        """Invalid POSTs return an error status code and JSON of the form.
+
         {"result": "error", "msg": "reason"}.
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
@@ -1127,9 +1120,11 @@ Output:
     def assert_database_query_count(
         self, count: int, include_savepoints: bool = False, keep_cache_warm: bool = False
     ) -> Iterator[None]:
-        """
-        This captures the queries executed and check the total number of queries.
-        Useful when minimizing unnecessary roundtrips to the database is important.
+        """This captures the queries executed and check the total number of
+        queries.
+
+        Useful when minimizing unnecessary roundtrips to the database is
+        important.
         """
         with queries_captured(
             include_savepoints=include_savepoints, keep_cache_warm=keep_cache_warm
@@ -1178,8 +1173,9 @@ Output:
             self.assertNotIn(substring, decoded)
 
     def assert_logged_in_user_id(self, user_id: Optional[int]) -> None:
-        """
-        Verifies the user currently logged in for the test client has the provided user_id.
+        """Verifies the user currently logged in for the test client has the
+        provided user_id.
+
         Pass None to verify no user is logged in.
         """
         self.assertEqual(get_session_dict_user(self.client.session), user_id)
@@ -1320,9 +1316,8 @@ Output:
         payload: Union[str, Dict[str, Any]],
         **extra: str,
     ) -> Message:
-        """
-        Send a webhook payload to the server, and verify that the
-        post is successful.
+        """Send a webhook payload to the server, and verify that the post is
+        successful.
 
         This is a pretty low-level function.  For most use cases
         see the helpers that call this function, which do additional
@@ -1381,10 +1376,8 @@ Output:
 
     @contextmanager
     def simulated_markdown_failure(self) -> Iterator[None]:
-        """
-        This raises a failure inside of the try/except block of
-        markdown.__init__.do_convert.
-        """
+        """This raises a failure inside of the try/except block of
+        markdown.__init__.do_convert."""
         with self.settings(ERROR_BOT=None), mock.patch(
             "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
         ), self.assertLogs(
@@ -1424,15 +1417,16 @@ Output:
         return [r for r in data if r["id"] == db_id][0]
 
     def init_default_ldap_database(self) -> None:
-        """
-        Takes care of the mock_ldap setup, loads
-        a directory from zerver/tests/fixtures/ldap/directory.json with various entries
-        to be used by tests.
-        If a test wants to specify its own directory, it can just replace
-        self.mock_ldap.directory with its own content, but in most cases it should be
-        enough to use change_user_attr to make simple modifications to the pre-loaded
-        directory. If new user entries are needed to test for some additional unusual
-        scenario, it's most likely best to add that to directory.json.
+        """Takes care of the mock_ldap setup, loads a directory from
+        zerver/tests/fixtures/ldap/directory.json with various entries to be
+        used by tests.
+
+        If a test wants to specify its own directory, it can just
+        replace self.mock_ldap.directory with its own content, but in
+        most cases it should be enough to use change_user_attr to make
+        simple modifications to the pre-loaded directory. If new user
+        entries are needed to test for some additional unusual scenario,
+        it's most likely best to add that to directory.json.
         """
         directory = orjson.loads(self.fixture_data("directory.json", type="ldap"))
 
@@ -1458,12 +1452,13 @@ Output:
     def change_ldap_user_attr(
         self, username: str, attr_name: str, attr_value: Union[str, bytes], binary: bool = False
     ) -> None:
-        """
-        Method for changing the value of an attribute of a user entry in the mock
-        directory. Use option binary=True if you want binary data to be loaded
-        into the attribute from a file specified at attr_value. This changes
-        the attribute only for the specific test function that calls this method,
-        and is isolated from other tests.
+        """Method for changing the value of an attribute of a user entry in the
+        mock directory.
+
+        Use option binary=True if you want binary data to be loaded into
+        the attribute from a file specified at attr_value. This changes
+        the attribute only for the specific test function that calls
+        this method, and is isolated from other tests.
         """
         dn = f"uid={username},ou=users,dc=zulip,dc=com"
         if binary:
@@ -1476,30 +1471,27 @@ Output:
         self.mock_ldap.directory[dn][attr_name] = [data]
 
     def remove_ldap_user_attr(self, username: str, attr_name: str) -> None:
-        """
-        Method for removing the value of an attribute of a user entry in the mock
-        directory. This changes the attribute only for the specific test function
+        """Method for removing the value of an attribute of a user entry in the
+        mock directory.
+
+        This changes the attribute only for the specific test function
         that calls this method, and is isolated from other tests.
         """
         dn = f"uid={username},ou=users,dc=zulip,dc=com"
         self.mock_ldap.directory[dn].pop(attr_name, None)
 
     def ldap_username(self, username: str) -> str:
-        """
-        Maps Zulip username to the name of the corresponding LDAP user
-        in our test directory at zerver/tests/fixtures/ldap/directory.json,
-        if the LDAP user exists.
-        """
+        """Maps Zulip username to the name of the corresponding LDAP user in
+        our test directory at zerver/tests/fixtures/ldap/directory.json, if the
+        LDAP user exists."""
         return self.example_user_ldap_username_map[username]
 
     def ldap_password(self, uid: str) -> str:
         return f"{uid}_ldap_password"
 
     def email_display_from(self, email_message: EmailMessage) -> str:
-        """
-        Returns the email address that will show in email clients as the
-        "From" field.
-        """
+        """Returns the email address that will show in email clients as the
+        "From" field."""
         # The extra_headers field may contain a "From" which is used
         # for display in email clients, and appears in the RFC822
         # header as `From`.  The `.from_email` accessor is the
@@ -1508,9 +1500,7 @@ Output:
         return email_message.extra_headers.get("From", email_message.from_email)
 
     def email_envelope_from(self, email_message: EmailMessage) -> str:
-        """
-        Returns the email address that will be used if the email bounces.
-        """
+        """Returns the email address that will be used if the email bounces."""
         # See email_display_from, above.
         return email_message.from_email
 
@@ -1666,11 +1656,9 @@ Output:
     def get_maybe_enqueue_notifications_parameters(
         self, *, message_id: int, user_id: int, acting_user_id: int, **kwargs: Any
     ) -> Dict[str, Any]:
-        """
-        Returns a dictionary with the passed parameters, after filling up the
-        missing data with default values, for testing what was passed to the
-        `maybe_enqueue_notifications` method.
-        """
+        """Returns a dictionary with the passed parameters, after filling up
+        the missing data with default values, for testing what was passed to
+        the `maybe_enqueue_notifications` method."""
         user_notifications_data = self.create_user_notifications_data_object(
             user_id=user_id, **kwargs
         )
@@ -1686,13 +1674,14 @@ Output:
         )
 
     def verify_emoji_code_foreign_keys(self) -> None:
-        """
-        DB tables that refer to RealmEmoji use int(emoji_code) as the
-        foreign key. Those tables tend to de-normalize emoji_name due
-        to our inheritance-based setup. This helper makes sure those
-        invariants are intact, which is particularly tricky during
-        the import/export process (or during conversions from things
-        like Slack/RocketChat/MatterMost/etc.).
+        """DB tables that refer to RealmEmoji use int(emoji_code) as the
+        foreign key.
+
+        Those tables tend to de-normalize emoji_name due to our
+        inheritance-based setup. This helper makes sure those invariants
+        are intact, which is particularly tricky during the
+        import/export process (or during conversions from things like
+        Slack/RocketChat/MatterMost/etc.).
         """
         dct = {}
 
@@ -1730,10 +1719,9 @@ Output:
     def soft_deactivate_and_check_long_term_idle(
         self, user: UserProfile, expected: bool
     ) -> Iterator[None]:
-        """
-        Ensure that the user is soft deactivated (long term idle), and check if the user
-        has been reactivated when exiting the context with an assertion
-        """
+        """Ensure that the user is soft deactivated (long term idle), and check
+        if the user has been reactivated when exiting the context with an
+        assertion."""
         if not user.long_term_idle:
             do_soft_deactivate_users([user])
             self.assertTrue(user.long_term_idle)
@@ -1858,10 +1846,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         expect_noop: bool = False,
         **extra: str,
     ) -> None:
-        """
-        check_webhook is the main way to test "normal" webhooks that
-        work by receiving a payload from a third party and then writing
-        some message to a Zulip stream.
+        """check_webhook is the main way to test "normal" webhooks that work by
+        receiving a payload from a third party and then writing some message to
+        a Zulip stream.
 
         We use `fixture_name` to find the payload data in of our test
         fixtures.  Then we verify that a message gets sent to a stream:
@@ -1940,9 +1927,8 @@ one or more new messages.
         sender: Optional[UserProfile] = None,
         **extra: str,
     ) -> Message:
-        """
-        For the rare cases that you are testing a webhook that sends
-        private messages, use this function.
+        """For the rare cases that you are testing a webhook that sends private
+        messages, use this function.
 
         Most webhooks send to streams, and you will want to look at
         check_webhook.
@@ -1991,8 +1977,7 @@ one or more new messages.
         return url[:-1] if has_arguments else url
 
     def get_payload(self, fixture_name: str) -> Union[str, Dict[str, str]]:
-        """
-        Generally webhooks that override this should return dicts."""
+        """Generally webhooks that override this should return dicts."""
         return self.get_body(fixture_name)
 
     def get_body(self, fixture_name: str) -> str:
@@ -2004,9 +1989,9 @@ one or more new messages.
 
 
 class MigrationsTestCase(ZulipTestCase):  # nocoverage
-    """
-    Test class for database migrations inspired by this blog post:
-       https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
+    """Test class for database migrations inspired by this blog post:
+
+    https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
     Documented at https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html
     """
 

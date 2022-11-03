@@ -743,12 +743,11 @@ _check_realm_emoji_update = make_checker(realm_emoji_update_event)
 
 
 def check_realm_emoji_update(var_name: str, event: Dict[str, object]) -> None:
-    """
-    The way we send realm emojis is kinda clumsy--we
-    send a dict mapping the emoji id to a sub_dict with
-    the fields (including the id).  Ideally we can streamline
-    this and just send a list of dicts.  The clients can make
-    a Map as needed.
+    """The way we send realm emojis is kinda clumsy--we send a dict mapping the
+    emoji id to a sub_dict with the fields (including the id).
+
+    Ideally we can streamline this and just send a list of dicts.  The
+    clients can make a Map as needed.
     """
     _check_realm_emoji_update(var_name, event)
 
@@ -876,8 +875,7 @@ def check_realm_update(
     event: Dict[str, object],
     prop: str,
 ) -> None:
-    """
-    Realm updates have these two fields:
+    """Realm updates have these two fields:
 
         property
         value
@@ -1478,11 +1476,8 @@ def check_update_display_settings(
     var_name: str,
     event: Dict[str, object],
 ) -> None:
-    """
-    Display setting events have a "setting" field that
-    is more specifically typed according to the
-    UserProfile.property_types dictionary.
-    """
+    """Display setting events have a "setting" field that is more specifically
+    typed according to the UserProfile.property_types dictionary."""
     _check_update_display_settings(var_name, event)
     setting_name = event["setting_name"]
     setting = event["setting"]
@@ -1537,10 +1532,7 @@ def check_update_global_notifications(
     event: Dict[str, object],
     desired_val: Union[bool, int, str],
 ) -> None:
-    """
-    See UserProfile.notification_settings_legacy for
-    more details.
-    """
+    """See UserProfile.notification_settings_legacy for more details."""
     _check_update_global_notifications(var_name, event)
     setting_name = event["notification_name"]
     setting = event["setting"]

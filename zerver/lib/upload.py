@@ -97,10 +97,9 @@ class RealmUploadQuotaError(JsonableError):
 
 
 def sanitize_name(value: str) -> str:
-    """
-    Sanitizes a value to be safe to store in a Linux filesystem, in
-    S3, and in a URL.  So Unicode is allowed, but not special
-    characters other than ".", "-", and "_".
+    """Sanitizes a value to be safe to store in a Linux filesystem, in S3, and
+    in a URL.  So Unicode is allowed, but not special characters other than
+    ".", "-", and "_".
 
     This implementation is based on django.utils.text.slugify; it is
     modified by:
@@ -374,7 +373,6 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 
 
 def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
-
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 
@@ -468,9 +466,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return urllib.parse.urljoin(self.public_upload_url_base, key)
 
     def get_boto_client(self) -> S3Client:
-        """
-        Creating the client takes a long time so we need to cache it.
-        """
+        """Creating the client takes a long time so we need to cache it."""
         if self._boto_client is None:
             config = Config(signature_version=botocore.UNSIGNED)
             self._boto_client = self.session.client(

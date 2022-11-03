@@ -18,8 +18,8 @@ def get_user_topics(
     include_stream_name: bool = False,
     visibility_policy: Optional[int] = None,
 ) -> List[UserTopicDict]:
-    """
-    Fetches UserTopic objects associated with the target user.
+    """Fetches UserTopic objects associated with the target user.
+
     * include_deactivated: Whether to include those associated with
       deactivated streams.
     * include_stream_name: Whether to include stream names in the
@@ -80,9 +80,7 @@ def set_topic_mutes(
     muted_topics: List[List[str]],
     date_muted: Optional[datetime.datetime] = None,
 ) -> None:
-    """
-    This is only used in tests.
-    """
+    """This is only used in tests."""
 
     UserTopic.objects.filter(
         user_profile=user_profile,

@@ -87,18 +87,19 @@ class RateLimitedObject(ABC):
         return self.get_rules()[-1][0]
 
     def api_calls_left(self) -> Tuple[int, float]:
-        """Returns how many API calls in this range this client has, as well as when
-        the rate-limit will be reset to 0"""
+        """Returns how many API calls in this range this client has, as well as
+        when the rate-limit will be reset to 0."""
         max_window = self.max_api_window()
         max_calls = self.max_api_calls()
         return self.backend.get_api_calls_left(self.key(), max_window, max_calls)
 
     def get_rules(self) -> List[Tuple[int, int]]:
-        """
-        This is a simple wrapper meant to protect against having to deal with
-        an empty list of rules, as it would require fiddling with that special case
-        all around this system. "9999 max request per seconds" should be a good proxy
-        for "no rules".
+        """This is a simple wrapper meant to protect against having to deal
+        with an empty list of rules, as it would require fiddling with that
+        special case all around this system.
+
+        "9999 max request per seconds" should be a good proxy for "no
+        rules".
         """
         rules_list = self.rules()
         return rules_list or [(1, 9999)]
@@ -246,9 +247,9 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def need_to_limit(cls, entity_key: str, time_window: int, max_count: int) -> Tuple[bool, float]:
-        """
-        Returns a tuple of `(rate_limited, time_till_free)`.
-        For simplicity, we have loosened the semantics here from
+        """Returns a tuple of `(rate_limited, time_till_free)`. For simplicity,
+        we have loosened the semantics here from.
+
         - each key may make atmost `count * (t / window)` request within any t
           time interval.
         to
@@ -434,7 +435,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def incr_ratelimit(cls, entity_key: str, max_api_calls: int, max_api_window: int) -> None:
-        """Increases the rate-limit for the specified entity"""
+        """Increases the rate-limit for the specified entity."""
         list_key, set_key, _ = cls.get_keys(entity_key)
         now = time.time()
 
@@ -579,9 +580,12 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
 
 def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> None:
-    """Returns whether or not a user was rate limited. Will raise a RateLimited exception
-    if the user has been rate limited, otherwise returns and modifies request to contain
-    the rate limit information"""
+    """Returns whether or not a user was rate limited.
+
+    Will raise a RateLimited exception if the user has been rate
+    limited, otherwise returns and modifies request to contain the rate
+    limit information
+    """
     if not should_rate_limit(request):
         return
 

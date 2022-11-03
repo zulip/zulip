@@ -48,10 +48,8 @@ _worker_id = 0  # Used to identify the worker process.
 
 
 class TextTestResult(runner.TextTestResult):
-    """
-    This class has unpythonic function names because base class follows
-    this style.
-    """
+    """This class has unpythonic function names because base class follows this
+    style."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -85,10 +83,8 @@ class TextTestResult(runner.TextTestResult):
 
 
 class RemoteTestResult(django_runner.RemoteTestResult):
-    """
-    The class follows the unpythonic style of function names of the
-    base class.
-    """
+    """The class follows the unpythonic style of function names of the base
+    class."""
 
     def addInstrumentation(self, test: unittest.TestCase, data: Dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
@@ -145,7 +141,7 @@ def destroy_test_databases(worker_id: Optional[int] = None) -> None:
             # delete that database, we need to not pass a number
             # argument to destroy_test_db.
             if worker_id is not None:
-                """Modified from the Django original to"""
+                """Modified from the Django original to."""
                 database_id = get_database_id(worker_id)
                 connection.creation.destroy_test_db(suffix=database_id)
             else:
@@ -181,9 +177,10 @@ def init_worker(
     process_setup_args: Optional[Tuple[Any, ...]] = None,
     debug_mode: Optional[bool] = None,
 ) -> None:
-    """
-    This function runs only under parallel mode. It initializes the
-    individual processes which are also called workers.
+    """This function runs only under parallel mode.
+
+    It initializes the individual processes which are also called
+    workers.
     """
     global _worker_id
 

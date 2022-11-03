@@ -40,8 +40,7 @@ from zerver.tornado.django_api import send_event
 
 
 class StreamDict(TypedDict, total=False):
-    """
-    This type ultimately gets used in two places:
+    """This type ultimately gets used in two places:
 
         - we use it to create a stream
         - we use it to specify a stream
@@ -180,7 +179,7 @@ def create_streams_if_needed(
     realm: Realm, stream_dicts: List[StreamDict], acting_user: Optional[UserProfile] = None
 ) -> Tuple[List[Stream], List[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
-    whitespace"""
+    whitespace."""
     added_streams: List[Stream] = []
     existing_streams: List[Stream] = []
     for stream_dict in stream_dicts:
@@ -377,11 +376,13 @@ def access_stream_common(
     require_active: bool = True,
     allow_realm_admin: bool = False,
 ) -> Optional[Subscription]:
-    """Common function for backend code where the target use attempts to
-    access the target stream, returning all the data fetched along the
-    way.  If that user does not have permission to access that stream,
-    we throw an exception.  A design goal is that the error message is
-    the same for streams you can't access and streams that don't exist."""
+    """Common function for backend code where the target use attempts to access
+    the target stream, returning all the data fetched along the way.
+
+    If that user does not have permission to access that stream, we
+    throw an exception.  A design goal is that the error message is the
+    same for streams you can't access and streams that don't exist.
+    """
 
     # First, we don't allow any access to streams in other realms.
     if stream.realm_id != user_profile.realm_id:
@@ -490,10 +491,9 @@ def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
 def access_stream_for_unmute_topic_by_name(
     user_profile: UserProfile, stream_name: str, error: str
 ) -> Stream:
-    """
-    It may seem a little silly to have this helper function for unmuting
-    topics, but it gets around a linter warning, and it helps to be able
-    to review all security-related stuff in one place.
+    """It may seem a little silly to have this helper function for unmuting
+    topics, but it gets around a linter warning, and it helps to be able to
+    review all security-related stuff in one place.
 
     Our policy for accessing streams when you unmute a topic is that you
     don't necessarily need to have an active subscription or even "legal"
@@ -553,8 +553,8 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
 
 
 def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
-    """Determine whether the provided user is allowed to access the
-    history of the target stream.  The stream is specified by name.
+    """Determine whether the provided user is allowed to access the history of
+    the target stream.  The stream is specified by name.
 
     This is used by the caller to determine whether this user can get
     historical messages before they joined for a narrowing search.
@@ -656,7 +656,8 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
 ) -> Tuple[List[Stream], List[Stream]]:
-    """Converts list of dicts to a list of Streams, validating input in the process
+    """Converts list of dicts to a list of Streams, validating input in the
+    process.
 
     For each stream name, we validate it to ensure it meets our
     requirements for a proper stream name using check_stream_name.
@@ -764,10 +765,9 @@ def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStr
 
 
 def get_stream_by_narrow_operand_access_unchecked(operand: Union[str, int], realm: Realm) -> Stream:
-    """This is required over access_stream_* in certain cases where
-    we need the stream data only to prepare a response that user can access
-    and not send it out to unauthorized recipients.
-    """
+    """This is required over access_stream_* in certain cases where we need the
+    stream data only to prepare a response that user can access and not send it
+    out to unauthorized recipients."""
     if isinstance(operand, str):
         return get_stream(operand, realm)
     return get_stream_by_id_in_realm(operand, realm)
@@ -796,7 +796,7 @@ def ensure_stream(
 
 
 def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
-    """Get streams with subscribers"""
+    """Get streams with subscribers."""
     exists_expression = Exists(
         Subscription.objects.filter(
             active=True,

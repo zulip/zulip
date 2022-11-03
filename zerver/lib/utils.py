@@ -19,8 +19,8 @@ def statsd_key(val: str, clean_periods: bool = False) -> str:
 
 
 class StatsDWrapper:
-    """Transparently either submit metrics to statsd
-    or do nothing without erroring out"""
+    """Transparently either submit metrics to statsd or do nothing without
+    erroring out."""
 
     # Backported support for gauge deltas
     # as our statsd server supports them but supporting
@@ -56,17 +56,15 @@ statsd = StatsDWrapper()
 
 
 def make_safe_digest(string: str, hash_func: Callable[[bytes], Any] = hashlib.sha1) -> str:
-    """
-    return a hex digest of `string`.
-    """
+    """return a hex digest of `string`."""
     # hashlib.sha1, md5, etc. expect bytes, so non-ASCII strings must
     # be encoded.
     return hash_func(string.encode()).hexdigest()
 
 
 def log_statsd_event(name: str) -> None:
-    """
-    Sends a single event to statsd with the desired name and the current timestamp
+    """Sends a single event to statsd with the desired name and the current
+    timestamp.
 
     This can be used to provide vertical lines in generated graphs,
     for example when doing a prod deploy, bankruptcy request, or

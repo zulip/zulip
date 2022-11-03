@@ -26,9 +26,10 @@ def bulk_create_users(
     tos_version: Optional[str] = None,
     timezone: str = "",
 ) -> None:
-    """
-    Creates and saves a UserProfile with the given email.
-    Has some code based off of UserManage.create_user, but doesn't .save()
+    """Creates and saves a UserProfile with the given email.
+
+    Has some code based off of UserManage.create_user, but doesn't
+    .save()
     """
     existing_users = frozenset(
         UserProfile.objects.filter(realm=realm).values_list("email", flat=True)

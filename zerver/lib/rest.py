@@ -26,11 +26,9 @@ METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH")
 def default_never_cache_responses(
     view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
-    """Patched version of the standard Django never_cache_responses
-    decorator that adds headers to a response so that it will never be
-    cached, unless the view code has already set a Cache-Control
-    header.
-    """
+    """Patched version of the standard Django never_cache_responses decorator
+    that adds headers to a response so that it will never be cached, unless the
+    view code has already set a Cache-Control header."""
 
     @wraps(view_func)
     def _wrapped_view_func(
@@ -49,9 +47,9 @@ def default_never_cache_responses(
 def get_target_view_function_or_response(
     request: HttpRequest, rest_dispatch_kwargs: Dict[str, object]
 ) -> Union[Tuple[Callable[..., HttpResponse], Set[str]], HttpResponse]:
-    """Helper for REST API request dispatch. The rest_dispatch_kwargs
-    parameter is expected to be a dictionary mapping HTTP methods to
-    a mix of view functions and (view_function, {view_flags}) tuples.
+    """Helper for REST API request dispatch. The rest_dispatch_kwargs parameter
+    is expected to be a dictionary mapping HTTP methods to a mix of view
+    functions and (view_function, {view_flags}) tuples.
 
     * Returns an error HttpResponse for unsupported HTTP methods.
 
@@ -63,7 +61,6 @@ def get_target_view_function_or_response(
     method details but leaving any other parameters for the caller to
     pass directly to the view function. We should see if we can remove
     this feature; it's not clear it's actually used.
-
     """
     supported_methods: Dict[str, object] = {}
     request_notes = RequestNotes.get_notes(request)
@@ -131,7 +128,6 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
 
     Never make a urls.py pattern put user input into a variable called GET, POST,
     etc, as that is where we route HTTP verbs to target functions.
-
     """
     result = get_target_view_function_or_response(request, kwargs)
     if isinstance(result, HttpResponse):

@@ -40,8 +40,8 @@ class GenericParser(BaseParser):
         return None
 
     def _get_image(self) -> Optional[str]:
-        """
-        Finding a first image after the h1 header.
+        """Finding a first image after the h1 header.
+
         Presumably it will be the main image.
         """
         soup = self._soup

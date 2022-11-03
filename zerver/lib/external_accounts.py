@@ -1,6 +1,4 @@
-"""
-    This module stores data for "external account" custom profile field.
-"""
+"""This module stores data for "external account" custom profile field."""
 from dataclasses import dataclass
 from typing import Dict
 

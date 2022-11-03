@@ -209,6 +209,7 @@ class ZulipBaseHandler:
 
     def format_text(self, text: str) -> str:
         """Returns a formatted text.
+
         Subclasses should override this method.
         """
         raise NotImplementedError()
@@ -537,7 +538,7 @@ class FencedBlockPreprocessor(Preprocessor):
         return self.md.htmlStash.store(code)
 
     def _escape(self, txt: str) -> str:
-        """basic html escaping"""
+        """basic html escaping."""
         txt = txt.replace("&", "&amp;")
         txt = txt.replace("<", "&lt;")
         txt = txt.replace(">", "&gt;")
