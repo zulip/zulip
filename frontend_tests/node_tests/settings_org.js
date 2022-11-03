@@ -470,7 +470,7 @@ function test_discard_changes_button(discard_changes) {
         "id_realm_message_content_delete_limit_minutes",
     );
 
-    const $discard_button_parent = $(".org-subsection-parent");
+    const $discard_button_parent = $(".settings-subsection-parent");
     $discard_button_parent.find = () => [
         $allow_edit_history,
         $msg_edit_limit_setting,
