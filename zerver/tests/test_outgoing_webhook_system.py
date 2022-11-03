@@ -7,11 +7,13 @@ import responses
 
 from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
+from zerver.actions.streams import do_deactivate_stream
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_webhook import (
     GenericOutgoingWebhookService,
     SlackOutgoingWebhookService,
     do_rest_call,
+    fail_with_message,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
@@ -608,6 +610,40 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(stream_message.topic_name(), "bar")
         display_recipient = get_display_recipient(stream_message.recipient)
         self.assertEqual(display_recipient, "Denmark")
+
+    @responses.activate
+    def test_stream_message_failure_deactivated_to_outgoing_webhook_bot(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        def wrapped(event: Dict[str, Any], failure_message: str) -> None:
+            do_deactivate_stream(get_stream("Denmark", get_realm("zulip")), acting_user=None)
+            fail_with_message(event, failure_message)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            body=requests.exceptions.Timeout("Time is up!"),
+        )
+        with mock.patch(
+            "zerver.lib.outgoing_webhook.fail_with_message", side_effect=wrapped
+        ) as fail:
+            with self.assertLogs(level="INFO") as logs:
+                self.send_stream_message(
+                    bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+                )
+
+        self.assert_length(logs.output, 5)
+        fail.assert_called_once()
+
+        last_message = self.get_last_message()
+        self.assertIn("Request timed out after 10 seconds", last_message.content)
+
+        prev_message = self.get_second_to_last_message()
+        self.assertIn(
+            "tried to send a message to stream #**Denmark**, but that stream does not exist",
+            prev_message.content,
+        )
 
     @responses.activate
     def test_empty_string_json_as_response_to_outgoing_webhook_request(self) -> None:
