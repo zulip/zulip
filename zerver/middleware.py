@@ -550,7 +550,16 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
         # and saved in the set_language flag so that it can be used here.
         set_language = RequestNotes.get_notes(request).set_language
         if set_language is not None:
-            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, set_language)
+            response.set_cookie(
+                settings.LANGUAGE_COOKIE_NAME,
+                set_language,
+                max_age=settings.LANGUAGE_COOKIE_AGE,
+                path=settings.LANGUAGE_COOKIE_PATH,
+                domain=settings.LANGUAGE_COOKIE_DOMAIN,
+                secure=settings.LANGUAGE_COOKIE_SECURE,
+                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/pull/1228
+                samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+            )
 
         return response
 
