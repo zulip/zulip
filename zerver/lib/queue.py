@@ -437,4 +437,4 @@ def retry_event(
     if event["failed_tries"] > MAX_REQUEST_RETRIES:
         failure_processor(event)
     else:
-        queue_json_publish(queue_name, event, lambda x: None)
+        queue_json_publish(queue_name, event)
