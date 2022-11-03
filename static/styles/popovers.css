@@ -792,7 +792,8 @@ ul {
     }
 
     .dropdown-list-widget,
-    .stream_header_colorblock {
+    .stream_header_colorblock,
+    .inline_topic_edit {
         margin-bottom: 10px;
     }
 
