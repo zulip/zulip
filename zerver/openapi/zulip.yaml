@@ -1047,7 +1047,6 @@ paths:
                                     presence as a UNIX timestamp.
                                 presence:
                                   type: object
-                                  x-model: dict
                                   description: |
                                     Object containing the details of the user's most recent presence.
                                   additionalProperties:
@@ -2735,7 +2734,6 @@ paths:
                                     marking already read messages as unread was not
                                     supported by the Zulip API.
                                   type: object
-                                  x-model: dict
                                   additionalProperties:
                                     type: object
                                     description: |
@@ -3235,7 +3233,6 @@ paths:
                                     - update
                                 realm_emoji:
                                   type: object
-                                  x-model: dict
                                   description: |
                                     An object in which each key describes a realm emoji.
                                   additionalProperties:
@@ -3809,7 +3806,6 @@ paths:
                                         allows editing the content of messages.
                                     authentication_methods:
                                       type: object
-                                      x-model: dict
                                       additionalProperties:
                                         description: |
                                           Boolean describing whether the authentication method (i.e its key)
@@ -6056,7 +6052,6 @@ paths:
                       msg: {}
                       messages:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary with a key for each queried message that matches the narrow,
                           with message IDs as keys and search rendering data as values.
@@ -6800,7 +6795,6 @@ paths:
                       msg: {}
                       presence:
                         type: object
-                        x-model: dict
                         description: |
                           An object containing the presence details for every client the user has
                           logged into.
@@ -7761,7 +7755,6 @@ paths:
                       msg: {}
                       subscribed:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary where the key is the email
                           address of the user/bot and the value is a
@@ -7776,7 +7769,6 @@ paths:
                             type: string
                       already_subscribed:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary where the key is the email
                           address of the user/bot and the value is a
@@ -8179,7 +8171,6 @@ paths:
                       msg: {}
                       emoji:
                         type: object
-                        x-model: dict
                         description: |
                           An object that contains `emoji` objects, each identified with their
                           emoji ID as the key.
@@ -8233,13 +8224,11 @@ paths:
                           in the response.
                       presences:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary where each entry describes the presence details
                           of a user in the Zulip organization.
                         additionalProperties:
                           type: object
-                          x-model: dict
                           description: |
                             `{user_email}`: Object containing the details of a user's presence
                             on every client the user is logged into. The object's key is the
@@ -8471,7 +8460,6 @@ paths:
             application/json:
               schema:
                 type: object
-                x-model: dict
               example:
                 {
                   "python": {"text": "Python", "order": "1"},
@@ -9844,7 +9832,6 @@ paths:
                           $ref: "#/components/schemas/CustomProfileField"
                       custom_profile_field_types:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `custom_profile_fields` is present in `fetch_event_types`.
 
@@ -10021,7 +10008,6 @@ paths:
                                 An integer UNIX timestamp representing when the user was muted.
                       presences:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `presence` is present in `fetch_event_types`.
 
@@ -10031,7 +10017,6 @@ paths:
                           Users who have been offline for multiple weeks may not appear in this object.
                         additionalProperties:
                           type: object
-                          x-model: dict
                           description: |
                             `{user_id}` or `{user_email}`: Object containing the details of a user's
                             presence on every client the user is logged into. Depending on the value
@@ -10066,7 +10051,6 @@ paths:
                           emoji that has been uploaded in this Zulip organization.
                         oneOf:
                           - type: object
-                            x-model: dict
                             additionalProperties:
                               $ref: "#/components/schemas/RealmEmoji"
                           - type: array
@@ -10500,7 +10484,6 @@ paths:
                           a stop word in the query was ignored.
                       user_status:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
@@ -11941,7 +11924,6 @@ paths:
                           special value `0` before Zulip 5.0 (feature level 100).
                       realm_authentication_methods:
                         type: object
-                        x-model: dict
                         additionalProperties:
                           description: |
                             Boolean describing whether the authentication method (i.e its key)
@@ -12105,7 +12087,6 @@ paths:
                           The URL for the organization.
                       realm_available_video_chat_providers:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
@@ -12252,7 +12233,6 @@ paths:
                           a new wide organization logo to brand the organization.
                       realm_default_external_accounts:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
@@ -12328,7 +12308,6 @@ paths:
                           will be accepted.
                       giphy_rating_options:
                         type: object
-                        x-model: dict
                         description: |
                           Dictionary where each entry describes a valid rating
                           that is configured on this server and could be selected by an
@@ -13089,7 +13068,6 @@ paths:
                       msg: {}
                       authentication_methods:
                         type: object
-                        x-model: dict
                         additionalProperties: false
                         deprecated: true
                         description: |
@@ -15559,7 +15537,6 @@ components:
                 A boolean describing whether the user account has been deactivated.
     Config:
       type: object
-      x-model: dict
       description: |
         A "string: string" dictionary which describes the configuration
         for the embedded bot (usually details like API keys).
@@ -16691,7 +16668,6 @@ components:
           $ref: "#/components/schemas/profile_data"
     profile_data:
       type: object
-      x-model: dict
       description: |
         Only present if `is_bot` is false; bots can't have custom profile fields.
 
@@ -16887,7 +16863,6 @@ components:
             msg: {}
             subscribed:
               type: object
-              x-model: dict
               description: |
                 A dictionary where the key is the email address of the user/bot and the
                 value is a list of the names of the streams that were subscribed to as a
@@ -16901,7 +16876,6 @@ components:
                   type: string
             already_subscribed:
               type: object
-              x-model: dict
               description: |
                 A dictionary where the key is the email address of the user/bot and the
                 value is a list of the names of the streams that the user/bot is already
