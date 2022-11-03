@@ -1029,7 +1029,7 @@ paths:
                                 presence:
                                   type: object
                                   description: |
-                                    An object contatining a set of objects which describe the
+                                    An object containing a set of objects which describe the
                                     the user's presence on various platforms.
                                   additionalProperties:
                                     $ref: "#/components/schemas/Presence"
@@ -1120,7 +1120,7 @@ paths:
                                 streams:
                                   type: array
                                   description: |
-                                    Array of stream objects, each contatining
+                                    Array of stream objects, each containing
                                     details about a stream that was deleted.
                                   items:
                                     $ref: "#/components/schemas/BasicStream"
