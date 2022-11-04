@@ -176,7 +176,6 @@ MIDDLEWARE = (
     "zerver.middleware.LocaleMiddleware",
     "zerver.middleware.HostDomainMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "zerver.middleware.ZulipSCIMAuthCheckMiddleware",
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
@@ -1235,6 +1234,7 @@ SCIM_SERVICE_PROVIDER = {
     "SCHEME": EXTERNAL_URI_SCHEME,
     "GET_EXTRA_MODEL_FILTER_KWARGS_GETTER": "zerver.lib.scim.get_extra_model_filter_kwargs_getter",
     "BASE_LOCATION_GETTER": "zerver.lib.scim.base_scim_location_getter",
+    "AUTH_CHECK_MIDDLEWARE": "zerver.middleware.ZulipSCIMAuthCheckMiddleware",
     "AUTHENTICATION_SCHEMES": [
         {
             "type": "bearer",
