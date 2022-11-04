@@ -172,6 +172,10 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Upgrade notes for 6.0
 
+- Installations using [docker-zulip][docker-zulip] will need to [upgrade
+  Postgres][docker-zulip-upgrade-database] before upgrading to Zulip
+  6.0, because the previous default of Postgres 10 is no longer
+  supported by this release.
 - Installations using the AzureAD authentication backend will need to
   update `/etc/zulip/zulip-secrets.conf` after upgrading. The
   `azure_oauth2_secret` secret was renamed to
@@ -183,6 +187,8 @@ log][commit-log] for an up-to-date list of raw changes.
   million messages in the database. The new column is not yet used in
   this release, so this migration can be run in the background for
   installations hoping to avoid extended downtime.
+
+[docker-zulip-upgrade-database]: https://github.com/zulip/docker-zulip/#upgrading-zulipzulip-postgresql-to-14
 
 ## Zulip 5.x series
 
