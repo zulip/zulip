@@ -162,13 +162,6 @@ function get_property_value(property_name, for_realm_default_settings) {
         return "custom_days";
     }
 
-    if (property_name === "realm_message_retention_setting") {
-        if (page_params.realm_message_retention_days === settings_config.retain_message_forever) {
-            return "retain_forever";
-        }
-        return "retain_for_period";
-    }
-
     if (property_name === "realm_org_join_restrictions") {
         if (page_params.realm_emails_restricted_to_domains) {
             return "only_selected_domain";
@@ -371,19 +364,45 @@ function set_msg_delete_limit_dropdown() {
     set_time_limit_setting("realm_message_content_delete_limit_seconds");
 }
 
-function set_message_retention_setting_dropdown() {
-    const value = get_property_value("realm_message_retention_setting");
-    $("#id_realm_message_retention_setting").val(value);
-    change_element_block_display_property(
-        "id_realm_message_retention_days",
-        value === "retain_for_period",
-    );
-    if (
-        get_property_value("realm_message_retention_days") ===
-        settings_config.retain_message_forever
-    ) {
-        $("#id_realm_message_retention_days").val("");
+function get_message_retention_setting_value($input_elem, for_api_data = true) {
+    const select_elem_val = $input_elem.val();
+    if (select_elem_val === "retain_forever") {
+        if (!for_api_data) {
+            return settings_config.retain_message_forever;
+        }
+        return JSON.stringify("unlimited");
     }
+
+    const $custom_input = $input_elem.parent().find(".message-retention-setting-custom-input");
+    if ($custom_input.val().length === 0) {
+        return settings_config.retain_message_forever;
+    }
+    return Number.parseInt($custom_input.val(), 10);
+}
+
+function get_dropdown_value_for_message_retention_setting(setting_value) {
+    if (setting_value === settings_config.retain_message_forever) {
+        return "retain_forever";
+    }
+
+    return "retain_for_period";
+}
+
+function set_message_retention_setting_dropdown() {
+    const value = get_property_value("realm_message_retention_days");
+    const dropdown_val = get_dropdown_value_for_message_retention_setting(value);
+    $("#id_realm_message_retention_days").val(dropdown_val);
+
+    change_element_block_display_property(
+        "id_realm_message_retention_custom_input",
+        dropdown_val === "retain_for_period",
+    );
+
+    let custom_input_val = "";
+    if (dropdown_val === "retain_for_period") {
+        custom_input_val = value;
+    }
+    $("#id_realm_message_retention_custom_input").val(custom_input_val);
 }
 
 function set_org_join_restrictions_dropdown() {
@@ -484,9 +503,6 @@ function update_dependent_subsettings(property_name) {
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(page_params.realm_allow_message_editing);
             break;
-        case "realm_message_retention_days":
-            set_message_retention_setting_dropdown();
-            break;
         case "realm_delete_own_message_policy":
             set_delete_own_message_policy_dropdown(page_params.realm_delete_own_message_policy);
             break;
@@ -577,6 +593,9 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
             set_time_limit_setting(property_name);
+            break;
+        case "realm_message_retention_days":
+            set_message_retention_setting_dropdown();
             break;
         default:
             if (property_value !== undefined) {
@@ -732,6 +751,8 @@ export function get_input_element_value(input_elem, input_type) {
             return undefined;
         case "time-limit":
             return get_time_limit_setting_value($input_elem);
+        case "message-retention-setting":
+            return get_message_retention_setting_value($input_elem);
         default:
             return undefined;
     }
@@ -827,6 +848,9 @@ function check_property_changed(elem, for_realm_default_settings) {
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
             proposed_val = get_time_limit_setting_value($elem, false);
+            break;
+        case "realm_message_retention_days":
+            proposed_val = get_message_retention_setting_value($elem, false);
             break;
         case "realm_default_language":
             proposed_val = $(
@@ -984,19 +1008,6 @@ export function register_save_discard_widget_handlers(
                     "#org-notifications .language_selection_widget .language_selection_button span",
                 ).attr("data-language-code");
                 break;
-            case "message_retention": {
-                const message_retention_setting_value = $(
-                    "#id_realm_message_retention_setting",
-                ).val();
-                if (message_retention_setting_value === "retain_forever") {
-                    data.message_retention_days = JSON.stringify("unlimited");
-                } else {
-                    data.message_retention_days = JSON.stringify(
-                        get_input_element_value($("#id_realm_message_retention_days")),
-                    );
-                }
-                break;
-            }
             case "other_settings": {
                 const code_block_language_value = default_code_language_widget.value();
                 // No need to JSON-encode, since this value is already a string.
@@ -1156,10 +1167,10 @@ export function build_page() {
         update_custom_value_input("realm_message_content_delete_limit_seconds");
     });
 
-    $("#id_realm_message_retention_setting").on("change", (e) => {
+    $("#id_realm_message_retention_days").on("change", (e) => {
         const message_retention_setting_dropdown_value = e.target.value;
         change_element_block_display_property(
-            "id_realm_message_retention_days",
+            "id_realm_message_retention_custom_input",
             message_retention_setting_dropdown_value === "retain_for_period",
         );
     });

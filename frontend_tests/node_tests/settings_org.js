@@ -557,7 +557,9 @@ test("set_up", ({override, override_rewire}) => {
     );
     $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
 
-    $("#id_realm_message_retention_days").set_parent($.create("<stub retention period parent>"));
+    $("#id_realm_message_retention_custom_input").set_parent(
+        $.create("<stub retention period parent>"),
+    );
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
     );
