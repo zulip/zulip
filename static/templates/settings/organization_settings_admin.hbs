@@ -69,23 +69,23 @@
 
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
-                    <label for="id_realm_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
+                    <label for="id_realm_message_retention_days" class="dropdown-title">{{t "Message retention period" }}
                     </label>
-                    <select name="realm_message_retention_setting"
-                      id="id_realm_message_retention_setting" class="prop-element"
+                    <select name="realm_message_retention_days"
+                      id="id_realm_message_retention_days" class="prop-element"
+                      data-setting-widget-type="message-retention-setting"
                       {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
                         <option value="retain_forever">{{t 'Retain forever' }}</option>
                         <option value="retain_for_period">{{t 'Retain for N days after posting' }}</option>
                     </select>
 
                     <div class="dependent-inline-block">
-                        <label for="id_realm_message_retention_days" class="inline-block realm-time-limit-label">
+                        <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label">
                             {{t 'N' }}:
                         </label>
-                        <input type="text" id="id_realm_message_retention_days" autocomplete="off"
-                          name="realm_message_retention_days"
-                          class="admin-realm-message-retention-days prop-element"
-                          value="{{ realm_message_retention_days }}"
+                        <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
+                          name="realm_message_retention_custom_input"
+                          class="admin-realm-message-retention-days message-retention-setting-custom-input"
                           data-setting-widget-type="number"
                           {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}/>
                     </div>
