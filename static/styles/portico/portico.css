@@ -521,9 +521,9 @@ input.text-error {
                 content: "\25B2";
                 position: absolute;
                 top: -4px;
-                right: 9px;
-                font-size: 0.5em;
-                color: hsl(0, 0%, 87%);
+                right: 13px;
+                font-size: 1.5em;
+                color: hsl(0, 0%, 100%);
                 line-height: 0;
                 transform: scale(1.8, 1);
             }
