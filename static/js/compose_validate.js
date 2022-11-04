@@ -483,7 +483,8 @@ function validate_private_message() {
     const user_ids = compose_pm_pill.get_user_ids();
 
     if (
-        page_params.realm_private_message_policy === 2 && // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
+        page_params.realm_private_message_policy ===
+            settings_config.private_message_policy_values.disabled.code &&
         (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
     ) {
         // Unless we're composing to a bot
