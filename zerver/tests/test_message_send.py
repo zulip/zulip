@@ -80,7 +80,7 @@ class MessagePOSTTest(ZulipTestCase):
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(user, stream_name)
-            result = self.api_get(user, "/json/messages/" + str(msg_id))
+            result = self.api_get(user, "/api/v1/messages/" + str(msg_id))
             self.assert_json_success(result)
         else:
             with self.assertRaisesRegex(JsonableError, error_msg):
@@ -787,7 +787,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         result = self.api_post(
             self.mit_user("starnine"),
-            "/json/messages",
+            "/api/v1/messages",
             {
                 "type": "private",
                 "sender": self.mit_email("sipbtest"),
@@ -807,7 +807,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         result = self.api_post(
             self.mit_user("starnine"),
-            "/json/messages",
+            "/api/v1/messages",
             {
                 "type": "private",
                 "sender": self.mit_email("sipbtest"),
@@ -1779,7 +1779,7 @@ class StreamMessagesTest(ZulipTestCase):
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=sub_count):
             if not test_fails:
                 msg_id = self.send_stream_message(sender, "test_stream", content)
-                result = self.api_get(sender, "/json/messages/" + str(msg_id))
+                result = self.api_get(sender, "/api/v1/messages/" + str(msg_id))
                 self.assert_json_success(result)
 
             else:
