@@ -25,6 +25,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
@@ -635,6 +636,23 @@ export function on_narrow(opts) {
         // is present.
         if (opts.trigger === "search" && !opts.private_message_recipient) {
             return;
+        }
+        // Do not open compose box if organization has disabled sending
+        // private messages and recipient is not a bot.
+        if (
+            page_params.realm_private_message_policy ===
+                settings_config.private_message_policy_values.disabled.code &&
+            opts.private_message_recipient
+        ) {
+            const emails = opts.private_message_recipient.split(",");
+            if (emails.length !== 1 || !people.get_by_email(emails[0]).is_bot) {
+                // If we are navigating between private message conversations,
+                // we want the compose box to close for non-bot users.
+                if (compose_state.composing()) {
+                    cancel();
+                }
+                return;
+            }
         }
         start("private");
         return;
