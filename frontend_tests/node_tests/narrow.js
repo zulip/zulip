@@ -57,6 +57,13 @@ const ray = {
     full_name: "Raymond",
 };
 
+const bot = {
+    email: "bot@example.com",
+    user_id: 25,
+    full_name: "Example Bot",
+    is_bot: true,
+};
+
 function hide_all_empty_narrow_messages() {
     const all_empty_narrow_messages = [
         ".empty_feed_notice",
@@ -372,6 +379,32 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    // private messages with a bot are possible even though
+    // the organization has disabled sending private messages
+    people.add_active_user(bot);
+    set_filter([["pm-with", "bot@example.com"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated HTML: You have no private messages with Example Bot yet.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
+    // group private messages with bots are not possible when
+    // sending private messages is disabled
+    set_filter([["pm-with", bot.email + "," + alice.email]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to send private messages in this organization.",
+        ),
+    );
+
     // sending private messages enabled
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
@@ -381,7 +414,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages with this person yet!",
+            "translated HTML: You have no private messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -405,7 +438,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages with these people yet!",
+            "translated: You have no private messages with these people yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -433,6 +466,18 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    // group private messages with bots are not possible when
+    // sending private messages is disabled
+    set_filter([["group-pm-with", "bot@example.com"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to send group private messages in this organization.",
+        ),
+    );
+
     // sending private messages enabled
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
@@ -442,7 +487,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no group private messages with this person yet!",
+            "translated HTML: You have no group private messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -452,7 +497,9 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: You haven't received any messages sent by this user yet!"),
+        empty_narrow_html(
+            "translated HTML: You haven't received any messages sent by Raymond yet.",
+        ),
     );
 
     set_filter([["sender", "sinwar@example.com"]]);

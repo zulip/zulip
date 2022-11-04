@@ -152,7 +152,7 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
     await page.waitForSelector("#search_query", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await page.waitForSelector(".empty_feed_notice", {visible: true});
-    const expect_message = "You haven't received any messages sent by this user yet!";
+    const expect_message = "You haven't received any messages sent by Email Gateway yet.";
     assert.strictEqual(
         await common.get_text_from_selector(page, ".empty_feed_notice"),
         expect_message,
