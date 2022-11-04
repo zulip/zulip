@@ -555,9 +555,18 @@ test("set_up", ({override, override_rewire}) => {
     );
     $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
 
-    $("#id_realm_message_retention_custom_input").set_parent(
-        $.create("<stub retention period parent>"),
+    const $stub_realm_message_retention_parent = $.create(
+        "<stub message retention setting parent>",
     );
+    const $realm_message_retention_custom_input = $("#id_realm_message_retention_custom_input");
+    $("#id_realm_message_retention_days").set_parent($stub_realm_message_retention_parent);
+    $realm_message_retention_custom_input.set_parent($stub_realm_message_retention_parent);
+    $stub_realm_message_retention_parent.set_find_results(
+        ".message-retention-setting-custom-input",
+        $realm_message_retention_custom_input,
+    );
+    $realm_message_retention_custom_input.attr("id", "id_realm_message_retention_custom_input");
+
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
     );
