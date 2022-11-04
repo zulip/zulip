@@ -176,7 +176,7 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
 
     # most clients (mobile, bots, etc) use HTTP basic auth and REST calls, where instead of
     # username:password, we use email:apiKey
-    elif "Authorization" in request.headers:
+    elif request.path.startswith("/api") and "Authorization" in request.headers:
         # Wrap function with decorator to authenticate the user before
         # proceeding
         target_function = authenticated_rest_api_view(

@@ -56,11 +56,11 @@ class EventsEndpointTest(ZulipTestCase):
         # events_register code paths
         user = self.example_user("hamlet")
         with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
-            result = self.api_post(user, "/json/register")
+            result = self.api_post(user, "/api/v1/register")
         self.assert_json_success(result)
 
         with mock.patch("zerver.lib.events.request_event_queue", return_value=None):
-            result = self.api_post(user, "/json/register")
+            result = self.api_post(user, "/api/v1/register")
         self.assert_json_error(result, "Could not allocate event queue")
 
         return_event_queue = "15:11"
@@ -75,13 +75,13 @@ class EventsEndpointTest(ZulipTestCase):
         with mock.patch("zerver.lib.events.reactivate_user_if_soft_deactivated") as fa:
             with stub_event_queue_user_events(return_event_queue, return_user_events):
                 result = self.api_post(
-                    user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
+                    user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
                 )
                 self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
-                user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
+                user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
             )
 
         result_dict = self.assert_json_success(result)
@@ -94,7 +94,7 @@ class EventsEndpointTest(ZulipTestCase):
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
-                user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
+                user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
             )
 
         result_dict = self.assert_json_success(result)
@@ -109,7 +109,7 @@ class EventsEndpointTest(ZulipTestCase):
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
                 user,
-                "/json/register",
+                "/api/v1/register",
                 dict(
                     event_types=orjson.dumps([event_type]).decode(),
                     fetch_event_types=orjson.dumps(["message"]).decode(),
@@ -128,7 +128,7 @@ class EventsEndpointTest(ZulipTestCase):
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
                 user,
-                "/json/register",
+                "/api/v1/register",
                 dict(
                     fetch_event_types=orjson.dumps([event_type]).decode(),
                     event_types=orjson.dumps(["message"]).decode(),
@@ -187,11 +187,11 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(normal_user.role, UserProfile.ROLE_MEMBER)
 
         with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
-            result = self.api_post(normal_user, "/json/register", dict(all_public_streams="true"))
+            result = self.api_post(normal_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_success(result)
 
         with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
-            result = self.api_post(guest_user, "/json/register", dict(all_public_streams="true"))
+            result = self.api_post(guest_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_events_get_events_endpoint_guest_cant_use_all_public_streams_param(self) -> None:

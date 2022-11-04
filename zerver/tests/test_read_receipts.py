@@ -14,7 +14,7 @@ class TestReadReceipts(ZulipTestCase):
     def mark_message_read(self, user: UserProfile, message_id: int) -> None:
         result = self.api_post(
             user,
-            "/json/messages/flags",
+            "/api/v1/messages/flags",
             {"messages": orjson.dumps([message_id]).decode(), "op": "add", "flag": "read"},
         )
         self.assert_json_success(result)
