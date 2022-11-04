@@ -192,9 +192,9 @@ boolean field, `mandatory_topics`, to the Realm model in
 
  class Realm(models.Model):
      # ...
-     emails_restricted_to_domains: bool = models.BooleanField(default=True)
-     invite_required: bool = models.BooleanField(default=False)
-+    mandatory_topics: bool = models.BooleanField(default=False)
+     emails_restricted_to_domains = models.BooleanField(default=True)
+     invite_required = models.BooleanField(default=False)
++    mandatory_topics = models.BooleanField(default=False)
 ```
 
 The Realm model also contains an attribute, `property_types`, which
