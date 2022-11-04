@@ -632,9 +632,11 @@ export function on_narrow(opts) {
 
     if (narrow_state.narrowed_by_pm_reply()) {
         opts = fill_in_opts_from_current_narrowed_view("private", opts);
-        // Do not open compose box if triggered by search and invalid recipient
-        // is present.
-        if (opts.trigger === "search" && !opts.private_message_recipient) {
+        // Do not open compose box if an invalid recipient is present.
+        if (!opts.private_message_recipient) {
+            if (compose_state.composing()) {
+                cancel();
+            }
             return;
         }
         // Do not open compose box if organization has disabled sending
