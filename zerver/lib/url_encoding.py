@@ -1,6 +1,7 @@
-from email.headerregistry import Address
 from typing import Any, Dict, List
 from urllib.parse import quote, urlsplit
+
+import re2
 
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import Realm, Stream, UserProfile
@@ -21,8 +22,8 @@ def encode_stream(stream_id: int, stream_name: str) -> str:
 
 def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
     base_url = f"{realm.uri}/#narrow/pm-with/"
-    email_user = Address(addr_spec=sender.email).username.lower()
-    pm_slug = str(sender.id) + "-" + hash_util_encode(email_user)
+    encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", sender.full_name)
+    pm_slug = str(sender.id) + "-" + encoded_user_name
     return base_url + pm_slug
 
 

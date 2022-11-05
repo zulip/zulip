@@ -327,6 +327,30 @@
         }
     }
 
+    kbd {
+        /* Same as kbd in app_components.css */
+        display: inline-block;
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 4px;
+        font-weight: 600;
+        white-space: nowrap;
+        background-color: hsl(0, 0%, 98%);
+        color: hsl(0, 0%, 20%);
+        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+        /* Different from app_components.css */
+        /* Removed margin setting */
+        font-size: 0.85em;
+        padding: 0 0.4em;
+
+        &.arrow-key {
+            /* Same as in informational_overlays.css */
+            line-height: 1;
+            padding: 0 0.2em 0.2em;
+            /* Different from informational_overlays.css */
+            font-size: 1.2em;
+        }
+    }
+
     code {
         /* Copied from rendered_markdown.css */
         font-size: 0.825em;

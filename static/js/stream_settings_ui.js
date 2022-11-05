@@ -16,6 +16,7 @@ import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
@@ -663,7 +664,7 @@ export function setup_page(callback) {
         // streams, either explicitly via user_can_create_streams, or
         // implicitly because page_params.realm_is_zephyr_mirror_realm.
         $("#stream_filter input[type='text']").on("keypress", (e) => {
-            if (e.key !== "Enter") {
+            if (!keydown_util.is_enter_event(e)) {
                 return;
             }
 
@@ -970,7 +971,11 @@ export function open_create_stream() {
 }
 
 export function unsubscribe_from_private_stream(sub) {
-    const html_body = render_unsubscribe_private_stream_modal();
+    const html_body = render_unsubscribe_private_stream_modal({
+        message: $t({
+            defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
+        }),
+    });
 
     function unsubscribe_from_stream() {
         let $stream_row;

@@ -3,7 +3,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,fullstack,non_aws_host,frontends,not_pageable_servers,postgresql
        }
 <% end -%>
@@ -13,7 +13,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,aws_host,prod_frontends,pageable_servers
        }
 <% end -%>
@@ -23,7 +23,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,aws_host,staging_frontends,not_pageable_servers
        }
 <% end -%>
@@ -33,7 +33,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,non_aws_host,zmirror,flaky_servers
        }
 <% end -%>
@@ -43,7 +43,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,non_aws_host,zmirrorp,flaky_servers
        }
 <% end -%>
@@ -53,7 +53,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,aws_host,postgresql_primary,pageable_servers
        }
 <% end -%>
@@ -63,7 +63,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,aws_host,postgresql_replica,pageable_servers
        }
 <% end -%>
@@ -73,7 +73,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,aws_host,not_pageable_servers, redis
        }
 <% end -%>
@@ -83,7 +83,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
        hostgroups       all,aws_host,pageable_servers,smokescreen
        }
 <% end -%>
@@ -93,7 +93,7 @@ define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,aws_host,not_pageable_servers,other
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,<% if host.include?(".") %>non_<% end %>aws_host,not_pageable_servers,other
        }
 <% end -%>

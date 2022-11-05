@@ -7,16 +7,16 @@ set -e
 SUPPRESS_SHARDING_NOTICE=1 "$(dirname "$0")/zulip-puppet-apply" -f
 
 # Verify, before we move them into place
-if ! [ -e /etc/zulip/nginx_sharding.conf.tmp ] || ! [ -e /etc/zulip/sharding.json.tmp ]; then
+if ! [ -e /etc/zulip/nginx_sharding_map.conf.tmp ] || ! [ -e /etc/zulip/sharding.json.tmp ]; then
     echo "No sharding updates found to apply."
     exit 1
 fi
 
-chown root:root /etc/zulip/nginx_sharding.conf.tmp
-chmod 644 /etc/zulip/nginx_sharding.conf.tmp
+chown root:root /etc/zulip/nginx_sharding_map.conf.tmp
+chmod 644 /etc/zulip/nginx_sharding_map.conf.tmp
 chown zulip:zulip /etc/zulip/sharding.json.tmp
 chmod 644 /etc/zulip/sharding.json.tmp
-mv /etc/zulip/nginx_sharding.conf.tmp /etc/zulip/nginx_sharding.conf
+mv /etc/zulip/nginx_sharding_map.conf.tmp /etc/zulip/nginx_sharding_map.conf
 mv /etc/zulip/sharding.json.tmp /etc/zulip/sharding.json
 
 # In the ordering of operations below, the crucial detail is that
@@ -33,7 +33,7 @@ mv /etc/zulip/sharding.json.tmp /etc/zulip/sharding.json
 # while Django is restarting.  For this reason it's important to
 # reload nginx only after Django.
 supervisorctl restart zulip-django
-supervisorctl restart zulip-workers:*
+supervisorctl restart 'zulip-workers:*'
 if [ -f /etc/supervisor/conf.d/zulip/zulip-once.conf ]; then
     supervisorctl restart zulip_deliver_scheduled_emails zulip_deliver_scheduled_messages
 fi

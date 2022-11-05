@@ -77,12 +77,11 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str
             )
 
 
-class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+class AsyncDjangoHandler(tornado.web.RequestHandler):
+    handler_id: int
 
-        # Copied from the django.core.handlers.wsgi __init__() method.
-        self.load_middleware()
+    def initialize(self, django_handler: base.BaseHandler) -> None:
+        self.django_handler = django_handler
 
         # Prevent Tornado from automatically finishing the request
         self._auto_finish = False
@@ -111,7 +110,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # `get_response()`.
         set_script_prefix(get_script_name(environ))
         await sync_to_async(
-            lambda: signals.request_started.send(sender=self.__class__), thread_sensitive=True
+            lambda: signals.request_started.send(sender=type(self.django_handler)),
+            thread_sensitive=True,
         )()
         self._request = WSGIRequest(environ)
 
@@ -156,7 +156,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     async def get(self, *args: Any, **kwargs: Any) -> None:
         request = await self.convert_tornado_request_to_django_request()
-        response = await sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
+        response = await sync_to_async(
+            lambda: self.django_handler.get_response(request), thread_sensitive=True
+        )()
 
         try:
             if isinstance(response, AsynchronousResponse):
@@ -258,7 +260,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             res_type=result_dict["result"], data=result_dict, status=self.get_status()
         )
 
-        response = await sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
+        response = await sync_to_async(
+            lambda: self.django_handler.get_response(request), thread_sensitive=True
+        )()
         try:
             # Explicitly mark requests as varying by cookie, since the
             # middleware will not have seen a session access

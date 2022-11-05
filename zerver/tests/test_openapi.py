@@ -107,7 +107,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaisesRegex(SchemaError, r"42 is not of type string"):
+        with self.assertRaisesRegex(SchemaError, r"42 is not of type 'string'"):
             bad_content = {
                 "msg": 42,
                 "result": "success",
@@ -422,8 +422,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         # Iterate through the decorators to find the original
         # function, wrapped by has_request_variables, so we can parse
         # its arguments.
-        while hasattr(function, "__wrapped__"):
-            function = getattr(function, "__wrapped__")
+        while (wrapped := getattr(function, "__wrapped__", None)) is not None:
+            function = wrapped
 
         # Now, we do inference mapping each REQ parameter's
         # declaration details to the Python/mypy types for the
@@ -934,13 +934,13 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 for status_code, response in operation["responses"].items():
                     schema = response["content"]["application/json"]["schema"]
                     if "oneOf" in schema:
-                        for subschema_index, subschema in enumerate(schema["oneOf"]):
+                        for _, subschema in enumerate(schema["oneOf"]):
                             validate_schema(subschema)
                             assert validate_against_openapi_schema(
                                 subschema["example"],
                                 path,
                                 method,
-                                status_code + "_" + str(subschema_index),
+                                status_code,
                             )
                         continue
                     validate_schema(schema)

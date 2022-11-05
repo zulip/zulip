@@ -138,3 +138,24 @@ def is_unsupported_browser(user_agent: str) -> Tuple[bool, Optional[str]]:
     if browser_name == "Internet Explorer":
         return (True, browser_name)
     return (False, browser_name)
+
+
+def is_pronouns_field_type_supported(user_agent_str: str) -> bool:
+    # In order to avoid users having a bad experience with these
+    # custom profile fields disappearing after applying migration
+    # 0421_migrate_pronouns_custom_profile_fields, we provide this
+    # compatibility shim to show such custom profile fields as
+    # SHORT_TEXT to older mobile app clients.
+    #
+    # TODO/compatibility(7.0): Because this is a relatively minor
+    # detail, we can remove this compatibility hack once most users
+    # have upgraded to a sufficiently new mobile client.
+    user_agent = parse_user_agent(user_agent_str)
+    if user_agent["name"] != "ZulipMobile":
+        return True
+
+    FIRST_VERSION_TO_SUPPORT_PRONOUNS_FIELD = "27.192"
+    if version_lt(user_agent["version"], FIRST_VERSION_TO_SUPPORT_PRONOUNS_FIELD):
+        return False
+
+    return True

@@ -60,7 +60,7 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
             # to raise a TimeoutExpired in _this_ thread.
             assert self.ident is not None
             ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                ctypes.c_long(self.ident),
+                ctypes.c_ulong(self.ident),
                 ctypes.py_object(TimeoutExpired),
             )
 

@@ -143,3 +143,12 @@ If you're migrating from a configuration using the root domain to one
 with realms hosted on subdomains, be sure to clear cookies in any
 browsers that were logged in on the root domain; otherwise, those
 browsers will experience weird/confusing redirects.
+
+## Open realm creation
+
+Installations like [Zulip Cloud](https://zulip.com/plans) that wish to
+allow anyone on the Internet to create new Zulip organizations can do
+so by setting `OPEN_REALM_CREATION = True` in
+`/etc/zulip/settings.py`. Note that offering Zulip hosting to anyone
+on the Internet entails significant responsibility around security,
+abuse/spam, legal issues like GDPR/CCPA compliance, and more.

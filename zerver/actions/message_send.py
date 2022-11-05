@@ -3,7 +3,6 @@ import logging
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import (
-    TYPE_CHECKING,
     AbstractSet,
     Any,
     Callable,
@@ -27,6 +26,7 @@ from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.lib.addressee import Addressee
@@ -78,18 +78,17 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
     get_client,
     get_huddle_user_ids,
     get_stream,
     get_stream_by_id_in_realm,
     get_system_bot,
     get_user_by_delivery_email,
+    is_cross_realm_bot_email,
     query_for_ids,
 )
 from zerver.tornado.django_api import send_event
-
-if TYPE_CHECKING:
-    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -205,7 +204,7 @@ def get_recipient_info(
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
         assert stream_topic is not None
-        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
+        user_ids_muting_topic = stream_topic.user_ids_with_visibility_policy(UserTopic.MUTED)
 
         subscription_rows = (
             get_subscriptions_for_send_message(
@@ -512,6 +511,7 @@ def build_message_send_dict(
     """
     if realm is None:
         realm = message.sender.realm
+    assert realm == message.realm
 
     if mention_backend is None:
         mention_backend = MentionBackend(realm.id)
@@ -1444,6 +1444,7 @@ def check_message(
     message.sender = sender
     message.content = message_content
     message.recipient = recipient
+    message.realm = realm
     if addressee.is_stream():
         message.set_topic_name(topic_name)
     if forged and forged_timestamp is not None:
@@ -1593,7 +1594,6 @@ def internal_prep_stream_message_by_name(
 
 
 def internal_prep_private_message(
-    realm: Realm,
     sender: UserProfile,
     recipient_user: UserProfile,
     content: str,
@@ -1603,6 +1603,10 @@ def internal_prep_private_message(
     See _internal_prep_message for details of how this works.
     """
     addressee = Addressee.for_user_profile(recipient_user)
+    if not is_cross_realm_bot_email(recipient_user.delivery_email):
+        realm = recipient_user.realm
+    else:
+        realm = sender.realm
 
     return _internal_prep_message(
         realm=realm,
@@ -1616,8 +1620,7 @@ def internal_prep_private_message(
 def internal_send_private_message(
     sender: UserProfile, recipient_user: UserProfile, content: str
 ) -> Optional[int]:
-    realm = recipient_user.realm
-    message = internal_prep_private_message(realm, sender, recipient_user, content)
+    message = internal_prep_private_message(sender, recipient_user, content)
     if message is None:
         return None
     message_ids = do_send_messages([message])

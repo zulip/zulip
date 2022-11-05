@@ -174,9 +174,9 @@ test("set_compose_defaults", () => {
         ["topic", "Bar"],
     ]);
 
-    const stream_and_subject = narrow_state.set_compose_defaults();
-    assert.equal(stream_and_subject.stream, "Foo");
-    assert.equal(stream_and_subject.topic, "Bar");
+    const stream_and_topic = narrow_state.set_compose_defaults();
+    assert.equal(stream_and_topic.stream, "Foo");
+    assert.equal(stream_and_topic.topic, "Bar");
 
     set_filter([["pm-with", "foo@bar.com"]]);
     let pm_test = narrow_state.set_compose_defaults();

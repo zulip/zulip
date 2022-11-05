@@ -5,37 +5,6 @@
         <span class="send-status-close">&times;</span>
         <span class="error-msg"></span>
     </div>
-    {{#if is_stream}}
-    <div class="edit-controls">
-        <div class="message_edit_header">
-            <div class="stream_header_colorblock" {{#unless is_stream_editable}}style="display:none"{{/unless}}></div>
-            <div class="select_stream_setting" {{#unless is_stream_editable}}style="display:none"{{/unless}}>
-                {{> settings/dropdown_list_widget
-                  widget_name=select_move_stream_widget_name
-                  list_placeholder=(t 'Filter streams')}}
-            </div>
-            <i class="fa fa-angle-right" aria-hidden="true" {{#unless is_stream_editable}}style="display:none"{{/unless}}></i>
-            <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
-        </div>
-        <select class='message_edit_topic_propagate' style='display:none;'>
-            <option value="change_one"> {{t "Move only this message" }}</option>
-            <option selected="selected" value="change_later"> {{t "Move this and all following messages in this topic" }}</option>
-            <option value="change_all"> {{t "Move all messages in this topic" }}</option>
-        </select>
-        <div class="message_edit_breadcrumb_messages"  style='display:none;'>
-            <label class="checkbox">
-                <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
-                <span></span>
-                {{t "Send automated notice to new topic" }}
-            </label>
-            <label class="checkbox">
-                <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
-                <span></span>
-                {{t "Send automated notice to old topic" }}
-            </label>
-        </div>
-    </div>
-    {{/if}}
     <div class="edit-controls">
         {{> copy_message_button message_id=this.message_id}}
         <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
@@ -57,7 +26,7 @@
                 <div class="btn-wrapper inline-block">
                     <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
                 </div>
-                {{#if is_content_editable}}
+                {{#if is_editable}}
                 <div class="message-edit-feature-group">
                     {{> compose_control_buttons }}
                 </div>
@@ -65,12 +34,12 @@
             {{else}}
                 <button type="button" class="button small rounded message_edit_close">{{t "Close" }}</button>
             {{/if}}
-            {{#if has_been_editable}}
+            {{#if is_editable}}
             <div class="message-edit-timer">
                 <span class="message_edit_countdown_timer"></span>
                 <span>
                     <i id="message_edit_tooltip" class="tippy-zulip-tooltip message_edit_tooltip fa fa-question-circle" aria-hidden="true"
-                      {{#if is_widget_message}} data-tippy-content="{{#tr}}Widgets cannot be edited.{{/tr}}" {{else}} data-tippy-content="{{#tr}}This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.{{/tr}}" {{/if}}>
+                      data-tippy-content="{{#tr}}This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.{{/tr}}">
                     </i>
                 </span>
             </div>

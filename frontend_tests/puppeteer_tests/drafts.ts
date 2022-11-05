@@ -2,18 +2,14 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
-    await page.waitForFunction(
-        () => $("#draft_overlay").length === 0 || $("#draft_overlay").css("opacity") === "0",
-    );
+    await page.waitForSelector("#draft_overlay.show", {hidden: true});
 }
 
 async function wait_for_drafts_to_appear(page: Page): Promise<void> {
-    await page.waitForFunction(
-        () => $("#draft_overlay").length === 1 && $("#draft_overlay").css("opacity") === "1",
-    );
+    await page.waitForSelector("#draft_overlay.show");
 }
 
 async function get_drafts_count(page: Page): Promise<number> {
@@ -40,7 +36,7 @@ async function create_stream_message_draft(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#stream-message", {visible: true});
     await common.fill_form(page, "form#send_message_form", {
-        stream_message_recipient_stream: "all",
+        stream_message_recipient_stream: "Denmark",
         stream_message_recipient_topic: "tests",
         content: "Test stream message.",
     });
@@ -82,7 +78,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
             page,
             ".draft-row .message_header_stream .stream_label",
         ),
-        "all",
+        "Denmark",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -121,20 +117,20 @@ async function test_restore_message_draft(page: Page): Promise<void> {
     await page.waitForSelector("#stream-message", {visible: true});
     await page.waitForSelector("#preview_message_area", {hidden: true});
     await common.check_form_contents(page, "form#send_message_form", {
-        stream_message_recipient_stream: "all",
+        stream_message_recipient_stream: "Denmark",
         stream_message_recipient_topic: "tests",
         content: "Test stream message.",
     });
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
-        "tests - Zulip Dev - Zulip",
+        "#Denmark > tests - Zulip Dev - Zulip",
         "Didn't narrow to the right topic.",
     );
 }
 
 async function edit_stream_message_draft(page: Page): Promise<void> {
     await common.fill_form(page, "form#send_message_form", {
-        stream_message_recipient_stream: "all",
+        stream_message_recipient_stream: "Denmark",
         stream_message_recipient_topic: "tests",
         content: "Updated stream message",
     });
@@ -151,7 +147,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
             page,
             ".draft-row .message_header_stream .stream_label",
         ),
-        "all",
+        "Denmark",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -163,7 +159,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
+            ".draft-row .message_row:not(.private-message) .rendered_markdown.restore-draft",
         ),
         "Updated stream message",
     );

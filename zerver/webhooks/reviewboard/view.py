@@ -1,11 +1,10 @@
-from typing import Any, Dict, Sequence
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
@@ -57,60 +56,62 @@ BRANCH_TEMPLATE = "**Branch**: {branch_name}"
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_REVIEWBOARD_EVENT")
 
 
-def get_target_people_string(payload: Dict[str, Any]) -> str:
+def get_target_people_string(payload: WildValue) -> str:
     result = ""
     target_people = payload["review_request"]["target_people"]
     if len(target_people) == 1:
-        result = "**{title}**".format(**target_people[0])
+        result = "**{title}**".format(title=target_people[0]["title"].tame(check_string))
     else:
-        for target_person in target_people[:-1]:
-            result += "**{title}**, ".format(**target_person)
-        result += "and **{title}**".format(**target_people[-1])
+        for target_index in range(len(target_people) - 1):
+            result += "**{title}**, ".format(
+                title=target_people[target_index]["title"].tame(check_string)
+            )
+        result += "and **{title}**".format(title=target_people[-1]["title"].tame(check_string))
 
     return result
 
 
-def get_review_published_body(payload: Dict[str, Any]) -> str:
+def get_review_published_body(payload: WildValue) -> str:
     kwargs = {
-        "review_url": payload["review"]["absolute_url"],
-        "id": payload["review_request"]["id"],
-        "review_request_title": payload["review_request"]["summary"],
-        "review_request_url": payload["review_request"]["absolute_url"],
-        "user_name": payload["review"]["links"]["user"]["title"],
-        "review_body_top": payload["review"]["body_top"],
+        "review_url": payload["review"]["absolute_url"].tame(check_string),
+        "id": payload["review_request"]["id"].tame(check_int),
+        "review_request_title": payload["review_request"]["summary"].tame(check_string),
+        "review_request_url": payload["review_request"]["absolute_url"].tame(check_string),
+        "user_name": payload["review"]["links"]["user"]["title"].tame(check_string),
+        "review_body_top": payload["review"]["body_top"].tame(check_string),
     }
 
     return REVIEW_PUBLISHED.format(**kwargs).strip()
 
 
-def get_reply_published_body(payload: Dict[str, Any]) -> str:
+def get_reply_published_body(payload: WildValue) -> str:
     kwargs = {
-        "reply_url": payload["reply"]["links"]["self"]["href"],
-        "id": payload["review_request"]["id"],
-        "review_request_title": payload["review_request"]["summary"],
-        "review_request_url": payload["review_request"]["links"]["self"]["href"],
-        "user_name": payload["reply"]["links"]["user"]["title"],
-        "user_url": payload["reply"]["links"]["user"]["href"],
-        "reply_body_top": payload["reply"]["body_top"],
+        "reply_url": payload["reply"]["links"]["self"]["href"].tame(check_string),
+        "id": payload["review_request"]["id"].tame(check_int),
+        "review_request_title": payload["review_request"]["summary"].tame(check_string),
+        "review_request_url": payload["review_request"]["links"]["self"]["href"].tame(check_string),
+        "user_name": payload["reply"]["links"]["user"]["title"].tame(check_string),
+        "user_url": payload["reply"]["links"]["user"]["href"].tame(check_string),
+        "reply_body_top": payload["reply"]["body_top"].tame(check_string),
     }
 
     return REPLY_PUBLISHED.format(**kwargs).strip()
 
 
-def get_review_request_published_body(payload: Dict[str, Any]) -> str:
+def get_review_request_published_body(payload: WildValue) -> str:
     kwargs = {
-        "id": payload["review_request"]["id"],
-        "review_request_title": payload["review_request"]["summary"],
-        "review_request_url": payload["review_request"]["absolute_url"],
-        "user_name": payload["review_request"]["links"]["submitter"]["title"],
-        "description": payload["review_request"]["description"],
-        "status": payload["review_request"]["status"],
+        "id": payload["review_request"]["id"].tame(check_int),
+        "review_request_title": payload["review_request"]["summary"].tame(check_string),
+        "review_request_url": payload["review_request"]["absolute_url"].tame(check_string),
+        "user_name": payload["review_request"]["links"]["submitter"]["title"].tame(check_string),
+        "description": payload["review_request"]["description"].tame(check_string),
+        "status": payload["review_request"]["status"].tame(check_string),
         "target_people": get_target_people_string(payload),
         "extra_info": "",
     }
 
     message = REVIEW_REQUEST_PUBLISHED + REVIEW_REQUEST_DETAILS
-    branch = payload["review_request"].get("branch")
+    branch = payload["review_request"].get("branch").tame(check_none_or(check_string))
     if branch and branch is not None:
         branch_info = BRANCH_TEMPLATE.format(branch_name=branch)
         kwargs["extra_info"] = branch_info
@@ -118,20 +119,20 @@ def get_review_request_published_body(payload: Dict[str, Any]) -> str:
     return message.format(**kwargs).strip()
 
 
-def get_review_request_reopened_body(payload: Dict[str, Any]) -> str:
+def get_review_request_reopened_body(payload: WildValue) -> str:
     kwargs = {
-        "id": payload["review_request"]["id"],
-        "review_request_title": payload["review_request"]["summary"],
-        "review_request_url": payload["review_request"]["absolute_url"],
-        "user_name": payload["reopened_by"]["username"],
-        "description": payload["review_request"]["description"],
-        "status": payload["review_request"]["status"],
+        "id": payload["review_request"]["id"].tame(check_int),
+        "review_request_title": payload["review_request"]["summary"].tame(check_string),
+        "review_request_url": payload["review_request"]["absolute_url"].tame(check_string),
+        "user_name": payload["reopened_by"]["username"].tame(check_string),
+        "description": payload["review_request"]["description"].tame(check_string),
+        "status": payload["review_request"]["status"].tame(check_string),
         "target_people": get_target_people_string(payload),
         "extra_info": "",
     }
 
     message = REVIEW_REQUEST_REOPENED + REVIEW_REQUEST_DETAILS
-    branch = payload["review_request"].get("branch")
+    branch = payload["review_request"].get("branch").tame(check_none_or(check_string))
     if branch and branch is not None:
         branch_info = BRANCH_TEMPLATE.format(branch_name=branch)
         kwargs["extra_info"] = branch_info
@@ -139,20 +140,20 @@ def get_review_request_reopened_body(payload: Dict[str, Any]) -> str:
     return message.format(**kwargs).strip()
 
 
-def get_review_request_closed_body(payload: Dict[str, Any]) -> str:
+def get_review_request_closed_body(payload: WildValue) -> str:
     kwargs = {
-        "id": payload["review_request"]["id"],
-        "review_request_title": payload["review_request"]["summary"],
-        "review_request_url": payload["review_request"]["absolute_url"],
-        "user_name": payload["closed_by"]["username"],
-        "description": payload["review_request"]["description"],
-        "status": payload["review_request"]["status"],
+        "id": payload["review_request"]["id"].tame(check_int),
+        "review_request_title": payload["review_request"]["summary"].tame(check_string),
+        "review_request_url": payload["review_request"]["absolute_url"].tame(check_string),
+        "user_name": payload["closed_by"]["username"].tame(check_string),
+        "description": payload["review_request"]["description"].tame(check_string),
+        "status": payload["review_request"]["status"].tame(check_string),
         "target_people": get_target_people_string(payload),
-        "extra_info": "**Close type**: {}".format(payload["close_type"]),
+        "extra_info": "**Close type**: {}".format(payload["close_type"].tame(check_string)),
     }
 
     message = REVIEW_REQUEST_CLOSED + REVIEW_REQUEST_DETAILS
-    branch = payload["review_request"].get("branch")
+    branch = payload["review_request"].get("branch").tame(check_none_or(check_string))
     if branch and branch is not None:
         branch_info = BRANCH_TEMPLATE.format(branch_name=branch)
         kwargs["extra_info"] = "{}\n{}".format(kwargs["extra_info"], branch_info)
@@ -160,8 +161,8 @@ def get_review_request_closed_body(payload: Dict[str, Any]) -> str:
     return message.format(**kwargs).strip()
 
 
-def get_review_request_repo_title(payload: Dict[str, Any]) -> str:
-    return payload["review_request"]["links"]["repository"]["title"]
+def get_review_request_repo_title(payload: WildValue) -> str:
+    return payload["review_request"]["links"]["repository"]["title"].tame(check_string)
 
 
 RB_MESSAGE_FUNCTIONS = {
@@ -180,7 +181,7 @@ ALL_EVENT_TYPES = list(RB_MESSAGE_FUNCTIONS.keys())
 def api_reviewboard_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     event_type = validate_extract_webhook_http_header(
         request, "X-ReviewBoard-Event", "Review Board"

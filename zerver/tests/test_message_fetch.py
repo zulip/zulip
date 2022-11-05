@@ -26,7 +26,13 @@ from zerver.lib.message import (
     render_markdown,
     update_first_visible_message_id,
 )
-from zerver.lib.narrow import build_narrow_filter, is_spectator_compatible
+from zerver.lib.narrow import (
+    BadNarrowOperator,
+    NarrowBuilder,
+    build_narrow_filter,
+    exclude_muting_conditions,
+    is_spectator_compatible,
+)
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
@@ -49,9 +55,6 @@ from zerver.models import (
 )
 from zerver.views.message_fetch import (
     LARGER_THAN_MAX_MESSAGE_ID,
-    BadNarrowOperator,
-    NarrowBuilder,
-    exclude_muting_conditions,
     find_first_unread_anchor,
     get_messages_backend,
     ok_to_include_history,
@@ -3058,8 +3061,9 @@ class GetOldMessagesTest(ZulipTestCase):
             get_messages_backend(request, user_profile)
 
         for query in queries:
-            if "/* get_messages */" in query["sql"]:
-                sql = str(query["sql"]).replace(" /* get_messages */", "")
+            sql = str(query["sql"])
+            if "/* get_messages */" in sql:
+                sql = sql.replace(" /* get_messages */", "")
                 self.assertEqual(sql, expected)
                 return
         raise AssertionError("get_messages query not found")
@@ -3238,7 +3242,7 @@ class GetOldMessagesTest(ZulipTestCase):
             get_messages_backend(request, user_profile)
 
         # Verify the query for old messages looks correct.
-        queries = [q for q in all_queries if "/* get_messages */" in q["sql"]]
+        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
         self.assert_length(queries, 1)
         sql = queries[0]["sql"]
         self.assertNotIn(f"AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
@@ -3284,7 +3288,7 @@ class GetOldMessagesTest(ZulipTestCase):
             with queries_captured() as all_queries:
                 get_messages_backend(request, user_profile)
 
-        queries = [q for q in all_queries if "/* get_messages */" in q["sql"]]
+        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
         self.assert_length(queries, 1)
         sql = queries[0]["sql"]
         self.assertNotIn(f"AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
@@ -3308,7 +3312,7 @@ class GetOldMessagesTest(ZulipTestCase):
         with queries_captured() as all_queries:
             get_messages_backend(request, user_profile)
 
-        queries = [q for q in all_queries if "/* get_messages */" in q["sql"]]
+        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
         self.assert_length(queries, 1)
 
         sql = queries[0]["sql"]
@@ -3321,7 +3325,7 @@ class GetOldMessagesTest(ZulipTestCase):
         with first_visible_id_as(first_visible_message_id):
             with queries_captured() as all_queries:
                 get_messages_backend(request, user_profile)
-            queries = [q for q in all_queries if "/* get_messages */" in q["sql"]]
+            queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
             sql = queries[0]["sql"]
             self.assertNotIn("AND message_id <=", sql)
             self.assertNotIn("AND message_id >=", sql)
@@ -3374,7 +3378,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Next, verify the use_first_unread_anchor setting invokes
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
-        queries = [q for q in all_queries if "/* get_messages */" in q["sql"]]
+        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
         self.assert_length(queries, 1)
         self.assertIn(f"AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}", queries[0]["sql"])
 

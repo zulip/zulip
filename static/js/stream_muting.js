@@ -8,6 +8,7 @@ import * as overlays from "./overlays";
 import * as settings_notifications from "./settings_notifications";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
+import * as unread_ui from "./unread_ui";
 
 export function update_is_muted(sub, value) {
     sub.is_muted = value;
@@ -54,9 +55,9 @@ export function update_is_muted(sub, value) {
         navigate.plan_scroll_to_selected();
         message_scroll.suppress_selection_update_on_next_scroll();
 
-        if (!message_lists.home.empty()) {
-            message_util.do_unread_count_updates(message_lists.home.all_messages());
-        }
+        // Since muted streams aren't counted in visible unread
+        // counts, we need to update the rendering of them.
+        unread_ui.update_unread_counts();
     }, 0);
 
     settings_notifications.update_muted_stream_state(sub);

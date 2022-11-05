@@ -37,7 +37,7 @@ run_test("hash_util", () => {
     let operator = "sender";
     let operand = hamlet.email;
 
-    encode_decode_operand(operator, operand, "15-hamlet");
+    encode_decode_operand(operator, operand, "15-Hamlet");
 
     operator = "stream";
     operand = "frontend";
@@ -185,7 +185,7 @@ run_test("test_search_public_streams_notice_url", () => {
 
     assert.equal(
         hash_util.search_public_streams_notice_url(get_operators("#narrow/sender/15")),
-        "#narrow/streams/public/sender/15-hamlet",
+        "#narrow/streams/public/sender/15-Hamlet",
     );
 });
 

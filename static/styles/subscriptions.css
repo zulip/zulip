@@ -2,10 +2,12 @@
     margin: 10px auto;
 }
 
+.member_list_loading_indicator,
 .subscriber_list_loading_indicator {
     margin: 10px auto;
 }
 
+.member_list_loading_indicator:empty,
 .subscriber_list_loading_indicator:empty {
     margin: 0;
 }
@@ -20,11 +22,8 @@
 
 .stream-email {
     font-family: "Source Code Pro", monospace;
-    padding: 5px;
-    /* We need a smaller font because this is fixed-width and we really
-       want it to fit without line-wrapping. 82.5% copies our code block
-       font size. */
-    font-size: 82.5%;
+    padding: 10px;
+    font-size: 0.85rem;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
@@ -218,6 +217,7 @@ h4.user_group_setting_subsection_title {
     width: 100%;
     margin: 0 0 10px;
 
+    .user_group_subscription_request_result,
     .stream_subscription_request_result {
         a {
             color: inherit;
@@ -225,6 +225,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.member-search,
 .subscriber-search {
     margin: 10px 0 0;
 
@@ -279,6 +280,7 @@ h4.user_group_setting_subsection_title {
     transition: all 0.3s ease;
 }
 
+.user-groups-container .user-groups-header.slide-left .fa-chevron-left,
 .subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
 #settings_overlay_container
     .settings-header.mobile.slide-left
@@ -598,7 +600,7 @@ h4.user_group_setting_subsection_title {
         }
 
         .top-bar .stream-name,
-        .top-bar .group-name,
+        .top-bar .group-name-wrapper,
         .bottom-bar .description {
             white-space: nowrap;
             overflow: hidden;
@@ -624,7 +626,7 @@ h4.user_group_setting_subsection_title {
         }
 
         .top-bar .stream-name,
-        .top-bar .group-name {
+        .top-bar .group-name-wrapper {
             font-weight: 600;
         }
 
@@ -673,9 +675,27 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
+    #user-group-creation {
+        max-height: calc(100% - 102px);
+
+        .user-group-creation-body {
+            padding: 15px;
+        }
+    }
+
+    #stream-creation {
+        .stream-creation-body {
+            height: calc(95vh - 155px);
+            padding: 15px;
+
+            @media (width < $md_min) {
+                height: calc(95vh - 115px);
+            }
+        }
+    }
+
     #user-group-creation,
     #stream-creation {
-        max-height: calc(100% - 102px);
         overflow: auto;
         outline: none;
         -webkit-overflow-scrolling: touch;
@@ -685,11 +705,6 @@ h4.user_group_setting_subsection_title {
             bottom: 0;
             width: calc(100% - 27px);
             padding-top: 9px;
-        }
-
-        .user-group-creation-body,
-        .stream-creation-body {
-            padding: 15px;
         }
 
         .add_all_users_to_user_group,
@@ -740,6 +755,7 @@ h4.user_group_setting_subsection_title {
         margin: 20px;
     }
 
+    .group_settings_header,
     .stream_settings_header {
         white-space: nowrap;
         display: flex;
@@ -766,10 +782,12 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .group-header,
     .stream-header {
         white-space: nowrap;
         padding-top: 10px;
 
+        .group-name-wrapper,
         .stream-name {
             display: inline-block;
             position: relative;
@@ -780,6 +798,7 @@ h4.user_group_setting_subsection_title {
             white-space: nowrap;
             max-width: 260px;
 
+            .group-name,
             .sub-stream-name {
                 display: block;
                 max-width: 20ch;
@@ -825,12 +844,14 @@ h4.user_group_setting_subsection_title {
             }
         }
 
+        .group_change_property_info,
         .stream_change_property_info {
             vertical-align: top;
             margin: -5px 0 0;
         }
     }
 
+    .group-description-wrapper,
     .stream-description {
         margin-bottom: 5px;
 
@@ -914,6 +935,10 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .copy_email_button {
+        padding: 10px 15px;
+    }
+
     .loading_indicator_text {
         font-weight: 400;
         line-height: 20px;
@@ -995,6 +1020,7 @@ h4.user_group_setting_subsection_title {
     margin: 5.5px 0 1px;
 }
 
+#change_user_group_description,
 #change_stream_description {
     width: 100%;
     height: 80px;
@@ -1036,6 +1062,7 @@ h4.user_group_setting_subsection_title {
         text-align: center;
     }
 
+    #groups_overlay .group_settings_header,
     #subscription_overlay .stream_settings_header {
         flex-wrap: wrap;
     }
@@ -1066,7 +1093,6 @@ h4.user_group_setting_subsection_title {
     #groups_overlay .right,
     #subscription_overlay .left,
     #subscription_overlay .right,
-    #settings_page .left,
     #settings_page .content-wrapper.right {
         position: absolute;
         display: block;
@@ -1084,7 +1110,7 @@ h4.user_group_setting_subsection_title {
         left: 101%;
 
         top: 45px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0, 0%, 98%);
         border-top: none;
 
         transition: all 0.3s ease;
@@ -1095,12 +1121,14 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    #subscription_overlay,
     #groups_overlay {
         .display-type {
             display: none;
         }
+    }
 
+    #subscription_overlay,
+    #groups_overlay {
         .user-groups-container,
         .subscriptions-container {
             height: 95%;
@@ -1115,6 +1143,7 @@ h4.user_group_setting_subsection_title {
 }
 
 @media (width < $sm_min) {
+    #groups_overlay .user_group_settings_wrapper,
     #subscription_overlay .subscription_settings {
         .button-group {
             display: block;
@@ -1122,10 +1151,14 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
         }
 
-        .stream-header .button-group {
-            margin-top: -5px;
+        .group-header,
+        .stream-header {
+            .button-group {
+                margin-top: -5px;
+            }
         }
 
+        .group_change_property_info,
         .stream_change_property_info {
             /* For small widths where there is not enough space
             to show alert beside stream name we set its display
@@ -1144,7 +1177,9 @@ h4.user_group_setting_subsection_title {
 }
 
 @media (width <= 500px) {
+    #groups_overlay,
     #subscription_overlay {
+        .groups_settings_header,
         .stream_settings_header {
             display: block;
             text-align: center;

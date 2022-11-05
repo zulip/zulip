@@ -1,9 +1,11 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-{% block title %}
-<title>Zulip: Efficient communication for your business.</title>
-{% endblock %}
+{% set PAGE_TITLE = "Zulip for business" %}
+
+{% set PAGE_DESCRIPTION = "Zulip offers efficient communication for your
+  business, with organized and inclusive threaded team chat. Free for
+  light use!" %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,7 +15,7 @@
 
 {% include 'zerver/landing_nav.html' %}
 
-<div class="portico-landing plans why-page no-slide solutions-page for-companies">
+<div class="portico-landing plans why-page solutions-page for-companies">
     <div class="hero bg-companies">
         <div class="bg-dimmer"></div>
         <h1 class="center">Efficient communication for your business.</h1>
@@ -412,7 +414,7 @@
                             Add partners, vendors and temporary contractors as <a href="/help/roles-and-permissions">guest users</a> in your organization.
                         </div>
                     </li>
-                    <li><div class="list-content">Use Zulip as your employee directory. Sync names, <a href="/help/roles-and-permissions">roles</a>, avatars, and <a href="/help/add-custom-profile-fields">custom profile fields</a> from LDAP or SAML.</div></li>
+                    <li><div class="list-content">Use Zulip as your employee directory. Sync names, <a href="/help/roles-and-permissions">roles</a>, avatars, and <a href="/help/custom-profile-fields">custom profile fields</a> from LDAP or SAML.</div></li>
                     <li><div class="list-content">Set a <a href="/help/message-retention-policy">message retention policy</a> that fits your needs.</div></li>
                 </ul>
             </div>

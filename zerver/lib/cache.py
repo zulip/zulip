@@ -26,6 +26,7 @@ from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from typing_extensions import ParamSpec
 
@@ -173,6 +174,12 @@ def cache_with_key(
                 return val[0]
 
             val = func(*args, **kwargs)
+            if isinstance(val, QuerySet):  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/issues/704
+                logging.warning(
+                    "cache_with_key attempted to store a full QuerySet object -- flattening using list()",
+                    stack_info=True,
+                )
+                val = list(val)
 
             cache_set(key, val, cache_name=cache_name, timeout=timeout)
 
@@ -492,7 +499,6 @@ realm_user_dict_fields: List[str] = [
     "role",
     "is_billing_admin",
     "is_bot",
-    "realm_id",
     "timezone",
     "date_joined",
     "bot_owner_id",

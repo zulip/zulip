@@ -41,7 +41,6 @@ from zerver.lib.test_helpers import (
     cache_tries_captured,
     get_subscription,
     get_test_image_file,
-    queries_captured,
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
 )
@@ -613,7 +612,8 @@ class PermissionTest(ZulipTestCase):
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": [cordelia.id],
-            "GitHub": "timabbott",
+            "GitHub username": "timabbott",
+            "Pronouns": "she/her",
         }
 
         for field_name in fields:
@@ -721,7 +721,8 @@ class PermissionTest(ZulipTestCase):
             "Birthday": None,
             "Favorite website": "https://zulip.github.io",
             "Mentor": [hamlet.id],
-            "GitHub": "timabbott",
+            "GitHub username": "timabbott",
+            "Pronouns": None,
         }
         new_profile_data = []
         for field_name in fields:
@@ -803,7 +804,7 @@ class QueryCountTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(91):
             with cache_tries_captured() as cache_tries:
                 with self.tornado_redirected_to_list(events, expected_num_events=11):
                     fred = do_create_user(
@@ -814,8 +815,6 @@ class QueryCountTest(ZulipTestCase):
                         prereg_user=prereg_user,
                         acting_user=None,
                     )
-
-        self.assert_length(queries, 91)
 
         self.assert_length(cache_tries, 28)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
@@ -1318,12 +1317,11 @@ class UserProfileTest(ZulipTestCase):
 
         # Subscribe to the stream.
         self.subscribe(iago, stream.name)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(6):
             result = orjson.loads(
                 self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
             )
 
-        self.assert_length(queries, 6)
         self.assertTrue(result["is_subscribed"])
 
         # Logging in with a Guest user.
@@ -1623,7 +1621,8 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
 
-        do_deactivate_user(user, acting_user=None)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_deactivate_user(user, acting_user=None)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
 
         result = self.client_get("/json/users")
@@ -2028,11 +2027,10 @@ class GetProfileTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         email = self.example_user("hamlet").email
-        with queries_captured() as queries:
+        with self.assert_database_query_count(1):
             with simulated_empty_cache() as cache_queries:
                 user_profile = get_user(email, realm)
 
-        self.assert_length(queries, 1)
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, email)
 

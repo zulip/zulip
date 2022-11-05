@@ -1,8 +1,11 @@
 import $ from "jquery";
 
+import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
@@ -95,14 +98,16 @@ function build_page() {
         e.preventDefault();
         e.stopPropagation();
         const $btn = $(this);
+        const url =
+            "/json/realm/playgrounds/" + encodeURIComponent($btn.attr("data-playground-id"));
+        const html_body = render_confirm_delete_playground();
 
-        channel.del({
-            url: "/json/realm/playgrounds/" + encodeURIComponent($btn.attr("data-playground-id")),
-            error(xhr) {
-                ui_report.generic_row_button_error(xhr, $btn);
-            },
-            // There is no need for an on-success action here since the row is removed by the
-            // `realm_playgrounds` events handler which builds the playground list again.
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Delete code playground?"}),
+            html_body,
+            id: "confirm_delete_code_playgrounds_modal",
+            on_click: () => dialog_widget.submit_api_request(channel.del, url),
+            loading_spinner: true,
         });
     });
 

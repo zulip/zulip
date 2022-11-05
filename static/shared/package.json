@@ -1,13 +1,13 @@
 {
   "name": "@zulip/shared",
-  "version": "0.0.14",
+  "version": "0.0.16",
   "license": "Apache-2.0",
   "scripts": {
     "version": "tools/npm-version",
     "postversion": "tools/npm-postversion"
   },
   "dependencies": {
-    "katex": "^0.15.3",
+    "katex": "^0.16.2",
     "lodash": "^4.17.19"
   }
 }

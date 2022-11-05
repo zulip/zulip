@@ -1,5 +1,10 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "signup" %}
+
+{% block title %}
+<title>{{ _("Log in") }} | Zulip</title>
+{% endblock %}
+
 {# Login page. #}
 
 {% block portico_content %}
@@ -58,6 +63,19 @@ page can be easily identified in it's respective JavaScript file. -->
                         </p>
                     </div>
                 {% else %}
+
+                    {% if already_registered %}
+                    <div class="alert">
+                        {{ _("You've already registered with this email address. Please log in below.") }}
+                    </div>
+                    {% endif %}
+
+                    {% if deactivated_account_error %}
+                    <div class="alert">
+                        {{ deactivated_account_error }}
+                    </div>
+                    {% endif %}
+
                     {% if password_auth_enabled %}
                         <form name="login_form" id="login_form" method="post" class="login-form"
                           action="{{ url('login') }}">
@@ -102,18 +120,6 @@ page can be easily identified in it's respective JavaScript file. -->
                                 {% for error in form.errors.values() %}
                                 <div>{{ error | striptags }}</div>
                                 {% endfor %}
-                            </div>
-                            {% endif %}
-
-                            {% if already_registered %}
-                            <div class="alert">
-                                {{ _("You've already registered with this email address. Please log in below.") }}
-                            </div>
-                            {% endif %}
-
-                            {% if deactivated_account_error %}
-                            <div class="alert">
-                                {{ deactivated_account_error }}
                             </div>
                             {% endif %}
 

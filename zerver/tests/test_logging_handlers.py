@@ -240,7 +240,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report["stack_trace"], "No stack trace available")
 
         # Test arbitrary exceptions from request.user
-        delattr(record.request, "user")
+        del record.request.user
         with patch("zerver.logging_handlers.traceback.print_exc"):
             report = self.run_handler(record)
         self.assertIn("host", report)

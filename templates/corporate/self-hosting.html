@@ -1,12 +1,11 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-{% set OPEN_GRAPH_TITLE = 'Self-host Zulip today.' %}
-{% set OPEN_GRAPH_DESCRIPTION = 'Open-source software that provides enterprise-grade reliability and security.' %}
+{% set PAGE_TITLE = "Self-host Zulip" %}
 
-{% block title %}
-<title>Self-host Zulip today. Open-source software that provides enterprise-grade reliability and security.</title>
-{% endblock %}
+{% set PAGE_DESCRIPTION = "Open-source team chat with enterprise-grade
+  reliability and security. Take charge of your mission-critical communication
+  platform." %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,7 +15,7 @@
 
 {% include 'zerver/landing_nav.html' %}
 
-<div class="portico-landing why-page no-slide solutions-page self-hosting-page">
+<div class="portico-landing why-page solutions-page self-hosting-page">
     <div class="hero bg-pycon security">
         <div class="bg-dimmer"></div>
         <div class="content">

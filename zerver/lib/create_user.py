@@ -43,8 +43,8 @@ def copy_default_settings(
         target_profile.save()
         return
 
-    setattr(target_profile, "full_name", settings_source.full_name)
-    setattr(target_profile, "timezone", canonicalize_timezone(settings_source.timezone))
+    target_profile.full_name = settings_source.full_name
+    target_profile.timezone = canonicalize_timezone(settings_source.timezone)
     target_profile.save()
 
     if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:

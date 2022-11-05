@@ -41,7 +41,7 @@ def transfer_avatars_to_s3(processes: int) -> None:
             _transfer_avatar_to_s3(user)
     else:  # nocoverage
         connection.close()
-        _cache = getattr(cache, "_cache")
+        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
         assert isinstance(_cache, bmemcached.Client)
         _cache.disconnect_all()
         with ProcessPoolExecutor(max_workers=processes) as executor:
@@ -76,7 +76,7 @@ def transfer_message_files_to_s3(processes: int) -> None:
             _transfer_message_files_to_s3(attachment)
     else:  # nocoverage
         connection.close()
-        _cache = getattr(cache, "_cache")
+        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
         assert isinstance(_cache, bmemcached.Client)
         _cache.disconnect_all()
         with ProcessPoolExecutor(max_workers=processes) as executor:
@@ -111,7 +111,7 @@ def transfer_emoji_to_s3(processes: int) -> None:
             _transfer_emoji_to_s3(realm_emoji)
     else:  # nocoverage
         connection.close()
-        _cache = getattr(cache, "_cache")
+        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
         assert isinstance(_cache, bmemcached.Client)
         _cache.disconnect_all()
         with ProcessPoolExecutor(max_workers=processes) as executor:

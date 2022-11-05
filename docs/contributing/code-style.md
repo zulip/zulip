@@ -52,7 +52,7 @@ The Vagrant setup process runs this for you.
 - JavaScript ([ESLint](https://eslint.org/),
   [Prettier](https://prettier.io/))
 - Python ([mypy](http://mypy-lang.org/),
-  [Pyflakes](https://pypi.python.org/pypi/pyflakes),
+  [ruff](https://github.com/charliermarsh/ruff),
   [Black](https://github.com/psf/black),
   [isort](https://pycqa.github.io/isort/))
 - templates

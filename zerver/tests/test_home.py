@@ -245,7 +245,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(47):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -253,7 +253,6 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 47)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode()
@@ -324,7 +323,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
-        # Load webapp directly if spectator access is enabled.
+        # Load web app directly if spectator access is enabled.
         do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
@@ -392,12 +391,11 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(44):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 44)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -425,10 +423,8 @@ class HomeTest(ZulipTestCase):
 
         # Then for the second page load, measure the number of queries.
         flush_per_request_caches()
-        with queries_captured() as queries2:
+        with self.assert_database_query_count(42):
             result = self._get_home_page()
-
-        self.assert_length(queries2, 42)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode()
@@ -928,6 +924,7 @@ class HomeTest(ZulipTestCase):
 
         # verify furthest_read_time is last activity time, irrespective of client
         furthest_read_time = get_furthest_read_time(hamlet)
+        assert furthest_read_time is not None
         self.assertGreaterEqual(furthest_read_time, activity_time)
 
         # Check when user has no activity

@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_search_list_item from "../templates/search_list_item.hbs";
 
 import {Filter} from "./filter";
+import * as keydown_util from "./keydown_util";
 import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -136,7 +137,7 @@ export function initialize() {
     $searchbox_form
         .on("keydown", (e) => {
             update_button_visibility();
-            if (e.key === "Enter" && $search_query_box.is(":focus")) {
+            if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
                 // Don't submit the form so that the typeahead can instead
                 // handle our Enter keypress. Any searching that needs
                 // to be done will be handled in the keyup.
@@ -149,7 +150,7 @@ export function initialize() {
                 return;
             }
 
-            if (e.key === "Enter" && $search_query_box.is(":focus")) {
+            if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
                 // We just pressed Enter and the box had focus, which
                 // means we didn't use the typeahead at all.  In that
                 // case, we should act as though we're searching by

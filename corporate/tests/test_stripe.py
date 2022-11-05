@@ -173,12 +173,11 @@ def generate_and_save_stripe_fixture(
                 stripe_object = mocked_function(*args, **kwargs)
         except stripe.error.StripeError as e:
             with open(fixture_path, "w") as f:
-                error_dict = e.__dict__
-                error_dict["headers"] = dict(error_dict["headers"])
+                error_dict = {**vars(e), "headers": dict(e.headers)}
                 f.write(
                     json.dumps(error_dict, indent=2, separators=(",", ": "), sort_keys=True) + "\n"
                 )
-            raise e
+            raise
         with open(fixture_path, "w") as f:
             if stripe_object is not None:
                 f.write(str(stripe_object) + "\n")
@@ -1979,8 +1978,9 @@ class StripeTest(StripeTestCase):
             invoice: bool,
             licenses: Optional[int],
             min_licenses_in_response: int,
-            upgrade_params: Dict[str, Any] = {},
+            upgrade_params: Mapping[str, Any] = {},
         ) -> None:
+            upgrade_params = dict(upgrade_params)
             if licenses is None:
                 del_args = ["licenses"]
             else:
@@ -2006,8 +2006,9 @@ class StripeTest(StripeTestCase):
             )
 
         def check_success(
-            invoice: bool, licenses: Optional[int], upgrade_params: Dict[str, Any] = {}
+            invoice: bool, licenses: Optional[int], upgrade_params: Mapping[str, Any] = {}
         ) -> None:
+            upgrade_params = dict(upgrade_params)
             if licenses is None:
                 del_args = ["licenses"]
             else:

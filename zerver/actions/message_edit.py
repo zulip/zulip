@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Set, TypedDict
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 from django.conf import settings
 from django.db import transaction
@@ -8,7 +8,9 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
+from django_stubs_ext import StrPromise
 
+from zerver.actions.message_delete import DeleteMessagesEvent
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
@@ -18,7 +20,6 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import check_attachment_reference_change
 from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
-from zerver.lib import retention as retention
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -32,7 +33,6 @@ from zerver.lib.message import (
     wildcard_mention_allowed,
 )
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import access_stream_by_id, check_stream_access_based_on_stream_post_policy
@@ -65,9 +65,6 @@ from zerver.models import (
     get_system_bot,
 )
 from zerver.tornado.django_api import send_event
-
-if TYPE_CHECKING:
-    from django.utils.functional import _StrPromise as StrPromise
 
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
@@ -201,10 +198,10 @@ def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
-    old_thread_notification_string: Optional["StrPromise"],
+    old_thread_notification_string: Optional[StrPromise],
     new_stream: Stream,
     new_topic: Optional[str],
-    new_thread_notification_string: Optional["StrPromise"],
+    new_thread_notification_string: Optional[StrPromise],
     changed_messages_count: int,
 ) -> None:
     # Since moving content between streams is highly disruptive,
@@ -263,7 +260,7 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
-    return {user_profile_id for user_profile_id in mentioned_user_ids}
+    return set(mentioned_user_ids)
 
 
 def update_user_message_flags(
@@ -335,14 +332,6 @@ def do_update_embedded_data(
         }
 
     send_event(user_profile.realm, event, list(map(user_info, ums)))
-
-
-class DeleteMessagesEvent(TypedDict, total=False):
-    type: str
-    message_ids: List[int]
-    message_type: str
-    topic: str
-    stream_id: int
 
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
@@ -732,7 +721,7 @@ def do_update_message(
                 )
                 subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
-            users_to_be_notified += list(map(subscriber_info, sorted(list(subscriber_ids))))
+            users_to_be_notified += list(map(subscriber_info, sorted(subscriber_ids)))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -827,6 +816,7 @@ def do_update_message(
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
+    sent_resolve_topic_notification = False
     if (
         topic_name is not None
         and new_stream is None
@@ -834,7 +824,7 @@ def do_update_message(
         and len(changed_messages) > 0
     ):
         assert stream_being_edited is not None
-        maybe_send_resolve_topic_notifications(
+        sent_resolve_topic_notification = maybe_send_resolve_topic_notifications(
             user_profile=user_profile,
             stream=stream_being_edited,
             old_topic=orig_topic_name,
@@ -842,7 +832,11 @@ def do_update_message(
             changed_messages=changed_messages,
         )
 
-    if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
+    if (
+        len(changed_messages) > 0
+        and (new_stream is not None or topic_name is not None)
+        and stream_being_edited is not None
+    ):
         # Notify users that the topic was moved.
         changed_messages_count = len(changed_messages)
 
@@ -861,8 +855,25 @@ def do_update_message(
                     "{changed_messages_count} messages were moved from this topic to {new_location} by {user}."
                 )
 
+        # The new thread notification code path is a bit subtle. We
+        # don't want every resolve-topic action to also annoyingly
+        # send an extra notification that the topic was moved!
+        #
+        # Since one can resolve/unresolve a topic at the same time
+        # you're moving it, we need to carefully treat the resolve
+        # topic notification as satisfying our obligation to send a
+        # notification to the new topic only if the only thing this
+        # request did is mark the topic as resolved.
         new_thread_notification_string = None
-        if send_notification_to_new_thread:
+        if send_notification_to_new_thread and (
+            new_stream is not None
+            or not sent_resolve_topic_notification
+            or (
+                topic_name is not None
+                and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+                != topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+            )
+        ):
             if moved_all_visible_messages:
                 new_thread_notification_string = gettext_lazy(
                     "This topic was moved here from {old_location} by {user}."
@@ -881,7 +892,7 @@ def do_update_message(
             stream_being_edited,
             orig_topic_name,
             old_thread_notification_string,
-            new_stream,
+            new_stream if new_stream is not None else stream_being_edited,
             topic_name,
             new_thread_notification_string,
             changed_messages_count,
@@ -1038,53 +1049,3 @@ def check_update_message(
         queue_json_publish("embed_links", event_data)
 
     return number_changed
-
-
-def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
-    # messages in delete_message event belong to the same topic
-    # or is a single private message, as any other behaviour is not possible with
-    # the current callers to this method.
-    messages = list(messages)
-    message_ids = [message.id for message in messages]
-    if not message_ids:
-        return
-
-    event: DeleteMessagesEvent = {
-        "type": "delete_message",
-        "message_ids": message_ids,
-    }
-
-    sample_message = messages[0]
-    message_type = "stream"
-    users_to_notify = []
-    if not sample_message.is_stream_message():
-        assert len(messages) == 1
-        message_type = "private"
-        ums = UserMessage.objects.filter(message_id__in=message_ids)
-        users_to_notify = [um.user_profile_id for um in ums]
-        archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
-
-    if message_type == "stream":
-        stream_id = sample_message.recipient.type_id
-        event["stream_id"] = stream_id
-        event["topic"] = sample_message.topic_name()
-        subscriptions = get_active_subscriptions_for_stream_id(
-            stream_id, include_deactivated_users=False
-        )
-        # We exclude long-term idle users, since they by definition have no active clients.
-        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        users_to_notify = list(subscriptions.values_list("user_profile_id", flat=True))
-        archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
-
-    move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
-
-    event["message_type"] = message_type
-    transaction.on_commit(lambda: send_event(realm, event, users_to_notify))
-
-
-def do_delete_messages_by_sender(user: UserProfile) -> None:
-    message_ids = list(
-        Message.objects.filter(sender=user).values_list("id", flat=True).order_by("id")
-    )
-    if message_ids:
-        move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)

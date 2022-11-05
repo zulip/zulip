@@ -1,7 +1,12 @@
+from unittest import mock
+
+import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import timeout_mock
+from zerver.lib.timeout import TimeoutExpired
 from zerver.models import Message, UserMessage, get_client, get_realm, get_stream
 
 
@@ -40,6 +45,7 @@ class TopicHistoryTest(ZulipTestCase):
             message = Message(
                 sender=hamlet,
                 recipient=recipient,
+                realm=stream.realm,
                 content="whatever",
                 date_sent=timezone_now(),
                 sending_client=get_client("whatever"),
@@ -281,23 +287,51 @@ class TopicDeleteTest(ZulipTestCase):
             acting_user=user_profile,
         )
         # Delete the topic should now remove all messages
-        result = self.client_post(
-            endpoint,
-            {
-                "topic_name": topic_name,
-            },
-        )
+        with timeout_mock("zerver.views.streams"):
+            result = self.client_post(
+                endpoint,
+                {
+                    "topic_name": topic_name,
+                },
+            )
         self.assert_json_success(result)
         self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
         self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
 
         # Delete again, to test the edge case of deleting an empty topic.
-        result = self.client_post(
-            endpoint,
-            {
-                "topic_name": topic_name,
-            },
-        )
+        with timeout_mock("zerver.views.streams"):
+            result = self.client_post(
+                endpoint,
+                {
+                    "topic_name": topic_name,
+                },
+            )
         self.assert_json_success(result)
         self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
         self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
+
+    def test_topic_delete_timeout(self) -> None:
+        stream_name = "new_stream"
+        topic_name = "new topic 2"
+
+        user_profile = self.example_user("iago")
+        self.subscribe(user_profile, stream_name)
+
+        stream = get_stream(stream_name, user_profile.realm)
+        self.send_stream_message(user_profile, stream_name, topic_name=topic_name)
+
+        self.login_user(user_profile)
+        endpoint = "/json/streams/" + str(stream.id) + "/delete_topic"
+        with mock.patch("zerver.views.streams.timeout", side_effect=TimeoutExpired):
+            result = self.client_post(
+                endpoint,
+                {
+                    "topic_name": topic_name,
+                },
+            )
+            self.assertEqual(result.status_code, 200)
+
+            result_dict = orjson.loads(result.content)
+            self.assertEqual(
+                result_dict, {"result": "partially_completed", "msg": "", "code": "REQUEST_TIMEOUT"}
+            )

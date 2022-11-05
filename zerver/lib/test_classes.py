@@ -70,7 +70,7 @@ from zerver.lib.test_console_output import (
     tee_stderr_and_find_extra_console_output,
     tee_stdout_and_find_extra_console_output,
 )
-from zerver.lib.test_helpers import find_key_by_email, instrument_url
+from zerver.lib.test_helpers import find_key_by_email, instrument_url, queries_captured
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
@@ -89,6 +89,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -252,7 +253,7 @@ Output:
         url: str,
         method: str,
         result: "TestHttpResponse",
-        data: Union[str, bytes, Dict[str, Any]],
+        data: Union[str, bytes, Mapping[str, Any]],
         extra: Dict[str, str],
         intentionally_undocumented: bool = False,
     ) -> None:
@@ -295,7 +296,7 @@ Output:
     def client_patch(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -324,7 +325,7 @@ Output:
     def client_patch_multipart(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -339,7 +340,7 @@ Output:
         with the Django test client, it deals with MULTIPART_CONTENT
         automatically, but not patch.)
         """
-        encoded = encode_multipart(BOUNDARY, info)
+        encoded = encode_multipart(BOUNDARY, dict(info))
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         result = django_client.patch(
@@ -358,7 +359,7 @@ Output:
     def json_patch(
         self,
         url: str,
-        payload: Dict[str, Any] = {},
+        payload: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -375,7 +376,7 @@ Output:
     def client_put(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -390,7 +391,7 @@ Output:
     def json_put(
         self,
         url: str,
-        payload: Dict[str, Any] = {},
+        payload: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -407,7 +408,7 @@ Output:
     def client_delete(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -433,7 +434,7 @@ Output:
     def client_options(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -441,13 +442,13 @@ Output:
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.options(url, info, follow=follow, secure=secure, **extra)
+        return django_client.options(url, dict(info), follow=follow, secure=secure, **extra)
 
     @instrument_url
     def client_head(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -499,7 +500,7 @@ Output:
     def client_get(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -857,7 +858,7 @@ Output:
         return "Basic " + base64.b64encode(credentials.encode()).decode()
 
     def uuid_get(
-        self, identifier: str, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, identifier: str, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
         return self.client_get(
@@ -889,7 +890,7 @@ Output:
         )
 
     def api_get(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_get(
@@ -922,7 +923,7 @@ Output:
         )
 
     def api_patch(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_patch(
@@ -936,7 +937,7 @@ Output:
         )
 
     def api_delete(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_delete(
@@ -1122,6 +1123,34 @@ Output:
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
             raise AssertionError(f"{str(type(items))} is of unexpected size!")
 
+    @contextmanager
+    def assert_database_query_count(
+        self, count: int, include_savepoints: bool = False, keep_cache_warm: bool = False
+    ) -> Iterator[None]:
+        """
+        This captures the queries executed and check the total number of queries.
+        Useful when minimizing unnecessary roundtrips to the database is important.
+        """
+        with queries_captured(
+            include_savepoints=include_savepoints, keep_cache_warm=keep_cache_warm
+        ) as queries:
+            yield
+        actual_count = len(queries)
+        if actual_count != count:  # nocoverage
+            print("\nITEMS:\n")
+            for index, query in enumerate(queries):
+                print(f"#{index + 1}\nsql: {str(query['sql'])}\ntime: {query['time']}\n")
+            print(f"expected count: {count}\nactual count: {actual_count}")
+            raise AssertionError(
+                f"""
+    {count} queries expected, got {actual_count}.
+    This is a performance-critical code path, where we check
+    the number of database queries used in order to avoid accidental regressions.
+    If an unnecessary query was removed or the new query is necessary, you should
+    update this test, and explain what queries we added/removed in the pull request
+    and why any new queries can't be avoided."""
+            )
+
     def assert_json_error_contains(
         self, result: "TestHttpResponse", msg_substring: str, status_code: int = 400
     ) -> None:
@@ -1188,6 +1217,9 @@ Output:
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers
         )
+        administrators_user_group = UserGroup.objects.get(
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+        )
 
         try:
             stream = Stream.objects.create(
@@ -1196,6 +1228,7 @@ Output:
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
+                can_remove_subscribers_group=administrators_user_group,
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception(
@@ -1242,7 +1275,7 @@ Output:
         self,
         user: UserProfile,
         streams: Iterable[str],
-        extra_post_data: Dict[str, Any] = {},
+        extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,
         is_web_public: bool = False,
         allow_fail: bool = False,

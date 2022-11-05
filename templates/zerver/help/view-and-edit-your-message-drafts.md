@@ -14,7 +14,7 @@ so that you never lose your work. Drafts are saved for 30 days.
 
 {tab|desktop-web}
 
-Simply close the compose box. You can hit `Esc`, click
+Simply close the compose box. You can hit <kbd>Esc</kbd>, click
 the <i class="fa fa-remove"></i> in the top right corner of the
 compose box, or click on an empty part of the app.
 
@@ -31,7 +31,7 @@ From there, you can delete or restore any of your drafts.
 
 {end_tabs}
 
-!!! tip ""
+!!! keyboard_tip ""
 
-    Use `d` to bring up the list of drafts. Check out other keyboard shortcuts
-    related to drafts [here](/help/keyboard-shortcuts#drafts)
+    Use <kbd>D</kbd> to bring up your list of drafts. Check out other
+    keyboard shortcuts related to drafts [here](/help/keyboard-shortcuts#drafts)

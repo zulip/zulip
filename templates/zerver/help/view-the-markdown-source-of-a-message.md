@@ -9,10 +9,11 @@ formatted, or to copy the Markdown source for a reply.
 
 {!message-actions-menu.md!}
 
-3. Click **View source**.
+3. Click **View message source**.
 
 {end_tabs}
 
 ## Related articles
 
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
+* [Edit or delete a message](/help/edit-or-delete-a-message)

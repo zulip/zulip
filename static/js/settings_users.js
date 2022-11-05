@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
+import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
@@ -21,7 +22,6 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
-import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
 import * as user_pill from "./user_pill";
@@ -375,6 +375,11 @@ export function redraw_bots_list() {
         return;
     }
 
+    // In order to properly redraw after a user may have been added,
+    // we need to update the bot_list_widget with the new set of bot
+    // user IDs to display.
+    const bot_user_ids = bot_data.all_user_ids();
+    bot_list_widget.replace_list_data(bot_user_ids);
     bot_list_widget.hard_redraw();
 }
 
@@ -483,8 +488,6 @@ function handle_deactivation($tbody) {
 
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url);
-
             let data = {};
             if ($(".send_email").is(":checked")) {
                 data = {
@@ -492,9 +495,7 @@ function handle_deactivation($tbody) {
                 };
             }
 
-            const $status_field = $("#admin-user-list .alert-notification");
-
-            settings_ui.do_settings_change(channel.del, url, data, $status_field);
+            dialog_widget.submit_api_request(channel.del, url, data);
         }
 
         confirm_deactivation(user_id, handle_confirm, true);
@@ -524,7 +525,14 @@ export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
     const opts = {
         username: user.full_name,
     };
-    const html_body = render_settings_reactivation_user_modal(opts);
+
+    let html_body;
+    // check if bot or human
+    if (user.is_bot) {
+        html_body = render_settings_reactivation_bot_modal(opts);
+    } else {
+        html_body = render_settings_reactivation_user_modal(opts);
+    }
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
@@ -596,6 +604,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
             true,
             false,
         );
+        settings_account.initialize_custom_pronouns_type_fields(element);
 
         $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
             e.preventDefault();
@@ -693,4 +702,10 @@ export function set_up_humans() {
 export function set_up_bots() {
     section.bots.handle_events();
     section.bots.create_table();
+
+    $("#admin-bot-list .add-a-new-bot").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        settings_bots.add_a_new_bot();
+    });
 }

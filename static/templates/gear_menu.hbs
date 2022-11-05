@@ -8,6 +8,45 @@
             view is a Bootstrap nav tab, even though we don't show the tab
             anymore --}}
             <li class="invisible" style="display:none;" role="presentation"><a href="#message_feed_container" data-toggle="tab"></a></li>
+            <li class="org-info org-name">{{realm_name}}</li>
+            <li class="org-info org-url">{{realm_uri}}</li>
+            {{#if is_self_hosted }}
+                <li class="org-info org-version">
+                    <a href="#about-zulip" role="menuitem">{{version_display_string}}</a>
+                </li>
+                {{#if server_needs_upgrade }}
+                <li class="org-info org-upgrade small-font-size">
+                    <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Upgrade to the latest release' }}</a>
+                </li>
+                {{/if}}
+            {{else}}
+                <li class="org-info org-plan hidden-for-spectators small-font-size">
+                    {{#if is_plan_limited }}
+                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
+                    {{else if is_plan_standard}}
+                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
+                    {{else if is_plan_standard_sponsored_for_free}}
+                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
+                    {{/if}}
+                </li>
+            {{/if}}
+            {{#if (and is_plan_limited is_owner) }}
+            <li class="org-info org-upgrade small-font-size">
+                <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{#tr}}Upgrade to {standard_plan_name}{{/tr}}</a>
+            </li>
+            {{/if}}
+            {{#if is_plan_limited }}
+                {{#if is_education_org }}
+                <li class="org-info org-upgrade small-font-size">
+                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
+                </li>
+                {{else if (not is_business_org) }}
+                <li class="org-info org-upgrade small-font-size">
+                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
+                </li>
+                {{/if}}
+            {{/if}}
+            <li class="divider" role="presentation"></li>
             <li class="hidden-for-spectators" role="presentation">
                 <a href="#streams/subscribed" role="menuitem">
                     <i class="fa fa-exchange" aria-hidden="true"></i> {{t 'Manage streams' }}

@@ -14,7 +14,8 @@ import * as common from "./common";
 import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -22,6 +23,7 @@ import * as pill_typeahead from "./pill_typeahead";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
+import * as typeahead_helper from "./typeahead_helper";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 import * as user_profile from "./user_profile";
@@ -41,7 +43,7 @@ export function update_full_name(new_full_name) {
     // Arguably, this should work more like how the `update_email`
     // flow works, where we update the name in the modal on open,
     // rather than updating it here, but this works.
-    const $full_name_input = $(".full-name-change-form input[name='full_name']");
+    const $full_name_input = $(".full-name-change-container input[name='full_name']");
     if ($full_name_input) {
         $full_name_input.val(new_full_name);
     }
@@ -148,6 +150,7 @@ export function append_custom_profile_fields(element_id, user_id) {
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
         [all_field_types.URL.id, "url"],
+        [all_field_types.PRONOUNS.id, "text"],
     ]);
 
     for (const field of all_custom_fields) {
@@ -179,6 +182,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
             is_url_field: field.type === all_field_types.URL.id,
+            is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
             is_select_field,
             field_choices,
         });
@@ -280,6 +284,27 @@ export function initialize_custom_user_type_fields(
     return user_pills;
 }
 
+export function initialize_custom_pronouns_type_fields(element_id) {
+    const commonly_used_pronouns = [
+        $t({defaultMessage: "he/him"}),
+        $t({defaultMessage: "she/her"}),
+        $t({defaultMessage: "they/them"}),
+    ];
+    $(element_id)
+        .find(".pronouns_type_field")
+        .typeahead({
+            items: 3,
+            fixed: true,
+            helpOnEmptyStrings: true,
+            source() {
+                return commonly_used_pronouns;
+            },
+            highlighter(item) {
+                return typeahead_helper.render_typeahead_item({primary: item});
+            },
+        });
+}
+
 export function add_custom_profile_fields_to_settings() {
     if (!overlays.settings_open()) {
         return;
@@ -291,6 +316,7 @@ export function add_custom_profile_fields_to_settings() {
     append_custom_profile_fields(element_id, people.my_current_user_id());
     initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
     initialize_custom_date_type_fields(element_id);
+    initialize_custom_pronouns_type_fields(element_id);
 }
 
 export function hide_confirm_email_banner() {
@@ -359,7 +385,7 @@ export function set_up() {
                 do_get_api_key();
             });
             $("#get_api_key_password").on("keydown", (e) => {
-                if (e.key === "Enter") {
+                if (keydown_util.is_enter_event(e)) {
                     e.preventDefault();
                     e.stopPropagation();
                     do_get_api_key();
@@ -688,7 +714,9 @@ export function set_up() {
                         },
                         {
                             "z-link": (content_html) =>
-                                `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
+                                `<a target="_blank" href="/#organization/organization-profile">${content_html.join(
+                                    "",
+                                )}</a>`,
                         },
                     );
                     let rendered_error_msg;

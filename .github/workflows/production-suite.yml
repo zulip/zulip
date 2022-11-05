@@ -176,9 +176,7 @@ jobs:
           restore-keys: v1-yarn-deps-${{ matrix.os }}
 
       - name: Install production
-        run: |
-          sudo service rabbitmq-server restart
-          sudo /tmp/production-install ${{ matrix.extra-args }}
+        run: sudo /tmp/production-install ${{ matrix.extra-args }}
 
       - name: Verify install
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}

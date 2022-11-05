@@ -644,6 +644,7 @@ paths:
                                         "in_home_view": true,
                                         "email_address": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                                         "stream_weekly_traffic": null,
+                                        "can_remove_subscribers_group_id": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1143,6 +1144,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1165,7 +1167,7 @@ paths:
                                 streams:
                                   type: array
                                   description: |
-                                    Array of stream objects, each contatining
+                                    Array of stream objects, each containing
                                     details about a stream that was deleted.
                                   items:
                                     $ref: "#/components/schemas/BasicStream"
@@ -1188,6 +1190,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1552,8 +1555,14 @@ paths:
                                         - user_status
                                 away:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user has marked themself "away" with this status.
+
+                                    **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                    starting with that feature level, `away` is a legacy way to
+                                    access the user's `presence_enabled` setting, with
+                                    `away = !presence_enabled`. To be removed in a future release.
                                 status_text:
                                   type: string
                                   description: |
@@ -1663,6 +1672,7 @@ paths:
                                         "hint": "",
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 5,
@@ -1679,6 +1689,7 @@ paths:
                                         "hint": "Or your personal blog's URL",
                                         "field_data": "",
                                         "order": 6,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 7,
@@ -1745,6 +1756,7 @@ paths:
                                               "first_message_id": 1,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                             {
                                               "name": "Denmark",
@@ -1758,6 +1770,7 @@ paths:
                                               "first_message_id": 4,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                             {
                                               "name": "Verona",
@@ -1771,6 +1784,7 @@ paths:
                                               "first_message_id": 6,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                           ],
                                       },
@@ -1815,6 +1829,7 @@ paths:
                                         "first_message_id": 1,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -3767,6 +3782,12 @@ paths:
                                   type: object
                                   description: |
                                     An object containing the properties that have changed.
+
+                                    **Changes**: Before Zulip 6.0 (feature level 150), on changing any of
+                                    `allow_message_editing`, `message_content_edit_limit_seconds`, or
+                                    `edit_topic_policy` settings, this object included all the three settings
+                                    irrespective of which of these settings were changed. Now, a separate event
+                                    is sent for each changed setting.
                                   properties:
                                     add_custom_emoji_policy:
                                       type: integer
@@ -4207,11 +4228,7 @@ paths:
                                   "op": "update_dict",
                                   "property": "default",
                                   "data":
-                                    {
-                                      "allow_message_editing": false,
-                                      "message_content_edit_limit_seconds": 600,
-                                      "edit_topic_policy": 2,
-                                    },
+                                    {"message_content_edit_limit_seconds": 600},
                                   "id": 0,
                                 }
                             - type: object
@@ -4360,7 +4377,7 @@ paths:
                           The ID of the registered queue.
                     example:
                       {
-                        "queue_id": "1375801870:2942",
+                        "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
                         "events":
                           [
                             {
@@ -4512,9 +4529,41 @@ paths:
       tags: ["messages"]
       description: |
         Marks all of the current user's unread messages as read.
+
+        **Changes**: Before Zulip 6.0 (feature level 153), this
+        request did a single atomic operation, which could time out
+        with 10,000s of unread messages to mark as read.
+
+        It now marks messages as read in batches, starting with the
+        newest messages, so that progress will be made even if the
+        request times out.
+
+        If the server's processing is interrupted by a timeout, it
+        will return an HTTP 200 success response with result
+        "partially_completed". A correct client should repeat the
+        request when handling such a response.
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success or partial success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonSuccess"
+                      - $ref: "#/components/schemas/SuccessDescription"
+                  - allOf:
+                      - $ref: "#/components/schemas/PartiallyCompleted"
+                      - example:
+                          {
+                            "code": "REQUEST_TIMEOUT",
+                            "msg": "",
+                            "result": "partially_completed",
+                          }
+                        description: |
+                          If the request exceeds its processing time limit after having
+                          successfully marked some messages as read, response code 200
+                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
   /mark_stream_as_read:
     post:
       operationId: mark-stream-as-read
@@ -4978,19 +5027,20 @@ paths:
       summary: Get messages
       tags: ["messages"]
       description: |
-        Fetch message history from a Zulip server.
+        Fetch user's message history from a Zulip server.
 
-        This `GET /api/v1/messages` endpoint is the primary way to fetch
-        message history from a Zulip server. It is useful both for Zulip
-        clients (e.g. the web, desktop, mobile, and terminal clients) as well
-        as bots, API clients, backup scripts, etc.
+        This endpoint is the primary way to fetch a user's message history
+        from a Zulip server. It is useful both for Zulip clients (e.g. the
+        web, desktop, mobile, and terminal clients) as well as bots, API
+        clients, backup scripts, etc.
 
-        By specifying a [narrow filter](/api/construct-narrow), you can use
-        this endpoint to fetch the messages matching any search query that is
-        supported by Zulip's powerful full-text search backend.
+        Note that a user's message history does not contain messages sent to
+        streams before they [subscribe](/api/subscribe), and newly created
+        bot users are not usually subscribed to any streams.
 
-        When a narrow is not specified, it can be used to fetch a user's
-        message history. (We recommend paginating to 1000 messages at a time.)
+        By specifying a [narrow filter](/api/get-messages#parameter-narrow),
+        you can use this endpoint to fetch the messages matching any search
+        query that is supported by Zulip's powerful full-text search backend.
 
         In either case, you specify an `anchor` message (or ask the server to
         calculate the first unread message for you and use that as the
@@ -5065,6 +5115,22 @@ paths:
             The narrow where you want to fetch the messages from. See how to
             [construct a narrow](/api/construct-narrow).
 
+            Note that many narrows, including all that lack a `stream`
+            or `streams` operator, search the user's personal message
+            history. See [searching shared
+            history](/help/search-for-messages#searching-shared-history)
+            for details.
+
+            For example, if you would like to fetch messages from all public streams instead
+            of only the user's message history, then a specific narrow for
+            messages sent to all public streams can be used:
+            `{"operator": "streams", "operand": "public"}`.
+
+            Newly created bot users are not usually subscribed to any
+            streams, so bots using this API should either be
+            subscribed to appropriate streams or use a shared history
+            search narrow with this endpoint.
+
             **Changes**: In Zulip 2.1.0, added support for using user/stream IDs
             when constructing narrows for a message's sender, its stream and/or
             its recipient(s).
@@ -5073,7 +5139,29 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  oneOf:
+                    - type: object
+                      required:
+                        - operator
+                        - operand
+                      additionalProperties: false
+                      properties:
+                        operator:
+                          type: string
+                        operand:
+                          oneOf:
+                            - type: string
+                            - type: integer
+                            - type: array
+                              items:
+                                type: integer
+                        negated:
+                          type: boolean
+                    - type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
                 default: []
               example: [{"operand": "Denmark", "operator": "stream"}]
         - $ref: "#/components/parameters/ClientGravatar"
@@ -5310,9 +5398,16 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                oneOf:
+                  - type: string
+                  - type: integer
+                  - type: array
+                    items:
+                      type: string
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
               example: [9, 10]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
@@ -5344,7 +5439,7 @@ paths:
             that it should replace the locally echoed message, rather than adding this new
             message (which would be correct if the user had sent the new message from another
             device).
-          example: "1593114627:0"
+          example: "fb67bf8a-c031-47cc-84cf-ed80accacda8"
         - name: local_id
           in: query
           schema:
@@ -5867,8 +5962,16 @@ paths:
 
                           The IDs of users who have disabled sending read receipts
                           (`send_read_receipts=false`) will never appear in the response,
-                          nor will the message's sender. The current user's ID will, if
-                          they have marked the read target message as read.
+                          nor will the message's sender. Additionally, the IDs of any users
+                          who have been muted by the current user or who have muted the
+                          current user will not be included in the response.
+
+                          The current user's ID will appear if they have marked the target
+                          message as read.
+
+                          **Changes**: Prior to Zulip 6.0 (feature level 143), the IDs of
+                          users who have been muted by or have muted the current user were
+                          included in the response.
                         items:
                           type: integer
                     example:
@@ -5895,19 +5998,20 @@ paths:
       description: |
         Check whether a set of messages match a [narrow](/api/construct-narrow).
 
-        For many common narrows (E.g. a topic), clients can write an
-        efficient client-side check to determine whether a
-        newly arrived message belongs in the view.
+        For many common narrows (e.g. a topic), clients can write an efficient
+        client-side check to determine whether a newly arrived message belongs
+        in the view.
 
         This endpoint is designed to allow clients to handle more complex narrows
-        for which the client does not (or in the case of full-text search,
-        cannot) implement this check.
+        for which the client does not (or in the case of full-text search, cannot)
+        implement this check.
 
-        The format of the `match_subject` and `match_content` objects is designed to match
-        those of `GET /messages`, so that a client can splice these fields into a
-        `message` object received from `GET /events` and end up with an extended message
-        object identical to how a `GET /messages` for the current narrow would have
-        returned the message.
+        The format of the `match_subject` and `match_content` objects is designed
+        to match those returned by the [`GET /messages`](/api/get-messages#response)
+        endpoint, so that a client can splice these fields into a `message` object
+        received from [`GET /events`](/api/get-events#message) and end up with an
+        extended message object identical to how a [`GET /messages`](/api/get-messages)
+        request for the current narrow would have returned the message.
       parameters:
         - name: msg_ids
           in: query
@@ -6200,21 +6304,30 @@ paths:
         - name: send_notification_to_old_thread
           in: query
           description: |
-            Whether to send an automated message to the old thread to
+            Whether to send an automated message to the old topic to
             notify users where the messages were moved to.
 
-            **Changes**: New in Zulip 3.0 (feature level 9).
+            **Changes**: Before Zulip 6.0 (feature level 152), this parameter
+            had a default of `true` and was ignored unless the stream was changed.
+
+            New in Zulip 3.0 (feature level 9).
           schema:
             type: boolean
-            default: true
+            default: false
           example: true
         - name: send_notification_to_new_thread
           in: query
           description: |
-            Whether to send an automated message to the new thread to
+            Whether to send an automated message to the new topic to
             notify users where the messages came from.
 
-            **Changes**: New in Zulip 3.0 (feature level 9).
+            If the move is just [resolving/unresolving a topic](/help/resolve-a-topic),
+            this parameter will not trigger an additional notification.
+
+            **Changes**: Before Zulip 6.0 (feature level 152), this parameter
+            was ignored unless the stream was changed.
+
+            New in Zulip 3.0 (feature level 9).
           schema:
             type: boolean
             default: true
@@ -6420,7 +6533,7 @@ paths:
       tags: ["users"]
       description: |
         Retrieve details on all users in the organization. Optionally
-        includes values of [custom profile field](/help/add-custom-profile-fields).
+        includes values of [custom profile fields](/help/custom-profile-fields).
 
         You can also [fetch details on a single user](/api/get-user).
       x-curl-examples-parameters:
@@ -7126,11 +7239,17 @@ paths:
           example: on vacation
           required: false
         - name: away
+          deprecated: true
           schema:
             type: boolean
           in: query
           description: |
             Whether the user should be marked as "away".
+
+            **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+            starting with that feature level, `away` is a legacy way to
+            access the user's `presence_enabled` setting, with
+            `away = !presence_enabled`. To be removed in a future release.
           example: true
           required: false
         - name: emoji_name
@@ -7692,6 +7811,16 @@ paths:
       tags: ["streams"]
       description: |
         Unsubscribe yourself or other users from one or more streams.
+
+        In addition to managing the current user's subscriptions, this
+        endpoint can be used by organization administrators to remove
+        other users from streams, or to remove a bot that the current
+        user is the `bot_owner` for from any stream that the current
+        user can access.
+
+        **Changes**: Before Zulip 6.0 (feature level 145), only
+        organization administrators could remove other users from
+        streams.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -8137,7 +8266,7 @@ paths:
       summary: Get all custom profile fields
       tags: ["server_and_organizations"]
       description: |
-        Get all the [custom profile fields](/help/add-custom-profile-fields)
+        Get all the [custom profile fields](/help/custom-profile-fields)
         configured for the user's organization.
       responses:
         "200":
@@ -8196,6 +8325,7 @@ paths:
                               "hint": "",
                               "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 5,
@@ -8212,6 +8342,7 @@ paths:
                               "hint": "Or your personal blog's URL",
                               "field_data": "",
                               "order": 6,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 7,
@@ -8229,6 +8360,13 @@ paths:
                               "field_data": '{"subtype":"github"}',
                               "order": 8,
                             },
+                            {
+                              "id": 9,
+                              "name": "Pronouns",
+                              "type": 8,
+                              "hint": "What pronouns should people use to refer to you?",
+                              "order": 9,
+                            },
                           ],
                       }
     patch:
@@ -8242,7 +8380,7 @@ paths:
         endpoint allows administrative settings UI to change the field ordering.
 
         This endpoint is used to implement the dragging feature described in the
-        [custom profile fields documentation](/help/add-custom-profile-fields).
+        [custom profile fields documentation](/help/custom-profile-fields).
       x-requires-administrator: true
       parameters:
         - name: order
@@ -8256,7 +8394,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+              example: [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
           required: true
       responses:
         "200":
@@ -8266,7 +8404,7 @@ paths:
       summary: Create a custom profile field
       tags: ["server_and_organizations"]
       description: |
-        [Create a custom profile field](/help/add-custom-profile-fields) in the user's organization.
+        [Create a custom profile field](/help/custom-profile-fields#add-a-custom-profile-field) in the user's organization.
       x-requires-administrator: true
       parameters:
         - name: name
@@ -8290,8 +8428,8 @@ paths:
           in: query
           description: |
             The field type can be any of the supported custom profile field types. See the
-            [custom profile fields documentation](/help/add-custom-profile-fields)
-            more details on what each type means.
+            [custom profile fields documentation](/help/custom-profile-fields)
+            for more details on what each type means.
 
             - **1**: Short text
             - **2**: Long text
@@ -8300,6 +8438,9 @@ paths:
             - **5**: Link
             - **6**: Person picker
             - **7**: External account
+            - **8**: Pronouns
+
+            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
           schema:
             type: integer
           example: 3
@@ -8324,6 +8465,25 @@ paths:
                   "python": {"text": "Python", "order": "1"},
                   "java": {"text": "Java", "order": "2"},
                 }
+        - name: display_in_profile_summary
+          in: query
+          description: |
+            Whether clients should display this profile field in a summary section of a
+            user's profile (or in a more easily accessible "small profile").
+
+            At most 2 profile fields may have this property be true in a given
+            organization. The "Long text" [profile field types][profile-field-types]
+            profile field types cannot be selected to be displayed in profile summaries.
+
+            The "Person picker" profile field is also not supported, but that is likely to
+            be temporary.
+
+            [profile-field-types]: /help/custom-profile-fields#profile-field-types
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success.
@@ -8394,7 +8554,7 @@ paths:
           in: query
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
-            for the web app's center panel (message feed, recent topics) on wide screens.
+            for the web app's center panel (message feed, recent conversations) on wide screens.
           schema:
             type: boolean
           example: true
@@ -8464,7 +8624,7 @@ paths:
             The [default view](/help/configure-default-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-            - "recent_topics" - Recent topics view
+            - "recent_topics" - Recent conversations view
             - "all_messages" - All messages view
           schema:
             type: string
@@ -8494,10 +8654,10 @@ paths:
             The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
             used to display emoji to the user everywhere they appear in the UI.
 
-            - "google" - Google modern
-            - "google-blob" - Google classic
+            - "google" - Google
             - "twitter" - Twitter
             - "text" - Plain text
+            - "google-blob" - Google blobs
           schema:
             type: string
           example: "google"
@@ -8509,6 +8669,23 @@ paths:
             - 1 - Automatic
             - 2 - Always
             - 3 - Never
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
+        - name: user_list_style
+          in: query
+          description: |
+            The style selected by the user for the right sidebar user list.
+
+            - 1 - Compact
+            - 2 - With status
+            - 3 - With avatar and status
+
+            **Changes**: New in Zulip 6.0 (feature level 141).
           schema:
             type: integer
             enum:
@@ -9052,7 +9229,7 @@ paths:
         Supports everything an administrator can do to edit details of another
         user's account, including editing full name,
         [role](/help/roles-and-permissions), and [custom profile
-        fields](/help/add-custom-profile-fields).
+        fields](/help/custom-profile-fields).
       parameters:
         - $ref: "#/components/parameters/UserId"
         - name: full_name
@@ -9445,7 +9622,50 @@ paths:
             type: boolean
             default: false
           example: true
-        - $ref: "#/components/parameters/ClientGravatar"
+        - name: client_gravatar
+          in: query
+          description: |
+            Whether the client supports computing gravatars URLs. If
+            enabled, `avatar_url` will be included in the response only
+            if there is a Zulip avatar, and will be `null` for users who
+            are using gravatar as their avatar. This option
+            significantly reduces the compressed size of user data,
+            since gravatar URLs are long, random strings and thus do not
+            compress well. The `client_gravatar` field is set to `true` if
+            clients can compute their own gravatars.
+
+            The default value is `true` for authenticated requests and
+            `false` for [unauthenticated
+            requests](/help/public-access-option). Passing `true` in
+            an unauthenticated request is an error.
+
+            **Changes**: Before Zulip 6.0 (feature level 149), this
+            parameter was silently ignored and processed as though it
+            were `false` in unauthenticated requests.
+          schema:
+            type: boolean
+          example: false
+        - name: include_subscribers
+          in: query
+          description: |
+            Whether each returned stream object should include a `subscribers`
+            field containing a list of the user IDs of its subscribers.
+
+            (This may be significantly slower in organizations with
+            thousands of users subscribed to many streams.)
+
+            Passing `true` in an [unauthenticated
+            request](/help/public-access-option) is an error.
+
+            **Changes**: Before Zulip 6.0 (feature level 149), this
+            parameter was silently ignored and processed as though it
+            were `false` in unauthenticated requests.
+
+            New in Zulip 2.1.0.
+          schema:
+            type: boolean
+            default: false
+          example: true
         - name: slim_presence
           in: query
           description: |
@@ -9459,7 +9679,6 @@ paths:
           example: true
         - $ref: "#/components/parameters/Event_types"
         - $ref: "#/components/parameters/AllPublicStreams"
-        - $ref: "#/components/parameters/IncludeSubscribers"
         - name: client_capabilities
           in: query
           description: |
@@ -9637,6 +9856,9 @@ paths:
                             - `URL` for links.
                             - `EXTERNAL_ACCOUNT` for external accounts.
                             - `USER` for selecting a user for the field.
+                            - `PRONOUNS` for a short text field with convenient typeahead for one's preferred pronouns.
+
+                            **Changes**: `PRONOUNS` type added in Zulip 6.0 (feature level 151).
                           additionalProperties: false
                           properties:
                             id:
@@ -10043,6 +10265,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
+                                can_remove_subscribers_group_id: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -10278,8 +10501,14 @@ paths:
                           properties:
                             away:
                               type: boolean
+                              deprecated: true
                               description: |
                                 If present, the user has marked themself "away".
+
+                                **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                starting with that feature level, `away` is a legacy way to
+                                access the user's `presence_enabled` setting, with
+                                `away = !presence_enabled`. To be removed in a future release.
                             status_text:
                               type: string
                               description: |
@@ -10348,7 +10577,7 @@ paths:
                             type: boolean
                             description: |
                               Whether to use the [maximum available screen width](/help/enable-full-width-display)
-                              for the web app's center panel (message feed, recent topics) on wide screens.
+                              for the web app's center panel (message feed, recent conversations) on wide screens.
                           high_contrast_mode:
                             type: boolean
                             description: |
@@ -10398,7 +10627,7 @@ paths:
                               The [default view](/help/configure-default-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent topics view
+                              - "recent_topics" - Recent conversations view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
@@ -10431,17 +10660,24 @@ paths:
                               - 1 - Automatic
                               - 2 - Always
                               - 3 - Never
+                          user_list_style:
+                            type: integer
+                            description: |
+                              The style selected by the user for the right sidebar user list.
+
+                              - 1 - Compact
+                              - 2 - With status
+                              - 3 - With avatar and status
+
+                              **Changes**: New in Zulip 6.0 (feature level 141).
                           timezone:
                             type: string
                             description: |
-                              The user's [configured time zone](/help/change-your-timezone).
-
-                              Time zone values supported by the server are served at
-                              [/static/generated/timezones.json](/static/generated/timezones.json).
+                              The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -11392,7 +11628,7 @@ paths:
 
                           The [organization language][org-lang] for automated messages and invitation emails.
 
-                          [org-lang]: /help/change-the-default-language-for-your-organization
+                          [org-lang]: /help/configure-organization-language
                       realm_description:
                         type: string
                         description: |
@@ -12261,7 +12497,7 @@ paths:
                             type: boolean
                             description: |
                               Whether to use the [maximum available screen width](/help/enable-full-width-display)
-                              for the web app's center panel (message feed, recent topics) on wide screens.
+                              for the web app's center panel (message feed, recent conversations) on wide screens.
                           high_contrast_mode:
                             type: boolean
                             description: |
@@ -12311,7 +12547,7 @@ paths:
                               The [default view](/help/configure-default-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent topics view
+                              - "recent_topics" - Recent conversations view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
@@ -12344,6 +12580,16 @@ paths:
                               - 1 - Automatic
                               - 2 - Always
                               - 3 - Never
+                          user_list_style:
+                            type: integer
+                            description: |
+                              The style selected by the user for the right sidebar user list.
+
+                              - 1 - Compact
+                              - 2 - With status
+                              - 3 - With avatar and status
+
+                              **Changes**: New in Zulip 6.0 (feature level 141).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -12432,7 +12678,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -12662,7 +12908,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                          Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                           in the compose box is enabled.
 
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
@@ -12755,7 +13001,7 @@ paths:
                       {
                         "last_event_id": -1,
                         "msg": "",
-                        "queue_id": "1517975029:0",
+                        "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
                         "realm_emoji":
                           {
                             "1":
@@ -13053,14 +13299,14 @@ paths:
                             {
                               "name": "google",
                               "display_name": "Google",
-                              "display_icon": "/static/images/landing-page/logos/googl_e-icon.png",
+                              "display_icon": "/static/images/authentication_backends/googl_e-icon.png",
                               "login_url": "/accounts/login/social/google",
                               "signup_url": "/accounts/register/social/google",
                             },
                             {
                               "name": "github",
                               "display_name": "GitHub",
-                              "display_icon": "/static/images/landing-page/logos/github-icon.png",
+                              "display_icon": "/static/images/authentication_backends/github-icon.png",
                               "login_url": "/accounts/login/social/github",
                               "signup_url": "/accounts/register/social/github",
                             },
@@ -13181,7 +13427,7 @@ paths:
           in: query
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
-            for the web app's center panel (message feed, recent topics) on wide screens.
+            for the web app's center panel (message feed, recent conversations) on wide screens.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
@@ -13282,7 +13528,7 @@ paths:
             The [default view](/help/configure-default-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-            - "recent_topics" - Recent topics view
+            - "recent_topics" - Recent conversations view
             - "all_messages" - All messages view
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -13350,13 +13596,27 @@ paths:
               - 2
               - 3
           example: 1
+        - name: user_list_style
+          in: query
+          description: |
+            The style selected by the user for the right sidebar user list.
+
+            - 1 - Compact
+            - 2 - With status
+            - 3 - With avatar and status
+
+            **Changes**: New in Zulip 6.0 (feature level 141).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: timezone
           in: query
           description: |
-            The user's [configured time zone](/help/change-your-timezone).
-
-            Time zone values supported by the server are served at
-            [/static/generated/timezones.json](/static/generated/timezones.json).
+            The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
@@ -13796,6 +14056,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
+                                can_remove_subscribers_group_id: {}
                                 is_default:
                                   type: boolean
                                   description: |
@@ -13906,6 +14167,7 @@ paths:
                             "rendered_description": "<p>A Scandinavian country</p>",
                             "stream_id": 7,
                             "stream_post_policy": 1,
+                            "can_remove_subscribers_group_id": 2,
                           },
                       }
         "400":
@@ -14098,6 +14360,15 @@ paths:
         Topics are a field on messages (not an independent
         data structure), so deleting all the messages in the topic
         deletes the topic from Zulip.
+
+        **Changes**: Before Zulip 6.0 (feature level 147), this
+        request did a single atomic operation, which could time out
+        for very large topics. It now deletes messages in batches,
+        starting with the newest messages, so that progress will be
+        made even if the request times out.
+
+        As of feature level 154, in case of timeout, a success response
+        with "partially_completed" result will now be returned.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: topic_name
@@ -14110,7 +14381,26 @@ paths:
           required: true
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success or partial success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonSuccess"
+                      - $ref: "#/components/schemas/SuccessDescription"
+                  - allOf:
+                      - $ref: "#/components/schemas/PartiallyCompleted"
+                      - example:
+                          {
+                            "code": "REQUEST_TIMEOUT",
+                            "msg": "",
+                            "result": "partially_completed",
+                          }
+                        description: |
+                          If the request exceeds its processing time limit after having
+                          successfully marked some messages as read, response code 200
+                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
         "400":
           description: Bad request.
           content:
@@ -14992,6 +15282,7 @@ components:
             first_message_id:
               nullable: true
             is_announcement_only: {}
+            can_remove_subscribers_group_id: {}
     BasicStreamBase:
       type: object
       description: |
@@ -15093,6 +15384,13 @@ components:
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
+        can_remove_subscribers_group_id:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to unsubscribe others
+            from the stream.
+
+            **Changes**: New in Zulip 6.0 (feature level 142).
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -15256,15 +15554,15 @@ components:
         id:
           type: integer
           description: |
-            The ID of the custom profile field. This will be referenced in custom
-            the profile fields section of user objects.
+            The ID of the custom profile field. This will be referenced in the custom
+            profile fields section of user objects.
         type:
           type: integer
           description: |
             An integer indicating the type of the custom profile field, which determines
             how it is configured and displayed to users.
 
-            See the [Add custom profile fields](/help/add-custom-profile-fields)
+            See the [Custom profile fields](/help/custom-profile-fields#profile-field-types)
             article for details on what each type means.
 
             - **1**: Short text
@@ -15274,6 +15572,9 @@ components:
             - **5**: Link
             - **6**: Person picker
             - **7**: External account
+            - **8**: Pronouns
+
+            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
         order:
           type: integer
           description: |
@@ -15299,6 +15600,15 @@ components:
             dropdown UI for individual users to select an option.
 
             The interface for field type 7 is not yet stabilized.
+        display_in_profile_summary:
+          type: boolean
+          description: |
+            Whether the custom profile field, display or not in the user profile summary.
+
+            Currently it's value not allowed to be `true` of `Long text` and `Person picker`
+            [profile field types](/help/custom-profile-fields#profile-field-types).
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
     Hotspot:
       type: object
       additionalProperties: false
@@ -15709,6 +16019,13 @@ components:
 
             Null means the stream was recently created and there is
             insufficient data to estimate the average traffic.
+        can_remove_subscribers_group_id:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to unsubscribe others
+            from the stream.
+
+            **Changes**: New in Zulip 6.0 (feature level 142).
     DefaultStreamGroup:
       type: object
       description: |
@@ -16426,6 +16743,23 @@ components:
                 - error
             msg:
               type: string
+    PartiallyCompleted:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
+        - required:
+            - result
+            - code
+          additionalProperties: false
+          properties:
+            result:
+              enum:
+                - partially_completed
+            code:
+              type: string
+              description: |
+                A string that identifies the cause of the partial completion of the request.
+            msg:
+              type: string
     ApiKeyResponse:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -16484,8 +16818,8 @@ components:
           example:
             {
               "code": "BAD_EVENT_QUEUE_ID",
-              "msg": "Bad event queue id: 1518820930:1",
-              "queue_id": "1518820930:1",
+              "msg": "Bad event queue id: fb67bf8a-c031-47cc-84cf-ed80accacda8",
+              "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "result": "error",
             }
     InvalidMessageError:
@@ -16709,11 +17043,33 @@ components:
       in: query
       description: |
         A JSON-encoded array of arrays of length 2 indicating the
-        narrow for which you'd like to receive events for. For
-        instance, to receive events for the stream `Denmark`, you
-        would specify `narrow=[['stream', 'Denmark']]`. Another
-        example is `narrow=[['is', 'private']]` for private messages.
-        Default is `[]`.
+        [narrow filter(s)](/api/construct-narrow) for which you'd
+        like to receive events for.
+
+        For example, to receive events for private messages (including
+        group private messages) received by the user, one can use
+        `narrow=[["is", "private"]]`.
+
+        Unlike the API for [fetching messages](/api/get-messages),
+        this narrow parameter is simply a filter on messages that the
+        user receives through their stream subscriptions (or because
+        they are a recipient of a private message).
+
+        This means that a client that requests a `narrow` filter of
+        `[["stream", "Denmark"]]` will receive events for new messages
+        sent to that stream while the user is subscribed to that
+        stream. The client will not receive any message events at all
+        if the user is not subscribed to `"Denmark"`.
+
+        Newly created bot users are not usually subscribed to any
+        streams, so bots using this API need to be
+        [subscribed](/api/subscribe) to any streams whose messages
+        you'd like them to process using this endpoint.
+
+        See the `all_public_streams` parameter for how to process all
+        public stream messages in an organization.
+
+        Defaults to `[]`.
       content:
         application/json:
           schema:
@@ -16753,7 +17109,7 @@ components:
         `POST /api/v1/register` (see [Register a queue](/api/register-queue)).
       schema:
         type: string
-      example: 1375801870:2942
+      example: fb67bf8a-c031-47cc-84cf-ed80accacda8
       required: true
     StreamIdInPath:
       name: stream_id
@@ -16887,7 +17243,7 @@ components:
       name: include_custom_profile_fields
       in: query
       description: |
-        Whether the client wants [custom profile field](/help/add-custom-profile-fields)
+        Whether the client wants [custom profile field](/help/custom-profile-fields)
         data to be included in the response.
 
         **Changes**: New in Zulip 2.1.0. Previous versions do no offer these

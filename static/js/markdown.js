@@ -574,24 +574,24 @@ export function parse({raw_content, helper_config}) {
     return parse_with_options({raw_content, helper_config, options});
 }
 
-// NOTE: Everything below this line is likely to be webapp-specific
+// NOTE: Everything below this line is likely to be web-specific
 //       and won't be used by future platforms such as mobile.
 //       We may eventually move this code to a new file, but we want
 //       to wait till the dust settles a bit on some other changes first.
 
-let webapp_helpers;
+let web_app_helpers;
 
 export function initialize(helper_config) {
-    // This is generally only intended to be called by the webapp. Most
+    // This is generally only intended to be called by the web app. Most
     // other platforms should call setup().
-    webapp_helpers = helper_config;
+    web_app_helpers = helper_config;
 }
 
 export function apply_markdown(message) {
-    // This is generally only intended to be called by the webapp. Most
+    // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
     const raw_content = message.raw_content;
-    const {content, flags} = parse({raw_content, helper_config: webapp_helpers});
+    const {content, flags} = parse({raw_content, helper_config: web_app_helpers});
     message.content = content;
     message.flags = flags;
     message.is_me_message = is_status_message(raw_content);
@@ -604,14 +604,14 @@ export function add_topic_links(message) {
     }
     message.topic_links = get_topic_links({
         topic: message.topic,
-        get_linkifier_map: webapp_helpers.get_linkifier_map,
+        get_linkifier_map: web_app_helpers.get_linkifier_map,
     });
 }
 
 export function contains_backend_only_syntax(content) {
     return content_contains_backend_only_syntax({
         content,
-        get_linkifier_map: webapp_helpers.get_linkifier_map,
+        get_linkifier_map: web_app_helpers.get_linkifier_map,
     });
 }
 
@@ -620,5 +620,5 @@ export function parse_non_message(raw_content) {
     // a message, but we want to convert it to HTML. Note that we parse
     // raw_content exactly as if it were a Zulip message, so we will
     // handle things like mentions, stream links, and linkifiers.
-    return parse({raw_content, helper_config: webapp_helpers}).content;
+    return parse({raw_content, helper_config: web_app_helpers}).content;
 }

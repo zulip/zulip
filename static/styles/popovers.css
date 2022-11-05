@@ -32,8 +32,76 @@
     }
 }
 
-.popover_info {
-    text-align: center;
+.user_full_name,
+.bot_owner {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.popover_user_name_row {
+    display: flex;
+    align-items: center;
+}
+
+.user_info_popover_action_buttons {
+    display: flex;
+    margin-left: auto;
+}
+
+.user_info_popover_manage_menu_btn {
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+}
+
+.user_popover_manage_menu {
+    .zulip-icon {
+        /* Overriding CSS margin */
+        margin-right: 0;
+    }
+}
+
+.info_popover_actions .custom_user_field {
+    display: flex;
+    align-items: center;
+
+    .value {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    /* Overriding CSS from rendered_markdown.css */
+    .rendered_markdown p {
+        margin: 0;
+    }
+
+    /* Overriding CSS from bootstrap > nav-list. */
+    .custom_profile_fields_link {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        &:hover {
+            background-color: transparent;
+        }
+
+        &:focus {
+            background-color: transparent;
+        }
+    }
+}
+
+.info_popover_actions .user_info_popover_manage_menu_btn {
+    /* Create a larger click target around the icon. */
+    padding: 0 6px;
+
+    opacity: 0.8;
+
+    &:hover {
+        opacity: 1;
+    }
 }
 
 .sp-container {
@@ -98,9 +166,26 @@ ul {
     &.streams_popover i,
     &.topics_popover i {
         display: inline-block;
-        width: 14px;
         text-align: center;
-        margin-right: 3px;
+
+        &:not(.popover_action_icon) {
+            width: 14px;
+        }
+
+        &:not(.popover_action_icon, .custom_user_field i) {
+            margin-right: 3px;
+        }
+
+        &.zulip-icon {
+            /* These icons are different from font awesome icons,
+                so they need to be aligned separately. */
+            line-height: 14px;
+            position: relative;
+
+            &:not(.zulip-icon-bot) {
+                top: 2px;
+            }
+        }
     }
 
     &.topics_popover {
@@ -120,6 +205,46 @@ ul {
     }
 }
 
+.actions_popover_wrapper {
+    .arrow {
+        position: absolute;
+    }
+
+    @media (width < $xl_min) {
+        width: max-content;
+    }
+
+    @media (width <= $mm_min) {
+        width: auto;
+    }
+}
+
+.actions_popover {
+    .mark_as_unread {
+        .unread_count {
+            /* The icon for this menu item is in the form of an unread count from
+               the left sidebar. We reuse much of the shared styling,
+               but need to override some of the defaults set in app_components.css. */
+            display: inline;
+            float: unset;
+            line-height: 14px;
+            font-size: 11px;
+            font-weight: 550;
+            margin-right: 2px;
+            background-color: hsl(200, 100%, 40%);
+            /* Override random undesired bootstrap style */
+            text-shadow: none;
+            /* Not center aligned but looks better. */
+            position: relative;
+            top: -1px;
+        }
+    }
+}
+
+/* Important note: The user info popover user_popover class is applied
+   to user info popovers ONLY when they are opened from the right
+   sidebar; otherwise, it will have the user-info-popover class
+   instead. */
 .user_popover {
     width: 240px;
 
@@ -184,7 +309,8 @@ ul {
     display: inline-block;
     float: initial;
     position: relative;
-    top: 1px;
+    top: 0;
+    flex-shrink: 0;
 }
 
 .bot-owner-name {
@@ -220,19 +346,18 @@ ul {
         padding-right: 16px;
     }
 
+    .modal__header {
+        justify-content: center;
+    }
+
     .modal__close {
-        float: right;
-        margin: 0;
+        position: absolute;
+        right: 20px;
     }
 
     #tab-toggle {
         font-weight: initial;
-        margin: 6px 4px 6px 0;
-        width: 100%;
-
-        .tab-switcher {
-            margin-left: 2px;
-        }
+        padding: 0 16px 6px;
     }
 
     .name {
@@ -273,25 +398,16 @@ ul {
         background-size: cover;
         background-position: center;
         border-radius: 5px;
-        border: 1px solid hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.2);
 
         &.guest-avatar::after {
             outline: 9px solid hsl(0, 0%, 100%);
         }
     }
 
-    #name {
-        font-size: 26px;
-        font-weight: 700;
-        margin-bottom: 5px;
-        max-width: 100%;
-        text-align: center;
-        line-height: 30px;
-
-        #edit-button {
-            font-size: 18px;
-            margin-left: 10px;
-        }
+    #edit-button {
+        font-size: 18px;
+        margin-left: 10px;
     }
 
     #default-section {
@@ -338,21 +454,6 @@ ul {
 
     .col-right {
         width: fit-content;
-    }
-
-    &.no-fields {
-        hr,
-        #content {
-            display: none;
-        }
-    }
-
-    &:not(.no-fields) {
-        #body {
-            padding-bottom: 10px;
-            padding-top: 4px;
-            margin-top: 10px;
-        }
     }
 
     .tab-data {
@@ -651,12 +752,26 @@ ul {
 
 .user_info_status_text {
     opacity: 0.8;
-    padding: 2px 0 3px;
 
     .status_emoji {
         height: 18px;
         width: 18px;
-        top: 2px;
+        /* Override the default 3px left margin for status emoji, which is
+           intended for their presentation elsewhere to the left of a
+           user's name. */
+        margin-left: 0;
+        margin-right: 2px;
+    }
+
+    #status_message {
+        padding: 1px 0;
+        display: flex;
+        align-items: baseline;
+        hyphens: auto;
+    }
+
+    .status_text {
+        overflow-wrap: anywhere;
     }
 }
 

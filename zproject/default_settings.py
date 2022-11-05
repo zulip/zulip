@@ -1,15 +1,14 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from scripts.lib.zulip_tools import deport
+from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
 
 from .config import DEVELOPMENT, PRODUCTION, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
-
-    from zerver.lib.types import OIDCIdPConfigDict, SAMLIdPConfigDict
 
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
@@ -76,7 +75,7 @@ SOCIAL_AUTH_GITHUB_ORG_NAME: Optional[str] = None
 SOCIAL_AUTH_GITHUB_TEAM_ID: Optional[str] = None
 SOCIAL_AUTH_GITLAB_KEY = get_secret("social_auth_gitlab_key", development_only=True)
 SOCIAL_AUTH_SUBDOMAIN: Optional[str] = None
-SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret("azure_oauth2_secret")
+SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = get_secret("social_auth_azuread_oauth2_key", development_only=True)
 SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=True)
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: Optional[str] = None
@@ -85,7 +84,7 @@ SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
 SOCIAL_AUTH_SAML_ORG_INFO: Optional[Dict[str, Dict[str, str]]] = None
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: Optional[Dict[str, str]] = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: Optional[Dict[str, str]] = None
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, "SAMLIdPConfigDict"] = {}
+SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {}
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {}
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
@@ -102,7 +101,7 @@ SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
 # Generic OpenID Connect:
-SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, "OIDCIdPConfigDict"] = {}
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, OIDCIdPConfigDict] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
 SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: Dict[str, Dict[str, Dict[str, str]]] = {}
@@ -374,16 +373,7 @@ TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 STATSD_HOST = ""
 
 # Configuration for JWT auth.
-if TYPE_CHECKING:
-
-    class JwtAuthKey(TypedDict):
-        key: str
-        # See https://pyjwt.readthedocs.io/en/latest/algorithms.html for a list
-        # of supported algorithms.
-        algorithms: List[str]
-
-
-JWT_AUTH_KEYS: Dict[str, "JwtAuthKey"] = {}
+JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {}
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.

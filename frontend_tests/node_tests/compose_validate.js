@@ -388,7 +388,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
     };
 
-    compose_state.topic("subject102");
+    compose_state.topic("topic102");
     compose_state.stream_name("stream102");
     stream_data.add_sub(sub);
     assert.ok(!compose_validate.validate());
@@ -403,7 +403,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     page_params.is_admin = false;
     page_params.is_guest = true;
 
-    compose_state.topic("subject102");
+    compose_state.topic("topic102");
     compose_state.stream_name("stream102");
     assert.ok(!compose_validate.validate());
     assert.equal(
@@ -424,7 +424,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
         stream_post_policy: stream_data.stream_post_policy_values.moderators.code,
     };
 
-    compose_state.topic("subject104");
+    compose_state.topic("topic104");
     compose_state.stream_name("stream104");
     stream_data.add_sub(sub);
     assert.ok(!compose_validate.validate());
@@ -457,7 +457,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
         stream_post_policy: stream_data.stream_post_policy_values.non_new_members.code,
     };
 
-    compose_state.topic("subject103");
+    compose_state.topic("topic103");
     compose_state.stream_name("stream103");
     stream_data.add_sub(sub);
     assert.ok(!compose_validate.validate());

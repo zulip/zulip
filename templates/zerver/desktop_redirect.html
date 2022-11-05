@@ -1,6 +1,10 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "desktop-redirect" %}
 
+{% block title %}
+<title>{{ _("Log in to desktop app") }} | Zulip</title>
+{% endblock %}
+
 {% block content %}
 <div class="flex new-style">
     <div class="desktop-redirect-box white-box">

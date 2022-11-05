@@ -7,7 +7,7 @@ from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import make_client, queries_captured
+from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import (
@@ -143,6 +143,7 @@ class MessageDictTest(ZulipTestCase):
     def test_bulk_message_fetching(self) -> None:
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
+        realm = get_realm("zulip")
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         stream_name = "Çiğdem"
         stream = self.make_stream(stream_name)
@@ -155,6 +156,7 @@ class MessageDictTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
+                    realm=realm,
                     content=f"whatever {i}",
                     rendered_content="DOES NOT MATTER",
                     rendered_content_version=markdown_version,
@@ -175,13 +177,12 @@ class MessageDictTest(ZulipTestCase):
         self.assertTrue(num_ids >= 600)
 
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(7):
             rows = list(MessageDict.get_raw_db_rows(ids))
 
             objs = [MessageDict.build_dict_from_raw_db_row(row) for row in rows]
             MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
 
-        self.assert_length(queries, 7)
         self.assert_length(rows, num_ids)
 
     def test_applying_markdown(self) -> None:
@@ -192,6 +193,7 @@ class MessageDictTest(ZulipTestCase):
         message = Message(
             sender=sender,
             recipient=recipient,
+            realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
             sending_client=sending_client,
@@ -222,6 +224,7 @@ class MessageDictTest(ZulipTestCase):
         message = Message(
             sender=sender,
             recipient=recipient,
+            realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
             sending_client=sending_client,
@@ -254,7 +257,7 @@ class MessageDictTest(ZulipTestCase):
             realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
 
@@ -287,6 +290,7 @@ class MessageDictTest(ZulipTestCase):
         message = Message(
             sender=sender,
             recipient=recipient,
+            realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
             sending_client=sending_client,
@@ -620,6 +624,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self) -> None:
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
+        realm = get_realm("zulip")
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         stream_name = "Çiğdem"
         stream = self.make_stream(stream_name)
@@ -632,6 +637,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
+                    realm=realm,
                     content=f"whatever {i}",
                     date_sent=timezone_now(),
                     sending_client=sending_client,

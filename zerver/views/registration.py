@@ -13,7 +13,6 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.translation import get_language
-from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 from confirmation.models import (
@@ -611,17 +610,13 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     except RealmCreationKey.Invalid:
         return render(
             request,
-            "zerver/realm_creation_failed.html",
-            context={
-                "message": _("The organization creation link has expired" " or is not valid.")
-            },
+            "zerver/realm_creation_link_invalid.html",
         )
     if not settings.OPEN_REALM_CREATION:
         if key_record is None:
             return render(
                 request,
-                "zerver/realm_creation_failed.html",
-                context={"message": _("New organization creation disabled")},
+                "zerver/realm_creation_disabled.html",
             )
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,

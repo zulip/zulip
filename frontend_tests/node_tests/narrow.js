@@ -15,6 +15,7 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../js/filter");
 const narrow = zrequire("narrow");
+const settings_config = zrequire("settings_config");
 
 const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 mock_esm("../../static/js/spectators", {
@@ -54,6 +55,13 @@ const ray = {
     email: "ray@example.com",
     user_id: 22,
     full_name: "Raymond",
+};
+
+const bot = {
+    email: "bot@example.com",
+    user_id: 25,
+    full_name: "Example Bot",
+    is_bot: true,
 };
 
 function hide_all_empty_narrow_messages() {
@@ -177,13 +185,13 @@ run_test("uris", () => {
     people.initialize_current_user(me.user_id);
 
     let url = hash_util.pm_with_url(ray.email);
-    assert.equal(url, "#narrow/pm-with/22-ray");
+    assert.equal(url, "#narrow/pm-with/22-Raymond");
 
     url = hash_util.huddle_with_url("22,23");
     assert.equal(url, "#narrow/pm-with/22,23-group");
 
     url = hash_util.by_sender_url(ray.email);
-    assert.equal(url, "#narrow/sender/22-ray");
+    assert.equal(url, "#narrow/sender/22-Raymond");
 
     let emails = hash_util.decode_operand("pm-with", "22,23-group");
     assert.equal(emails, "alice@example.com,ray@example.com");
@@ -296,6 +304,22 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    // organization has disabled sending private messages
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.disabled.code;
+    set_filter([["is", "private"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to send private messages in this organization.",
+        ),
+    );
+
+    // sending private messages enabled
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["is", "private"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
@@ -323,6 +347,11 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         empty_narrow_html("translated: No topics are marked as resolved."),
     );
 
+    // organization has disabled sending private messages
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.disabled.code;
+
+    // prioritize information about invalid user(s) in narrow/search
     set_filter([["pm-with", ["Yo"]]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
@@ -346,7 +375,46 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages with this person yet!",
+            "translated: You are not allowed to send private messages in this organization.",
+        ),
+    );
+
+    // private messages with a bot are possible even though
+    // the organization has disabled sending private messages
+    people.add_active_user(bot);
+    set_filter([["pm-with", "bot@example.com"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated HTML: You have no private messages with Example Bot yet.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
+    // group private messages with bots are not possible when
+    // sending private messages is disabled
+    set_filter([["pm-with", bot.email + "," + alice.email]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to send private messages in this organization.",
+        ),
+    );
+
+    // sending private messages enabled
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.by_anyone.code;
+    set_filter([["pm-with", "alice@example.com"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated HTML: You have no private messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -370,9 +438,22 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages with these people yet!",
+            "translated: You have no private messages with these people yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
+    );
+
+    // organization has disabled sending private messages
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.disabled.code;
+
+    // prioritize information about invalid user in narrow/search
+    set_filter([["group-pm-with", ["Yo"]]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
     );
 
     set_filter([["group-pm-with", "alice@example.com"]]);
@@ -381,7 +462,32 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no group private messages with this person yet!",
+            "translated: You are not allowed to send group private messages in this organization.",
+        ),
+    );
+
+    // group private messages with bots are not possible when
+    // sending private messages is disabled
+    set_filter([["group-pm-with", "bot@example.com"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to send group private messages in this organization.",
+        ),
+    );
+
+    // sending private messages enabled
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.by_anyone.code;
+    set_filter([["group-pm-with", "alice@example.com"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated HTML: You have no group private messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -391,7 +497,9 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: You haven't received any messages sent by this user yet!"),
+        empty_narrow_html(
+            "translated HTML: You haven't received any messages sent by Raymond yet.",
+        ),
     );
 
     set_filter([["sender", "sinwar@example.com"]]);

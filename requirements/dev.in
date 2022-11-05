@@ -21,7 +21,7 @@ coverage<6.4.3  # undiagnosed bug
 fakeldap
 
 # For testing mock http requests
-responses
+responses<0.22.0  # https://github.com/getsentry/responses/pull/593
 
 # For sorting imports
 isort
@@ -29,14 +29,11 @@ isort
 # For doing highly usable Python profiling
 line-profiler
 
-# for pep8 linter
-pycodestyle
-
 # Python reformatter
 black
 
-# Needed to run pyflakes linter
-pyflakes
+# Python linter
+ruff
 
 # Needed for watching file changes
 pyinotify
@@ -57,7 +54,7 @@ python-digitalocean
 pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/34adbc13d54ebeb4291c8f91483f946fce18a160.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/80aba3fd88faf6598665ac670a1d30f3c028df0d.zip#egg=zulint==1.0.0+git
 
 -r mypy.in
 
@@ -65,7 +62,7 @@ https://github.com/zulip/zulint/archive/34adbc13d54ebeb4291c8f91483f946fce18a160
 cairosvg
 
 # Needed for tools/check-thirdparty
-python-debian<0.1.45  # https://salsa.debian.org/python-debian-team/python-debian/-/merge_requests/106
+python-debian
 
 # Pattern-based lint tool
 semgrep
@@ -78,3 +75,6 @@ natsort
 
 # For spell check linter
 codespell
+
+# Finds appropriate directories for data, config, cache, etc.
+platformdirs

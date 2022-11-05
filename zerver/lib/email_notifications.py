@@ -408,8 +408,15 @@ def do_send_missedmessage_events_reply_in_zulip(
     triggers = [message["trigger"] for message in missed_messages]
     unique_triggers = set(triggers)
 
+    personal_mentioned = any(
+        message["trigger"] == "mentioned" and message["mentioned_user_group_id"] is None
+        for message in missed_messages
+    )
+
     context.update(
         mention="mentioned" in unique_triggers or "wildcard_mentioned" in unique_triggers,
+        personal_mentioned=personal_mentioned,
+        wildcard_mentioned="wildcard_mentioned" in unique_triggers,
         stream_email_notify="stream_email_notify" in unique_triggers,
         mention_count=triggers.count("mentioned") + triggers.count("wildcard_mentioned"),
         mentioned_user_group_name=mentioned_user_group_name,
@@ -476,6 +483,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
         stream_header = f"{stream.name} > {message.topic_name()}"
         context.update(
+            stream_name=stream.name,
             stream_header=stream_header,
         )
     else:

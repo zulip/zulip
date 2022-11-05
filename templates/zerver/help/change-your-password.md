@@ -6,19 +6,7 @@ account.
 
 ### If you've forgotten or never had a password
 
-{start_tabs}
-
-1. Log out.
-
-1. Go to your organization's login page.
-
-2. Below the **Password** field, click **Forgot password**.
-
-3. Enter your email address, and click **Send reset link**.
-
-4. You will receive a confirmation email within a few minutes. Open it and click **Reset password**.
-
-{end_tabs}
+{!change-password-via-email-confirmation.md!}
 
 ### If you know your current password
 

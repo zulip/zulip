@@ -1,8 +1,11 @@
 import $ from "jquery";
 
+import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
 import render_admin_export_list from "../templates/settings/admin_export_list.hbs";
 
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -129,13 +132,14 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         const $btn = $(this);
+        const url = "/json/export/realm/" + encodeURIComponent($btn.attr("data-export-id"));
+        const html_body = render_confirm_delete_data_export();
 
-        channel.del({
-            url: "/json/export/realm/" + encodeURIComponent($btn.attr("data-export-id")),
-            error(xhr) {
-                ui_report.generic_row_button_error(xhr, $btn);
-            },
-            // No success function, since UI updates are done via server_events
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Delete data export?"}),
+            html_body,
+            on_click: () => dialog_widget.submit_api_request(channel.del, url),
+            loading_spinner: true,
         });
     });
 }

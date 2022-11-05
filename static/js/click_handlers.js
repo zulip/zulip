@@ -32,6 +32,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -128,7 +129,7 @@ export function initialize() {
         }
 
         // UI elements for triggering message editing or viewing edit history.
-        if ($target.is("i.edit_content_button") || $target.is(".message_edit_notice")) {
+        if ($target.is("i.edit_message_button") || $target.is(".message_edit_notice")) {
             return true;
         }
 
@@ -273,10 +274,23 @@ export function initialize() {
 
     // MESSAGE EDITING
 
-    $("body").on("click", ".edit_content_button", function (e) {
+    $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
         message_edit.start($row);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+    $("body").on("click", ".move_message_button", function (e) {
+        const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
+        const message_id = rows.id($row);
+        message_lists.current.select_id(message_id);
+        const message = message_lists.current.get(message_id);
+        stream_popover.build_move_topic_to_stream_popover(
+            message.stream_id,
+            message.topic,
+            message,
+        );
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -434,11 +448,20 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
-        const topic_row_index = $(e.target).closest("tr").index();
+        const $elt = $(e.currentTarget);
+        const topic_row_index = $elt.closest("tr").index();
         recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.read);
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-topic-name");
-        unread_ops.mark_topic_as_read(stream_id, topic);
+        const user_ids_string = $elt.attr("data-user-ids-string");
+        if (user_ids_string) {
+            // PM row
+            unread_ops.mark_pm_as_read(user_ids_string);
+        } else {
+            // Stream row
+            const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+            const topic = $elt.attr("data-topic-name");
+            unread_ops.mark_topic_as_read(stream_id, topic);
+        }
+        recent_topics_ui.change_focused_element($elt, "down_arrow");
     });
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
@@ -468,7 +491,7 @@ export function initialize() {
         // The element's parent may re-render while it is being passed to
         // other functions, so, we get topic_key first.
         const $topic_row = $(e.target).closest("tr");
-        const topic_key = $topic_row.attr("id").slice("recent_topics:".length - 1);
+        const topic_key = $topic_row.attr("id").slice("recent_conversation:".length);
         const topic_row_index = $topic_row.index();
         recent_topics_ui.focus_clicked_element(
             topic_row_index,
@@ -528,7 +551,7 @@ export function initialize() {
 
     // SIDEBARS
 
-    $(".right-sidebar .login_button").on("click", (e) => {
+    $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         window.location.href = hash_util.build_login_link();
@@ -736,6 +759,47 @@ export function initialize() {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
     });
+
+    $("body").on(
+        "click",
+        ".private_messages_container.zoom-out #private_messages_section_header",
+        (e) => {
+            if (e.target.classList.value === "fa fa-align-right") {
+                // Let the browser handle the "all private messages" widget.
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            const $left_sidebar_scrollbar = $(
+                "#left_sidebar_scroll_container .simplebar-content-wrapper",
+            );
+            const scroll_position = $left_sidebar_scrollbar.scrollTop();
+
+            // This next bit of logic is a bit subtle; this header
+            // button scrolls to the top of the private messages
+            // section is uncollapsed but out of view; otherwise, we
+            // toggle its collapsed state.
+            if (scroll_position === 0 || pm_list.is_private_messages_collapsed()) {
+                pm_list.toggle_private_messages_section();
+            }
+            $left_sidebar_scrollbar.scrollTop(0);
+        },
+    );
+
+    /* The PRIVATE MESSAGES label's click behavior is complicated;
+     * only when zoomed in does it have a navigation effect, so we need
+     * this click handler rather than just a link. */
+    $("body").on(
+        "click",
+        ".private_messages_container.zoom-in #private_messages_section_header",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.location.hash = "narrow/is/private";
+        },
+    );
 
     // WEBATHENA
 

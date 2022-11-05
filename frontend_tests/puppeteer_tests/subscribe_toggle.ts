@@ -1,6 +1,6 @@
 import type {ElementHandle, Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function test_subscription_button(page: Page): Promise<void> {
     const stream_selector = "[data-stream-name='Venice']";
@@ -9,15 +9,19 @@ async function test_subscription_button(page: Page): Promise<void> {
     const unsubscribed_selector = `${button_selector}:not(.checked)`;
 
     async function subscribed(): Promise<ElementHandle | null> {
-        await page.waitForFunction(
-            () => $(".stream_settings_header .sub_unsub_button").text().trim() === "Unsubscribe",
+        await page.waitForSelector(
+            `xpath///*[${common.has_class_x("stream_settings_header")}]//*[${common.has_class_x(
+                "sub_unsub_button",
+            )} and normalize-space()="Unsubscribe"]`,
         );
         return await page.waitForSelector(subscribed_selector, {visible: true});
     }
 
     async function unsubscribed(): Promise<ElementHandle | null> {
-        await page.waitForFunction(
-            () => $(".stream_settings_header .sub_unsub_button").text().trim() === "Subscribe",
+        await page.waitForSelector(
+            `xpath///*[${common.has_class_x("stream_settings_header")}]//*[${common.has_class_x(
+                "sub_unsub_button",
+            )} and normalize-space()="Subscribe"]`,
         );
         return await page.waitForSelector(unsubscribed_selector, {visible: true});
     }

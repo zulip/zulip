@@ -50,58 +50,58 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.4.0',
-      'goversion' => '1176',
+      'version'   => '2.4.1',
+      'goversion' => '1191',
       'sha256'    => {
-        'amd64'   => '0033c412d1da09caca1774d2a7e3de3ec281e0450d67c574846f167ce253b67c',
-        'aarch64' => '81bdf24e769cdf9a8bd2c5d9ecc633437eb3b22be73bdc10e03e517dd887b2b7',
+        'amd64'   => '8f4c715c44e18efc1fe5ce3e3e25f9b02442e46cf4e11df7d8d77d5305121f4b',
+        'aarch64' => 'e3750345f51a5df198c287749a99d4222fbe55fb0be6872643dfe466db1768da',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.18.4',
+      'version' => '1.19.2',
       'sha256' => {
-        'amd64'   => 'c9b099b68d93f5c5c8a8844a89f8db07eaa58270e3a1e01804f17f4cf8df02f5',
-        'aarch64' => '35014d92b50d97da41dade965df7ebeb9a715da600206aa59ce1b2d05527421f',
+        'amd64'   => '5e8c5a74fe6470dd7e055a461acda8bb4050ead8c2df70f227e3ff7d8eb7eeb6',
+        'aarch64' => 'b62a8d9654436c67c14a0c91e931d50440541f09eb991a987536cb982903126d',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '40870920671b64102c45b164152aef83a08d4735',
+      'version' => '5b7c3b74c3243e167cb650a91406c11e80532319',
       # Source code, so arch-invariant sha256
-      'sha256' => '48ec3c4eac69d2cd837e6a67fadf7215a237b3dd90cdd6cce339ce729e3ef1eb',
+      'sha256' => 'e93d19b28fca0757ead502976a6ea71406b8b2a6fce536386c861fd97e257297',
     },
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version'       => '2.0.0',
+      'version'       => '2.0.1',
       'sha256'        => {
-        'amd64' => 'df50c0c588fe9ff1638e42763c26e885ea32ad6dc39dee35d547186d3b94a19a',
+        'amd64' => '2640cb9110e802bf971efdc9b7a35515af7757e06693bf5c81bd4915d8d42b9c',
         # aarch64 builds from source, below
       },
       # This is a Git commit hash, not a sha256sum, for when building from source.
-      'git_commit_id' => '1eb88a577d5f938ffc1af9ae8f6ecdf82b7fda6b',
+      'git_commit_id' => 'b7d53dd74d92dd92dce224190361ad0607d680e2',
     },
 
     ### zulip_ops packages
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '9.0.3',
+      'version' => '9.2.0',
       'sha256' => {
-        'amd64'   => '9765d30b43b121e503e2c8cce30f56b13f6ce5a9068d6a459a7667988fef4840',
-        'aarch64' => 'd9dbe7727b2e6a8f0fbac9fbb2bcd8c84dc2f221663e1d819b2e7ed796f28418',
+        'amd64'   => 'a899ea2288390d05c8f0c019b5bd944a46f953063b734e670c1b7699fd77049f',
+        'aarch64' => '4d7dad0607141f07e00e743d53c232eeae2bbee962ab0859a9a2719b5902d3d2',
       },
     },
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '1.3.1',
+      'version' => '1.4.0',
       'sha256' => {
-        'amd64'   => '68f3802c2dd3980667e4ba65ea2e1fb03f4a4ba026cca375f15a0390ff850949',
-        'aarch64' => 'f19f35175f87d41545fa7d4657e834e3a37c1fe69f3bf56bc031a256117764e7',
+        'amd64'   => 'e77ff1b0a824a4e13f82a35d98595fe526849c09e3480d0789a56b72242d2abc',
+        'aarch64' => '0b20aa75385a42857a67ee5f6c7f67b229039a22a49c5c61c33f071356415b59',
       },
     },
 
@@ -116,28 +116,28 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.37.0',
+      'version' => '2.39.0',
       'sha256' => {
-        'amd64'   => 'ca70f5a261fd545da0b9893c42a73547a94ebd5111ef2b6b9f8742c5dbb73522',
-        'aarch64' => '024cc048131098d408c8c3588237c42de4a13d9030b352f0a0d7f4a734fda102',
+        'amd64'   => '4a5fb68e2f44f5e2fdef698bbe4ac8564b02789873aa57a36c72e590977734fe',
+        'aarch64' => '46e353fbc276d1462b1cc8c9a1f5a2e4c49770b8ad459f5711c592e48b176dc6',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.43.0',
+      'version' => '1.44.0',
       'sha256' => {
-        'amd64'   => '4d0d49b00ca414f667b0f347f2c231db743a952b6e596fab50fd863201d7c815',
-        'aarch64' => '11c3b545a4f934799c5ed24f98fa486f490aa23ecd9735edf95ebf58ceb56273',
+        'amd64'   => 'ce532668418b7c7a9da2c70504185e50da0decbb8a34c162f762fef5c9b48373',
+        'aarch64' => 'd1a211dd5f132f0e3653bca8871dbd276563ba46b7b17824e008198ca4278d7b',
       },
     },
 
     # https://github.com/timonwong/uwsgi_exporter/releases
     'uwsgi_exporter' => {
-      'version' => '1.0.0',
+      'version' => '1.1.0',
       'sha256' => {
-        'amd64'   => '7e924dec77bca1052b4782dcf31f0c6b2ebe71d6bf4a72412b97fec45962cef0',
-        'aarch64' => 'b36e26c8e94f1954c76aa9e9920be2f84ecc12b34f14a81086fedade8c48cb74',
+        'amd64'   => '28c7eb81515a08246824019fc42aa16c9bb3effafbcc150ab083e29295ba1fe3',
+        'aarch64' => 'c8143ebd56f5d0e9eb84e3d091613cc656ea96bd176e7ff9ace9cd58e8358dc3',
       },
     },
   }

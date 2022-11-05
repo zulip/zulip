@@ -1,5 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
+import _ from "lodash";
 
 import * as fenced_code from "../shared/js/fenced_code";
 
@@ -24,6 +25,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
@@ -141,6 +143,25 @@ function composing_to_current_topic_narrow() {
     );
 }
 
+function composing_to_current_private_message_narrow() {
+    const compose_state_recipient = compose_state.private_message_recipient();
+    const narrow_state_recipient = narrow_state.pm_emails_string();
+    return (
+        compose_state_recipient &&
+        narrow_state_recipient &&
+        _.isEqual(
+            compose_state_recipient
+                .split(",")
+                .map((s) => s.trim())
+                .sort(),
+            narrow_state_recipient
+                .split(",")
+                .map((s) => s.trim())
+                .sort(),
+        )
+    );
+}
+
 export function update_narrow_to_recipient_visibility() {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
@@ -150,13 +171,23 @@ export function update_narrow_to_recipient_visibility() {
         if (
             stream_exists &&
             !composing_to_current_topic_narrow() &&
-            !compose_state.is_topic_field_empty()
+            compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").show();
+            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            return;
+        }
+    } else if (message_type === "private") {
+        const recipients = compose_state.private_message_recipient();
+        if (
+            recipients &&
+            !composing_to_current_private_message_narrow() &&
+            compose_state.has_full_recipient()
+        ) {
+            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
             return;
         }
     }
-    $(".narrow_to_compose_recipients").hide();
+    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
 }
 
 export function complete_starting_tasks(msg_type, opts) {
@@ -491,7 +522,7 @@ export function on_topic_narrow() {
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $("#compose-textarea").trigger("focus").trigger("select");
+    $("#compose-textarea").trigger("focus");
 }
 
 export function quote_and_reply(opts) {
@@ -601,10 +632,29 @@ export function on_narrow(opts) {
 
     if (narrow_state.narrowed_by_pm_reply()) {
         opts = fill_in_opts_from_current_narrowed_view("private", opts);
-        // Do not open compose box if triggered by search and invalid recipient
-        // is present.
-        if (opts.trigger === "search" && !opts.private_message_recipient) {
+        // Do not open compose box if an invalid recipient is present.
+        if (!opts.private_message_recipient) {
+            if (compose_state.composing()) {
+                cancel();
+            }
             return;
+        }
+        // Do not open compose box if organization has disabled sending
+        // private messages and recipient is not a bot.
+        if (
+            page_params.realm_private_message_policy ===
+                settings_config.private_message_policy_values.disabled.code &&
+            opts.private_message_recipient
+        ) {
+            const emails = opts.private_message_recipient.split(",");
+            if (emails.length !== 1 || !people.get_by_email(emails[0]).is_bot) {
+                // If we are navigating between private message conversations,
+                // we want the compose box to close for non-bot users.
+                if (compose_state.composing()) {
+                    cancel();
+                }
+                return;
+            }
         }
         start("private");
         return;

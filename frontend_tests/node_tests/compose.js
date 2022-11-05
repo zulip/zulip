@@ -147,6 +147,10 @@ test_ui("send_message", ({override, override_rewire}) => {
         return stub_state;
     }
 
+    const $container = $(".top_left_drafts");
+    const $child = $(".unread_count");
+    $container.set_find_results(".unread_count", $child);
+
     override(server_events, "assert_get_events_running", () => {
         stub_state.get_events_running_called += 1;
     });
@@ -754,11 +758,6 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 
     (function test_markdown_preview_compose_clicked() {
-        let reset_compose_message_max_height_called = false;
-        override(resize, "reset_compose_message_max_height", () => {
-            reset_compose_message_max_height_called = true;
-        });
-
         // Tests setup
         function setup_visibilities() {
             $("#compose-textarea").show();
@@ -843,7 +842,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.equal($("#compose .preview_content").html(), "translated HTML: Nothing to preview");
         assert_visibilities();
-        assert.ok(reset_compose_message_max_height_called);
 
         let make_indicator_called = false;
         $("#compose-textarea").val("```foobarfoobar```");

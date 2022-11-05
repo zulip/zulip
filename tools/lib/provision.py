@@ -64,12 +64,12 @@ try:
     os.remove(os.path.join(VAR_DIR_PATH, "zulip-test-symlink"))
 except OSError:
     print(
-        FAIL + "Error: Unable to create symlinks."
+        FAIL + "Error: Unable to create symlinks. "
         "Make sure you have permission to create symbolic links." + ENDC
     )
     print("See this page for more information:")
     print(
-        "  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error"
+        "  https://zulip.readthedocs.io/en/latest/development/setup-recommended.html#os-symlink-error"
     )
     sys.exit(1)
 

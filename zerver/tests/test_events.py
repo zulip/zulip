@@ -45,14 +45,11 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-from zerver.actions.message_edit import (
-    do_delete_messages,
-    do_update_embedded_data,
-    do_update_message,
-)
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import do_update_embedded_data, do_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
-from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_domains import (
     do_add_realm_domain,
@@ -73,7 +70,6 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
@@ -82,6 +78,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_can_remove_subscribers_group,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -109,6 +106,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
     do_regenerate_api_key,
 )
+from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.actions.users import (
     do_change_user_role,
@@ -264,6 +262,7 @@ class BaseAction(ZulipTestCase):
         bulk_message_deletion: bool = True,
         stream_typing_notifications: bool = True,
         user_settings_object: bool = False,
+        pronouns_field_type_supported: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -291,6 +290,7 @@ class BaseAction(ZulipTestCase):
                 bulk_message_deletion=bulk_message_deletion,
                 stream_typing_notifications=stream_typing_notifications,
                 user_settings_object=user_settings_object,
+                pronouns_field_type_supported=pronouns_field_type_supported,
             )
         )
 
@@ -304,6 +304,7 @@ class BaseAction(ZulipTestCase):
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
 
         # We want even those `send_event` calls which have been hooked to
@@ -359,6 +360,7 @@ class BaseAction(ZulipTestCase):
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -987,14 +989,44 @@ class NormalActionsTest(BaseAction):
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
         name = field.name
         hint = "Biography of the user"
+        display_in_profile_summary = False
 
         events = self.verify_action(
-            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint)
+            lambda: try_update_realm_custom_profile_field(
+                realm, field, name, hint=hint, display_in_profile_summary=display_in_profile_summary
+            )
         )
         check_custom_profile_fields("events[0]", events[0])
 
         events = self.verify_action(lambda: do_remove_realm_custom_profile_field(realm, field))
         check_custom_profile_fields("events[0]", events[0])
+
+    def test_pronouns_type_support_in_custom_profile_fields_events(self) -> None:
+        realm = self.user_profile.realm
+        field = CustomProfileField.objects.get(realm=realm, name="Pronouns")
+        name = field.name
+        hint = "What pronouns should people use for you?"
+
+        events = self.verify_action(
+            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint),
+            pronouns_field_type_supported=True,
+        )
+        check_custom_profile_fields("events[0]", events[0])
+        pronouns_field = [
+            field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
+        ][0]
+        self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
+
+        hint = "What pronouns should people use to refer you?"
+        events = self.verify_action(
+            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint),
+            pronouns_field_type_supported=False,
+        )
+        check_custom_profile_fields("events[0]", events[0])
+        pronouns_field = [
+            field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
+        ][0]
+        self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
 
     def test_custom_profile_field_data_events(self) -> None:
         field_id = self.user_profile.realm.customprofilefield_set.get(
@@ -1141,16 +1173,20 @@ class NormalActionsTest(BaseAction):
 
     def test_away_events(self) -> None:
         client = get_client("website")
+
+        # Set all
+        away_val = True
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
-                away=True,
+                away=away_val,
                 status_text="out to lunch",
                 emoji_name="car",
                 emoji_code="1f697",
                 reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
-            )
+            ),
+            num_events=4,
         )
 
         check_user_status(
@@ -1158,16 +1194,29 @@ class NormalActionsTest(BaseAction):
             events[0],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
+        check_user_settings_update("events[1]", events[1])
+        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_presence(
+            "events[3]",
+            events[3],
+            has_email=True,
+            presence_key="website",
+            status="active" if not away_val else "idle",
+        )
+
+        # Remove all
+        away_val = False
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
-                away=False,
+                away=away_val,
                 status_text="",
                 emoji_name="",
                 emoji_code="",
                 reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
-            )
+            ),
+            num_events=4,
         )
 
         check_user_status(
@@ -1175,21 +1224,43 @@ class NormalActionsTest(BaseAction):
             events[0],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
+        check_user_settings_update("events[1]", events[1])
+        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_presence(
+            "events[3]",
+            events[3],
+            has_email=True,
+            presence_key="website",
+            status="active" if not away_val else "idle",
+        )
 
+        # Only set away
+        away_val = True
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
-                away=True,
+                away=away_val,
                 status_text=None,
                 emoji_name=None,
                 emoji_code=None,
                 reaction_type=None,
                 client_id=client.id,
-            )
+            ),
+            num_events=4,
         )
 
         check_user_status("events[0]", events[0], {"away"})
+        check_user_settings_update("events[1]", events[1])
+        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_presence(
+            "events[3]",
+            events[3],
+            has_email=True,
+            presence_key="website",
+            status="active" if not away_val else "idle",
+        )
 
+        # Only set status_text
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
@@ -1562,27 +1633,6 @@ class NormalActionsTest(BaseAction):
                     property=setting_name,
                     value=value,
                 )
-
-    def test_change_realm_message_edit_settings(self) -> None:
-        # Test every transition among the four possibilities {T,F} x {0, non-0}
-        for (allow_message_editing, message_content_edit_limit_seconds) in (
-            (True, 0),
-            (False, 0),
-            (False, 1234),
-            (True, 600),
-            (False, 0),
-            (True, 1234),
-        ):
-            events = self.verify_action(
-                lambda: do_set_realm_message_editing(
-                    self.user_profile.realm,
-                    allow_message_editing,
-                    message_content_edit_limit_seconds,
-                    Realm.POLICY_ADMINS_ONLY,
-                    acting_user=None,
-                )
-            )
-            check_realm_update_dict("events[0]", events[0])
 
     def test_change_realm_notifications_stream(self) -> None:
 
@@ -2488,7 +2538,7 @@ class RealmPropertyActionTest(BaseAction):
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
-            waiting_period_threshold=[10, 20],
+            waiting_period_threshold=[1000, 2000],
             create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
@@ -2510,6 +2560,8 @@ class RealmPropertyActionTest(BaseAction):
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            edit_topic_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            message_content_edit_limit_seconds=[1000, 1100, 1200, None],
         )
 
         vals = test_values.get(name)
@@ -2566,7 +2618,15 @@ class RealmPropertyActionTest(BaseAction):
                 ).count(),
                 1,
             )
-            check_realm_update("events[0]", events[0], name)
+
+            if name in [
+                "allow_message_editing",
+                "edit_topic_policy",
+                "message_content_edit_limit_seconds",
+            ]:
+                check_realm_update_dict("events[0]", events[0])
+            else:
+                check_realm_update("events[0]", events[0], name)
 
             if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
                 old_value,
@@ -2586,6 +2646,7 @@ class RealmPropertyActionTest(BaseAction):
             default_view=["recent_topics", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
+            user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
@@ -2659,6 +2720,7 @@ class UserDisplayActionTest(BaseAction):
             default_language=["es", "de", "en"],
             default_view=["all_messages", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
+            user_list_style=[1, 2, 3],
             color_scheme=[2, 3, 1],
         )
 
@@ -2884,6 +2946,17 @@ class SubscribeActionTest(BaseAction):
             stream, self.example_user("hamlet"), -1
         )
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_stream_update("events[0]", events[0])
+
+        moderators_group = UserGroup.objects.get(
+            name=UserGroup.MODERATORS_GROUP_NAME,
+            is_system_group=True,
+            realm=self.user_profile.realm,
+        )
+        action = lambda: do_change_can_remove_subscribers_group(
+            stream, moderators_group, acting_user=self.example_user("hamlet")
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
         check_stream_update("events[0]", events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it

@@ -435,8 +435,8 @@ requires a more subtle restructuring of the code.)
 We try to prevent these bugs in our tests by using a context manager
 called `queries_captured()` that captures the SQL queries used by
 the backend during a particular operation. We make assertions about
-those queries, often simply asserting that the number of queries is
-below some threshold.
+those queries, often simply by using the `assert_database_query_count`
+that checks the number of queries.
 
 ### Event-based tests
 

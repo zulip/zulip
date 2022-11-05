@@ -31,7 +31,7 @@ from zerver.models import get_stream
 # been tested for a migration being merged.
 
 
-@skip("Will not pass once newer migrations are merged.")  # nocoverage # skipped
+@skip("Fails because newer migrations have since been merged.")  # nocoverage # skipped
 class MessageEditHistoryLegacyFormats(MigrationsTestCase):
     migrate_from = "0376_set_realmemoji_author_and_reupload_realmemoji"
     migrate_to = "0377_message_edit_history_format"
@@ -170,7 +170,7 @@ class MessageEditHistoryLegacyFormats(MigrationsTestCase):
         )
 
 
-@skip("Will not pass once newer migrations are merged.")  # nocoverage # skipped
+@skip("Fails because newer migrations have since been merged.")  # nocoverage # skipped
 class MessageEditHistoryModernFormats(MigrationsTestCase):
     migrate_from = "0376_set_realmemoji_author_and_reupload_realmemoji"
     migrate_to = "0377_message_edit_history_format"
@@ -292,7 +292,7 @@ class MessageEditHistoryModernFormats(MigrationsTestCase):
         )
 
 
-@skip("Will not pass once newer migrations are merged.")  # nocoverage # skipped
+@skip("Fails because newer migrations have since been merged.")  # nocoverage # skipped
 class MessageEditHistoryIntermediateFormats(MigrationsTestCase):
     migrate_from = "0376_set_realmemoji_author_and_reupload_realmemoji"
     migrate_to = "0377_message_edit_history_format"

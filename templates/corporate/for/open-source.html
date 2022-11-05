@@ -1,12 +1,11 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-(% set OPEN_GRAPH_TITLE = 'Modern chat for open source' %}
-{% set OPEN_GRAPH_DESCRIPTION = 'Zulip is the only modern team chat app that is ideal for both live and asynchronous conversations. Discuss issues, pull requests and feature ideas, engage with users, answer questions, and onboard new contributors.' %}
+{% set PAGE_TITLE = "Zulip for open-source projects" %}
 
-{% block title %}
-<title>Zulip: the best group chat for open-source projects</title>
-{% endblock %}
+{% set PAGE_DESCRIPTION = "Grow your community with thoughtful and inclusive
+  discussion, using the only modern team chat app that is ideal for both live
+  and asynchronous conversations." %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,7 +15,7 @@
 
 {% include 'zerver/landing_nav.html' %}
 
-<div class="portico-landing why-page no-slide solutions-page">
+<div class="portico-landing why-page solutions-page">
     <div class="hero bg-pycon">
         <div class="bg-dimmer"></div>
         <div class="content">
@@ -86,7 +85,7 @@
                     <li>
                         <div class="list-content">
                             Find active conversations, or see what happened while you were away,
-                            with the <a href="/help/recent-topics">Recent Topics</a>
+                            with the <a href="/help/recent-conversations">Recent conversations</a>
                             view. Read the topics you care about, and skip the rest.
                         </div>
                     </li>
@@ -123,6 +122,16 @@
                 <ul>
                     <li>
                         <div class="list-content">
+                            Maintain access to your organization's entire
+                            message history with free <a href="/plans">Zulip
+                            Cloud Standard</a> hosting. Information is at your
+                            fingertips with Zulip's <a
+                            href="/help/search-for-messages">powerful full-text
+                            search</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
                             <a href="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere">Permanently link</a>
                             to a Zulip conversation or a message in context
                             from your issue tracker, forum, or anywhere else.
@@ -141,14 +150,6 @@
                             Conversations are organized by topic, so you can
                             review old discussions to understand past work,
                             explanations, and decisions.
-                        </div>
-                    </li>
-                    <li>
-                        <div class="list-content">
-                            Topics make it easy to find the right conversation with Zulip's
-                            <a href="/help/search-for-messages">powerful full-text search</a>.
-                            New participants can learn from past discussions as they onboard,
-                            with unlimited message history.
                         </div>
                     </li>
                 </ul>
@@ -661,6 +662,15 @@
                             Mattermost</a>, <a href="/help/import-from-gitter">
                             Gitter</a>, or <a href="/help/import-from-rocketchat">
                             Rocket.Chat</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            See how <a href="/communities/">other open
+                            communities</a> are using Zulip, and learn about <a
+                            href="/help/moderating-open-organizations">best
+                            practices</a> for moderating an open Zulip
+                            organization.
                         </div>
                     </li>
                     <li>

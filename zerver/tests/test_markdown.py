@@ -235,7 +235,7 @@ class MarkdownMiscTest(ZulipTestCase):
         lst = get_possible_mentions_info(
             mention_backend, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
         )
-        set_of_names = set(map(lambda x: x.full_name.lower(), lst))
+        set_of_names = {x.full_name.lower() for x in lst}
         self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
 
         by_id = {row.id: row for row in lst}
@@ -623,7 +623,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(converted.rendered_content, with_preview)
 
         realm = msg.get_realm()
-        setattr(realm, "inline_image_preview", False)
+        realm.inline_image_preview = False
         realm.save()
 
         sender_user_profile = self.example_user("othello")
@@ -1309,7 +1309,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
 
@@ -1427,14 +1427,18 @@ class MarkdownTest(ZulipTestCase):
         RealmFilter(
             realm=realm,
             pattern=r"url-(?P<id>[0-9]+)",
-            url_format_string="https://example.com/%%%ba/%(id)s",
+            url_format_string="https://example.com/A%20Test/%%%ba/%(id)s",
         ).save()
         msg = Message(sender=self.example_user("hamlet"))
         content = "url-123 is well-escaped"
         converted = markdown_convert(content, message_realm=realm, message=msg)
         self.assertEqual(
             converted.rendered_content,
-            '<p><a href="https://example.com/%%ba/123">url-123</a> is well-escaped</p>',
+            '<p><a href="https://example.com/A%20Test/%%ba/123">url-123</a> is well-escaped</p>',
+        )
+        converted_topic = topic_links(realm.id, content)
+        self.assertEqual(
+            converted_topic, [{"url": "https://example.com/A%20Test/%%ba/123", "text": "url-123"}]
         )
 
     def test_multiple_matching_realm_patterns(self) -> None:
@@ -1447,7 +1451,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier_1.save()
         self.assertEqual(
-            linkifier_1.__str__(),
+            str(linkifier_1),
             r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
         )
 
@@ -1459,7 +1463,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier_2.save()
         self.assertEqual(
-            linkifier_2.__str__(),
+            str(linkifier_2),
             r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)"
             " https://other-trac.example.com/ticket/%(id)s>",
         )
@@ -2230,7 +2234,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user that potentially interferes with the pattern.
@@ -2318,7 +2322,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user-group that potentially interferes with the pattern.
@@ -2576,7 +2580,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a topic link that potentially interferes with the pattern.
@@ -2645,7 +2649,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a stream that potentially interferes with the pattern.
@@ -2928,7 +2932,7 @@ class MarkdownErrorTests(ZulipTestCase):
             "``` curl",
             "curl {{ api_url }}/v1/register",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
-            '    -d "queue_id=1375801870:2942"',
+            '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
 
@@ -2942,14 +2946,14 @@ class MarkdownErrorTests(ZulipTestCase):
             "``` curl",
             "curl {{ api_url }}/v1/register",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
-            '    -d "queue_id=1375801870:2942"',
+            '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
         expected = [
             "",
             "**curl:curl {{ api_url }}/v1/register",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
-            '    -d "queue_id=1375801870:2942"**',
+            '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"**',
             "",
             "",
         ]

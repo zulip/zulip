@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 import * as user_group_create_members from "./user_group_create_members";
@@ -182,7 +183,7 @@ export function set_up_handlers() {
     // Do not allow the user to enter newline characters while typing out the
     // group's description during it's creation.
     $container.on("keydown", "#create_user_group_description", (e) => {
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
         }
     });

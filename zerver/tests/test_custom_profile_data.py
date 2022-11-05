@@ -12,7 +12,6 @@ from zerver.actions.custom_profile_fields import (
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
 from zerver.models import (
     CustomProfileField,
@@ -60,11 +59,19 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data["hint"] = "*" * 81
         data["field_type"] = CustomProfileField.SHORT_TEXT
         result = self.client_post("/json/realm/profile_fields", info=data)
-        msg = "hint is too long (limit: 80 characters)"
-        self.assert_json_error(result, msg)
+        self.assert_json_error(result, "hint is too long (limit: 80 characters)")
 
         data["name"] = "Phone"
         data["hint"] = "Contact number"
+        data["field_type"] = CustomProfileField.LONG_TEXT
+        data["display_in_profile_summary"] = "true"
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "Field type not supported for display in profile summary.")
+
+        data["field_type"] = CustomProfileField.USER
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "Field type not supported for display in profile summary.")
+
         data["field_type"] = CustomProfileField.SHORT_TEXT
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
@@ -75,12 +82,19 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data["name"] = "Name "
         data["hint"] = "Some name"
         data["field_type"] = CustomProfileField.SHORT_TEXT
+        data["display_in_profile_summary"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
         field = CustomProfileField.objects.get(name="Name", realm=realm)
         self.assertEqual(field.id, field.order)
 
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(
+            result, "Only 2 custom profile fields can be displayed in the profile summary."
+        )
+
+        data["display_in_profile_summary"] = "false"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "A field with that label already exists.")
 
@@ -188,10 +202,10 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         # for default custom external account fields.
         with self.assertRaises(CustomProfileField.DoesNotExist):
             field = CustomProfileField.objects.get(name=invalid_field_name, realm=realm)
-        # The field is created with 'Twitter' name as per values in default fields dict
-        field = CustomProfileField.objects.get(name="Twitter")
-        self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["twitter"]["name"])
-        self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["twitter"]["hint"])
+        # The field is created with 'Twitter username' name as per values in default fields dict
+        field = CustomProfileField.objects.get(name="Twitter username")
+        self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].name)
+        self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].hint)
 
         result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
@@ -202,13 +216,25 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         self.assert_json_success(result)
 
-        # Default external account field data cannot be updated
-        field = CustomProfileField.objects.get(name="Twitter", realm=realm)
+        # Default external account field data cannot be updated except "display_in_profile_summary" field
+        field = CustomProfileField.objects.get(name="Twitter username", realm=realm)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Twitter username", "field_type": CustomProfileField.EXTERNAL_ACCOUNT},
+            info={"name": "Twitter", "field_type": CustomProfileField.EXTERNAL_ACCOUNT},
         )
         self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": field.name,
+                "hint": field.hint,
+                "field_type": field_type,
+                "field_data": field_data,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_success(result)
 
         result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
@@ -217,7 +243,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login("iago")
         realm = get_realm("zulip")
         data: Dict[str, Union[str, int, Dict[str, str]]] = {}
-        data["name"] = "Twitter"
+        data["name"] = "Twitter username"
         data["field_type"] = CustomProfileField.EXTERNAL_ACCOUNT
 
         data["field_data"] = "invalid"
@@ -261,9 +287,9 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
-        twitter_field = CustomProfileField.objects.get(name="Twitter", realm=realm)
+        twitter_field = CustomProfileField.objects.get(name="Twitter username", realm=realm)
         self.assertEqual(twitter_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
-        self.assertEqual(twitter_field.name, "Twitter")
+        self.assertEqual(twitter_field.name, "Twitter username")
         self.assertEqual(orjson.loads(twitter_field.field_data)["subtype"], "twitter")
 
         data["name"] = "Reddit"
@@ -335,6 +361,16 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data = {
             "name": "Your mentor",
             "field_type": CustomProfileField.USER,
+        }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+    def test_create_field_of_type_pronouns(self) -> None:
+        self.login("iago")
+        data = {
+            "name": "Pronouns for you",
+            "hint": "What pronouns should people use to refer to you?",
+            "field_type": CustomProfileField.PRONOUNS,
         }
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
@@ -470,6 +506,18 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={
                 "name": "New phone number",
                 "hint": "New contact number",
+                "display_in_profile_summary": "invalid value",
+            },
+        )
+        msg = 'Argument "display_in_profile_summary" is not valid JSON.'
+        self.assert_json_error(result, msg)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "New phone number",
+                "hint": "New contact number",
+                "display_in_profile_summary": "true",
             },
         )
         self.assert_json_success(result)
@@ -479,14 +527,16 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.name, "New phone number")
         self.assertEqual(field.hint, "New contact number")
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+        self.assertEqual(field.display_in_profile_summary, True)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Name "},
+            info={"name": "Name ", "display_in_profile_summary": "true"},
         )
         self.assert_json_success(result)
         field.refresh_from_db()
         self.assertEqual(field.name, "Name")
+        self.assertEqual(field.display_in_profile_summary, True)
 
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         result = self.client_patch(
@@ -516,9 +566,26 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         ).decode()
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Favorite editor", "field_data": field_data},
+            info={
+                "name": "Favorite editor",
+                "field_data": field_data,
+                "display_in_profile_summary": "true",
+            },
         )
         self.assert_json_success(result)
+
+        field = CustomProfileField.objects.get(name="Birthday", realm=realm)
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": field.name,
+                "hint": field.hint,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(
+            result, "Only 2 custom profile fields can be displayed in the profile summary."
+        )
 
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login("iago")
@@ -598,7 +665,8 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ("Birthday", "1909-03-05"),
             ("Favorite website", "https://zulip.com"),
             ("Mentor", [self.example_user("cordelia").id]),
-            ("GitHub", "zulip-mobile"),
+            ("GitHub username", "zulip-mobile"),
+            ("Pronouns", "he/him"),
         ]
 
         data: List[ProfileDataElementUpdateDict] = []
@@ -751,6 +819,62 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             CustomProfileFieldValue.objects.filter(field_id=field.id, value="1").exists()
         )
 
+    def test_default_external_account_type_field(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field_data = orjson.dumps(
+            {
+                "subtype": "twitter",
+            }
+        ).decode()
+
+        field = CustomProfileField.objects.get(name="GitHub username", realm=realm)
+        # Attempting to change subtype here.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "GitHub username",
+                "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+                "field_data": field_data,
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        field_data = orjson.dumps(
+            {
+                "subtype": "github",
+            }
+        ).decode()
+
+        # Attempting to change name here.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "GitHub",
+                "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+                "field_data": field_data,
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        field_data = orjson.dumps(
+            {
+                "subtype": "github",
+                "url_pattern": "invalid",
+            }
+        ).decode()
+
+        # Verify cannot change URL pattern
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "GitHub username",
+                "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+                "field_data": field_data,
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
 
 class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_list(self) -> None:
@@ -783,12 +907,10 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         test_bot = self.create_test_bot("foo-bot", iago)
         self.login_user(iago)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(4):
             response = self.client_get(
                 "/json/users", {"client_gravatar": "false", "include_custom_profile_fields": "true"}
             )
-
-        self.assert_length(queries, 4)
 
         raw_users_data = self.assert_json_success(response)["members"]
 

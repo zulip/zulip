@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {FormData} = require("formdata-node");
-
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -16,7 +14,6 @@ const noop = () => {};
 const realm_icon = mock_esm("../../static/js/realm_icon");
 
 const channel = mock_esm("../../static/js/channel");
-const overlays = mock_esm("../../static/js/overlays");
 
 mock_esm("../../static/js/csrf", {csrf_token: "token-stub"});
 mock_esm("../../static/js/list_widget", {
@@ -26,8 +23,6 @@ mock_esm("../../static/js/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
-
-set_global("FormData", FormData);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
@@ -86,6 +81,11 @@ function createSaveButtons(subsection) {
     $save_button_controls.fadeOut = () => {
         props.hidden = true;
     };
+
+    $save_button_controls.closest = () => $stub_save_button_header;
+    $stub_save_button_header.set_find_results(".time-limit-setting", []);
+    $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
+
     return {
         props,
         $save_button: $stub_save_button,
@@ -308,8 +308,6 @@ function test_extract_property_name() {
 }
 
 function test_sync_realm_settings() {
-    overlays.settings_open = () => true;
-
     {
         /* Test invalid settings property sync */
         const $property_elem = $("#id_realm_invalid_settings_property");
@@ -353,8 +351,11 @@ function test_sync_realm_settings() {
     {
         /* Test message content edit limit minutes sync */
         const $property_elem = $("#id_realm_message_content_edit_limit_minutes");
+        const $property_dropdown_elem = $("#id_realm_message_content_edit_limit_seconds");
         $property_elem.length = 1;
+        $property_dropdown_elem.length = 1;
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
+        $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
 
         page_params.realm_create_public_stream_policy = 1;
         page_params.realm_message_content_edit_limit_seconds = 120;
@@ -365,17 +366,13 @@ function test_sync_realm_settings() {
 
     {
         /* Test message content edit limit dropdown value sync */
-        const $property_elem = $("#id_realm_msg_edit_limit_setting");
-        $property_elem.length = 1;
-        $property_elem.attr("id", "id_realm_msg_edit_limit_setting");
-
         page_params.realm_message_content_edit_limit_seconds = 120;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
-        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "upto_two_min");
+        assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "120");
 
         page_params.realm_message_content_edit_limit_seconds = 130;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
-        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "custom_limit");
+        assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "custom_period");
     }
 
     {
@@ -452,18 +449,22 @@ function test_discard_changes_button(discard_changes) {
     const $edit_topic_policy = $("#id_realm_edit_topic_policy").val(
         settings_config.common_message_policy_values.by_admins_only.code,
     );
-    const $msg_edit_limit_setting = $("#id_realm_msg_edit_limit_setting").val("custom_limit");
+    const $msg_edit_limit_setting = $("#id_realm_message_content_edit_limit_seconds").val(
+        "custom_period",
+    );
     const $message_content_edit_limit_minutes = $(
         "#id_realm_message_content_edit_limit_minutes",
     ).val(130);
-    const $msg_delete_limit_setting = $("#id_realm_msg_delete_limit_setting").val("custom_limit");
+    const $msg_delete_limit_setting = $("#id_realm_message_content_delete_limit_seconds").val(
+        "custom_period",
+    );
     const $message_content_delete_limit_minutes = $(
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
 
     $allow_edit_history.attr("id", "id_realm_allow_edit_history");
-    $msg_edit_limit_setting.attr("id", "id_realm_msg_edit_limit_setting");
-    $msg_delete_limit_setting.attr("id", "id_realm_msg_delete_limit_setting");
+    $msg_edit_limit_setting.attr("id", "id_realm_message_content_edit_limit_seconds");
+    $msg_delete_limit_setting.attr("id", "id_realm_message_content_delete_limit_seconds");
     $edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
     $message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
     $message_content_delete_limit_minutes.attr(
@@ -477,8 +478,6 @@ function test_discard_changes_button(discard_changes) {
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
         $edit_topic_policy,
-        $message_content_edit_limit_minutes,
-        $message_content_delete_limit_minutes,
     ];
 
     const {$discard_button, props} = createSaveButtons("msg-editing");
@@ -491,9 +490,9 @@ function test_discard_changes_button(discard_changes) {
         $edit_topic_policy.val(),
         settings_config.common_message_policy_values.by_everyone.code,
     );
-    assert.equal($msg_edit_limit_setting.val(), "upto_one_hour");
+    assert.equal($msg_edit_limit_setting.val(), "3600");
     assert.equal($message_content_edit_limit_minutes.val(), "60");
-    assert.equal($msg_delete_limit_setting.val(), "upto_two_min");
+    assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
     assert.ok(props.hidden);
 }
@@ -525,11 +524,39 @@ test("set_up", ({override, override_rewire}) => {
         update: noop,
     }));
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
-        $.create("<stub edit limit parent>"),
+        $.create("<stub edit limit custom input parent>"),
     );
     $("#id_realm_message_content_delete_limit_minutes").set_parent(
-        $.create("<stub delete limit parent>"),
+        $.create("<stub delete limit custom input parent>"),
     );
+    const $stub_message_content_edit_limit_parent = $.create(
+        "<stub message_content_edit_limit parent",
+    );
+    $("#id_realm_message_content_edit_limit_seconds").set_parent(
+        $stub_message_content_edit_limit_parent,
+    );
+
+    const $stub_message_content_delete_limit_parent = $.create(
+        "<stub message_content_delete_limit parent",
+    );
+    $("#id_realm_message_content_delete_limit_seconds").set_parent(
+        $stub_message_content_delete_limit_parent,
+    );
+
+    const $custom_edit_limit_input = $("#id_realm_message_content_edit_limit_minutes");
+    $stub_message_content_edit_limit_parent.set_find_results(
+        ".admin-realm-time-limit-input",
+        $custom_edit_limit_input,
+    );
+    $custom_edit_limit_input.attr("id", "id_realm_message_content_edit_limit_minutes");
+
+    const $custom_delete_limit_input = $("#id_realm_message_content_delete_limit_minutes");
+    $stub_message_content_delete_limit_parent.set_find_results(
+        ".admin-realm-time-limit-input",
+        $custom_delete_limit_input,
+    );
+    $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
+
     $("#id_realm_message_retention_days").set_parent($.create("<stub retention period parent>"));
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),

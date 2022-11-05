@@ -10,12 +10,33 @@ import {page_params} from "../page_params";
 Plotly.register([PlotlyBar, PlotlyPie]);
 
 const font_14pt = {
-    family: "Source Sans 3",
+    family: "Open Sans, sans-serif",
     size: 14,
     color: "#000000",
 };
 
+const font_12pt = {
+    family: "Open Sans, sans-serif",
+    size: 12,
+    color: "#000000",
+};
+
 let last_full_update = Number.POSITIVE_INFINITY;
+
+// Copied from attachments_ui.js
+function bytes_to_size(bytes, kb_with_1024_bytes = false) {
+    const kb_size = kb_with_1024_bytes ? 1024 : 1000;
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    if (bytes === 0) {
+        return "0 B";
+    }
+    const i = Number.parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    let size = Math.round(bytes / Math.pow(kb_size, i));
+    if (i > 0 && size < 10) {
+        size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
+    }
+    return size + " " + sizes[i];
+}
 
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
@@ -101,6 +122,86 @@ $(() => {
     // Add configuration for any additional tooltips here.
 });
 
+// Helper used in vertical bar charts
+function make_rangeselector(button1, button2) {
+    return {
+        x: -0.045,
+        y: -0.62,
+        buttons: [
+            {stepmode: "backward", ...button1},
+            {stepmode: "backward", ...button2},
+            {step: "all", label: $t({defaultMessage: "All time"})},
+        ],
+    };
+}
+
+// SUMMARY STATISTICS
+function get_user_summary_statistics(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    // Users that are not deactivated and are not bots.
+    const total_users = data.all_time.at(-1);
+    const total_users_string = total_users.toLocaleString();
+
+    $("#id_total_users").text(total_users_string);
+    $("#id_total_users").closest("summary-stats").show();
+
+    // Users that have been active in the last 15 days and are not bots.
+    const active_fifeteen_day_users = data._15day.at(-1);
+    const active_fifteen_day_users_string = active_fifeteen_day_users.toLocaleString();
+
+    $("#id_active_fifteen_day_users").text(active_fifteen_day_users_string);
+    $("#id_active_fifteen_day_users").closest("summary-stats").show();
+}
+
+function get_total_messages_sent(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    const total_messages_sent = data.human.at(-1) + data.bot.at(-1);
+    const total_messages_string = total_messages_sent.toLocaleString();
+
+    $("#id_total_messages_sent").text(total_messages_string);
+    $("#id_total_messages_sent").closest("summary-stats").show();
+}
+
+function get_thirty_days_messages_sent(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    const thirty_days_bot_messages = data.bot
+        .slice(-30)
+        .reduce((total_messages, day_messages) => total_messages + day_messages);
+    const thirty_days_human_messages = data.human
+        .slice(-30)
+        .reduce((total_messages, day_messages) => total_messages + day_messages);
+
+    const thirty_days_total_messages = thirty_days_bot_messages + thirty_days_human_messages;
+    const thirty_days_messages_string = thirty_days_total_messages.toLocaleString();
+
+    $("#id_thirty_days_messages_sent").text(thirty_days_messages_string);
+    $("#id_thirty_days_messages_sent").closest("summary-stats").show();
+}
+
+function set_storage_space_used_statistic(upload_space_used) {
+    const space_used = bytes_to_size(upload_space_used, true);
+
+    $("#id_storage_space_used").text(space_used);
+    $("#id_storage_space_used").closest("summary-stats").show();
+}
+
+function set_guest_users_statistic(guest_users) {
+    const guest_users_string = guest_users.toLocaleString();
+
+    $("#id_guest_users_count").text(guest_users_string);
+    $("#id_guest_users_count").closest("summary-stats").show();
+}
+
+// PLOTLY CHARTS
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
@@ -139,11 +240,12 @@ function populate_messages_sent_over_time(data) {
         barmode: "group",
         width: 750,
         height: 400,
-        margin: {l: 40, r: 0, b: 40, t: 0},
+        margin: {l: 40, r: 10, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             type: "date",
+            tickangle: 0,
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
@@ -152,31 +254,15 @@ function populate_messages_sent_over_time(data) {
             orientation: "h",
             font: font_14pt,
         },
-        font: font_14pt,
+        font: font_12pt,
     };
-
-    function make_rangeselector(x, y, button1, button2) {
-        return {
-            x,
-            y,
-            buttons: [
-                {stepmode: "backward", ...button1},
-                {stepmode: "backward", ...button2},
-                {step: "all", label: $t({defaultMessage: "All time"})},
-            ],
-        };
-    }
 
     // This is also the cumulative rangeselector
     const daily_rangeselector = make_rangeselector(
-        0.68,
-        -0.62,
         {count: 10, label: $t({defaultMessage: "Last 10 days"}), step: "day"},
         {count: 30, label: $t({defaultMessage: "Last 30 days"}), step: "day"},
     );
     const weekly_rangeselector = make_rangeselector(
-        0.656,
-        -0.62,
         {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
@@ -273,6 +359,7 @@ function populate_messages_sent_over_time(data) {
     };
     const last_day_is_partial = info.last_value_is_partial;
     const daily_traces = make_traces(info.dates, info.values, "bar", date_formatter);
+    get_thirty_days_messages_sent(info.values);
 
     info = aggregate_data("week");
     date_formatter = function (date) {
@@ -290,6 +377,7 @@ function populate_messages_sent_over_time(data) {
     date_formatter = function (date) {
         return format_date(date, true);
     };
+    get_total_messages_sent(values);
     const cumulative_traces = make_traces(dates, values, "scatter", date_formatter);
 
     // Functions to draw and interact with the plot
@@ -425,7 +513,7 @@ function populate_messages_sent_by_client(data) {
     const layout = {
         width: 750,
         height: null, // set in draw_plot()
-        margin: {l: 3, r: 40, b: 40, t: 0},
+        margin: {l: 10, r: 10, b: 40, t: 10},
         font: font_14pt,
         xaxis: {range: null}, // set in draw_plot()
         yaxis: {showticklabels: false},
@@ -476,7 +564,6 @@ function populate_messages_sent_by_client(data) {
                 textinfo: "text",
                 hoverinfo: "none",
                 marker: {color: "#537c5e"},
-                font: {family: "Source Sans 3", size: 18, color: "#000000"},
             },
             trace_annotations: {
                 x: annotations.values,
@@ -561,29 +648,17 @@ function populate_messages_sent_by_client(data) {
         }
         draw_plot();
     });
-
-    // handle links with @href started with '#' only
-    $(document).on("click", 'a[href^="#"]', function (e) {
-        // target element id
-        const id = $(this).attr("href");
-        // target element
-        const $id = $(id);
-        if ($id.length === 0) {
-            return;
-        }
-        // prevent standard hash navigation (avoid blinking in IE)
-        e.preventDefault();
-        const pos = $id.offset().top + $(".page-content")[0].scrollTop - 50;
-        $(".page-content").animate({scrollTop: pos + "px"}, 500);
-    });
 }
 
 function populate_messages_sent_by_message_type(data) {
     const layout = {
-        margin: {l: 90, r: 0, b: 0, t: 0},
+        margin: {l: 90, r: 0, b: 10, t: 0},
         width: 750,
         height: 300,
-        font: font_14pt,
+        legend: {
+            font: font_14pt,
+        },
+        font: font_12pt,
     };
 
     function make_plot_data(time_series_data, num_steps) {
@@ -694,35 +769,23 @@ function populate_messages_sent_by_message_type(data) {
 }
 
 function populate_number_of_users(data) {
+    const weekly_rangeselector = make_rangeselector(
+        {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
+        {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
+    );
+
     const layout = {
         width: 750,
         height: 370,
-        margin: {l: 40, r: 0, b: 65, t: 20},
+        margin: {l: 40, r: 10, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
-            rangeselector: {
-                x: 0.64,
-                y: -0.79,
-                buttons: [
-                    {
-                        count: 2,
-                        label: $t({defaultMessage: "Last 2 months"}),
-                        step: "month",
-                        stepmode: "backward",
-                    },
-                    {
-                        count: 6,
-                        label: $t({defaultMessage: "Last 6 months"}),
-                        step: "month",
-                        stepmode: "backward",
-                    },
-                    {step: "all", label: $t({defaultMessage: "All time"})},
-                ],
-            },
+            rangeselector: weekly_rangeselector,
+            tickangle: 0,
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
-        font: font_14pt,
+        font: font_12pt,
     };
 
     const end_dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
@@ -800,6 +863,7 @@ function populate_number_of_users(data) {
     // Initial drawing of plot
     draw_or_update_plot(all_time_trace, true);
     $("#all_time_actives_button").addClass("selected");
+    get_user_summary_statistics(data.everyone);
 }
 
 function populate_messages_read_over_time(data) {
@@ -832,11 +896,12 @@ function populate_messages_read_over_time(data) {
         barmode: "group",
         width: 750,
         height: 400,
-        margin: {l: 40, r: 0, b: 40, t: 0},
+        margin: {l: 40, r: 10, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             type: "date",
+            tickangle: 0,
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
@@ -845,31 +910,15 @@ function populate_messages_read_over_time(data) {
             orientation: "h",
             font: font_14pt,
         },
-        font: font_14pt,
+        font: font_12pt,
     };
-
-    function make_rangeselector(x, y, button1, button2) {
-        return {
-            x,
-            y,
-            buttons: [
-                {stepmode: "backward", ...button1},
-                {stepmode: "backward", ...button2},
-                {step: "all", label: $t({defaultMessage: "All time"})},
-            ],
-        };
-    }
 
     // This is also the cumulative rangeselector
     const daily_rangeselector = make_rangeselector(
-        0.68,
-        -0.62,
         {count: 10, label: $t({defaultMessage: "Last 10 days"}), step: "day"},
         {count: 30, label: $t({defaultMessage: "Last 30 days"}), step: "day"},
     );
     const weekly_rangeselector = make_rangeselector(
-        0.656,
-        -0.62,
         {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
@@ -1072,3 +1121,6 @@ get_chart_data(
     {chart_name: "messages_read_over_time", min_length: "10"},
     populate_messages_read_over_time,
 );
+
+set_storage_space_used_statistic(page_params.upload_space_used);
+set_guest_users_statistic(page_params.guest_users);

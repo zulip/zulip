@@ -47,6 +47,8 @@ VNU_IGNORE = [
     r"No “p” element in scope but a “p” end tag seen\.",
     r"Element “div” not allowed as child of element “ul” in this context\. "
     + r"\(Suppressing further errors from this subtree\.\)",
+    # Opinionated informational messages.
+    r"Self-closing tag syntax in text/html documents is widely discouraged; it’s unnecessary and interacts badly with other HTML features \(e\.g\., unquoted attribute values\)\. If you’re using a tool that injects self-closing tag syntax into all void elements, without any option to prevent it from doing so, then consider switching to a different tool\.",
 ]
 VNU_IGNORE_REGEX = re.compile(r"|".join(VNU_IGNORE))
 
@@ -142,6 +144,11 @@ class BaseDocumentationSpider(scrapy.Spider):
             or url.startswith("http://localhost:9981/#")
             or url.startswith("http://localhost:9981#")
         ):
+            return
+
+        # This page has some invisible to the user anchor links like #all
+        # that are currently invisible, and thus would otherwise fail this test.
+        if url.startswith("http://localhost:9981/communities"):
             return
 
         callback: Callable[[Response], Optional[Iterator[Request]]] = self.parse

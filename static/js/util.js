@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -39,6 +40,10 @@ export function lower_bound(array, value, less) {
 }
 
 export const lower_same = function lower_same(a, b) {
+    if (a === undefined || b === undefined) {
+        blueslip.error(`Cannot compare strings; at least one value is undefined: ${a}, ${b}`);
+        return false;
+    }
     return a.toLowerCase() === b.toLowerCase();
 };
 
@@ -215,18 +220,6 @@ export function set_match_data(target, source) {
 
 export function get_match_topic(obj) {
     return obj.match_subject;
-}
-
-export function get_draft_topic(obj) {
-    // We will need to support subject for old drafts.
-    return obj.topic || obj.subject || "";
-}
-
-export function get_reload_topic(obj) {
-    // When we first upgrade to releases that have
-    // topic=foo in the code, the user's reload URL
-    // may still have subject=foo from the prior version.
-    return obj.topic || obj.subject || "";
 }
 
 export function get_edit_event_topic(obj) {

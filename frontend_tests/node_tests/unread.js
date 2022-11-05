@@ -4,12 +4,13 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {zrequire, set_global} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 page_params.realm_push_notifications_enabled = false;
 
+set_global("document", "document-stub");
 const {FoldDict} = zrequire("fold_dict");
 const message_store = zrequire("message_store");
 const user_topics = zrequire("user_topics");
@@ -98,6 +99,8 @@ test("changing_topics", () => {
         topic: "lunCH",
         unread: true,
     };
+    message_store.update_message_cache(message);
+    message_store.update_message_cache(other_message);
 
     assert.deepEqual(unread.get_read_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
@@ -266,6 +269,7 @@ test("num_unread_for_topic", () => {
     let i;
     for (i = num_msgs; i > 0; i -= 1) {
         message.id = i;
+        message_store.update_message_cache(message);
         unread.process_loaded_messages([message]);
     }
 
@@ -363,7 +367,7 @@ test("phantom_messages", () => {
         stream_id: 555,
         topic: "phantom",
     };
-
+    message_store.update_message_cache(message);
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
@@ -416,11 +420,11 @@ test("private_messages", () => {
     };
     people.add_active_user(bob);
 
-    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
-    assert.equal(unread.num_unread_for_person(bob.user_id.toString()), 0);
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(), []);
+    assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 0);
+    assert.equal(unread.num_unread_for_user_ids_string(bob.user_id.toString()), 0);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
 
     const message = {
@@ -428,26 +432,29 @@ test("private_messages", () => {
         display_recipient: [{id: alice.user_id}],
         type: "private",
         unread: true,
+        to_user_ids: alice.user_id.toString(),
     };
 
     const read_message = {
         flags: ["read"],
     };
     unread.process_loaded_messages([message, read_message]);
-    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 1);
+    assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 1);
 
-    assert.equal(unread.num_unread_for_person(""), 0);
+    assert.equal(unread.num_unread_for_user_ids_string(""), 0);
 
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), [message.id]);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), [
+        message.id,
+    ]);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
     unread.mark_as_read(message.id);
-    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
-    assert.equal(unread.num_unread_for_person(""), 0);
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
+    assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 0);
+    assert.equal(unread.num_unread_for_user_ids_string(""), 0);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
     assert.deepEqual(unread.get_all_msg_ids(), []);
     const counts = unread.get_counts();
@@ -507,7 +514,7 @@ test("mentions", () => {
     };
 
     const muted_direct_mention_message = {
-        id: 17,
+        id: 18,
         type: "stream",
         stream_id: muted_stream_id,
         topic: "lunch",
@@ -535,6 +542,7 @@ test("mentions", () => {
         mention_me_message.id,
         mention_all_message.id,
         muted_mention_all_message.id,
+        muted_direct_mention_message.id,
     ]);
     test_notifiable_count(counts.home_unread_messages, 3);
 
@@ -556,6 +564,7 @@ test("mention updates", () => {
         id: 17,
         unread: false,
         type: "stream",
+        topic: "hello",
     };
 
     function test_counted(counted) {
@@ -690,36 +699,38 @@ test("message_unread", () => {
 test("server_counts", () => {
     // note that user_id 30 is "me"
 
-    page_params.unread_msgs = {
-        pms: [
-            {
-                other_user_id: 101,
-                // sender_id is deprecated.
-                sender_id: 101,
-                unread_message_ids: [31, 32, 60, 61, 62, 63],
-            },
-        ],
-        huddles: [
-            {
-                user_ids_string: "4,6,30,101",
-                unread_message_ids: [34, 50],
-            },
-        ],
-        streams: [
-            {
-                stream_id: 1,
-                topic: "test",
-                unread_message_ids: [33, 35, 36],
-            },
-        ],
-        mentions: [31, 34, 40, 41],
+    const unread_params = {
+        unread_msgs: {
+            pms: [
+                {
+                    other_user_id: 101,
+                    // sender_id is deprecated.
+                    sender_id: 101,
+                    unread_message_ids: [31, 32, 60, 61, 62, 63],
+                },
+            ],
+            huddles: [
+                {
+                    user_ids_string: "4,6,30,101",
+                    unread_message_ids: [34, 50],
+                },
+            ],
+            streams: [
+                {
+                    stream_id: 1,
+                    topic: "test",
+                    unread_message_ids: [33, 35, 36],
+                },
+            ],
+            mentions: [31, 34, 40, 41],
+        },
     };
 
-    unread.initialize();
+    unread.initialize(unread_params);
 
-    assert.equal(unread.num_unread_for_person("101"), 6);
-    assert.equal(unread.num_unread_for_person("4,6,101"), 2);
-    assert.equal(unread.num_unread_for_person("30"), 0);
+    assert.equal(unread.num_unread_for_user_ids_string("101"), 6);
+    assert.equal(unread.num_unread_for_user_ids_string("4,6,101"), 2);
+    assert.equal(unread.num_unread_for_user_ids_string("30"), 0);
 
     assert.equal(unread.num_unread_for_topic(0, "bogus"), 0);
     assert.equal(unread.num_unread_for_topic(1, "bogus"), 0);
@@ -734,7 +745,7 @@ test("server_counts", () => {
     assert.equal(unread.num_unread_for_topic(1, "test"), 2);
 
     unread.mark_as_read(34);
-    assert.equal(unread.num_unread_for_person("4,6,101"), 1);
+    assert.equal(unread.num_unread_for_user_ids_string("4,6,101"), 1);
 });
 
 test("empty_cases", () => {

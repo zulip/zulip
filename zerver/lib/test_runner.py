@@ -5,7 +5,7 @@ import shutil
 import unittest
 from functools import partial
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
-from unittest import TestLoader, TestSuite, runner
+from unittest import TestSuite, runner
 from unittest.result import TestResult
 
 import orjson
@@ -114,7 +114,7 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     # because we run our own version of the runner class.
     _, subsuite_index, subsuite, failfast, buffer = args
     runner = RemoteTestRunner(failfast=failfast, buffer=buffer)
-    result = runner.run(deserialize_suite(subsuite))
+    result = runner.run(subsuite)
     # Now we send instrumentation related events. This data will be
     # appended to the data structure in the main thread. For Mypy,
     # type of Partial is different from Callable. All the methods of
@@ -173,7 +173,14 @@ def create_test_databases(worker_id: int) -> None:
         connection.close()
 
 
-def init_worker(counter: "multiprocessing.sharedctypes.Synchronized[int]") -> None:
+def init_worker(
+    counter: "multiprocessing.sharedctypes.Synchronized[int]",
+    initial_settings: Optional[Dict[str, Any]] = None,
+    serialized_contents: Optional[Dict[str, str]] = None,
+    process_setup: Optional[Callable[..., None]] = None,
+    process_setup_args: Optional[Tuple[Any, ...]] = None,
+    debug_mode: Optional[bool] = None,
+) -> None:
     """
     This function runs only under parallel mode. It initializes the
     individual processes which are also called workers.
@@ -213,21 +220,6 @@ def init_worker(counter: "multiprocessing.sharedctypes.Synchronized[int]") -> No
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite
     init_worker = init_worker
-
-    def __init__(
-        self,
-        subsuites: List[TestSuite],
-        processes: int,
-        failfast: bool = False,
-        buffer: bool = False,
-    ) -> None:
-        super().__init__(subsuites=subsuites, processes=processes, failfast=failfast, buffer=buffer)
-        # We can't specify a consistent type for self.subsuites, since
-        # the whole idea here is to monkey-patch that so we can use
-        # most of django_runner.ParallelTestSuite with our own suite
-        # definitions.
-        assert not isinstance(self.subsuites, SubSuiteList)
-        self.subsuites: Union[SubSuiteList, List[TestSuite]] = SubSuiteList(self.subsuites)
 
 
 def check_import_error(test_name: str) -> None:
@@ -422,13 +414,7 @@ class Runner(DiscoverRunner):
 
 def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
     if isinstance(suite, ParallelTestSuite):
-        # suite is ParallelTestSuite. It will have a subsuites parameter of
-        # type SubSuiteList. Each element of a SubsuiteList is a tuple whose
-        # first element is the type of TestSuite and the second element is a
-        # list of test names in that test suite. See serialize_suite() for the
-        # implementation details.
-        assert isinstance(suite.subsuites, SubSuiteList)
-        return [name for subsuite in suite.subsuites for name in subsuite[1]]
+        return [name for subsuite in suite.subsuites for name in get_test_names(subsuite)]
     else:
         return [t.id() for t in get_tests_from_suite(suite)]
 
@@ -441,33 +427,5 @@ def get_tests_from_suite(suite: TestSuite) -> Iterable[unittest.TestCase]:
             yield test
 
 
-def serialize_suite(suite: TestSuite) -> Tuple[Type[TestSuite], List[str]]:
-    return type(suite), get_test_names(suite)
-
-
-def deserialize_suite(args: Tuple[Type[TestSuite], List[str]]) -> TestSuite:
-    suite_class, test_names = args
-    suite = suite_class()
-    tests = TestLoader().loadTestsFromNames(test_names)
-    for test in get_tests_from_suite(tests):
-        suite.addTest(test)
-    return suite
-
-
 class RemoteTestRunner(django_runner.RemoteTestRunner):
     resultclass = RemoteTestResult
-
-
-class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
-    """
-    This class allows us to avoid changing the main logic of
-    ParallelTestSuite and still make it serializable.
-    """
-
-    def __init__(self, suites: List[TestSuite]) -> None:
-        serialized_suites = [serialize_suite(s) for s in suites]
-        super().__init__(serialized_suites)
-
-    def __getitem__(self, index: Any) -> Any:
-        suite = super().__getitem__(index)
-        return deserialize_suite(suite)

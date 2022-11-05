@@ -19,25 +19,22 @@ content.
 
 {!message-actions.md!}
 
-1. Click the pencil (<i class="fa fa-pencil"></i>) icon.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon.
 
 1. Edit the message, and click **Save**.
 
+!!! warn ""
+    **Note:** If you don't see the **pencil** (<i class="fa fa-pencil"></i>) icon,
+    you are not permitted to edit this message.
+
 {end_tabs}
 
-!!! warn ""
+!!! tip ""
 
-    **Note:** After you have edited a message, the message is publicly
+    After you have edited a message, the message is publicly
     marked as **EDITED**. You can
-    [view a message's edit history](/help/view-a-messages-edit-history),
-    assuming that feature has not been
-    [disabled by an organization administrator](/help/disable-message-edit-history).
-
-If you don't see the pencil (<i class="fa fa-pencil"></i>) icon, the message content
-can no longer be edited. You should see a file (<i class="fa fa-file-code-o"></i>)
-icon instead. Clicking the file icon will allow you to view the
-[Markdown source](/help/view-the-markdown-source-of-a-message) of the message, or
-[edit the topic](/help/rename-a-topic).
+    [view a message's edit history](/help/view-a-messages-edit-history)
+    if it is [enabled](/help/disable-message-edit-history) in your organization.
 
 ## Delete a message
 
@@ -96,6 +93,7 @@ permissions to delete that message.
 
 ## Related articles
 
+* [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [Delete a topic](/help/delete-a-topic)
 * [Archive a stream](/help/archive-a-stream)
 * [Message retention policy](/help/message-retention-policy)

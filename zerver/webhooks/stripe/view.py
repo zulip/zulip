@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import time
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Dict, Optional, Sequence, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
@@ -9,6 +9,14 @@ from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.validator import (
+    WildValue,
+    check_bool,
+    check_int,
+    check_none_or,
+    check_string,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -50,19 +58,23 @@ ALL_EVENT_TYPES = [
 def api_stripe_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
     stream: str = REQ(default="test"),
 ) -> HttpResponse:
     try:
         topic, body = topic_and_body(payload)
     except SuppressedEvent:  # nocoverage
         return json_success(request)
-    check_send_webhook_message(request, user_profile, topic, body, payload["type"])
+    check_send_webhook_message(
+        request, user_profile, topic, body, payload["type"].tame(check_string)
+    )
     return json_success(request)
 
 
-def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
-    event_type = payload["type"]  # invoice.created, customer.subscription.created, etc
+def topic_and_body(payload: WildValue) -> Tuple[str, str]:
+    event_type = payload["type"].tame(
+        check_string
+    )  # invoice.created, customer.subscription.created, etc
     if len(event_type.split(".")) == 3:
         category, resource, event = event_type.split(".")
     else:
@@ -73,7 +85,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
 
     # Set the topic to the customer_id when we can
     topic = ""
-    customer_id = object_.get("customer", None)
+    customer_id = object_.get("customer").tame(check_none_or(check_string))
     if customer_id is not None:
         # Running into the 60 character topic limit.
         # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (customer_id, customer_id)
@@ -82,22 +94,22 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
 
     def update_string(blacklist: Sequence[str] = []) -> str:
         assert "previous_attributes" in payload["data"]
-        previous_attributes = payload["data"]["previous_attributes"]
-        for attribute in blacklist:
-            previous_attributes.pop(attribute, None)
+        previous_attributes = set(payload["data"]["previous_attributes"].keys()).difference(
+            blacklist
+        )
         if not previous_attributes:  # nocoverage
             raise SuppressedEvent()
         return "".join(
             "\n* "
             + attribute.replace("_", " ").capitalize()
             + " is now "
-            + stringify(object_[attribute])
-            for attribute in sorted(previous_attributes.keys())
+            + stringify(object_[attribute].value)
+            for attribute in sorted(previous_attributes)
         )
 
     def default_body(update_blacklist: Sequence[str] = []) -> str:
         body = "{resource} {verbed}".format(
-            resource=linkified_id(object_["id"]), verbed=event.replace("_", " ")
+            resource=linkified_id(object_["id"].tame(check_string)), verbed=event.replace("_", " ")
         )
         if event == "updated":
             return body + update_string(blacklist=update_blacklist)
@@ -124,23 +136,27 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             if not topic:  # only in legacy fixtures
                 topic = "charges"
             body = "{resource} for {amount} {verbed}".format(
-                resource=linkified_id(object_["id"]),
-                amount=amount_string(object_["amount"], object_["currency"]),
+                resource=linkified_id(object_["id"].tame(check_string)),
+                amount=amount_string(
+                    object_["amount"].tame(check_int), object_["currency"].tame(check_string)
+                ),
                 verbed=event,
             )
             if object_["failure_code"]:  # nocoverage
-                body += ". Failure code: {}".format(object_["failure_code"])
+                body += ". Failure code: {}".format(object_["failure_code"].tame(check_string))
         if resource == "dispute":
             topic = "disputes"
             body = default_body() + ". Current status: {status}.".format(
-                status=object_["status"].replace("_", " ")
+                status=object_["status"].tame(check_string).replace("_", " ")
             )
         if resource == "refund":
             topic = "refunds"
             body = "A {resource} for a {charge} of {amount} was updated.".format(
-                resource=linkified_id(object_["id"], lower=True),
-                charge=linkified_id(object_["charge"], lower=True),
-                amount=amount_string(object_["amount"], object_["currency"]),
+                resource=linkified_id(object_["id"].tame(check_string), lower=True),
+                charge=linkified_id(object_["charge"].tame(check_string), lower=True),
+                amount=amount_string(
+                    object_["amount"].tame(check_int), object_["currency"].tame(check_string)
+                ),
             )
     if category == "checkout_beta":  # nocoverage
         # Not sure what this is
@@ -152,20 +168,20 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         if resource == "customer":
             # Running into the 60 character topic limit.
             # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (object_['id'], object_['id'])
-            topic = object_["id"]
+            topic = object_["id"].tame(check_string)
             body = default_body(update_blacklist=["delinquent", "currency", "default_source"])
             if event == "created":
                 if object_["email"]:
-                    body += "\nEmail: {}".format(object_["email"])
+                    body += "\nEmail: {}".format(object_["email"].tame(check_string))
                 if object_["metadata"]:  # nocoverage
                     for key, value in object_["metadata"].items():
-                        body += f"\n{key}: {value}"
+                        body += f"\n{key}: {value.tame(check_string)}"
         if resource == "discount":
             body = "Discount {verbed} ([{coupon_name}]({coupon_url})).".format(
                 verbed=event.replace("_", " "),
-                coupon_name=object_["coupon"]["name"],
+                coupon_name=object_["coupon"]["name"].tame(check_string),
                 coupon_url="https://dashboard.stripe.com/{}/{}".format(
-                    "coupons", object_["coupon"]["id"]
+                    "coupons", object_["coupon"]["id"].tame(check_string)
                 ),
             )
         if resource == "source":  # nocoverage
@@ -176,35 +192,40 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 DAY = 60 * 60 * 24  # seconds in a day
                 # Basically always three: https://stripe.com/docs/api/python#event_types
                 body += " in {days} days".format(
-                    days=int((object_["trial_end"] - time.time() + DAY // 2) // DAY)
+                    days=int((object_["trial_end"].tame(check_int) - time.time() + DAY // 2) // DAY)
                 )
             if event == "created":
                 if object_["plan"]:
                     body += "\nPlan: [{plan_nickname}](https://dashboard.stripe.com/plans/{plan_id})".format(
-                        plan_nickname=object_["plan"]["nickname"], plan_id=object_["plan"]["id"]
+                        plan_nickname=object_["plan"]["nickname"].tame(check_string),
+                        plan_id=object_["plan"]["id"].tame(check_string),
                     )
                 if object_["quantity"]:
-                    body += "\nQuantity: {}".format(object_["quantity"])
+                    body += "\nQuantity: {}".format(object_["quantity"].tame(check_int))
                 if "billing" in object_:  # nocoverage
-                    body += "\nBilling method: {}".format(object_["billing"].replace("_", " "))
+                    body += "\nBilling method: {}".format(
+                        object_["billing"].tame(check_string).replace("_", " ")
+                    )
     if category == "file":  # nocoverage
         topic = "files"
         body = default_body() + " ({purpose}). \nTitle: {title}".format(
-            purpose=object_["purpose"].replace("_", " "), title=object_["title"]
+            purpose=object_["purpose"].tame(check_string).replace("_", " "),
+            title=object_["title"].tame(check_string),
         )
     if category == "invoice":
         if event == "upcoming":  # nocoverage
             body = "Upcoming invoice created"
         elif (
             event == "updated"
-            and payload["data"]["previous_attributes"].get("paid", None) is False
-            and object_["paid"] is True
-            and object_["amount_paid"] != 0
-            and object_["amount_remaining"] == 0
+            and payload["data"]["previous_attributes"].get("paid").tame(check_none_or(check_bool))
+            is False
+            and object_["paid"].tame(check_bool) is True
+            and object_["amount_paid"].tame(check_int) != 0
+            and object_["amount_remaining"].tame(check_int) == 0
         ):
             # We are taking advantage of logical AND short circuiting here since we need the else
             # statement below.
-            object_id = object_["id"]
+            object_id = object_["id"].tame(check_string)
             invoice_link = f"https://dashboard.stripe.com/invoices/{object_id}"
             body = f"[Invoice]({invoice_link}) is now paid"
         else:
@@ -221,15 +242,21 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         if event == "created":
             # Could potentially add link to invoice PDF here
             body += " ({reason})\nTotal: {total}\nAmount due: {due}".format(
-                reason=object_["billing_reason"].replace("_", " "),
-                total=amount_string(object_["total"], object_["currency"]),
-                due=amount_string(object_["amount_due"], object_["currency"]),
+                reason=object_["billing_reason"].tame(check_string).replace("_", " "),
+                total=amount_string(
+                    object_["total"].tame(check_int), object_["currency"].tame(check_string)
+                ),
+                due=amount_string(
+                    object_["amount_due"].tame(check_int), object_["currency"].tame(check_string)
+                ),
             )
     if category == "invoiceitem":
         body = default_body(update_blacklist=["description", "invoice"])
         if event == "created":
             body += " for {amount}".format(
-                amount=amount_string(object_["amount"], object_["currency"])
+                amount=amount_string(
+                    object_["amount"].tame(check_int), object_["currency"].tame(check_string)
+                )
             )
     if category.startswith("issuing"):  # nocoverage
         # Not implemented
@@ -334,7 +361,7 @@ def linkified_id(object_id: str, lower: bool = False) -> str:
     return f"[{name}](https://dashboard.stripe.com/{url_prefix}/{object_id})"
 
 
-def stringify(value: Any) -> str:
+def stringify(value: object) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:
         return timestamp_to_datetime(value).strftime("%b %d, %Y, %H:%M:%S %Z")
     return str(value)

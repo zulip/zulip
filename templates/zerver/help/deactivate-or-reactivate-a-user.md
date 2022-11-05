@@ -16,10 +16,7 @@ Note that organization administrators cannot deactivate organization owners.
 
 {tab|via-user-profile}
 
-1. Hover over a user's name in the right sidebar.
-
-1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>)
-   to the right of their name.
+{!profile-summary-three-dot-menu.md!}
 
 1. Click **Manage this user**.
 
@@ -43,7 +40,7 @@ user's bots will also be deactivated. Lastly, the user will be unable to
 create a new Zulip account in your organization using their deactivated
 email address.
 
-### Notify users of their deactivation
+## Notify users of their deactivation
 
 Zulip can optionally send the user an email notification that their account was deactivated.
 
@@ -86,3 +83,7 @@ want to reactivate.
 !!! tip ""
     You may want to [review and adjust](/help/manage-user-stream-subscriptions)
     the reactivated user's stream subscriptions.
+
+## Related articles
+
+* [Mute a user](/help/mute-a-user)

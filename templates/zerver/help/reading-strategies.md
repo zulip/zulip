@@ -10,13 +10,14 @@ in Zulip.
 
 ## Topic by topic
 
-Like your email inbox, for most users, Zulip works best if you read it topic-by-topic.
+Like your email inbox, for most users, Zulip works best if you read it
+topic-by-topic.
 
 ### Finding a topic to read
 
-#### From Recent topics
+#### From Recent conversations
 
-{!recent-topics.md!}
+{!recent-conversations.md!}
 
 #### From the list of streams
 
@@ -33,12 +34,12 @@ especially in situations where you just want a general idea of what's going
 on.
 
 * Click on a stream name in the left sidebar, and scroll using your mouse,
-  the arrow keys, `End`, or page up/down.
+  the arrow keys, <kbd>End</kbd>, or page up/down.
 
 * Click on a topic to narrow to messages from that topic.
 
 You can also search for a stream by clicking on **STREAMS** in the
-left sidebar, or using the `q` [keyboard
+left sidebar, or using the <kbd>Q</kbd> [keyboard
 shortcut](/help/keyboard-shortcuts).
 
 ## All messages
@@ -46,10 +47,12 @@ shortcut](/help/keyboard-shortcuts).
 If you're all caught up, it can be useful to have a single place to keep
 track of all messages coming in.
 
-* Click on **All messages** near the top left corner of the app, or hit `a`.
+* Click on **All messages** near the top left corner of the app, or hit
+  <kbd>A</kbd>.
 
-* You can use `s` (narrow to stream) or `S` (narrow to topic) to zoom in,
-  and `a` to get back to All messages.
+* You can use <kbd>S</kbd> (narrow to stream) or <kbd>Shift</kbd> +
+  <kbd>S</kbd> (narrow to topic) to zoom in, and <kbd>A</kbd> to get back
+  to All messages.
 
 ## Starring messages for later
 
@@ -59,5 +62,7 @@ like to reply to later.
 ## Related articles
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Recent topics](/help/recent-topics)
-* [Search](/help/search-for-messages) for streams, topics, or messages.
+* [Recent conversations](/help/recent-conversations)
+* [Searching for messages](/help/search-for-messages)
+* [Marking messages as read](/help/marking-messages-as-read)
+* [Marking messages as unread](/help/marking-messages-as-unread)

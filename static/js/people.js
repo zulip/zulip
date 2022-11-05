@@ -1,6 +1,5 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
-import {parseOneAddress} from "email-addresses";
 
 import * as typeahead from "../shared/js/typeahead";
 
@@ -111,6 +110,13 @@ export function get_bot_owner_user(user) {
     }
 
     return get_by_user_id(owner_id);
+}
+
+export function can_admin_user(user) {
+    return (
+        (user.is_bot && user.bot_owner_id && user.bot_owner_id === page_params.user_id) ||
+        is_my_user_id(user.user_id)
+    );
 }
 
 export function id_matches_email_operand(user_id, email) {
@@ -521,8 +527,8 @@ export function pm_with_url(message) {
         suffix = "group";
     } else {
         const person = get_by_user_id(user_ids[0]);
-        if (person && person.email) {
-            suffix = parseOneAddress(person.email).local.toLowerCase();
+        if (person && person.full_name) {
+            suffix = person.full_name.replace(/[ "%/<>`\p{C}]+/gu, "-");
         } else {
             blueslip.error("Unknown people in message");
             suffix = "unk";
@@ -596,7 +602,8 @@ export function emails_to_slug(emails_string) {
     const emails = emails_string.split(",");
 
     if (emails.length === 1) {
-        slug += parseOneAddress(emails[0]).local.toLowerCase();
+        const name = get_by_email(emails[0]).full_name;
+        slug += name.replace(/[ "%/<>`\p{C}]+/gu, "-");
     } else {
         slug += "group";
     }

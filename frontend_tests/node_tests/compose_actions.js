@@ -5,6 +5,9 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
+
+const settings_config = zrequire("settings_config");
 
 const noop = () => {};
 
@@ -443,6 +446,22 @@ test("on_narrow", ({override, override_rewire}) => {
     let narrowed_by_pm_reply;
     override(narrow_state, "narrowed_by_pm_reply", () => narrowed_by_pm_reply);
 
+    const steve = {
+        user_id: 90,
+        email: "steve@example.com",
+        full_name: "Steve Stephenson",
+        is_bot: false,
+    };
+    people.add_active_user(steve);
+
+    const bot = {
+        user_id: 91,
+        email: "bot@example.com",
+        full_name: "Steve's bot",
+        is_bot: true,
+    };
+    people.add_active_user(bot);
+
     let cancel_called = false;
     override_rewire(compose_actions, "cancel", () => {
         cancel_called = true;
@@ -479,6 +498,24 @@ test("on_narrow", ({override, override_rewire}) => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.disabled.code;
+    compose_actions.on_narrow({
+        force_close: false,
+        trigger: "not-search",
+        private_message_recipient: "steve@example.com",
+    });
+    assert.ok(!start_called);
+
+    compose_actions.on_narrow({
+        force_close: false,
+        trigger: "not-search",
+        private_message_recipient: "bot@example.com",
+    });
+    assert.ok(start_called);
+
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.by_anyone.code;
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",

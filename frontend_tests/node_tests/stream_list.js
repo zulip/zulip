@@ -330,7 +330,7 @@ function elem($obj) {
     return {to_$: () => $obj};
 }
 
-test_ui("zoom_in_and_zoom_out", () => {
+test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     const $label1 = $.create("label1 stub");
     const $label2 = $.create("label2 stub");
 
@@ -376,6 +376,14 @@ test_ui("zoom_in_and_zoom_out", () => {
     };
     stream_list.set_event_handlers();
 
+    mock_template("filter_topics", false, () => "filter-topics-stub");
+    let filter_topics_appended = false;
+    $stream_li1.children = () => ({
+        append: (html) => {
+            assert.equal(html, "filter-topics-stub");
+            filter_topics_appended = true;
+        },
+    });
     stream_list.zoom_in_topics({stream_id: 42});
 
     assert.ok(!$label1.visible());
@@ -384,6 +392,7 @@ test_ui("zoom_in_and_zoom_out", () => {
     assert.ok($stream_li1.visible());
     assert.ok(!$stream_li2.visible());
     assert.ok($("#streams_list").hasClass("zoom-in"));
+    assert.ok(filter_topics_appended);
 
     $("#stream_filters li.narrow-filter").show = () => {
         $stream_li1.show();
@@ -391,6 +400,9 @@ test_ui("zoom_in_and_zoom_out", () => {
     };
 
     $stream_li1.length = 1;
+    $(".filter-topics").remove = () => {
+        filter_topics_appended = false;
+    };
     stream_list.zoom_out_topics({$stream_li: $stream_li1});
 
     assert.ok($label1.visible());
@@ -399,6 +411,7 @@ test_ui("zoom_in_and_zoom_out", () => {
     assert.ok($stream_li1.visible());
     assert.ok($stream_li2.visible());
     assert.ok($("#streams_list").hasClass("zoom-out"));
+    assert.ok(!filter_topics_appended);
 });
 
 test_ui("narrowing", ({mock_template}) => {
@@ -409,6 +422,7 @@ test_ui("narrowing", ({mock_template}) => {
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
+    $("#streams_header").outerHeight = () => 0;
 
     assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
@@ -700,6 +714,7 @@ test_ui("refresh_pin", ({override, override_rewire, mock_template}) => {
 
     override_rewire(stream_list, "update_count_in_dom", noop);
     $("#stream_filters").append = noop;
+    $("#streams_header").outerHeight = () => 0;
 
     let scrolled;
     override(scroll_util, "scroll_element_into_container", ($li) => {

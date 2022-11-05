@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
@@ -23,7 +24,6 @@ import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics_ui from "./recent_topics_ui";
-import * as resize from "./resize";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -32,7 +32,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-function maybe_add_narrowed_messages(messages, msg_list, callback) {
+function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) {
     const ids = [];
 
     for (const elem of messages) {
@@ -80,15 +80,34 @@ function maybe_add_narrowed_messages(messages, msg_list, callback) {
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
-        error() {
-            // We might want to be more clever here
+        error(xhr) {
+            if (msg_list.narrowed && msg_list !== message_lists.current) {
+                return;
+            }
+            if (xhr.status === 400) {
+                // This narrow was invalid -- don't retry it, and don't display the message.
+                return;
+            }
+            if (attempt >= 5) {
+                // Too many retries -- bail out.  However, this means the `messages` are potentially
+                // missing from the search results view.  Since this is a very unlikely circumstance
+                // (Tornado is up, Django is down for 5 retries, user is in a search view that it
+                // cannot apply itself) and the failure mode is not bad (it will simply fail to
+                // include live updates of new matching messages), just log an error.
+                blueslip.error(
+                    "Failed to determine if new message matches current narrow, after 5 tries",
+                );
+                return;
+            }
+            // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
+            const delay = Math.random() * 2 ** attempt * 2000;
             setTimeout(() => {
                 if (msg_list === message_lists.current) {
-                    // Don't actually try again if we unnarrowed
+                    // Don't actually try again if we un-narrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, callback);
+                    maybe_add_narrowed_messages(messages, msg_list, callback, attempt + 1);
                 }
-            }, 5000);
+            }, delay);
         },
     });
 }
@@ -96,7 +115,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback) {
 export function insert_new_messages(messages, sent_by_this_client) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
-    unread.process_loaded_messages(messages);
+    const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     huddle_data.process_loaded_messages(messages);
 
     // all_messages_data is the data that we use to populate
@@ -133,8 +152,9 @@ export function insert_new_messages(messages, sent_by_this_client) {
         notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
-    unread_ui.update_unread_counts();
-    resize.resize_page_components();
+    if (any_untracked_unread_messages) {
+        unread_ui.update_unread_counts();
+    }
 
     unread_ops.process_visible();
     notifications.received_messages(messages);
@@ -162,8 +182,6 @@ export function update_messages(events) {
         msgs_to_rerender.push(msg);
 
         message_store.update_booleans(msg, event.flags);
-
-        unread.update_message_for_mention(msg);
 
         condense.un_cache_message_content_height(msg.id);
 
@@ -207,6 +225,8 @@ export function update_messages(events) {
             // Update raw_content, so that editing a few times in a row is fast.
             msg.raw_content = event.content;
         }
+
+        unread.update_message_for_mention(msg, any_message_content_edited);
 
         // new_topic will be undefined if the topic is unchanged.
         const new_topic = util.get_edit_event_topic(event);
@@ -268,7 +288,9 @@ export function update_messages(events) {
                 compose_fade.set_focused_recipient("stream");
             }
 
-            drafts.rename_topic(old_stream_id, orig_topic, new_topic);
+            if (going_forward_change) {
+                drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
+            }
 
             for (const msg of event_messages) {
                 if (page_params.realm_allow_edit_history) {
@@ -469,6 +491,7 @@ export function update_messages(events) {
                 new_stream_id: post_edit_stream_id,
                 new_topic: post_edit_topic,
             });
+            unread.clear_and_populate_unread_mention_topics();
             recent_topics_ui.process_topic_edit(...args);
         }
 

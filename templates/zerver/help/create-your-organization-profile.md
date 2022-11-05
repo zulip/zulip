@@ -2,11 +2,7 @@
 
 {!admin-only.md!}
 
-The information in your organization profile is displayed on your
-registration and login pages, and in the Zulip app. Here is an example
-registration/login page:
-
-![settings](/static/images/help/organization-profile-example.png)
+{!organization-profile-intro.md!}
 
 ## Edit organization profile
 

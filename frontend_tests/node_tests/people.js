@@ -316,6 +316,9 @@ test_people("basics", () => {
 
     assert.equal(people.get_bot_owner_user(bot_botson).full_name, "Isaac Newton");
 
+    assert.equal(people.can_admin_user(me), true);
+    assert.equal(people.can_admin_user(bot_botson), false);
+
     // Add our cross-realm bot.  It won't add to our human
     // count, and it has no owner.
     people.add_cross_realm_user(welcome_bot);
@@ -753,7 +756,7 @@ test_people("message_methods", () => {
         display_recipient: [{id: maria.user_id}, {id: me.user_id}],
         avatar_url: "legacy.png",
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/302-athens");
+    assert.equal(people.pm_with_url(message), "#narrow/pm-with/302-Maria-Athens");
     assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,302-pm");
     assert.equal(people.pm_reply_to(message), "Athens@example.com");
     assert.equal(people.small_avatar_url(message), "http://zulip.zulipdev.com/legacy.png?s=50");
@@ -790,7 +793,7 @@ test_people("message_methods", () => {
         type: "private",
         display_recipient: [{id: me.user_id}],
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/30-me");
+    assert.equal(people.pm_with_url(message), "#narrow/pm-with/30-Me-Myself");
     assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30-pm");
 
     message = {type: "stream"};
@@ -903,7 +906,7 @@ test_people("slugs", () => {
     people.add_active_user(debbie);
 
     const slug = people.emails_to_slug(debbie.email);
-    assert.equal(slug, "501-debbie71");
+    assert.equal(slug, "501-Debra-Henton");
 
     const email = people.slug_to_emails(slug);
     assert.equal(email, "debbie71@example.com");

@@ -19,8 +19,7 @@ from zerver.lib.validator import (
     to_non_negative_int,
 )
 from zerver.models import Client, UserProfile, get_client, get_user_profile_by_id
-from zerver.tornado.event_queue import fetch_events, get_client_descriptor, process_notification
-from zerver.tornado.exceptions import BadEventQueueIdError
+from zerver.tornado.event_queue import access_client_descriptor, fetch_events, process_notification
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -46,11 +45,7 @@ def notify(
 def cleanup_event_queue(
     request: HttpRequest, user_profile: UserProfile, queue_id: str = REQ()
 ) -> HttpResponse:
-    client = get_client_descriptor(str(queue_id))
-    if client is None:
-        raise BadEventQueueIdError(queue_id)
-    if user_profile.id != client.user_profile_id:
-        raise JsonableError(_("You are not authorized to access this queue"))
+    client = access_client_descriptor(user_profile.id, queue_id)
     log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{queue_id}]"
@@ -121,6 +116,9 @@ def get_events_backend(
     user_settings_object: bool = REQ(
         default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
+    pronouns_field_type_supported: bool = REQ(
+        default=True, json_validator=check_bool, intentionally_undocumented=True
+    ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
         raise JsonableError(_("User not authorized for this query"))
@@ -152,6 +150,7 @@ def get_events_backend(
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
 
     result = in_tornado_thread(fetch_events)(

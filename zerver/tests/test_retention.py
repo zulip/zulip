@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.submessage import do_add_submessage
@@ -19,7 +19,7 @@ from zerver.lib.retention import (
     restore_retention_policy_deletions_for_stream,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured, zulip_reaction_info
+from zerver.lib.test_helpers import zulip_reaction_info
 from zerver.lib.upload import create_attachment
 from zerver.models import (
     ArchivedAttachment,
@@ -142,6 +142,19 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         msg_id = internal_send_private_message(
             sender=get_system_bot(bot_email, internal_realm.id),
             recipient_user=zulip_user,
+            content="test message",
+        )
+        assert msg_id is not None
+        return msg_id
+
+    def _send_personal_message_to_cross_realm_bot(self) -> int:
+        # Send message from bot to users from different realm.
+        bot_email = "notification-bot@zulip.com"
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        zulip_user = self.example_user("hamlet")
+        msg_id = internal_send_private_message(
+            sender=zulip_user,
+            recipient_user=get_system_bot(bot_email, internal_realm.id),
             content="test message",
         )
         assert msg_id is not None
@@ -298,9 +311,13 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
     def test_cross_realm_personal_message_archiving(self) -> None:
         """Check that cross-realm personal messages get correctly archived."""
+
+        # We want to test on a set of cross-realm messages of both kinds -
+        # from a bot to a user, and from a user to a bot.
         msg_ids = [self._send_cross_realm_personal_message() for i in range(1, 7)]
+        msg_ids += [self._send_personal_message_to_cross_realm_bot() for i in range(1, 7)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
-        # Make the message expired on the recipient's realm:
+        # Make the message expired in the Zulip realm.:
         self._change_messages_date_sent(msg_ids, timezone_now() - timedelta(ZULIP_REALM_DAYS + 1))
 
         archive_messages()
@@ -313,8 +330,10 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
         # Insert an exception near the end of the archiving process of a chunk:
-        with mock.patch("zerver.lib.retention.delete_messages", side_effect=Exception):
-            with self.assertRaises(Exception):
+        with mock.patch(
+            "zerver.lib.retention.delete_messages", side_effect=Exception("delete_messages error")
+        ):
+            with self.assertRaisesRegex(Exception, r"^delete_messages error$"):
                 # Specify large chunk_size to ensure things happen in a single batch
                 archive_messages(chunk_size=1000)
 
@@ -1053,10 +1072,9 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(0, 10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(19):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
-        self.assert_length(queries, 19)
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))

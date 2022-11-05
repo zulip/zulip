@@ -19,7 +19,9 @@
     },
     "plugins": ["formatjs", "no-jquery"],
     "settings": {
-        "additionalFunctionNames": ["$t", "$t_html"],
+        "formatjs": {
+            "additionalFunctionNames": ["$t", "$t_html"]
+        },
         "no-jquery": {
             "collectionReturningPlugins": {
                 "expectOne": "always"
@@ -128,6 +130,7 @@
         "unicorn/prefer-ternary": "off",
         "unicorn/prefer-top-level-await": "off",
         "unicorn/prevent-abbreviations": "off",
+        "unicorn/switch-case-braces": "off",
         "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
     },
@@ -141,7 +144,6 @@
         {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
-                "$": false,
                 "zulip_test": false
             }
         },

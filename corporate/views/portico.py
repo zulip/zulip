@@ -115,7 +115,8 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         want_advertise_in_communities_directory=True
     ).order_by("name")
     for realm in want_to_be_advertised_realms:
-        if realm.allow_web_public_streams_access():
+        open_to_public = not realm.invite_required and not realm.emails_restricted_to_domains
+        if realm.allow_web_public_streams_access() or open_to_public:
             eligible_realms.append(
                 {
                     "id": realm.id,
@@ -140,6 +141,10 @@ def communities_view(request: HttpRequest) -> HttpResponse:
 
         # Remove `Unspecified` ORG_TYPE
         org_types.pop("unspecified", None)
+
+    # Change display name of non-profit orgs.
+    if org_types.get("nonprofit"):
+        org_types["nonprofit"]["name"] = "Non-profit"
 
     return TemplateResponse(
         request,

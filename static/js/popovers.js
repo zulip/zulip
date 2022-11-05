@@ -5,12 +5,14 @@ import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_actions_popover_template from "../templates/actions_popover_template.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
 import render_remind_me_popover_content from "../templates/remind_me_popover_content.hbs";
 import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
 import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
 import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
+import render_user_info_popover_manage_menu from "../templates/user_info_popover_manage_menu.hbs";
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
 
 import * as blueslip from "./blueslip";
@@ -20,6 +22,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
+import {media_breakpoints_num} from "./css_variables";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
@@ -47,9 +50,13 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
+import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
+import * as unread_ops from "./unread_ops";
 import * as user_groups from "./user_groups";
+import * as user_profile from "./user_profile";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
@@ -58,6 +65,7 @@ let $current_actions_popover_elem;
 let current_flatpickr_instance;
 let $current_message_info_popover_elem;
 let $current_user_info_popover_elem;
+let $current_user_info_popover_manage_menu;
 let $current_playground_links_popover_elem;
 let userlist_placement = "right";
 
@@ -68,6 +76,7 @@ export function clear_for_testing() {
     current_flatpickr_instance = undefined;
     $current_message_info_popover_elem = undefined;
     $current_user_info_popover_elem = undefined;
+    $current_user_info_popover_manage_menu = undefined;
     $current_playground_links_popover_elem = undefined;
     list_of_popovers.length = 0;
     userlist_placement = "right";
@@ -185,6 +194,46 @@ function calculate_info_popover_placement(size, $elt) {
     return undefined;
 }
 
+export function hide_user_info_popover_manage_menu() {
+    if ($current_user_info_popover_manage_menu !== undefined) {
+        $current_user_info_popover_manage_menu.popover("destroy");
+        $current_user_info_popover_manage_menu = undefined;
+    }
+}
+
+function show_user_info_popover_manage_menu(element, user) {
+    const $last_popover_elem = $current_user_info_popover_manage_menu;
+    hide_user_info_popover_manage_menu();
+    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
+        return;
+    }
+
+    const is_me = people.is_my_user_id(user.user_id);
+    const is_muted = muted_users.is_user_muted(user.user_id);
+    const is_system_bot = user.is_system_bot;
+    const muting_allowed = !is_me && !user.is_bot;
+
+    const args = {
+        can_mute: muting_allowed && !is_muted,
+        can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
+        can_unmute: muting_allowed && is_muted,
+        is_active: people.is_active_user_for_popover(user.user_id),
+        is_bot: user.is_bot,
+        user_id: user.user_id,
+    };
+
+    const $popover_elt = $(element);
+    $popover_elt.popover({
+        content: render_user_info_popover_manage_menu(args),
+        placement: "bottom",
+        html: true,
+        trigger: "manual",
+    });
+
+    $popover_elt.popover("show");
+    $current_user_info_popover_manage_menu = $popover_elt;
+}
+
 function render_user_info_popover(
     user,
     popover_element,
@@ -196,41 +245,44 @@ function render_user_info_popover(
 ) {
     const is_me = people.is_my_user_id(user.user_id);
 
-    let can_set_away = false;
-    let can_revoke_away = false;
+    let invisible_mode = false;
 
     if (is_me) {
-        if (user_status.is_away(user.user_id)) {
-            can_revoke_away = true;
-        } else {
-            can_set_away = true;
-        }
+        invisible_mode = !user_settings.presence_enabled;
     }
 
     const muting_allowed = !is_me && !user.is_bot;
     const is_active = people.is_active_user_for_popover(user.user_id);
-    const is_muted = muted_users.is_user_muted(user.user_id);
+    const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
-
     const spectator_view = page_params.is_spectator;
+
+    // TODO: The show_manage_menu calculation can get a lot simpler
+    // if/when we allow muting bot users.
+    const can_manage_user = page_params.is_admin && !is_me && !is_system_bot;
+    const show_manage_menu = !spectator_view && (muting_allowed || can_manage_user);
+
     let date_joined;
     if (spectator_view) {
         const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
         date_joined = dateFormat.format(parseISO(user.date_joined));
     }
+    // Filtering out only those profile fields that can be display in the popover and are not empty.
+    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+    const field_types = page_params.custom_profile_field_types;
+    const display_profile_fields = page_params.custom_profile_fields
+        .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types, dateFormat))
+        .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
     const args = {
-        can_revoke_away,
-        can_set_away,
-        can_mute: muting_allowed && !is_muted,
-        can_manage_user: page_params.is_admin && !is_me,
+        invisible_mode,
         can_send_private_message:
             is_active &&
             !is_me &&
             page_params.realm_private_message_policy !==
                 settings_config.private_message_policy_values.disabled.code,
-        can_unmute: muting_allowed && is_muted,
+        display_profile_fields,
         has_message_context,
         is_active,
         is_bot: user.is_bot,
@@ -241,7 +293,7 @@ function render_user_info_popover(
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_url(user.email),
         show_email: settings_data.show_email(),
-        show_user_profile: !user.is_bot,
+        show_manage_menu,
         user_email: people.get_visible_email(user),
         user_full_name: user.full_name,
         user_id: user.user_id,
@@ -257,7 +309,6 @@ function render_user_info_popover(
     };
 
     if (user.is_bot) {
-        const is_system_bot = user.is_system_bot;
         const bot_owner_id = user.bot_owner_id;
         if (is_system_bot) {
             args.is_system_bot = is_system_bot;
@@ -267,8 +318,9 @@ function render_user_info_popover(
         }
     }
 
+    const $popover_content = $(render_user_info_popover_content(args));
     popover_element.popover({
-        content: render_user_info_popover_content(args),
+        content: $popover_content.get(0),
         // TODO: Determine whether `fixed` should be applied
         // unconditionally.  Right now, we only do it for the user
         // sidebar version of the popover.
@@ -289,6 +341,17 @@ function render_user_info_popover(
 
     init_email_clipboard();
     init_email_tooltip(user);
+    const $user_name_element = $popover_content.find(".user_full_name");
+    const $bot_owner_element = $popover_content.find(".bot_owner");
+    if ($user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")) {
+        $user_name_element.addClass("tippy-zulip-tooltip");
+    }
+    if (
+        args.bot_owner &&
+        $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
+    ) {
+        $bot_owner_element.addClass("tippy-zulip-tooltip");
+    }
 
     // Note: We pass the normal-size avatar in initial rendering, and
     // then query the server to replace it with the medium-size
@@ -388,6 +451,21 @@ function get_user_info_popover_items() {
     return $("li:not(.divider):visible a", $popover_elt);
 }
 
+function get_user_info_popover_manage_menu_items() {
+    if (!$current_user_info_popover_manage_menu) {
+        blueslip.error("Trying to get menu items when action popover is closed.");
+        return undefined;
+    }
+
+    const popover_data = $current_user_info_popover_manage_menu.data("popover");
+    if (!popover_data) {
+        blueslip.error("Cannot find popover data for actions menu.");
+        return undefined;
+    }
+
+    return $(".user_info_popover_manage_menu li:not(.divider):visible a", popover_data.$tip);
+}
+
 function fetch_group_members(member_ids) {
     return member_ids
         .map((m) => people.get_by_user_id(m))
@@ -464,18 +542,50 @@ export function toggle_actions_popover(element, id) {
             !message_container.is_hidden &&
             not_spectator;
         const editability = message_edit.get_editability(message);
-        let use_edit_icon;
+        const can_move_message = message_edit.can_move_message(message);
+
         let editability_menu_item;
+        let move_message_menu_item;
+        let view_source_menu_item;
+
         if (editability === message_edit.editability_types.FULL) {
-            use_edit_icon = true;
-            editability_menu_item = $t({defaultMessage: "Edit"});
-        } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
-            use_edit_icon = false;
-            editability_menu_item = $t({defaultMessage: "View source / Move message"});
+            editability_menu_item = $t({defaultMessage: "Edit message"});
+            if (message.is_stream) {
+                move_message_menu_item = $t({defaultMessage: "Move messages"});
+            }
+        } else if (can_move_message) {
+            move_message_menu_item = $t({defaultMessage: "Move messages"});
+            view_source_menu_item = $t({defaultMessage: "View message source"});
         } else {
-            use_edit_icon = false;
-            editability_menu_item = $t({defaultMessage: "View source"});
+            view_source_menu_item = $t({defaultMessage: "View message source"});
         }
+
+        // We do not offer "Mark as unread" on messages in streams
+        // that the user is not currently subscribed to. Zulip has an
+        // invariant that all unread messages must be in streams the
+        // user is subscribed to, and so the server will ignore any
+        // messages in such streams; it's better to hint this is not
+        // useful by not offering the option.
+        //
+        // We also require that the message is currently marked as
+        // read. Theoretically, it could be useful to offer this even
+        // for a message that is already unread, so you can mark those
+        // below it as unread; but that's an unlikely situation, and
+        // showing it can be a confusing source of clutter. We may
+        // want to revise this algorithm specifically in the context
+        // of interleaved views.
+        //
+        // To work around #22893, we also only offer the option if the
+        // fetch_status data structure means we'll be able to mark
+        // everything below the current message as read correctly.
+        const not_stream_message = message.type !== "stream";
+        const subscribed_to_stream =
+            message.type === "stream" && stream_data.is_subscribed(message.stream_id);
+        const should_display_mark_as_unread =
+            message_lists.current.data.fetch_status.has_found_newest() &&
+            !message.unread &&
+            not_spectator &&
+            (not_stream_message || subscribed_to_stream);
 
         const should_display_edit_history_option =
             message.edit_history &&
@@ -499,10 +609,6 @@ export function toggle_actions_popover(element, id) {
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-        const should_display_edit_and_view_source =
-            message.content !== "<p>(deleted)</p>" ||
-            editability === message_edit.editability_types.FULL ||
-            editability === message_edit.editability_types.TOPIC_ONLY;
         const should_display_quote_and_reply =
             message.content !== "<p>(deleted)</p>" && not_spectator;
 
@@ -515,10 +621,11 @@ export function toggle_actions_popover(element, id) {
 
         const args = {
             message_id: message.id,
-            historical: message.historical,
             stream_id: message.stream_id,
-            use_edit_icon,
             editability_menu_item,
+            move_message_menu_item,
+            should_display_mark_as_unread,
+            view_source_menu_item,
             should_display_collapse,
             should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
@@ -529,7 +636,6 @@ export function toggle_actions_popover(element, id) {
             should_display_delete_option,
             should_display_read_receipts_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
-            should_display_edit_and_view_source,
             should_display_quote_and_reply,
         };
 
@@ -539,11 +645,18 @@ export function toggle_actions_popover(element, id) {
             placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
             title: "",
             content: render_actions_popover_content(args),
+            template: render_actions_popover_template(),
             html: true,
             trigger: "manual",
         });
         $elt.popover("show");
         $current_actions_popover_elem = $elt;
+    }
+
+    if (window.innerWidth < media_breakpoints_num.xl) {
+        // This ensures that the popover doesn't overflow to the right of the window.
+        const actions_popover_left = window.innerWidth - $(".actions_popover_wrapper").outerWidth();
+        $(".actions_popover_wrapper").css("left", actions_popover_left);
     }
 }
 
@@ -595,12 +708,12 @@ function get_action_menu_menu_items() {
     return $("li:not(.divider):visible a", popover_data.$tip);
 }
 
-export function focus_first_popover_item($items) {
+export function focus_first_popover_item($items, index = 0) {
     if (!$items) {
         return;
     }
 
-    $items.eq(0).expectOne().trigger("focus");
+    $items.eq(index).expectOne().trigger("focus");
 }
 
 export function popover_items_handle_keyboard(key, $items) {
@@ -612,10 +725,18 @@ export function popover_items_handle_keyboard(key, $items) {
 
     if (key === "enter" && index >= 0 && index < $items.length) {
         $items[index].click();
+        if ($current_user_info_popover_manage_menu) {
+            const $items = get_user_info_popover_manage_menu_items();
+            focus_first_popover_item($items);
+        }
         return;
     }
     if (index === -1) {
-        index = 0;
+        if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
+            index = 1;
+        } else {
+            index = 0;
+        }
     } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
         index += 1;
     } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
@@ -683,6 +804,10 @@ export function user_info_popped() {
     return $current_user_info_popover_elem !== undefined;
 }
 
+export function user_info_manage_menu_popped() {
+    return $current_user_info_popover_manage_menu !== undefined;
+}
+
 export function hide_user_info_popover() {
     if (user_info_popped()) {
         $current_user_info_popover_elem.popover("destroy");
@@ -700,11 +825,6 @@ export function hide_pm_list_sidebar() {
 
 export function show_userlist_sidebar() {
     $(".app-main .column-right").addClass("expanded");
-    resize.resize_page_components();
-}
-
-export function show_pm_list_sidebar() {
-    $(".app-main .column-left").addClass("expanded");
     resize.resize_page_components();
 }
 
@@ -730,6 +850,7 @@ export function hide_user_sidebar_popover() {
 }
 
 function hide_all_user_info_popovers() {
+    hide_user_info_popover_manage_menu();
     hide_message_info_popover();
     hide_user_sidebar_popover();
     hide_user_info_popover();
@@ -739,7 +860,12 @@ function focus_user_info_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_info_popover_for_message_items();
-    focus_first_popover_item($items);
+
+    if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
+        focus_first_popover_item($items, 1);
+    } else {
+        focus_first_popover_item($items);
+    }
 }
 
 function get_user_sidebar_popover_items() {
@@ -748,7 +874,7 @@ function get_user_sidebar_popover_items() {
         return undefined;
     }
 
-    return $("li:not(.divider):visible > a", current_user_sidebar_popover.$tip);
+    return $("li:not(.divider):visible a", current_user_sidebar_popover.$tip);
 }
 
 export function user_sidebar_popover_handle_keyboard(key) {
@@ -763,6 +889,11 @@ export function user_info_popover_for_message_handle_keyboard(key) {
 
 export function user_info_popover_handle_keyboard(key) {
     const $items = get_user_info_popover_items();
+    popover_items_handle_keyboard(key, $items);
+}
+
+export function user_info_popover_manage_menu_handle_keyboard(key) {
+    const $items = get_user_info_popover_manage_menu_items();
     popover_items_handle_keyboard(key, $items);
 }
 
@@ -967,7 +1098,7 @@ export function register_click_handlers() {
     $("body").on("click", ".info_popover_actions .clear_status", (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents("ul"));
-        user_status.server_update({
+        user_status.server_update_status({
             user_id: me,
             status_text: "",
             emoji_name: "",
@@ -990,16 +1121,16 @@ export function register_click_handlers() {
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
-    $("body").on("click", ".set_away_status", (e) => {
+    $("body").on("click", ".invisible_mode_turn_on", (e) => {
         hide_all();
-        user_status.server_set_away();
+        user_status.server_invisible_mode_on();
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("click", ".revoke_away_status", (e) => {
+    $("body").on("click", ".invisible_mode_turn_off", (e) => {
         hide_all();
-        user_status.server_revoke_away();
+        user_status.server_invisible_mode_off();
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1022,7 +1153,7 @@ export function register_click_handlers() {
         open_user_status_modal,
     );
 
-    $("body").on("click", ".info_popover_actions .sidebar-popover-mute-user", (e) => {
+    $("body").on("click", ".sidebar-popover-mute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all_user_info_popovers();
         e.stopPropagation();
@@ -1030,7 +1161,7 @@ export function register_click_handlers() {
         muted_users_ui.confirm_mute_user(user_id);
     });
 
-    $("body").on("click", ".info_popover_actions .sidebar-popover-unmute-user", (e) => {
+    $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_all_user_info_popovers();
         muted_users_ui.unmute_user(user_id);
@@ -1097,6 +1228,16 @@ export function register_click_handlers() {
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = $target.data("popover");
+    });
+
+    $("body").on("click", ".mark_as_unread", (e) => {
+        hide_actions_popover();
+        const message_id = $(e.currentTarget).data("message-id");
+
+        unread_ops.mark_as_unread_from_here(message_id);
+
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".respond_button", (e) => {
@@ -1205,11 +1346,23 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
-    $("body").on("click", ".popover_edit_message", (e) => {
+    $("body").on("click", ".popover_edit_message, .popover_view_source", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
         const $row = message_lists.current.get_row(message_id);
         hide_actions_popover();
         message_edit.start($row);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $("body").on("click", ".popover_move_message", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        const message = message_lists.current.get(message_id);
+        hide_actions_popover();
+        stream_popover.build_move_topic_to_stream_popover(
+            message.stream_id,
+            message.topic,
+            message,
+        );
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1314,6 +1467,14 @@ export function register_click_handlers() {
         } else {
             settings_users.show_edit_user_info_modal(user_id, true);
         }
+    });
+
+    $("body").on("click", ".user_info_popover_manage_menu_btn", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user = people.get_by_user_id(user_id);
+        show_user_info_popover_manage_menu(e.target, user);
     });
 }
 

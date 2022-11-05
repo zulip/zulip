@@ -6,6 +6,7 @@ import render_status_emoji_selector from "../templates/status_emoji_selector.hbs
 import * as dialog_widget from "./dialog_widget";
 import * as emoji from "./emoji";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as people from "./people";
 import * as user_status from "./user_status";
 
@@ -62,7 +63,7 @@ export function submit_new_status() {
         return;
     }
 
-    user_status.server_update({
+    user_status.server_update_status({
         status_text: new_status_text,
         emoji_name: selected_emoji_info.emoji_name || "",
         emoji_code: selected_emoji_info.emoji_code || "",
@@ -146,7 +147,7 @@ function user_status_post_render() {
     });
 
     input_field().on("keypress", (event) => {
-        if (event.key === "Enter") {
+        if (keydown_util.is_enter_event(event)) {
             event.preventDefault();
 
             submit_new_status();
@@ -190,6 +191,10 @@ export function initialize() {
         {
             status_text: $t({defaultMessage: "Working remotely"}),
             emoji: emoji.get_emoji_details_by_name("house"),
+        },
+        {
+            status_text: $t({defaultMessage: "At the office"}),
+            emoji: emoji.get_emoji_details_by_name("office"),
         },
     ];
 }

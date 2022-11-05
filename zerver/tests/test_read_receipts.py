@@ -1,10 +1,12 @@
 import orjson
+from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.user_mutes import add_user_mute, get_mute_object
 from zerver.models import UserMessage, UserProfile
 
 
@@ -12,7 +14,7 @@ class TestReadReceipts(ZulipTestCase):
     def mark_message_read(self, user: UserProfile, message_id: int) -> None:
         result = self.api_post(
             user,
-            "/json/messages/flags",
+            "/api/v1/messages/flags",
             {"messages": orjson.dumps([message_id]).decode(), "op": "add", "flag": "read"},
         )
         self.assert_json_success(result)
@@ -206,3 +208,80 @@ class TestReadReceipts(ZulipTestCase):
         result = self.client_get(f"/json/messages/{message_id}/read_receipts")
         self.assert_json_success(result)
         self.assertIn(hamlet.id, result.json()["user_ids"])
+
+    def test_filter_muted_users(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+
+        # Hamlet mutes Cordelia
+        add_user_mute(hamlet, cordelia, date_muted=timezone_now())
+        # Cordelia mutes Othello
+        add_user_mute(cordelia, othello, date_muted=timezone_now())
+
+        # Iago sends a message
+        message_id = self.send_stream_message(iago, "Verona", "read receipts")
+
+        # Mark message as read for users.
+        self.mark_message_read(hamlet, message_id)
+        self.mark_message_read(cordelia, message_id)
+        self.mark_message_read(othello, message_id)
+
+        # Login as Iago and make sure all three users are in read receipts.
+        self.login("iago")
+        result = self.client_get(f"/json/messages/{message_id}/read_receipts")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["user_ids"], 3)
+        self.assertTrue(hamlet.id in response_dict["user_ids"])
+        self.assertTrue(cordelia.id in response_dict["user_ids"])
+        self.assertTrue(othello.id in response_dict["user_ids"])
+
+        # Login as Hamlet and make sure Cordelia is not in read receipts.
+        self.login("hamlet")
+        result = self.client_get(f"/json/messages/{message_id}/read_receipts")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["user_ids"], 2)
+        self.assertTrue(hamlet.id in response_dict["user_ids"])
+        self.assertFalse(cordelia.id in response_dict["user_ids"])
+        self.assertTrue(othello.id in response_dict["user_ids"])
+
+        # Login as Othello and make sure Cordelia is not in in read receipts.
+        self.login("othello")
+        result = self.client_get(f"/json/messages/{message_id}/read_receipts")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["user_ids"], 2)
+        self.assertTrue(hamlet.id in response_dict["user_ids"])
+        self.assertFalse(cordelia.id in response_dict["user_ids"])
+        self.assertTrue(othello.id in response_dict["user_ids"])
+
+        # Login as Cordelia and make sure Hamlet and Othello are not in read receipts.
+        self.login("cordelia")
+        result = self.client_get(f"/json/messages/{message_id}/read_receipts")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["user_ids"], 1)
+        self.assertFalse(hamlet.id in response_dict["user_ids"])
+        self.assertTrue(cordelia.id in response_dict["user_ids"])
+        self.assertFalse(othello.id in response_dict["user_ids"])
+
+        # Cordelia unmutes Othello
+        mute_object = get_mute_object(cordelia, othello)
+        assert mute_object is not None
+        mute_object.delete()
+
+        # Now Othello should appear in her read receipts, but not Hamlet.
+        result = self.client_get(f"/json/messages/{message_id}/read_receipts")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["user_ids"], 2)
+        self.assertFalse(hamlet.id in response_dict["user_ids"])
+        self.assertTrue(cordelia.id in response_dict["user_ids"])
+        self.assertTrue(othello.id in response_dict["user_ids"])
+
+        # Login as Othello and make sure all three users are in read receipts.
+        self.login("othello")
+        result = self.client_get(f"/json/messages/{message_id}/read_receipts")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["user_ids"], 3)
+        self.assertTrue(hamlet.id in response_dict["user_ids"])
+        self.assertTrue(cordelia.id in response_dict["user_ids"])
+        self.assertTrue(othello.id in response_dict["user_ids"])

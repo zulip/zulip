@@ -1,4 +1,7 @@
-1. Press `Tab` or click on the compose box to compose your message.
+1. Click on the compose box, or press <kbd>Tab</kbd> to compose your message. You
+   can [preview your message](/help/preview-your-message-before-sending) before
+   sending.
 
-1. Click **Send**, or use `Enter` or `Ctrl` + `Enter` (depending on whether
-  the [**Press Enter to send** option](/help/enable-enter-to-send) is checked).
+1. Click **Send**, or use a [keyboard
+   shortcut](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
+   to send your message.

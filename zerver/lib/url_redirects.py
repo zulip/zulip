@@ -21,6 +21,19 @@ POLICY_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
 
 HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     # Add URL redirects for help center documentation here:
+    URLRedirect("/help/recent-topics", "/help/recent-conversations"),
+    URLRedirect(
+        "/help/add-custom-profile-fields",
+        "/help/custom-profile-fields",
+    ),
+    URLRedirect(
+        "/help/enable-enter-to-send",
+        "/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message",
+    ),
+    URLRedirect(
+        "/help/change-the-default-language-for-your-organization",
+        "/help/configure-organization-language",
+    ),
     URLRedirect("/help/delete-a-stream", "/help/archive-a-stream"),
     URLRedirect("/help/change-the-topic-of-a-message", "/help/rename-a-topic"),
     URLRedirect("/help/configure-missed-message-emails", "/help/email-notifications"),

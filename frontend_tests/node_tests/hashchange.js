@@ -106,13 +106,13 @@ run_test("people_slugs", () => {
     people.add_active_user(alice);
     operators = [{operator: "sender", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
-    assert.equal(hash, "#narrow/sender/42-alice");
+    assert.equal(hash, "#narrow/sender/42-Alice-Smith");
     const narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "sender", operand: "alice@example.com", negated: false}]);
 
     operators = [{operator: "pm-with", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
-    assert.equal(hash, "#narrow/pm-with/42-alice");
+    assert.equal(hash, "#narrow/pm-with/42-Alice-Smith");
 });
 
 function test_helper({override, change_tab}) {
@@ -204,6 +204,19 @@ run_test("hash_interactions", ({override}) => {
         [narrow, "deactivate"],
         [floating_recipient_bar, "update"],
     ]);
+
+    // Test old "#recent_topics" hash redirects to "#recent".
+    recent_topics_ui_shown = false;
+    window.location.hash = "#recent_topics";
+
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    assert.equal(recent_topics_ui_shown, true);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+    ]);
+    assert.equal(window.location.hash, "#recent");
 
     window.location.hash = "#narrow/stream/Denmark";
 

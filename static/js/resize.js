@@ -56,7 +56,7 @@ function get_new_heights() {
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true);
+        $("#private_messages_sticky_header").safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -100,10 +100,9 @@ function left_userlist_get_new_heights() {
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
-        Number.parseInt($stream_filters.css("marginBottom"), 10);
+        $("#private_messages_sticky_header").safeOuterHeight(true);
 
     const blocks = [
         {
@@ -172,17 +171,24 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
         bottom_whitespace_height = h.bottom_whitespace_height;
     }
 
-    const $visible_textarea = $("#compose-textarea, #preview_message_area");
-    const compose_height = Number.parseInt($("#compose").outerHeight(), 10);
-    const compose_textarea_height = Number.parseInt($visible_textarea.outerHeight(), 10);
+    const compose_height = $("#compose").get(0).getBoundingClientRect().height;
+    const compose_textarea_height = Math.max(
+        $("#compose-textarea").get(0).getBoundingClientRect().height,
+        $("#preview_message_area").get(0).getBoundingClientRect().height,
+    );
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
-    // The `preview_message_area` can have a slightly different height
-    // than `compose-textarea` based on operating system. We just
-    // ensure that the last message is not overlapped by compose box.
-    $visible_textarea.css(
+    // We ensure that the last message is not overlapped by compose box.
+    $("#compose-textarea").css(
         "max-height",
-        // The 10 here leaves space for the selected message border.
+        // Because <textarea> max-height includes padding, we subtract
+        // 10 for the padding and 10 for the selected message border.
+        bottom_whitespace_height - compose_non_textarea_height - 20,
+    );
+    $("#preview_message_area").css(
+        "max-height",
+        // Because <div> max-height doesn't include padding, we only
+        // subtract 10 for the selected message border.
         bottom_whitespace_height - compose_non_textarea_height - 10,
     );
 }
@@ -204,7 +210,7 @@ export function resize_bottom_whitespace(h) {
 export function resize_stream_filters_container(h) {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     resize_bottom_whitespace(h);
-    $("#stream-filters-container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
 export function resize_sidebars() {
@@ -241,7 +247,7 @@ export function resize_sidebars() {
     const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
-    $("#stream-filters-container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 
     return h;
 }

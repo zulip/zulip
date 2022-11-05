@@ -256,6 +256,17 @@ run_test("read", ({override}) => {
         },
         success: channel_post_opts.success,
     });
+
+    msgs_to_flag_read = [1, 2, 3, 4, 5];
+    message_flags.mark_as_read(msgs_to_flag_read);
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        data: {
+            messages: "[1,2,3,4,5]",
+            op: "add",
+            flag: "read",
+        },
+    });
 });
 
 run_test("read_empty_data", ({override}) => {
@@ -315,6 +326,27 @@ run_test("collapse_and_uncollapse", ({override}) => {
             messages: "[5]",
             op: "remove",
             flag: "collapsed",
+        },
+    });
+});
+
+run_test("mark_as_unread", ({override}) => {
+    // Way to capture posted info in every request
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    const msg = {id: 5};
+
+    message_flags.mark_as_unread([msg.id]);
+
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        data: {
+            messages: "[5]",
+            op: "remove",
+            flag: "read",
         },
     });
 });

@@ -3,6 +3,7 @@ import os
 import random
 import secrets
 import subprocess
+import uuid
 from typing import Any, Dict, List, Set, Tuple
 
 import bson
@@ -33,7 +34,7 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
-from zerver.lib.utils import process_list_in_batches
+from zerver.lib.utils import make_safe_digest, process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 
@@ -134,11 +135,22 @@ def process_users(
             bot_user["bot_owner"] = realm_owners[0]
 
 
+def truncate_name(name: str, name_id: int, max_length: int = 60) -> str:
+    if len(name) > max_length:
+        name_id_suffix = f" [{name_id}]"
+        name = name[0 : max_length - len(name_id_suffix)] + name_id_suffix
+    return name
+
+
 def get_stream_name(rc_channel: Dict[str, Any]) -> str:
     if rc_channel.get("teamMain"):
-        return f'[TEAM] {rc_channel["name"]}'
+        stream_name = f'[TEAM] {rc_channel["name"]}'
     else:
-        return rc_channel["name"]
+        stream_name = rc_channel["name"]
+
+    stream_name = truncate_name(stream_name, rc_channel["_id"])
+
+    return stream_name
 
 
 def convert_channel_data(
@@ -365,6 +377,14 @@ def process_message_attachment(
     upload_id_to_upload_data_map: Dict[str, Dict[str, Any]],
     output_dir: str,
 ) -> Tuple[str, bool]:
+    if upload["_id"] not in upload_id_to_upload_data_map:  # nocoverage
+        logging.info("Skipping unknown attachment of message_id: %s", message_id)
+        return "", False
+
+    if "type" not in upload:  # nocoverage
+        logging.info("Skipping attachment without type of message_id: %s", message_id)
+        return "", False
+
     upload_file_data = upload_id_to_upload_data_map[upload["_id"]]
     file_name = upload["name"]
     file_ext = f'.{upload["type"].split("/")[-1]}'
@@ -373,12 +393,22 @@ def process_message_attachment(
     if file_ext.lower() in IMAGE_EXTENSIONS:
         has_image = True
 
+    try:
+        sanitized_name = sanitize_name(file_name)
+    except AssertionError:  # nocoverage
+        logging.info("Replacing invalid attachment name with random uuid: %s", file_name)
+        sanitized_name = uuid.uuid4().hex
+
+    if len(sanitized_name) >= 255:  # nocoverage
+        logging.info("Replacing too long attachment name with random uuid: %s", file_name)
+        sanitized_name = uuid.uuid4().hex
+
     s3_path = "/".join(
         [
             str(realm_id),
             format(random.randint(0, 255), "x"),
             secrets.token_urlsafe(18),
-            sanitize_name(file_name),
+            sanitized_name,
         ]
     )
 
@@ -513,6 +543,7 @@ def process_raw_message_batch(
             message_id=message_id,
             date_sent=date_sent,
             recipient_id=recipient_id,
+            realm_id=realm_id,
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,
@@ -556,15 +587,15 @@ def get_topic_name(
         return ""
     elif message["rid"] in dsc_id_to_dsc_map:
         dsc_channel_name = dsc_id_to_dsc_map[message["rid"]]["fname"]
-        return f"{dsc_channel_name} (Imported from Rocket.Chat)"
+        return truncate_name(f"{dsc_channel_name} (Imported from Rocket.Chat)", message["rid"])
     elif message.get("replies"):
         # Message is the start of a thread
         thread_id = thread_id_mapper.get(message["_id"])
-        return f"Thread {thread_id} (Imported from Rocket.Chat)"
+        return truncate_name(f"Thread {thread_id} (Imported from Rocket.Chat)", message["_id"])
     elif message.get("tmid"):
         # Message is a part of a thread
         thread_id = thread_id_mapper.get(message["tmid"])
-        return f"Thread {thread_id} (Imported from Rocket.Chat)"
+        return truncate_name(f"Thread {thread_id} (Imported from Rocket.Chat)", message["tmid"])
     else:
         # Normal channel message
         return "Imported from Rocket.Chat"
@@ -604,6 +635,11 @@ def process_messages(
             usernames = reactions[react_code]["usernames"]
 
             for username in usernames:
+                if username not in username_to_user_id_map:  # nocoverage
+                    # This can happen with production data when old user names no longer exist. We cannot do
+                    # much about it here so we just ignore the unknown user name.
+                    continue
+
                 rc_user_id = username_to_user_id_map[username]
                 user_id = user_id_mapper.get(rc_user_id)
                 reactions_list.append({"name": name, "user_id": user_id})
@@ -613,7 +649,15 @@ def process_messages(
     def message_to_dict(message: Dict[str, Any]) -> Dict[str, Any]:
         rc_sender_id = message["u"]["_id"]
         sender_id = user_id_mapper.get(rc_sender_id)
-        content = message["msg"]
+        if "msg" in message:
+            content = message["msg"]
+        else:  # nocoverage
+            content = "This message imported from Rocket.Chat had no body in the data export."
+            logging.info(
+                "Message %s contains no message content: %s",
+                message["_id"],
+                message,
+            )
 
         if message.get("reactions"):
             reactions = list_reactions(message["reactions"])
@@ -726,6 +770,9 @@ def process_messages(
                 parent_stream_name = get_stream_name(parent_rc_channel)
 
                 zulip_mention = f"#**{parent_stream_name}>{converted_topic_name}**"
+            else:  # nocoverage
+                logging.info("Failed to map mention '%s' to zulip syntax.", mention)
+                continue
 
             mention_data = {"rc_mention": rc_mention, "zulip_mention": zulip_mention}
             rc_channel_mention_data.append(mention_data)
@@ -839,6 +886,21 @@ def map_receiver_id_to_recipient_id(
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
+# This is inspired by get_huddle_hash from zerver/models.py. It
+# expects strings identifying Rocket.Chat users, like
+# `LdBZ7kPxtKESyHPEe`, not integer IDs.
+#
+# Its purpose is to be a stable map usable for deduplication/merging
+# of Rocket.Chat threads involving the same set of people. Thus, its
+# only important property is that if two sets of users S and T are
+# equal and thus will have the same actual huddle hash once imported,
+# that get_string_huddle_hash(S) = get_string_huddle_hash(T).
+def get_string_huddle_hash(id_list: List[str]) -> str:
+    id_list = sorted(set(id_list))
+    hash_key = ",".join(str(x) for x in id_list)
+    return make_safe_digest(hash_key)
+
+
 def categorize_channels_and_map_with_id(
     channel_data: List[Dict[str, Any]],
     room_id_to_room_map: Dict[str, Dict[str, Any]],
@@ -848,12 +910,50 @@ def categorize_channels_and_map_with_id(
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
 ) -> None:
+    huddle_hashed_channels: Dict[str, Any] = {}
     for channel in channel_data:
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
             if len(channel["uids"]) > 2:
-                huddle_id_to_huddle_map[channel["_id"]] = channel
+                huddle_hash = get_string_huddle_hash(channel["uids"])
+                logging.info(
+                    "Huddle channel found. UIDs: %s -> hash %s", channel["uids"], huddle_hash
+                )
+
+                if channel["msgs"] == 0:  # nocoverage
+                    # Rocket.Chat exports in the wild sometimes
+                    # contain duplicates of real huddles, with no
+                    # messages in the duplicate.  We ignore these
+                    # minor database corruptions in the Rocket.Chat
+                    # export. Doing so is safe, because a huddle with no
+                    # message history has no value in Zulip's data
+                    # model.
+                    logging.debug("Skipping huddle with 0 messages: %s", channel)
+                elif huddle_hash in huddle_hashed_channels:  # nocoverage
+                    logging.info(
+                        "Mapping huddle hash %s to existing channel: %s",
+                        huddle_hash,
+                        huddle_hashed_channels[huddle_hash],
+                    )
+                    huddle_id_to_huddle_map[channel["_id"]] = huddle_hashed_channels[huddle_hash]
+
+                    # Ideally, we'd merge the duplicate huddles. Doing
+                    # so correctly requires special handling in
+                    # convert_huddle_data() and on the message import
+                    # side as well, since those appear to be mapped
+                    # via rocketchat channel IDs and not all of that
+                    # information is resolved via the
+                    # huddle_id_to_huddle_map.
+                    #
+                    # For now, just throw an exception here rather
+                    # than during the import process.
+                    raise NotImplementedError(
+                        "Mapping multiple huddles with messages to one is not fully implemented yet"
+                    )
+                else:
+                    huddle_id_to_huddle_map[channel["_id"]] = channel
+                    huddle_hashed_channels[huddle_hash] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
         elif channel["t"] == "l":

@@ -100,7 +100,7 @@ export function should_display_bankruptcy_banner() {
 
     const now = Date.now() / 1000;
     if (
-        page_params.unread_msgs.count > 500 &&
+        unread.get_unread_message_count() > 500 &&
         now - page_params.furthest_read_time > 60 * 60 * 24 * 2
     ) {
         // 2 days.
@@ -125,6 +125,8 @@ export function initialize() {
             .all_messages()
             .filter((message) => unread.message_unread(message));
         notify_server_messages_read(unread_messages);
+        // New messages received may be marked as read based on narrow type.
+        message_lists.current.resume_reading();
 
         hide_mark_as_read_turned_off_banner();
     });

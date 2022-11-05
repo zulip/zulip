@@ -26,7 +26,12 @@ class BaseNotes(Generic[_KeyT, _DataT], metaclass=ABCMeta):
     handle correctly.
     """
 
-    __notes_map: ClassVar[MutableMapping[Any, Any]] = weakref.WeakKeyDictionary()
+    __notes_map: ClassVar[MutableMapping[Any, Any]]
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        super().__init_subclass__(**kwargs)
+        if not hasattr(cls, "__notes_map"):
+            cls.__notes_map = weakref.WeakKeyDictionary()
 
     @classmethod
     def get_notes(cls, key: _KeyT) -> _DataT:

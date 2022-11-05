@@ -56,12 +56,14 @@ export const draft_model = (function () {
         return get()[id] || false;
     };
 
-    function save(drafts) {
+    function save(drafts, update_count = true) {
         ls.set(KEY, drafts);
-        set_count(Object.keys(drafts).length);
+        if (update_count) {
+            set_count(Object.keys(drafts).length);
+        }
     }
 
-    exports.addDraft = function (draft) {
+    exports.addDraft = function (draft, update_count = true) {
         const drafts = get();
 
         // use the base16 of the current time + a random string to reduce
@@ -70,7 +72,7 @@ export const draft_model = (function () {
 
         draft.updatedAt = getTimestamp();
         drafts[id] = draft;
-        save(drafts);
+        save(drafts, update_count);
 
         return id;
     };
@@ -104,6 +106,37 @@ export const draft_model = (function () {
     return exports;
 })();
 
+// A one-time fix for buggy drafts that had their topics renamed to
+// `undefined` when the topic was moved to another stream without
+// changing the topic. The bug was introduced in
+// 4c8079c49a81b08b29871f9f1625c6149f48b579 and fixed in
+// aebdf6af8c6675fbd2792888d701d582c4a1110a; but servers running
+// intermediate versions may have generated some bugged drafts with
+// this invalid topic value.
+//
+// TODO/compatibility: This can be deleted once servers can no longer
+// directly upgrade from Zulip 6.0beta1 and earlier development branch where the bug was present,
+// since we expect bugged drafts will have either been run through
+// this code or else been deleted after 30 (DRAFT_LIFETIME) days.
+let fixed_buggy_drafts = false;
+export function fix_drafts_with_undefined_topics() {
+    const data = draft_model.get();
+    for (const draft_id of Object.keys(data)) {
+        const draft = data[draft_id];
+        if (draft.type === "stream" && draft.topic === undefined) {
+            const draft = data[draft_id];
+            draft.topic = "";
+            draft_model.editDraft(draft_id, draft, false);
+        }
+    }
+    fixed_buggy_drafts = true;
+}
+
+export function sync_count() {
+    const drafts = draft_model.get();
+    set_count(Object.keys(drafts).length);
+}
+
 export function delete_all_drafts() {
     const drafts = draft_model.get();
     for (const [id] of Object.entries(drafts)) {
@@ -121,12 +154,27 @@ export function confirm_delete_all_drafts() {
     });
 }
 
-export function rename_topic(stream_id, old_topic, new_topic) {
+export function rename_stream_recipient(old_stream_id, old_topic, new_stream_id, new_topic) {
     const current_drafts = draft_model.get();
     for (const draft_id of Object.keys(current_drafts)) {
         const draft = current_drafts[draft_id];
-        if (util.same_stream_and_topic(draft, {stream_id, topic: old_topic})) {
-            draft.topic = new_topic;
+        if (util.same_stream_and_topic(draft, {stream_id: old_stream_id, topic: old_topic})) {
+            // If new_stream_id is undefined, that means the stream wasn't updated.
+            if (new_stream_id !== undefined) {
+                draft.stream_id = new_stream_id;
+                // TODO: For now we need both a stream_id and stream (stream name)
+                // because there can be partial input in the stream field.
+                // Once we complete our UI plan to change the stream input field
+                // to a dropdown_list_widget, there will no longer be the possibility
+                // of invalid partial input in the stream field, and we can have the
+                // drafts system ignore the legacy `stream` field, using only `stream_id`.
+                // After enough drafts are autodeleted, we'd no longer have a `stream` field.
+                draft.stream = sub_store.get(new_stream_id).name;
+            }
+            // If new_topic is undefined, that means the topic wasn't updated.
+            if (new_topic !== undefined) {
+                draft.topic = new_topic;
+            }
             draft_model.editDraft(draft_id, draft, false);
         }
     }
@@ -170,7 +218,7 @@ export function restore_message(draft) {
         compose_args = {
             type: "stream",
             stream: draft.stream,
-            topic: util.get_draft_topic(draft),
+            topic: draft.topic,
             content: draft.content,
         };
     } else {
@@ -229,9 +277,9 @@ export function update_draft(opts = {}) {
         return draft_id;
     }
 
-    // We have never saved a draft for this message, so add
-    // one.
-    const new_draft_id = draft_model.addDraft(draft);
+    // We have never saved a draft for this message, so add one.
+    const update_count = opts.update_count === undefined ? true : opts.update_count;
+    const new_draft_id = draft_model.addDraft(draft, update_count);
     $("#compose-textarea").data("draft-id", new_draft_id);
     maybe_notify(no_notify);
 
@@ -306,12 +354,8 @@ export function format_draft(draft) {
                 draft_model.editDraft(id, draft);
             }
         }
-        let draft_topic = util.get_draft_topic(draft);
+        const draft_topic = draft.topic || compose.empty_topic_placeholder();
         const draft_stream_color = stream_data.get_color(stream_name);
-
-        if (draft_topic === "") {
-            draft_topic = compose.empty_topic_placeholder();
-        }
 
         formatted = {
             draft_id: draft.id,
@@ -754,6 +798,10 @@ export function set_initial_element(drafts) {
 
 export function initialize() {
     remove_old_drafts();
+
+    if (!fixed_buggy_drafts) {
+        fix_drafts_with_undefined_topics();
+    }
 
     window.addEventListener("beforeunload", () => {
         update_draft();

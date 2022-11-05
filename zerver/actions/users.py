@@ -163,21 +163,30 @@ def do_deactivate_user(
         if settings.BILLING_ENABLED:
             update_license_ledger_if_needed(user_profile.realm, event_time)
 
-    delete_user_sessions(user_profile)
-    event = dict(
-        type="realm_user",
-        op="remove",
-        person=dict(user_id=user_profile.id, full_name=user_profile.full_name),
-    )
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+        transaction.on_commit(lambda: delete_user_sessions(user_profile))
 
-    if user_profile.is_bot:
-        event = dict(
-            type="realm_bot",
+        event_remove_user = dict(
+            type="realm_user",
             op="remove",
-            bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
+            person=dict(user_id=user_profile.id, full_name=user_profile.full_name),
         )
-        send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm, event_remove_user, active_user_ids(user_profile.realm_id)
+            )
+        )
+
+        if user_profile.is_bot:
+            event_remove_bot = dict(
+                type="realm_bot",
+                op="remove",
+                bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
+            )
+            transaction.on_commit(
+                lambda: send_event(
+                    user_profile.realm, event_remove_bot, bot_owner_user_ids(user_profile)
+                )
+            )
 
 
 @transaction.atomic(durable=True)

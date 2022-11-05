@@ -15,7 +15,6 @@ import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
-import * as user_status from "./user_status";
 import * as watchdog from "./watchdog";
 
 export let user_cursor;
@@ -255,18 +254,6 @@ export function initialize() {
 
 export function update_presence_info(user_id, info, server_time) {
     presence.update_info_from_event(user_id, info, server_time);
-    redraw_user(user_id);
-    pm_list.update_private_messages();
-}
-
-export function on_set_away(user_id) {
-    user_status.set_away(user_id);
-    redraw_user(user_id);
-    pm_list.update_private_messages();
-}
-
-export function on_revoke_away(user_id) {
-    user_status.revoke_away(user_id);
     redraw_user(user_id);
     pm_list.update_private_messages();
 }

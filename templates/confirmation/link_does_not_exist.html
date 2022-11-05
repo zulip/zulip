@@ -1,8 +1,12 @@
 {% extends "zerver/portico.html" %}
 
+{% block title %}
+<title>{{ _("Confirmation link does not exist") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 <div class="error_page">
-    <div class="container">
+    <div class="container row-fluid">
         <img src="/static/images/errors/400art.svg" alt=""/>
         <div class="errorbox">
             <div class="errorcontent">

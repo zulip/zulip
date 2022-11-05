@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -12,11 +12,13 @@ set_global("navigator", {
 });
 
 let uppy_stub;
-function Uppy(options) {
-    return uppy_stub.call(this, options);
-}
-Uppy.UIPlugin = class UIPlugin {};
-mock_cjs("@uppy/core", Uppy);
+mock_esm("@uppy/core", {
+    Uppy: function Uppy(options) {
+        return uppy_stub.call(this, options);
+    },
+});
+mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
+mock_esm("@uppy/progress-bar", {default: class ProgressBar {}});
 
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const compose_ui = mock_esm("../../static/js/compose_ui");

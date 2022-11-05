@@ -10,12 +10,13 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Generator,
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
     cast,
@@ -34,7 +35,7 @@ from django.http.request import QueryDict
 from django.http.response import HttpResponseBase
 from django.test import override_settings
 from django.urls import URLResolver
-from moto import mock_s3
+from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
 import zerver.lib.upload
@@ -130,16 +131,21 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         yield cache_queries
 
 
+class CapturedQueryDict(TypedDict):
+    sql: bytes
+    time: str
+
+
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Generator[List[Dict[str, Union[str, bytes]]], None, None]:
+) -> Iterator[List[CapturedQueryDict]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[Dict[str, Union[str, bytes]]] = []
+    queries: List[CapturedQueryDict] = []
 
     def wrapper_execute(
         self: TimeTrackingCursor,
@@ -295,9 +301,17 @@ class HostRequestMock(HttpRequest):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
+    # The base class HttpRequest declares GET and POST as immutable
+    # QueryDict objects. The implementation of HostRequestMock
+    # requires POST to be mutable, and we have some use cases that
+    # modify GET, so GET and POST are both redeclared as mutable.
+
+    GET: QueryDict  # type: ignore[assignment] # See previous comment.
+    POST: QueryDict  # type: ignore[assignment] # See previous comment.
+
     def __init__(
         self,
-        post_data: Dict[str, Any] = {},
+        post_data: Mapping[str, Any] = {},
         user_profile: Union[UserProfile, None] = None,
         remote_server: Optional[RemoteZulipServer] = None,
         host: str = settings.EXTERNAL_HOST,
@@ -385,7 +399,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
                 info = "<bytes>"
             elif isinstance(info, dict):
                 info = {
-                    k: "<file object>" if hasattr(v, "read") and callable(getattr(v, "read")) else v
+                    k: "<file object>" if hasattr(v, "read") and callable(v.read) else v
                     for k, v in info.items()
                 }
 
@@ -703,3 +717,15 @@ def mock_queue_publish(
 
     with mock.patch(method_to_patch, side_effect=verify_serialize):
         yield inner
+
+
+@contextmanager
+def timeout_mock(mock_path: str) -> Iterator[None]:
+    # timeout() doesn't work in test environment with database operations
+    # and they don't get committed - so we need to replace it with a mock
+    # that just calls the function.
+    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
+        return func()
+
+    with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
+        yield

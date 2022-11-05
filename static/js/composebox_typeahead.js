@@ -12,6 +12,7 @@ import * as compose_validate from "./compose_validate";
 import * as emoji from "./emoji";
 import * as flatpickr from "./flatpickr";
 import {$t} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
@@ -86,18 +87,15 @@ function get_language_matcher(query) {
 }
 
 export function query_matches_person(query, person) {
-    if (!settings_data.show_email()) {
-        return typeahead.query_matches_source_attrs(query, person, ["full_name"], " ");
-    }
-    let email_attr = "email";
-    if (person.delivery_email) {
-        email_attr = "delivery_email";
-    }
-    return typeahead.query_matches_source_attrs(query, person, ["full_name", email_attr], " ");
+    return (
+        typeahead.query_matches_string(query, person.full_name, " ") ||
+        (settings_data.show_email() &&
+            typeahead.query_matches_string(query, people.get_visible_email(person), " "))
+    );
 }
 
 export function query_matches_name(query, user_group_or_stream) {
-    return typeahead.query_matches_source_attrs(query, user_group_or_stream, ["name"], " ");
+    return typeahead.query_matches_string(query, user_group_or_stream.name, " ");
 }
 
 function get_stream_or_user_group_matcher(query) {
@@ -113,7 +111,10 @@ function get_slash_matcher(query) {
     query = typeahead.clean_query_lowercase(query);
 
     return function (item) {
-        return typeahead.query_matches_source_attrs(query, item, ["name", "aliases"], " ");
+        return (
+            typeahead.query_matches_string(query, item.name, " ") ||
+            typeahead.query_matches_string(query, item.aliases, " ")
+        );
     };
 }
 
@@ -125,7 +126,7 @@ function get_topic_matcher(query) {
             topic,
         };
 
-        return typeahead.query_matches_source_attrs(query, obj, ["topic"], " ");
+        return typeahead.query_matches_string(query, obj.topic, " ");
     };
 }
 
@@ -137,7 +138,7 @@ export function should_enter_send(e) {
         // With the enter_sends setting, we should send
         // the message unless the user was holding a
         // modifier key.
-        this_enter_sends = !has_modifier_key;
+        this_enter_sends = !has_modifier_key && keydown_util.is_enter_event(e);
     } else {
         // If enter_sends is not enabled, just hitting
         // Enter should add a newline, but with a
@@ -194,7 +195,7 @@ let $nextFocus = false;
 function handle_keydown(e) {
     const key = e.key;
 
-    if (key === "Enter" || (key === "Tab" && !e.shiftKey)) {
+    if (keydown_util.is_enter_event(e) || (key === "Tab" && !e.shiftKey)) {
         // Enter key or Tab key
         let target_sel;
 
@@ -256,7 +257,7 @@ function handle_keydown(e) {
 function handle_keyup(e) {
     if (
         // Enter key or Tab key
-        (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) &&
+        (keydown_util.is_enter_event(e) || (e.key === "Tab" && !e.shiftKey)) &&
         $nextFocus
     ) {
         $nextFocus.trigger("focus");
@@ -422,7 +423,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
         name: "poll",
         aliases: "",
-        placeholder: "Question",
+        placeholder: $t({defaultMessage: "Question"}),
     },
     {
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
@@ -779,8 +780,10 @@ export function content_typeahead_selected(item, event) {
     let beginning = pieces[0];
     let rest = pieces[1];
     const $textbox = this.$element;
-    // this highlight object will hold the start and end indices
-    // for highlighting any placeholder text
+    // Accepting some typeahead selections, like polls, will generate
+    // placeholder text that is selected, in order to clarify for the
+    // user what a given parameter is for. This object stores the
+    // highlight offsets for that purpose.
     const highlight = {};
 
     switch (this.completing) {
@@ -860,16 +863,21 @@ export function content_typeahead_selected(item, event) {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward
             const backticks = beginning.length - this.token.length;
+            beginning = beginning.slice(0, backticks) + item;
+            if (item === "spoiler") {
+                // to add in and highlight placeholder "Header"
+                const placeholder = $t({defaultMessage: "Header"});
+                highlight.start = beginning.length + 1;
+                beginning = beginning + " " + placeholder;
+                highlight.end = highlight.start + placeholder.length;
+            }
+            // If cursor is at end of input ("rest" is empty), then
+            // add a closing fence after the cursor
+            // If there is more text after the cursor, then don't
+            // touch "rest" (i.e. do not add a closing fence)
             if (rest === "") {
-                // If cursor is at end of input ("rest" is empty), then
-                // complete the token before the cursor, and add a closing fence
-                // after the cursor
-                beginning = beginning.slice(0, backticks) + item + "\n";
+                beginning = beginning + "\n";
                 rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
-            } else {
-                // If more text after the input, then complete the token, but don't touch
-                // "rest" (i.e. do not add a closing fence)
-                beginning = beginning.slice(0, backticks) + item;
             }
             break;
         }
@@ -919,11 +927,9 @@ export function content_typeahead_selected(item, event) {
     // placeholder text, as Bootstrap will call $textbox.change() to
     // overwrite the text in the textbox.
     setTimeout(() => {
-        if (item.placeholder) {
-            // This placeholder block is exclusively for slash
-            // commands, which always appear at the start of the message.
-            $textbox.get(0).setSelectionRange(highlight.start, highlight.end);
-            $textbox.trigger("focus");
+        // Select any placeholder text configured to be highlighted.
+        if (highlight.start && highlight.end) {
+            $textbox.range(highlight.start, highlight.end);
         } else {
             $textbox.caret(beginning.length, beginning.length);
         }

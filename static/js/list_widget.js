@@ -172,7 +172,9 @@ export function create($container, list, opts) {
         return undefined;
     }
 
-    const widget = {};
+    const widget = {
+        meta,
+    };
 
     widget.get_current_list = function () {
         return meta.filtered_list;

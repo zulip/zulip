@@ -9,6 +9,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
+from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.realm_settings import do_set_realm_property
@@ -18,14 +19,10 @@ from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    HostRequestMock,
-    dummy_handler,
-    queries_captured,
-    stub_event_queue_user_events,
-)
+from zerver.lib.test_helpers import HostRequestMock, dummy_handler, stub_event_queue_user_events
 from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
+    CustomProfileField,
     Realm,
     UserMessage,
     UserPresence,
@@ -43,6 +40,7 @@ from zerver.tornado.event_queue import (
     process_message_event,
     send_restart_events,
 )
+from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.views import get_events, get_events_backend
 from zerver.views.events_register import (
     _default_all_public_streams,
@@ -58,11 +56,11 @@ class EventsEndpointTest(ZulipTestCase):
         # events_register code paths
         user = self.example_user("hamlet")
         with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
-            result = self.api_post(user, "/json/register")
+            result = self.api_post(user, "/api/v1/register")
         self.assert_json_success(result)
 
         with mock.patch("zerver.lib.events.request_event_queue", return_value=None):
-            result = self.api_post(user, "/json/register")
+            result = self.api_post(user, "/api/v1/register")
         self.assert_json_error(result, "Could not allocate event queue")
 
         return_event_queue = "15:11"
@@ -77,13 +75,13 @@ class EventsEndpointTest(ZulipTestCase):
         with mock.patch("zerver.lib.events.reactivate_user_if_soft_deactivated") as fa:
             with stub_event_queue_user_events(return_event_queue, return_user_events):
                 result = self.api_post(
-                    user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
+                    user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
                 )
                 self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
-                user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
+                user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
             )
 
         result_dict = self.assert_json_success(result)
@@ -96,7 +94,7 @@ class EventsEndpointTest(ZulipTestCase):
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
-                user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
+                user, "/api/v1/register", dict(event_types=orjson.dumps([event_type]).decode())
             )
 
         result_dict = self.assert_json_success(result)
@@ -111,7 +109,7 @@ class EventsEndpointTest(ZulipTestCase):
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
                 user,
-                "/json/register",
+                "/api/v1/register",
                 dict(
                     event_types=orjson.dumps([event_type]).decode(),
                     fetch_event_types=orjson.dumps(["message"]).decode(),
@@ -130,7 +128,7 @@ class EventsEndpointTest(ZulipTestCase):
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
                 user,
-                "/json/register",
+                "/api/v1/register",
                 dict(
                     fetch_event_types=orjson.dumps([event_type]).decode(),
                     event_types=orjson.dumps(["message"]).decode(),
@@ -150,17 +148,37 @@ class EventsEndpointTest(ZulipTestCase):
         # Verify that POST /register works for spectators, but not for
         # normal users.
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
-            result = self.client_post("/json/register", dict())
+            result = self.client_post("/json/register")
             self.assert_json_error(
                 result,
                 "Not logged in: API authentication or user session required",
                 status_code=401,
             )
 
-        result = self.client_post("/json/register", dict())
+        result = self.client_post("/json/register")
         result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["queue_id"], None)
         self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
+
+        result = self.client_post("/json/register")
+        self.assertEqual(result.status_code, 200)
+
+        result = self.client_post("/json/register", dict(client_gravatar="false"))
+        self.assertEqual(result.status_code, 200)
+
+        result = self.client_post("/json/register", dict(client_gravatar="true"))
+        self.assert_json_error(
+            result,
+            "Invalid 'client_gravatar' parameter for anonymous request",
+            status_code=400,
+        )
+
+        result = self.client_post("/json/register", dict(include_subscribers="true"))
+        self.assert_json_error(
+            result,
+            "Invalid 'include_subscribers' parameter for anonymous request",
+            status_code=400,
+        )
 
     def test_events_register_endpoint_all_public_streams_access(self) -> None:
         guest_user = self.example_user("polonius")
@@ -169,11 +187,11 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(normal_user.role, UserProfile.ROLE_MEMBER)
 
         with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
-            result = self.api_post(normal_user, "/json/register", dict(all_public_streams="true"))
+            result = self.api_post(normal_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_success(result)
 
         with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
-            result = self.api_post(guest_user, "/json/register", dict(all_public_streams="true"))
+            result = self.api_post(guest_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_events_get_events_endpoint_guest_cant_use_all_public_streams_param(self) -> None:
@@ -453,6 +471,105 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
 
+    def test_bogus_queue_id(self) -> None:
+        user = self.example_user("hamlet")
+
+        with self.assertRaises(BadEventQueueIdError):
+            self.tornado_call(
+                get_events,
+                user,
+                {
+                    "queue_id": "hamster",
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+
+    def test_wrong_user_queue_id(self) -> None:
+        user = self.example_user("hamlet")
+        wrong_user = self.example_user("othello")
+
+        result = self.tornado_call(
+            get_events,
+            user,
+            {
+                "apply_markdown": orjson.dumps(True).decode(),
+                "client_gravatar": orjson.dumps(True).decode(),
+                "event_types": orjson.dumps(["message"]).decode(),
+                "user_client": "website",
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        with self.assertLogs(level="WARNING") as cm, self.assertRaises(BadEventQueueIdError):
+            self.tornado_call(
+                get_events,
+                wrong_user,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+        self.assertIn("not authorized for queue", cm.output[0])
+
+    def test_get_events_custom_profile_fields(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        profile_field = CustomProfileField.objects.get(realm=user_profile.realm, name="Pronouns")
+
+        def check_pronouns_type_field_supported(
+            pronouns_field_type_supported: bool, new_name: str
+        ) -> None:
+            clear_client_event_queues_for_testing()
+
+            queue_data = dict(
+                apply_markdown=True,
+                all_public_streams=True,
+                client_type_name="ZulipMobile",
+                event_types=["custom_profile_fields"],
+                last_connection_time=time.time(),
+                queue_timeout=0,
+                realm_id=user_profile.realm.id,
+                user_profile_id=user_profile.id,
+                pronouns_field_type_supported=pronouns_field_type_supported,
+            )
+
+            client = allocate_client_descriptor(queue_data)
+
+            try_update_realm_custom_profile_field(
+                realm=user_profile.realm, field=profile_field, name=new_name
+            )
+            result = self.tornado_call(
+                get_events,
+                user_profile,
+                {
+                    "queue_id": client.event_queue.id,
+                    "user_client": "ZulipAndroid",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+            events = orjson.loads(result.content)["events"]
+            self.assert_json_success(result)
+            self.assert_length(events, 1)
+
+            pronouns_field = [
+                field for field in events[0]["fields"] if field["id"] == profile_field.id
+            ][0]
+            if pronouns_field_type_supported:
+                expected_type = CustomProfileField.PRONOUNS
+            else:
+                expected_type = CustomProfileField.SHORT_TEXT
+            self.assertEqual(pronouns_field["type"], expected_type)
+
+        check_pronouns_type_field_supported(False, "Pronouns field")
+        check_pronouns_type_field_supported(True, "Pronouns")
+
 
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
@@ -614,6 +731,30 @@ class FetchInitialStateDataTest(ZulipTestCase):
                 # Only legacy settings are included in the top level.
                 self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
+
+    def test_pronouns_field_type_support(self) -> None:
+        hamlet = self.example_user("hamlet")
+        result = fetch_initial_state_data(
+            user_profile=hamlet,
+            pronouns_field_type_supported=False,
+        )
+        self.assertIn("custom_profile_fields", result)
+        custom_profile_fields = result["custom_profile_fields"]
+        pronouns_field = [field for field in custom_profile_fields if field["name"] == "Pronouns"][
+            0
+        ]
+        self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
+
+        result = fetch_initial_state_data(
+            user_profile=hamlet,
+            pronouns_field_type_supported=True,
+        )
+        self.assertIn("custom_profile_fields", result)
+        custom_profile_fields = result["custom_profile_fields"]
+        pronouns_field = [field for field in custom_profile_fields if field["name"] == "Pronouns"][
+            0
+        ]
+        self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
 
 
 class ClientDescriptorsTest(ZulipTestCase):
@@ -918,9 +1059,18 @@ class RestartEventsTest(ZulipTestCase):
         user_profile: UserProfile,
         post_data: Dict[str, Any],
         client_name: Optional[str] = None,
+        user_agent: Optional[str] = None,
     ) -> HttpResponse:
+        meta_data: Optional[Dict[str, Any]] = None
+        if user_agent is not None:
+            meta_data = {"HTTP_USER_AGENT": user_agent}
+
         request = HostRequestMock(
-            post_data, user_profile, client_name=client_name, tornado_handler=dummy_handler
+            post_data,
+            user_profile,
+            client_name=client_name,
+            tornado_handler=dummy_handler,
+            meta_data=meta_data,
         )
         return view_func(request, user_profile)
 
@@ -1037,6 +1187,7 @@ class RestartEventsTest(ZulipTestCase):
                     "dont_block": orjson.dumps(True).decode(),
                 },
                 client_name="website",
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             )
 
 
@@ -1047,11 +1198,9 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(37):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
-
-        self.assert_length(queries, 37)
 
         expected_counts = dict(
             alert_words=1,
@@ -1098,14 +1247,13 @@ class FetchQueriesTest(ZulipTestCase):
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
             flush_per_request_caches()
-            with queries_captured() as queries:
+            with self.assert_database_query_count(count):
                 if event_type == "update_message_flags":
                     event_types = ["update_message_flags", "message"]
                 else:
                     event_types = [event_type]
 
                 fetch_initial_state_data(user, event_types=event_types)
-            self.assert_length(queries, count)
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):

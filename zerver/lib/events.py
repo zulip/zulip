@@ -2,7 +2,7 @@
 # high-level documentation on how this system works.
 import copy
 import time
-from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
+from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -20,7 +20,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
@@ -49,7 +49,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
-from zerver.lib.user_status import get_user_info_dict
+from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
@@ -114,6 +114,7 @@ def fetch_initial_state_data(
     include_subscribers: bool = True,
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
+    pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -146,15 +147,25 @@ def fetch_initial_state_data(
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
 
-    # Spectators can't access full user profiles or personal settings,
-    # so there's no need to send custom profile field data.
-    if want("custom_profile_fields") and user_profile is not None:
-        fields = custom_profile_fields_for_realm(realm.id)
-        state["custom_profile_fields"] = [f.as_dict() for f in fields]
+    if want("custom_profile_fields"):
+        if user_profile is None:
+            # Spectators can't access full user profiles or
+            # personal settings, so we send an empty list.
+            state["custom_profile_fields"] = []
+        else:
+            fields = custom_profile_fields_for_realm(realm.id)
+            state["custom_profile_fields"] = [f.as_dict() for f in fields]
         state["custom_profile_field_types"] = {
             item[4]: {"id": item[0], "name": str(item[1])}
             for item in CustomProfileField.ALL_FIELD_TYPES
         }
+
+        if not pronouns_field_type_supported:
+            for field in state["custom_profile_fields"]:
+                if field["type"] == CustomProfileField.PRONOUNS:
+                    field["type"] = CustomProfileField.SHORT_TEXT
+
+            del state["custom_profile_field_types"]["PRONOUNS"]
 
     if want("hotspots"):
         # Even if we offered special hotspots for guests without an
@@ -318,7 +329,7 @@ def fetch_initial_state_data(
 
         # TODO: Should these have the realm prefix replaced with server_?
         state["realm_push_notifications_enabled"] = push_notifications_enabled()
-        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
+        state["realm_default_external_accounts"] = get_default_external_accounts()
 
         if settings.JITSI_SERVER_URL is not None:
             state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
@@ -592,7 +603,9 @@ def fetch_initial_state_data(
 
     if want("user_status"):
         # We require creating an account to access statuses.
-        state["user_status"] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
+        state["user_status"] = (
+            {} if user_profile is None else get_user_status_dict(realm_id=realm.id)
+        )
 
     if want("user_topic"):
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
@@ -1090,7 +1103,7 @@ def apply_event(
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) | user_ids
-                            sub["subscribers"] = sorted(list(subscribers))
+                            sub["subscribers"] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
@@ -1104,7 +1117,7 @@ def apply_event(
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) - user_ids
-                            sub["subscribers"] = sorted(list(subscribers))
+                            sub["subscribers"] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
@@ -1193,7 +1206,7 @@ def apply_event(
                 state["starred_messages"] = [
                     message
                     for message in state["starred_messages"]
-                    if not (message in event["messages"])
+                    if message not in event["messages"]
                 ]
     elif event["type"] == "realm_domains":
         if event["op"] == "add":
@@ -1363,10 +1376,11 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: Dict[str, bool] = {},
+    client_capabilities: Mapping[str, bool] = {},
     narrow: Collection[Sequence[str]] = [],
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
+    pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
@@ -1394,27 +1408,25 @@ def do_events_register(
         event_types_set = None
 
     if user_profile is None:
-        # TODO: Unify this with the below code path once if/when we
-        # support requesting an event queue for spectators.
-        #
-        # Doing so likely has a prerequisite of making this function's
-        # caller enforce client_gravatar=False,
-        # include_subscribers=False and include_streams=False.
+        # TODO: Unify the two fetch_initial_state_data code paths.
+        assert client_gravatar is False
+        assert include_subscribers is False
+        assert include_streams is False
         ret = fetch_initial_state_data(
             user_profile,
             realm=realm,
             event_types=event_types_set,
             queue_id=None,
             # Force client_gravatar=False for security reasons.
-            client_gravatar=False,
+            client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             # slim_presence is a noop, because presence is not included.
             slim_presence=True,
             # Force include_subscribers=False for security reasons.
-            include_subscribers=False,
+            include_subscribers=include_subscribers,
             # Force include_streams=False for security reasons.
-            include_streams=False,
+            include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
         )
 
@@ -1440,6 +1452,7 @@ def do_events_register(
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
 
         if queue_id is None:
@@ -1455,6 +1468,7 @@ def do_events_register(
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
 
         # Apply events that came in while we were fetching initial data

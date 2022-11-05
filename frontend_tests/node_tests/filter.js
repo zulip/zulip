@@ -1478,6 +1478,18 @@ test("navbar_helpers", () => {
     const group_pm_including_missing_person = [
         {operator: "pm-with", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"},
     ];
+    // not common narrows, but used for browser title updates
+    const is_alerted = [{operator: "is", operand: "alerted"}];
+    const is_unread = [{operator: "is", operand: "unread"}];
+    const stream_topic_near = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "near", operand: "12"},
+    ];
+    const pm_with_near = [
+        {operator: "pm-with", operand: "joe@example.com"},
+        {operator: "near", operand: "12"},
+    ];
 
     const test_cases = [
         {
@@ -1533,7 +1545,7 @@ test("navbar_helpers", () => {
             operator: streams_public,
             is_common_narrow: true,
             icon: undefined,
-            title: "translated: Public stream messages in organization",
+            title: "translated: Messages in all public streams",
             redirect_url_with_search: "/#narrow/streams/public",
         },
         {
@@ -1547,14 +1559,14 @@ test("navbar_helpers", () => {
             operator: non_existent_stream,
             is_common_narrow: true,
             icon: "question-circle-o",
-            title: "translated: Unknown stream",
+            title: "translated: Unknown stream #Elephant",
             redirect_url_with_search: "#",
         },
         {
             operator: non_existent_stream_topic,
             is_common_narrow: true,
             icon: "question-circle-o",
-            title: "translated: Unknown stream",
+            title: "translated: Unknown stream #Elephant",
             redirect_url_with_search: "#",
         },
         {
@@ -1598,6 +1610,34 @@ test("navbar_helpers", () => {
             ]),
             redirect_url_with_search: "/#narrow/pm-with/undefined",
         },
+        {
+            operator: is_alerted,
+            is_common_narrow: false,
+            icon: undefined,
+            title: "translated: Alerted messages",
+            redirect_url_with_search: "#",
+        },
+        {
+            operator: is_unread,
+            is_common_narrow: false,
+            icon: undefined,
+            title: "translated: Unread messages",
+            redirect_url_with_search: "#",
+        },
+        {
+            operator: stream_topic_near,
+            is_common_narrow: false,
+            icon: "hashtag",
+            title: "Foo",
+            redirect_url_with_search: "#",
+        },
+        {
+            operator: pm_with_near,
+            is_common_narrow: false,
+            icon: "envelope",
+            title: properly_separated_names([joe.full_name]),
+            redirect_url_with_search: "#",
+        },
     ];
 
     for (const test_case of test_cases) {
@@ -1611,14 +1651,12 @@ test("navbar_helpers", () => {
     const redirect_edge_cases = [
         {
             operator: sender_me,
-            redirect_url_with_search:
-                "/#narrow/sender/" + me.user_id + "-" + parseOneAddress(me.email).local,
+            redirect_url_with_search: "/#narrow/sender/" + me.user_id + "-Me-Myself",
             is_common_narrow: false,
         },
         {
             operator: sender_joe,
-            redirect_url_with_search:
-                "/#narrow/sender/" + joe.user_id + "-" + parseOneAddress(joe.email).local,
+            redirect_url_with_search: "/#narrow/sender/" + joe.user_id + "-joe",
             is_common_narrow: false,
         },
     ];
@@ -1653,7 +1691,7 @@ test("navbar_helpers", () => {
 
     const stream_topic_search_operator_test_case = {
         operator: stream_topic_search_operator,
-        title: "Foo",
+        title: undefined,
     };
 
     test_get_title(stream_topic_search_operator_test_case);

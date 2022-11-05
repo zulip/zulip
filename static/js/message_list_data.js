@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
 import {Filter} from "./filter";
@@ -40,6 +38,21 @@ export class MessageListData {
 
     last() {
         return this._items.at(-1);
+    }
+
+    ids_greater_or_equal_than(my_id) {
+        const result = [];
+
+        for (let i = this._items.length - 1; i >= 0; i -= 1) {
+            const message_id = this._items[i].id;
+            if (message_id >= my_id) {
+                result.push(message_id);
+            } else {
+                continue;
+            }
+        }
+
+        return result;
     }
 
     select_idx() {
@@ -526,7 +539,7 @@ export class MessageListData {
     }
 
     get_messages_sent_by_user(user_id) {
-        const msgs = _.filter(this._items, {sender_id: user_id});
+        const msgs = this._items.filter((msg) => msg.sender_id === user_id);
         if (msgs.length === 0) {
             return [];
         }
@@ -534,7 +547,7 @@ export class MessageListData {
     }
 
     get_last_message_sent_by_me() {
-        const msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
+        const msg_index = this._items.findLastIndex((msg) => msg.sender_id === page_params.user_id);
         if (msg_index === -1) {
             return undefined;
         }

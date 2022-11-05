@@ -51,11 +51,11 @@ Zulip:
      major release of the Zulip server and web app (which is what we
      run on chat.zulip.org and Zulip Cloud).
    - The variants of `django.po` and `translations.json` with names
-     starting with a version, like, `4-x--`, are strings for Zulip's
+     starting with a version, like `5-x--`, are strings for Zulip's
      current [stable release series](../overview/release-lifecycle.md).
 
    Transifex is smart about only asking you to translate a string once
-   even if it appears in multiple resources. The `4-x--` type variants
+   even if it appears in multiple resources. The `5-x--` type variants
    allow translators to get a language to 100% translated for the
    current release.
 

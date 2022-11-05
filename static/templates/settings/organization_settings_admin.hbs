@@ -53,7 +53,7 @@
                   setting_value=realm_default_language_name
                   language_code=realm_default_language_code
                   section_title=admin_settings_label.realm_default_language
-                  help_link_widget_link="/help/change-the-default-language-for-your-organization"}}
+                  help_link_widget_link="/help/configure-organization-language"}}
             </div>
         </div>
 
@@ -70,8 +70,6 @@
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
                     <label for="id_realm_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
-                        <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip"
-                          aria-hidden="true" data-tippy-content="{{t 'Only owners can change message retention policy.' }}"></i>
                     </label>
                     <select name="realm_message_retention_setting"
                       id="id_realm_message_retention_setting" class="prop-element"
@@ -142,17 +140,12 @@
                   is_checked=realm_mandatory_topics
                   label=admin_settings_label.realm_mandatory_topics}}
 
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" class="realm_enable_read_receipts inline-block setting-widget prop-element" name="realm_enable_read_receipts" data-setting-widget-type="boolean" id="id_realm_enable_read_receipts" {{#if realm_enable_read_receipts}}checked="checked"{{/if}}/>
-                        <span></span>
-                    </label>
-                    <label for="id_realm_enable_read_receipts" class="inline realm_enable_read_receipts_label" id="id_realm_enable_read_receipts_label">
-                        {{#tr}}
-                            Enable read receipts (<i>Users can always disable their personal read receipts.</i>)
-                        {{/tr}}
-                    </label>
-                </div>
+                {{> settings_checkbox
+                  setting_name="realm_enable_read_receipts"
+                  prefix="id_"
+                  is_checked=realm_enable_read_receipts
+                  label=admin_settings_label.realm_enable_read_receipts
+                  label_parens_text=admin_settings_label.realm_enable_read_receipts_parens_text}}
 
                 {{#if server_inline_image_preview}}
                 {{> settings_checkbox

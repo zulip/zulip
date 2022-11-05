@@ -233,6 +233,7 @@ def convert_gitter_workspace_messages(
     stream_map: Dict[str, int],
     user_short_name_to_full_name: Dict[str, str],
     zerver_userprofile: List[ZerverFieldsT],
+    realm_id: int,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> None:
     """
@@ -272,13 +273,14 @@ def convert_gitter_workspace_messages(
             user_id = user_map[get_user_from_message(message)]
             recipient_id = stream_map[message["room"]] if "room" in message else 0
             zulip_message = build_message(
-                topic_name,
-                message_time,
-                message_id,
-                message["text"],
-                rendered_content,
-                user_id,
-                recipient_id,
+                topic_name=topic_name,
+                date_sent=message_time,
+                message_id=message_id,
+                content=message["text"],
+                rendered_content=rendered_content,
+                user_id=user_id,
+                recipient_id=recipient_id,
+                realm_id=realm_id,
             )
             zerver_message.append(zulip_message)
 
@@ -365,6 +367,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int = 6) ->
         stream_map,
         user_short_name_to_full_name,
         realm["zerver_userprofile"],
+        realm_id=realm_id,
     )
 
     avatar_folder = os.path.join(output_dir, "avatars")

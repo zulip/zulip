@@ -1,18 +1,7 @@
 import hashlib
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Collection,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Set,
-    Tuple,
-)
+from typing import Any, Collection, Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
 import orjson
 from django.conf import settings
@@ -20,6 +9,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,
@@ -68,14 +58,12 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserProfile,
     active_non_guest_user_ids,
     get_system_bot,
 )
 from zerver.tornado.django_api import send_event
-
-if TYPE_CHECKING:
-    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 @transaction.atomic(savepoint=False)
@@ -219,7 +207,7 @@ def merge_streams(
 
 def get_subscriber_ids(
     stream: Stream, requesting_user: Optional[UserProfile] = None
-) -> "ValuesQuerySet[Subscription, int]":
+) -> ValuesQuerySet[Subscription, int]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     return subscriptions_query.values_list("user_profile_id", flat=True)
 
@@ -289,6 +277,7 @@ def send_subscription_add_events(
                 stream_weekly_traffic=stream_info.stream_weekly_traffic,
                 subscribers=stream_info.subscribers,
                 # Fields from Stream.API_FIELDS
+                can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group_id"],
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
@@ -408,7 +397,7 @@ def send_peer_subscriber_events(
                 type="subscription",
                 op=op,
                 stream_ids=[stream_id],
-                user_ids=sorted(list(altered_user_ids)),
+                user_ids=sorted(altered_user_ids),
             )
             send_event(realm, event, peer_user_ids)
 
@@ -446,7 +435,7 @@ def send_peer_subscriber_events(
                         type="subscription",
                         op=op,
                         stream_ids=[stream_id],
-                        user_ids=sorted(list(altered_user_ids)),
+                        user_ids=sorted(altered_user_ids),
                     )
                     send_event(realm, event, peer_user_ids)
 
@@ -455,7 +444,7 @@ def send_peer_subscriber_events(
             event = dict(
                 type="subscription",
                 op=op,
-                stream_ids=sorted(list(stream_ids)),
+                stream_ids=sorted(stream_ids),
                 user_ids=[user_id],
             )
             send_event(realm, event, peer_user_ids)
@@ -1201,7 +1190,7 @@ def do_change_stream_description(
 
     with transaction.atomic():
         stream.description = new_description
-        stream.rendered_description = render_stream_description(new_description)
+        stream.rendered_description = render_stream_description(new_description, stream.realm)
         stream.save(update_fields=["description", "rendered_description"])
         RealmAuditLog.objects.create(
             realm=stream.realm,
@@ -1316,4 +1305,40 @@ def do_change_stream_message_retention_days(
         stream=stream,
         old_value=old_message_retention_days_value,
         new_value=message_retention_days,
+    )
+
+
+def do_change_can_remove_subscribers_group(
+    stream: Stream, user_group: UserGroup, *, acting_user: Optional[UserProfile] = None
+) -> None:
+    old_user_group = stream.can_remove_subscribers_group
+    old_user_group_id = None
+    if old_user_group is not None:
+        old_user_group_id = old_user_group.id
+
+    stream.can_remove_subscribers_group = user_group
+    stream.save()
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_user_group_id,
+                RealmAuditLog.NEW_VALUE: user_group.id,
+            }
+        ).decode(),
+    )
+    event = dict(
+        op="update",
+        type="stream",
+        property="can_remove_subscribers_group_id",
+        value=user_group.id,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    transaction.on_commit(
+        lambda: send_event(stream.realm, event, can_access_stream_user_ids(stream))
     )

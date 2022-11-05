@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import * as keydown_util from "./keydown_util";
+
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
 
@@ -27,7 +29,7 @@ export function blur_active_element(): void {
 }
 
 export function convert_enter_to_click(e: JQuery.KeyDownEvent): void {
-    if (e.key === "Enter") {
+    if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
         e.stopPropagation();
         $(e.currentTarget).trigger("click");

@@ -3,6 +3,7 @@ from typing import Any, Collection, Dict, List, Optional, Sequence, Set, Tuple, 
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -376,9 +377,10 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     # to a "revoked" status so that we can give the invited user a better
     # error message.
     content_type = ContentType.objects.get_for_model(PreregistrationUser)
-    Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
-    prereg_user.delete()
-    clear_scheduled_invitation_emails(email)
+    with transaction.atomic():
+        Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
+        prereg_user.delete()
+        clear_scheduled_invitation_emails(email)
     notify_invites_changed(realm)
 
 
@@ -386,8 +388,11 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     realm = multiuse_invite.referred_by.realm
 
     content_type = ContentType.objects.get_for_model(MultiuseInvite)
-    Confirmation.objects.filter(content_type=content_type, object_id=multiuse_invite.id).delete()
-    multiuse_invite.delete()
+    with transaction.atomic():
+        Confirmation.objects.filter(
+            content_type=content_type, object_id=multiuse_invite.id
+        ).delete()
+        multiuse_invite.delete()
     notify_invites_changed(realm)
 
 

@@ -15,16 +15,13 @@ there is at least one other owner in the organization (consider
 promoting a new owner or [deactivating the
 organization](/help/deactivate-your-organization) instead).
 
-### Change a user's role
+## Change a user's role
 
 {start_tabs}
 
 {tab|via-user-profile}
 
-1. Hover over a user's name in the right sidebar.
-
-1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>)
-   to the right of their name.
+{!profile-summary-three-dot-menu.md!}
 
 1. Click **Manage this user**.
 

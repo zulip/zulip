@@ -10,7 +10,7 @@ tasks you need to go back to or documents you reference often.
 {tab|desktop}
 {!message-actions.md!}
 
-1. Click the star (<i class="fa fa-star-o"></i>) icon.
+1. Click the **star** (<i class="fa fa-star-o"></i>) icon.
 
 {tab|mobile}
 
@@ -42,3 +42,8 @@ can disable that feature.
 1. Under **Advanced**, toggle **Show counts for starred messages**.
 
 {end_tabs}
+
+## Related articles
+
+* [Marking messages as unread](/help/marking-messages-as-unread)
+* [Reading strategies](/help/reading-strategies)

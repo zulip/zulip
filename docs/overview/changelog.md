@@ -13,90 +13,182 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Highlights
 
-- Added support for Ubuntu 22.04.
-- Removed support for Debian 10 due to its approaching end-of-life
-  upstream.
-- Added new display setting to display users' names next to emoji
-  reactions when at most 3 users have reacted to a message. This saves
-  effort hovering over the reaction when the identity of the user who
-  reacted is important to the meaning.
-- Added new compose box button to navigate to the topic being composed
-  to, when that is different from the current view.
+- Users can now mark messages as unread.
+- Added support for viewing read receipts, along with settings
+  allowing both organizations and individual users to disable them.
+- Added new compose box button to navigate to the conversation being
+  composed to, when that is different from the current view.
 - Added a scroll-to-bottom button, analogous to the `End` shortcut,
   that appears only when scrolling using the mouse.
+- Added support for up to 2 custom profile fields being highlighted in
+  a user's profile summary popover, and added support for a new
+  Pronouns custom field type designed to take advantage of
+  it. Redesigned the custom profile fields administrative UI.
+- Redesigned the left sidebar to better organize pinned and inactive
+  streams, highlight topics where the user was mentioned, and better
+  advertise streams that the current user can subscribe to.
+- Redesigned the private messages experience in the left sidebar to
+  make browsing conversations more ergonomic, with a similar usage
+  pattern to browsing the topics within a stream.
+- Improved "Recent topics" and renamed it to "Recent conversations"
+  with the addition of including private messages in the view. The
+  timestamp links now go to the latest message in the topic, arrow key
+  navigation was improved, topics containing unread mentions are now
+  highlighted, as well as many other bug fixes or subtle improvements.
+- Messages containing 3 or fewer emoji reactions now display the names
+  of reacting users alongside the emoji. This eliminates the need to
+  mouse over emoji reactions to find out who reacted in the vast
+  majority of cases.
+- Replaced the previous "Unavailable" status with a "Go invisible" feature
+  that is more useful and intuitive.
+- The right sidebar now displays user status messages by default, with
+  an optional compact design available.
 - The [public access option][public-access-option] was enhanced to
   skip the login page by default, support switching themes and
   languages, and add many other UI improvements.
-- Added beta support for user groups to have subgroups, and for some
-  permissions settings to be managed using user groups. Over the
-  coming releases, we plan to migrate all Zulip permissions settings
-  to be based on this more flexible groups-based system. We expect the
-  migration to be fully backwards-compatible.
+- Incoming webhook integrations now support filtering which classes of events
+  are sent into Zulip; this can be invaluable when the third-party service
+  doesn't support configuring which events to send to Zulip.
+- Added support for Ubuntu 22.04.
+- Removed support for Debian 10 and PostgreSQL 10 due to their
+  approaching end-of-life upstream.
+- New integrations: Azure DevOps, RhodeCode, wekan.
 
 [public-access-option]: https://blog.zulip.com/2022/05/05/public-access-option/
 
 #### Full feature changelog
 
-- Improved Recent Topics. The timestamp links now go to the latest
-  message in the topic, and many subtle changes.
-- Added support for changing the role of bots in the UI; previously,
-  this was only possible via the API.
-- Added API endpoint to get a single stream by ID.
-- Added new RhodeCode webhook integration.
-- Zulip's automated emails use the `X-Auto-Response-Suppress` header
-  to reduce auto-responder replies.
+- Redesigned the message actions popover to be better organized.
+- Redesigned moving messages to have a cleaner, more consistent UI that is no
+  longer combined with the message editing UI. One can now choose to send
+  automated notices when moving messages within a stream, not only between
+  streams.
 - Redesigned full user profiles to have a cleaner look and also
-  display user IDs, which can be important when using the API.
+  display user IDs, which can be important when using the API. Users
+  can now administer bot stream subscriptions from the bot's full
+  profile.
+- Redesigned the gear menu to display basic details about the Zulip
+  organization, server, and its version.
 - Redesigned several organization settings pages to have more
   consistent design.
-- Redesigned the footer for self-hosted Zulip servers to no longer
-  contain all of the zulip.com marketing pages.
-- Reworked how a new user's language is set to prefer the browser's
-  configured language over the organization default language, which
-  has been renamed to reflect its remaining role as the language used
-  for automated notifications visible to many users.
-- Improved UI for moving topics with better labels, typeahead,
-  default notices, and cleaner interaction.
+- Redesigned the footer for self-hosted Zulip servers. The footer now has just a
+  few key links, rather than being almost identical to the footer for the
+  zulip.com website.
+- Redesigned the 500 error pages for self-hosted Zulip servers to be
+  clearer and link to the Zulip server troubleshooting guide.
+- Redesigned the interface for configuring message editing and
+  deletion permissions to be easier to understand.
+- Added support for emoji added in unicode versions since 2017, which
+  had previously been unavailable in Zulip. Users using the deprecated
+  "Google blobs" emoji set are automatically migrated to the modern
+  "Google" emoji set. The "Google blobs" emoji set remains available
+  for users who prefer it, with any new emoji that were added to the
+  Unicode standard since 2017 displayed in the modern "Google" style.
+- Added support for changing the role of bots in the UI; previously,
+  this was only possible via the API.
+- Added confirmation modals for various destructive actions, such as
+  deactivating bots.
+- Added new summary statistics on the organization analytics
+  page. Fixed several bugs with the display of analytics graphs.
+- Added support for administrators sending a final email to a user as
+  part of deactivating their Zulip account.
+- Added API endpoint to get a single stream by ID.
+- Added beta support for user groups to have subgroups, and for some
+  permissions settings to be managed using user groups. Over the
+  coming releases, we plan to migrate all Zulip permissions settings
+  to be based on this more flexible groups-based system. We currently
+  expect this migration to be fully backwards-compatible.
+- Zulip's automated emails use the `X-Auto-Response-Suppress` header
+  to reduce auto-responder replies.
+- Changed various icons to be more intuitive. The bell-based icon for
+  muted topics has been replaced by a more standard muted speaker icon.
+- Reworked how a new user's language is set to prefer their browser's
+  configured language over the organization's configured
+  language. This organization-level setting has been renamed to
+  "Language for automated messages and invitation emails" to reflect
+  what it actually does following this change.
+- Organized the Drafts panel to prioritize drafts matching the current
+  view.
+- Added an automated notification to the "stream events" topic when
+  changing a stream's privacy settings.
+- Improved the search typeahead to show profile pictures for users.
 - Improved typeahead matching algorithm for stream/user/emoji names
   containing multiple spaces and other corner cases.
-- Improved Help Center documentation, including mobile documentation
-  for common workflows and many polish improvements.
-- Improved API documentation, including new page on roles and
-  permissions, an audit to correct missing **Changes**, entries, etc.
+- Improved the help center, including better display of keyboard
+  shortcuts, mobile documentation for common workflows and many polish
+  improvements.
+- Improved API documentation, including a new page on roles and
+  permissions, an audit to correct missing **Changes** entries, and
+  new documentation for several previously undocumented endpoints.
 - Improved Python static type-checking to make use of Django stubs for
-  `mypy`, fixing many minor bugs.
+  `mypy`, fixing many minor bugs in the process.
 - Improved RealmAuditLog to cover several previously unauditable changes.
-- Improved the soft reactivation user experience; users who receive an
-  email notification or push notification because of a personal
-  mention or a private message are automatically soft reactivated at
-  that time, so that they are usually already soft-reactivated by the
-  time they visit Zulip after seeing the notification.
+- Improved the experience for users who have not logged in for a long
+  time, and receive an email or push notification about a private
+  message or personal mention. These users are now automatically soft
+  reactivated at the time of the notification, for a smoother
+  experience when they log in.
 - Improved user deactivation modal to provide details about bots and
   invitations that will be disabled.
+- Improve matching algorithm for left sidebar stream filtering.
 - Improved several integrations, including Harbor, NewRelic, and the
   Slack compatible incoming webhook.
+- Improved mention typeahead and rendering for cases where mention
+  syntax appears next to symbols.
+- Improved browser window titles used by the app to be clearer.
+- Improved the language in message notification emails explaining
+  why the notification was sent.
+- Reordered the organization settings panels to be more intuitive.
+- Increased timeout for processing slow requests from 20s to 60s.
+- Removed limits that prevented replying to Zulip email notifications multiple
+  times or, several days after receiving them.
+- Fixed numerous bugs and performance issues with the Rocket.Chat data
+  import tool.
+- Fixed several bugs where drafts could fail to be saved.
+- Fixed a bug where copy-paste would incorrectly copy an entire message.
 - Fixed the app's main loading page to not suggest reloading until
   several seconds have passed.
 - Fixed a bug where public streams imported from other chat systems
-  could incorrectly be configured as without shared history, a
-  configuration not otherwise possible in Zulip.
+  could incorrectly be configured as public streams without shared
+  history, a configuration not otherwise possible in Zulip.
 - Fixed several subtle bugs involving editing custom profile field
   configuration.
+- Fixed several bugs involving compose box keyboard shortcuts.
 - Fixed dozens of settings UI interaction design bugs.
 - Fixed subtle caching bugs in the URL preview system.
+- Fixed several rare race conditions in the server implementation.
 - Fixed many CSS corner cases issues involving content overflowing containers.
 - Fixed entering an emoji in the mobile web app using an emoji
   keyboard.
 - Fixed several subtle bugs with confirmation links.
 - Fixed a subtle performance issue for full-text search for uncommon words.
+- Fixed the estimator for the size of public data exports.
+- Major improvements to our documentation for setting up the development
+  environment and for joining the project as a new contributor.
 - Extracted several JavaScript modules to share code with the mobile
   app.
-- Upgraded many third-party dependencies including Django 4.0, and
+- Upgraded many third-party dependencies including Django 4.1, and
   substantially modernized the Python codebase.
 
 #### Upgrade notes for 6.0
 
-- None yet.
+- Installations using [docker-zulip][docker-zulip] will need to [upgrade
+  Postgres][docker-zulip-upgrade-database] before upgrading to Zulip
+  6.0, because the previous default of Postgres 10 is no longer
+  supported by this release.
+- Installations using the AzureAD authentication backend will need to
+  update `/etc/zulip/zulip-secrets.conf` after upgrading. The
+  `azure_oauth2_secret` secret was renamed to
+  `social_auth_azuread_oauth2_secret`, to match our other external
+  authentication methods.
+- This release contains an expensive migration,
+  `0419_backfill_message_realm`, which adds data to a new `realm`
+  column in the message table. Expect it to run for 10-15 minutes per
+  million messages in the database. The new column is not yet used in
+  this release, so this migration can be run in the background for
+  installations hoping to avoid extended downtime.
+
+[docker-zulip-upgrade-database]: https://github.com/zulip/docker-zulip/#upgrading-zulipzulip-postgresql-to-14
 
 ## Zulip 5.x series
 
@@ -350,7 +442,7 @@ log][commit-log] for an up-to-date list of raw changes.
   sending email notifications after a mention or PM.
 - Improved integrations: BigBlueButton, GitHub, Grafana, PagerDuty,
   and many more.
-- Improved various interaction and performance details in Recent Topics.
+- Improved various interaction and performance details in "Recent topics".
 - Improved styling for poll and todo list widgets.
 - Zulip now supports configuring the database name and username when
   using a remote Postgres server. Previously, these were hardcoded to "zulip".
@@ -695,7 +787,7 @@ log][commit-log] for an up-to-date list of raw changes.
   allowing moderators and above to use the feature.
 - Added a native Giphy integration for sending animated GIFs.
 - Added support for muting another user.
-- Recent topics is no longer beta, no longer an overlay, supports
+- "Recent topics" is no longer beta, no longer an overlay, supports
   composing messages, and is now the default view. The previous
   default view, "All messages", is still available, and the default
   view can now be configured via "Display settings".
@@ -976,7 +1068,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Redesigned the top navbar/search area to be much cleaner and show
   useful data like subscriber counts and stream descriptions in
   default views.
-- Added a new "recent topics" widget, which lets one browse recent
+- Added a new "Recent topics" widget, which lets one browse recent
   and ongoing conversations at a glance. We expect this widget to
   replace "All messages" as the default view in Zulip in the
   next major release.
@@ -2760,7 +2852,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Added easy configuration support for a remote PostgreSQL database.
 - Added extensive documentation on scalability, backups, and security.
 - Recent private message threads are now displayed expanded similar to
-  the pre-existing recent topics feature.
+  the pre-existing "Recent topics" feature.
 - Made it possible to set LDAP and EMAIL_HOST passwords in
   /etc/zulip/secrets.conf.
 - Improved the styling for the Administration page and added tabs.

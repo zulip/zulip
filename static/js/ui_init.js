@@ -35,6 +35,7 @@ import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
+import * as hotkey from "./hotkey";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as invite from "./invite";
@@ -58,6 +59,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
 import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
@@ -99,6 +101,7 @@ import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_group_edit from "./user_group_edit";
+import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_groups from "./user_groups";
 import * as user_group_settings_ui from "./user_groups_settings_ui";
 import {initialize_user_settings, user_settings} from "./user_settings";
@@ -133,18 +136,19 @@ function message_hover($message_row) {
     message_unhover();
     $current_message_hover = $message_row;
 
-    // Locally echoed messages have !is_topic_editable and thus go
-    // through this code path.
-    if (!message_edit.is_topic_editable(message)) {
+    if (!message.sent_by_me) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }
 
     // But the message edit hover icon is determined by whether the message is still editable
-    const is_message_editable =
-        message_edit.get_editability(message) === message_edit.editability_types.FULL;
+    const editability = message_edit.get_editability(message);
+    const is_content_editable = editability === message_edit.editability_types.FULL;
+
+    const can_move_message = message_edit.can_move_message(message);
     const args = {
-        is_editable: is_message_editable && !message.status_message,
+        is_content_editable: is_content_editable && !message.status_message,
+        can_move_message,
         msg_id: id,
     };
     $message_row.find(".edit_content").html(render_edit_content_button(args));
@@ -554,6 +558,8 @@ export function initialize_everything() {
 
     const user_groups_params = pop_fields("realm_user_groups");
 
+    const unread_params = pop_fields("unread_msgs");
+
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
@@ -622,6 +628,7 @@ export function initialize_everything() {
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(stream_data_params);
+    user_group_edit_members.initialize();
     pm_conversations.recent.initialize(pm_conversations_params);
     user_topics.initialize();
     muted_users.initialize();
@@ -643,7 +650,7 @@ export function initialize_everything() {
     search_pill_widget.initialize();
     reload.initialize();
     user_groups.initialize(user_groups_params);
-    unread.initialize();
+    unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize(server_events.home_view_loaded);
     message_scroll.initialize();
@@ -673,6 +680,7 @@ export function initialize_everything() {
     unread_ui.initialize();
     activity.initialize();
     emoji_picker.initialize();
+    pm_list.initialize();
     topic_list.initialize();
     topic_zoom.initialize();
     drafts.initialize();
@@ -684,6 +692,7 @@ export function initialize_everything() {
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
+    hotkey.initialize();
 
     $("#app-loading").addClass("loaded");
 }

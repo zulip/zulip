@@ -213,7 +213,7 @@ difficult and rarely a useful goal. To make the best use of your time,
 we highly recommend that you unsubscribe from streams that you aren’t
 interested in, mute streams that are only of occasional interest, and
 make use of [Zulip’s skimming features](/help/reading-strategies),
-like Recent Topics, to spend your time on conversations that interest
+like Recent conversations, to spend your time on topics that interest
 you.
 
 ## Searching for past conversations

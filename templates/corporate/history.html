@@ -1,9 +1,11 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-{% block title %}
-<title>Zulip history</title>
-{% endblock %}
+{% set PAGE_TITLE = "History of the Zulip project" %}
+
+{% set PAGE_DESCRIPTION = "Learn how Zulip grew from a small startup to become
+  the project with the most active open-source development community of any team
+  chat software." %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,11 +15,11 @@
 
 {% include 'zerver/landing_nav.html' %}
 
-<div class="portico-landing why-page no-slide">
+<div class="portico-landing why-page">
     <div class="hero bg-pycon">
         <div class="bg-dimmer"></div>
         <div class="content">
-            <h1 class="center">Zulip History</h1>
+            <h1 class="center">History of the Zulip project</h1>
         </div>
     </div>
     <div class="main">

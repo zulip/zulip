@@ -41,6 +41,11 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
+
+if not args.skip_checks:
+    logging.info("Running syntax and database checks")
+    subprocess.check_call(["./manage.py", "check", "--database", "default"])
+
 if args.fill_cache:
     logging.info("Filling memcached caches")
     subprocess.check_call(["./manage.py", "fill_memcached_caches", "--skip-checks"])

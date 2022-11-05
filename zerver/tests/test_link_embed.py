@@ -10,7 +10,7 @@ from django.utils.html import escape
 from pyoembed.providers import get_provider
 from requests.exceptions import ConnectionError
 
-from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish
@@ -542,7 +542,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(msg.rendered_content, with_preview)
 
         realm = msg.get_realm()
-        setattr(realm, "inline_url_embed_preview", False)
+        realm.inline_url_embed_preview = False
         realm.save()
 
         msg = self._send_message_with_test_org_url(

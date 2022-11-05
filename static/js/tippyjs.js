@@ -114,6 +114,11 @@ export function initialize() {
         target: ".message_reaction, .message_reactions .reaction_button",
         placement: "bottom",
         onShow(instance) {
+            if (!document.body.contains(instance.reference)) {
+                // It is possible for reaction to be removed before `onShow` is triggered,
+                // so, we check if the element exists before proceeding.
+                return false;
+            }
             const $elem = $(instance.reference);
             if (!instance.reference.classList.contains("reaction_button")) {
                 const local_id = $elem.attr("data-reaction-id");
@@ -130,6 +135,7 @@ export function initialize() {
                 $elem.get(0),
             ];
             hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+            return true;
         },
         onHidden(instance) {
             instance.destroy();
@@ -171,7 +177,7 @@ export function initialize() {
                 // content from it.
                 //
                 // TODO: Change the template structure so logic is unnecessary.
-                const $edit_button = $elem.find("i.edit_content_button");
+                const $edit_button = $elem.find("i.edit_message_button");
                 content = $edit_button.attr("data-tippy-content");
             }
 
@@ -216,9 +222,12 @@ export function initialize() {
     delegate("body", {
         target: [
             ".recipient_bar_icon",
-            ".sidebar-title",
+            "#streams_header .sidebar-title",
+            "#userlist-title",
             "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
+            ".code_external_link",
+            ".spectator_narrow_login_button",
         ],
         appendTo: () => document.body,
     });
@@ -364,6 +373,63 @@ export function initialize() {
         placement: "bottom",
 
         // Avoid inheriting `position: relative` CSS on the stream sorter widget.
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        // This tooltip appears on the "Summary" checkboxes in
+        // settings > custom profile fields, when at the limit of 2
+        // fields with display_in_profile_summary enabled.
+        target: [
+            "#profile-field-settings .display_in_profile_summary_tooltip",
+            "#edit-custom-profile-field-form-modal .display_in_profile_summary_tooltip",
+            "#add-new-custom-profile-field-form .display_in_profile_summary_tooltip",
+        ],
+        content: $t({
+            defaultMessage: "Only 2 custom profile fields can be displayed in the profile summary.",
+        }),
+        appendTo: () => document.body,
+        onTrigger(instance) {
+            // Sometimes just removing class is not enough to destroy/remove tooltip, especially in
+            // "Add a new custom profile field" form, so here we are manually calling `destroy()`.
+            if (!instance.reference.classList.contains("display_in_profile_summary_tooltip")) {
+                instance.destroy();
+            }
+        },
+    });
+
+    delegate("body", {
+        target: "#pm_tooltip_container",
+        onShow(instance) {
+            if ($(".private_messages_container").hasClass("zoom-in")) {
+                return false;
+            }
+
+            if ($("#toggle_private_messages_section_icon").hasClass("fa-caret-down")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Collapse private messages",
+                    }),
+                );
+            } else {
+                instance.setContent($t({defaultMessage: "Expand private messages"}));
+            }
+            return true;
+        },
+        delay: [500, 20],
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#show_all_private_messages",
+        placement: "bottom",
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage: "All private messages (P)",
+                }),
+            );
+        },
         appendTo: () => document.body,
     });
 }

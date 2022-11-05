@@ -234,7 +234,7 @@ def send_email(
     from_address: Optional[str] = None,
     reply_to_email: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
     realm: Optional[Realm] = None,
     connection: Optional[BaseEmailBackend] = None,
     dry_run: bool = False,
@@ -289,9 +289,7 @@ def send_email(
         )
         raise EmailNotDeliveredException
     except smtplib.SMTPException as e:
-        logger.exception(
-            "Error sending %s email to %s: %s", template, mail.to, str(e), stack_info=True
-        )
+        logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
         raise EmailNotDeliveredException
 
 
@@ -338,7 +336,7 @@ def send_future_email(
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
     delay: datetime.timedelta = datetime.timedelta(0),
 ) -> None:
     template_name = template_prefix.split("/")[-1]
@@ -393,7 +391,7 @@ def send_email_to_admins(
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
 ) -> None:
     admins = realm.get_human_admin_users()
     admin_user_ids = [admin.id for admin in admins]
@@ -413,7 +411,7 @@ def send_email_to_billing_admins_and_realm_owners(
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
 ) -> None:
     send_email(
         template_prefix,

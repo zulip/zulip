@@ -71,7 +71,6 @@ EXEMPT_FILES = make_set(
         "static/js/confirm_dialog.js",
         "static/js/copy_and_paste.js",
         "static/js/csrf.ts",
-        "static/js/css_variables.js",
         "static/js/dark_theme.js",
         "static/js/debug.js",
         "static/js/deprecated_feature_notice.js",
@@ -135,6 +134,7 @@ EXEMPT_FILES = make_set(
         "static/js/realm_playground.js",
         "static/js/realm_user_settings_defaults.ts",
         "static/js/recent_topics_ui.js",
+        "static/js/recent_topics_util.js",
         "static/js/reload.js",
         "static/js/reminder.js",
         "static/js/resize.js",
@@ -197,6 +197,7 @@ EXEMPT_FILES = make_set(
         "static/js/ui_init.js",
         "static/js/ui_report.ts",
         "static/js/ui_util.ts",
+        "static/js/unread.js",
         "static/js/unread_ops.js",
         "static/js/unread_ui.js",
         "static/js/upload_widget.ts",
@@ -204,10 +205,12 @@ EXEMPT_FILES = make_set(
         "static/js/user_group_create_members.js",
         "static/js/user_group_create_members_data.js",
         "static/js/user_group_edit.js",
+        "static/js/user_group_edit_members.js",
         "static/js/user_group_ui_updates.js",
         "static/js/user_groups_settings_ui.js",
         "static/js/user_profile.js",
         "static/js/user_settings.ts",
+        "static/js/user_status.js",
         "static/js/user_status_ui.js",
         "static/js/webpack_public_path.js",
         "static/js/zcommand.js",
@@ -397,7 +400,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
     coverage_lost = False
     for relative_path in enforce_fully_covered:
         path = ROOT_DIR + "/" + relative_path
-        if not (path in coverage_json):
+        if path not in coverage_json:
             coverage_lost = True
             print_error(f"{relative_path} has no node test coverage")
             continue

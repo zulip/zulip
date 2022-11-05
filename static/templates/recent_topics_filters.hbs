@@ -1,4 +1,12 @@
 <button data-filter="all" type="button" class="btn btn-default btn-recent-filters">{{t 'All' }}</button>
+<button data-filter="include_private" type="button" class="btn btn-default btn-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="true">
+    {{#if filter_pm}}
+    <i class="fa fa-check-square-o"></i>
+    {{else}}
+    <i class="fa fa-square-o"></i>
+    {{/if}}
+    {{t 'Include PMs' }}
+</button>
 <button data-filter="include_muted" type="button" class="btn btn-default btn-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="false">
     {{#if filter_muted }}
     <i class="fa fa-check-square-o"></i>

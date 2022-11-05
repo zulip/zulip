@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_filter_topics from "../templates/filter_topics.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_subheader from "../templates/streams_subheader.hbs";
@@ -14,6 +15,7 @@ import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
@@ -234,7 +236,7 @@ export function update_subscribe_to_more_streams_link() {
         render_subscribe_to_more_streams({
             can_subscribe_stream_count,
             can_create_streams,
-            exactly_one_unsusbcribed_stream: can_subscribe_stream_count === 1,
+            exactly_one_unsubscribed_stream: can_subscribe_stream_count === 1,
         }),
     );
 }
@@ -264,13 +266,24 @@ export function zoom_in_topics(options) {
 
         if (stream_id_for_elt($elt) === stream_id) {
             $elt.show();
+            // Add search box for topics list.
+            $elt.children("div.bottom_left_row").append(render_filter_topics());
+            $("#filter-topic-input").trigger("focus");
+            $("#clear_search_topic_button").hide();
         } else {
             $elt.hide();
         }
     });
+
+    // we also need to hide the PM section and allow
+    // stream list to take complete left-sidebar in zoomedIn view.
+    $(".private_messages_container").hide();
 }
 
 export function zoom_out_topics() {
+    // Show PM section
+    $(".private_messages_container").show();
+
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
@@ -281,6 +294,8 @@ export function zoom_out_topics() {
 
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
+    // Remove search box for topics list from DOM.
+    $(".filter-topics").remove();
 }
 
 export function set_in_home_view(stream_id, in_home) {
@@ -599,16 +614,33 @@ export function set_event_handlers() {
             toggle_filter_displayed(e);
         });
 
+    function toggle_pm_header_icon() {
+        if (pm_list.is_private_messages_collapsed()) {
+            return;
+        }
+
+        const scroll_position = $(
+            "#left_sidebar_scroll_container .simplebar-content-wrapper",
+        ).scrollTop();
+        const pm_list_height = $("#private_messages_list").height();
+        if (scroll_position > pm_list_height) {
+            $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
+            $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
+        } else {
+            $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
+            $("#toggle_private_messages_section_icon").removeClass("fa-caret-right");
+        }
+    }
+
     // check for user scrolls on streams list for first time
-    ui.get_scroll_element($("#stream-filters-container")).on("scroll", function () {
+    ui.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
         has_scrolled = true;
-        // remove listener once user has scrolled
-        $(this).off("scroll");
+        toggle_pm_header_icon();
     });
 
     stream_cursor = new ListCursor({
         list: {
-            scroll_container_sel: "#stream-filters-container",
+            scroll_container_sel: "#left_sidebar_scroll_container",
             find_li(opts) {
                 const stream_id = opts.key;
                 const li = get_stream_li(stream_id);
@@ -722,14 +754,14 @@ export function toggle_filter_displayed(e) {
 }
 
 export function scroll_stream_into_view($stream_li) {
-    const $container = $("#stream-filters-container");
+    const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-
-    scroll_util.scroll_element_into_container($stream_li, $container);
+    const stream_header_height = $("#streams_header").outerHeight();
+    scroll_util.scroll_element_into_container($stream_li, $container, stream_header_height);
 }
 
 export function maybe_scroll_narrow_into_view() {

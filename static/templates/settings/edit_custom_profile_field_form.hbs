@@ -24,7 +24,7 @@
     {{#if is_external_account_field}}
     <div class="input-group profile_field_external_accounts_edit">
         <label for="external_acc_field_type">{{t "External account type" }}</label>
-        <select name="external_acc_field_type">
+        <select name="external_acc_field_type" disabled>
             {{#each ../realm_default_external_accounts}}
                 <option value='{{@key}}'>{{this.text}}</option>
             {{/each}}
@@ -35,6 +35,15 @@
         <label for="url_pattern">{{t "URL pattern" }}</label>
         <input type="url" name="url_pattern" autocomplete="off" maxlength="80" />
     </div>
+    {{/if}}
+    {{#if valid_to_display_in_summary}}
+        <div class="input-group">
+            <label class="checkbox edit_profile_field_display_label" for="edit_display_in_profile_summary_{{id}}">
+                <input class="edit_display_in_profile_summary" type="checkbox" id="edit_display_in_profile_summary_{{id}}" name="display_in_profile_summary" {{#if display_in_profile_summary}} checked="checked" {{/if}}/>
+                <span></span>
+                {{t 'Display in profile summary' }}
+            </label>
+        </div>
     {{/if}}
 </form>
 {{/with}}

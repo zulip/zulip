@@ -29,8 +29,8 @@ export function update_page(property) {
     let value = realm_user_settings_defaults[property];
 
     // settings_org.set_input_element_value doesn't support radio
-    // button widgets like this one.
-    if (property === "emojiset") {
+    // button widgets like these.
+    if (property === "emojiset" || property === "user_list_style") {
         $container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
         return;
     }

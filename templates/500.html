@@ -1,5 +1,9 @@
 {% extends "zerver/portico.html" %}
 
+{% block title %}
+<title>{{ _("Internal server error") }} | Zulip</title>
+{% endblock %}
+
 {% block customhead %}
 {{ super() }}
 <meta http-equiv="refresh" content="60;URL='/'" />
@@ -14,12 +18,36 @@
             <img src="/static/images/errors/500art.svg" alt=""/>
             <div class="errorbox">
                 <div class="errorcontent">
-                    <h1 class="lead">Internal server error</h1>
-                    <p>This Zulip server is currently experiencing some technical difficulties. Sorry about that!</p>
-                    <p>The page will reload automatically soon after service is restored.</p>
-                    <p>If you'd like, you can <a href="mailto:{{ support_email }}?Subject=500%20error%20on%20%7Bwhich%20URL%3F%7D&Body=Hi%20there%21%0A%0AI%20was%20trying%20to%20do%20%7Bwhat%20were%20you%20trying%20to%20do%3F%7D%20at%20around%20%7Bwhen%20was%20this%3F%7D%20when%20I%20got%20a%20500%20error%20while%20accessing%20%7Bwhich%20URL%3F%7D.%0A%0AThanks!%0A%0ASincerely%2C%20%0A%0A%7BYour%20name%7D">drop us a line</a> to let us know what happened.</p>
+                    <h1 class="lead">{{ _("Internal server error") }}</h1>
+                    <p>
+                        {% trans %}
+                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.
+                        {% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}
+                        This page will reload automatically when service is restored.
+                        {% endtrans %}
+                        {% if corporate_enabled %}
+                            {% trans %}
+                            In the meantime, you can <a href="mailto:{{support_email}}">contact Zulip support</a>.
+                            {% endtrans %}
+                        {% else %}
+                            {% trans %}
+                            In the meantime, you can <a href="mailto:{{support_email}}">contact
+                            this server's administrators</a> for support.
+                            {% endtrans %}
+                        {% endif %}
+                    </p>
+                    {% if not corporate_enabled %}
+                        <p>
+                            {% trans troubleshooting_url="https://zulip.readthedocs.io/en/latest/production/troubleshooting.html" %}
+                            If you administer this server, you may want to check out the
+                            <a href="{{troubleshooting_url}}">Zulip server troubleshooting guide</a>.
+                            {% endtrans %}
+                        </p>
+                    {% endif %}
                 </div>
-
             </div>
         </div>
     </div>

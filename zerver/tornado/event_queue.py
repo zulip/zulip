@@ -6,6 +6,7 @@ import os
 import random
 import time
 import traceback
+import uuid
 from collections import deque
 from dataclasses import asdict
 from functools import lru_cache
@@ -43,6 +44,7 @@ from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
+from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import (
@@ -93,6 +95,7 @@ class ClientDescriptor:
         bulk_message_deletion: bool = False,
         stream_typing_notifications: bool = False,
         user_settings_object: bool = False,
+        pronouns_field_type_supported: bool = True,
     ) -> None:
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
@@ -116,6 +119,7 @@ class ClientDescriptor:
         self.bulk_message_deletion = bulk_message_deletion
         self.stream_typing_notifications = stream_typing_notifications
         self.user_settings_object = user_settings_object
+        self.pronouns_field_type_supported = pronouns_field_type_supported
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -143,6 +147,7 @@ class ClientDescriptor:
             bulk_message_deletion=self.bulk_message_deletion,
             stream_typing_notifications=self.stream_typing_notifications,
             user_settings_object=self.user_settings_object,
+            pronouns_field_type_supported=self.pronouns_field_type_supported,
         )
 
     def __repr__(self) -> str:
@@ -175,6 +180,7 @@ class ClientDescriptor:
             d.get("bulk_message_deletion", False),
             d.get("stream_typing_notifications", False),
             d.get("user_settings_object", False),
+            d.get("pronouns_field_type_supported", True),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -428,8 +434,6 @@ realm_clients_all_streams: Dict[int, List[ClientDescriptor]] = {}
 # that is about to be deleted
 gc_hooks: List[Callable[[int, ClientDescriptor, bool], None]] = []
 
-next_queue_id = 0
-
 
 def clear_client_event_queues_for_testing() -> None:
     assert settings.TEST_SUITE
@@ -437,19 +441,25 @@ def clear_client_event_queues_for_testing() -> None:
     user_clients.clear()
     realm_clients_all_streams.clear()
     gc_hooks.clear()
-    global next_queue_id
-    next_queue_id = 0
 
 
 def add_client_gc_hook(hook: Callable[[int, ClientDescriptor, bool], None]) -> None:
     gc_hooks.append(hook)
 
 
-def get_client_descriptor(queue_id: str) -> ClientDescriptor:
-    try:
-        return clients[queue_id]
-    except KeyError:
-        raise BadEventQueueIdError(queue_id)
+def access_client_descriptor(user_id: int, queue_id: str) -> ClientDescriptor:
+    client = clients.get(queue_id)
+    if client is not None:
+        if user_id == client.user_profile_id:
+            return client
+        logging.warning(
+            "User %d is not authorized for queue %s (%d via %s)",
+            user_id,
+            queue_id,
+            client.user_profile_id,
+            client.current_client_name,
+        )
+    raise BadEventQueueIdError(queue_id)
 
 
 def get_client_descriptors_for_user(user_profile_id: int) -> List[ClientDescriptor]:
@@ -467,9 +477,7 @@ def add_to_client_dicts(client: ClientDescriptor) -> None:
 
 
 def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> ClientDescriptor:
-    global next_queue_id
-    queue_id = str(settings.SERVER_GENERATION) + ":" + str(next_queue_id)
-    next_queue_id += 1
+    queue_id = str(uuid.uuid4())
     new_queue_data["event_queue"] = EventQueue(queue_id).to_dict()
     client = ClientDescriptor.from_dict(new_queue_data)
     clients[queue_id] = client
@@ -649,9 +657,7 @@ def fetch_events(
         else:
             if last_event_id is None:
                 raise JsonableError(_("Missing 'last_event_id' argument"))
-            client = get_client_descriptor(queue_id)
-            if user_profile_id != client.user_profile_id:
-                raise JsonableError(_("You are not authorized to get events from this queue"))
+            client = access_client_descriptor(user_profile_id, queue_id)
             if (
                 client.event_queue.newest_pruned_id is not None
                 and last_event_id < client.event_queue.newest_pruned_id
@@ -1181,6 +1187,25 @@ def process_message_update_event(
                 client.add_event(user_event)
 
 
+def process_custom_profile_fields_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    pronouns_type_unsupported_fields = copy.deepcopy(event["fields"])
+    for field in pronouns_type_unsupported_fields:
+        if field["type"] == CustomProfileField.PRONOUNS:
+            field["type"] = CustomProfileField.SHORT_TEXT
+
+    pronouns_type_unsupported_event = dict(
+        type="custom_profile_fields", fields=pronouns_type_unsupported_fields
+    )
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(event):
+                if not client.pronouns_field_type_supported:
+                    client.add_event(pronouns_type_unsupported_event)
+                    continue
+                client.add_event(event)
+
+
 def maybe_enqueue_notifications_for_message_update(
     user_notifications_data: UserMessageNotificationsData,
     message_id: int,
@@ -1313,6 +1338,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_deletion_event(event, user_ids)
     elif event["type"] == "presence":
         process_presence_event(event, cast(List[int], users))
+    elif event["type"] == "custom_profile_fields":
+        process_custom_profile_fields_event(event, cast(List[int], users))
     else:
         process_event(event, cast(List[int], users))
     logging.debug(

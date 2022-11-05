@@ -55,10 +55,18 @@ def render_stats(
     analytics_ready: bool = True,
 ) -> HttpResponse:
     assert request.user.is_authenticated
+
+    # Same query to get guest user count as in get_seat_count in corporate/lib/stripe.py.
+    guest_users = UserProfile.objects.filter(
+        realm=request.user.realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
+    ).count()
+
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
         remote=remote,
+        upload_space_used=request.user.realm.currently_used_upload_space_bytes(),
+        guest_users=guest_users,
     )
 
     request_language = get_and_set_request_language(

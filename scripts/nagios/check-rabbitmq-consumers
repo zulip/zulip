@@ -19,7 +19,7 @@ states = {
     3: "UNKNOWN",
 }
 
-if "USER" in os.environ and not os.environ["USER"] in ["root", "rabbitmq"]:
+if "USER" in os.environ and os.environ["USER"] not in ["root", "rabbitmq"]:
     print("This script must be run as the root or rabbitmq user")
 
 

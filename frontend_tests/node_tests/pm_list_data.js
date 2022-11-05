@@ -8,7 +8,6 @@ const {run_test} = require("../zjsunit/test");
 const unread = mock_esm("../../static/js/unread");
 
 mock_esm("../../static/js/user_status", {
-    is_away: () => false,
     get_status_emoji: () => ({
         emoji_code: 20,
     }),
@@ -110,8 +109,8 @@ function get_list_info(zoomed) {
 test("get_conversations", ({override}) => {
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
     pm_conversations.recent.insert([me.user_id], 2);
-    let num_unread_for_person = 1;
-    override(unread, "num_unread_for_person", () => num_unread_for_person);
+    let num_unread_for_user_ids_string = 1;
+    override(unread, "num_unread_for_user_ids_string", () => num_unread_for_user_ids_string);
 
     assert.equal(narrow_state.filter(), undefined);
 
@@ -122,7 +121,7 @@ test("get_conversations", ({override}) => {
             is_zero: false,
             recipients: "Me Myself",
             unread: 1,
-            url: "#narrow/pm-with/103-me",
+            url: "#narrow/pm-with/103-Me-Myself",
             user_circle_class: "user_circle_empty",
             user_ids_string: "103",
             status_emoji_info: {
@@ -145,7 +144,7 @@ test("get_conversations", ({override}) => {
     let pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 
-    num_unread_for_person = 0;
+    num_unread_for_user_ids_string = 0;
 
     pm_data = pm_list_data.get_conversations();
     expected_data[0].unread = 0;
@@ -162,7 +161,7 @@ test("get_conversations bot", ({override}) => {
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
     pm_conversations.recent.insert([bot_test.user_id], 2);
 
-    override(unread, "num_unread_for_person", () => 1);
+    override(unread, "num_unread_for_user_ids_string", () => 1);
 
     assert.equal(narrow_state.filter(), undefined);
 
@@ -173,7 +172,7 @@ test("get_conversations bot", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
-            url: "#narrow/pm-with/314-outgoingwebhook",
+            url: "#narrow/pm-with/314-Outgoing-webhook",
             status_emoji_info: undefined,
             user_circle_class: "user_circle_green",
             is_group: false,
@@ -259,8 +258,8 @@ test("get_list_info", ({override}) => {
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     // Mock to arrange that each user has exactly 1 unread.
-    const num_unread_for_person = 1;
-    override(unread, "num_unread_for_person", () => num_unread_for_person);
+    const num_unread_for_user_ids_string = 1;
+    override(unread, "num_unread_for_user_ids_string", () => num_unread_for_user_ids_string);
 
     // Initially, we append 2 conversations and check for the
     // `conversations_to_be_shown` returned in list_info.
@@ -278,7 +277,7 @@ test("get_list_info", ({override}) => {
                 emoji_code: 20,
             },
             unread: 1,
-            url: "#narrow/pm-with/103-me",
+            url: "#narrow/pm-with/103-Me-Myself",
             user_circle_class: "user_circle_empty",
             user_ids_string: "103",
         },
@@ -402,7 +401,7 @@ test("get_list_info", ({override}) => {
     );
 
     // We now test some no unreads cases.
-    override(unread, "num_unread_for_person", () => 0);
+    override(unread, "num_unread_for_user_ids_string", () => 0);
     pm_conversations.clear_for_testing();
     pm_conversations.recent.insert([alice.user_id], 1);
     pm_conversations.recent.insert([bob.user_id], 2);
@@ -429,7 +428,7 @@ test("get_list_info", ({override}) => {
         unread: 0,
         is_zero: true,
         is_active: true,
-        url: "#narrow/pm-with/101-alice",
+        url: "#narrow/pm-with/101-Alice",
         status_emoji_info: {emoji_code: 20},
         user_circle_class: "user_circle_empty",
         is_group: false,

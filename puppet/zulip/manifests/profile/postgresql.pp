@@ -47,7 +47,7 @@ class zulip::profile::postgresql {
           |-EOT
       warning($message)
     }
-    if $zulip::postgresql_common::version in ['10', '11'] {
+    if $zulip::postgresql_common::version in ['11'] {
       # PostgreSQL 11 and below used a recovery.conf file for replication
       file { "${zulip::postgresql_base::postgresql_datadir}/recovery.conf":
         ensure  => file,

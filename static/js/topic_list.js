@@ -1,7 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_filter_topics from "../templates/filter_topics.hbs";
 import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
@@ -117,25 +116,12 @@ export function spinner_li() {
     };
 }
 
-function filter_topics_li() {
-    const eq = (other) => other.filter_topics;
-
-    return {
-        key: "filter",
-        filter_topics: true,
-        render: render_filter_topics,
-        eq,
-    };
-}
-
 export class TopicListWidget {
     prior_dom = undefined;
 
     constructor($parent_elem, my_stream_id) {
         this.$parent_elem = $parent_elem;
         this.my_stream_id = my_stream_id;
-        this.topic_search_text = "";
-        this.topic_search_focused_before_build = true;
     }
 
     build_list(spinner) {
@@ -158,10 +144,6 @@ export class TopicListWidget {
             nodes.push(spinner_li());
         } else if (!is_showing_all_possible_topics) {
             nodes.push(more_li(more_topics_unreads, more_topics_have_unread_mention_messages));
-        } else if (zoomed) {
-            // In the zoomed topic view, we need to add the input
-            // for filtering through list of topics.
-            nodes.unshift(filter_topics_li());
         }
 
         const dom = vdom.ul({
@@ -180,50 +162,7 @@ export class TopicListWidget {
         return this.my_stream_id;
     }
 
-    update_topic_search_text(text) {
-        this.topic_search_text = text;
-    }
-
-    update_topic_search_input() {
-        const $input = this.$parent_elem.find("#filter-topic-input");
-        if ($input.length) {
-            // Restore topic search text saved in remove()
-            // after the element was rerendered.
-            $input.val(this.topic_search_text);
-            if (this.topic_search_focused_before_build) {
-                // Don't focus topic search if it wasn't focused before.
-                // This avoids unwanted change of focus.
-                $input.trigger("focus");
-            }
-
-            // set up display of clear(x) button.
-            if (this.topic_search_text.length) {
-                $("#clear_search_topic_button").show();
-            } else {
-                $("#clear_search_topic_button").hide();
-            }
-
-            // set up event handlers.
-            const rebuild_list = () => this.build();
-            $input.on("input", rebuild_list);
-        }
-    }
-
     remove() {
-        // If text was present in the topic search filter, we store
-        // the input value lazily before removing old elements.  This
-        // is a workaround for the quirk that the filter input is part
-        // of the region that we rerender.
-        const $input = this.$parent_elem.find("#filter-topic-input");
-        if ($input.length) {
-            this.update_topic_search_text($input.val());
-            // Only set focus on search input if it was focused before the update.
-            this.topic_search_focused_before_build =
-                document.activeElement.id === "filter-topic-input";
-        } else {
-            // Clear the topic search input when zooming out.
-            this.update_topic_search_text("");
-        }
         this.$parent_elem.find(".topic-list").remove();
         this.prior_dom = undefined;
     }
@@ -234,7 +173,6 @@ export class TopicListWidget {
         const replace_content = (html) => {
             this.remove();
             this.$parent_elem.append(html);
-            this.update_topic_search_input();
         };
 
         const find = () => this.$parent_elem.find(".topic-list");
@@ -242,6 +180,12 @@ export class TopicListWidget {
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
         this.prior_dom = new_dom;
+
+        if ($("#filter-topic-input").val() !== "") {
+            $("#clear_search_topic_button").show();
+        } else {
+            $("#clear_search_topic_button").hide();
+        }
     }
 }
 
@@ -331,7 +275,7 @@ export function zoom_in() {
         active_widget.build();
     }
 
-    ui.get_scroll_element($("#stream-filters-container")).scrollTop(0);
+    ui.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
 
     const spinner = true;
     active_widget.build(spinner);
@@ -373,5 +317,9 @@ export function initialize() {
         );
 
         e.preventDefault();
+    });
+
+    $("body").on("input", "#filter-topic-input", () => {
+        active_widgets.get(active_stream_id()).build();
     });
 }

@@ -86,9 +86,9 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
     url += hash_util.build_reload_url();
 
+    // Delete unused states that have been around for a while.
     const ls = localstorage();
-    // Delete all the previous preserved states.
-    ls.removeRegex("reload:\\d+");
+    delete_stale_tokens(ls);
 
     // To protect the browser against CSRF type attacks, the reload
     // logic uses a random token (to distinct this browser from
@@ -99,9 +99,38 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     // TODO: Remove the now-unnecessary URL-encoding logic above and
     // just pass the actual data structures through local storage.
     const token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
-
-    ls.set("reload:" + token, url);
+    const metadata = {
+        url,
+        timestamp: Date.now(),
+    };
+    ls.set("reload:" + token, metadata);
     window.location.replace("#reload:" + token);
+}
+
+export function is_stale_refresh_token(token_metadata, now) {
+    // TODO/compatibility: the metadata was changed from a string
+    // to a map containing the string and a timestamp. For now we'll
+    // delete all tokens that only contain the url. Remove this
+    // early return once you can no longer directly upgrade from
+    // Zulip 5.x to the current version.
+    if (!token_metadata.timestamp) {
+        return true;
+    }
+
+    // The time between reload token generation and use should usually be
+    // fewer than 30 seconds, but we keep tokens around for a week just in case
+    // (e.g. a tab could fail to load and be refreshed a while later).
+    const milliseconds_in_a_day = 1000 * 60 * 60 * 24;
+    const timedelta = now - token_metadata.timestamp;
+    const days_since_token_creation = timedelta / milliseconds_in_a_day;
+    return days_since_token_creation > 7;
+}
+
+function delete_stale_tokens(ls) {
+    const now = Date.now();
+    ls.removeDataRegexWithCondition("reload:\\d+", (metadata) =>
+        is_stale_refresh_token(metadata, now),
+    );
 }
 
 // Check if we're doing a compose-preserving reload.  This must be
@@ -129,7 +158,12 @@ export function initialize() {
     }
     ls.remove(hash_fragment);
 
-    [, fragment] = /^#reload:(.*)/.exec(fragment);
+    // TODO/compatibility: `fragment` was changed from a string
+    // to a map containing the string and a timestamp. For now we'll
+    // delete all tokens that only contain the url. Remove the
+    // `|| fragment` once you can no longer directly upgrade
+    // from Zulip 5.x to the current version.
+    [, fragment] = /^#reload:(.*)/.exec(fragment.url || fragment);
     const keyvals = fragment.split("+");
     const vars = {};
 
@@ -142,12 +176,9 @@ export function initialize() {
         const send_now = Number.parseInt(vars.send_after_reload, 10);
 
         try {
-            // TODO: preserve focus
-            const topic = util.get_reload_topic(vars);
-
             compose_actions.start(vars.msg_type, {
                 stream: vars.stream || "",
-                topic: topic || "",
+                topic: vars.topic || "",
                 private_message_recipient: vars.recipient || "",
                 content: vars.msg || "",
                 draft_id: vars.draft_id || "",

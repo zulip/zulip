@@ -20,6 +20,113 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 154**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
+  When the process of deleting messages times out, a success response
+  with "partially_completed" result will now be returned by the server,
+  analogically to the `/mark_all_as_read` endpoint.
+
+**Feature level 153**
+
+* [`POST /mark_all_as_read`](/api/mark-all-as-read): Messages are now
+  marked as read in batches, so that progress will be made even if the
+  request times out because of an extremely large number of unread
+  messages to process. Upon timeout, a success response with a
+  "partially_completed" result will be returned by the server.
+
+**Feature level 152**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): The
+  `send_notification_to_old_thread` and
+  `send_notification_to_new_thread` parameters are now respected when
+  moving a topic within a stream.
+
+**Feature level 151**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added
+  pronouns custom profile field type.
+
+**Feature level 150**
+
+* [`GET /events`](/api/get-events): Separate events are now sent on changing
+  `allow_message_editing`, `message_content_edit_limit_seconds` and
+  `edit_topic_policy` settings, whereas previously one event was sent including
+  all of these setting values irrespective of which of them were actually changed.
+* [`PATCH /realm`]: Only changed settings are included in the response data now
+  when changing `allow_message_editing`, `edit_topic_policy` and
+  `message_content_edit_limit_seconds` settings, instead of including all the
+  fields even if one of these settings was changed.
+
+**Feature level 149**
+
+* [`POST /register`](/api/register-queue): The `client_gravatar` and
+  `include_subscribers` parameters now return an error for
+  [unauthenticated requests](/help/public-access-option) if an
+  unsupported value is requested by the client.
+
+**Feature level 148**
+
+* [`POST /users/me/status`](/api/update-status):
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  The user status `away` field/parameter is deprecated, and as of this
+  feature level are a legacy way to access the user's `presence_enabled`
+  setting, with `away = !presence_enabled`. To be removed in a future
+  release.
+
+**Feature level 147**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
+  Messages now are deleted in batches, starting from the newest, so
+  that progress will be made even if the request times out because of
+  an extremely large topic.
+
+**Feature level 146**
+
+* [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+[`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a
+new parameter `display_in_profile_summary`, which clients use to
+decide whether to display the field in a small/summary section of the
+user's profile.
+
+**Feature level 145**
+
+* [`DELETE users/me/subscriptions`](/api/unsubscribe): Normal users can
+  now remove bots that they own from streams.
+
+**Feature level 144**
+
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  The `user_ids` array returned by the server no longer includes IDs
+  of users who have been muted by or have muted the current user.
+
+**Feature level 143**
+
+* `PATCH /realm`: The `disallow_disposable_email_addresses`,
+  `emails_restricted_to_domains`, `invite_required`, and
+  `waiting_period_threshold` settings can no longer be changed by
+  organization administrators who are not owners.
+* `PATCH /realm/domains`, `POST /realm/domains`, `DELETE
+  /realm/domains`: Organization administrators who are not owners can
+  no longer access these endpoints.
+
+**Feature level 142**
+
+* [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
+  /streams`](/api/get-streams), [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_remove_subscribers_group_id`
+  field to Stream and Subscription objects.
+
+**Feature level 141**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `user_list_style` display setting, which controls the
+  layout of the right sidebar.
+
 **Feature level 140**
 
 * [`POST /register`](/api/register-queue): Added string field `server_emoji_data_url`

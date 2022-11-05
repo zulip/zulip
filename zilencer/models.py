@@ -1,6 +1,4 @@
-import datetime
 from typing import List, Tuple
-from uuid import UUID
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -31,25 +29,25 @@ class RemoteZulipServer(models.Model):
 
     # The unique UUID (`zulip_org_id`) and API key (`zulip_org_key`)
     # for this remote server registration.
-    uuid: UUID = models.UUIDField(unique=True)
-    api_key: str = models.CharField(max_length=API_KEY_LENGTH)
+    uuid = models.UUIDField(unique=True)
+    api_key = models.CharField(max_length=API_KEY_LENGTH)
 
     # The hostname and contact details are not verified/trusted. Thus,
     # they primarily exist so that we can communicate with the
     # maintainer of a server about abuse problems.
-    hostname: str = models.CharField(max_length=HOSTNAME_MAX_LENGTH)
-    contact_email: str = models.EmailField(blank=True, null=False)
-    last_updated: datetime.datetime = models.DateTimeField("last updated", auto_now=True)
+    hostname = models.CharField(max_length=HOSTNAME_MAX_LENGTH)
+    contact_email = models.EmailField(blank=True, null=False)
+    last_updated = models.DateTimeField("last updated", auto_now=True)
 
     # Whether the server registration has been deactivated.
-    deactivated: bool = models.BooleanField(default=False)
+    deactivated = models.BooleanField(default=False)
 
     # Plan types for self-hosted customers
     PLAN_TYPE_SELF_HOSTED = 1
     PLAN_TYPE_STANDARD = 102
 
     # The current billing plan for the remote server, similar to Realm.plan_type.
-    plan_type: int = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
+    plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     def __str__(self) -> str:
         return f"<RemoteZulipServer {self.hostname} {str(self.uuid)[0:12]}>"
@@ -61,10 +59,10 @@ class RemoteZulipServer(models.Model):
 class RemotePushDeviceToken(AbstractPushDeviceToken):
     """Like PushDeviceToken, but for a device connected to a remote server."""
 
-    server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
     # The user id on the remote server for this device
-    user_id: int = models.BigIntegerField(null=True)
-    user_uuid: UUID = models.UUIDField(null=True)
+    user_id = models.BigIntegerField(null=True)
+    user_uuid = models.UUIDField(null=True)
 
     class Meta:
         unique_together = [
@@ -90,7 +88,7 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
     authoritative storage location for the server's history.
     """
 
-    server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return f"<RemoteZulipServerAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
@@ -101,19 +99,19 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     billing.  See RealmAuditLog and AbstractRealmAuditLog for details.
     """
 
-    server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id: int = models.IntegerField(db_index=True)
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+    realm_id = models.IntegerField(db_index=True)
     # The remote_id field lets us deduplicate data from the remote server
-    remote_id: int = models.IntegerField(db_index=True)
+    remote_id = models.IntegerField(db_index=True)
 
     def __str__(self) -> str:
         return f"<RemoteRealmAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
 
 
 class RemoteInstallationCount(BaseCount):
-    server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
     # The remote_id field lets us deduplicate data from the remote server
-    remote_id: int = models.IntegerField(db_index=True)
+    remote_id = models.IntegerField(db_index=True)
 
     class Meta:
         unique_together = ("server", "property", "subgroup", "end_time")
@@ -127,10 +125,10 @@ class RemoteInstallationCount(BaseCount):
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
 class RemoteRealmCount(BaseCount):
-    server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id: int = models.IntegerField(db_index=True)
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+    realm_id = models.IntegerField(db_index=True)
     # The remote_id field lets us deduplicate data from the remote server
-    remote_id: int = models.IntegerField(db_index=True)
+    remote_id = models.IntegerField(db_index=True)
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")

@@ -17,6 +17,8 @@
 * Customize Zulip for all your needs. It's easy to develop and maintain [custom
   integrations](/api/incoming-webhooks-overview) and [features][modify-zulip].
 
+Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
+
 [zulip-github]: https://github.com/zulip/zulip#readme
 [install-zulip]: https://zulip.readthedocs.io/en/latest/production/install.html
 [back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups

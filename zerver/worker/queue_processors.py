@@ -197,7 +197,7 @@ def retry_send_email_failures(
             socket.timeout,
             EmailNotDeliveredException,
         ) as e:
-            error_class_name = e.__class__.__name__
+            error_class_name = type(e).__name__
 
             def on_failure(event: Dict[str, Any]) -> None:
                 logging.exception(
@@ -958,7 +958,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                     bot_handler=self.get_bot_api_client(user_profile),
                 )
             except EmbeddedBotQuitException as e:
-                logging.warning(str(e))
+                logging.warning("%s", e)
 
 
 @assign_queue("deferred_work")
@@ -995,9 +995,11 @@ class DeferredWorker(QueueProcessingWorker):
                 messages = Message.objects.filter(
                     recipient_id=event["stream_recipient_id"]
                 ).order_by("id")[offset : offset + batch_size]
-                UserMessage.objects.filter(message__in=messages).extra(
-                    where=[UserMessage.where_unread()]
-                ).update(flags=F("flags").bitor(UserMessage.flags.read))
+
+                with transaction.atomic(savepoint=False):
+                    UserMessage.select_for_update_query().filter(message__in=messages).extra(
+                        where=[UserMessage.where_unread()]
+                    ).update(flags=F("flags").bitor(UserMessage.flags.read))
                 offset += len(messages)
                 if len(messages) < batch_size:
                     break

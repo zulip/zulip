@@ -38,8 +38,8 @@ export function open_reactions_popover() {
 export function current_user_has_reacted_to_emoji(message, local_id) {
     set_clean_reactions(message);
 
-    const r = message.clean_reactions.get(local_id);
-    return r && r.user_ids.includes(page_params.user_id);
+    const clean_reaction_object = message.clean_reactions.get(local_id);
+    return clean_reaction_object && clean_reaction_object.user_ids.includes(page_params.user_id);
 }
 
 function get_message(message_id) {
@@ -124,9 +124,9 @@ export function process_reaction_click(message_id, local_id) {
         return;
     }
 
-    const r = message.clean_reactions.get(local_id);
+    const clean_reaction_object = message.clean_reactions.get(local_id);
 
-    if (!r) {
+    if (!clean_reaction_object) {
         blueslip.error(
             "Data integrity problem for reaction " + local_id + " (message " + message_id + ")",
         );
@@ -134,9 +134,9 @@ export function process_reaction_click(message_id, local_id) {
     }
 
     const reaction_info = {
-        reaction_type: r.reaction_type,
-        emoji_name: r.emoji_name,
-        emoji_code: r.emoji_code,
+        reaction_type: clean_reaction_object.reaction_type,
+        emoji_name: clean_reaction_object.emoji_name,
+        emoji_code: clean_reaction_object.emoji_code,
     };
 
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
@@ -195,9 +195,9 @@ function generate_title(emoji_name, user_ids) {
 export function get_reaction_title_data(message_id, local_id) {
     const message = get_message(message_id);
 
-    const r = message.clean_reactions.get(local_id);
-    const user_list = r.user_ids;
-    const emoji_name = r.emoji_name;
+    const clean_reaction_object = message.clean_reactions.get(local_id);
+    const user_list = clean_reaction_object.user_ids;
+    const emoji_name = clean_reaction_object.emoji_name;
     const title = generate_title(emoji_name, user_list);
 
     return title;
@@ -221,9 +221,9 @@ export function get_add_reaction_button(message_id) {
     return $add_button;
 }
 
-export function set_reaction_count($reaction, count) {
+export function set_reaction_vote_text($reaction, vote_text) {
     const $count_element = $reaction.find(".message_reaction_count");
-    $count_element.text(count);
+    $count_element.text(vote_text);
 }
 
 export function add_reaction(event) {
@@ -241,87 +241,68 @@ export function add_reaction(event) {
 
     const local_id = get_local_reaction_id(event);
     const user_id = event.user_id;
-
-    const r = message.clean_reactions.get(local_id);
-
-    if (r && r.user_ids.includes(user_id)) {
+    let clean_reaction_object = message.clean_reactions.get(local_id);
+    if (clean_reaction_object && clean_reaction_object.user_ids.includes(user_id)) {
         return;
     }
 
-    if (r) {
-        r.user_ids.push(user_id);
-        update_user_fields(r);
+    if (clean_reaction_object) {
+        clean_reaction_object.user_ids.push(user_id);
+        update_user_fields(clean_reaction_object, message.clean_reactions);
+        view.update_existing_reaction(clean_reaction_object, message, user_id);
     } else {
-        message.clean_reactions.set(
+        clean_reaction_object = make_clean_reaction({
             local_id,
-            make_clean_reaction({
-                local_id,
-                user_ids: [user_id],
-                reaction_type: event.reaction_type,
-                emoji_name: event.emoji_name,
-                emoji_code: event.emoji_code,
-            }),
-        );
-    }
+            user_ids: [user_id],
+            reaction_type: event.reaction_type,
+            emoji_name: event.emoji_name,
+            emoji_code: event.emoji_code,
+        });
 
-    const opts = {
-        message_id,
-        reaction_type: event.reaction_type,
-        emoji_name: event.emoji_name,
-        emoji_code: event.emoji_code,
-        user_id,
-    };
-
-    if (r) {
-        opts.user_list = r.user_ids;
-        view.update_existing_reaction(opts);
-    } else {
-        view.insert_new_reaction(opts);
+        message.clean_reactions.set(local_id, clean_reaction_object);
+        update_user_fields(clean_reaction_object, message.clean_reactions);
+        view.insert_new_reaction(clean_reaction_object, message, user_id);
     }
 }
 
-view.update_existing_reaction = function ({
-    message_id,
-    emoji_name,
-    user_list,
-    user_id,
-    reaction_type,
-    emoji_code,
-}) {
+view.update_existing_reaction = function (clean_reaction_object, message, acting_user_id) {
     // Our caller ensures that this message already has a reaction
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
-    const local_id = get_local_reaction_id({reaction_type, emoji_code});
-    const $reaction = find_reaction(message_id, local_id);
+    const local_id = get_local_reaction_id(clean_reaction_object);
+    const $reaction = find_reaction(message.id, local_id);
 
-    set_reaction_count($reaction, user_list.length);
-
-    const new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
     $reaction.attr("aria-label", new_label);
 
-    if (user_id === page_params.user_id) {
+    if (acting_user_id === page_params.user_id) {
         $reaction.addClass("reacted");
     }
+
+    update_vote_text_on_message(message);
 };
 
-view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_code, reaction_type}) {
+view.insert_new_reaction = function (clean_reaction_object, message, user_id) {
     // Our caller ensures we are the first user to react to this
-    // message with this emoji, and it populates user_list for
-    // us.  We then render the emoji/title/count and insert it
-    // before the add button.
-
-    const user_list = [user_id];
+    // message with this emoji. We then render the emoji/title/count
+    // and insert it before the add button.
 
     const context = {
-        message_id,
-        ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
+        message_id: message.id,
+        ...emoji.get_emoji_details_for_rendering(clean_reaction_object),
     };
 
-    const new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
 
     context.count = 1;
     context.label = new_label;
-    context.local_id = get_local_reaction_id({reaction_type, emoji_code});
+    context.local_id = get_local_reaction_id(clean_reaction_object);
     context.emoji_alt_code = user_settings.emojiset === "text";
     context.is_realm_emoji =
         context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
@@ -335,14 +316,13 @@ view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_cod
     const $new_reaction = $(render_message_reaction(context));
 
     // Now insert it before the add button.
-    const $reaction_button_element = get_add_reaction_button(message_id);
+    const $reaction_button_element = get_add_reaction_button(message.id);
     $new_reaction.insertBefore($reaction_button_element);
+
+    update_vote_text_on_message(message);
 };
 
 export function remove_reaction(event) {
-    const reaction_type = event.reaction_type;
-    const emoji_name = event.emoji_name;
-    const emoji_code = event.emoji_code;
     const message_id = event.message_id;
     const user_id = event.user_id;
     const message = message_store.get(message_id);
@@ -357,65 +337,53 @@ export function remove_reaction(event) {
 
     set_clean_reactions(message);
 
-    const r = message.clean_reactions.get(local_id);
+    const clean_reaction_object = message.clean_reactions.get(local_id);
 
-    if (!r) {
+    if (!clean_reaction_object) {
         return;
     }
 
-    if (!r.user_ids.includes(user_id)) {
+    if (!clean_reaction_object.user_ids.includes(user_id)) {
         return;
     }
 
-    r.user_ids = r.user_ids.filter((id) => id !== user_id);
-    if (r.user_ids.length > 0) {
-        update_user_fields(r);
-    } else {
+    clean_reaction_object.user_ids = clean_reaction_object.user_ids.filter((id) => id !== user_id);
+    if (clean_reaction_object.user_ids.length === 0) {
         message.clean_reactions.delete(local_id);
     }
 
-    view.remove_reaction({
-        message_id,
-        reaction_type,
-        emoji_name,
-        emoji_code,
-        user_list: r.user_ids,
-        user_id,
-    });
+    const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+    update_user_fields(clean_reaction_object, should_display_reactors);
+
+    view.remove_reaction(clean_reaction_object, message, user_id);
 }
 
-view.remove_reaction = function ({
-    message_id,
-    emoji_name,
-    user_list,
-    user_id,
-    reaction_type,
-    emoji_code,
-}) {
-    const local_id = get_local_reaction_id({reaction_type, emoji_code});
-    const $reaction = find_reaction(message_id, local_id);
+view.remove_reaction = function (clean_reaction_object, message, user_id) {
+    const local_id = get_local_reaction_id(clean_reaction_object);
+    const $reaction = find_reaction(message.id, local_id);
+    const reaction_count = clean_reaction_object.user_ids.length;
 
-    if (user_list.length === 0) {
+    if (reaction_count === 0) {
         // If this user was the only one reacting for this emoji, we simply
         // remove the reaction and exit.
         $reaction.remove();
+        update_vote_text_on_message(message);
         return;
     }
 
     // The emoji still has reactions from other users, so we need to update
     // the title/count and, if the user is the current user, turn off the
     // "reacted" class.
-
-    const new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
     $reaction.attr("aria-label", new_label);
-
-    // If the user is the current user, turn off the "reacted" class.
-
-    set_reaction_count($reaction, user_list.length);
-
     if (user_id === page_params.user_id) {
         $reaction.removeClass("reacted");
     }
+
+    update_vote_text_on_message(message);
 };
 
 export function get_emojis_used_by_user_for_message_id(message_id) {
@@ -424,9 +392,9 @@ export function get_emojis_used_by_user_for_message_id(message_id) {
     set_clean_reactions(message);
 
     const names = [];
-    for (const r of message.clean_reactions.values()) {
-        if (r.user_ids.includes(user_id)) {
-            names.push(r.emoji_name);
+    for (const clean_reaction_object of message.clean_reactions.values()) {
+        if (clean_reaction_object.user_ids.includes(user_id)) {
+            names.push(clean_reaction_object.emoji_name);
         }
     }
 
@@ -440,25 +408,32 @@ export function get_message_reactions(message) {
 
 export function set_clean_reactions(message) {
     /*
-        The server sends us a single structure for
-        each reaction, even if two users are reacting
-        with the same emoji.  Our first loop creates
-        a map of distinct reactions and a map of
-        local_id -> user_ids.  The `local_id` is
-        basically a key for the emoji name.
+      set_clean_reactions processes the raw message.reactions object,
+      which will contain one object for each individual reaction, even
+      if two users react with the same emoji.
 
-        Then in our second loop we build a more compact
-        data structure that's easier for our message
-        list view templates to work with.
+      As output, it sets message.cleaned_reactions, which is a more
+      compressed format with one entry per reaction pill that should
+      be displayed visually to users.
     */
 
     if (message.clean_reactions) {
+        // Update display details for the reaction. In particular,
+        // user_settings.display_emoji_reaction_users or the names of
+        // the users appearing in the reaction may have changed since
+        // this reaction was first rendered.
+        const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+        for (const clean_reaction of message.clean_reactions.values()) {
+            update_user_fields(clean_reaction, should_display_reactors);
+        }
         return;
     }
 
+    // This first loop creates a temporary distinct_reactions data
+    // structure, which will accumulate the set of users who have
+    // reacted with each distinct reaction.
     const distinct_reactions = new Map();
     const user_map = new Map();
-
     for (const reaction of message.reactions) {
         const local_id = get_local_reaction_id(reaction);
         const user_id = reaction.user_id;
@@ -485,16 +460,12 @@ export function set_clean_reactions(message) {
         user_ids.push(user_id);
     }
 
-    /*
-        It might feel a little janky to attach clean_reactions
-        directly to the message object, but this allows the
-        server to send us a new copy of the message, and then
-        the next time we try to get reactions from it, we
-        won't have `clean_reactions`, and we will re-process
-        the server's latest copy of the reactions.
-    */
+    // TODO: Rather than adding this field to the message object, it
+    // might be cleaner to create an independent map from message_id
+    // => clean_reactions data for the message, with care being taken
+    // to make sure reify_message_id moves the data structure
+    // properly.
     message.clean_reactions = new Map();
-
     for (const local_id of distinct_reactions.keys()) {
         const reaction = distinct_reactions.get(local_id);
         const user_ids = user_map.get(local_id);
@@ -504,29 +475,109 @@ export function set_clean_reactions(message) {
             make_clean_reaction({local_id, user_ids, ...reaction}),
         );
     }
+
+    // We do update_user_fields in a separate loop, because doing so
+    // lets us avoid duplicating check_should_display_reactors to
+    // determine whether to store in the vote_text field a count or
+    // the names of reactors (users who reacted).
+    const should_display_reactors = check_should_display_reactors(message.clean_reactions);
+    for (const clean_reaction of message.clean_reactions.values()) {
+        update_user_fields(clean_reaction, should_display_reactors);
+    }
+
+    // We don't maintain message.reactions when users react to
+    // messages we already have a copy of, so it's safest to delete it
+    // after we've processed the reactions data for a message into the
+    // clean_reactions data structure, which we do maintain.
+    delete message.reactions;
 }
 
 function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reaction_type}) {
-    const r = {
+    const clean_reaction_object = {
         local_id,
         user_ids,
         ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
     };
-
-    update_user_fields(r);
-
-    r.emoji_alt_code = user_settings.emojiset === "text";
-    r.is_realm_emoji = r.reaction_type === "realm_emoji" || r.reaction_type === "zulip_extra_emoji";
-
-    return r;
+    clean_reaction_object.emoji_alt_code = user_settings.emojiset === "text";
+    clean_reaction_object.is_realm_emoji =
+        clean_reaction_object.reaction_type === "realm_emoji" ||
+        clean_reaction_object.reaction_type === "zulip_extra_emoji";
+    return clean_reaction_object;
 }
 
-export function update_user_fields(r) {
-    r.count = r.user_ids.length;
-    r.label = generate_title(r.emoji_name, r.user_ids);
-    if (r.user_ids.includes(page_params.user_id)) {
-        r.class = "message_reaction reacted";
+export function update_user_fields(clean_reaction_object, should_display_reactors) {
+    // update_user_fields needs to be called whenever the set of users
+    // whor eacted on a message might have changed, including due to
+    // upvote/downvotes on ANY reaction in the message, because those
+    // can change the correct value of should_display_reactors to use.
+    clean_reaction_object.count = clean_reaction_object.user_ids.length;
+    clean_reaction_object.label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
+    if (clean_reaction_object.user_ids.includes(page_params.user_id)) {
+        clean_reaction_object.class = "message_reaction reacted";
     } else {
-        r.class = "message_reaction";
+        clean_reaction_object.class = "message_reaction";
+    }
+
+    clean_reaction_object.count = clean_reaction_object.user_ids.length;
+    clean_reaction_object.label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
+
+    // The vote_text field set here is used directly in the Handlebars
+    // template for rendering (or rerendering!) a message.
+    clean_reaction_object.vote_text = get_vote_text(clean_reaction_object, should_display_reactors);
+}
+
+export function get_vote_text(clean_reaction_object, should_display_reactors) {
+    if (should_display_reactors) {
+        return comma_separated_usernames(clean_reaction_object.user_ids);
+    }
+    return `${clean_reaction_object.user_ids.length}`;
+}
+
+function check_should_display_reactors(cleaned_reactions) {
+    if (!user_settings.display_emoji_reaction_users) {
+        return false;
+    }
+
+    let total_reactions = 0;
+    for (const r of cleaned_reactions.values()) {
+        // r.count is not yet initialized when this is called during
+        // set_clean_reactions.
+        total_reactions += r.count || r.user_ids.length;
+    }
+    return total_reactions <= 3;
+}
+
+function comma_separated_usernames(user_list) {
+    const usernames = people.get_display_full_names(user_list);
+    const current_user_has_reacted = user_list.includes(page_params.user_id);
+
+    if (current_user_has_reacted) {
+        const current_user_index = user_list.indexOf(page_params.user_id);
+        usernames[current_user_index] = $t({
+            defaultMessage: "You",
+        });
+    }
+    const comma_separated_usernames = usernames.join(", ");
+    return comma_separated_usernames;
+}
+
+export function update_vote_text_on_message(message) {
+    // Because whether we display a count or the names of reacting
+    // users depends on total reactions on the message, we need to
+    // recalculate this whenever adjusting reaction rendering on a
+    // message.
+    const cleaned_reactions = get_message_reactions(message);
+    const should_display_reactors = check_should_display_reactors(cleaned_reactions);
+    for (const [reaction, clean_reaction] of message.clean_reactions.entries()) {
+        const reaction_elem = find_reaction(message.id, clean_reaction.local_id);
+        const vote_text = get_vote_text(clean_reaction, should_display_reactors);
+        message.clean_reactions.get(reaction).vote_text = vote_text;
+        set_reaction_vote_text(reaction_elem, vote_text);
     }
 }

@@ -50,7 +50,7 @@ Usage examples:
         for realm in realms:
             # Start with just all the fields on the object, which is
             # hacky but doesn't require any work to maintain.
-            realm_dict = realm.__dict__
+            realm_dict = vars(realm).copy()
             # Remove a field that is confusingly useless
             del realm_dict["_state"]
             # Fix the one bitfield to display useful data

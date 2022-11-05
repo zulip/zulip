@@ -3,7 +3,7 @@ import pwd
 from typing import Dict, Optional, Set, Tuple
 
 from scripts.lib.zulip_tools import deport
-from zerver.lib.types import SCIMConfigDict
+from zproject.settings_types import SCIMConfigDict
 
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 

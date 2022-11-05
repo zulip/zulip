@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function test_mention(page: Page): Promise<void> {
     await common.log_in(page);
@@ -29,8 +29,10 @@ async function test_mention(page: Page): Promise<void> {
     assert.ok(stream_size > threshold);
     await page.click("#compose-send-button");
 
-    await page.waitForXPath(
-        '//*[@class="compose-all-everyone-msg" and contains(text(), "Are you sure you want to mention all")]',
+    await page.waitForSelector(
+        `xpath///*[${common.has_class_x(
+            "compose-all-everyone-msg",
+        )} and contains(text(), "Are you sure you want to mention all")]`,
     );
     await page.click(".compose-all-everyone-confirm");
     await page.waitForSelector(".compose-all-everyone-msg", {hidden: true});

@@ -1,9 +1,11 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-{% block title %}
-<title>Zulip for communities</title>
-{% endblock %}
+{% set PAGE_TITLE = "Zulip for communities" %}
+
+{% set PAGE_DESCRIPTION = "Zulip is designed with communities in mind, including
+  open-source projects, research collaborations, and volunteer organizations.
+  Reach out for a sponsorship!" %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />

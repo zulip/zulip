@@ -158,25 +158,7 @@
                     </tr>
                 </tbody>
             </table>
-            {{#tr}}
-                <p>You can use any combination of these search operators in a single query. For example:</p>
-                <z-operator>
-                    <z-stream-prefix></z-stream-prefix><z-stream>streamname</z-stream>
-                    <z-sender-prefix></z-sender-prefix><z-email>user@example.com</z-email>
-                    <z-keyword>keyword</z-keyword>
-                </z-operator>
-                <p>
-                    That query would search for messages sent by <z-email>email</z-email> to
-                    stream <z-stream>streamname</z-stream> containing
-                    the keyword <z-keyword>keyword</z-keyword>.
-                </p>
-                {{#*inline "z-operator"}}<p><span class="operator">{{> @partial-block}}</span></p>{{/inline}}
-                {{#*inline "z-stream-prefix"}}stream:{{/inline}}
-                {{#*inline "z-stream"}}<span class="operator_value">{{> @partial-block}}</span>{{/inline}}
-                {{#*inline "z-sender-prefix"}}email:{{/inline}}
-                {{#*inline "z-email"}}<span class="operator_value">{{> @partial-block}}</span>{{/inline}}
-                {{#*inline "z-keyword"}}<span class="operator_value">keyword</span>{{/inline}}
-            {{/tr}}
+            <p>{{t "You can combine search operators as needed." }}</p>
             <hr />
             <a href="help/search-for-messages#search-operators" target="_blank" rel="noopener noreferrer">{{t "Detailed search operators documentation" }}</a>
         </div>

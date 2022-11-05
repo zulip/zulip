@@ -76,6 +76,10 @@ whitespace_rules: List["Rule"] = [
         "pattern": "\t",
         "description": "Fix tab-based whitespace",
     },
+    {
+        "pattern": r"(?i:webapp)",
+        "description": "Web app should be two words",
+    },
 ]
 comma_whitespace_rule: List["Rule"] = [
     {
@@ -670,7 +674,7 @@ html_rules: List["Rule"] = [
     },
     {
         "pattern": r"\bon\w+ ?=",
-        "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
+        "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead, "
         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
         "the DOM is ready (inside a $(function () {...}) block).",
         "exclude": {

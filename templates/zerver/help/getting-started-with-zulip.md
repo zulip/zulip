@@ -22,9 +22,9 @@ Like your email inbox, Zulip works best if you read it topic-by-topic.
 
 ### Finding a topic to read
 
-#### From Recent topics
+#### From Recent conversations
 
-{!recent-topics.md!}
+{!recent-conversations.md!}
 
 #### From the list of streams
 

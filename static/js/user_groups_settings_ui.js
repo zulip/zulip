@@ -173,6 +173,13 @@ export function initialize() {
         e.preventDefault();
         open_create_user_group();
     });
+
+    $("#manage_groups_container").on("click", ".group-row", show_right_section);
+
+    $("#manage_groups_container").on("click", ".fa-chevron-left", () => {
+        $(".right").removeClass("show");
+        $(".user-groups-header").removeClass("slide-left");
+    });
 }
 
 export function launch(section) {

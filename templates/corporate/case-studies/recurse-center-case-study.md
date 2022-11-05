@@ -81,9 +81,9 @@ different levels of engagement. Current RC members can immerse themselves in the
 ongoing discussions, occasionally muting topics they don’t want to follow. RC
 leaders monitor the community asynchronously, reviewing the ongoing
 conversations a few times a day and jumping in as needed. Finally, alumni can
-drop by on occasion to skim [recent
-topics](https://zulip.com/help/recent-topics), catch up on their friends’ update
-threads, or search the discussion history for a topic of interest.
+drop by on occasion to skim [recent conversations](/help/recent-conversations),
+catch up on their friends’ update threads, or search the discussion history for
+a topic of interest.
 
 “Our community is 10 years old and spans continents,” RC’s Head of Retreat
 Rachel Petacat says. “Zulip provides the continuity that lets us maintain our
@@ -170,9 +170,9 @@ doesn’t see a message in some channel on that day, they’ll *never* see it.�
 
 Without dedicating a lot of time, John is able to stay involved in the community
 on Zulip, and share his expertise where relevant. “I scan [recent
-topics](https://zulip.com/help/recent-topics) for places where I could help, and
-rely on email notifications for private messages,” John explains. The experience
-of keeping up on Zulip is in sharp contrast with Slack, which John uses at work:
+topics](/help/recent-conversations) for places where I could help, and rely on
+email notifications for private messages,” John explains. The experience of
+keeping up on Zulip is in sharp contrast with Slack, which John uses at work:
 “It’s so hard to keep up with the Slack firehose.”
 
 > “Zulip allows people who are engaging with the community at different paces to connect.”

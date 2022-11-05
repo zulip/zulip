@@ -1,14 +1,11 @@
+import logging
 import os
 import sys
 import time
 from copy import deepcopy
-from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
-from django.template.loaders import app_directories
-
-import zerver.lib.logging_util
 from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
 
@@ -160,20 +157,6 @@ ALLOWED_HOSTS += ["127.0.0.1", "localhost"]
 ALLOWED_HOSTS += [EXTERNAL_HOST_WITHOUT_PORT, "." + EXTERNAL_HOST_WITHOUT_PORT]
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
-
-
-class TwoFactorLoader(app_directories.Loader):
-    def get_dirs(self) -> List[Union[str, Path]]:
-        dirs = super().get_dirs()
-        # app_directories.Loader returns only a list of
-        # Path objects by calling get_app_template_dirs
-        two_factor_dirs: List[Union[str, Path]] = []
-        for d in dirs:
-            assert isinstance(d, Path)
-            if d.match("two_factor/*"):
-                two_factor_dirs.append(d)
-        return two_factor_dirs
-
 
 MIDDLEWARE = (
     "zerver.middleware.TagRequests",
@@ -675,7 +658,7 @@ non_html_template_engine_settings["OPTIONS"].update(
 two_factor_template_options = deepcopy(default_template_engine_settings["OPTIONS"])
 del two_factor_template_options["environment"]
 del two_factor_template_options["extensions"]
-two_factor_template_options["loaders"] = ["zproject.settings.TwoFactorLoader"]
+two_factor_template_options["loaders"] = ["zproject.template_loaders.TwoFactorLoader"]
 
 two_factor_template_engine_settings = {
     "NAME": "Two_Factor",
@@ -752,6 +735,21 @@ DEFAULT_ZULIP_HANDLERS = [
     "errors_file",
 ]
 
+
+def skip_200_and_304(record: logging.LogRecord) -> bool:
+    # Apparently, `status_code` is added by Django and is not an actual
+    # attribute of LogRecord; as a result, mypy throws an error if we
+    # access the `status_code` attribute directly.
+    return getattr(record, "status_code", None) not in [200, 304]
+
+
+def skip_site_packages_logs(record: logging.LogRecord) -> bool:
+    # This skips the log records that are generated from libraries
+    # installed in site packages.
+    # Workaround for https://code.djangoproject.com/ticket/26886
+    return "site-packages" not in record.pathname
+
+
 LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -787,11 +785,11 @@ LOGGING: Dict[str, Any] = {
         },
         "skip_200_and_304": {
             "()": "django.utils.log.CallbackFilter",
-            "callback": zerver.lib.logging_util.skip_200_and_304,
+            "callback": skip_200_and_304,
         },
         "skip_site_packages_logs": {
             "()": "django.utils.log.CallbackFilter",
-            "callback": zerver.lib.logging_util.skip_site_packages_logs,
+            "callback": skip_site_packages_logs,
         },
     },
     "handlers": {
@@ -1120,6 +1118,8 @@ else:
 
 SOCIAL_AUTH_GITHUB_SECRET = get_secret("social_auth_github_secret")
 SOCIAL_AUTH_GITLAB_SECRET = get_secret("social_auth_gitlab_secret")
+SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret("social_auth_azuread_oauth2_secret")
+
 SOCIAL_AUTH_GITHUB_SCOPE = ["user:email"]
 if SOCIAL_AUTH_GITHUB_ORG_NAME or SOCIAL_AUTH_GITHUB_TEAM_ID:
     SOCIAL_AUTH_GITHUB_SCOPE.append("read:org")
@@ -1224,10 +1224,6 @@ TWO_FACTOR_PATCH_ADMIN = False
 
 # Allow the environment to override the default DSN
 SENTRY_DSN = os.environ.get("SENTRY_DSN", SENTRY_DSN)
-if SENTRY_DSN:
-    from .sentry import setup_sentry
-
-    setup_sentry(SENTRY_DSN, get_config("machine", "deploy_type", "development"))
 
 SCIM_SERVICE_PROVIDER = {
     "USER_ADAPTER": "zerver.lib.scim.ZulipSCIMUser",

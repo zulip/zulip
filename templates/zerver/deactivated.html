@@ -1,5 +1,9 @@
 {% extends "zerver/portico_signup.html" %}
 
+{% block title %}
+<title>{{ _("Deactivated organization") }} | Zulip</title>
+{% endblock %}
+
 {% block customhead %}
 {{ super() }}
 <meta http-equiv="refresh" content="60;URL='/'" />

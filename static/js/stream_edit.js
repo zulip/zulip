@@ -1,8 +1,10 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_types from "../templates/stream_settings/stream_types.hbs";
@@ -15,6 +17,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
@@ -463,6 +466,18 @@ export function archive_stream(stream_id, $alert_element, $stream_row) {
     });
 }
 
+export function get_stream_email_address(flags, address) {
+    const clean_address = address
+        .replace(".show-sender", "")
+        .replace(".include-footer", "")
+        .replace(".include-quotes", "")
+        .replace(".prefer-html", "");
+
+    const flag_string = flags.map((flag) => "." + flag).join("");
+
+    return clean_address.replace("@", flag_string + "@");
+}
+
 export function initialize() {
     $("#main_div").on("click", ".stream_sub_unsub_button", (e) => {
         e.preventDefault();
@@ -560,7 +575,7 @@ export function initialize() {
     $("#manage_streams_container").on("keypress", "#change_stream_description", (e) => {
         // Stream descriptions can not be multiline, so disable enter key
         // to prevent new line
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             return false;
         }
         return true;
@@ -590,6 +605,72 @@ export function initialize() {
         dialog_widget.close_modal();
         settings_ui.do_settings_change(channel.patch, url, data, $status_element);
     }
+
+    $("#manage_streams_container").on("click", ".copy_email_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const stream_id = get_stream_id(e.target);
+        const stream = sub_store.get(stream_id);
+        let address = stream.email_address;
+
+        const copy_email_address = render_copy_email_address_modal({
+            email_address: address,
+            tags: [
+                {
+                    name: "show-sender",
+                    description: $t({
+                        defaultMessage: "The sender's email address",
+                    }),
+                },
+                {
+                    name: "include-footer",
+                    description: $t({defaultMessage: "Email footers (e.g., signature)"}),
+                },
+                {
+                    name: "include-quotes",
+                    description: $t({defaultMessage: "Quoted original email (in replies)"}),
+                },
+                {
+                    name: "prefer-html",
+                    description: $t({
+                        defaultMessage: "Use html encoding (not recommended)",
+                    }),
+                },
+            ],
+        });
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Generate stream email address"}),
+            html_body: copy_email_address,
+            id: "copy_email_address_modal",
+            html_submit_button: $t_html({defaultMessage: "Copy address"}),
+            help_link: "/help/message-a-stream-by-email#configuration-options",
+            on_click: () => {},
+            close_on_submit: true,
+        });
+        $("#show-sender").prop("checked", true);
+
+        new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
+            text() {
+                return address;
+            },
+        });
+
+        $("#copy_email_address_modal .tag-checkbox").on("change", () => {
+            const $checked_checkboxes = $(".copy-email-modal").find("input:checked");
+
+            const flags = [];
+
+            $($checked_checkboxes).each(function () {
+                flags.push($(this).attr("id"));
+            });
+
+            address = get_stream_email_address(flags, address);
+
+            $(".email-address").text(address);
+        });
+    });
 
     $("#manage_streams_container").on(
         "click",

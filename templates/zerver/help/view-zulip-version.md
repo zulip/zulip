@@ -31,7 +31,7 @@ Zulip Cloud organizations are always updated to the latest version of Zulip.
 ## Zulip desktop app version
 
 The [Zulip desktop app](/apps/) has an independent version from the server and
-webapp.
+web app.
 
 ### View Zulip desktop app version
 

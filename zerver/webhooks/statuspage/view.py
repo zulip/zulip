@@ -1,12 +1,11 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -23,33 +22,33 @@ TOPIC_TEMPLATE = "{name}: {description}"
 ALL_EVENT_TYPES = ["incident", "component"]
 
 
-def get_incident_events_body(payload: Dict[str, Any]) -> str:
+def get_incident_events_body(payload: WildValue) -> str:
     return INCIDENT_TEMPLATE.format(
-        name=payload["incident"]["name"],
-        state=payload["incident"]["status"],
-        content=payload["incident"]["incident_updates"][0]["body"],
+        name=payload["incident"]["name"].tame(check_string),
+        state=payload["incident"]["status"].tame(check_string),
+        content=payload["incident"]["incident_updates"][0]["body"].tame(check_string),
     )
 
 
-def get_components_update_body(payload: Dict[str, Any]) -> str:
+def get_components_update_body(payload: WildValue) -> str:
     return COMPONENT_TEMPLATE.format(
-        name=payload["component"]["name"],
-        old_status=payload["component_update"]["old_status"],
-        new_status=payload["component_update"]["new_status"],
+        name=payload["component"]["name"].tame(check_string),
+        old_status=payload["component_update"]["old_status"].tame(check_string),
+        new_status=payload["component_update"]["new_status"].tame(check_string),
     )
 
 
-def get_incident_topic(payload: Dict[str, Any]) -> str:
+def get_incident_topic(payload: WildValue) -> str:
     return TOPIC_TEMPLATE.format(
-        name=payload["incident"]["name"],
-        description=payload["page"]["status_description"],
+        name=payload["incident"]["name"].tame(check_string),
+        description=payload["page"]["status_description"].tame(check_string),
     )
 
 
-def get_component_topic(payload: Dict[str, Any]) -> str:
+def get_component_topic(payload: WildValue) -> str:
     return TOPIC_TEMPLATE.format(
-        name=payload["component"]["name"],
-        description=payload["page"]["status_description"],
+        name=payload["component"]["name"].tame(check_string),
+        description=payload["page"]["status_description"].tame(check_string),
     )
 
 
@@ -58,7 +57,7 @@ def get_component_topic(payload: Dict[str, Any]) -> str:
 def api_statuspage_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
 
     if "incident" in payload:

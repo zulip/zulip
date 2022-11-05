@@ -605,6 +605,8 @@ class RealmTest(ZulipTestCase):
             move_messages_between_streams_policy=10,
             add_custom_emoji_policy=10,
             delete_own_message_policy=10,
+            edit_topic_policy=10,
+            message_content_edit_limit_seconds=0,
         )
 
         # We need an admin user.
@@ -1141,6 +1143,8 @@ class RealmAPITest(ZulipTestCase):
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            edit_topic_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            message_content_edit_limit_seconds=[1000, 1100, 1200],
         )
 
         vals = test_values.get(name)
@@ -1202,6 +1206,7 @@ class RealmAPITest(ZulipTestCase):
             default_view=["recent_topics", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
+            user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
@@ -1280,61 +1285,6 @@ class RealmAPITest(ZulipTestCase):
         self.assertIn("ignored_parameters_unsupported", result)
         self.assertEqual(result["ignored_parameters_unsupported"], ["emoji_set"])
 
-    def test_update_realm_allow_message_editing(self) -> None:
-        """Tests updating the realm property 'allow_message_editing'."""
-        self.set_up_db("allow_message_editing", False)
-        self.set_up_db("message_content_edit_limit_seconds", None)
-        self.set_up_db("edit_topic_policy", Realm.POLICY_ADMINS_ONLY)
-        realm = self.update_with_api("allow_message_editing", True)
-        realm = self.update_with_api("message_content_edit_limit_seconds", 100)
-        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_EVERYONE)
-        self.assertEqual(realm.allow_message_editing, True)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
-        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_EVERYONE)
-        realm = self.update_with_api("allow_message_editing", False)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
-        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_EVERYONE)
-        realm = self.update_with_api("message_content_edit_limit_seconds", 200)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
-        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_EVERYONE)
-        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_ADMINS_ONLY)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
-        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_ADMINS_ONLY)
-
-        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_MODERATORS_ONLY)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
-        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_MODERATORS_ONLY)
-
-        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
-        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_FULL_MEMBERS_ONLY)
-
-        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_MEMBERS_ONLY)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
-        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_MEMBERS_ONLY)
-
-        # Test an invalid value for edit_topic_policy
-        invalid_edit_topic_policy_value = 10
-        req = {"edit_topic_policy": orjson.dumps(invalid_edit_topic_policy_value).decode()}
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid edit_topic_policy")
-
-        # Test 0 is invalid value of message_content_edit_limit_seconds
-        invalid_message_content_edit_limit_seconds_value = 0
-        req = {
-            "message_content_edit_limit_seconds": orjson.dumps(
-                invalid_message_content_edit_limit_seconds_value
-            ).decode()
-        }
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Bad value for 'message_content_edit_limit_seconds': 0")
-
     def test_update_realm_delete_own_message_policy(self) -> None:
         """Tests updating the realm property 'delete_own_message_policy'."""
         self.set_up_db("delete_own_message_policy", Realm.POLICY_EVERYONE)
@@ -1371,17 +1321,40 @@ class RealmAPITest(ZulipTestCase):
             result, "Bad value for 'message_content_delete_limit_seconds': invalid"
         )
 
-    def test_change_invite_to_realm_policy_by_owners_only(self) -> None:
+    def do_test_changing_settings_by_owners_only(self, setting_name: str) -> None:
+        bool_tests: List[bool] = [False, True]
+        test_values: Dict[str, Any] = dict(
+            invite_to_realm_policy=[Realm.POLICY_MEMBERS_ONLY, Realm.POLICY_ADMINS_ONLY],
+            waiting_period_threshold=[10, 20],
+        )
+
+        vals = test_values.get(setting_name)
+        if Realm.property_types[setting_name] is bool:
+            vals = bool_tests
+        assert vals is not None
+
+        self.set_up_db(setting_name, vals[0])
+        value = vals[1]
+
+        if not isinstance(value, str):
+            value = orjson.dumps(value).decode()
+
         self.login("iago")
-        req = {"invite_to_realm_policy": Realm.POLICY_ADMINS_ONLY}
-        result = self.client_patch("/json/realm", req)
+        result = self.client_patch("/json/realm", {setting_name: value})
         self.assert_json_error(result, "Must be an organization owner")
 
         self.login("desdemona")
-        result = self.client_patch("/json/realm", req)
+        result = self.client_patch("/json/realm", {setting_name: value})
         self.assert_json_success(result)
         realm = get_realm("zulip")
-        self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
+        self.assertEqual(getattr(realm, setting_name), vals[1])
+
+    def test_changing_user_joining_settings_require_owners(self) -> None:
+        self.do_test_changing_settings_by_owners_only("invite_to_realm_policy")
+        self.do_test_changing_settings_by_owners_only("invite_required")
+        self.do_test_changing_settings_by_owners_only("emails_restricted_to_domains")
+        self.do_test_changing_settings_by_owners_only("disallow_disposable_email_addresses")
+        self.do_test_changing_settings_by_owners_only("waiting_period_threshold")
 
     def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
         self.login("iago")

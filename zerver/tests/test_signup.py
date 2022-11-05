@@ -12,7 +12,8 @@ from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.mail.message import EmailMultiAlternatives
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBase
+from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils import translation
@@ -42,6 +43,7 @@ from zerver.actions.invites import (
 )
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
+    do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
@@ -113,7 +115,7 @@ from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_
 from zerver.views.development.registration import confirmation_key
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
 from zerver.views.registration import accounts_home
-from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
+from zproject.backends import ExternalAuthDataDict, ExternalAuthResult, email_auth_enabled
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -198,7 +200,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.client_get("/login/", follow=True)
-        self.assertEqual(getattr(result, "redirect_chain")[-1], ("/accounts/deactivated/", 302))
+        self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
         self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
         self.assertNotIn("It has moved to", result.content.decode())
 
@@ -809,6 +811,32 @@ class LoginTest(ZulipTestCase):
         )
         self.assert_logged_in_user_id(None)
 
+    def test_login_deactivate_user_error(self) -> None:
+        """
+        This is meant to test whether the error message signaled by the
+        is_deactivated is shown independently of whether the Email
+        backend is enabled.
+        """
+        user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
+        self.assertTrue(email_auth_enabled(realm))
+
+        url = f"{realm.uri}/login/?" + urlencode({"is_deactivated": user_profile.delivery_email})
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response(
+            f"Your account {user_profile.delivery_email} has been deactivated.", result
+        )
+
+        auth_dict = realm.authentication_methods_dict()
+        auth_dict["Email"] = False
+        do_set_realm_authentication_methods(realm, auth_dict, acting_user=None)
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response(
+            f"Your account {user_profile.delivery_email} has been deactivated.", result
+        )
+
     def test_login_bad_password(self) -> None:
         user = self.example_user("hamlet")
         password: Optional[str] = "wrongpassword"
@@ -928,11 +956,10 @@ class LoginTest(ZulipTestCase):
         flush_per_request_caches()
         ContentType.objects.clear_cache()
 
-        with queries_captured() as queries, cache_tries_captured() as cache_tries:
+        # Ensure the number of queries we make is not O(streams)
+        with self.assert_database_query_count(96), cache_tries_captured() as cache_tries:
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
-        # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 96)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -1080,10 +1107,12 @@ class LoginTest(ZulipTestCase):
         description = "https://www.google.com/images/srpr/logo4w.png"
         realm.description = description
         realm.save(update_fields=["description"])
-        response = self.client_get("/login/")
+        response: HttpResponseBase = self.client_get("/login/")
         expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png">\
 https://www.google.com/images/srpr/logo4w.png</a></p>"""
-        self.assertEqual(getattr(response, "context_data")["realm_description"], expected_response)
+        assert isinstance(response, TemplateResponse)
+        assert response.context_data is not None
+        self.assertEqual(response.context_data["realm_description"], expected_response)
         self.assertEqual(response.status_code, 200)
 
 
@@ -3427,7 +3456,7 @@ class RealmCreationTest(ZulipTestCase):
             # Create new realm with the email, but no creation key.
             result = self.client_post("/new/", {"email": email})
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response("New organization creation disabled", result)
+            self.assert_in_response("Organization creation link required", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_subdomain(self) -> None:
@@ -3797,6 +3826,9 @@ class RealmCreationTest(ZulipTestCase):
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_invalid_email_signup(self) -> None:
+        result = self.client_post("/new/", {"email": "<foo"})
+        self.assert_in_response("Please use your real email address.", result)
+
         result = self.client_post("/new/", {"email": "foo\x00bar"})
         self.assert_in_response("Please use your real email address.", result)
 

@@ -3,7 +3,7 @@
     <form id="stream_creation_form">
         <div class="alert stream_create_info"></div>
         <div id="stream_creating_indicator"></div>
-        <div class="stream-creation-body">
+        <div class="stream-creation-body" data-simplebar>
             <section class="block">
                 <label for="create_stream_name">
                     {{t "Stream name" }}
@@ -15,6 +15,7 @@
             <section class="block">
                 <label for="create_stream_description">
                     {{t "Stream description" }}
+                    {{> ../help_link_widget link="/help/change-the-stream-description" }}
                 </label>
                 <input type="text" name="stream_description" id="create_stream_description"
                   placeholder="{{t 'Stream description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />

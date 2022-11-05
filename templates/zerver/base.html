@@ -9,10 +9,8 @@
             {% if user_profile and user_profile.realm.name %}
                 <title>{{user_profile.realm.name}} - Zulip</title>
             {% else %}
-                {% if OPEN_GRAPH_TITLE %}
-                <title>{{ OPEN_GRAPH_TITLE }}</title>
-                {% else %}
-                <title>Zulip</title>
+                {% if PAGE_TITLE %}
+                <title>{{ PAGE_TITLE }}</title>
                 {% endif %}
             {% endif %}
         {% endblock %}

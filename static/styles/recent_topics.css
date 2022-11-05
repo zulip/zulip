@@ -70,6 +70,21 @@
             padding-right: 3px;
         }
 
+        .fa-group {
+            font-size: 0.8rem;
+            margin-left: 5px;
+            /* color: hsl(105, 2%, 50%); */
+            opacity: 0.6;
+        }
+
+        .fa-envelope {
+            font-size: 0.7rem;
+            margin-right: 2px;
+            position: relative;
+            top: -1px;
+            opacity: 0.6;
+        }
+
         .table_fix_head {
             padding: 0 !important;
             /* 100px = space occupied by `recent_topics_filter_buttons`( ~49px)
@@ -148,8 +163,28 @@
             background-color: hsl(105, 2%, 50%);
         }
 
+        .unread_mention_info:not(:empty) {
+            margin-right: -5px;
+            /* Match with its font-size. */
+            line-height: 14px;
+        }
+
         .unread_hidden {
             visibility: hidden;
+        }
+
+        .user_circle {
+            /* Shrink the user activity circle for the recent topics context. */
+            min-width: 7px;
+            height: 7px;
+            margin-left: 8px;
+            top: 0;
+        }
+
+        .flex_container_pm {
+            /* Flex container to fit in user circle and group icon */
+            display: flex;
+            justify-content: space-between;
         }
 
         .flex_container {
@@ -171,6 +206,20 @@
             margin-left: 10px;
             display: flex;
             flex-flow: row nowrap;
+        }
+
+        .mention_in_unread {
+            opacity: 0.7;
+        }
+
+        .recent_topic_actions.dummy_action_button {
+            visibility: hidden;
+        }
+
+        .recent_topic_actions .recent_topics_focusable {
+            display: flex;
+            align-items: center;
+            padding-bottom: 3px;
         }
 
         .recent_topics_participants {
@@ -282,11 +331,35 @@
            as new messages arrive from the server. */
         .recent_topic_stream {
             width: 25%;
-            padding: 8px;
+            padding: 8px 0 8px 8px;
+
+            a {
+                word-break: break-word;
+                hyphens: auto;
+            }
         }
 
         .recent_topic_name {
             width: 40%;
+
+            a {
+                word-break: break-word;
+                /* No hyphes for word break since it caused hyphens to appear before
+                   the ellipsis `longText-...` which is not desirable. Ellipsis appears due
+                   to the line clamp applied below.
+                */
+            }
+
+            .line_clamp {
+                /* This -webkit-box display property is webkit-specific, but
+                   it appears that line clamping works fine for this component
+                   on Firefox anyway. */
+                /* stylelint-disable-next-line value-no-vendor-prefix */
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
         }
 
         .recent_topic_users {

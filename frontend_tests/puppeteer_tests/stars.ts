@@ -2,28 +2,29 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 const message = "test star";
 
 async function stars_count(page: Page): Promise<number> {
-    return await page.evaluate(() => $("#zhome .fa-star:not(.empty-star)").length);
+    return (await page.$$("#zhome .fa-star:not(.empty-star)")).length;
 }
 
 async function toggle_test_star_message(page: Page): Promise<void> {
-    await page.evaluate((message: string) => {
-        const $msg = $(`.message_content:contains("${CSS.escape(message)}"):visible`).last();
-        if ($msg.length !== 1) {
-            throw new Error("cannot find test star message");
-        }
+    const messagebox = await page.waitForSelector(
+        `xpath/(//*[@id="zhome"]//*[${common.has_class_x(
+            "message_content",
+        )} and normalize-space()="${message}"])[last()]/ancestor::*[${common.has_class_x(
+            "messagebox",
+        )}]`,
+        {visible: true},
+    );
+    assert.ok(messagebox !== null);
+    await messagebox.hover();
 
-        const $star_icon = $msg.closest(".messagebox").find(".star");
-        if ($star_icon.length !== 1) {
-            throw new Error("cannot find star icon");
-        }
-
-        $star_icon.trigger("click");
-    }, message);
+    const star_icon = await messagebox.waitForSelector(".star", {visible: true});
+    assert.ok(star_icon !== null);
+    await star_icon.click();
 }
 
 async function test_narrow_to_starred_messages(page: Page): Promise<void> {

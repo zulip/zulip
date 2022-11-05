@@ -5,6 +5,7 @@ import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 
@@ -15,7 +16,8 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
             defaultMessage: "This is not a <z-link>publicly accessible</z-link> conversation.",
         },
         {
-            "z-link": (content_html) => `<a href="/help/public-access-option">${content_html}</a>`,
+            "z-link": (content_html) =>
+                `<a href="/help/public-access-option">${content_html.join("")}</a>`,
         },
     ),
 };
@@ -74,7 +76,9 @@ function pick_empty_narrow_banner() {
                   },
                   {
                       "z-link": (content_html) =>
-                          `<a href="#" class="empty_feed_compose_stream">${content_html}</a>`,
+                          `<a href="#" class="empty_feed_compose_stream">${content_html.join(
+                              "",
+                          )}</a>`,
                   },
               ),
     };
@@ -162,7 +166,7 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="/help/star-a-message">${content_html}</a>`,
+                                    `<a href="/help/star-a-message">${content_html.join("")}</a>`,
                             },
                         ),
                     };
@@ -175,12 +179,25 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="/help/mention-a-user-or-group">${content_html}</a>`,
+                                    `<a href="/help/mention-a-user-or-group">${content_html.join(
+                                        "",
+                                    )}</a>`,
                             },
                         ),
                     };
                 case "private":
                     // You have no private messages.
+                    if (
+                        page_params.realm_private_message_policy ===
+                        settings_config.private_message_policy_values.disabled.code
+                    ) {
+                        return {
+                            title: $t({
+                                defaultMessage:
+                                    "You are not allowed to send private messages in this organization.",
+                            }),
+                        };
+                    }
                     return {
                         title: $t({defaultMessage: "You have no private messages yet!"}),
                         html: $t_html(
@@ -191,7 +208,9 @@ function pick_empty_narrow_banner() {
                                 // TODO: The href here is a bit weird; we probably want to migrate
                                 // this to a button element down the line.
                                 "z-link": (content_html) =>
-                                    `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                                    `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                        "",
+                                    )}</a>`,
                             },
                         ),
                     };
@@ -241,7 +260,9 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-button": (content_html) =>
-                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html}</button>`,
+                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html.join(
+                                        "",
+                                    )}</button>`,
                             },
                         ),
                     };
@@ -260,7 +281,7 @@ function pick_empty_narrow_banner() {
                 search_data: retrieve_search_query_data(),
             };
         }
-        case "pm-with":
+        case "pm-with": {
             if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
                 if (!first_operand.includes(",")) {
                     return {
@@ -269,6 +290,19 @@ function pick_empty_narrow_banner() {
                 }
                 return {
                     title: $t({defaultMessage: "One or more of these users do not exist!"}),
+                };
+            }
+            const user_ids = people.emails_strings_to_user_ids_array(first_operand);
+            if (
+                page_params.realm_private_message_policy ===
+                    settings_config.private_message_policy_values.disabled.code &&
+                (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
+            ) {
+                return {
+                    title: $t({
+                        defaultMessage:
+                            "You are not allowed to send private messages in this organization.",
+                    }),
                 };
             }
             if (!first_operand.includes(",")) {
@@ -286,54 +320,90 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                                    `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                        "",
+                                    )}</a>`,
                             },
                         ),
                     };
                 }
                 return {
-                    title: $t({
-                        defaultMessage: "You have no private messages with this person yet!",
-                    }),
+                    title: $t_html(
+                        {
+                            defaultMessage: "You have no private messages with {person} yet.",
+                        },
+                        {person: people.get_by_user_id(user_ids[0]).full_name},
+                    ),
                     html: $t_html(
                         {
                             defaultMessage: "Why not <z-link>start the conversation</z-link>?",
                         },
                         {
                             "z-link": (content_html) =>
-                                `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                                `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                    "",
+                                )}</a>`,
                         },
                     ),
                 };
             }
             return {
-                title: $t({defaultMessage: "You have no private messages with these people yet!"}),
+                title: $t({defaultMessage: "You have no private messages with these people yet."}),
                 html: $t_html(
                     {
                         defaultMessage: "Why not <z-link>start the conversation</z-link>?",
                     },
                     {
                         "z-link": (content_html) =>
-                            `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
+                            `<a href="#" class="empty_feed_compose_private">${content_html.join(
+                                "",
+                            )}</a>`,
                     },
                 ),
             };
-        case "sender":
-            if (people.get_by_email(first_operand)) {
+        }
+        case "sender": {
+            const sender = people.get_by_email(first_operand);
+            if (sender) {
                 return {
-                    title: $t({
-                        defaultMessage: "You haven't received any messages sent by this user yet!",
-                    }),
+                    title: $t_html(
+                        {
+                            defaultMessage:
+                                "You haven't received any messages sent by {person} yet.",
+                        },
+                        {person: sender.full_name},
+                    ),
                 };
             }
             return {
                 title: $t({defaultMessage: "This user does not exist!"}),
             };
-        case "group-pm-with":
+        }
+        case "group-pm-with": {
+            const person_in_group_pm = people.get_by_email(first_operand);
+            if (!person_in_group_pm) {
+                return {
+                    title: $t({defaultMessage: "This user does not exist!"}),
+                };
+            }
+            if (
+                page_params.realm_private_message_policy ===
+                settings_config.private_message_policy_values.disabled.code
+            ) {
+                return {
+                    title: $t({
+                        defaultMessage:
+                            "You are not allowed to send group private messages in this organization.",
+                    }),
+                };
+            }
             return {
-                title: $t({
-                    defaultMessage: "You have no group private messages with this person yet!",
-                }),
+                title: $t_html(
+                    {
+                        defaultMessage: "You have no group private messages with {person} yet.",
+                    },
+                    {person: person_in_group_pm.full_name},
+                ),
                 html: $t_html(
                     {
                         defaultMessage: "Why not <z-link>start the conversation</z-link>?",
@@ -344,6 +414,7 @@ function pick_empty_narrow_banner() {
                     },
                 ),
             };
+        }
     }
     return default_banner;
 }

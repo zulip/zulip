@@ -42,7 +42,7 @@ from zerver.lib.response import (
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
-from zerver.models import Realm, SCIMClient, flush_per_request_caches, get_realm
+from zerver.models import Realm, flush_per_request_caches, get_realm
 
 ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
@@ -479,7 +479,7 @@ class JsonErrorHandler(MiddlewareMixin):
                     request.path,
                     response=response,
                     request=request,
-                    exc_info=True,
+                    exception=exception,
                 )
             return response
         if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
@@ -696,6 +696,17 @@ class ZulipCommonMiddleware(CommonMiddleware):
         return super().should_redirect_with_slash(request)
 
 
+class SCIMClient:
+    @property
+    def is_authenticated(self) -> bool:
+        """
+        The purpose of this is to make SCIMClient behave like a UserProfile
+        when an instance is assigned to request.user - we need it to pass
+        request.user.is_authenticated verifications.
+        """
+        return True
+
+
 def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
     """
     This function verifies the request is allowed to make SCIM requests on this subdomain,
@@ -720,12 +731,15 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
         return None
 
     request_notes = RequestNotes.get_notes(request)
-    assert request_notes.realm
+    assert request_notes.realm is not None
+    request_notes.requestor_for_logs = (
+        f"scim-client:{scim_client_name}:realm:{request_notes.realm.id}"
+    )
 
     # While API authentication code paths are sufficiently high
     # traffic that we prefer to use a cache, SCIM is much lower
     # traffic, and doing a database query is plenty fast.
-    return SCIMClient.objects.get(realm=request_notes.realm, name=scim_client_name)
+    return SCIMClient()
 
 
 class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
@@ -760,5 +774,7 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
         # so we can assign the corresponding SCIMClient object to request.user - which
         # will allow this request to pass request.user.is_authenticated checks from now on,
         # to be served by the relevant views implemented in django-scim2.
-        request.user = scim_client
+        # Since request.user must be a UserProfile or AnonymousUser, this is a type-unsafe
+        # workaround to make this monkey-patching work.
+        request.user = scim_client  # type: ignore[assignment] # wrong type
         return None

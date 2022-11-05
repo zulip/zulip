@@ -1,6 +1,6 @@
 # Restrict permissions of new members
 
-{!admin-only.md!}
+{!owner-only.md!}
 
 In large Zulip organizations where
 [anyone can join](/help/restrict-account-creation#set-whether-invitations-are-required-to-join), it can

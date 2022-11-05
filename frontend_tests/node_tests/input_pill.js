@@ -500,6 +500,7 @@ run_test("exit button on pill", ({mock_template}) => {
         $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
+    $(".narrow_to_compose_recipients").toggleClass = noop;
 
     const info = set_up();
 

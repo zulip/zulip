@@ -5,8 +5,18 @@
           href="{{href}}"
           data-user-id="{{user_id}}"
           data-name="{{name}}">
-            <span class="user-name">{{name}}</span>
-            {{> status_emoji status_emoji_info}}
+            {{#if user_list_style.WITH_STATUS}}
+                <div class="user-name-and-status-wrapper">
+                    <div class="user-name-and-status-emoji">
+                        <span class="user-name">{{name}}</span>
+                        {{> status_emoji status_emoji_info}}
+                    </div>
+                    <span class="status-text">{{status_text}}</span>
+                </div>
+            {{else}}
+                <span class="user-name">{{name}}</span>
+                {{> status_emoji status_emoji_info}}
+            {{/if}}
         </a>
         <span class="unread_count">{{#if num_unread}}{{num_unread}}{{/if}}</span>
     </div>

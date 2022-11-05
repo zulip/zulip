@@ -50,6 +50,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 basic_stream_fields = [
+    ("can_remove_subscribers_group_id", int),
     ("date_created", int),
     ("description", str),
     ("first_message_id", OptionalType(int)),
@@ -169,6 +170,9 @@ custom_profile_field_type = DictType(
         ("hint", str),
         ("field_data", str),
         ("order", int),
+    ],
+    optional_keys=[
+        ("display_in_profile_summary", bool),
     ],
 )
 
@@ -973,10 +977,20 @@ logo_data = DictType(
     ]
 )
 
-message_edit_data = DictType(
+allow_message_editing_data = DictType(
     required_keys=[
         ("allow_message_editing", bool),
-        ("message_content_edit_limit_seconds", int),
+    ]
+)
+
+message_content_edit_limit_seconds_data = DictType(
+    required_keys=[
+        ("message_content_edit_limit_seconds", OptionalType(int)),
+    ]
+)
+
+edit_topic_policy_data = DictType(
+    required_keys=[
         ("edit_topic_policy", int),
     ]
 )
@@ -992,10 +1006,12 @@ night_logo_data = DictType(
 update_dict_data = UnionType(
     [
         # force vertical
+        allow_message_editing_data,
         authentication_data,
+        edit_topic_policy_data,
         icon_data,
         logo_data,
-        message_edit_data,
+        message_content_edit_limit_seconds_data,
         night_logo_data,
     ]
 )
@@ -1022,7 +1038,11 @@ def check_realm_update_dict(
         assert isinstance(event["data"], dict)
 
         if "allow_message_editing" in event["data"]:
-            sub_type = message_edit_data
+            sub_type = allow_message_editing_data
+        elif "message_content_edit_limit_seconds" in event["data"]:
+            sub_type = message_content_edit_limit_seconds_data
+        elif "edit_topic_policy" in event["data"]:
+            sub_type = edit_topic_policy_data
         elif "authentication_methods" in event["data"]:
             sub_type = authentication_data
         else:
@@ -1287,6 +1307,9 @@ def check_stream_update(
     elif prop == "stream_post_policy":
         assert extra_keys == set()
         assert value in Stream.STREAM_POST_POLICY_TYPES
+    elif prop == "can_remove_subscribers_group_id":
+        assert extra_keys == set()
+        assert isinstance(value, int)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 

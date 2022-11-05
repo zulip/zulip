@@ -48,7 +48,7 @@ export function has_mac_keyboard(): boolean {
     return /mac/i.test(navigator.platform);
 }
 
-export function adjust_mac_shortcuts(key_elem_class: string, kbd_elem = true): void {
+export function adjust_mac_shortcuts(kbd_elem_class: string): void {
     if (!has_mac_keyboard()) {
         return;
     }
@@ -66,25 +66,12 @@ export function adjust_mac_shortcuts(key_elem_class: string, kbd_elem = true): v
 
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
 
-    $(key_elem_class).each(function () {
+    $(kbd_elem_class).each(function () {
         let key_text = $(this).text();
 
-        // There may be matches to `key_elem_class` that are not
-        // keyboard shortcuts. Since keyboard shortcuts should be an
-        // exact match to the text on a physical key of a keyboard,
-        // none of which have spaces, we check and return early for
-        // any matched element's text that contains whitespace.
-        if (/\s/.test(key_text)) {
-            return;
-        }
-
         if (fn_shortcuts.has(key_text)) {
-            if (kbd_elem) {
-                $(this).before("<kbd>Fn</kbd> + ");
-                $(this).addClass("arrow-key");
-            } else {
-                $(this).before("<code>Fn</code> + ");
-            }
+            $(this).before("<kbd>Fn</kbd> + ");
+            $(this).addClass("arrow-key");
         }
 
         const replace_key = keys_map.get(key_text);

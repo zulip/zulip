@@ -1,5 +1,9 @@
 {% extends "zerver/portico_signup.html" %}
 
+{% block title %}
+<title>{{ _("Account not found") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 <div class="app register-page">
     <div class="app-main confirm-continue-page-container">

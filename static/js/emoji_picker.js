@@ -10,6 +10,7 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as emoji from "./emoji";
+import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -306,7 +307,7 @@ function is_status_emoji(emoji) {
 }
 
 function process_enter_while_filtering(e) {
-    if (e.key === "Enter") {
+    if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
         const $first_emoji = get_rendered_emoji(0, 0);
         if ($first_emoji) {

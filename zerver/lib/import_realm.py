@@ -181,6 +181,15 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
                         )
 
 
+def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
+    table = get_db_table(Stream)
+    admins_group = UserGroup.objects.get(
+        name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+    )
+    for stream in data[table]:
+        stream["can_remove_subscribers_group_id"] = admins_group.id
+
+
 def create_subscription_events(data: TableData, realm_id: int) -> None:
     """
     When the export data doesn't contain the table `zerver_realmauditlog`,
@@ -883,7 +892,7 @@ def import_uploads(
                 process_avatars(record)
         else:
             connection.close()
-            _cache = getattr(cache, "_cache")
+            _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
             assert isinstance(_cache, bmemcached.Client)
             _cache.disconnect_all()
             with ProcessPoolExecutor(max_workers=processes) as executor:
@@ -898,6 +907,7 @@ def import_uploads(
 #
 # * Client [no deps]
 # * Realm [-notifications_stream]
+# * UserGroup
 # * Stream [only depends on realm]
 # * Realm's notifications_stream
 # * Now can do all realm_tables
@@ -960,13 +970,30 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm.signup_notifications_stream_id = None
     realm.save()
 
+    if "zerver_usergroup" in data:
+        update_model_ids(UserGroup, data, "usergroup")
+        re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
+        bulk_import_model(data, UserGroup)
+
+    # We expect Zulip server exports to contain these system groups,
+    # this logic here is needed to handle the imports from other services.
+    role_system_groups_dict: Optional[Dict[int, UserGroup]] = None
+    if "zerver_usergroup" not in data:
+        role_system_groups_dict = create_system_user_groups_for_realm(realm)
+
     # Email tokens will automatically be randomly generated when the
     # Stream objects are created by Django.
     fix_datetime_fields(data, "zerver_stream")
     re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
+    if role_system_groups_dict is not None:
+        fix_streams_can_remove_subscribers_group_column(data, realm)
+    else:
+        re_map_foreign_keys(
+            data, "zerver_stream", "can_remove_subscribers_group", related_table="usergroup"
+        )
     # Handle rendering of stream descriptions for import from non-Zulip
     for stream in data["zerver_stream"]:
-        stream["rendered_description"] = render_stream_description(stream["description"])
+        stream["rendered_description"] = render_stream_description(stream["description"], realm)
     bulk_import_model(data, Stream)
 
     realm.notifications_stream_id = notifications_stream_id
@@ -1170,16 +1197,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         bulk_import_model(data, Service)
 
     if "zerver_usergroup" in data:
-        re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-        re_map_foreign_keys_many_to_many(
-            data, "zerver_usergroup", "direct_members", related_table="user_profile"
-        )
-        re_map_foreign_keys_many_to_many(
-            data, "zerver_usergroup", "direct_subgroups", related_table="usergroup"
-        )
-        update_model_ids(UserGroup, data, "usergroup")
-        bulk_import_model(data, UserGroup)
-
         re_map_foreign_keys(
             data, "zerver_usergroupmembership", "user_group", related_table="usergroup"
         )
@@ -1198,10 +1215,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(GroupGroupMembership, data, "groupgroupmembership")
         bulk_import_model(data, GroupGroupMembership)
 
-    # We expect Zulip server exports to contain these system groups,
-    # this logic here is needed to handle the imports from other services.
-    if not UserGroup.objects.filter(realm=realm, is_system_group=True).exists():
-        role_system_groups_dict = create_system_user_groups_for_realm(realm)
+    # We expect Zulip server exports to contain UserGroupMembership objects
+    # for system groups, this logic here is needed to handle the imports from
+    # other services.
+    if role_system_groups_dict is not None:
         add_users_to_system_user_groups(realm, user_profiles, role_system_groups_dict)
 
     if "zerver_botstoragedata" in data:
@@ -1311,14 +1328,24 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     bulk_import_model(data, Reaction)
 
     # Similarly, we need to recalculate the first_message_id for stream objects.
-    for stream in Stream.objects.filter(realm=realm):
-        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-        first_message = Message.objects.filter(recipient=recipient).first()
-        if first_message is None:
-            stream.first_message_id = None
-        else:
-            stream.first_message_id = first_message.id
-        stream.save(update_fields=["first_message_id"])
+    update_first_message_id_query = SQL(
+        """
+    UPDATE zerver_stream
+    SET first_message_id = subquery.first_message_id
+    FROM (
+        SELECT r.type_id id, min(m.id) first_message_id
+        FROM zerver_message m
+        JOIN zerver_recipient r ON
+        r.id = m.recipient_id
+        WHERE r.type = 2 AND m.realm_id = %(realm_id)s
+        GROUP BY r.type_id
+        ) AS subquery
+    WHERE zerver_stream.id = subquery.id
+    """
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(update_first_message_id_query, {"realm_id": realm.id})
 
     if "zerver_userstatus" in data:
         fix_datetime_fields(data, "zerver_userstatus")
@@ -1452,6 +1479,8 @@ def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir:
         # apply them.
         message_id_map = ID_MAP["message"]
         for row in data["zerver_message"]:
+            del row["realm"]
+            row["realm_id"] = realm.id
             row["id"] = message_id_map[row["id"]]
 
         for row in data["zerver_usermessage"]:

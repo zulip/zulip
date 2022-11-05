@@ -141,6 +141,13 @@ h3,
     margin-right: 10px;
 }
 
+#admin_profile_fields_table {
+    th.display,
+    td.display_in_profile_summary_cell {
+        text-align: center;
+    }
+}
+
 .user-details-title {
     display: inline-block;
     min-width: 80px;
@@ -213,8 +220,9 @@ h3,
         width: 20%;
     }
 
-    .admin-table-wrapper table.admin_profile_fields_table tr td {
-        width: 28%;
+    /* Limit the actions column to not using excessive width */
+    .admin-table-wrapper table.admin_profile_fields_table tr .actions {
+        width: 11%;
     }
 }
 
@@ -347,6 +355,10 @@ td .button {
     }
 }
 
+.user_role {
+    min-width: 95px;
+}
+
 .button,
 .input-group {
     margin: 0 0 20px;
@@ -362,10 +374,6 @@ td .button {
     label.checkbox + label {
         cursor: pointer;
     }
-}
-
-.dependent-block {
-    margin: -5px 0 15px 23px;
 }
 
 .dependent-inline-block {
@@ -416,6 +424,7 @@ input[type="checkbox"] {
 #stream-specific-notify-table .unmute_stream {
     position: relative;
     left: 3px;
+    top: 2px;
 
     &:hover {
         color: hsl(0, 0%, 20%);
@@ -559,7 +568,7 @@ input[type="checkbox"] {
 
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
-    .full-name-change-form label,
+    .full-name-change-container label,
     .timezone-setting-form label {
         min-width: fit-content;
     }
@@ -643,6 +652,10 @@ input[type="checkbox"] {
         margin-left: calc(10em + 20px) !important;
     }
     margin-bottom: 15px;
+
+    .checkbox {
+        margin-top: 5px;
+    }
 }
 
 .grey-box .wrapper {
@@ -681,6 +694,10 @@ input[type="checkbox"] {
 
 #admin-default-streams-list .progressive-table-wrapper {
     max-height: calc(95vh - 280px);
+}
+
+#bot-settings .add-a-new-bot {
+    margin-bottom: 2px;
 }
 
 .bots_list {
@@ -739,6 +756,10 @@ input[type="checkbox"] {
 
         .copy-gold {
             color: hsl(51, 90%, 50%);
+        }
+
+        .purple {
+            color: hsl(278, 62%, 68%);
         }
     }
 
@@ -811,13 +832,6 @@ input[type="checkbox"] {
 
 #inactive_bots_list .bot_info .reactivate_bot {
     margin-top: 5px;
-}
-
-#edit_bot_modal {
-    /* Ensure that the dropdown can overflow the modal. */
-    .modal__content {
-        overflow: visible;
-    }
 }
 
 .edit_bot_form {
@@ -922,14 +936,9 @@ input[type="checkbox"] {
     }
 }
 
-.emojiset_choices {
-    width: 250px;
+.emojiset_choices,
+.user_list_style_values {
     padding: 0 10px;
-
-    .emoji {
-        height: 22px;
-        width: 22px;
-    }
 
     label {
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
@@ -948,10 +957,56 @@ input[type="checkbox"] {
                 font-weight: 600;
             }
         }
-    }
 
-    .right {
-        float: right;
+        .right {
+            float: right;
+        }
+    }
+}
+
+.emojiset_choices {
+    width: 350px;
+
+    .emoji {
+        height: 22px;
+        width: 22px;
+    }
+}
+
+$right_sidebar_width: 170px;
+$option_title_width: 180px;
+
+.user_list_style_values {
+    max-width: calc($right_sidebar_width + $option_title_width);
+
+    .preview {
+        background-color: inherit !important;
+        /* Match the 170px width of the right sidebar region for the name/status,
+           doing something reasonable if the window shrinks. */
+        width: calc(100% - $option_title_width);
+        text-align: left;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow-x: hidden;
+        overflow-y: visible;
+        position: relative;
+        height: 36px;
+
+        .user-name-and-status-text {
+            margin-top: -4px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-text {
+            display: inline-block;
+            opacity: 0.75;
+            font-size: 90%;
+
+            &:not(:empty) {
+                margin-top: -3px;
+            }
+        }
     }
 }
 
@@ -1443,9 +1498,9 @@ input[type="checkbox"] {
 #id_realm_move_messages_between_streams_policy,
 #id_realm_invite_to_realm_policy,
 #id_realm_edit_topic_policy,
-#id_realm_msg_edit_limit_setting,
+#id_realm_message_content_edit_limit_seconds,
 #id_realm_delete_own_message_policy,
-#id_realm_msg_delete_limit_setting {
+#id_realm_message_content_delete_limit_seconds {
     width: 325px;
 }
 
@@ -1632,19 +1687,22 @@ input[type="checkbox"] {
     }
 }
 
-.custom_user_field .pill-container {
-    padding: 2px 6px;
-    min-height: 24px;
-    max-width: 206px;
-    background-color: hsl(0, 0%, 100%);
+.custom_user_field,
+.bot_owner_user_field {
+    .pill-container {
+        padding: 2px 6px;
+        min-height: 24px;
+        max-width: 206px;
+        background-color: hsl(0, 0%, 100%);
 
-    &:focus-within {
-        border-color: hsla(206, 80%, 62%, 0.8);
-        outline: 0;
-        outline: 1px dotted \9;
+        &:focus-within {
+            border-color: hsla(206, 80%, 62%, 0.8);
+            outline: 0;
+            outline: 1px dotted \9;
 
-        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
-            0 0 8px hsla(206, 80%, 62%, 0.6);
+            box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
+                0 0 8px hsla(206, 80%, 62%, 0.6);
+        }
     }
 }
 
@@ -1739,6 +1797,12 @@ input[type="checkbox"] {
         }
 
         .sidebar {
+            position: absolute;
+            width: 100%;
+            border: none;
+            /* 48px is the height of settings header and 45px is the height of tab-container */
+            height: calc(100% - 93px);
+
             li.active {
                 /* Don't highlight the active section in the settings list. */
                 background: inherit;
@@ -1830,5 +1894,13 @@ input[type="checkbox"] {
         font-size: 1em;
         max-width: 160px;
         margin-top: 12px;
+    }
+}
+
+#add-new-custom-profile-field-form,
+#edit-custom-profile-field-form-modal {
+    .disabled_label {
+        cursor: default;
+        opacity: 0.7;
     }
 }

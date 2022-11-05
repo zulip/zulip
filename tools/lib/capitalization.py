@@ -32,6 +32,7 @@ IGNORED_PHRASES = [
     r"PM",
     r"PMs",
     r"Slack",
+    r"Google",
     r"Terms of Service",
     r"Tuesday",
     r"URL",
@@ -41,6 +42,7 @@ IGNORED_PHRASES = [
     r"Zephyr",
     r"Zoom",
     r"Zulip",
+    r"Zulip Server",
     r"Zulip Account Security",
     r"Zulip Security",
     r"Zulip Cloud Standard",
@@ -50,6 +52,7 @@ IGNORED_PHRASES = [
     # BeautifulSoup will remove <z-user> which is horribly confusing,
     # so we need more of the sentence.
     r"<z-user></z-user> will have the same role",
+    r"<z-user></z-user> will have the same properties",
     # Things using "I"
     r"I understand",
     r"I'm",
@@ -74,6 +77,11 @@ IGNORED_PHRASES = [
     # SPECIAL CASES
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
+    # Used alone in a parenthetical where capitalized looks worse.
+    r"^deprecated$",
+    # We want the similar text in the Private Messages section to have the same capitalization.
+    r"more conversations",
+    r"back to streams",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",
@@ -109,6 +117,14 @@ IGNORED_PHRASES = [
     # Use in compose box.
     r"to send",
     r"to add a new line",
+    # Used in showing Notification Bot read receipts message
+    "Notification Bot",
+    # Used in presence_enabled setting label
+    r"invisible mode off",
+    # Typeahead suggestions for "Pronouns" custom field type.
+    r"he/him",
+    r"she/her",
+    r"they/them",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

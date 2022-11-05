@@ -30,7 +30,7 @@ below will direct you to the official documentation for these projects.
 - [Prettier](https://prettier.io/)
 - [Puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
-- [pyflakes](https://pypi.python.org/pypi/pyflakes)
+- [ruff](https://github.com/charliermarsh/ruff)
 - [stylelint](https://github.com/stylelint/stylelint)
 
 Zulip also uses some home-grown code to perform tasks like validating
@@ -109,7 +109,7 @@ describes our test system in detail.
 Most of our lint checks get performed by `./tools/lint`. These include the
 following checks:
 
-- Check Python code with pyflakes.
+- Check Python code with ruff.
 - Check Python formatting with Black and isort.
 - Check JavaScript and TypeScript code with ESLint.
 - Check CSS, JavaScript, TypeScript, and YAML formatting with Prettier.
@@ -131,7 +131,7 @@ The rest of this document pertains to the checks that occur in `./tools/lint`.
 
 Zulip has a script called `lint` that lives in our "tools" directory.
 It is the workhorse of our linting system, although in some cases it
-dispatches the heavy lifting to other components such as pyflakes,
+dispatches the heavy lifting to other components such as ruff,
 eslint, and other home grown tools.
 
 You can find the source code [here](https://github.com/zulip/zulip/blob/main/tools/lint).
@@ -139,8 +139,7 @@ You can find the source code [here](https://github.com/zulip/zulip/blob/main/too
 In order for our entire lint suite to run in a timely fashion, the `lint`
 script performs several lint checks in parallel by forking out subprocesses.
 
-Note that our project does custom regex-based checks on the code, and we
-also customize how we call pyflakes and pycodestyle (pep8). The code for these
+Note that our project does custom regex-based checks on the code. The code for these
 types of checks mostly lives [here](https://github.com/zulip/zulip/tree/main/tools/linter_lib).
 
 ### Special options
@@ -182,10 +181,8 @@ Our Python code is formatted using Black (using the options in the
 options in `.isort.cfg`). The `lint` script enforces this by running
 Black and isort in check mode, or in write mode with `--fix`.
 
-The bulk of our Python linting gets outsourced to the "pyflakes" tool. We
-call "pyflakes" in a fairly vanilla fashion, and then we post-process its
-output to exclude certain specific errors that Zulip is comfortable
-ignoring.
+The bulk of our Python linting gets outsourced to the "ruff" tool,
+which is configured in the `tool.ruff` section of `pyproject.toml`.
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint`. Note that we

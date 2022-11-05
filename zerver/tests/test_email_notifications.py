@@ -385,7 +385,7 @@ class TestMissedMessages(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": hamlet.email,
+                "to": orjson.dumps([hamlet.email]).decode(),
             },
         )
         self.assert_json_success(result)
@@ -518,7 +518,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = [
                 "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > @**King Hamlet** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev.",
+                "You are receiving this because you were personally mentioned.",
             ]
             email_subject = "#Denmark > test"
             verify_body_does_not_include: List[str] = []
@@ -527,7 +527,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
+                "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
 
@@ -538,7 +538,7 @@ class TestMissedMessages(ZulipTestCase):
                 "1 2 3 4 5 6 7 8 9 10 @**King Hamlet**",
                 "private",
                 "group",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -561,7 +561,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = [
                 "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**all** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev.",
+                "You are receiving this because everyone was mentioned in #Denmark.",
             ]
             email_subject = "#Denmark > test"
             verify_body_does_not_include: List[str] = []
@@ -570,7 +570,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
+                "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
             email_subject = "New messages"
@@ -580,7 +580,7 @@ class TestMissedMessages(ZulipTestCase):
                 "1 2 3 4 5 @**all**",
                 "private",
                 "group",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -599,7 +599,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "12")
         verify_body_include = [
             "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > 12 -- ",
-            "You are receiving this because you have email notifications enabled for this stream.",
+            "You are receiving this because you have email notifications enabled for #Denmark.",
         ]
         email_subject = "#Denmark > test"
         self._test_cases(
@@ -619,7 +619,7 @@ class TestMissedMessages(ZulipTestCase):
         )
         verify_body_include = [
             "Cordelia, Lear's daughter: > 0 > 1 > 2 Othello, the Moor of Venice: > @**King Hamlet** -- ",
-            "You are receiving this because you were mentioned in Zulip Dev.",
+            "You are receiving this because you were personally mentioned.",
         ]
         email_subject = "#Denmark > test"
         self._test_cases(
@@ -648,14 +648,14 @@ class TestMissedMessages(ZulipTestCase):
                 verify_body_include = [
                     "This email does not include message content because your organization has disabled",
                     "http://zulip.testserver/help/hide-message-content-in-emails",
-                    "View or reply in Zulip",
+                    "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             elif message_content_disabled_by_user:
                 verify_body_include = [
                     "This email does not include message content because you have disabled message ",
                     "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                    "View or reply in Zulip",
+                    "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             email_subject = "New messages"
@@ -664,7 +664,7 @@ class TestMissedMessages(ZulipTestCase):
                 "Extremely personal message!",
                 "mentioned",
                 "group",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -681,7 +681,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("hamlet"),
             "Extremely personal message!",
         )
-        verify_body_include = ["Reply to this email directly, or view it in Zulip"]
+        verify_body_include = ["Reply to this email directly, or view it in Zulip Dev Zulip"]
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
@@ -717,7 +717,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
+                "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
             email_subject = "New messages"
@@ -726,7 +726,7 @@ class TestMissedMessages(ZulipTestCase):
                 "Othello, the Moor of Venice Othello, the Moor of Venice",
                 "Group personal message!",
                 "mentioned",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -849,7 +849,7 @@ class TestMissedMessages(ZulipTestCase):
 
         expected_email_include = [
             "Othello, the Moor of Venice: > @*hamlet_only* > @*hamlet_and_cordelia* -- ",
-            "You are receiving this because @hamlet_only was mentioned in Zulip Dev.",
+            "You are receiving this because @hamlet_only was mentioned.",
         ]
 
         for text in expected_email_include:
@@ -889,7 +889,76 @@ class TestMissedMessages(ZulipTestCase):
 
         expected_email_include = [
             "Othello, the Moor of Venice: > @*hamlet_and_cordelia* > @**King Hamlet** -- ",
-            "You are receiving this because you were mentioned in Zulip Dev.",
+            "You are receiving this because you were personally mentioned.",
+        ]
+
+        for text in expected_email_include:
+            self.assertIn(text, self.normalize_string(mail.outbox[0].body))
+
+    def test_user_group_over_wildcard_mention_priority(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        hamlet_and_cordelia = create_user_group(
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+        )
+
+        wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
+        user_group_mentioned_message_id = self.send_stream_message(
+            othello, "Denmark", "@*hamlet_and_cordelia*"
+        )
+
+        handle_missedmessage_emails(
+            hamlet.id,
+            [
+                {
+                    "message_id": wildcard_mentioned_message_id,
+                    "trigger": "wildcard_mentioned",
+                    "mentioned_user_group_id": None,
+                },
+                {
+                    "message_id": user_group_mentioned_message_id,
+                    "trigger": "mentioned",
+                    "mentioned_user_group_id": hamlet_and_cordelia.id,
+                },
+            ],
+        )
+
+        expected_email_include = [
+            "Othello, the Moor of Venice: > @**all** > @*hamlet_and_cordelia* -- ",
+            "You are receiving this because @hamlet_and_cordelia was mentioned.",
+        ]
+
+        for text in expected_email_include:
+            self.assertIn(text, self.normalize_string(mail.outbox[0].body))
+
+    def test_wildcard_over_stream_mention_priority(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", "1")
+        wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
+
+        handle_missedmessage_emails(
+            hamlet.id,
+            [
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": "stream_email_notify",
+                    "mentioned_user_group_id": None,
+                },
+                {
+                    "message_id": wildcard_mentioned_message_id,
+                    "trigger": "wildcard_mentioned",
+                    "mentioned_user_group_id": None,
+                },
+            ],
+        )
+
+        expected_email_include = [
+            "Othello, the Moor of Venice: > 1 > @**all** -- ",
+            "You are receiving this because everyone was mentioned in #Denmark.",
         ]
 
         for text in expected_email_include:
@@ -1113,6 +1182,21 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(
             msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
         )
+
+    def test_pm_link_in_missed_message_header(self) -> None:
+        cordelia = self.example_user("cordelia")
+        msg_id = self.send_personal_message(
+            cordelia,
+            self.example_user("hamlet"),
+            "Let's test PM link in email notifications",
+        )
+
+        encoded_name = "Cordelia,-Lear's-daughter"
+        verify_body_include = [
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/pm-with/{cordelia.id}-{encoded_name}"
+        ]
+        email_subject = "PMs with Cordelia, Lear's daughter"
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False)
 
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1450,7 +1534,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("hamlet"),
             "```\n```",
         )
-        verify_body_include = ["view it in Zulip"]
+        verify_body_include = ["view it in Zulip Dev Zulip"]
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(
             msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
