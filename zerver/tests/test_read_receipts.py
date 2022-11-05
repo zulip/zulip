@@ -157,6 +157,7 @@ class TestReadReceipts(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         sender = self.example_user("othello")
         bot = self.example_user("default_bot")
+        self.subscribe(bot, "Verona")
 
         message_id = self.send_stream_message(sender, "Verona", "read receipts")
 
