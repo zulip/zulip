@@ -8,8 +8,9 @@
    <kbd>PgDn</kbd>.
 
 1. If the conversation is not of interest, you can
-   [mark all messages as read](/help/marking-messages-as-read) or do so
-   by jumping to the end using the <kbd>End</kbd> key.
+   [mark all messages as read](/help/marking-messages-as-read) by
+   jumping to the bottom with the **Scroll to bottom**
+   (<i class="fa fa-chevron-down"></i>) button or the <kbd>End</kbd> shortcut.
 
 1. Click on the next conversation in the left sidebar, or use the
    <kbd>P</kbd> key to go to the next unread conversation.
