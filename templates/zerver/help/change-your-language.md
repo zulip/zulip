@@ -13,7 +13,7 @@ messages you receive.
 
 {settings_tab|display-settings}
 
-1. Under **Language and time**, click the button under **Language**.
+1. Under **General**, click the button under **Language**.
 
 1. Select a language.
 

@@ -9,13 +9,13 @@ for working in a dark space.
 
 {settings_tab|display-settings}
 
-2. Under **Theme**, configure **Color scheme**.
+2. Under **General**, configure **Theme**.
 
 {end_tabs}
 
-The default is **Sync with computer**, which detects which theme to use based
-on the color scheme used by your operating system.
+The default is **Automatic (follows system settings)**, which detects which theme to use based
+on the theme used by your operating system.
 
 You can also specify **Dark theme** or **Light theme** if you'd like
-Zulip to use the same color scheme regardless of your operating system
+Zulip to use the same theme regardless of your operating system
 configuration.
