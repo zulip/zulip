@@ -88,10 +88,10 @@ function left_userlist_get_new_heights() {
     res.main_div_min_height = viewport_height - top_navbar_height;
 
     // left sidebar
-    const $stream_filters = $("#stream_filters").expectOne();
+    const $stream_filters = $("#left_sidebar_scroll_container").expectOne();
     const $buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
 
-    const stream_filters_real_height = $stream_filters.prop("scrollHeight");
+    const stream_filters_real_height = ui.get_scroll_element($stream_filters).prop("scrollHeight");
     const user_list_real_height = ui.get_scroll_element($buddy_list_wrapper).prop("scrollHeight");
 
     res.total_leftlist_height =
