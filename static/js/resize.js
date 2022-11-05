@@ -36,7 +36,12 @@ function size_blocks(blocks, usable_height) {
     for (const block of blocks) {
         let ratio = block.real_height / sum_height;
         ratio = confine_to_range(0.05, ratio, 0.85);
-        block.max_height = confine_to_range(80, usable_height * ratio, 1.2 * block.real_height);
+        const min_block_height = Math.min(250, usable_height / blocks.length, block.real_height);
+        block.max_height = confine_to_range(
+            min_block_height,
+            usable_height * ratio,
+            1.2 * block.real_height,
+        );
     }
 }
 
