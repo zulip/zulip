@@ -764,6 +764,24 @@ CAMO_URI = "/external_content/"
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
 
+## Entries in this dictionary will override Zulip's default rate
+## limits. Rules which are not explicitly overridden here
+## will be as default. View the current rules using:
+##   /home/zulip/deployments/current/scripts/get-django-setting RATE_LIMITING_RULES
+##
+## The limits are tuples of a number of seconds and a number of
+## requests allowed over that many seconds. If multiple tuples are
+## given in a rule, a request breaching any of them will trigger a
+## rate-limited response to the client. For example, to change the
+## limits for total API requests by each user to be at most 100
+## requests per minute, and at most 200 requests per hour, add:
+##   "api_by_user": [(60, 100), (3600, 200)],
+# RATE_LIMITING_RULES = {
+#     "api_by_ip": [
+#         (60, 100),
+#     ],
+# }
+
 ## Fetch TOR exit node list every hour, and group all TOR exit nodes
 ## together into one bucket when applying rate-limiting.
 # RATE_LIMIT_TOR_TOGETHER = False
