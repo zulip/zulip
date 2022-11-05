@@ -30,6 +30,7 @@ from .configured_settings import (
     CUSTOM_HOME_NOT_LOGGED_IN,
     DEBUG,
     DEBUG_ERROR_REPORTING,
+    DEFAULT_RATE_LIMITING_RULES,
     EMAIL_BACKEND,
     EMAIL_HOST,
     ERROR_REPORTING,
@@ -42,6 +43,7 @@ from .configured_settings import (
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
+    RATE_LIMITING_RULES,
     REALM_HOSTS,
     REGISTER_LINK_DISABLED,
     REMOTE_POSTGRES_HOST,
@@ -358,34 +360,8 @@ CACHES: Dict[str, Dict[str, object]] = {
 # REDIS-BASED RATE LIMITING CONFIGURATION
 ########################################################################
 
-RATE_LIMITING_RULES = {
-    "api_by_user": [
-        (60, 200),  # 200 requests max every minute
-    ],
-    "api_by_ip": [
-        (60, 100),
-    ],
-    "api_by_remote_server": [
-        (60, 1000),
-    ],
-    "authenticate_by_username": [
-        (1800, 5),  # 5 failed login attempts within 30 minutes
-    ],
-    "email_change_by_user": [
-        (3600, 2),  # 2 per hour
-        (86400, 5),  # 5 per day
-    ],
-    "password_reset_form_by_email": [
-        (3600, 2),  # 2 reset emails per hour
-        (86400, 5),  # 5 per day
-    ],
-    "sends_email_by_ip": [
-        (86400, 5),
-    ],
-    "spectator_attachment_access_by_file": [
-        (86400, 1000),  # 1000 per day per file
-    ],
-}
+# Merge any local overrides with the default rules.
+RATE_LIMITING_RULES = {**DEFAULT_RATE_LIMITING_RULES, **RATE_LIMITING_RULES}
 
 # List of domains that, when applied to a request in a Tornado process,
 # will be handled with the separate in-memory rate limiting backend for Tornado,

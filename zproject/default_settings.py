@@ -1,6 +1,6 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
@@ -197,6 +197,39 @@ RATE_LIMITING_AUTHENTICATE = True
 RATE_LIMIT_TOR_TOGETHER = False
 SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
+
+DEFAULT_RATE_LIMITING_RULES = {
+    "api_by_user": [
+        (60, 200),  # 200 requests max every minute
+    ],
+    "api_by_ip": [
+        (60, 100),
+    ],
+    "api_by_remote_server": [
+        (60, 1000),
+    ],
+    "authenticate_by_username": [
+        (1800, 5),  # 5 failed login attempts within 30 minutes
+    ],
+    "email_change_by_user": [
+        (3600, 2),  # 2 per hour
+        (86400, 5),  # 5 per day
+    ],
+    "password_reset_form_by_email": [
+        (3600, 2),  # 2 reset emails per hour
+        (86400, 5),  # 5 per day
+    ],
+    "sends_email_by_ip": [
+        (86400, 5),
+    ],
+    "spectator_attachment_access_by_file": [
+        (86400, 1000),  # 1000 per day per file
+    ],
+}
+# Rate limiting defaults can be individually overridden by adding
+# entries in this object, which is merged with
+# DEFAULT_RATE_LIMITING_RULES.
+RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {}
 
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
