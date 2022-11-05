@@ -421,7 +421,16 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
         .map((stream) => ({
             name: stream.name,
             value: stream.stream_id.toString(),
-        }));
+        }))
+        .sort((a, b) => {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                return -1;
+            }
+            if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                return 1;
+            }
+            return 0;
+        });
 }
 
 function edit_message($row, raw_content) {
