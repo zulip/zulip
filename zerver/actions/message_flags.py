@@ -288,16 +288,31 @@ def do_update_message_flags(
         query = UserMessage.select_for_update_query().filter(
             user_profile=user_profile, message_id__in=messages
         )
+
         um_message_ids = {um.message_id for um in query}
-        historical_message_ids = list(set(messages) - um_message_ids)
+        if flag == "read" and operation == "add":
+            # When marking messages as read, creating "historical"
+            # UserMessage rows would be a waste of storage, because
+            # `flags.read | flags.historical` is exactly the flags we
+            # simulate when processing a message for which a user has
+            # access but no UserMessage row.
+            messages = [message_id for message_id in messages if message_id in um_message_ids]
+        else:
+            # Users can mutate flags for messages that don't have a
+            # UserMessage yet.  Validate that the user is even allowed
+            # to access these message_ids; if so, we will create
+            # "historical" UserMessage rows for the messages in question.
+            #
+            # See create_historical_user_messages for a more detailed
+            # explanation.
+            historical_message_ids = list(set(messages) - um_message_ids)
 
-        # Users can mutate flags for messages that don't have a UserMessage yet.
-        # First, validate that the user is even allowed to access these message_ids.
-        for message_id in historical_message_ids:
-            access_message(user_profile, message_id)
+            for message_id in historical_message_ids:
+                access_message(user_profile, message_id)
 
-        # And then create historical UserMessage records.  See the called function for more context.
-        create_historical_user_messages(user_id=user_profile.id, message_ids=historical_message_ids)
+            create_historical_user_messages(
+                user_id=user_profile.id, message_ids=historical_message_ids
+            )
 
         if operation == "add":
             count = query.update(flags=F("flags").bitor(flagattr))
