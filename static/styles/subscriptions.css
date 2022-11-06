@@ -675,30 +675,20 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
-    #user-group-creation {
-        max-height: calc(100% - 102px);
-
-        .user-group-creation-body {
-            padding: 15px;
-        }
-    }
-
-    #stream-creation {
-        .stream-creation-body {
-            height: calc(95vh - 155px);
-            padding: 15px;
-
-            @media (width < $md_min) {
-                height: calc(95vh - 115px);
-            }
-        }
-    }
-
     #user-group-creation,
     #stream-creation {
         overflow: auto;
         outline: none;
         -webkit-overflow-scrolling: touch;
+
+        .user-group-creation-body,
+        .stream-creation-body {
+            /*
+                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer) + 15px (padding for .simplebar-content)
+            */
+            height: calc(95vh - 164px);
+            padding: 15px 15px 0;
+        }
 
         .modal-footer {
             position: absolute;
