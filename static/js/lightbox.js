@@ -200,7 +200,10 @@ export function render_lightbox_list_images(preview_source) {
 }
 
 function display_image(payload) {
+
+
     render_lightbox_list_images(payload.preview);
+
 
     $(".player-container").hide();
     $(".image-preview, .image-actions, .image-description, .download, .lightbox-zoom-reset").show();
@@ -476,6 +479,22 @@ export function initialize() {
         e.stopPropagation();
         const $img = $(this).find("img");
         open_image($img);
+
+        const $selectedImage = $("#lightbox_overlay .image-list .selected");
+        const $imageList = $("#lightbox_overlay .image-list");
+        const imageListWidth = $imageList.prop('clientWidth');
+        const smallImageWidth = $selectedImage.prop('clientWidth');
+        const currentScrollAmount = $imageList.prop('scrollLeft');
+
+        const parentOffset = {
+            center: $imageList.offset().left + imageListWidth / 2,
+        }
+
+        const coords = {
+            center: $selectedImage.position().left + smallImageWidth / 2,
+        };
+
+        $imageList.scrollLeft(currentScrollAmount - (parentOffset.center - coords.center));
     });
 
     $("#lightbox_overlay .download").on("click", function () {
@@ -494,24 +513,39 @@ export function initialize() {
         $(this).addClass("selected");
         pan_zoom_control.reset();
 
-        const parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
-        // this is the left and right of the image compared to its parent.
+        const currentScrollAmount = $image_list.prop('scrollLeft');
+        const imageListWidth = $image_list.prop('clientWidth');
+        const smallImageWidth = this.clientWidth;
+
+        // set same value as used in css
+        const imageListFlexGap = 6;
+
+        const parentOffset = {
+            left: $image_list.offset().left,
+            right: $image_list.offset().left + imageListWidth,
+            center: $image_list.offset().left + imageListWidth / 2,
+        }
+
         const coords = {
-            left: this.offsetLeft,
-            right: this.offsetLeft + this.clientWidth,
+            left: $(this).position().left,
+            right: $(this).position().left + smallImageWidth,
+            center: $(this).position().left + smallImageWidth/ 2,
         };
 
-        if (coords.right > parentOffset) {
-            // add 2px margin
+        if (coords.right > parentOffset.right) {
             $image_list.animate(
                 {
-                    scrollLeft: coords.right - this.parentNode.clientWidth + 2,
+                    scrollLeft: currentScrollAmount + (coords.right - parentOffset.right + imageListFlexGap),
                 },
-                100,
+                150, 'swing'
             );
-        } else if (coords.left < this.parentNode.scrollLeft) {
-            // subtract 2px margin
-            $image_list.animate({scrollLeft: coords.left - 2}, 100);
+        } else if (coords.left < parentOffset.left) {
+            $image_list.animate(
+                {
+                    scrollLeft: currentScrollAmount - (parentOffset.left - coords.left + imageListFlexGap),
+                },
+                150, 'swing'
+            );
         }
     });
 
