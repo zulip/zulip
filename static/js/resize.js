@@ -16,35 +16,6 @@ import * as util from "./util";
 
 let narrow_window = false;
 
-function confine_to_range(lo, val, hi) {
-    if (val < lo) {
-        return lo;
-    }
-    if (val > hi) {
-        return hi;
-    }
-    return val;
-}
-
-function size_blocks(blocks, usable_height) {
-    let sum_height = 0;
-
-    for (const block of blocks) {
-        sum_height += block.real_height;
-    }
-
-    for (const block of blocks) {
-        let ratio = block.real_height / sum_height;
-        ratio = confine_to_range(0.05, ratio, 0.85);
-        const min_block_height = Math.min(250, usable_height / blocks.length, block.real_height);
-        block.max_height = confine_to_range(
-            min_block_height,
-            usable_height * ratio,
-            1.2 * block.real_height,
-        );
-    }
-}
-
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
@@ -109,20 +80,18 @@ function left_userlist_get_new_heights() {
         $("#user_search_section").safeOuterHeight(true) -
         $("#private_messages_sticky_header").safeOuterHeight(true);
 
-    const blocks = [
-        {
-            real_height: stream_filters_real_height,
-        },
-        {
-            real_height: user_list_real_height,
-        },
-    ];
-
-    size_blocks(blocks, res.total_leftlist_height);
-
-    res.stream_filters_max_height = blocks[0].max_height;
-    res.buddy_list_wrapper_max_height = blocks[1].max_height;
-
+    if (res.total_leftlist_height - user_list_real_height > stream_filters_real_height) {
+        // There is enough space for the both lists to be fully displayed.
+        res.stream_filters_max_height = "100%";
+        res.buddy_list_wrapper_max_height = "100%";
+    } else {
+        res.stream_filters_max_height = Math.min(
+            res.total_leftlist_height / 2,
+            stream_filters_real_height,
+        );
+        res.buddy_list_wrapper_max_height =
+            res.total_leftlist_height - res.stream_filters_max_height;
+    }
     return res;
 }
 
