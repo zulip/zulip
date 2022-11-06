@@ -36,7 +36,12 @@ function size_blocks(blocks, usable_height) {
     for (const block of blocks) {
         let ratio = block.real_height / sum_height;
         ratio = confine_to_range(0.05, ratio, 0.85);
-        block.max_height = confine_to_range(80, usable_height * ratio, 1.2 * block.real_height);
+        const min_block_height = Math.min(250, usable_height / blocks.length, block.real_height);
+        block.max_height = confine_to_range(
+            min_block_height,
+            usable_height * ratio,
+            1.2 * block.real_height,
+        );
     }
 }
 
@@ -88,10 +93,10 @@ function left_userlist_get_new_heights() {
     res.main_div_min_height = viewport_height - top_navbar_height;
 
     // left sidebar
-    const $stream_filters = $("#stream_filters").expectOne();
+    const $stream_filters = $("#left_sidebar_scroll_container").expectOne();
     const $buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
 
-    const stream_filters_real_height = $stream_filters.prop("scrollHeight");
+    const stream_filters_real_height = ui.get_scroll_element($stream_filters).prop("scrollHeight");
     const user_list_real_height = ui.get_scroll_element($buddy_list_wrapper).prop("scrollHeight");
 
     res.total_leftlist_height =
@@ -211,6 +216,9 @@ export function resize_stream_filters_container(h) {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     resize_bottom_whitespace(h);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
+    if (user_settings.left_side_userlist) {
+        $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
+    }
 }
 
 export function resize_sidebars() {

@@ -489,8 +489,9 @@ django-phonenumber-field==6.4.0 \
     --hash=sha256:72a3e7a3e7493bf2a12c07a3bc77ce89813acc16592bf04d0eee3b5a452097ed \
     --hash=sha256:a31b4f05ac0ff898661516c84940f83adb5cdcf0ae4b9b1d31bb8ad3ff345b58
     # via django-two-factor-auth
-django-scim2==0.17.3 \
-    --hash=sha256:6fcff9389e3a6bad1599f8873a5fbf4e0101400cd62beac4d7bf053bd4944447
+django-scim2==0.18.0 \
+    --hash=sha256:5055099fdbfa55b46488cece7b378225263265ae4acd1669c47b2c286d2cfbb2 \
+    --hash=sha256:f3353df68b469f494a5c7f53bb487411125a08be77d2ccc2d4c048138895614c
     # via -r requirements/common.in
 django-sendfile2==0.7.0 \
     --hash=sha256:0ee17b4f7ce8cc7159f75fa4e5d62e7795c1217de8f1e52ee6265d4aa46dce03 \
@@ -1608,7 +1609,6 @@ python-dateutil==2.8.2 \
     #   -r requirements/common.in
     #   arrow
     #   botocore
-    #   django-scim2
     #   moto
 python-debian==0.1.48 \
     --hash=sha256:00edb2c95a9e28e17067c055d17a66e90abf9d7c80cfda93095e7193e5ae58c3 \
