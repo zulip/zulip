@@ -37,7 +37,7 @@ html {
     padding: 15px 0;
     height: 29px;
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
 
     z-index: 100;
@@ -92,7 +92,7 @@ html {
 
 .digest-email-html {
     padding: 20px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     border-radius: 5px;
 }
 
@@ -238,7 +238,7 @@ html {
 }
 
 .help .markdown {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
 }
@@ -346,8 +346,8 @@ label.text-error {
 }
 
 input.text-error {
-    border-color: hsl(0, 100%, 50%);
-    outline-color: hsl(0, 100%, 50%);
+    border-color: var(--alert);
+    outline-color: var(--alert);
 }
 
 .portico-container {
@@ -511,7 +511,7 @@ input.text-error {
             margin: 10px 0 0;
             list-style-type: none;
             width: fit-content;
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             padding: 5px 0;
             border-radius: 4px;
             border: 1px solid hsl(0, 0%, 87%);
@@ -634,7 +634,7 @@ input.text-error {
 }
 
 .table.table-striped {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
 }
 
@@ -819,7 +819,7 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 .btn-admin {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     border-color: hsl(198, 100%, 48%);
     border-style: solid;
     color: hsl(207, 89%, 54%);
@@ -1086,7 +1086,7 @@ input.new-organization-button {
     margin: auto;
     border: 2px solid hsl(163, 43%, 46%);
     max-width: 500px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     box-shadow: 0 0 4px hsl(163, 43%, 46%);
     font-size: 18px;
 

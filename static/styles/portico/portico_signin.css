@@ -20,7 +20,7 @@ html {
     padding: 30px;
     min-width: 0;
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
@@ -133,7 +133,7 @@ html {
 
         .form-inline .outline {
             border: 2px inset hsl(213, 23%, 25%);
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             color: hsl(213, 23%, 25%);
             padding: 13px 20px 11px;
 
@@ -247,7 +247,7 @@ html {
 
 .header {
     color: hsl(0, 0%, 27%);
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     position: fixed;
     width: 100%;
     top: 0;
@@ -643,7 +643,7 @@ html {
         }
 
         span {
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             padding: 0 5px;
         }
     }
@@ -757,7 +757,7 @@ button.login-social-button {
     background-size: auto 60%;
     background-repeat: no-repeat;
     background-position: 13px 50%;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.3), 0 0 5px hsla(0, 0%, 0%, 0.1);
     margin-left: 0;
     margin-top: 0;

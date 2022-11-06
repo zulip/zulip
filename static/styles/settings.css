@@ -1149,7 +1149,7 @@ $option_title_width: 180px;
 
         &:hover,
         &:focus {
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             border: 1px solid hsl(0, 0%, 61%);
             color: hsl(0, 0%, 18%);
 
@@ -1345,7 +1345,7 @@ $option_title_width: 180px;
         .settings-sticky-bar {
             position: sticky;
             z-index: 1;
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             top: 0;
         }
     }
@@ -1656,7 +1656,7 @@ $option_title_width: 180px;
 @supports (-moz-appearance: none) {
     #settings_page select {
         appearance: none;
-        background: hsl(0, 0%, 100%) url("../images/dropdown.png") right / 20px
+        background: var(--light-background) url("../images/dropdown.png") right / 20px
             no-repeat;
         padding-right: 20px;
     }
@@ -1693,7 +1693,7 @@ $option_title_width: 180px;
         padding: 2px 6px;
         min-height: 24px;
         max-width: 206px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-background);
 
         &:focus-within {
             border-color: hsla(206, 80%, 62%, 0.8);

@@ -80,7 +80,7 @@
     top: 2px;
     border: 1px solid hsl(0, 0%, 80%);
     border-radius: 5px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     color: hsl(0, 0%, 0%);
     margin: 0 0 0 5px;
     height: 27px;
@@ -104,7 +104,7 @@
 .stream_creation_error {
     display: none;
     margin-left: 2px;
-    color: hsl(0, 100%, 50%);
+    color: var(--alert);
 }
 
 /* TODO: Unify with settings.css definition */
@@ -561,7 +561,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .checked svg {
-        fill: hsl(170, 48%, 54%);
+        fill: var(--success);
     }
 
     .icon {

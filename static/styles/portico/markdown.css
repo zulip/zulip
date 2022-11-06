@@ -127,7 +127,7 @@
                 vertical-align: top;
                 padding: 3px 6.5px 3px 7.5px;
                 margin-right: 5px;
-                background-color: hsl(170, 48%, 54%);
+                background-color: var(--success);
                 color: hsl(0, 0%, 100%);
                 border-radius: 100%;
                 font-size: 0.9em;
@@ -136,7 +136,7 @@
             }
 
             .codehilite {
-                background-color: hsl(0, 0%, 100%);
+                background-color: var(--light-background);
             }
 
             & > ul {
@@ -179,7 +179,7 @@
     .content {
         padding: 30px;
         max-width: 768px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-background);
 
         ol li p:not(:first-child) {
             display: block;
@@ -359,7 +359,7 @@
         white-space: initial;
         padding: 0;
         padding-right: 4px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-background);
     }
 
     pre {
