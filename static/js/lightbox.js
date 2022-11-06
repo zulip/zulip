@@ -73,16 +73,19 @@ export class PanZoomControl {
             }
             switch (e.key) {
                 case "Z":
-                case "+":
+                case "+": {
                     this.zoomIn();
                     break;
+                }
                 case "z":
-                case "-":
+                case "-": {
                     this.zoomOut();
                     break;
-                case "v":
+                }
+                case "v": {
                     overlays.close_overlay("lightbox");
                     break;
+                }
             }
             e.preventDefault();
             e.stopPropagation();
@@ -200,10 +203,7 @@ export function render_lightbox_list_images(preview_source) {
 }
 
 function display_image(payload) {
-
-
     render_lightbox_list_images(payload.preview);
-
 
     $(".player-container").hide();
     $(".image-preview, .image-actions, .image-description, .download, .lightbox-zoom-reset").show();
@@ -247,13 +247,15 @@ function display_video(payload) {
 
     let source;
     switch (payload.type) {
-        case "youtube-video":
+        case "youtube-video": {
             source = "https://www.youtube.com/embed/" + payload.source;
             break;
-        case "vimeo-video":
+        }
+        case "vimeo-video": {
             source = "https://player.vimeo.com/video/" + payload.source;
             break;
-        case "embed-video":
+        }
+        case "embed-video": {
             // Use data: to load the player in a unique origin for security.
             source =
                 "data:text/html," +
@@ -262,6 +264,7 @@ function display_video(payload) {
                         payload.source,
                 );
             break;
+        }
     }
 
     const $iframe = $("<iframe>");
@@ -482,13 +485,13 @@ export function initialize() {
 
         const $selectedImage = $("#lightbox_overlay .image-list .selected");
         const $imageList = $("#lightbox_overlay .image-list");
-        const imageListWidth = $imageList.prop('clientWidth');
-        const smallImageWidth = $selectedImage.prop('clientWidth');
-        const currentScrollAmount = $imageList.prop('scrollLeft');
+        const imageListWidth = $imageList.prop("clientWidth");
+        const smallImageWidth = $selectedImage.prop("clientWidth");
+        const currentScrollAmount = $imageList.prop("scrollLeft");
 
         const parentOffset = {
             center: $imageList.offset().left + imageListWidth / 2,
-        }
+        };
 
         const coords = {
             center: $selectedImage.position().left + smallImageWidth / 2,
@@ -513,8 +516,8 @@ export function initialize() {
         $(this).addClass("selected");
         pan_zoom_control.reset();
 
-        const currentScrollAmount = $image_list.prop('scrollLeft');
-        const imageListWidth = $image_list.prop('clientWidth');
+        const currentScrollAmount = $image_list.prop("scrollLeft");
+        const imageListWidth = $image_list.prop("clientWidth");
         const smallImageWidth = this.clientWidth;
 
         // set same value as used in css
@@ -524,27 +527,32 @@ export function initialize() {
             left: $image_list.offset().left,
             right: $image_list.offset().left + imageListWidth,
             center: $image_list.offset().left + imageListWidth / 2,
-        }
+        };
 
         const coords = {
             left: $(this).position().left,
             right: $(this).position().left + smallImageWidth,
-            center: $(this).position().left + smallImageWidth/ 2,
+            center: $(this).position().left + smallImageWidth / 2,
         };
 
         if (coords.right > parentOffset.right) {
             $image_list.animate(
                 {
-                    scrollLeft: currentScrollAmount + (coords.right - parentOffset.right + imageListFlexGap),
+                    scrollLeft:
+                        currentScrollAmount +
+                        (coords.right - parentOffset.right + imageListFlexGap),
                 },
-                150, 'swing'
+                150,
+                "swing",
             );
         } else if (coords.left < parentOffset.left) {
             $image_list.animate(
                 {
-                    scrollLeft: currentScrollAmount - (parentOffset.left - coords.left + imageListFlexGap),
+                    scrollLeft:
+                        currentScrollAmount - (parentOffset.left - coords.left + imageListFlexGap),
                 },
-                150, 'swing'
+                150,
+                "swing",
             );
         }
     });

@@ -6,10 +6,12 @@
         </div>
         <div class="image-actions">
             <a class="button small lightbox-zoom-reset disabled">{{t "Reset zoom" }}</a>
-            <a class="button small open" rel="noopener noreferrer" target="_blank">{{t "Open" }}</a>
-            <a class="button small download" download>{{t "Download" }}</a>
+            <div class="dual-button">
+                <a class="button small open" rel="noopener noreferrer" target="_blank">{{t "Open" }}</a>
+                <a class="button small download" download>{{t "Download" }}</a>
+            </div>
         </div>
-        <div class="exit" aria-label="{{t 'Close' }}"><span aria-hidden="true">x</span></div>
+        <button class="exit" aria-label="{{t 'Close' }}"></button>
     </div>
 
     <div class="image-preview no-select">
@@ -17,8 +19,10 @@
     </div>
     <div class="player-container"></div>
     <div class="center">
-        <div class="arrow no-select" data-direction="prev">&lt;</div>
+        <button class="arrow no-select" data-direction="prev">
+        </button>
         <div class="image-list"></div>
-        <div class="arrow no-select" data-direction="next">&gt;</div>
+        <button class="arrow no-select" data-direction="next">
+        </button>
     </div>
 </div>

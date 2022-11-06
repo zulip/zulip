@@ -1,5 +1,5 @@
 #lightbox_overlay {
-    background-color: hsl(227, 40%, 16%);
+    background: linear-gradient(0deg, hsl(225, 15%, 10%), hsl(225, 15%, 15%));
 
     .image-preview {
         display: flex;
@@ -7,10 +7,9 @@
         justify-content: center;
         position: relative;
         width: 100%;
-        height: calc(100% - 65px - 95px);
+        height: calc(100% - 100px - 80px);
         margin: 0;
-        overflow: hidden;
-
+        z-index: 0;
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center center;
@@ -31,57 +30,68 @@
     }
 
     .exit {
+        position: relative;
         flex-shrink: 0;
+        margin: 4px 0 0 20px;
+        width: 20px;
+        height: 20px;
+        opacity: 0.75;
+        transition: opacity 0.2s ease 0s;
 
-        color: hsla(0, 0%, 100%, 0.8);
-        font-size: 2rem;
-        margin: 6px 20px 0 0;
+        background: hsl(0, 0%, 100%);
+        mask-image: url("../images/close.svg");
+        mask-size: contain;
+        mask-repeat: no-repeat;
 
-        transform: scaleY(0.75);
-        font-weight: 300;
-
-        opacity: 0;
-        pointer-events: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    &.show .exit {
-        pointer-events: auto;
-        opacity: 1;
+        &:hover {
+            opacity: 1;
+        }
     }
 
     .image-info-wrapper {
-        background-color: transparent;
+        position: relative;
         display: flex;
         flex-flow: row wrap;
+        padding: 24px 25px;
+        background: hsl(225, 15%, 15%, 0.65);
+        box-shadow: 0 0 15px hsla(0, 0%, 0%, 0.35);
+        backdrop-filter: blur(10px);
+        z-index: 1;
     }
 
-    .image-description,
     .image-actions {
-        margin: 20px;
-    }
-
-    .image-actions {
+        display: flex;
+        gap: 6px;
+        align-items: flex-start;
         flex-shrink: 0;
         margin-left: auto;
 
         .button {
-            font-size: 0.9rem;
-            min-width: inherit;
-            padding: 4px 10px;
-            border: 1px solid hsla(0, 0%, 100%, 0.6);
-            background-color: transparent;
-            color: hsl(0, 0%, 100%);
-            border-radius: 4px;
-            text-decoration: none;
             display: inline-block;
-            margin: 0 5px;
+            font-size: 0.85rem;
+            line-height: 1.25em;
+            min-width: inherit;
+            padding: 8px 19px;
+            color: hsl(0, 0%, 100%);
+            background-color: hsla(0, 0%, 100%, 0.125);
+            border: none;
+            border-radius: 16px;
+            text-decoration: none;
 
             &:hover {
-                background-color: hsl(0, 0%, 100%);
-                border-color: hsl(0, 0%, 100%);
-                color: hsl(227, 40%, 16%);
+                background-color: hsla(0, 0%, 100%, 0.35);
+            }
+        }
+
+        .dual-button {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 2px;
+            border-radius: 16px;
+            overflow: hidden;
+
+            .button {
+                border-radius: 0;
             }
         }
 
@@ -90,9 +100,7 @@
             cursor: default;
 
             &:hover {
-                background-color: transparent;
-                color: hsl(0, 0%, 100%);
-                border: 1px solid hsla(0, 0%, 100%, 0.6);
+                background-color: hsla(0, 0%, 100%, 0.125);
             }
         }
     }
@@ -100,19 +108,14 @@
     .image-description {
         display: flex;
         flex-direction: column;
+        gap: 3px;
         max-width: calc(100% - 400px);
-        /* add some extra margin top and remove some bottom to keep the
-        height the same. and vertically center the text with the buttons. */
-        margin-top: 25px;
-        margin-bottom: 15px;
-
-        font-size: 1.1rem;
         color: hsl(0, 0%, 100%);
 
         .title {
-            vertical-align: top;
+            font-size: 1.1rem;
             font-weight: 400;
-            line-height: normal;
+            line-height: 1.5em;
 
             /* Required for text-overflow */
             white-space: nowrap;
@@ -121,8 +124,12 @@
         }
 
         .user {
+            font-size: 0.97rem;
             font-weight: 300;
-            line-height: normal;
+            line-height: 1.5em;
+            opacity: 0.75;
+
+            /* Required for text-overflow */
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: pre;
@@ -150,21 +157,35 @@
     }
 
     .center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: hsl(225, 15%, 10%, 0.65);
+        border-top: solid 1.5px hsla(0, 0%, 100%, 0.175);
+        backdrop-filter: blur(10px);
+        z-index: 1;
+
         .arrow {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 25px;
-            padding: 5px 10px;
-
-            color: hsl(0, 0%, 100%);
-            font-size: 1.8em;
-            font-weight: 100;
-
-            transform: scaleY(2);
-            cursor: pointer;
-
+            position: relative;
+            width: 23px;
+            height: 23px;
             opacity: 0.5;
-            transition: all 0.3s ease;
+            appearance: none;
+            transition: opacity 0.3s ease;
+
+            background: hsl(0, 0%, 100%);
+            mask-image: url("../images/chevron-left.svg");
+            mask-size: contain;
+            mask-repeat: no-repeat;
+
+            &[data-direction="next"] {
+                mask-image: url("../images/chevron-right.svg");
+            }
 
             &:hover {
                 opacity: 1;
@@ -172,44 +193,70 @@
         }
 
         .image-list {
-            position: relative;
-            display: inline-block;
-            padding: 15px 0 12px;
-            height: 50px;
-            font-size: 0;
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            gap: 6px;
 
-            max-width: 40vw;
-            overflow: hidden;
-            white-space: nowrap;
+            padding: 15px 0;
+            height: 50px;
+            max-width: 55%;
+            overflow: scroll;
+
+            /* hide scroll bar */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
 
             .image {
-                display: inline-block;
-                vertical-align: top;
                 width: 50px;
                 height: 50px;
-                margin: 0 2px;
-
-                background-color: hsla(0, 0%, 94%, 0.2);
-                opacity: 0.5;
-
+                min-width: 50px;
+                border-radius: 5px;
+                background-color: hsla(0, 0%, 100%, 0.25);
                 background-size: cover;
                 background-position: center;
                 cursor: pointer;
+                transform: scale(0.925);
+                transition: transform 0.15s ease 0s;
+
+                &:first-child {
+                    margin-left: 6px;
+                }
+
+                &:last-child {
+                    position: relative;
+
+                    &::after {
+                        position: absolute;
+                        content: "";
+                        width: 6px;
+                        height: 100%;
+                        top: 0;
+                        right: -6px;
+                    }
+                }
 
                 &.selected {
-                    opacity: 1;
+                    box-shadow: 0 0 0 1.5px hsl(0, 0%, 100%, 0.75);
+                    transform: scale(1);
                 }
             }
         }
     }
 }
 
-@media only screen and ($ms_min <= width < $md_min) {
+@media only screen and (width < $md_min) {
     #lightbox_overlay {
+        .image-info-wrapper {
+            gap: 17px;
+        }
+
         .image-actions {
             width: 100%;
-            padding-left: 15px;
-            margin-top: 0;
         }
 
         .image-description {
@@ -217,11 +264,10 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 5px;
         }
 
         .center .image-list {
-            max-width: 80vw;
+            max-width: 80%;
         }
 
         .player-container iframe {
@@ -232,17 +278,14 @@
         }
 
         .image-preview {
-            height: calc(100% - 101px - 104px);
-        }
-
-        .image-info-wrapper {
-            align-items: flex-end;
+            height: calc(100% - 150px - 80px);
         }
 
         .exit {
             position: absolute;
-            right: 5px;
-            top: 6px;
+            right: 25px;
+            top: 24px;
+            margin: 0;
         }
     }
 }
