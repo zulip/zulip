@@ -1,9 +1,0 @@
-/* Variable names for colors according to their purpose in the system. */
-body {
-    --success: hsl(170, 48%, 54%);
-    --danger: hsl(357, 52%, 57%);
-    --alert: hsl(0, 100%, 50%);
-    --link: hsl(200, 100%, 40%);
-    --light-background: hsl(0, 0%, 100%);
-    --dark-background: hsl(0, 0%, 0%);
-}

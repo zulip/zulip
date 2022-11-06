@@ -45,7 +45,7 @@ body {
 /* Common background color */
 body,
 #message_view_header_underpadding {
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
     transition: background-color 200ms linear;
 }
 
@@ -69,7 +69,7 @@ a {
 
     &.message_label_clickable:hover {
         cursor: pointer;
-        color: var(--link);
+        color: hsl(200, 100%, 40%);
     }
 }
 
@@ -437,7 +437,7 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
 }
 
 .fixed-app {
@@ -906,7 +906,7 @@ li.actual-dropdown-menu i {
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
 }
 
 .new_messages {
@@ -1022,8 +1022,8 @@ td.pointer {
 .alert-msg {
     position: absolute;
     right: -110px;
-    color: var(--success);
-    background-color: var(--light-background);
+    color: hsl(170, 48%, 54%);
+    background-color: hsl(0, 0%, 100%);
     z-index: 999;
     padding-left: 20px;
     padding-right: 40px;
@@ -1116,7 +1116,7 @@ td.pointer {
 
         .failed_message_action {
             opacity: 1 !important;
-            color: var(--alert);
+            color: hsl(0, 100%, 50%);
             font-weight: bold;
         }
 
@@ -1477,7 +1477,7 @@ td.pointer {
 }
 
 .actions_hover:hover {
-    color: var(--link);
+    color: hsl(200, 100%, 40%);
 }
 
 .always_visible_topic_edit,
@@ -2428,7 +2428,7 @@ div.floating_recipient {
     }
 
     &.small_square_x {
-        background-color: var(--light-background);
+        background-color: hsl(0, 0%, 100%);
         color: hsl(0, 0%, 47%);
 
         &:hover {
@@ -2734,7 +2734,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     position: absolute;
     left: 0;
     top: 0;
-    background-color: var(--dark-background);
+    background-color: hsl(0, 0%, 0%);
     z-index: 20000;
 }
 
@@ -2766,7 +2766,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .email_copied,
 .user_popover_email i:hover {
-    color: var(--success);
+    color: hsl(170, 48%, 54%);
 }
 
 .email_copied i {
@@ -3219,7 +3219,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         .date_row {
             position: relative;
             z-index: 1;
-            background-color: var(--light-background);
+            background-color: hsl(0, 0%, 100%);
         }
     }
 

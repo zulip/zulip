@@ -132,7 +132,7 @@
 
 .add_subscribers_container .pill-container {
     width: 100%;
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
 
     .input:first-child:empty::before {
         opacity: 0.5;

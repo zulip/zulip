@@ -435,7 +435,7 @@
         padding: 5px 8px 5px 10px;
         font-size: 12px;
         border-radius: 4px;
-        background-color: var(--dark-background);
+        background-color: hsl(0, 0%, 0%);
         color: hsl(0, 0%, 100%);
         opacity: 0.7;
         top: 0;
@@ -618,7 +618,7 @@ code {
 .rendered_markdown code {
     white-space: pre-wrap;
     padding: 0 4px;
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
 }
 
 .codehilite {

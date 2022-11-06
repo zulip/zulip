@@ -120,7 +120,7 @@
         margin-right: 10px;
 
         .sp-container {
-            background-color: var(--light-background);
+            background-color: hsl(0, 0%, 100%);
             cursor: pointer;
             border: none;
 
@@ -136,7 +136,7 @@
             }
 
             button {
-                background-color: var(--light-background);
+                background-color: hsl(0, 0%, 100%);
                 background-image: none;
                 border: 1px solid hsl(0, 0%, 80%);
                 border-radius: 4px;
@@ -582,7 +582,7 @@ ul {
         pointer-events: none;
 
         .popover-inner {
-            background-color: var(--light-background);
+            background-color: hsl(0, 0%, 100%);
             pointer-events: all;
         }
     }
@@ -606,7 +606,7 @@ ul {
         pointer-events: none;
 
         .popover-inner {
-            background-color: var(--light-background);
+            background-color: hsl(0, 0%, 100%);
             pointer-events: all;
         }
 
@@ -733,7 +733,7 @@ ul {
 
     .popover-footer {
         text-align: center;
-        background-color: var(--dark-background);
+        background-color: hsl(0, 0%, 0%);
         border-radius: 0 0 6px 6px;
 
         img {

@@ -1,5 +1,5 @@
 .codehilite pre {
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
 }
 
 .codehilite .hll {

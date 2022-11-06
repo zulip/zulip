@@ -23,7 +23,7 @@
 .modal__container {
     display: flex;
     flex-direction: column;
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
     max-width: calc(100% - 32px);
     max-height: 96%;
     width: 32.5rem;
@@ -105,7 +105,7 @@
 }
 
 .dialog_cancel_button {
-    background: var(--light-background);
+    background: hsl(0, 0%, 100%);
     border: 1px solid hsla(300, 2%, 11%, 0.3);
 
     &:hover {

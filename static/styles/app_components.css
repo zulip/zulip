@@ -125,7 +125,7 @@ input::placeholder {
         line-height: normal;
         text-align: center;
 
-        background-color: var(--light-background);
+        background-color: hsl(0, 0%, 100%);
         color: inherit;
         outline: none;
         border: 1px solid hsl(0, 0%, 80%);
@@ -265,7 +265,7 @@ input::placeholder {
             overflow: hidden;
             vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
             padding: 3px 10px;
-            background-color: var(--light-background);
+            background-color: hsl(0, 0%, 100%);
             cursor: pointer;
             justify-content: center;
             align-items: center;
@@ -423,7 +423,7 @@ div.overlay {
 }
 
 .white-box {
-    background-color: var(--light-background);
+    background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(0, 0%, 87%);
 }
 
@@ -689,7 +689,7 @@ div.overlay {
 
     thead th {
         color: inherit;
-        background-color: var(--light-background);
+        background-color: hsl(0, 0%, 100%);
         border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
 

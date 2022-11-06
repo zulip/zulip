@@ -134,7 +134,7 @@ $alert-error-red: hsl(0, 80%, 40%);
 
         font-size: 1rem;
         border-radius: 4px;
-        background-color: var(--light-background);
+        background-color: hsl(0, 0%, 100%);
 
         position: relative;
 
