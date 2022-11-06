@@ -81,7 +81,7 @@ body.dark-theme {
     }
 
     table.table-striped thead.table-sticky-headers th {
-        background-color: hsl(0, 0%, 0%);
+        background-color: var(--dark-background);
 
         &[data-sort]:hover {
             background-color: hsl(211, 29%, 14%) !important;
@@ -695,7 +695,7 @@ body.dark-theme {
 
     .btn-recent-selected,
     #recent_topics_table thead th {
-        background-color: hsl(0, 0%, 0%) !important;
+        background-color: var(--dark-background) !important;
 
         &[data-sort]:hover {
             background-color: hsl(211, 29%, 14%) !important;
@@ -1214,7 +1214,7 @@ body.dark-theme {
     }
 
     .simplebar-track .simplebar-scrollbar::before {
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-background);
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.33);
     }
 

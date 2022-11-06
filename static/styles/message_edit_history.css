@@ -25,7 +25,7 @@
         }
 
         .highlight_text_deleted {
-            color: hsl(0, 100%, 50%);
+            color: var(--alert);
             background-color: hsl(7, 90%, 92%);
             text-decoration: line-through;
             word-break: break-all;

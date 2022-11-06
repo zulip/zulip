@@ -25,7 +25,7 @@ $category-text: hsl(219, 23%, 33%);
         max-width: 1170px;
         margin: 0 auto;
         border-radius: 10px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-background);
         visibility: hidden;
 
         img {

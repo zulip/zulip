@@ -1,7 +1,7 @@
 .drafts-container {
     position: relative;
     height: 95%;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     border-radius: 4px;
     padding: 0;
     width: 58%;
@@ -132,7 +132,7 @@
             .restore-draft {
                 cursor: pointer;
                 margin-right: 5px;
-                color: hsl(170, 48%, 54%);
+                color: var(--success);
                 opacity: 0.7;
 
                 &:hover {
@@ -143,7 +143,7 @@
             .delete-draft {
                 cursor: pointer;
                 margin-left: 5px;
-                color: hsl(357, 52%, 57%);
+                color: var(--danger);
                 opacity: 0.7;
 
                 &:hover {

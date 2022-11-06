@@ -10,7 +10,7 @@
         margin: 0.15em;
         padding: 0 2px 0 0;
         cursor: pointer;
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-background);
         border: 1px solid hsl(194, 37%, 84%);
         border-radius: 4px;
         align-items: center;

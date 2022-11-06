@@ -1,7 +1,7 @@
 .recent_topics_container {
     padding: 0;
     border-radius: 4px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -145,7 +145,7 @@
                 opacity: 0.5;
 
                 &:hover {
-                    background-color: hsl(0, 0%, 100%);
+                    background-color: var(--light-background);
                     border-color: hsl(0, 0%, 80%);
                 }
             }
@@ -279,7 +279,7 @@
         }
 
         .unread_topic {
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
         }
 
         .last_msg_time {
@@ -288,7 +288,7 @@
         }
 
         thead th {
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             color: inherit;
             border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
             border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;

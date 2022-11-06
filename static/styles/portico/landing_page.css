@@ -5,7 +5,7 @@ html {
 
 body {
     margin: 0;
-    background-color: hsl(0, 0%, 100%) !important;
+    background-color: var(--light-background) !important;
     color: hsl(0, 0%, 27%);
     line-height: normal;
 
@@ -147,7 +147,7 @@ button {
 
     font-family: inherit;
     font-size: 0.7em;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     color: hsl(0, 0%, 27%);
 
     line-height: 20px;
@@ -210,7 +210,7 @@ nav {
     }
 
     &.white {
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-background);
 
         li {
             a,
@@ -545,7 +545,7 @@ nav {
             padding: 50px 100px;
             max-width: calc(1000px);
 
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             border-radius: 10px;
 
             box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
@@ -753,7 +753,7 @@ nav {
             margin-top: 0;
             padding: 12px 20px;
 
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             border: 2px solid hsl(0, 0%, 100%);
 
             font-size: 1.2em;
@@ -1160,7 +1160,7 @@ nav {
     }
 
     .navbar {
-        background-color: hsl(170, 48%, 54%);
+        background-color: var(--success);
         padding: 10px;
     }
 
@@ -1189,7 +1189,7 @@ nav {
             padding: 3px 5px 0;
             margin: 0 5px;
 
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             border-radius: 4px;
 
             box-shadow: 0 0 15px hsla(0, 0%, 0%, 0.01);
@@ -1256,7 +1256,7 @@ nav {
 .portico-landing.hello .features {
     padding: 50px 0 100px;
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
 }
 
 .portico-landing.hello .open-source {
@@ -1810,7 +1810,7 @@ nav {
 }
 
 .portico-landing.hello .apps .arrow::before {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
 }
 
 .portico-landing.hello .apps .left-side,
@@ -1966,7 +1966,7 @@ nav {
 
 .portico-landing.apps .main,
 .portico-landing.features-app .main {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
 }
 
 .portico-landing.apps .hero {
@@ -2054,7 +2054,7 @@ nav {
 }
 
 .portico-landing.apps .other-apps {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     padding: 50px 50px 120px;
 
     text-align: center;
@@ -2177,7 +2177,7 @@ nav {
 }
 
 .portico-landing.why-page .main blockquote {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     border-color: hsl(168, 24%, 51%);
     padding: 20px 30px;
     margin-top: 20px;
@@ -2370,7 +2370,7 @@ nav {
 
     transform: translateY(50px);
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
 }
 
 .portico-landing.hello .apps .screen.android {
@@ -2545,7 +2545,7 @@ nav {
     box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
     text-align: left;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
 
     transition-property: all;
     transition-duration: 0.3s;
@@ -3290,7 +3290,7 @@ nav {
             width: 300px;
             padding-left: 30px;
 
-            background-color: hsl(0, 0%, 100%);
+            background-color: var(--light-background);
             transform: translate(-350px, 0);
 
             box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
@@ -4325,7 +4325,7 @@ nav {
                     1px 1px 1px 0 hsla(193, 100%, 7.1%, 0.15),
                     -1px 1px 1px 0 hsla(193, 100%, 7.1%, 0.15);
 
-                background: hsl(0, 0%, 100%);
+                background: var(--light-background);
                 text-align: left;
                 margin: 10px 0;
                 padding: 50px 30px 0;

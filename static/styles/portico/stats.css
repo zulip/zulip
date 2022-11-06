@@ -31,7 +31,7 @@ p {
     margin: 0 auto;
     padding: 20px;
     border: 2px solid hsl(0, 0%, 93%);
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
     width: 395px;
 
     h1 {
@@ -51,7 +51,7 @@ p {
     margin: 10px 0;
     padding: 20px;
     border: 2px solid hsl(0, 0%, 93%);
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-background);
 
     button {
         position: relative;
