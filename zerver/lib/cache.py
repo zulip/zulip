@@ -756,6 +756,11 @@ class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
         self.cache_clear = cached_function.cache_clear
 
     def __call__(self, *args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+            # In the development environment, we want every file
+            # change to refresh the source files from disk.
+            return self.function(*args, **kwargs)
+
         if self.key_prefix != KEY_PREFIX:
             # Clear cache when cache.KEY_PREFIX changes. This is used in
             # tests.
