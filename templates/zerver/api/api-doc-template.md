@@ -26,6 +26,6 @@
 
 {generate_response_description(API_ENDPOINT_NAME)}
 
-#### Example response
+#### Example response(s)
 
 {generate_code_example|API_ENDPOINT_NAME|fixture}
