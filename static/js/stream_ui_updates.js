@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
@@ -126,17 +125,6 @@ export function update_regular_sub_settings(sub) {
     }
 }
 
-export function update_change_stream_privacy_settings(sub) {
-    // This is in the right panel.
-    const $stream_privacy_btn = $(".change-stream-privacy");
-
-    if (sub.can_change_stream_permissions) {
-        $stream_privacy_btn.show();
-    } else {
-        $stream_privacy_btn.hide();
-    }
-}
-
 export function enable_or_disable_permission_settings_in_edit_panel(sub) {
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
@@ -217,20 +205,6 @@ export function update_stream_row_in_settings_tab(sub) {
         } else if (sub.invite_only || page_params.is_guest) {
             $sub_row.addClass("notdisplayed");
         }
-    }
-}
-
-export function update_stream_subscription_type_text(sub) {
-    // This is in the right panel.
-    const $stream_settings = stream_settings_containers.get_edit_container(sub);
-    const template_data = {
-        ...sub,
-        stream_post_policy_values: stream_data.stream_post_policy_values,
-        message_retention_text: stream_edit.get_retention_policy_text_for_subscription_type(sub),
-    };
-    const html = render_stream_permission_description(template_data);
-    if (hash_util.is_editing_stream(sub.stream_id)) {
-        $stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
 }
 
