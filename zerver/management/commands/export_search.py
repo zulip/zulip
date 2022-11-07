@@ -1,6 +1,6 @@
 import os
 from argparse import ArgumentParser
-from datetime import datetime
+from datetime import datetime, timezone
 from email.headerregistry import Address
 from functools import lru_cache, reduce
 from operator import or_
@@ -51,6 +51,18 @@ This is most often used for legal compliance.
             metavar="<search term>",
             help="Terms to search for in message body or topic",
         )
+        parser.add_argument(
+            "--after",
+            metavar="<datetime>",
+            help="Limit to messages on or after this ISO datetime, treated as UTC",
+            type=lambda s: datetime.fromisoformat(s).astimezone(timezone.utc),
+        )
+        parser.add_argument(
+            "--before",
+            metavar="<datetime>",
+            help="Limit to messages on or before this ISO datetime, treated as UTC",
+            type=lambda s: datetime.fromisoformat(s).astimezone(timezone.utc),
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         terms = set()
@@ -59,8 +71,8 @@ This is most often used for legal compliance.
                 terms.update(f.read().splitlines())
         terms.update(options["search_terms"])
 
-        if not terms:
-            raise CommandError("One or more search terms are required!")
+        if not terms and not options["before"] and not options["after"]:
+            raise CommandError("One or more limits are required!")
 
         if os.path.exists(options["output"]) and not options["force"]:
             raise CommandError(
@@ -68,11 +80,18 @@ This is most often used for legal compliance.
             )
 
         realm = self.get_realm(options)
+        limits = Q()
+
         limits = reduce(
             or_,
             [Q(content__icontains=term) | Q(subject__icontains=term) for term in terms],
-            Q(),
+            limits,
         )
+
+        if options["after"]:
+            limits &= Q(date_sent__gt=options["after"])
+        if options["before"]:
+            limits &= Q(date_sent__lt=options["before"])
 
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
 
