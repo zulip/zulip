@@ -8082,7 +8082,6 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: MANUALLY
                     properties:
                       result: {}
                       msg: {}
