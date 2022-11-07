@@ -137,6 +137,14 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
+        result = self.client_get(
+            # This template shouldn't be accessed directly.
+            "/api/api-doc-template",
+            follow=True,
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(result.status_code, 404)
+
         # Test some API doc endpoints for specific content and metadata.
         self._test("/api/", "The Zulip API")
         self._test("/api/api-keys", "be careful with it")
