@@ -19,7 +19,7 @@ if [ ! -d "/srv/zulip-aws-tools/v2/$AWS_CLI_VERSION" ]; then
     (
         cd /srv/zulip-aws-tools || exit 1
         rm -rf awscli.zip awscli.zip.sha256 aws/
-        curl -fL "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH-$AWS_CLI_VERSION.zip" -o awscli.zip
+        curl -fL --retry 3 "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH-$AWS_CLI_VERSION.zip" -o awscli.zip
         echo "$AWS_CLI_SHA  awscli.zip" >awscli.zip.sha256
         sha256sum -c awscli.zip.sha256
         unzip -q awscli.zip
