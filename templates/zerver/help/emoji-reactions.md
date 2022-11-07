@@ -85,8 +85,6 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 
 {start_tabs}
 
-{tab|desktop-web}
-
 {settings_tab|display-settings}
 
 1. Under **Theme**, toggle **Display names of reacting users when few users have
