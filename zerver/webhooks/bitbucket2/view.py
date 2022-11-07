@@ -25,6 +25,7 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_remove_branch_event_message,
+    get_short_sha,
 )
 from zerver.models import UserProfile
 
@@ -293,7 +294,7 @@ def get_commit_status_changed_body(payload: WildValue, include_title: bool) -> s
 
     commit_info = "[{short_commit_id}]({repo_url}/commits/{commit_id})".format(
         repo_url=get_repository_url(payload["repository"]),
-        short_commit_id=commit_id[:7],
+        short_commit_id=get_short_sha(commit_id),
         commit_id=commit_id,
     )
 

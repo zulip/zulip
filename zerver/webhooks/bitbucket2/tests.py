@@ -88,7 +88,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.check_webhook("commit_comment_created", TOPIC, expected_message)
 
     def test_bitbucket2_on_commit_status_changed_event(self) -> None:
-        expected_message = "[System mybuildtool](https://my-build-tool.com/builds/MY-PROJECT/BUILD-777) changed status of [9fec847](https://bitbucket.org/kolaszek/repository-name/commits/9fec847784abb10b2fa567ee63b85bd238955d0e) to SUCCESSFUL."
+        expected_message = "[System mybuildtool](https://my-build-tool.com/builds/MY-PROJECT/BUILD-777) changed status of [9fec847784a](https://bitbucket.org/kolaszek/repository-name/commits/9fec847784abb10b2fa567ee63b85bd238955d0e) to SUCCESSFUL."
         self.check_webhook("commit_status_changed", TOPIC, expected_message)
 
     def test_bitbucket2_on_issue_created_event(self) -> None:

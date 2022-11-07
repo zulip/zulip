@@ -9,6 +9,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import get_short_sha
 from zerver.models import UserProfile
 
 # Semaphore Classic templates
@@ -129,7 +130,7 @@ def semaphore_classic(payload: WildValue) -> Tuple[str, str, str, str]:
             build_number=build_number,
             build_url=build_url,
             status=result,
-            commit_hash=commit_id[:7],
+            commit_hash=get_short_sha(commit_id),
             commit_message=message,
             commit_url=commit_url,
             email=author_email,
@@ -147,7 +148,7 @@ def semaphore_classic(payload: WildValue) -> Tuple[str, str, str, str]:
             build_number=build_number,
             build_url=build_url,
             status=result,
-            commit_hash=commit_id[:7],
+            commit_hash=get_short_sha(commit_id),
             commit_message=message,
             commit_url=commit_url,
             email=author_email,
@@ -181,7 +182,7 @@ def semaphore_2(payload: WildValue) -> Tuple[str, str, Optional[str], str]:
         context.update(
             branch_name=branch_name,
             commit_id=commit_id,
-            commit_hash=commit_id[:7],
+            commit_hash=get_short_sha(commit_id),
             commit_message=summary_line(payload["revision"]["commit_message"].tame(check_string)),
             commit_url=GITHUB_URL_TEMPLATES["commit"].format(
                 repo_url=repo_url, commit_id=commit_id
