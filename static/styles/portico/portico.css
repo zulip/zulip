@@ -33,12 +33,11 @@ html {
 
 .header {
     position: relative;
-
     padding: 15px 0;
-    height: 29px;
+    height: 30px;
 
     background-color: hsl(0, 0%, 100%);
-    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 12px hsla(0, 0%, 0%, 0.1);
 
     z-index: 100;
 }
@@ -467,14 +466,22 @@ input.text-error {
 /* -- end new footer -- */
 
 .header-main {
+    display: flex;
+    flex-flow: row nowrap;
+    height: 30px;
+
     .logo {
-        display: block;
-        text-decoration: none;
-        position: relative;
-        line-height: 0.8;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        margin-right: auto;
 
         svg {
             vertical-align: -5px;
+        }
+
+        a {
+            line-height: 1;
         }
 
         a,
@@ -484,11 +491,24 @@ input.text-error {
             color: hsl(0, 0%, 20%);
         }
 
-        .light {
-            font-size: 1.2rem;
+        &__subtitle {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+
+            font-size: 1.25rem;
             font-weight: 400;
             color: hsl(0, 0%, 20%);
-            opacity: 0.7;
+            opacity: 0.65;
+
+            &::before {
+                content: "";
+                width: 2px;
+                height: 0.85em;
+                margin: 0 0.75rem;
+                border-radius: 2px;
+                background: hsl(0, 0%, 20%);
+            }
         }
     }
 
@@ -893,21 +913,26 @@ input.new-organization-button {
 }
 
 .top-links {
-    text-align: right;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 0.5rem;
 
     a {
         display: inline-block;
         color: hsl(0, 0%, 100%);
-        padding: 2px 7px 1px 8px;
+        padding: 3px 15px;
+
+        font-size: 0.85rem;
         font-weight: 600;
-        font-size: 16px;
-        transition: all 0.2s ease-in;
-        border-radius: 4px;
+        text-decoration: none;
+
+        border-radius: 5px;
+        background-color: hsl(0, 0%, 20%, 0.1);
+        transition: all 0.15s ease;
 
         &:hover {
-            text-decoration: none;
-            background-color: hsla(0, 0%, 100%, 1);
-            color: hsl(170, 50%, 40%);
+            background-color: hsl(0, 0%, 20%, 0.15);
         }
     }
 }
@@ -1130,7 +1155,7 @@ input.new-organization-button {
         .hamburger {
             display: block;
             position: fixed;
-            top: 70px;
+            top: 80px;
             left: 9px;
             fill: hsl(0, 0%, 100%);
             z-index: 2;
@@ -1251,21 +1276,17 @@ input.new-organization-button {
 @media (width <= 500px) {
     .app.help {
         .sidebar {
-            top: 39px;
-            height: calc(100vh - 39px);
-        }
-
-        .hamburger {
-            top: 50px;
+            top: 65px;
+            height: calc(100vh - 65px);
         }
     }
 
     .help .app-main {
-        margin-top: 39px;
+        margin-top: 65px;
     }
 
     .help .markdown {
-        height: calc(100vh - 39px);
+        height: calc(100vh - 65px);
     }
 
     .error_page .lead {
@@ -1273,21 +1294,40 @@ input.new-organization-button {
         margin-bottom: 10px;
     }
 
-    .brand.logo .light {
-        display: none;
-    }
-
     .center-container {
         display: block;
     }
 
     .header {
-        padding: 4px 0 6px;
+        padding: 11px 0;
+        height: 43px;
     }
 
     .header-main {
         max-width: 100vw;
-        padding: 0 10px;
+        padding: 0 14px;
+        height: 43px;
+
+        .logo {
+            flex-flow: column nowrap;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 5px;
+
+            .brand-logo {
+                height: 21px;
+            }
+
+            &__subtitle {
+                font-size: 11px;
+                line-height: 100%;
+                vertical-align: middle;
+
+                &::before {
+                    content: none;
+                }
+            }
+        }
     }
 
     .footer {
@@ -1314,14 +1354,6 @@ label.label-title {
 .inline-block {
     display: inline-block;
     vertical-align: top;
-}
-
-.float-left {
-    float: left;
-}
-
-.float-right {
-    float: right;
 }
 
 #find_account .form-control {
