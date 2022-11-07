@@ -72,6 +72,6 @@ file.
 
 {generate_response_description(/messages:post)}
 
-#### Example response
+#### Example response(s)
 
 {generate_code_example|/messages:post|fixture}
