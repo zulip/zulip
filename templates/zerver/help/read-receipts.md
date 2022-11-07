@@ -18,15 +18,23 @@ their organization.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!message-actions-menu.md!}
 
 3. Click **View read receipts**.
 
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **View read receipts**.
+
+{end_tabs}
+
 !!! tip ""
     In addition to a list of names, you will see how many people have read
     the message.
-
-{end_tabs}
 
 ## Configure whether Zulip lets others see when you've read messages
 
