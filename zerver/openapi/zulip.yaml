@@ -4824,13 +4824,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: |
-                      When all of the drafts in the request are valid, this endpoint will return
-                      an array of the IDs for the drafts that were just created in the same
-                      order as they were requested. If any of the drafts failed the validation
-                      step, then none of the drafts will be created and we would not get this
-                      status code. The typical JSON response in such a case is:
                     properties:
                       result: {}
                       msg: {}
