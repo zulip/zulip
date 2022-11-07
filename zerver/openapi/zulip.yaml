@@ -5193,12 +5193,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: |
-                      When a request is successful, this endpoint returns a dictionary
-                      containing the following (in addition to the `msg` and `result` keys
-                      present in all Zulip API responses).
-                      A typical successful JSON response may look like:
                     properties:
                       result: {}
                       msg: {}
