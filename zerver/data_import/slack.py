@@ -1123,7 +1123,11 @@ def build_reactions(
     # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
-        emoji_name = slack_reaction["name"]
+        # Slack's data exports use encode skin tone variants on emoji
+        # reactions like this: `clap::skin-tone-2`. For now, we only
+        # use the name of the base emoji, since Zulip's emoji
+        # reactions system doesn't yet support skin tone modifiers.
+        emoji_name = slack_reaction["name"].split("::", maxsplit=1)[0]
         if emoji_name in slack_emoji_name_to_codepoint:
             emoji_code = slack_emoji_name_to_codepoint[emoji_name]
             try:
