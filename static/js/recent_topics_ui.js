@@ -509,12 +509,16 @@ export function inplace_rerender(topic_key) {
 
     const topic_data = topics.get(topic_key);
     const topic_row = get_topic_row(topic_data);
+    // We cannot rely on `topic_widget.meta.filtered_list` to know
+    // if a topic is rendered since the `filtered_list` might have
+    // already been updated via other calls.
+    const is_topic_rendered = topic_row.length;
     // Resorting the topics_widget is important for the case where we
     // are rerendering because of message editing or new messages
     // arriving, since those operations often change the sort key.
     topics_widget.filter_and_sort();
     const current_topics_list = topics_widget.get_current_list();
-    if (topic_row.length && filters_should_hide_topic(topic_data)) {
+    if (is_topic_rendered && filters_should_hide_topic(topic_data)) {
         const row_is_focused = get_focused_row_message().id === topic_data.last_msg_id;
         if (row_is_focused && row_focus >= current_topics_list.length) {
             row_focus = current_topics_list.length - 1;
@@ -523,16 +527,16 @@ export function inplace_rerender(topic_key) {
         // We removed a rendered row, so we need to reduce one offset.
         // TODO: This is correct, but a list_widget abstractions violation.
         topics_widget.meta.offset -= 1;
-    } else if (!topic_row.length && filters_should_hide_topic(topic_data)) {
+    } else if (!is_topic_rendered && filters_should_hide_topic(topic_data)) {
         // In case `topic_row` is not present, our job is already done here
         // since it has not been rendered yet and we already removed it from
         // the filtered list in `topic_widget`. So, it won't be displayed in
         // the future too.
-    } else if (topic_row.length && !filters_should_hide_topic(topic_data)) {
+    } else if (is_topic_rendered && !filters_should_hide_topic(topic_data)) {
         // Only a re-render is required in this case.
         topics_widget.render_item(topic_data);
     } else {
-        // Final case: !topic_row.length && !filters_should_hide_topic(topic_data).
+        // Final case: !is_topic_rendered && !filters_should_hide_topic(topic_data).
         if (current_topics_list.length <= 2) {
             // Avoids edge cases for us and could be faster too.
             topics_widget.clean_redraw();
