@@ -1398,8 +1398,9 @@ $option_title_width: 180px;
     }
 
     #show_my_user_profile_modal {
-        width: 150px;
-        margin-top: 20px;
+        width: 100%;
+        top: 20px;
+        position: sticky;
     }
 
     #show_my_user_profile_modal i {
