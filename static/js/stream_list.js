@@ -420,6 +420,15 @@ export function update_streams_sidebar(force_rerender) {
 }
 
 export function update_dom_with_unread_counts(counts) {
+    if (!counts.stream_count.size) {
+        // No messages are unread in any stream.
+        // To ensure the UI reflects the same, update all subscribed streams
+        // with 0 unread count.
+        const streams = stream_data.subscribed_stream_ids();
+        for (const stream of streams) {
+            set_stream_unread_count(stream, 0, false);
+        }
+    }
     // counts.stream_count maps streams to counts
     for (const [stream_id, count] of counts.stream_count) {
         const stream_has_any_unread_mention_messages =
