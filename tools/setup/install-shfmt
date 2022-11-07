@@ -24,7 +24,7 @@ if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
-    curl -fLO "https://github.com/mvdan/sh/releases/download/v$version/$binary"
+    curl -fLO --retry 3 "https://github.com/mvdan/sh/releases/download/v$version/$binary"
     sha256sum -c <<<"$sha256 $binary"
     chmod +x "$binary"
     mv "$binary" /usr/local/bin/shfmt

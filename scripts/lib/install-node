@@ -24,7 +24,7 @@ if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
-    curl_opts=(-fLO)
+    curl_opts=(-fLO --retry 3)
     if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
         curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
     fi
