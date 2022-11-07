@@ -12,7 +12,7 @@ FROM $BASE_IMAGE
 # Download the release tarball, start rabbitmq server and install the server
 ARG VERSION
 RUN cd $(mktemp -d) \
-  && curl -fLO "https://download.zulip.com/server/zulip-server-$VERSION.tar.gz" \
+  && curl -fLO --retry 3 "https://download.zulip.com/server/zulip-server-$VERSION.tar.gz" \
   && tar -xf "zulip-server-$VERSION.tar.gz" \
   # Version 3.4 predates ddb9d16132a6336b384bf674c4c950cd75d83e5c and 9d57fa97597ec176a8357d6620ab9e670ee19f4e
   && perl -pi -e 's/pgrep -f epmd/which pgrep && pgrep -x epmd/' zulip-server-$VERSION/puppet/zulip/manifests/rabbit.pp \
