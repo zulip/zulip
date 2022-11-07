@@ -7,7 +7,6 @@ import render_change_stream_info_modal from "../templates/stream_settings/change
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
-import render_stream_types from "../templates/stream_settings/stream_types.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -54,38 +53,6 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
     }
 }
 
-export function get_retention_policy_text_for_subscription_type(sub) {
-    let message_retention_days = sub.message_retention_days;
-    // If both this stream and the organization-level policy are to retain forever,
-    // there's no need to comment on retention policies when describing the stream.
-    if (
-        page_params.realm_message_retention_days === settings_config.retain_message_forever &&
-        (sub.message_retention_days === null ||
-            sub.message_retention_days === settings_config.retain_message_forever)
-    ) {
-        return undefined;
-    }
-
-    // Forever for this stream, overriding the organization default
-    if (sub.message_retention_days === settings_config.retain_message_forever) {
-        return $t({defaultMessage: "Messages in this stream will be retained forever."});
-    }
-
-    // If we are deleting messages, even if it's the organization
-    // default, it's worth commenting on the policy.
-    if (message_retention_days === null) {
-        message_retention_days = page_params.realm_message_retention_days;
-    }
-
-    return $t(
-        {
-            defaultMessage:
-                "Messages in this stream will be automatically deleted after {retention_days} days.",
-        },
-        {retention_days: message_retention_days},
-    );
-}
-
 export function get_display_text_for_realm_message_retention_setting() {
     const realm_message_retention_days = page_params.realm_message_retention_days;
     if (realm_message_retention_days === settings_config.retain_message_forever) {
@@ -95,26 +62,6 @@ export function get_display_text_for_realm_message_retention_setting() {
         {defaultMessage: "({message_retention_days} days)"},
         {message_retention_days: realm_message_retention_days},
     );
-}
-
-function change_stream_message_retention_days_block_display_property(value) {
-    if (value === "custom_period") {
-        $("#stream_privacy_modal .stream-message-retention-days-input").show();
-    } else {
-        $("#stream_privacy_modal .stream-message-retention-days-input").hide();
-    }
-}
-
-function set_stream_message_retention_setting_dropdown(stream) {
-    let value = "custom_period";
-    if (stream.message_retention_days === null) {
-        value = "realm_default";
-    } else if (stream.message_retention_days === settings_config.retain_message_forever) {
-        value = "unlimited";
-    }
-
-    $("#stream_privacy_modal .stream_message_retention_setting").val(value);
-    change_stream_message_retention_days_block_display_property(value);
 }
 
 function get_stream_id(target) {
@@ -368,16 +315,6 @@ export function set_stream_property(sub, property, value, status_element) {
     bulk_set_stream_property([sub_data], status_element);
 }
 
-function get_message_retention_days_from_sub(sub) {
-    if (sub.message_retention_days === null) {
-        return "realm_default";
-    }
-    if (sub.message_retention_days === -1) {
-        return "unlimited";
-    }
-    return sub.message_retention_days;
-}
-
 export function get_request_data_for_stream_privacy(selected_val) {
     switch (selected_val) {
         case stream_data.stream_privacy_policy_values.public.code: {
@@ -409,91 +346,6 @@ export function get_request_data_for_stream_privacy(selected_val) {
             };
         }
     }
-}
-
-function change_stream_privacy(e) {
-    e.stopPropagation();
-
-    const data = {};
-    const stream_id = $(e.target).closest(".dialog_submit_button").data("stream-id");
-    const url = "/json/streams/" + stream_id;
-    const $status_element = $(".stream_permission_change_info");
-    const sub = sub_store.get(stream_id);
-
-    const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
-    const stream_post_policy = Number.parseInt(
-        $("#stream_privacy_modal select[name=stream-post-policy]").val(),
-        10,
-    );
-
-    if (sub.stream_post_policy !== stream_post_policy) {
-        data.stream_post_policy = JSON.stringify(stream_post_policy);
-    }
-
-    let invite_only;
-    let history_public_to_subscribers;
-    let is_web_public;
-
-    switch (privacy_setting) {
-        case stream_data.stream_privacy_policy_values.public.code: {
-            invite_only = false;
-            history_public_to_subscribers = true;
-            is_web_public = false;
-
-            break;
-        }
-        case stream_data.stream_privacy_policy_values.private.code: {
-            invite_only = true;
-            history_public_to_subscribers = false;
-            is_web_public = false;
-
-            break;
-        }
-        case stream_data.stream_privacy_policy_values.web_public.code: {
-            invite_only = false;
-            history_public_to_subscribers = true;
-            is_web_public = true;
-
-            break;
-        }
-        default: {
-            invite_only = true;
-            history_public_to_subscribers = true;
-            is_web_public = false;
-        }
-    }
-
-    if (
-        sub.invite_only !== invite_only ||
-        sub.history_public_to_subscribers !== history_public_to_subscribers ||
-        sub.is_web_public !== is_web_public
-    ) {
-        data.is_private = JSON.stringify(invite_only);
-        data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
-        data.is_web_public = JSON.stringify(is_web_public);
-    }
-
-    let message_retention_days = $(
-        "#stream_privacy_modal select[name=stream_message_retention_setting]",
-    ).val();
-    if (message_retention_days === "custom_period") {
-        message_retention_days = Number.parseInt(
-            $("#stream_privacy_modal input[name=stream-message-retention-days]").val(),
-            10,
-        );
-    }
-
-    const message_retention_days_from_sub = get_message_retention_days_from_sub(sub);
-
-    if (message_retention_days_from_sub !== message_retention_days) {
-        data.message_retention_days = JSON.stringify(message_retention_days);
-    }
-
-    if (Object.keys(data).length === 0) {
-        return;
-    }
-
-    settings_ui.do_settings_change(channel.patch, url, data, $status_element);
 }
 
 export function archive_stream(stream_id, $alert_element, $stream_row) {
@@ -531,59 +383,6 @@ export function initialize() {
         }
 
         stream_settings_ui.sub_or_unsub(sub);
-    });
-
-    $("#manage_streams_container").on("click", ".change-stream-privacy", (e) => {
-        const stream_id = get_stream_id(e.target);
-        const stream = sub_store.get(stream_id);
-
-        const template_data = {
-            ask_to_announce_stream: false,
-            stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
-            stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
-            stream_post_policy_values: stream_data.stream_post_policy_values,
-            stream_post_policy: stream.stream_post_policy,
-            is_owner: page_params.is_owner,
-            zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
-            disable_message_retention_setting:
-                !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
-            stream_message_retention_days: stream.message_retention_days,
-            org_level_message_retention_setting:
-                get_display_text_for_realm_message_retention_setting(),
-            upgrade_text_for_wide_organization_logo:
-                page_params.upgrade_text_for_wide_organization_logo,
-            is_business_type_org:
-                page_params.realm_org_type === settings_config.all_org_type_values.business.code,
-            is_stream_edit: true,
-        };
-        const change_privacy_modal = render_stream_types(template_data);
-
-        dialog_widget.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Change stream permissions for #{stream_name}"},
-                {stream_name: stream.name},
-            ),
-            html_body: change_privacy_modal,
-            close_on_submit: true,
-            id: "stream_privacy_modal",
-            on_click: change_stream_privacy,
-            post_render() {
-                $("#stream_privacy_modal .dialog_submit_button").attr("data-stream-id", stream_id);
-                set_stream_message_retention_setting_dropdown(stream);
-
-                $("#stream_privacy_modal .stream_message_retention_setting").on("change", (e) => {
-                    const dropdown_value = e.target.value;
-                    change_stream_message_retention_days_block_display_property(dropdown_value);
-                });
-            },
-            on_show() {
-                stream_settings_ui.hide_or_disable_stream_privacy_options_if_required(
-                    $("#stream_privacy_modal"),
-                );
-            },
-        });
-        e.preventDefault();
-        e.stopPropagation();
     });
 
     $("#manage_streams_container").on("click", "#open_stream_info_modal", (e) => {

@@ -259,11 +259,6 @@ h4.user_group_setting_subsection_title {
     padding-top: 40px;
 }
 
-.change-stream-privacy {
-    width: 100%;
-    text-align: center;
-}
-
 .subscriptions-container .subscriptions-header .fa-chevron-left,
 .user-groups-container .user-groups-header .fa-chevron-left,
 #settings_overlay_container .settings-header.mobile .fa-chevron-left {
@@ -851,21 +846,6 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream_setting_subsection_header {
-        display: flex;
-
-        .stream_permission_change_info {
-            /* TODO: Deduplicate with .save-discard-widget-button. */
-            margin: 12px auto 12px 3px;
-        }
-
-        .button-group {
-            display: inline;
-            margin-left: auto;
-            align-self: center;
-        }
-    }
-
     .checkmark {
         display: none;
         margin-left: 5px;
@@ -875,18 +855,6 @@ h4.user_group_setting_subsection_title {
 
         &.show {
             display: block;
-        }
-    }
-
-    .subscription-type {
-        margin-bottom: 10px;
-
-        .subscription-type-text {
-            display: inline;
-        }
-
-        b {
-            font-weight: 600;
         }
     }
 
@@ -1191,14 +1159,6 @@ div.settings-radio-input-parent {
                 .ind-tab {
                     width: 85px;
                 }
-            }
-        }
-
-        .stream_setting_subsection_header {
-            display: block;
-
-            .stream_permission_change_info {
-                margin: 12px auto 0 3px;
             }
         }
     }
