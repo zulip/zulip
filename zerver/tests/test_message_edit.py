@@ -2460,7 +2460,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -2494,7 +2493,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "true",
@@ -2528,7 +2526,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "true",
@@ -2566,7 +2563,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -2596,7 +2592,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_one",
                 "send_notification_to_old_thread": "false",
@@ -2633,7 +2628,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_one",
                 "send_notification_to_old_thread": "true",
@@ -2670,7 +2664,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_one",
                 "send_notification_to_old_thread": "true",
@@ -2711,7 +2704,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "edited",
                 "propagate_mode": "change_one",
                 "send_notification_to_old_thread": "false",
