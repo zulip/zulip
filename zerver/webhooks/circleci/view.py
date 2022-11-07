@@ -5,6 +5,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import get_short_sha
 from zerver.models import UserProfile
 
 outcome_to_formatted_status_map = {
@@ -48,15 +49,15 @@ def get_commit_range_info(payload: WildValue) -> str:
     num_commits = len(commits)
 
     if num_commits == 1:
-        commit_id = commits[0]["commit"].tame(check_string)[:10]
+        commit_id = get_short_sha(commits[0]["commit"].tame(check_string))
         commit_url = commits[0]["commit_url"].tame(check_string)
         return f"- **Commit:** [{commit_id}]({commit_url})"
 
     vcs_provider = payload["user"]["vcs_type"].tame(check_string)  # Same as payload["why"]?
     first_commit_id = commits[0]["commit"].tame(check_string)
-    shortened_first_commit_id = first_commit_id[:10]
+    shortened_first_commit_id = get_short_sha(first_commit_id)
     last_commit_id = commits[-1]["commit"].tame(check_string)
-    shortened_last_commit_id = last_commit_id[:10]
+    shortened_last_commit_id = get_short_sha(last_commit_id)
     if vcs_provider == "github":
         # Then use GitHub's commit range feature to form the appropriate url.
         vcs_url = payload["vcs_url"].tame(check_string)

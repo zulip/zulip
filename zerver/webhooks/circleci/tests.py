@@ -10,7 +10,7 @@ class CircleCiHookTests(WebhookTestCase):
         expected_topic = "circleci-test"
         expected_message = """
 Build [#5](https://circleci.com/bb/Hypro999/circleci-test/5) of `build`/`workflow` on branch `unstable` has failed.
-- **Commits (3):** [6b5361c166](https://bitbucket.org/Hypro999/circleci-test/commits/6b5361c1661581d975e84b68904ae9bfba75d5e5) ... [eaa88f9eac](https://bitbucket.org/Hypro999/circleci-test/commits/eaa88f9eac0fad86c46a8fe35462fe2c904d84b1)
+- **Commits (3):** [6b5361c1661](https://bitbucket.org/Hypro999/circleci-test/commits/6b5361c1661581d975e84b68904ae9bfba75d5e5) ... [eaa88f9eac0](https://bitbucket.org/Hypro999/circleci-test/commits/eaa88f9eac0fad86c46a8fe35462fe2c904d84b1)
 - **Pull request:** https://bitbucket.org/Hypro999/circleci-test/pull-requests/1
 - **Author:** Hemanth V. Alluri
 """.strip()
@@ -22,7 +22,7 @@ Build [#5](https://circleci.com/bb/Hypro999/circleci-test/5) of `build`/`workflo
         expected_topic = "zulip"
         expected_message = """
 Build [#1429](https://circleci.com/gh/Hypro999/zulip/1429) of `bionic-backend-frontend`/`Ubuntu 18.04 Bionic (Python 3.6, backend+frontend)` on branch `circleci` has failed.
-- **Commits (2):** [73900eeb69 ... 5326f9ea40](https://github.com/Hypro999/zulip/compare/73900eeb69adbf0b83dc487e8eda90661b524eff...5326f9ea4084a01cc2bf1a461b9ad819b4ffdd14)
+- **Commits (2):** [73900eeb69a ... 5326f9ea408](https://github.com/Hypro999/zulip/compare/73900eeb69adbf0b83dc487e8eda90661b524eff...5326f9ea4084a01cc2bf1a461b9ad819b4ffdd14)
 
 - **Author:** Hemanth V. Alluri (Hypro999)
 - **Committer:** Hemanth V. Alluri (Hypro999)
@@ -35,7 +35,7 @@ Build [#1429](https://circleci.com/gh/Hypro999/zulip/1429) of `bionic-backend-fr
         expected_topic = "zulip"
         expected_message = """
 Build [#1431](https://circleci.com/gh/Hypro999/zulip/1431) of `bionic-production-build`/`Production` on branch `circleci` has succeeded.
-- **Commits (2):** [73900eeb69 ... 5326f9ea40](https://github.com/Hypro999/zulip/compare/73900eeb69adbf0b83dc487e8eda90661b524eff...5326f9ea4084a01cc2bf1a461b9ad819b4ffdd14)
+- **Commits (2):** [73900eeb69a ... 5326f9ea408](https://github.com/Hypro999/zulip/compare/73900eeb69adbf0b83dc487e8eda90661b524eff...5326f9ea4084a01cc2bf1a461b9ad819b4ffdd14)
 
 - **Authors:** Gintoki Sakata (ShiroYasha999), Hemanth V. Alluri (Hypro999)
 - **Committers:** Hemanth V. Alluri (Hypro999), Sadaharu
@@ -50,7 +50,7 @@ Build [#1431](https://circleci.com/gh/Hypro999/zulip/1431) of `bionic-production
         expected_topic = "zulip"
         expected_message = """
 Build [#1420](https://circleci.com/gh/Hypro999/zulip/1420) of `bionic-production-install`/`Production` on branch `circleci` was canceled.
-- **Commit:** [b0d6197fb4](https://github.com/Hypro999/zulip/commit/b0d6197fb4cacaf917adca77f77354882ee80621)
+- **Commit:** [b0d6197fb4c](https://github.com/Hypro999/zulip/commit/b0d6197fb4cacaf917adca77f77354882ee80621)
 
 - **Author:** Hemanth V. Alluri (Hypro999)
 - **Committer:** Hemanth V. Alluri (Hypro999)

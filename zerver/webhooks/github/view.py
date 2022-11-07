@@ -32,6 +32,7 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_release_event_message,
+    get_short_sha,
 )
 from zerver.models import UserProfile
 
@@ -419,7 +420,7 @@ def get_status_body(helper: Helper) -> str:
     else:
         status = payload["state"].tame(check_string)
     return "[{}]({}) changed its status to {}.".format(
-        payload["sha"].tame(check_string)[:7],  # TODO
+        get_short_sha(payload["sha"].tame(check_string)),
         payload["commit"]["html_url"].tame(check_string),
         status,
     )
@@ -566,7 +567,7 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
         "name": payload["check_run"]["name"].tame(check_string),
         "html_url": payload["check_run"]["html_url"].tame(check_string),
         "status": payload["check_run"]["status"].tame(check_string),
-        "short_hash": payload["check_run"]["head_sha"].tame(check_string)[:7],
+        "short_hash": get_short_sha(payload["check_run"]["head_sha"].tame(check_string)),
         "commit_url": "{}/commit/{}".format(
             payload["repository"]["html_url"].tame(check_string),
             payload["check_run"]["head_sha"].tame(check_string),

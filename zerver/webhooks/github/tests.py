@@ -232,11 +232,11 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:
-        expected_message = "[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
+        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
         self.check_webhook("status", TOPIC_REPO, expected_message)
 
     def test_status_with_target_url_msg(self) -> None:
-        expected_message = "[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
+        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
@@ -346,7 +346,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_check_run(self) -> None:
         expected_topic = "hello-world / checks"
         expected_message = """
-Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed", expected_topic, expected_message)
 
