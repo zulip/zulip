@@ -1,4 +1,7 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
+import {$t_html} from "./i18n";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
@@ -10,13 +13,15 @@ import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
+import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
 export function mark_all_as_read() {
-    unread.declare_bankruptcy();
-    unread_ui.update_unread_counts();
-
+    ui_report.success(
+        $t_html({defaultMessage: "Marking all messages as read..."}),
+        $("#reloading-application"),
+    );
     channel.post({
         url: "/json/mark_all_as_read",
         success: () => {
@@ -35,6 +40,13 @@ export function mark_all_as_read() {
                 save_narrow: true,
                 save_compose: true,
             });
+        },
+        error(xhr) {
+            ui_report.error(
+                $t_html({defaultMessage: "Unable to mark all messages as read. Please try again!"}),
+                xhr,
+                $("#reloading-application"),
+            );
         },
     });
 }

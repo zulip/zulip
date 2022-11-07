@@ -672,6 +672,7 @@ export function mark_as_read(message_id) {
 }
 
 export function declare_bankruptcy() {
+    // This function is only used in tests.
     unread_pm_counter.clear();
     unread_topic_counter.clear();
     unread_mentions_counter.clear();
