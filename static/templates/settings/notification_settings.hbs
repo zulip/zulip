@@ -51,7 +51,9 @@
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
-            <h3>{{t "Desktop message notifications" }}</h3>
+            <h3>{{t "Desktop message notifications" }}
+                {{> ../help_link_widget link="/help/desktop-notifications" }}
+            </h3>
             {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
@@ -98,7 +100,9 @@
     <div class="mobile_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
-            <h3>{{t "Mobile message notifications" }}</h3>
+            <h3>{{t "Mobile message notifications" }}
+                {{> ../help_link_widget link="/help/mobile-notifications" }}
+            </h3>
             {{> settings_save_discard_widget section_name="mobile-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
@@ -115,7 +119,9 @@
     <div class="email_message_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
-            <h3>{{t "Email message notifications" }}</h3>
+            <h3>{{t "Email message notifications" }}
+                {{> ../help_link_widget link="/help/email-notifications" }}
+            </h3>
             {{> settings_save_discard_widget section_name="email-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
