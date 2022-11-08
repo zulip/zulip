@@ -6,6 +6,15 @@ Zulip can be configured to send message notification emails for [PMs
 and mentions](/help/pm-mention-alert-notifications), as well as
 [stream messages](/help/stream-notifications).
 
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Toggle the checkboxes for **Streams** and **PMs, mentions, and alerts**
+   in the **Email** column of the **Notification triggers** table.
+
+{end_tabs}
+
 You can [respond to Zulip messages directly][reply-from-email] by
 replying to message notification emails, unless you are connecting to
 a self-hosted Zulip server whose system administrator has not
