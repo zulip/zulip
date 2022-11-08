@@ -113,12 +113,6 @@ ignore = [
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
-
-    # Requires Python 3.9:
-    "U002", # `abspath(__file__)` is unnecessary in Python 3.9 and later
-    "U006", # Use `list` instead of `List` for type annotations
-
-    # Requires Python 3.10:
-    "U007", # Use `X | Y` for type annotations
 ]
 line-length = 100
+target-version = "py38"
