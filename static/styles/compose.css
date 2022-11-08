@@ -445,36 +445,6 @@
     }
 }
 
-/* Like .nav-tabs > li > a */
-#compose-send-status {
-    padding: 8px 14px;
-    margin-bottom: 8px;
-    line-height: 20px;
-    display: none;
-}
-
-#compose-send-status .progress {
-    height: 10px;
-    margin-bottom: 10px;
-}
-
-/* Like .alert .close */
-.send-status-close,
-.compose-send-status-close {
-    font-size: 17px;
-    font-weight: bold;
-    color: hsl(0, 0%, 0%);
-    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-    opacity: 0.2;
-    float: right;
-}
-
-.send-status-close:hover,
-.compose-send-status-close:hover {
-    cursor: pointer;
-    opacity: 0.4;
-}
-
 .composition-area {
     position: relative;
     flex: 1;

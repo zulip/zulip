@@ -114,7 +114,6 @@ test_ui("send_message_success", ({override_rewire}) => {
     mock_banners();
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
-    $("#compose-send-status").show();
     $("#compose-send-button .loader").show();
 
     let reify_message_id_checked;
@@ -128,7 +127,6 @@ test_ui("send_message_success", ({override_rewire}) => {
 
     assert.equal($("#compose-textarea").val(), "");
     assert.ok($("#compose-textarea").is_focused());
-    assert.ok(!$("#compose-send-status").visible());
     assert.ok(!$("#compose-send-button .loader").visible());
 
     assert.ok(reify_message_id_checked);
@@ -210,7 +208,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         $("#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-status").show();
         $("#compose-send-button .loader").show();
 
         compose.send_message();
@@ -223,7 +220,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.equal($("#compose-textarea").val(), "");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok(!$("#compose-send-status").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
     })();
 
@@ -266,7 +262,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-status").show();
         $("#compose-send-button .loader").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
@@ -286,7 +281,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(banner_rendered);
         assert.equal($("#compose-textarea").val(), "foobarfoobar");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok($("#compose-send-status").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
     })();
 });
@@ -337,7 +331,6 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     user_settings.enter_sends = true;
 
     compose.enter_with_preview_open();
-    assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
 test_ui("finish", ({override, override_rewire, mock_template}) => {
