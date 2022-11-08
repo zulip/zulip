@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
-import {set, wrapSelection} from "text-field-edit";
+import {insert, replace, set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -60,14 +60,9 @@ export function smart_insert($textarea, syntax) {
         syntax += " ";
     }
 
-    $textarea.trigger("focus");
-
-    // We prefer to use insertText, which supports things like undo better
-    // for rich-text editing features like inserting links.  But we fall
-    // back to textarea.caret if the browser doesn't support insertText.
-    if (!document.execCommand("insertText", false, syntax)) {
-        $textarea.caret(syntax);
-    }
+    // text-field-edit ensures `$textarea` is focused before inserting
+    // the new syntax.
+    insert($textarea[0], syntax);
 
     autosize_textarea($textarea);
 }
@@ -84,17 +79,12 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
     // the way that JavaScript handles string replacements, if `old_syntax` is
     // a string it will only replace the first instance. If `old_syntax` is
     // a RegExp with a global flag, it will replace all instances.
-    $textarea.val(
-        $textarea.val().replace(
-            old_syntax,
-            () =>
-                // We need this anonymous function to avoid JavaScript's
-                // replace() function treating `$`s in new_syntax as special syntax.  See
-                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
-                // for details.
-                new_syntax,
-        ),
-    );
+
+    // We need use anonymous function for `new_syntax` to avoid JavaScript's
+    // replace() function treating `$`s in new_syntax as special syntax.  See
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
+    // for details.
+    replace($textarea[0], old_syntax, () => new_syntax);
 }
 
 export function compute_placeholder_text(opts) {
