@@ -83,10 +83,8 @@ class MarkdownDirectoryView(ApiURLView):
             article = "index"
         elif article == "include/sidebar_index":
             pass
-        elif "/" in article:
-            article = "missing"
-            http_status = 404
         elif len(article) > 100 or not re.match("^[0-9a-zA-Z_-]+$", article):
+            # note: also handles ("/" in article)
             article = "missing"
             http_status = 404
 
@@ -106,6 +104,15 @@ class MarkdownDirectoryView(ApiURLView):
             return DocumentationArticle(
                 article_path=path,
                 article_http_status=http_status,
+                endpoint_path=None,
+                endpoint_method=None,
+            )
+
+        if path == "/zerver/api/api-doc-template.md":
+            # This shouldn't be accessible directly
+            return DocumentationArticle(
+                article_path=self.path_template % ("missing",),
+                article_http_status=404,
                 endpoint_path=None,
                 endpoint_method=None,
             )

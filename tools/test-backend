@@ -83,9 +83,7 @@ not_yet_fully_covered = [
     "zerver/lib/url_preview/preview.py",
     "zerver/worker/queue_processors.py",
     # Markdown sub-libs should have full coverage too; a lot are really close
-    "zerver/lib/markdown/api_arguments_table_generator.py",
     "zerver/lib/markdown/fenced_code.py",
-    "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
     # Other lib files that ideally would coverage, but aren't sorted
     "zerver/filters.py",

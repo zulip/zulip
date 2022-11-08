@@ -87,34 +87,31 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 doc_name = match.group(2)
                 filename = os.path.expanduser(filename)
 
-                is_openapi_format = filename.endswith(".yaml")
+                # openapi is now the standard for Zulip and this assertion replicates the logic
+                # used to compute is_openapi_format, which is now always true.
+                assert filename.endswith(".yaml")
 
                 if not os.path.isabs(filename):
                     parent_dir = self.base_path
                     filename = os.path.normpath(os.path.join(parent_dir, filename))
 
-                if is_openapi_format:
-                    endpoint, method = doc_name.rsplit(":", 1)
-                    arguments: List[Dict[str, Any]] = []
+                endpoint, method = doc_name.rsplit(":", 1)
+                arguments: List[Dict[str, Any]] = []
 
-                    try:
-                        arguments = get_openapi_parameters(endpoint, method)
-                    except KeyError as e:
-                        # Don't raise an exception if the "parameters"
-                        # field is missing; we assume that's because the
-                        # endpoint doesn't accept any parameters
-                        if e.args != ("parameters",):
-                            raise e
-                else:
-                    with open(filename) as fp:
-                        json_obj = json.load(fp)
-                        arguments = json_obj[doc_name]
+                try:
+                    arguments = get_openapi_parameters(endpoint, method)
+                except KeyError as e:
+                    # Don't raise an exception if the "parameters"
+                    # field is missing; we assume that's because the
+                    # endpoint doesn't accept any parameters
+                    if e.args != ("parameters",):
+                        raise e
 
                 if arguments:
                     text = self.render_parameters(arguments)
                 # We want to show this message only if the parameters
                 # description doesn't say anything else.
-                elif is_openapi_format and get_parameters_description(endpoint, method) == "":
+                elif get_parameters_description(endpoint, method) == "":
                     text = ["This endpoint does not accept any parameters."]
                 else:
                     text = []
