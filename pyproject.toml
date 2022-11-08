@@ -99,9 +99,11 @@ django_settings_module = "zproject.settings"
 
 [tool.ruff]
 # See https://github.com/charliermarsh/ruff#rules for error code definitions.
-extend-select = [
+select = [
     "B", # bugbear
     "C", # comprehensions
+    "E", # style errors
+    "F", # flakes
     "M", # meta
     "U", # upgrade
     "W", # style warnings
