@@ -60,10 +60,10 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.19.2',
+      'version' => '1.19.3',
       'sha256' => {
-        'amd64'   => '5e8c5a74fe6470dd7e055a461acda8bb4050ead8c2df70f227e3ff7d8eb7eeb6',
-        'aarch64' => 'b62a8d9654436c67c14a0c91e931d50440541f09eb991a987536cb982903126d',
+        'amd64'   => '74b9640724fd4e6bb0ed2a1bc44ae813a03f1e72a4c76253e2d5c015494430ba',
+        'aarch64' => '99de2fe112a52ab748fb175edea64b313a0c8d51d6157dba683a6be163fd5eab',
       },
     },
 
@@ -89,10 +89,10 @@ class zulip::common {
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '9.2.0',
+      'version' => '9.2.4',
       'sha256' => {
-        'amd64'   => 'a899ea2288390d05c8f0c019b5bd944a46f953063b734e670c1b7699fd77049f',
-        'aarch64' => '4d7dad0607141f07e00e743d53c232eeae2bbee962ab0859a9a2719b5902d3d2',
+        'amd64'   => '94d9cbea08120a9c51c29dfe66c8c85ef817af03b3ceb50bbb1b2bb2ee3bc07b',
+        'aarch64' => 'd7d7c5c8625c4fe92c100504d9168b68a12c87edf091da66027de9aa99571afb',
       },
     },
 
@@ -116,19 +116,19 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.39.0',
+      'version' => '2.40.0',
       'sha256' => {
-        'amd64'   => '4a5fb68e2f44f5e2fdef698bbe4ac8564b02789873aa57a36c72e590977734fe',
-        'aarch64' => '46e353fbc276d1462b1cc8c9a1f5a2e4c49770b8ad459f5711c592e48b176dc6',
+        'amd64'   => '005d3337420e4390ca80bb97960cd9ac31f38ae6065cb1e8f8298c35d1b257aa',
+        'aarch64' => 'c38d374624d329b64bb94bf9b25d7720d928a3117e4758546865d93059f14e53',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.44.0',
+      'version' => '1.45.0',
       'sha256' => {
-        'amd64'   => 'ce532668418b7c7a9da2c70504185e50da0decbb8a34c162f762fef5c9b48373',
-        'aarch64' => 'd1a211dd5f132f0e3653bca8871dbd276563ba46b7b17824e008198ca4278d7b',
+        'amd64'   => '0890f4a75c41a953b608a3c025ef735296a473e0119ed31864c8510efe7a8393',
+        'aarch64' => 'f18144cdd7876979c7278507ccb68b87801b0df977825d76f0293173653d3dd7',
       },
     },
 
