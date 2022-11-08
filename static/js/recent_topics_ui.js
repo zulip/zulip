@@ -523,10 +523,7 @@ export function inplace_rerender(topic_key) {
         if (row_is_focused && row_focus >= current_topics_list.length) {
             row_focus = current_topics_list.length - 1;
         }
-        topic_row.remove();
-        // We removed a rendered row, so we need to reduce one offset.
-        // TODO: This is correct, but a list_widget abstractions violation.
-        topics_widget.meta.offset -= 1;
+        topics_widget.remove_rendered_row(topic_row);
     } else if (!is_topic_rendered && filters_should_hide_topic(topic_data)) {
         // In case `topic_row` is not present, our job is already done here
         // since it has not been rendered yet and we already removed it from
@@ -537,27 +534,7 @@ export function inplace_rerender(topic_key) {
         topics_widget.render_item(topic_data);
     } else {
         // Final case: !is_topic_rendered && !filters_should_hide_topic(topic_data).
-        if (current_topics_list.length <= 2) {
-            // Avoids edge cases for us and could be faster too.
-            topics_widget.clean_redraw();
-            revive_current_focus();
-            return true;
-        }
-        // We need to insert the row for it to be displayed at the
-        // correct position. current_topics_list must contain the
-        // topic_item, since we know !filters_should_hide_topic(topic_data).
-        const topic_insert_index = current_topics_list.findIndex(
-            (topic_item) => topic_item.last_msg_id === topic_data.last_msg_id,
-        );
-        // Rows greater than `offset` are not rendered in the DOM by list_widget;
-        // for those, there's nothing to update.
-        // TODO: This is correct, but a list_widget abstractions violation.
-        if (topic_insert_index <= topics_widget.meta.offset) {
-            const rendered_row = render_recent_topic_row(format_conversation(topic_data));
-            const $target_row = $(`#recent_topics_table table tbody tr:eq(${topic_insert_index})`);
-            $target_row.before(rendered_row);
-            topics_widget.meta.offset += 1;
-        }
+        topics_widget.insert_rendered_row(topic_data);
     }
     setTimeout(revive_current_focus, 0);
     return true;
