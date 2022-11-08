@@ -6,6 +6,15 @@ customize whether [stream messages](/help/stream-notifications),
 [mentions](/help/pm-mention-alert-notifications#wildcard-mentions)
 trigger desktop notifications.
 
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Toggle the checkboxes for **Streams** and **PMs, mentions, and alerts**
+   in the **Desktop** column of the **Notification triggers** table.
+
+{end_tabs}
+
 ## Notification sound
 
 You can select the sound Zulip uses for audible desktop notifications. Choosing
