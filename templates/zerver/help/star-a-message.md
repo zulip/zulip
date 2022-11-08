@@ -24,9 +24,9 @@ Starred messages have a filled in star (<i class="fa fa-star"></i>) to
 their right.  You can unstar a message using the same instructions
 used to star it.
 
-## Access your starred messages
+## View your starred messages
 
-You can access your starred messages by clicking **Starred messages** in the
+You can view your starred messages by clicking **Starred messages** in the
 left sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
 
 By default, Zulip displays the number of starred messages in the left

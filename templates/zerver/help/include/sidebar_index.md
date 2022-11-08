@@ -81,6 +81,7 @@
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
 * [Emoji reactions](/help/emoji-reactions)
+* [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
 * [View and browse images](/help/view-and-browse-images)
 * [View messages sent by a user](/help/view-messages-sent-by-a-user)
