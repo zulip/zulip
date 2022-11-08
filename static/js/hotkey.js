@@ -305,12 +305,6 @@ export function process_escape_key(e) {
             }
 
             // Check for errors in compose box; close errors if they exist
-            if ($("#compose-send-status").css("display") !== "none") {
-                $("#compose-send-status").hide();
-                return true;
-            }
-
-            // Clear open compose banners, if present.
             if ($(".compose_banner").length) {
                 compose_banner.clear_errors();
                 compose_banner.clear_warnings();

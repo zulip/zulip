@@ -375,7 +375,6 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     compose_state.set_stream_name("social");
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
-    assert.ok(!$("#compose-send-status").visible());
 
     peer_data.get_subscriber_count = (stream_id) => {
         assert.equal(stream_id, 101);
@@ -392,7 +391,6 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(!$("#compose-send-status").visible());
     assert.ok(wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
