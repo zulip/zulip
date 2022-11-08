@@ -162,15 +162,6 @@
         }
     }
 
-    .compose-send-status-close {
-        color: hsl(0, 0%, 100%);
-        opacity: 1;
-    }
-
-    .compose-send-status-close:hover {
-        opacity: 0.4;
-    }
-
     .compose_banner {
         &.success {
             background-color: hsl(147, 100%, 8%);
