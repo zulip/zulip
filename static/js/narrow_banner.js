@@ -348,7 +348,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             return {
-                title: $t({defaultMessage: "You have no private messages with these people yet."}),
+                title: $t({defaultMessage: "You have no private messages with these users yet."}),
                 html: $t_html(
                     {
                         defaultMessage: "Why not <z-link>start the conversation</z-link>?",
