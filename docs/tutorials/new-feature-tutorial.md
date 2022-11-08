@@ -539,12 +539,11 @@ Then add the new form control in `static/js/admin.js`.
 ```diff
  // static/js/admin.js
 
- function _setup_page() {
-     var options = {
+ export function build_page() {
+     const options = {
+         custom_profile_field_types: page_params.custom_profile_field_types,
+         full_name: page_params.full_name,
          realm_name: page_params.realm_name,
-         realm_description: page_params.realm_description,
-         realm_emails_restricted_to_domains: page_params.realm_emails_restricted_to_domains,
-         realm_invite_required: page_params.realm_invite_required,
          // ...
 +        realm_mandatory_topics: page_params.mandatory_topics,
          // ...
