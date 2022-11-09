@@ -70,13 +70,6 @@
             padding-right: 3px;
         }
 
-        .fa-group {
-            font-size: 0.8rem;
-            margin-left: 5px;
-            /* color: hsl(105, 2%, 50%); */
-            opacity: 0.6;
-        }
-
         .fa-envelope {
             font-size: 0.7rem;
             margin-right: 2px;
@@ -171,14 +164,6 @@
 
         .unread_hidden {
             visibility: hidden;
-        }
-
-        .user_circle {
-            /* Shrink the user activity circle for the recent topics context. */
-            min-width: 7px;
-            height: 7px;
-            margin-left: 8px;
-            top: 0;
         }
 
         .flex_container_pm {
@@ -394,6 +379,32 @@
             .recent_topic_actions {
                 margin-right: 5px;
                 font-size: 15px;
+            }
+        }
+
+        .pm_status_icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Increasing vertical padding any further will increase
+               the height of the row. */
+            padding: 5px 0 5px 8px;
+            /* To accommodate fa-group icon */
+            width: 14px;
+            height: 14px;
+
+            .fa-group {
+                font-size: 0.8rem;
+                /* color: hsl(105, 2%, 50%); */
+                opacity: 0.6;
+            }
+
+            .user_circle {
+                /* Shrink the user activity circle for the recent topics context. */
+                width: 7px;
+                height: 7px;
+                float: left;
+                position: unset;
             }
         }
     }
