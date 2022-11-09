@@ -23,7 +23,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.engine import Connection
+from sqlalchemy.engine import Connection, Row
 from sqlalchemy.sql import (
     ClauseElement,
     ColumnElement,
@@ -45,7 +45,9 @@ from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.message import get_first_visible_message_id
 from zerver.lib.recipient_users import recipient_for_user_profiles
+from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
@@ -1144,4 +1146,121 @@ def post_process_limited_query(
         found_newest=found_newest,
         found_oldest=found_oldest,
         history_limited=history_limited,
+    )
+
+
+@dataclass
+class FetchedMessages(LimitedMessages[Row]):
+    anchor: int
+    include_history: bool
+    is_search: bool
+
+
+def fetch_messages(
+    *,
+    narrow: OptionalNarrowListT,
+    user_profile: Optional[UserProfile],
+    realm: Realm,
+    is_web_public_query: bool,
+    anchor: Optional[int],
+    num_before: int,
+    num_after: int,
+) -> FetchedMessages:
+    include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
+    if include_history:
+        # The initial query in this case doesn't use `zerver_usermessage`,
+        # and isn't yet limited to messages the user is entitled to see!
+        #
+        # This is OK only because we've made sure this is a narrow that
+        # will cause us to limit the query appropriately elsewhere.
+        # See `ok_to_include_history` for details.
+        #
+        # Note that is_web_public_query=True goes here, since
+        # include_history is semantically correct for is_web_public_query.
+        need_message = True
+        need_user_message = False
+    elif narrow is None:
+        # We need to limit to messages the user has received, but we don't actually
+        # need any fields from Message
+        need_message = False
+        need_user_message = True
+    else:
+        need_message = True
+        need_user_message = True
+
+    query: SelectBase
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
+
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+        realm=realm,
+        is_web_public_query=is_web_public_query,
+    )
+
+    with get_sqlalchemy_connection() as sa_conn:
+        if anchor is None:
+            # `anchor=None` corresponds to the anchor="first_unread" parameter.
+            anchor = find_first_unread_anchor(
+                sa_conn,
+                user_profile,
+                narrow,
+            )
+
+        anchored_to_left = anchor == 0
+
+        # Set value that will be used to short circuit the after_query
+        # altogether and avoid needless conditions in the before_query.
+        anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
+        if anchored_to_right:
+            num_after = 0
+
+        first_visible_message_id = get_first_visible_message_id(realm)
+
+        query = limit_query_to_range(
+            query=query,
+            num_before=num_before,
+            num_after=num_after,
+            anchor=anchor,
+            anchored_to_left=anchored_to_left,
+            anchored_to_right=anchored_to_right,
+            id_col=inner_msg_id_col,
+            first_visible_message_id=first_visible_message_id,
+        )
+
+        main_query = query.subquery()
+        query = (
+            select(*main_query.c)
+            .select_from(main_query)
+            .order_by(column("message_id", Integer).asc())
+        )
+        # This is a hack to tag the query we use for testing
+        query = query.prefix_with("/* get_messages */")
+        rows = list(sa_conn.execute(query).fetchall())
+
+    query_info = post_process_limited_query(
+        rows=rows,
+        num_before=num_before,
+        num_after=num_after,
+        anchor=anchor,
+        anchored_to_left=anchored_to_left,
+        anchored_to_right=anchored_to_right,
+        first_visible_message_id=first_visible_message_id,
+    )
+
+    return FetchedMessages(
+        rows=query_info.rows,
+        found_anchor=query_info.found_anchor,
+        found_newest=query_info.found_newest,
+        found_oldest=query_info.found_oldest,
+        history_limited=query_info.history_limited,
+        anchor=anchor,
+        include_history=include_history,
+        is_search=is_search,
     )

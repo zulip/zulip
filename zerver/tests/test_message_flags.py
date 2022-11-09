@@ -136,7 +136,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.assertEqual(messages_response["anchor"], new_message_id)
 
         with mock.patch(
-            "zerver.views.message_fetch.get_first_visible_message_id", return_value=new_message_id
+            "zerver.lib.narrow.get_first_visible_message_id", return_value=new_message_id
         ):
             messages_response = self.get_messages_response(
                 anchor="first_unread", num_before=0, num_after=1
@@ -145,7 +145,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.assertEqual(messages_response["anchor"], new_message_id)
 
         with mock.patch(
-            "zerver.views.message_fetch.get_first_visible_message_id",
+            "zerver.lib.narrow.get_first_visible_message_id",
             return_value=new_message_id + 1,
         ):
             messages_reponse = self.get_messages_response(
@@ -155,7 +155,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.assertIn("anchor", messages_reponse)
 
         with mock.patch(
-            "zerver.views.message_fetch.get_first_visible_message_id",
+            "zerver.lib.narrow.get_first_visible_message_id",
             return_value=new_message_id - 1,
         ):
             messages = self.get_messages(anchor="first_unread", num_before=0, num_after=1)
