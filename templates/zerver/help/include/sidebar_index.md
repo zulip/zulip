@@ -146,7 +146,7 @@
 * [Export your organization](/help/export-your-organization)
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)
-* [View organization statistics](/help/analytics)
+* [Usage statistics](/help/analytics)
 * [Linking to your organization](/help/linking-to-zulip)
 * [GDPR compliance](/help/gdpr-compliance)
 

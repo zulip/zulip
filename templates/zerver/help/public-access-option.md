@@ -100,7 +100,7 @@ detailed below.
 * The **Organization settings** and **Stream settings** menus are not
   available to logged out visitors. However, organization settings data is
   required for Zulip to load, and may thus be [accessed via the Zulip API][info-via-api].
-* Logged out visitors cannot view [organization statistics](/help/analytics).
+* Logged out visitors cannot view [usage statistics](/help/analytics).
 
 [info-via-api]: /help/public-access-option#information-that-can-be-accessed-via-api-when-web-public-streams-are-enabled
 
