@@ -249,7 +249,7 @@ def get_messages_backend(
         first_visible_message_id=first_visible_message_id,
     )
 
-    rows = query_info["rows"]
+    rows = query_info.rows
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
@@ -308,10 +308,10 @@ def get_messages_backend(
         messages=message_list,
         result="success",
         msg="",
-        found_anchor=query_info["found_anchor"],
-        found_oldest=query_info["found_oldest"],
-        found_newest=query_info["found_newest"],
-        history_limited=query_info["history_limited"],
+        found_anchor=query_info.found_anchor,
+        found_oldest=query_info.found_oldest,
+        found_newest=query_info.found_newest,
+        history_limited=query_info.history_limited,
         anchor=anchor,
     )
     return json_success(request, data=ret)
