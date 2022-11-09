@@ -615,7 +615,11 @@ test("initialize", ({override, mock_template}) => {
 
     let payload;
     override(channel, "post", (arg) => {
-        payload = arg;
+        if (payload === undefined) {
+            // This "if" block is added such that we can execute "success"
+            // function when want_redraw is true.
+            payload = arg;
+        }
     });
 
     function clear() {
@@ -636,6 +640,17 @@ test("initialize", ({override, mock_template}) => {
     activity.mark_client_idle();
 
     $(window).off("focus");
+
+    let set_timeout_function_called = false;
+    set_global("setTimeout", (func) => {
+        if (set_timeout_function_called) {
+            // This conditional is needed to avoid indefinite calls.
+            return;
+        }
+        set_timeout_function_called = true;
+        func();
+    });
+
     activity.initialize();
     payload.success({
         zephyr_mirror_active: true,
@@ -652,8 +667,8 @@ test("initialize", ({override, mock_template}) => {
     $(window).idle = (params) => {
         params.onIdle();
     };
-
-    set_global("setInterval", (func) => func());
+    payload = undefined;
+    set_timeout_function_called = false;
 
     $(window).off("focus");
     activity.initialize();
