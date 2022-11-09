@@ -92,7 +92,7 @@ def mute_stream(realm: Realm, user_profile: UserProfile, stream_name: str) -> No
 
 def first_visible_id_as(message_id: int) -> Any:
     return mock.patch(
-        "zerver.views.message_fetch.get_first_visible_message_id",
+        "zerver.lib.narrow.get_first_visible_message_id",
         return_value=message_id,
     )
 
