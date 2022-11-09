@@ -1,16 +1,19 @@
 import os
 import re
+from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
     Collection,
     Dict,
+    Generic,
     Iterable,
     List,
     Mapping,
     Optional,
     Sequence,
     Tuple,
+    TypeVar,
     Union,
 )
 
@@ -20,7 +23,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.engine import Connection, Row
+from sqlalchemy.engine import Connection
 from sqlalchemy.sql import (
     ClauseElement,
     ColumnElement,
@@ -1065,15 +1068,27 @@ def limit_query_to_range(
         return query.where(id_col == anchor)
 
 
+MessageRowT = TypeVar("MessageRowT", bound=Sequence[Any])
+
+
+@dataclass
+class LimitedMessages(Generic[MessageRowT]):
+    rows: List[MessageRowT]
+    found_anchor: bool
+    found_newest: bool
+    found_oldest: bool
+    history_limited: bool
+
+
 def post_process_limited_query(
-    rows: Sequence[Union[Row, Sequence[Any]]],
+    rows: Sequence[MessageRowT],
     num_before: int,
     num_after: int,
     anchor: int,
     anchored_to_left: bool,
     anchored_to_right: bool,
     first_visible_message_id: int,
-) -> Dict[str, Any]:
+) -> LimitedMessages[MessageRowT]:
     # Our queries may have fetched extra rows if they added
     # "headroom" to the limits, but we want to truncate those
     # rows.
@@ -1083,9 +1098,7 @@ def post_process_limited_query(
     # that the clients will know that they got complete results.
 
     if first_visible_message_id > 0:
-        visible_rows: Sequence[Union[Row, Sequence[Any]]] = [
-            r for r in rows if r[0] >= first_visible_message_id
-        ]
+        visible_rows: Sequence[MessageRowT] = [r for r in rows if r[0] >= first_visible_message_id]
     else:
         visible_rows = rows
 
@@ -1107,7 +1120,7 @@ def post_process_limited_query(
     if num_after:
         after_rows = after_rows[:num_after]
 
-    visible_rows = [*before_rows, *anchor_rows, *after_rows]
+    limited_rows = [*before_rows, *anchor_rows, *after_rows]
 
     found_anchor = len(anchor_rows) == 1
     found_oldest = anchored_to_left or (len(before_rows) < num_before)
@@ -1125,8 +1138,8 @@ def post_process_limited_query(
     # messages were hidden.
     history_limited = rows_limited and found_oldest
 
-    return dict(
-        rows=visible_rows,
+    return LimitedMessages(
+        rows=limited_rows,
         found_anchor=found_anchor,
         found_newest=found_newest,
         found_oldest=found_oldest,

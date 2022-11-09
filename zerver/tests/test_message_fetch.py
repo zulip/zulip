@@ -759,11 +759,11 @@ class PostProcessTest(ZulipTestCase):
                 first_visible_message_id=first_visible_message_id,
             )
 
-            self.assertEqual(info["rows"], out_rows)
-            self.assertEqual(info["found_anchor"], found_anchor)
-            self.assertEqual(info["found_newest"], found_newest)
-            self.assertEqual(info["found_oldest"], found_oldest)
-            self.assertEqual(info["history_limited"], history_limited)
+            self.assertEqual(info.rows, out_rows)
+            self.assertEqual(info.found_anchor, found_anchor)
+            self.assertEqual(info.found_newest, found_newest)
+            self.assertEqual(info.found_oldest, found_oldest)
+            self.assertEqual(info.history_limited, history_limited)
 
         # typical 2-sided query, with a bunch of tests for different
         # values of first_visible_message_id.
