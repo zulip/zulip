@@ -302,7 +302,7 @@ ul {
     }
 }
 
-.popover_user_presence {
+.user_profile_presence {
     width: 8px;
     height: 8px;
     margin: 0 5px;
@@ -348,6 +348,11 @@ ul {
 
     .modal__header {
         justify-content: center;
+    }
+
+    .popover_user_presence {
+        margin: 5px 10px;
+        vertical-align: middle;
     }
 
     .modal__close {
@@ -416,11 +421,6 @@ ul {
         .default-field {
             margin-bottom: 10px;
         }
-    }
-
-    #user-status {
-        text-align: center;
-        margin: 0 0 10px;
     }
 
     hr {
