@@ -924,6 +924,10 @@
         background-color: hsla(8, 78%, 43%, 0.15);
     }
 
+    .selected_message .messagebox-content {
+        border-color: hsla(217, 64%, 59%, 0.7);
+    }
+
     .rendered_markdown {
         .user-mention,
         .user-group-mention {
