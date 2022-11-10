@@ -12,16 +12,6 @@ $topic_resolve_width: 13px;
 $sections_vertical_gutter: 8px;
 $bottom_scrolling_buffer: 25px;
 
-#left-sidebar {
-    #user-list {
-        padding-left: 8.5px;
-
-        #userlist-header {
-            padding-left: 3px;
-        }
-    }
-}
-
 .hashtag {
     &:empty {
         &::after {

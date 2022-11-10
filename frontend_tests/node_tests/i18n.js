@@ -100,7 +100,6 @@ run_test("tr_tag", ({mock_template}) => {
             avatar_url: "http://example.com",
         },
         user_settings: {
-            left_side_userlist: false,
             twenty_four_hour_time: false,
             enable_stream_desktop_notifications: false,
             enable_stream_push_notifications: false,

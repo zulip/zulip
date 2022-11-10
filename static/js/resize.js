@@ -10,11 +10,7 @@ import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as popovers from "./popovers";
 import * as recent_topics_util from "./recent_topics_util";
-import * as ui from "./ui";
-import {user_settings} from "./user_settings";
 import * as util from "./util";
-
-let narrow_window = false;
 
 function get_new_heights() {
     const res = {};
@@ -48,50 +44,6 @@ function get_new_heights() {
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
-    return res;
-}
-
-function left_userlist_get_new_heights() {
-    const res = {};
-    const viewport_height = message_viewport.height();
-    const viewport_width = message_viewport.width();
-    res.viewport_height = viewport_height;
-    res.viewport_width = viewport_width;
-
-    // main div
-    const top_navbar_height = $(".header").safeOuterHeight(true);
-    res.bottom_whitespace_height = viewport_height * 0.4;
-    res.main_div_min_height = viewport_height - top_navbar_height;
-
-    // left sidebar
-    const $stream_filters = $("#left_sidebar_scroll_container").expectOne();
-    const $buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
-
-    const stream_filters_real_height = ui.get_scroll_element($stream_filters).prop("scrollHeight");
-    const user_list_real_height = ui.get_scroll_element($buddy_list_wrapper).prop("scrollHeight");
-
-    res.total_leftlist_height =
-        viewport_height -
-        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true) -
-        $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true) -
-        $("#private_messages_sticky_header").safeOuterHeight(true);
-
-    if (res.total_leftlist_height - user_list_real_height > stream_filters_real_height) {
-        // There is enough space for the both lists to be fully displayed.
-        res.stream_filters_max_height = "100%";
-        res.buddy_list_wrapper_max_height = "100%";
-    } else {
-        res.stream_filters_max_height = Math.min(
-            res.total_leftlist_height / 2,
-            stream_filters_real_height,
-        );
-        res.buddy_list_wrapper_max_height =
-            res.total_leftlist_height - res.stream_filters_max_height;
-    }
     return res;
 }
 
@@ -141,7 +93,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
 
     // Compute bottom_whitespace_height if not provided by caller.
     if (bottom_whitespace_height === undefined) {
-        const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+        const h = get_new_heights();
         bottom_whitespace_height = h.bottom_whitespace_height;
     }
 
@@ -182,50 +134,15 @@ export function resize_bottom_whitespace(h) {
 }
 
 export function resize_stream_filters_container() {
-    const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+    const h = get_new_heights();
     resize_bottom_whitespace(h);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
-    if (user_settings.left_side_userlist) {
-        $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
-    }
 }
 
 export function resize_sidebars() {
-    let $sidebar;
-
-    if (user_settings.left_side_userlist) {
-        const css_narrow_mode = message_viewport.is_narrow();
-
-        $("#top_navbar").removeClass("rightside-userlist");
-
-        const $right_items = $(".right-sidebar-items").expectOne();
-
-        if (css_narrow_mode && !narrow_window) {
-            // move stuff to the left sidebar (skinny mode)
-            narrow_window = true;
-            popovers.set_userlist_placement("left");
-            $sidebar = $("#left-sidebar").expectOne();
-            $sidebar.append($right_items);
-            $("#buddy_list_wrapper").css("margin", "0px");
-            $("#userlist-toggle").css("display", "none");
-            $("#invite-user-link").hide();
-        } else if (!css_narrow_mode && narrow_window) {
-            // move stuff to the right sidebar (wide mode)
-            narrow_window = false;
-            popovers.set_userlist_placement("right");
-            $sidebar = $("#right-sidebar").expectOne();
-            $sidebar.append($right_items);
-            $("#buddy_list_wrapper").css("margin", "");
-            $("#userlist-toggle").css("display", "");
-            $("#invite-user-link").show();
-        }
-    }
-
-    const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
-
+    const h = get_new_heights();
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
-
     return h;
 }
 

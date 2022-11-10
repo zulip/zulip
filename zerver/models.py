@@ -1485,10 +1485,13 @@ class UserBaseSettings(models.Model):
     created after the change.
     """
 
-    # UI settings
+    ### Generic UI settings
     enter_sends = models.BooleanField(default=False)
 
-    # display settings
+    ### Display settings. ###
+    # left_side_userlist was removed from the UI in Zulip 6.0; the
+    # database model is being temporarily preserved in case we want to
+    # restore a version of the setting, preserving who had it enabled.
     left_side_userlist = models.BooleanField(default=False)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     # This setting controls which view is rendered first when Zulip loads.

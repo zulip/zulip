@@ -715,7 +715,6 @@ a.compose_control_button.hide {
     margin-right: 4px;
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     #compose-content {
         margin-right: 7px;
