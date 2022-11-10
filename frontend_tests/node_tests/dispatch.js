@@ -743,11 +743,6 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
 
-    event = event_fixtures.user_settings__left_side_userlist;
-    user_settings.left_side_userlist = false;
-    dispatch(event);
-    assert_same(user_settings.left_side_userlist, true);
-
     event = event_fixtures.user_settings__escape_navigates_to_default_view;
     user_settings.escape_navigates_to_default_view = false;
     let toggled = [];

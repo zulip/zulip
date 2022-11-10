@@ -189,26 +189,7 @@ export function set_up(settings_panel) {
         const $status_element = $input_elem
             .closest(".subsection-parent")
             .find(".alert-notification");
-
-        if (["left_side_userlist"].includes(setting)) {
-            change_display_setting(
-                data,
-                $status_element,
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a class='reload_link'>${content_html.join("")}</a>`,
-                    },
-                ),
-                true,
-            );
-        } else {
-            change_display_setting(data, $status_element);
-        }
+        change_display_setting(data, $status_element);
     });
 
     $container.find(".setting_emojiset_choice").on("click", function () {

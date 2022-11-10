@@ -25,7 +25,6 @@ export type RealmDefaultSettings = {
     escape_navigates_to_default_view: boolean;
     fluid_layout_width: boolean;
     high_contrast_mode: boolean;
-    left_side_userlist: boolean;
     message_content_in_email_notifications: boolean;
     notification_sound: string;
     pm_content_in_desktop_notifications: boolean;

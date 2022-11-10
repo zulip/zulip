@@ -170,9 +170,6 @@ export function hide_drafts_popover() {
 
 export function show_streamlist_sidebar() {
     $(".app-main .column-left").addClass("expanded");
-
-    // Redo the calculation for how large the sidebar is; this is
-    // important for the left_side_userlist setting.
     resize.resize_stream_filters_container();
 }
 
