@@ -29,6 +29,9 @@ format used by the Zulip server that they are interacting with.
   /messages/flags`](/api/update-message-flags) no longer redundantly
   lists messages where the flag was set to the same state it was
   already in.
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow):
+  This new endpoint allows updating message flags on a range of
+  messages within a narrow.
 
 **Feature level 154**
 
