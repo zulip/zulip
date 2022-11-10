@@ -420,7 +420,7 @@
 
                 .user_circle {
                     /* Shrink the user activity circle for the recent topics context. */
-                    width: 7px;
+                    min-width: 7px;
                     height: 7px;
                     float: left;
                     position: unset;
