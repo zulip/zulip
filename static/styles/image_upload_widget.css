@@ -188,7 +188,7 @@
 }
 
 #realm-night-logo-upload-widget {
-    background-color: hsl(212, 28%, 18%);
+    background-color: var(--dark-theme-background);
 }
 
 .realm-logo-block {

@@ -1,4 +1,5 @@
 /* Variable names for colors according to their purpose in the system. */
 body {
     --light-theme-background: hsl(0, 0%, 100%);
+    --dark-theme-background: hsl(212, 28%, 18%);
 }

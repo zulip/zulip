@@ -6,7 +6,7 @@ body.dark-theme {
      */
     @extend %dark-theme-block;
 
-    background-color: hsl(212, 28%, 18%);
+    background-color: var(--dark-theme-background);
     color: hsl(236, 33%, 90%);
 
     .placeholder {
@@ -41,7 +41,7 @@ body.dark-theme {
 
     .modal-bg,
     .modal__container {
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
     }
 
     .modal__close {
@@ -147,7 +147,7 @@ body.dark-theme {
     #settings_page .right,
     #streams_header,
     .private_messages_container {
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
     }
 
     #scroll-to-bottom-button-container {
@@ -168,7 +168,11 @@ body.dark-theme {
     }
 
     .message_embed .data-container::after {
-        background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
+        background: linear-gradient(
+            0deg,
+            var(--dark-theme-background),
+            transparent 100%
+        );
     }
 
     .column-left .left-sidebar,
@@ -220,7 +224,7 @@ body.dark-theme {
        background colors for these, but this alert feature can't use a
        transparent background without creating other problems */
     .alert-msg {
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
     }
 
     .private-message .alert-msg {
@@ -302,7 +306,7 @@ body.dark-theme {
     }
 
     select option {
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
         color: hsl(236, 33%, 90%);
     }
 
@@ -418,7 +422,7 @@ body.dark-theme {
     .recipient_row {
         .message_row.unread {
             .date_row {
-                background-color: hsl(212, 28%, 18%);
+                background-color: var(--dark-theme-background);
             }
         }
 
@@ -630,7 +634,7 @@ body.dark-theme {
         #topics_header,
         .narrow-filter > .bottom_left_row,
         #stream_filters .topic-list .filter-topics {
-            background-color: hsl(212, 28%, 18%);
+            background-color: var(--dark-theme-background);
         }
     }
 
@@ -685,11 +689,11 @@ body.dark-theme {
     }
 
     .recent_topics_container {
-        background-color: hsl(212, 28%, 18%) !important;
+        background-color: var(--dark-theme-background) !important;
     }
 
     #recent_topics_table tr {
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
 
         &:hover {
             background-color: hsl(208, 26%, 11%, 0.6);
@@ -748,7 +752,7 @@ body.dark-theme {
     }
 
     .table-striped tbody tr:nth-child(odd) td {
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
     }
 
     .user-groups-container .right .display-type,
@@ -1157,7 +1161,7 @@ body.dark-theme {
     /* Content: */
     .hotspot.overlay .hotspot-popover .hotspot-popover-content,
     .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
     }
 
     .top-messages-logo,
@@ -1211,7 +1215,7 @@ body.dark-theme {
 
     #bots_lists_navbar .active a {
         color: hsl(0, 0%, 87%);
-        background-color: hsl(212, 28%, 18%);
+        background-color: var(--dark-theme-background);
         border-color: hsl(0, 0%, 87%);
         border-bottom-color: transparent;
     }
