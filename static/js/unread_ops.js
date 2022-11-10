@@ -159,6 +159,13 @@ export function process_unread_messages_event({message_ids, message_details}) {
     */
     message_live_update.rerender_messages_view();
 
+    if (
+        !message_lists.current.can_mark_messages_read() &&
+        message_lists.current.has_unread_messages()
+    ) {
+        unread_ui.notify_messages_remain_unread();
+    }
+
     unread_ui.update_unread_counts();
 }
 
