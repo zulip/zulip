@@ -108,7 +108,6 @@ export const get_all_display_settings = (): DisplaySettings => ({
         user_display_settings: [
             "dense_mode",
             "high_contrast_mode",
-            "left_side_userlist",
             "fluid_layout_width",
             "starred_message_counts",
         ],
@@ -479,9 +478,6 @@ export const display_settings_labels = {
     dense_mode: $t({defaultMessage: "Dense mode"}),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
-    left_side_userlist: $t({
-        defaultMessage: "Show user list on left sidebar in narrow windows",
-    }),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(

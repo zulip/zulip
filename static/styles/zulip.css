@@ -2846,7 +2846,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,
     .header-main {

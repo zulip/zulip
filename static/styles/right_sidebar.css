@@ -267,7 +267,6 @@ $user_status_emoji_width: 24px;
     margin-top: 5px;
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     #userlist-toggle {
         display: block;
