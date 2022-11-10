@@ -25,6 +25,7 @@ from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
+from django.utils.crypto import constant_time_compare
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.log import log_response
 from django.utils.translation import gettext as _
@@ -704,7 +705,10 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
     assert valid_bearer_token
     assert scim_client_name
 
-    if request.headers.get("Authorization") != f"Bearer {valid_bearer_token}":
+    authorization = request.headers.get("Authorization")
+    if authorization is None or not constant_time_compare(
+        authorization, f"Bearer {valid_bearer_token}"
+    ):
         return None
 
     request_notes = RequestNotes.get_notes(request)
