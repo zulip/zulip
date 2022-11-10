@@ -817,6 +817,9 @@ function check_property_changed(elem, for_realm_default_settings) {
             break;
         case "realm_default_code_block_language":
             proposed_val = default_code_language_widget.value();
+            if (proposed_val.length === 0) {
+                proposed_val = null;
+            }
             break;
         case "email_notifications_batching_period_seconds":
             proposed_val = get_time_limit_setting_value($elem, false);
