@@ -300,10 +300,6 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("spectator-view");
     }
 
-    if (!user_settings.left_side_userlist) {
-        $("#navbar-buttons").addClass("right-userlist");
-    }
-
     if (user_settings.high_contrast_mode) {
         $("body").addClass("high-contrast");
     }
