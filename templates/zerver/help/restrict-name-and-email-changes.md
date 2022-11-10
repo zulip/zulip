@@ -38,3 +38,6 @@ sign-on solution to manage user emails.
 {!save-changes.md!}
 
 {end_tabs}
+
+Note that, as protection from spam, administrators cannot change email addresses of
+other users.

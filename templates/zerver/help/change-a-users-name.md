@@ -34,3 +34,6 @@ Organization administrators can always change any user's name.
 {!save-changes.md!}
 
 {end_tabs}
+
+Note that, as protection from spam, administrators cannot change email addresses of
+other users.
