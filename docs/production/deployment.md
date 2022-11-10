@@ -302,13 +302,15 @@ public Internet.
 
 #### Configuring Zulip to allow HTTP
 
-Depending on your environment, you may want the reverse proxy to talk
-to the Zulip server over HTTP; this can be secure when the Zulip
-server is not directly exposed to the public Internet.
+Zulip requires clients to connect to Zulip servers over the secure
+HTTPS protocol; the insecure HTTP protocol is not supported. However,
+we do support using a reverse proxy that speaks HTTPS to clients and
+connects to the Zulip server over HTTP; this can be secure when the
+Zulip server is not directly exposed to the public Internet.
 
-After installing the Zulip server as
-[described above](#installer-options), you can configure Zulip to talk
-HTTP as follows:
+After installing the Zulip server as [described
+above](#installer-options), you can configure Zulip to accept HTTP
+requests from a reverse proxy as follows:
 
 1. Add the following block to `/etc/zulip/zulip.conf`:
 
