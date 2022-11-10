@@ -1193,24 +1193,18 @@ export function register_click_handlers() {
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
         e.stopPropagation();
 
-        // use email of currently selected user, rather than some elem comparison,
-        // as the presence list may be redrawn with new elements.
         const $target = $(this).closest("li");
         const user_id = elem_to_user_id($target.find("a"));
+        // Hiding popovers may mutate current_user_sidebar_user_id.
+        const previous_user_sidebar_id = current_user_sidebar_user_id;
 
-        if (current_user_sidebar_user_id === user_id) {
+        // Hide popovers, but we don't want to hide the sidebars on
+        // smaller browser windows.
+        hide_all_except_sidebars();
+
+        if (previous_user_sidebar_id === user_id) {
             // If the popover is already shown, clicking again should toggle it.
-            // We don't want to hide the sidebars on smaller browser windows.
-            hide_all_except_sidebars();
             return;
-        }
-        hide_all();
-
-        if (userlist_placement === "right") {
-            show_userlist_sidebar();
-        } else {
-            // Maintain the same behavior when displaying with the streamlist.
-            stream_popover.show_streamlist_sidebar();
         }
 
         const user = people.get_by_user_id(user_id);
