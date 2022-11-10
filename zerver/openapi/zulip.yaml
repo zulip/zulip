@@ -5071,9 +5071,6 @@ paths:
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
 
-            The special values of `'newest'` and `'oldest'` are also supported
-            for anchoring the query at the most recent or oldest messages.
-
             **Changes**: String values are new in Zulip 3.0 (feature level 1). The
             `first_unread` functionality was supported in Zulip 2.1.x
             and older by not sending `anchor` and using `use_first_unread_anchor`.
@@ -5663,6 +5660,8 @@ paths:
         Add or remove personal message flags like `read` and `starred`
         on a collection of message IDs.
 
+        See also the endpoint for [updating flags on a range of
+        messages within a narrow](/api/update-message-flags-for-narrow).
         For updating the `read` flag on common collections of messages, see also
         the
         [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
@@ -5792,6 +5791,205 @@ paths:
                           An array with the IDs of the modified messages.
                     example:
                       {"msg": "", "messages": [4, 18, 15], "result": "success"}
+  /messages/flags/narrow:
+    post:
+      operationId: update-message-flags-for-narrow
+      summary: Update personal message flags for narrow
+      tags: ["messages"]
+      description: |
+        Add or remove personal message flags like `read` and `starred`
+        on a range of messages within a narrow.
+
+        See also [the endpoint for updating flags on specific message
+        IDs](/api/update-message-flags).
+
+        **Changes**: New in Zulip 6.0 (feature level 155).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - include_anchor
+      parameters:
+        - name: anchor
+          in: query
+          description: |
+            Integer message ID to anchor updating of flags. Supports special
+            string values for when the client wants the server to compute the anchor
+            to use:
+
+            - `newest`: The most recent message.
+            - `oldest`: The oldest message.
+            - `first_unread`: The oldest unread message matching the
+              query, if any; otherwise, the most recent message.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+          example: 43
+          required: true
+        - name: include_anchor
+          in: query
+          description: |
+            Whether a message with the specified ID matching the narrow
+            should be included in the update range.
+          schema:
+            type: boolean
+            default: true
+          example: false
+        - name: num_before
+          in: query
+          description: |
+            Limit the number of messages preceding the anchor in the
+            update range. The server may decrease this to bound
+            transaction sizes.
+          schema:
+            type: integer
+            minimum: 0
+          example: 4
+          required: true
+        - name: num_after
+          in: query
+          description: |
+            Limit the number of messages following the anchor in the
+            update range. The server may decrease this to bound
+            transaction sizes.
+          schema:
+            type: integer
+            minimum: 0
+          example: 8
+          required: true
+        - name: narrow
+          in: query
+          description: |
+            The narrow you want update flags within. See how to
+            [construct a narrow](/api/construct-narrow).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - type: object
+                      required:
+                        - operator
+                        - operand
+                      additionalProperties: false
+                      properties:
+                        operator:
+                          type: string
+                        operand:
+                          oneOf:
+                            - type: string
+                            - type: integer
+                            - type: array
+                              items:
+                                type: integer
+                        negated:
+                          type: boolean
+                    - type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
+                default: []
+              example: [{"operand": "Denmark", "operator": "stream"}]
+          required: true
+        - name: op
+          in: query
+          description: |
+            Whether to `add` the flag or `remove` it.
+          schema:
+            type: string
+            enum:
+              - add
+              - remove
+          example: add
+          required: true
+        - name: flag
+          in: query
+          description: |
+            The flag that should be added/removed. See [available
+            flags](/api/update-message-flags#available-flags).
+          schema:
+            type: string
+          example: read
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    required:
+                      - processed_count
+                      - updated_count
+                      - first_processed_id
+                      - last_processed_id
+                      - found_oldest
+                      - found_newest
+                    properties:
+                      result: {}
+                      msg: {}
+                      processed_count:
+                        type: integer
+                        description: |
+                          The number of messages that were within the
+                          update range (at most `num_before + 1 +
+                          num_after`).
+                      updated_count:
+                        type: integer
+                        description: |
+                          The number of messages where the flag's
+                          value was changed (at most
+                          `processed_count`).
+                      first_processed_id:
+                        type: integer
+                        nullable: true
+                        description: |
+                          The ID of the oldest message within the
+                          update range, or `null` if the range was
+                          empty.
+                      last_processed_id:
+                        type: integer
+                        nullable: true
+                        description: |
+                          The ID of the newest message within the
+                          update range, or `null` if the range was
+                          empty.
+                      found_oldest:
+                        type: boolean
+                        description: |
+                          Whether the update range reached backward
+                          far enough to include very oldest message
+                          matching the narrow (used by clients doing a
+                          bulk update to decide whether to issue
+                          another request anchored at
+                          `first_processed_id`).
+                      found_newest:
+                        type: boolean
+                        description: |
+                          Whether the update range reached forward far
+                          enough to include very oldest message
+                          matching the narrow (used by clients doing a
+                          bulk update to decide whether to issue
+                          another request anchored at
+                          `last_processed_id`).
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "processed_count": 11,
+                        "updated_count": 8,
+                        "first_processed_id": 35,
+                        "last_processed_id": 55,
+                        "found_oldest": false,
+                        "found_newest": true,
+                      }
   /messages/render:
     post:
       operationId: render-message
