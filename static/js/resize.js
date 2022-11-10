@@ -181,8 +181,8 @@ export function resize_bottom_whitespace(h) {
     }
 }
 
-export function resize_stream_filters_container(h) {
-    h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+export function resize_stream_filters_container() {
+    const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     resize_bottom_whitespace(h);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
     if (user_settings.left_side_userlist) {
