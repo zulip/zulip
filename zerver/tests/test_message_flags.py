@@ -224,6 +224,92 @@ class UnreadCountTests(ZulipTestCase):
             elif msg["id"] == self.unread_msg_ids[1]:
                 check_flags(msg["flags"], set())
 
+    def test_update_flags_for_narrow(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        message_ids = [
+            self.send_stream_message(
+                self.example_user("cordelia"), "Verona", topic_name=f"topic {i % 2}"
+            )
+            for i in range(10)
+        ]
+
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[5],
+                    "num_before": 2,
+                    "num_after": 2,
+                    "narrow": "[]",
+                    "op": "add",
+                    "flag": "read",
+                },
+            )
+        )
+        self.assertEqual(response["processed_count"], 5)
+        self.assertEqual(response["updated_count"], 5)
+        self.assertEqual(response["first_processed_id"], message_ids[3])
+        self.assertEqual(response["last_processed_id"], message_ids[7])
+        self.assertEqual(response["found_oldest"], False)
+        self.assertEqual(response["found_newest"], False)
+        self.assertCountEqual(
+            UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
+            .extra(where=[UserMessage.where_read()])
+            .values_list("message_id", flat=True),
+            message_ids[3:8],
+        )
+
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[3],
+                    "include_anchor": "false",
+                    "num_before": 0,
+                    "num_after": 5,
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": "stream", "operand": "Verona"},
+                            {"operator": "topic", "operand": "topic 1"},
+                        ]
+                    ).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+        )
+        # In this topic (1, 3, 5, 7, 9), processes everything after 3.
+        self.assertEqual(response["processed_count"], 3)
+        self.assertEqual(response["updated_count"], 3)
+        self.assertEqual(response["first_processed_id"], message_ids[5])
+        self.assertEqual(response["last_processed_id"], message_ids[9])
+        self.assertEqual(response["found_oldest"], False)
+        self.assertEqual(response["found_newest"], True)
+        self.assertCountEqual(
+            UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
+            .extra(where=[UserMessage.where_starred()])
+            .values_list("message_id", flat=True),
+            message_ids[5::2],
+        )
+
+    def test_update_flags_for_narrow_misuse(self) -> None:
+        self.login("hamlet")
+
+        response = self.client_post(
+            "/json/messages/flags/narrow",
+            {
+                "anchor": "0",
+                "include_anchor": "false",
+                "num_before": "1",
+                "num_after": "1",
+                "narrow": "[]",
+                "op": "add",
+                "flag": "read",
+            },
+        )
+        self.assert_json_error(response, "The anchor can only be excluded at an end of the range")
+
     def test_mark_all_in_stream_read(self) -> None:
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
