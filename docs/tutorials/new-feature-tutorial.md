@@ -171,20 +171,43 @@ guide to adding or updating documentation for an API endpoint.
 
 ## Example feature
 
-This example describes the process of adding a new setting to Zulip: a
-flag that allows an admin to require topics on stream messages (the default
-behavior is that topics can have no subject). This flag is an
-actual Zulip feature. You can review [the original commit](https://github.com/zulip/zulip/pull/5660/commits/aeeb81d3ff0e0cc201e891cec07e1d2cd0a2060d)
-in the Zulip repo. (This commit displays the work of setting up a checkbox
-for the feature on the admin settings page, communicating and saving updates
-to the setting to the database, and updating the state of the application
-after the setting is updated. For the code that accomplishes the underlying
-task of requiring messages to have a topic, you can [view this commit](https://github.com/zulip/zulip/commit/90e2f5053f5958b44ea9b2362cadcb076deaa975).)
+This example goes through the steps of adding a new setting to Zulip:
+
+1. Update the backend to communicate and save updates to the new
+   setting to the database.
+2. Ensure that the state of the application updates when the new
+   setting is changed.
+3. Create a checkbox for the new setting on the admin settings page.
+
+Once you have successfully added the example feature, you will be
+able to view it rendered in the browser if you are in the
+[Zulip development environment.](../development/setup-recommended.md)
+A new checkbox
+will show up under **Require topics in stream messages** in
+[Organization Settings.](http://localhost:9991/#organization/organization-settings)
+It will look like this, but with the emoji of your choice:
+
+![tutorial-emoji-flag](../images/tutorial-emoji-flag.png)
+
+:::{Tip}
+The implementation of this setting is similar to that of an actual
+Zulip feature: a flag which requires messages to have a topic. You
+can review
+[the original commit for this feature](https://github.com/zulip/zulip/pull/5660/commits/aeeb81d3ff0e0cc201e891cec07e1d2cd0a2060d)
+in the Zulip repo. For the code where `mandatory_topics` was initially
+created, you can
+[view this commit](https://github.com/zulip/zulip/commit/90e2f5053f5958b44ea9b2362cadcb076deaa975).
+
+This is also a good opportunity for you to try using `git grep` to
+search for relevant files in the git repository. Checkout
+[this helpful blog post](https://laurynmm.github.io/2021/12/22/git-grep.html)
+to learn more about using `git grep`!
+:::
 
 ### Update the model
 
 First, update the database and model to store the new setting. Add a new
-boolean field, `mandatory_topics`, to the Realm model in
+boolean field, `my_favorite_emoji`, to the Realm model in
 `zerver/models.py`.
 
 ```diff
@@ -192,9 +215,9 @@ boolean field, `mandatory_topics`, to the Realm model in
 
  class Realm(models.Model):
      # ...
-     emails_restricted_to_domains = models.BooleanField(default=True)
-     invite_required = models.BooleanField(default=False)
-+    mandatory_topics = models.BooleanField(default=False)
+     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
+     mandatory_topics = models.BooleanField(default=False)
++    my_favorite_emoji = models.BooleanField(default=False)
 ```
 
 The Realm model also contains an attribute, `property_types`, which
@@ -210,11 +233,10 @@ dictionary.
  class Realm(models.Model)
      # ...
      # Define the types of the various automatically managed properties
-     property_types = dict(
-         add_custom_emoji_policy=int,
-         allow_edit_history=bool,
+     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
+         allow_message_editing=bool,
          # ...
-+        mandatory_topics=bool,
++        my_favorite_emoji=bool,
          # ...
 ```
 
@@ -236,8 +258,10 @@ below will point out where to write additional code for these cases.
 ### Create the migration
 
 Create the migration file using the Django `makemigrations` command:
-`./manage.py makemigrations`. Make sure to commit the generated file to git:
-`git add zerver/migrations/NNNN_realm_mandatory_topics.py`
+`./manage.py makemigrations`. Note that you must be [connected to the virtual machine](../development/setup-recommended.md#resuming-the-development-environment) to run this command.
+
+Make sure to commit the generated file to git:  
+`git add zerver/migrations/NNNN_realm_my_favorite_emoji.py`  
 (NNNN is a number that is equal to the number of migrations.)
 
 If you run into problems, the
@@ -261,11 +285,12 @@ Synchronizing apps without migrations:
   Installing custom SQL...
 Running migrations:
   Rendering model states... DONE
-  Applying zerver.NNNN_realm_mandatory_topics... OK
+  Applying zerver.NNNN_realm_my_favorite_emoji... OK
 ```
 
 Once you've run the migration, restart memcached on your development
-server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.md#running-the-development-server)
+server `/etc/init.d/memcached restart` or `sudo /etc/init.d/memcached restart`)
+and then [restart the development server](../development/remote.md#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Handle database interactions
@@ -440,11 +465,9 @@ annotation).
  def update_realm(
      request: HttpRequest,
      user_profile: UserProfile,
-     name: Optional[str] = REQ(str_validator=check_string, default=None),
      # ...
-+    mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
-     # ...
- ):
+     mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
++    my_favorite_emoji: Optional[bool] = REQ(json_validator=check_bool, default=None),
      # ...
 ```
 
@@ -534,10 +557,22 @@ If you're adding a non-checkbox field, you'll need to specify the type
 of the field via the `data-setting-widget-type` attribute in the HTML
 template.
 
-Then add the new form control in `static/js/admin.js`.
+Then add the new label and form control in `static/js/admin.js`. Paste
+your favorite emoji in place of the 😀 so you can share your personalized
+finished feature later.
 
 ```diff
  // static/js/admin.js
+
+ const admin_settings_label = {
+    // ...
+    // Organization settings
+    realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
++   realm_my_favorite_emoji: $t({defaultMessage: "😀"}),
+    // ...
+  };
+
+ // ...
 
  export function build_page() {
      const options = {
@@ -545,7 +580,8 @@ Then add the new form control in `static/js/admin.js`.
          full_name: page_params.full_name,
          realm_name: page_params.realm_name,
          // ...
-+        realm_mandatory_topics: page_params.mandatory_topics,
+         realm_mandatory_topics: page_params.realm_mandatory_topics,
++        realm_my_favorite_emoji: page_params.realm_my_favorite_emoji,
          // ...
 ```
 
@@ -560,7 +596,7 @@ In frontend, we have split the `property_types` into three objects:
 - `org_settings`: This contains properties for the "organization
   settings" page. Settings belonging to this section generally
   decide what features should be available to a user like deleting a
-  message, message edit history etc. Our `mandatory_topics` feature
+  message, message edit history etc. Our `my_favorite_emoji` feature
   belongs in this section.
 
 - `org_permissions`: This contains properties for the "organization
@@ -570,7 +606,7 @@ In frontend, we have split the `property_types` into three objects:
 
 Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting
-in. For example in this case of `mandatory_topics` it will lie in
+in. For example in this case of `my_favorite_emoji` it will lie in
 "Other settings" (`other_settings`) subsection.
 
 _If you're not sure in which section your feature belongs, it's
@@ -601,7 +637,7 @@ values are the UI updating functions to run when an event has occurred.
 
 If there is no relevant UI change to make other than in settings page
 itself, the value should be `noop` (this is the case for
-`mandatory_topics`, since this setting only has an effect on the
+`my_favorite_emoji`, since this setting only has an effect on the
 backend, so no UI updates are required.).
 
 However, if you had written a function to update the UI after a given
@@ -612,15 +648,15 @@ setting has changed, your function should be referenced in the
 ```diff
  // static/js/server_events_dispatch.js
 
- function dispatch_normal_event(event) {
-     switch (event.type) {
+ export function dispatch_normal_event(event) {
+    const noop = function () {};
+    switch (event.type) {
      // ...
      case 'realm':
-         var realm_settings = {
-             add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
-             allow_edit_history: noop,
+         const realm_settings = {
              // ...
-+            mandatory_topics: noop,
+             allow_message_editing: noop,
++            my_favorite_emoji: noop,
              // ...
          };
 ```
@@ -679,12 +715,11 @@ behavior of the setting you just created.
 
 ### Update documentation
 
-Nice job! You've added a new feature to Zulip that will improve user
+Nice job! You've learned how to add a new feature to Zulip that will change user
 and contributor experiences with the app, which is why it's really
 important to make sure that your new feature is well documented.
 
-This example feature adds new functionality that requires messages to
-have topics if the setting is enabled. A recommended way to document
+A recommended way to document
 this feature would be to update and/or augment Zulip's existing
 [help center documentation](https://zulip.com/help/) to reflect your
 changes and additions.
@@ -714,3 +749,12 @@ developers of mobile clients and other tools using the Zulip API to
 programmatically determine whether the Zulip server they are
 interacting with supports a given feature; see the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
+
+### Share your success with the Zulip community
+
+If you'd like, share that you completed this tutorial in
+[#new members > new application feature tutorial](https://chat.zulip.org/#narrow/stream/95-new-members/topic/new.20application.20feature.20tutorial) and include a screenshot of
+the newly added checkbox feature with your favorite emoji next to
+it like this:
+
+![tutorial-emoji-flag](../images/tutorial-emoji-flag.png)
