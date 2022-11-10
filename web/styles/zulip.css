@@ -1066,6 +1066,11 @@ td.pointer {
     cursor: pointer;
     vertical-align: top;
     border: none;
+    /* 3px on all sides because outline doesn't have a border-box option. */
+    /* +2px on the left to account for the stream-color line and unread marker. */
+    /* +1px on the right to make left/right more balanced, since the unread marker
+       is not visible most of the time. */
+    padding: 3px 4px 3px 5px;
 
     &:hover .message_controls,
     &:focus-within .message_controls,
@@ -1335,7 +1340,7 @@ td.pointer {
     display: block;
     position: absolute;
     height: 100%;
-    left: 2px;
+    left: 1px;
     top: 0;
     opacity: 0;
     z-index: 2;
@@ -1353,7 +1358,7 @@ td.pointer {
 
 .unread-marker-fill {
     background-color: hsl(107deg 74% 29%);
-    width: 3px;
+    width: 2px;
     height: 100%;
 }
 
@@ -1362,19 +1367,10 @@ td.pointer {
     opacity: 1;
 }
 
-.message_header + .selected_message {
-    /* Sticky message header overlaps 1px with the box-shadow, so we add another
-       2px wide box-shadow 1px below from top to compensate for that. */
-    .messagebox-content {
-        box-shadow: inset 0 1px 0 2px hsl(215deg 47% 50%),
-            inset 0 0 0 2px hsl(215deg 47% 50%), 0 0 0 1px hsl(215deg 47% 50%);
-    }
-}
-
 .selected_message {
     .messagebox-content {
-        box-shadow: inset 0 0 0 2px hsl(215deg 47% 50%),
-            0 0 0 1px hsl(215deg 47% 50%);
+        outline: 1px solid hsl(217deg 64% 59% / 60%);
+        border-radius: 4px;
     }
 }
 

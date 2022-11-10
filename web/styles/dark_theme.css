@@ -932,6 +932,10 @@
         background-color: hsl(8deg 78% 43% / 15%);
     }
 
+    .selected_message .messagebox-content {
+        border-color: hsl(217deg 64% 59% / 70%);
+    }
+
     .rendered_markdown {
         .alert-word {
             background-color: hsl(22deg 70% 35%);

@@ -1,7 +1,8 @@
 $avatar_column_width: 46px;
-$distance_of_text_elements_from_message_box_top: 8.5px;
-$distance_of_non_text_elements_from_message_box_top: 6px;
-$sender_name_distance_below_flex_center: 3px;
+$distance_of_text_elements_from_message_box_top: 5px;
+$distance_of_non_text_elements_from_message_box_top_with_sender_info: 5px;
+$distance_of_non_text_elements_from_message_box_top_without_sender_info: 2px;
+$sender_name_distance_below_flex_center: 2px;
 
 /* The time column usually just needs enough space to display the
    timestamp. The minimum width here is enough for "22:22 PM", which
@@ -58,7 +59,8 @@ $time_column_max_width: 150px;
             /* We need to position it from top and not vertically centered since we want it
                to have the same position from top when user is editing the message. */
             position: relative;
-            top: $distance_of_non_text_elements_from_message_box_top;
+            /* This won't have an effect when there is sender info, because that uses flexbox. */
+            top: $distance_of_non_text_elements_from_message_box_top_without_sender_info;
             padding: 0;
 
             @media (width < $sm_min) {
@@ -100,7 +102,8 @@ $time_column_max_width: 150px;
         .message_content {
             grid-row-start: 1;
             grid-column-start: 2;
-            padding: 4px 0 1px;
+            padding: 0;
+            padding-top: 2px;
         }
 
         .message_reactions {
@@ -146,7 +149,6 @@ $time_column_max_width: 150px;
         */
         .messagebox .messagebox-content {
             grid-template-rows: 25px repeat(3, auto);
-            padding-top: 2px;
 
             .message_content {
                 padding-top: 0;
@@ -228,7 +230,7 @@ $time_column_max_width: 150px;
                     /* Let user profile picture take extra height without
                        having any affect on height of the container. */
                     position: absolute;
-                    margin-top: $distance_of_non_text_elements_from_message_box_top;
+                    margin-top: $distance_of_non_text_elements_from_message_box_top_with_sender_info;
                 }
 
                 .sender_name {
