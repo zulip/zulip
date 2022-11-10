@@ -26,6 +26,7 @@ import * as message_edit from "./message_edit";
 import * as muted_topics_ui from "./muted_topics_ui";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
+import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -169,6 +170,10 @@ export function hide_drafts_popover() {
 
 export function show_streamlist_sidebar() {
     $(".app-main .column-left").addClass("expanded");
+
+    // Redo the calculation for how large the sidebar is; this is
+    // important for the left_side_userlist setting.
+    resize.resize_stream_filters_container();
 }
 
 export function hide_streamlist_sidebar() {
