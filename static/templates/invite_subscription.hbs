@@ -14,7 +14,7 @@
             {{#if (eq name ../notifications_stream)}}
             #{{name}} <i>({{t 'Receives new stream announcements' }})</i>
             {{else}}
-            #{{name}}
+            {{#if (not invite_only)}}#{{/if}}{{name}}
             {{/if}}
         </label>
     {{/each}}
