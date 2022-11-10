@@ -618,7 +618,7 @@ code {
 .rendered_markdown code {
     white-space: pre-wrap;
     padding: 0 4px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
 }
 
 .codehilite {

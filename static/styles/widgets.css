@@ -74,7 +74,7 @@
         padding-left: 2px; /* padding for Chromium browsers */
         padding-right: 2px;
         min-width: 28px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-theme-background);
 
         &:hover {
             border-color: hsl(156, 30%, 50%);
@@ -113,7 +113,7 @@ button {
     &.poll-question {
         border-radius: 3px;
         border: 1px solid hsl(0, 0%, 80%);
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-theme-background);
 
         &:hover {
             border-color: hsl(0, 0%, 60%);
@@ -143,7 +143,7 @@ button {
     height: 28px;
     border-radius: 3px;
     border: 1px solid hsl(0, 0%, 80%);
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
 
     &:hover {
         border-color: hsl(0, 0%, 60%);

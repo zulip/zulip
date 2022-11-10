@@ -1221,7 +1221,7 @@ body.dark-theme {
     }
 
     .simplebar-track .simplebar-scrollbar::before {
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-theme-background);
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.33);
     }
 

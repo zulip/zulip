@@ -45,7 +45,7 @@ body {
 /* Common background color */
 body,
 #message_view_header_underpadding {
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
     transition: background-color 200ms linear;
 }
 
@@ -437,7 +437,7 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
 }
 
 .fixed-app {
@@ -906,7 +906,7 @@ li.actual-dropdown-menu i {
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
 }
 
 .new_messages {
@@ -1023,7 +1023,7 @@ td.pointer {
     position: absolute;
     right: -110px;
     color: hsl(170, 48%, 54%);
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
     z-index: 999;
     padding-left: 20px;
     padding-right: 40px;
@@ -2428,7 +2428,7 @@ div.floating_recipient {
     }
 
     &.small_square_x {
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-theme-background);
         color: hsl(0, 0%, 47%);
 
         &:hover {
@@ -3218,8 +3218,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .message_row.unread {
         .date_row {
             position: relative;
-            z-index: 1;
-            background-color: hsl(0, 0%, 100%);
+            z-index: 3;
+            background-color: var(--light-theme-background);
         }
     }
 

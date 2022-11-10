@@ -79,7 +79,7 @@
             margin: 0 5px;
 
             &:hover {
-                background-color: hsl(0, 0%, 100%);
+                background-color: var(--light-theme-background);
                 border-color: hsl(0, 0%, 100%);
                 color: hsl(227, 40%, 16%);
             }

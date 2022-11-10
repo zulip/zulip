@@ -80,7 +80,7 @@
     top: 2px;
     border: 1px solid hsl(0, 0%, 80%);
     border-radius: 5px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
     color: hsl(0, 0%, 0%);
     margin: 0 0 0 5px;
     height: 27px;

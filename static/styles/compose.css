@@ -230,7 +230,7 @@
     z-index: 2;
     width: 100%;
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--light-theme-background);
 }
 
 #compose-container {
@@ -688,7 +688,7 @@ a.compose_control_button.hide {
     ul {
         list-style: none;
         margin: 0;
-        background: hsl(0, 0%, 100%);
+        background: var(--light-theme-background);
     }
 
     .typeahead-header {
@@ -706,7 +706,7 @@ a.compose_control_button.hide {
     }
 
     &.typeahead {
-        background: hsl(0, 0%, 100%);
+        background: var(--light-theme-background);
     }
 }
 

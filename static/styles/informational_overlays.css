@@ -9,7 +9,7 @@
         border-radius: 4px;
         overflow: hidden;
 
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--light-theme-background);
     }
 
     .overlay-tabs {
