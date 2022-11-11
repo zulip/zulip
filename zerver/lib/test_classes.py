@@ -1044,12 +1044,14 @@ Output:
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
+        include_anchor: bool = True,
     ) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {
             "anchor": anchor,
             "num_before": num_before,
             "num_after": num_after,
             "use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode(),
+            "include_anchor": orjson.dumps(include_anchor).decode(),
         }
         result = self.client_get("/json/messages", dict(post_params))
         data = result.json()
