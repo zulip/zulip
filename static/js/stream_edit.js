@@ -673,16 +673,6 @@ export function initialize() {
     });
 
     $("#manage_streams_container").on(
-        "click",
-        ".close-modal-btn, .close-change-stream-info-modal",
-        (e) => {
-            // This fixes a weird bug in which, subscription_settings hides
-            // unexpectedly by clicking the cancel button in a modal on top of it.
-            e.stopPropagation();
-        },
-    );
-
-    $("#manage_streams_container").on(
         "change",
         "#sub_is_muted_setting .sub_setting_control",
         stream_is_muted_changed,
