@@ -145,13 +145,16 @@ export function build_stream_list(force_rerender) {
     const any_pinned_streams = stream_groups.pinned_streams.length > 0;
     const any_normal_streams = stream_groups.normal_streams.length > 0;
     const any_dormant_streams = stream_groups.dormant_streams.length > 0;
+    const any_muted_pinned_streams = stream_groups.muted_pinned_streams.length > 0;
+    const any_muted_normal_streams = stream_groups.muted_active_streams.length > 0;
+    
     const need_section_subheaders =
-        (any_pinned_streams ? 1 : 0) +
-            (any_normal_streams ? 1 : 0) +
+        (any_normal_streams || any_muted_normal_streams ? 1 : 0) +
+            (any_pinned_streams || any_muted_pinned_streams ? 1 : 0) +
             (any_dormant_streams ? 1 : 0) >=
-        2;
+        2;    
 
-    if (any_pinned_streams && need_section_subheaders) {
+    if ((any_pinned_streams || any_muted_pinned_streams) && need_section_subheaders) {
         elems.push(
             render_stream_subheader({
                 subheader_name: $t({
@@ -169,7 +172,7 @@ export function build_stream_list(force_rerender) {
         add_sidebar_li(stream_id);
     }
 
-    if (any_normal_streams && need_section_subheaders) {
+    if ((any_normal_streams || any_muted_normal_streams) && need_section_subheaders) {
         elems.push(
             render_stream_subheader({
                 subheader_name: $t({
