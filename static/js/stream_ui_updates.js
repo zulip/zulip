@@ -7,6 +7,7 @@ import render_stream_settings_tip from "../templates/stream_settings/stream_sett
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as settings_org from "./settings_org";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_containers from "./stream_settings_containers";
@@ -137,6 +138,10 @@ export function update_change_stream_privacy_settings(sub) {
 }
 
 export function enable_or_disable_permission_settings_in_edit_panel(sub) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
     const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
@@ -267,4 +272,13 @@ export function update_add_subscriptions_elements(sub) {
             $t({defaultMessage: "Only stream members can add users to a private stream"}),
         );
     }
+}
+
+export function update_setting_element(sub, setting_name) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    const $elem = $(`#id_${CSS.escape(setting_name)}`);
+    settings_org.discard_property_element_changes($elem, false, sub);
 }
