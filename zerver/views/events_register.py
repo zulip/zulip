@@ -124,7 +124,9 @@ def events_register_backend(
     client = RequestNotes.get_notes(request).client
     assert client is not None
 
-    pronouns_field_type_supported = is_pronouns_field_type_supported(request.headers["User-Agent"])
+    pronouns_field_type_supported = is_pronouns_field_type_supported(
+        request.headers.get("User-Agent")
+    )
     ret = do_events_register(
         user_profile,
         realm,
