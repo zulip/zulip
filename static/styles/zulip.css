@@ -1401,7 +1401,7 @@ td.pointer {
     left: 2px;
     top: 0;
     opacity: 0;
-    z-index: 1;
+    z-index: 2;
     bottom: 1px;
     transition: all 0.3s ease-out;
 
@@ -3218,7 +3218,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .message_row.unread {
         .date_row {
             position: relative;
-            z-index: 1;
+            z-index: 3;
             background-color: hsl(0, 0%, 100%);
         }
     }
