@@ -2864,6 +2864,28 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
 
+        data = self.get_messages_response(
+            anchor=message_ids[5], num_before=3, num_after=0, include_anchor=False
+        )
+
+        messages = data["messages"]
+        self.assertEqual(data["found_anchor"], False)
+        self.assertEqual(data["found_oldest"], False)
+        self.assertEqual(data["found_newest"], False)
+        self.assertEqual(data["history_limited"], False)
+        messages_matches_ids(messages, message_ids[2:5])
+
+        data = self.get_messages_response(
+            anchor=message_ids[5], num_before=0, num_after=3, include_anchor=False
+        )
+
+        messages = data["messages"]
+        self.assertEqual(data["found_anchor"], False)
+        self.assertEqual(data["found_oldest"], False)
+        self.assertEqual(data["found_newest"], False)
+        self.assertEqual(data["history_limited"], False)
+        messages_matches_ids(messages, message_ids[6:9])
+
     def test_missing_params(self) -> None:
         """
         anchor, num_before, and num_after are all required
@@ -2913,6 +2935,13 @@ class GetOldMessagesTest(ZulipTestCase):
                 }
                 result = self.client_get("/json/messages", post_params)
                 self.assert_json_error(result, f"Bad value for '{param}': {type}")
+
+    def test_bad_include_anchor(self) -> None:
+        self.login("hamlet")
+        result = self.client_get(
+            "/json/messages", dict(anchor=1, num_before=1, num_after=1, include_anchor="false")
+        )
+        self.assert_json_error(result, "The anchor can only be excluded at an end of the range")
 
     def test_bad_narrow_type(self) -> None:
         """

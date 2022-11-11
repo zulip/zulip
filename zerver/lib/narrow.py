@@ -994,6 +994,7 @@ def limit_query_to_range(
     num_before: int,
     num_after: int,
     anchor: int,
+    include_anchor: bool,
     anchored_to_left: bool,
     anchored_to_right: bool,
     id_col: ColumnElement[Integer],
@@ -1010,10 +1011,10 @@ def limit_query_to_range(
 
     # The semantics of our flags are as follows:
     #
-    # num_after = number of rows < anchor
+    # num_before = number of rows < anchor
     # num_after = number of rows > anchor
     #
-    # But we also want the row where id == anchor (if it exists),
+    # But we may also want the row where id == anchor (if it exists),
     # and we don't want to union up to 3 queries.  So in some cases
     # we do things like `after_limit = num_after + 1` to grab the
     # anchor row in the "after" query.
@@ -1026,13 +1027,13 @@ def limit_query_to_range(
         before_limit = num_before
         after_limit = num_after + 1
     elif need_before_query:
-        before_anchor = anchor
+        before_anchor = anchor - (not include_anchor)
         before_limit = num_before
         if not anchored_to_right:
-            before_limit += 1
+            before_limit += include_anchor
     elif need_after_query:
-        after_anchor = max(anchor, first_visible_message_id)
-        after_limit = num_after + 1
+        after_anchor = max(anchor + (not include_anchor), first_visible_message_id)
+        after_limit = num_after + include_anchor
 
     if need_before_query:
         before_query = query
@@ -1163,6 +1164,7 @@ def fetch_messages(
     realm: Realm,
     is_web_public_query: bool,
     anchor: Optional[int],
+    include_anchor: bool,
     num_before: int,
     num_after: int,
 ) -> FetchedMessages:
@@ -1228,6 +1230,7 @@ def fetch_messages(
             num_before=num_before,
             num_after=num_after,
             anchor=anchor,
+            include_anchor=include_anchor,
             anchored_to_left=anchored_to_left,
             anchored_to_right=anchored_to_right,
             id_col=inner_msg_id_col,
