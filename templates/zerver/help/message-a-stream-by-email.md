@@ -30,7 +30,9 @@ API](/api/send-message).
 
 {!select-stream-view-general.md!}
 
-1. Copy the stream email address under **Email address**.
+1. Select **Generate email address** under **Email address**
+
+1. Copy the stream email address under **Stream email address**
 
 1. Send an email to that address.
 
