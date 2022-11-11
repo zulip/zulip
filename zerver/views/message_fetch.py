@@ -84,6 +84,7 @@ def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     anchor_val: Optional[str] = REQ("anchor", default=None),
+    include_anchor: bool = REQ(json_validator=check_bool, default=True),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
     narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
@@ -100,6 +101,8 @@ def get_messages_backend(
                 MAX_MESSAGES_PER_FETCH,
             )
         )
+    if num_before > 0 and num_after > 0 and not include_anchor:
+        raise JsonableError(_("The anchor can only be excluded at an end of the range"))
 
     realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
@@ -160,6 +163,7 @@ def get_messages_backend(
         realm=realm,
         is_web_public_query=is_web_public_query,
         anchor=anchor,
+        include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,
     )

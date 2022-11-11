@@ -5057,6 +5057,7 @@ paths:
                 - client_gravatar
                 - apply_markdown
                 - use_first_unread_anchor
+                - include_anchor
       parameters:
         - name: anchor
           in: query
@@ -5086,6 +5087,17 @@ paths:
               - type: string
               - type: integer
           example: 43
+        - name: include_anchor
+          in: query
+          description: |
+            Whether a message with the specified ID matching the narrow
+            should be included.
+
+            **Changes**: New in Zulip 6.0 (feature level 155).
+          schema:
+            type: boolean
+            default: true
+          example: false
         - name: num_before
           in: query
           description: |
@@ -5220,8 +5232,9 @@ paths:
                         description: |
                           Whether the anchor message is included in the
                           response. If the message with the ID specified
-                          in the request does not exist or did not match
-                          the narrow, this will be false.
+                          in the request does not exist, did not match
+                          the narrow, or was excluded via
+                          `include_anchor=false`, this will be false.
                       history_limited:
                         type: boolean
                         description: |
