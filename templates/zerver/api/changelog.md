@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 155**
+
+* [`GET /messages`](/api/get-messages): The new `include_anchor`
+  parameter controls whether a message with ID matching the specified
+  `anchor` should be included.
+
 **Feature level 154**
 
 * [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
