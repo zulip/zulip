@@ -478,6 +478,26 @@ export function process_enter_key(e) {
         return true;
     }
 
+    if (recent_topics_util.is_visible()) {
+        if (e.target === $("body")[0]) {
+            // There's a race when using `Esc` and `Enter` to navigate to
+            // Recent Topics and then navigate to the next topic, wherein
+            // Recent Topics won't have applied focus to its table yet.
+            //
+            // Recent Topics's own navigation just lets `Enter` be
+            // treated as a click on the highlighted message, so we
+            // don't need to do anything there. But if nothing is
+            // focused (say, during the race or after clicking on the
+            // sidebars, it's worth focusing the table so that hitting
+            // `Enter` again will navigate you somewhere.
+            const focus_changed = recent_topics_ui.revive_current_focus();
+            return focus_changed;
+        }
+
+        // Never fall through to opening the compose box to reply.
+        return false;
+    }
+
     // If we got this far, then we're presumably in the message
     // view, so in that case "Enter" is the hotkey to respond to a message.
     // Note that "r" has same effect, but that is handled in process_hotkey().
