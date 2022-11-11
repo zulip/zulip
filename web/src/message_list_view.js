@@ -825,7 +825,7 @@ export class MessageListView {
         // the bottom message is not visible), then we will respect
         // the user's current position after rendering, rather
         // than auto-scrolling.
-        const started_scrolled_up = message_viewport.is_scrolled_up();
+        const started_scrolled_up = message_viewport.is_scrolled_up(true);
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
@@ -1011,13 +1011,7 @@ export class MessageListView {
                 };
             }
             const new_messages_height = this._new_messages_height(new_dom_elements);
-            const need_user_to_scroll = this._maybe_autoscroll(new_messages_height);
-
-            if (need_user_to_scroll) {
-                return {
-                    need_user_to_scroll: true,
-                };
-            }
+            this._maybe_autoscroll(new_messages_height);
         }
 
         return undefined;
@@ -1037,41 +1031,20 @@ export class MessageListView {
         return new_messages_height;
     }
 
-    _scroll_limit($selected_row, viewport_info) {
-        // This scroll limit is driven by the TOP of the feed, and
-        // it's the max amount that we can scroll down (or "skooch
-        // up" the messages) before knocking the selected message
-        // out of the feed.
-        const selected_row_top = $selected_row.get_offset_to_window().top;
-        let scroll_limit = selected_row_top - viewport_info.visible_top;
-
-        if (scroll_limit < 0) {
-            // This shouldn't happen, but if we're off by a pixel or
-            // something, we can deal with it, and just warn.
-            blueslip.warn("Selected row appears too high on screen.");
-            scroll_limit = 0;
-        }
-
-        return scroll_limit;
-    }
-
     _maybe_autoscroll(new_messages_height) {
-        // If we are near the bottom of our feed (the bottom is visible) and can
-        // scroll up without moving the pointer out of the viewport, do so, by
-        // up to the amount taken up by the new message.
-        //
-        // returns `true` if we need the user to scroll
+        // If we are near the bottom of our feed (the bottom is visible after the compose box is
+        // cleared), scroll to the bottom of the feed. Otherwise, don't scroll.
 
         const $selected_row = this.selected_row();
         const $last_visible = rows.last_visible();
 
         // Make sure we have a selected row and last visible row. (defensive)
         if (!($selected_row && $selected_row.length > 0 && $last_visible)) {
-            return false;
+            return;
         }
 
         if (new_messages_height <= 0) {
-            return false;
+            return;
         }
 
         if (!activity.client_is_active) {
@@ -1082,7 +1055,7 @@ export class MessageListView {
             // throttled by modern Chrome's aggressive power-saving
             // features.
             blueslip.log("Suppressing scroll down due to inactivity");
-            return false;
+            return;
         }
 
         // do not scroll if there are any active popovers.
@@ -1090,63 +1063,17 @@ export class MessageListView {
             // If a popover is active, then we are pretty sure the
             // incoming message is not from the user themselves, so
             // we don't need to tell users to scroll down.
-            return false;
+            return;
         }
 
-        const info = message_viewport.message_viewport_info();
-        const scroll_limit = this._scroll_limit($selected_row, info);
-
-        // This next decision is fairly debatable.  For a big message that
-        // would push the pointer off the screen, we do a partial autoscroll,
-        // which has the following implications:
-        //    a) user sees scrolling (good)
-        //    b) user's pointer stays on screen (good)
-        //    c) scroll amount isn't really tied to size of new messages (bad)
-        //    d) all the bad things about scrolling for users who want messages
-        //       to stay on the screen
-        let scroll_amount;
-        let need_user_to_scroll;
-
-        if (new_messages_height <= scroll_limit) {
-            // This is the happy path where we can just scroll
-            // automatically, and the user will see the new message.
-            scroll_amount = new_messages_height;
-            need_user_to_scroll = false;
-        } else {
-            // Sometimes we don't want to scroll the entire height of
-            // the message, but our callers can give appropriate
-            // warnings if the message is gonna be offscreen.
-            // (Even if we are somewhat constrained here, the message may
-            // still end up being visible, so we do some arithmetic.)
-            scroll_amount = scroll_limit;
-            const offset = message_viewport.offset_from_bottom($last_visible);
-
-            // For determining whether we need to show the user a "you
-            // need to scroll down" notification, the obvious check
-            // would be `offset > scroll_amount`, and that is indeed
-            // correct with a 1-line message in the compose box.
-            // However, the compose box is open with the content of
-            // the message just sent when this code runs, and
-            // `offset_from_bottom` if an offset from the top of the
-            // compose box, which is about to be reset to empty.  So
-            // to compute the offset at the time the user might see
-            // this notification, we need to adjust by the amount that
-            // the current compose is bigger than the empty, open
-            // compose box.
-            const compose_textarea_default_height = 42;
-            const compose_textarea_current_height = $("textarea#compose-textarea").height();
-            const expected_change =
-                compose_textarea_current_height - compose_textarea_default_height;
-            const expected_offset = offset - expected_change;
-            need_user_to_scroll = expected_offset > scroll_amount;
-        }
-
-        // Ok, we are finally ready to actually scroll.
-        if (scroll_amount > 0) {
+        // Find out how close we are to the bottom of the feed.
+        const scroll_amount = message_viewport.offset_from_bottom($last_visible, true);
+        if (scroll_amount >= 0) {
+            // Scroll down to the bottom of the feed.
+            // For some reason the function doesn't scroll down to the point
+            // where offset_from_bottom is 0. The Error margin in the order of 0.1 - 1 px.
             message_viewport.system_initiated_animate_scroll(scroll_amount);
         }
-
-        return need_user_to_scroll;
     }
 
     clear_rendering_state(clear_table) {

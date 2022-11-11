@@ -103,28 +103,44 @@ export function is_below_visible_bottom(offset: number): boolean {
     return offset > scrollTop() + height() - ($("#compose").height() ?? 0);
 }
 
-export function is_scrolled_up(): boolean {
+export function is_scrolled_up(ignore_multiline_compose = false): boolean {
     // Let's determine whether the user was already dealing
     // with messages off the screen, which can guide auto
-    // scrolling decisions.
+    // scrolling decisions. If ignore_multiline_compose is true, we will only consider messages
+    // hidden by the default focused size of the compose box.
     const $last_row = rows.last_visible();
     if ($last_row.length === 0) {
         return false;
     }
 
-    const offset = offset_from_bottom($last_row);
-
-    return offset > 0;
+    const offset = offset_from_bottom($last_row, ignore_multiline_compose);
+    return offset > 1;
 }
 
-export function offset_from_bottom($last_row: JQuery): number {
+export function offset_from_bottom($last_row: JQuery, ignore_multiline_compose = false): number {
     // A positive return value here means the last row is
     // below the bottom of the feed (i.e. obscured by the compose
-    // box or even further below the bottom).
+    // box or even further below the bottom). If ignore_multiline_compose is true, we will only
+    // consider the default focused size of the compose box.
     const message_bottom = $last_row.get_offset_to_window().bottom;
     const info = message_viewport_info();
+    const offset = message_bottom - info.visible_bottom;
 
-    return message_bottom - info.visible_bottom;
+    if (ignore_multiline_compose) {
+        return offset - compose_added_height();
+    }
+    return offset;
+}
+
+export function compose_added_height(): number {
+    // Returns the difference between the compose box's current height and the height it has by
+    // default when it is focused.
+    // This is useful for auto scrolling behavior right after a message is sent. Since the compose
+    // box will be cleared, more of the feed will be visible, meaning we want to scroll down less.
+    const compose_textarea_default_height = 42;
+    const compose_textarea_current_height = $("#compose-textarea").height() ?? 0;
+
+    return compose_textarea_current_height - compose_textarea_default_height;
 }
 
 export function set_message_position(
@@ -359,7 +375,6 @@ export function stop_auto_scrolling(): void {
 }
 
 export function system_initiated_animate_scroll(scroll_amount: number): void {
-    message_scroll_state.set_update_selection_on_next_scroll(false);
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
     $scroll_container.animate({
