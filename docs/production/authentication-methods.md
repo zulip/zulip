@@ -703,7 +703,8 @@ this with another IdP.
 #### SP-initiated Single Logout
 
 After configuring IdP-initiated Logout, you only need to set
-`SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT = True` in
+`"sp_initiated_logout_enabled": True` in the appropriate IdP
+configuration dict in `SOCIAL_AUTH_SAML_ENABLED_IDPS` in
 `/etc/zulip/settings.py` to also enable SP-initiated Logout. When this
 is active, a user who logged in to Zulip via SAML, upon clicking
 "Logout" in the Zulip web app will be redirected to the IdP's Single

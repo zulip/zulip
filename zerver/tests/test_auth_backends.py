@@ -2067,7 +2067,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name)
 
-    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
     def test_saml_sp_initiated_logout_success(self) -> None:
         hamlet = self.example_user("hamlet")
 
@@ -2126,7 +2125,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.client_get(result["Location"])
         self.assert_logged_in_user_id(None)
 
-    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
     def test_saml_sp_initiated_logout_invalid_logoutresponse(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
@@ -2148,14 +2146,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
         )
         self.assert_logged_in_user_id(hamlet.id)
 
-    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
     def test_saml_sp_initiated_logout_endpoint_when_not_logged_in(self) -> None:
         self.assert_logged_in_user_id(None)
 
         result = self.client_post("/accounts/logout/")
-        self.assert_json_error(result, "Not logged in.")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/accounts/login/")
 
-    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
     def test_saml_sp_initiated_logout_logged_in_not_via_saml(self) -> None:
         """
         If the user is logged in, but not via SAML, the normal logout flow
@@ -2171,7 +2168,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.client_get(result["Location"])
         self.assert_logged_in_user_id(None)
 
-    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
     def test_saml_sp_initiated_logout_when_saml_not_enabled(self) -> None:
         """
         If SAML is not enabled, the normal logout flow should be correctly executed.
