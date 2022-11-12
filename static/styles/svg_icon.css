@@ -1,0 +1,164 @@
+﻿/* Usage:
+    1. Add a svg image file which you want to use.
+       /static/icons/~icon-provider/icon-name.svg
+
+    2. Add CSS class "&--icon-name" and set the file url for mask-image property.
+
+    3. Use in html <i class="svg-icon svg-icon--icon-name"></i>
+*/
+
+.svg-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    background: hsl(0, 0%, 40%);
+
+    mask-image: unset;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+
+    /* ---------- Custom icon ---------- */
+    &--help {
+        mask-image: url("../icons/help.svg");
+    }
+
+    &--tool {
+        mask-image: url("../icons/tool.svg");
+    }
+
+    &--users {
+        mask-image: url("../icons/users.svg");
+    }
+
+    /* ---------- Feather icon ---------- */
+    &--at-sign {
+        mask-image: url("../icons/feather/at-sign.svg");
+    }
+
+    &--bar-chart {
+        mask-image: url("../icons/feather/bar-chart.svg");
+    }
+
+    &--clock {
+        mask-image: url("../icons/feather/clock.svg");
+    }
+
+    &--credit-card {
+        mask-image: url("../icons/feather/credit-card.svg");
+    }
+
+    &--edit {
+        mask-image: url("../icons/feather/edit.svg");
+    }
+
+    &--file-text {
+        mask-image: url("../icons/feather/file-text.svg");
+    }
+
+    &--git-pull-request {
+        mask-image: url("../icons/feather/git-pull-request.svg");
+    }
+
+    &--github {
+        mask-image: url("../icons/feather/github.svg");
+    }
+
+    &--globe {
+        mask-image: url("../icons/feather/globe.svg");
+    }
+
+    &--hash-italic {
+        mask-image: url("../icons/feather/hash-italic.svg");
+    }
+
+    &--info {
+        mask-image: url("../icons/feather/info.svg");
+    }
+
+    &--life-buoy {
+        mask-image: url("../icons/feather/life-buoy.svg");
+    }
+
+    &--log-in {
+        mask-image: url("../icons/feather/log-in.svg");
+    }
+
+    &--mail {
+        mask-image: url("../icons/feather/mail.svg");
+    }
+
+    &--message-square {
+        mask-image: url("../icons/feather/message-square.svg");
+    }
+
+    &--monitor {
+        mask-image: url("../icons/feather/monitor.svg");
+    }
+
+    &--play-circle {
+        mask-image: url("../icons/feather/play-circle.svg");
+    }
+
+    &--power {
+        mask-image: url("../icons/feather/power.svg");
+    }
+
+    &--search {
+        mask-image: url("../icons/feather/search.svg");
+    }
+
+    &--settings {
+        mask-image: url("../icons/feather/settings.svg");
+    }
+
+    &--smile {
+        mask-image: url("../icons/feather/smile.svg");
+    }
+
+    &--stop-circle {
+        mask-image: url("../icons/feather/stop-circle.svg");
+    }
+
+    &--twitter {
+        mask-image: url("../icons/feather/twitter.svg");
+    }
+
+    &--user-plus {
+        mask-image: url("../icons/feather/user-plus.svg");
+    }
+
+    &--x {
+        mask-image: url("../icons/feather/x.svg");
+    }
+
+    &--x-circle {
+        mask-image: url("../icons/feather/x-circle.svg");
+    }
+
+    /* ---------- Fontawesome icon ---------- */
+    &--keyboard {
+        mask-image: url("../icons/fontawesome/keyboard.svg");
+    }
+
+    /* ---------- Google icon ---------- */
+    &--account {
+        mask-image: url("../icons/google/account.svg");
+    }
+
+    &--building {
+        mask-image: url("../icons/google/building.svg");
+    }
+
+    &--manage-search {
+        mask-image: url("../icons/google/manage-search.svg");
+    }
+
+    &--past-time {
+        mask-image: url("../icons/google/past-time.svg");
+    }
+
+    &--visibility-off {
+        mask-image: url("../icons/google/visibility-off.svg");
+    }
+}
