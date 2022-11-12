@@ -17,7 +17,7 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
 from zerver.actions.users import do_change_user_role
-from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
+from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
@@ -28,7 +28,16 @@ from zerver.lib.user_topics import (
     topic_is_muted,
 )
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
+from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
+    Message,
+    Realm,
+    Stream,
+    UserMessage,
+    UserProfile,
+    get_realm,
+    get_stream,
+)
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -2721,6 +2730,57 @@ class EditMessageTest(EditMessageTestCase):
         messages = get_topic_messages(user_profile, stream, "edited")
         self.assert_length(messages, 1)
         self.assertEqual(messages[0].content, "First")
+
+    def test_notify_resolve_topic_long_name(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login("hamlet")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        # Marking topics with a long name as resolved causes the new topic name to be truncated.
+        # We want to avoid having code paths believing that the topic is "moved" instead of
+        # "resolved" in this edge case.
+        topic_name = "a" * MAX_TOPIC_NAME_LENGTH
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name=topic_name, content="First"
+        )
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + topic_name
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        new_topic_name = truncate_topic(resolved_topic)
+        messages = get_topic_messages(user_profile, stream, new_topic_name)
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "First")
+        self.assertEqual(
+            messages[1].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
+        )
+
+        # Note that we are removing the prefix from the already truncated topic,
+        # so unresolved_topic_name will not be the same as the original topic_name
+        unresolved_topic_name = new_topic_name.replace(RESOLVED_TOPIC_PREFIX, "")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": unresolved_topic_name,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, unresolved_topic_name)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
+        )
 
     def test_notify_resolve_and_move_topic(self) -> None:
         user_profile = self.example_user("hamlet")

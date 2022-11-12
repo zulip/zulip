@@ -538,6 +538,10 @@ def do_update_message(
                 user_id for user_id in new_stream_sub_ids if user_id not in old_stream_sub_ids
             ]
 
+    # We save the full topic name so that checks that require comparison
+    # between the original topic and the topic name passed into this function
+    # will not be affected by the potential truncation of topic_name below.
+    pre_truncation_topic_name = topic_name
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
         target_message.set_topic_name(topic_name)
@@ -865,9 +869,9 @@ def do_update_message(
             new_stream is not None
             or not sent_resolve_topic_notification
             or (
-                topic_name is not None
+                pre_truncation_topic_name is not None
                 and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
-                != topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+                != pre_truncation_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
             )
         ):
             if moved_all_visible_messages:
