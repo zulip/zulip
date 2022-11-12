@@ -26,6 +26,7 @@ from zerver.lib.types import (
     SubscriptionStreamDict,
 )
 from zerver.models import Realm, Stream, Subscription, UserProfile, get_active_streams
+from typing import Tuple
 
 
 def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
@@ -212,7 +213,7 @@ def validate_user_access_to_subscribers_helper(
 def get_validated_stream(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
-    subscribed_stream_ids: Set[int])-> List[Stream]:
+    subscribed_stream_ids: Set[int])-> List[Mapping[str, Any]]:
     """returns the list of all validated streams"""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
@@ -230,7 +231,7 @@ def get_validated_stream(
         target_stream_dicts.append(stream_dict)
     return target_stream_dicts
 
-def query_select_by_recipient_ids(recipient_ids: List[int]) -> List[tuple]:
+def query_select_by_recipient_ids(recipient_ids: List[int]) -> List[Tuple[int, int]]:
     """
     The raw SQL below leads to more than a 2x speedup when tested with
     20k+ total subscribers.  (For large realms with lots of default
@@ -257,6 +258,7 @@ def query_select_by_recipient_ids(recipient_ids: List[int]) -> List[tuple]:
     cursor = connection.cursor()
     cursor.execute(query, {"recipient_ids": tuple(recipient_ids)})
     rows = cursor.fetchall()
+    # print(rows)
     cursor.close()
     return rows
 
@@ -299,7 +301,7 @@ def get_subscribers_query(
     return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
 
 def get_active_stream_subscriptions(user_profile: UserProfile) -> Tuple[
-    Dict[int, int], Dict[int, RawStreamDict], List[RawSubscriptionDict], QuerySet[Stream]]:
+    Dict[int, int], Dict[int, RawStreamDict], List[RawSubscriptionDict], Collection[Mapping[str, Any]]]:
     """extract all active subscription_stream given a UserProfile"""
     realm = user_profile.realm
     # The realm_id and recipient_id are generally not needed in the API.
@@ -339,7 +341,7 @@ def get_active_stream_subscriptions(user_profile: UserProfile) -> Tuple[
 def extract_subscriptions_in_3_groups(
     user_profile: UserProfile, recip_id_to_stream_id: Dict[int, int], 
     all_streams_map: Dict[int, RawStreamDict], sub_dicts: List[RawSubscriptionDict], 
-    all_streams: QuerySet[Stream]) -> Tuple[List[SubscriptionStreamDict], 
+    all_streams: Collection[Mapping[str, Any]]) -> Tuple[List[SubscriptionStreamDict], 
         List[SubscriptionStreamDict], 
         List[NeverSubscribedStreamDict]]:
     """returns subscribed, unsubscribed, and never_subscribed list"""
