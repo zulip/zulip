@@ -1,189 +1,148 @@
-<ul class="nav" role="navigation">
-    <li class="dropdown actual-dropdown-menu" id="gear-menu">
-        <a id="settings-dropdown" tabindex="0" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{t 'Menu' }} (g)">
-            <i class="fa fa-cog settings-dropdown-cog" aria-hidden="true"></i>
-        </a>
-        <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
-            {{!-- It is quite ingrained in our frontend code that your Home
-            view is a Bootstrap nav tab, even though we don't show the tab
-            anymore --}}
-            <li class="invisible" style="display:none;" role="presentation"><a href="#message_feed_container" data-toggle="tab"></a></li>
-            <li class="org-info org-name">{{realm_name}}</li>
-            <li class="org-info org-url">{{realm_uri}}</li>
-            {{#if is_self_hosted }}
-                <li class="org-info org-version">
+<div class="dropdown actual-dropdown-menu" id="gear-menu" role="navigation">
+    <a id="settings-dropdown" class="header-button dropdown-toggle" tabindex="0" role="button" data-target="nada" data-toggle="dropdown" title="{{t 'Menu' }} (g)">
+        <i class="svg-icon svg-icon--settings settings-dropdown__icon"></i>
+    </a>
+
+    <div class="dropdown-menu {{#if is_guest}}dropdown-menu--spectator{{/if}}" role="menu" aria-labelledby="settings-dropdown">
+        {{!-- It is quite ingrained in our frontend code that your Home
+        view is a Bootstrap nav tab, even though we don't show the tab
+        anymore --}}
+        <div class="arrow"></div>
+        <nav class="dropdown-menu__inner">
+            <section class="organization-info-wrap">
+                <div class="invisible" style="display: none;" role="presentation">
+                    <a href="#message_feed_container" data-toggle="tab"></a>
+                </div>
+                <h3 class="org-info org-name">{{realm_name}}</h3>
+                <p class="org-info org-url">{{realm_uri}}</p>
+
+                {{#if is_self_hosted }}
+                <p class="org-info org-version">
                     <a href="#about-zulip" role="menuitem">{{version_display_string}}</a>
-                </li>
+                </p>
+
                 {{#if server_needs_upgrade }}
-                <li class="org-info org-upgrade small-font-size">
+                <p class="org-info org-upgrade small-font-size">
                     <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Upgrade to the latest release' }}</a>
-                </li>
+                </p>
                 {{/if}}
-            {{else}}
-                <li class="org-info org-plan hidden-for-spectators small-font-size">
+
+                {{else}}
+                <p class="org-info org-plan hidden-for-spectators small-font-size">
                     {{#if is_plan_limited }}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
+                    <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
                     {{else if is_plan_standard}}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
+                    <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
                     {{else if is_plan_standard_sponsored_for_free}}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
+                    <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
                     {{/if}}
-                </li>
-            {{/if}}
-            {{#if (and is_plan_limited is_owner) }}
-            <li class="org-info org-upgrade small-font-size">
-                <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{#tr}}Upgrade to {standard_plan_name}{{/tr}}</a>
-            </li>
-            {{/if}}
-            {{#if is_plan_limited }}
-                {{#if is_education_org }}
-                <li class="org-info org-upgrade small-font-size">
-                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
-                </li>
-                {{else if (not is_business_org) }}
-                <li class="org-info org-upgrade small-font-size">
-                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
-                </li>
+                </p>
                 {{/if}}
-            {{/if}}
-            <li class="divider" role="presentation"></li>
-            <li class="hidden-for-spectators" role="presentation">
-                <a href="#streams/subscribed" role="menuitem">
-                    <i class="fa fa-exchange" aria-hidden="true"></i> {{t 'Manage streams' }}
-                </a>
-            </li>
-            <li class="hidden-for-spectators" role="presentation">
-                <a href="#settings" role="menuitem">
-                    <i class="fa fa-wrench" aria-hidden="true"></i> {{t 'Personal settings' }}
-                </a>
-            </li>
-            <li class="admin-menu-item hidden-for-spectators" role="presentation">
-                <a href="#organization" role="menuitem">
-                    <i class="fa fa-bolt" aria-hidden="true"></i>
-                    <span>{{t 'Manage organization' }}</span>
-                </a>
-            </li>
-            {{#unless is_guest}}
-            <li class="hidden-for-spectators" role="presentation">
-                <a href="/stats" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
-                    <span>{{t 'Usage statistics' }}</span>
-                </a>
-            </li>
-            {{/unless}}
-            <li role="presentation" class="only-visible-for-spectators">
-                <a class="change-language-spectator" role="menuitem">
-                    <i class="zulip-icon zulip-icon-language" aria-hidden="true"></i> {{t 'Select language' }}
-                </a>
-            </li>
-            <li role="presentation" class="only-visible-for-spectators">
-                <a class="dark-theme" role="menuitem">
-                    <i class="fa fa-moon-o" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
-                </a>
-            </li>
-            <li role="presentation" class="only-visible-for-spectators">
-                <a class="light-theme" role="menuitem">
-                    <i class="fa fa-sun-o" aria-hidden="true"></i> {{t 'Switch to light theme' }}
-                </a>
-            </li>
-            <li class="divider" role="presentation"></li>
-            <li role="presentation">
-                <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-question-circle" aria-hidden="true"></i> {{t 'Help center' }}
-                </a>
-            </li>
-            <li role="presentation">
-                <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
-                    <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span>
-                </a>
-            </li>
-            <li role="presentation" class="hidden-for-spectators">
-                <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
-                    <i class="fa fa-pencil" aria-hidden="true"></i> {{t 'Message formatting' }}
-                </a>
-            </li>
-            <li role="presentation">
-                <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
-                    <i class="fa fa-search" aria-hidden="true"></i> {{t 'Search operators' }}
-                </a>
-            </li>
-            <li class="divider only-visible-for-spectators" role="presentation"></li>
-            <li role="presentation" id="gear_menu_about_zulip">
-                <a href="#about-zulip" role="menuitem" class="menuitem-version">
-                    <span class="white_zulip_icon_without_text"></span>
-                    <span class="about_zulip_text">{{t "About Zulip" }}</span>
-                </a>
-            </li>
-            {{#if corporate_enabled}}
-            <li role="presentation">
-                <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-envelope" aria-hidden="true"></i> {{t 'Contact support' }}
-                </a>
-            </li>
-            {{/if}}
-            <li class="divider" role="presentation"></li>
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-desktop" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
-                </a>
-            </li>
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="/integrations" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-github" aria-hidden="true"></i> {{t 'Integrations' }}
-                </a>
-            </li>
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="/api" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-sitemap" aria-hidden="true"></i> {{t 'API documentation' }}
-                </a>
-            </li>
-            {{#if show_billing}}
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="/billing" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
-                </a>
-            </li>
-            {{/if}}
-            {{#if promote_sponsoring_zulip}}
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="https://github.com/sponsors/zulip" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
-                </a>
-            </li>
-            {{/if}}
-            {{#if show_plans}}
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
-                </a>
-            </li>
-            {{/if}}
-            <li class="divider hidden-for-spectators" role="presentation"></li>
-            {{#if can_invite_others_to_realm}}
-            <li role="presentation">
-                <a href="#invite" role="menuitem">
-                    <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
-                </a>
-            </li>
-            <li class="divider" role="presentation"></li>
-            {{/if}}
-            {{#if show_webathena}}
-            <li title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu" role="presentation">
-                <a href="#webathena" class="webathena_login" role="menuitem">
-                    <i class="fa fa-bolt" aria-hidden="true"></i>{{t 'Link with Webathena' }}
-                </a>
-            </li>
-            {{/if}}
-            <li role="presentation" class="only-visible-for-spectators">
-                <a href="{{login_link}}" role="menuitem">
-                    <i class="fa fa-sign-in" aria-hidden="true"></i> {{t 'Log in' }}
-                </a>
-            </li>
-            <li role="presentation">
-                <a href="#logout" class="logout_button hidden-for-spectators" role="menuitem">
-                    <i class="fa fa-power-off" aria-hidden="true"></i> {{t 'Log out' }}
-                </a>
-            </li>
-        </ul>
-    </li>
-</ul>
+            </section>
+
+            <div class="popover-list">
+                <ul class="popover-list__list hidden-for-spectators">
+                    <li class="popover-list__item admin-menu-item" role="presentation">
+                        <a href="#organization" role="menuitem">
+                            <i class="svg-icon svg-icon--building"></i>
+                            <span>{{t 'Organization settings' }}</span>
+                        </a>
+                    </li>
+                    <li role="presentation" class="popover-list__item">
+                        <a href="/billing" target="_blank" rel="noopener noreferrer" role="menuitem">
+                            <i class="svg-icon svg-icon--credit-card"></i>
+                            <span>{{t 'Billing' }}</span>
+                        </a>
+                    </li>
+                    {{#unless is_guest}}
+                    <li class="popover-list__item" role="presentation">
+                        <a href="/stats" target="_blank" rel="noopener noreferrer" role="menuitem">
+                            <i class="svg-icon svg-icon--bar-chart"></i>
+                            <span>{{t 'Usage statistic' }}</span>
+                        </a>
+                    </li>
+                    {{/unless}}
+                    <li class="popover-list__item" role="presentation">
+                        <a href="#streams/subscribed" role="menuitem">
+                            <i class="svg-icon svg-icon--hash-italic"></i>
+                            {{t 'Manage streams' }}
+                        </a>
+                    </li>
+                    {{#if can_invite_others_to_realm}}
+                    <li class="popover-list__item" role="presentation">
+                        <a href="#invite" role="menuitem">
+                            <i class="svg-icon svg-icon--user-plus"></i>
+                            {{t 'Invite users' }}
+                        </a>
+                    </li>
+                    {{/if}}
+                </ul>
+
+                <ul class="popover-list__list hidden-for-spectators">
+                    <li class="popover-list__item" role="presentation">
+                        <a href="/integrations" target="_blank" rel="noopener noreferrer" role="menuitem">
+                            <i class="svg-icon svg-icon--git-pull-request"></i>
+                            {{t 'Integrations' }}
+                        </a>
+                    </li>
+                    <li class="popover-list__item" role="presentation">
+                        <a href="/api" target="_blank" rel="noopener noreferrer" role="menuitem">
+                            <i class="svg-icon svg-icon--file-text"></i>
+                            {{t 'API documentation' }}
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="popover-list__list">
+                    <li class="popover-list__item" role="presentation">
+                        <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
+                            <i class="svg-icon svg-icon--help"></i>
+                            {{t 'Help center' }}
+                        </a>
+                    </li>
+                    <li class="popover-list__item" role="presentation">
+                        <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
+                            <i class="svg-icon svg-icon--keyboard"></i>
+                            {{t 'Keyboard shortcuts' }}
+                        </a>
+                    </li>
+                    <li class="popover-list__item hidden-for-spectators" role="presentation">
+                        <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
+                            <i class="svg-icon svg-icon--edit"></i>
+                            {{t 'Message formatting' }}
+                        </a>
+                    </li>
+                    <li class="popover-list__item" role="presentation">
+                        <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
+                            <i class="svg-icon svg-icon--manage-search"></i>
+                            {{t 'Search operators' }}
+                        </a>
+                    </li>
+                    {{#if corporate_enabled}}
+                    <li class="popover-list__item" role="presentation">
+                        <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
+                            <i class="svg-icon svg-icon--life-buoy"></i>
+                            {{t 'Contact support' }}
+                        </a>
+                    </li>
+                    {{/if}}
+                </ul>
+
+                <ul class="popover-list__list">
+                    <li class="popover-list__item hidden-for-spectators" role="presentation">
+                        <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
+                            <i class="svg-icon svg-icon--monitor"></i>
+                            {{t 'Desktop & mobile apps' }}
+                        </a>
+                    </li>
+                    <li class="popover-list__item" role="presentation" id="gear_menu_about_zulip">
+                        <a href="#about-zulip" role="menuitem" class="menuitem-version">
+                            <i class="svg-icon svg-icon--info"></i>
+                            <span class="about_zulip_text">{{t "About Zulip" }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>

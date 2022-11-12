@@ -1,7 +1,7 @@
 /*
 This is the header, aka the navbar.
 */
-$header_height: 40px;
+$header_height: 42px;
 
 /*
 We have a 10px gutter below the header,
@@ -20,7 +20,7 @@ $sidebar_top: calc($header_height + $header_padding_bottom);
 
 $left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
-$right_sidebar_width: 250px;
+$right_sidebar_width: 215px;
 
 body,
 html {
@@ -307,12 +307,217 @@ p.n-margin {
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     height: $header_height;
-    padding-bottom: $header_padding_bottom;
-    background-color: inherit;
+    background: hsla(0, 0%, 97%, 1);
+    border-bottom: solid 1px hsla(0, 0%, 80%, 1);
+    padding-bottom: 0 !important;
+
+    &__inner {
+        display: flex;
+        flex-flow: row nowrap;
+        height: 100%;
+    }
+
+    &__left,
+    &__middle,
+    &__right {
+        height: 100%;
+        flex-shrink: 0;
+        box-sizing: border-box;
+    }
+
+    &__left {
+        width: $left_sidebar_width;
+        padding: 0 0 0 25px;
+        display: flex;
+        align-items: center;
+    }
+
+    &__middle {
+        width: calc(100% - $left_sidebar_width - $right_sidebar_width);
+        display: flex;
+    }
+
+    &__middle-inner {
+        display: flex;
+        width: 100%;
+    }
+
+    &__right {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: flex-end;
+        width: $right_sidebar_width;
+    }
+
+    &__login-buttons {
+        display: flex;
+        flex-flow: row nowrap;
+        gap: 5px;
+        margin-right: 10px;
+
+        .login_button,
+        .signup_button {
+            display: inline-block;
+            padding: 4px 13px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .login_button {
+            color: hsl(0, 0%, 100%);
+            background: hsl(213, 100%, 59%);
+            padding-left: 9px;
+
+            .svg-icon {
+                background-color: hsl(0, 0%, 100%);
+                margin-right: 3px;
+            }
+        }
+
+        .signup_button {
+            color: hsl(213, 100%, 59%);
+            border: solid 1px hsl(213, 100%, 59%);
+        }
+    }
+
+    &__logo {
+        display: inline-block;
+        height: 20px;
+        width: fit-content;
+
+        img {
+            width: auto;
+            height: 100%;
+            vertical-align: baseline;
+        }
+    }
+
+    &__stream-info {
+        flex-grow: 1;
+    }
+
+    &__searchbox-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-left: auto;
+
+        &.expanded {
+            width: 100%;
+            padding-left: 10px;
+        }
+    }
 }
 
-#top_navbar {
-    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+.header-search {
+    margin: 0;
+    width: 150px;
+
+    &__inner {
+        display: grid !important;
+        align-items: center;
+        height: 28px;
+
+        &::after {
+            grid-column: 1/1;
+            grid-row: 1/1;
+            justify-self: end;
+            z-index: 15;
+
+            content: "";
+            height: 100%;
+            width: 30px;
+            background: linear-gradient(
+                90deg,
+                hsla(0, 0%, 100%, 0) 0%,
+                hsl(0, 0%, 100%) 75%
+            );
+        }
+    }
+
+    &__search-icon {
+        grid-column: 1/1;
+        grid-row: 1/1;
+        z-index: 10;
+
+        margin-left: 7.5px;
+        width: 12px;
+        height: 12px;
+        background: hsla(0, 0%, 0%, 0.5);
+    }
+
+    &__input {
+        grid-column: 1/1;
+        grid-row: 1/1;
+
+        height: 28px;
+        padding: 0 0 0 35px !important;
+        border-radius: 5px !important;
+        font-size: 14px !important;
+        color: hsla(0, 0%, 0%, 0.5) !important;
+        border: none !important;
+    }
+
+    &__exit-button {
+        display: none;
+
+        justify-self: end;
+        grid-column: 1/1;
+        grid-row: 1/1;
+
+        z-index: 20;
+        background: none;
+        border-radius: unset !important;
+
+        appearance: none;
+        border: none;
+    }
+
+    &.expanded {
+        width: 100%;
+
+        .header-search {
+            &__inner {
+                &::after {
+                    content: none;
+                }
+            }
+
+            &__input {
+                padding: 0 35px !important;
+            }
+
+            &__exit-button {
+                display: inline-block;
+            }
+        }
+    }
+}
+
+.header-button {
+    width: $header_height;
+    height: $header_height;
+    display: grid;
+    place-items: center;
+    transition: background 0.2s;
+
+    .svg-icon {
+        width: 18px;
+        height: 18px;
+        background: hsl(240, 20%, 50%);
+    }
+
+    &__avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        background-size: contain;
+    }
+
+    &:hover {
+        background: hsla(0, 0%, 0%, 0.05);
+    }
 }
 
 #navbar_alerts_wrapper {
@@ -366,9 +571,42 @@ p.n-margin {
 }
 
 #gear-menu .dropdown-menu {
+    padding: 0;
+    left: auto;
+    right: -39px;
+    top: 50px;
+    background-color: hsla(0, 0%, 100%);
+    border: solid 1px hsla(0, 0%, 0%, 0.4);
+
+    /* Match the width of the right sidebar so that we don't have
+        the presence dots distracting you when looking at this. */
+    min-width: 230px;
+
+    ul {
+        background: unset;
+    }
+
+    .arrow {
+        left: unset;
+        right: 42px;
+    }
+
+    &--spectator {
+        right: 3px;
+
+        .arrow {
+            right: 2px;
+        }
+    }
+
+    &__inner {
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
     .org-name,
     .org-url {
-        padding: 0 20px;
+        line-height: 125%;
     }
 
     .org-info {
@@ -380,41 +618,84 @@ p.n-margin {
     }
 
     .org-name {
-        font-size: large;
+        font-size: 17px;
         font-weight: bold;
+        margin: 0 0 1px;
+        color: hsla(0, 0%, 15%, 1);
+    }
+
+    .organization-info-wrap {
+        padding: 6px 5% 10px;
     }
 
     .org-url {
-        line-height: 100%;
-        color: hsl(0, 0%, 52%);
+        font-size: 14px;
+        color: hsla(0, 0%, 40%, 1);
+        margin-bottom: 7px;
     }
 
     .org-version {
-        padding-top: 3px;
-        white-space: normal;
-    }
-
-    .org-upgrade {
-        color: hsl(226, 82%, 60%);
+        font-size: 15px;
+        line-height: 125%;
+        margin: 0;
 
         a {
-            padding: 0;
+            color: hsla(217, 100%, 50%, 1);
+            line-height: 125%;
         }
     }
 
-    .org-plan,
     .org-upgrade {
-        a {
-            line-height: 16px;
-        }
-    }
-
-    .plan-separator {
-        line-height: 8px;
-    }
-
-    .small-font-size {
+        margin: 5px 0 0;
+        line-height: 125%;
         font-size: 12px;
+
+        a {
+            display: inline-block;
+            padding: 6px 12px;
+            line-height: 125%;
+            border-radius: 15px;
+            text-decoration: none;
+            background: hsla(0, 0%, 0%, 0.08);
+            transition: background 0.2s;
+
+            &:hover {
+                background: hsla(0, 0%, 0%, 0.12);
+            }
+        }
+    }
+}
+
+#personal-menu {
+    .dropdown-menu {
+        padding: 0;
+        left: auto;
+        right: 3px;
+        top: 50px;
+        border: solid 1px hsla(0, 0%, 0%, 0.4);
+        background-color: hsla(0, 0%, 100%);
+
+        /* Match the width of the right sidebar so that we don't have
+            the presence dots distracting you when looking at this. */
+        min-width: 230px;
+
+        ul {
+            background: unset;
+        }
+
+        .arrow {
+            left: unset;
+            right: 2px;
+        }
+
+        &__inner {
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .clear_status {
+            margin-left: auto;
+        }
     }
 }
 
@@ -424,20 +705,6 @@ p.n-margin {
     overflow-y: scroll;
     z-index: 99;
     -webkit-overflow-scrolling: touch;
-}
-
-.app-main,
-.header-main {
-    width: 100%;
-    /* `max-width` is changed based on `fluid_layout_width` setting in
-       `scroll_bar.js`. User may or may not see a flash of mispositioned content
-       based on how quickly the JS code is executed. */
-    max-width: 1400px;
-    min-width: 950px;
-    margin: 0 auto;
-    padding: 0;
-    position: relative;
-    background-color: hsl(0, 0%, 100%);
 }
 
 .fixed-app {
@@ -451,8 +718,8 @@ p.n-margin {
     width: $right_sidebar_width;
     max-width: $right_sidebar_width;
     position: absolute;
-    right: 0;
     top: 0;
+    right: 0;
 
     .spectator_login_buttons {
         display: flex;
@@ -523,6 +790,7 @@ p.n-margin {
 }
 
 .app-main {
+    position: relative;
     height: 100%;
     min-height: 100%;
 
@@ -540,7 +808,7 @@ p.n-margin {
 
     .column-right .right-sidebar {
         padding-left: 10px;
-        width: 240px;
+        width: $right_sidebar_width;
     }
 
     .column-middle {
@@ -854,14 +1122,6 @@ li.actual-dropdown-menu > a:focus {
     outline: 0;
 }
 
-li.actual-dropdown-menu i {
-    /* In gear menu, make icons the same width so labels line up. */
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
-}
-
 #gear_menu_about_zulip {
     .white_zulip_icon_without_text {
         position: relative;
@@ -883,10 +1143,6 @@ li.actual-dropdown-menu i {
             filter: none;
         }
     }
-}
-
-.settings-dropdown-cog {
-    padding: 6px 12px;
 }
 
 #settings_content .dependent-block,
@@ -1792,11 +2048,6 @@ div.focused_table {
     font-weight: bold;
 }
 
-.top-navbar-border {
-    border-right: 1px solid hsl(0, 0%, 88%);
-    border-left: 1px solid hsl(0, 0%, 88%);
-}
-
 .search_icon {
     /* These rules match the .dropdown-toggle CSS for the gear menu. */
     color: inherit;
@@ -1809,20 +2060,6 @@ div.focused_table {
 }
 
 #message_view_header {
-    z-index: 2;
-    float: left;
-    height: $header_height;
-    width: 100%;
-    line-height: $header_height;
-    font-size: 16px;
-    display: flex;
-    align-content: flex-start;
-    flex-wrap: nowrap;
-    margin: 0;
-    border: none;
-    white-space: nowrap;
-    cursor: default;
-
     .hidden {
         display: none;
     }
@@ -1848,9 +2085,6 @@ div.focused_table {
         padding: 12px 6px;
         overflow: hidden;
         text-overflow: ellipsis;
-        @media (width < $sm_min) {
-            padding: 7px 3.5px; /* based on having ~41.66% decrease */
-        }
 
         i {
             margin: 0 3px 0 5px;
@@ -1907,19 +2141,6 @@ div.focused_table {
 
         .fa.fa-user-o {
             margin-left: 0;
-        }
-
-        &::before,
-        &::after {
-            content: "|";
-            position: absolute;
-            top: 25%;
-            height: 50%;
-            color: hsl(0, 0%, 88%);
-            font-size: 20px;
-            @media (width < $sm_min) {
-                top: 10%;
-            }
         }
 
         &::before {
@@ -1988,15 +2209,7 @@ div.focused_table {
     }
 }
 
-#searchbox,
-#searchbox_legacy {
-    width: 100%;
-    height: $header_height;
-
-    .navbar-search:not(.expanded) {
-        display: none;
-    }
-
+#searchbox {
     .navbar-search.expanded {
         overflow: hidden;
         margin-top: 0;
@@ -2077,16 +2290,6 @@ div.focused_table {
         visibility: hidden;
     }
 
-    .search_icon {
-        position: absolute;
-        height: 100%;
-        text-decoration: none;
-        padding: 0 10px;
-        font-size: 20px;
-        z-index: 5;
-        left: 0;
-    }
-
     #search_arrows {
         padding-left: 35px;
         font-size: 90%;
@@ -2118,75 +2321,12 @@ div.focused_table {
     }
 }
 
-#searchbox_legacy {
-    #search_arrows {
-        padding-left: 0;
-    }
-
-    #search_query {
-        padding-left: 35px;
-    }
-
-    .search_button {
-        right: 0;
-    }
-
-    .navbar-search.expanded {
-        .search_button {
-            margin-right: 14px;
-        }
-    }
-}
-
 #message_view_header_underpadding {
     position: absolute;
     width: 100%;
     top: $header_height;
     height: $header_padding_bottom;
     z-index: 99;
-}
-
-#navbar-buttons {
-    white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
-    display: inline-block;
-    float: right;
-
-    ul.nav {
-        margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
-
-        li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-    }
 }
 
 #streamlist-toggle {
@@ -2236,36 +2376,6 @@ div.focused_table {
     color: hsl(0, 0%, 100%);
 }
 
-.nav .dropdown-menu {
-    left: auto;
-    right: 0;
-    top: 30px;
-    /* Match the width of the right sidebar so that we don't have
-       the presence dots distracting you when looking at this. */
-    min-width: 240px;
-    box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
-
-    &::after {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: -7px;
-        right: 19px;
-        display: inline-block;
-        border-right: 7px solid transparent;
-        border-bottom: 7px solid hsl(0, 0%, 67%);
-        border-left: 7px solid transparent;
-        content: "";
-        z-index: 10;
-    }
-}
-
-#gear-menu .zulip-icon-language {
-    position: relative;
-    top: 2.5px;
-    left: -0.5px;
-}
-
 .nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;
@@ -2312,18 +2422,6 @@ div.focused_table {
 }
 
 nav {
-    .column-left {
-        text-align: center;
-
-        .nav-logo {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 8px;
-            height: 25px;
-            max-width: 200px;
-        }
-    }
-
     a {
         &.no-style:hover {
             text-decoration: none;
@@ -2848,11 +2946,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
-    .app-main,
-    .header-main {
-        min-width: 750px;
-    }
-
     .column-right {
         display: none;
 
@@ -2879,30 +2972,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 
-    .header-main .column-right {
-        display: inline-block;
-        width: 30px;
-    }
-
-    #top_navbar.rightside-userlist #navbar-buttons {
-        margin-right: 41px;
-    }
-
-    .nav .dropdown-menu {
-        min-width: 180px;
-        box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
-
-        &::after {
-            right: 21px;
-        }
-    }
-
     .column-middle {
         margin-right: 7px;
     }
 
-    .top-navbar-container,
-    #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
         width: calc(100% - 84px);
     }
@@ -2916,8 +2989,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
             right: 72px;
         }
 
-        .top-navbar-border,
-        #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
             width: calc(100% - 50px);
         }
@@ -2957,6 +3028,75 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 
+    .header {
+        &__left {
+            width: $header_height;
+        }
+
+        &__middle {
+            width: unset;
+            flex-grow: 1;
+        }
+
+        &__right {
+            width: unset;
+        }
+
+        &__logo {
+            display: none;
+        }
+
+        &__searchbox-wrap {
+            width: unset;
+        }
+    }
+
+    .header-search {
+        width: 100%;
+
+        &__input {
+            display: none !important;
+        }
+
+        &__inner {
+            width: 28px;
+            border-radius: 15px;
+            background: hsl(0, 0%, 100%);
+
+            &::after {
+                content: none;
+            }
+        }
+
+        &__search-icon {
+            margin: 0;
+            justify-self: center;
+        }
+    }
+
+    .expanded {
+        .header-search {
+            &__input {
+                display: unset !important;
+            }
+
+            &__inner {
+                width: 100%;
+                border-radius: 0;
+                background: none;
+
+                &::after {
+                    content: "";
+                }
+            }
+
+            &__search-icon {
+                margin-left: 8px;
+                justify-self: left;
+            }
+        }
+    }
+
     body,
     html,
     .app-main,
@@ -2987,13 +3127,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
         display: block;
     }
 
-    .top-navbar-border {
-        margin-left: 40px;
-        width: calc(100% - 108px);
-    }
     /* todo: Figure out why this has to be different
        from above at this width and resolve it */
-    #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
         width: calc(100% - 123px);
     }
@@ -3003,11 +3138,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     #top_navbar:not(.rightside-userlist) {
-        .top-navbar-border {
-            width: calc(100% - 75px);
-        }
-
-        #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);
         }
@@ -3042,9 +3172,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     #navbar-buttons,
     .navbar-search,
     #message_view_header,
-    #searchbox,
-    #searchbox_legacy,
-    .header {
+    #searchbox {
         line-height: 30px;
         height: 30px;
     }
@@ -3053,24 +3181,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
         height: 30px !important;
     }
 
-    #search_query {
-        height: 30px !important;
-        vertical-align: text-bottom;
-    }
-
-    #streamlist-toggle-button {
-        height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
     #navbar-buttons ul.nav .dropdown-toggle,
     #navbar-buttons ul.nav li.active .dropdown-toggle {
         top: -8px;
     }
 
-    #searchbox,
-    #searchbox_legacy {
+    #searchbox {
         .input-append .fa-search {
             top: 5px;
         }
@@ -3243,5 +3359,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
         .date_row {
             background-color: hsl(192, 20%, 95%);
         }
+    }
+}
+
+.settings-dropdown {
+    &__icon {
+        width: 16px;
+        height: 16px;
     }
 }

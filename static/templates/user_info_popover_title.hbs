@@ -1,2 +1,33 @@
-<div class="popover-avatar{{#if user_is_guest}} guest-avatar{{/if}}" style="background-image: url('{{user_avatar}}');" >
-</div>
+<header class="user-info-popover-header">
+    <div class="user-info-popover-header__avatar">
+        <div class="user-info-popover-header__avatar-image popover-avatar{{#if user_is_guest}} guest-avatar{{/if}}" style="background-image: url('{{user_avatar}}');"></div>
+
+        {{#if is_active }}
+        {{#if is_bot}}
+        <i class="user-info-popover-header__status zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+        {{else}}
+        <span class="user-info-popover-header__status {{user_circle_class}} user_circle tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+        {{/if}}
+        {{/if}}
+
+    </div>
+    <div class="user-info-popover-header__text-area">
+        <p class="user-info-popover-header__full-name" data-tippy-content="{{user_info.user_full_name}}">{{user_full_name}}</p>
+
+        {{#if is_bot}}
+        {{#if bot_owner}}
+        <p class="user-info-popover-header__user-type bot_owner" data-tippy-content="{{ bot_owner.full_name }}">
+            {{#tr}}Bot owner{{/tr}}:
+            <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>{{ bot_owner.full_name }}</span>
+        </p>
+        {{else if is_system_bot}}
+        <p class="user-info-popover-header__user-type">{{#tr}}System bot{{/tr}}</p>
+        {{else}}
+        <p class="user-info-popover-header__user-type">{{#tr}}Bot{{/tr}}</p>
+        {{/if}}
+        {{else}}
+        <p class="user-info-popover-header__user-type">{{user_type}}</p>
+        {{/if}}
+
+    </div>
+</header>

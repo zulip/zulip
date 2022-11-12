@@ -1,194 +1,137 @@
 {{! Contents of the "message info" popup }}
-<ul class="nav nav-list info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
-    <li class="popover_user_name_row">
-        <b class="user_full_name" data-tippy-content="{{user_full_name}}">{{user_full_name}}</b>
-        {{#if is_active }}
-            {{#if is_bot}}
-            <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-            {{else}}
-            <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
-            {{/if}}
-        {{/if}}
-        {{#if show_manage_menu }}
-        <span class="user_info_popover_action_buttons">
-            <a class="user_info_popover_manage_menu_btn" role="button" tabindex="0" aria-haspopup="true">
-                <i class="popover_action_icon zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i>
-            </a>
-        </span>
-        {{/if}}
-    </li>
-
-
-    {{#if is_active }}
-        {{#if show_email}}
-        {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
-        <div>
-            <li class="user_popover_email">
-                <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-                {{ user_email }}
-            </li>
-        </div>
-        {{/if}}
-    {{else}}
-        <li class="user_popover_email half-opacity italic">{{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}</li>
-    {{/if}}
-
-
-    {{#if is_bot}}
-        {{#if bot_owner}}
-            <li class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{#tr}}Bot owner{{/tr}}:
-                <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
-                    {{bot_owner.full_name}}
-                </span>
-            </li>
-        {{else if is_system_bot}}
-            <li>{{#tr}}System bot{{/tr}}</li>
-        {{else}}
-            <li>{{#tr}}Bot{{/tr}}</li>
-        {{/if}}
-    {{else}}
-        <li>{{ user_type }}</li>
-    {{/if}}
+<section class="user-info-popover-content info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
     {{!-- Display selected custom profile fields in this popover. --}}
-    {{#each display_profile_fields}}
-        <li data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
-            {{#if this.is_link}}
+
+    {{#if status_content_available}}
+    <p class="user-info-popover-content__text-item">
+        <span id="status_message">
+            {{#if status_emoji_info}}
+            {{#if status_emoji_info.emoji_alt_code}}
+            <span class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</span>
+            {{else if status_emoji_info.url}}
+            <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+            {{else}}
+            <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
+            {{/if}}
+            {{/if}}
+            <span class="status_text">
+                {{status_text}}
+            </span>
+        </span>
+    </p>
+    {{/if}}
+
+    {{#if custom_user_field}}
+    <ul>
+        {{#each display_profile_fields}}
+            <li data-type="{{this.type}}" class="user-info-popover-content__text-item field-section custom_user_field" data-field-id="{{this.id}}">
+                {{#if this.is_link}}
+                <i class="svg-icon svg-icon--globe"></i>
                 <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</a>
-            {{else if this.is_external_account}}
+                {{else if this.is_external_account}}
                 <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">
                     {{#if (eq this.subtype "github") }}
-                    <i class="fa fa-github" aria-hidden="true"></i>
+                    <i class="svg-icon svg-icon--github"></i>
                     {{else if (eq this.subtype "twitter") }}
-                    <i class="fa fa-twitter" aria-hidden="true"></i>
+                    <i class="svg-icon svg-icon--twitter"></i>
                     {{/if}}
                     {{this.value}}
                 </a>
-            {{else}}
+                {{else}}
                 {{#if this.rendered_value}}
                 <span class="value rendered_markdown tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>
                 {{else}}
                 <span class="value tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</span>
                 {{/if}}
-            {{/if}}
-        </li>
-    {{/each}}
-
-
-    <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
-
-    {{#if (or (and user_time is_active) is_me status_content_available) }}
-        <hr />
-    {{/if}}
-    {{#if (and user_time is_active)}}
-        <li class="hidden-for-spectators local_time">{{#tr}}{user_time} local time{{/tr}}</li>
-    {{/if}}
-
-    {{#if status_content_available}}
-        <li class="user_info_status_text">
-            <span id="status_message">
-                {{#if status_emoji_info}}
-                    {{#if status_emoji_info.emoji_alt_code}}
-                        <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
-                    {{else if status_emoji_info.url}}
-                        <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
-                    {{else}}
-                        <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
-                    {{/if}}
                 {{/if}}
-                <span class="status_text">
-                    {{status_text}}
-                    {{#if is_me}}
-                    <span class="clear_status_button">(<a tabindex="0" class="clear_status">{{#tr}}clear{{/tr}}</a>)</span>
-                    {{/if}}
-                </span>
-            </span>
-        </li>
+            </li>
+        {{/each}}
+    </ul>
     {{/if}}
 
-    {{#if is_me}}
-        <li>
-            <a tabindex="0" class="update_status_text">
-                <i class="fa fa-comments" aria-hidden="true"></i>
-                {{#if status_text}}
-                    {{#tr}}Edit status{{/tr}}
+    {{#if spectator_view}}
+    <ul>
+        <li class="user-info-popover-content__text-item only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
+    </ul>
+    {{/if}}
+
+    {{#if (and user_time is_active)}}
+    <ul>
+        <li class="user-info-popover-content__text-item hidden-for-spectators local_time">
+            <i class="svg-icon svg-icon--clock"></i>
+            {{#tr}}{user_time} local time{{/tr}}
+        </li>
+        <li class="user-info-popover-content__text-item hidden-for-spectators local_time">
+            <i class="svg-icon svg-icon--past-time"></i>
+            {{user_last_seen_time_status}}
+        </li>
+    </ul>
+    {{/if}}
+
+    {{#unless spectator_view}}
+    <ul>
+        <li class="user-info-popover-content__link-item">
+            <a tabindex="0" class="view_full_user_profile">
+                {{#if is_me}}
+                <i class="svg-icon svg-icon--account"></i>
+                {{#tr}}Full profile{{/tr}}
                 {{else}}
-                    {{#tr}}Set a status{{/tr}}
+                <i class="svg-icon svg-icon--account"></i>
+                {{#tr}}Full profile{{/tr}}
                 {{/if}}
             </a>
         </li>
-        {{#if invisible_mode}}
-        <li>
-            <a tabindex="0" class="invisible_mode_turn_off">
-                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Turn off invisible mode{{/tr}}
+
+        <li class="user-info-popover-content__link-item">
+            <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
+                <i class="svg-icon svg-icon--mail"></i>
+                {{#if is_me}}
+                {{#tr}}Message with yourself{{/tr}}
+                {{else}}
+                {{#tr}}Direct message{{/tr}}
+                {{/if}}
+            </a>
+        </li>
+    </ul>
+
+    {{#unless is_me}}
+    <ul>
+        <li class="user-info-popover-content__link-item">
+            <a tabindex="0" class="copy_mention_syntax" data-clipboard-text="{{ user_mention_syntax }}">
+                <i class="svg-icon svg-icon--at-sign"></i>
+                {{#tr}}Copy mention syntax{{/tr}}
+            </a>
+        </li>
+        <li class="user-info-popover-content__link-item">
+            <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
+                <i class="svg-icon svg-icon--message-square"></i>
+                {{#tr}}View messages sent{{/tr}}
+            </a>
+        </li>
+    </ul>
+    {{/unless}}
+
+    {{#if muting_allowed}}
+    {{#unless is_me}}
+    <ul>
+        {{#if can_mute}}
+        <li class="user-info-popover-content__link-item">
+            <a href="" class="narrow_to_messages_sent mute_user">
+                <i class="svg-icon svg-icon--visibility-off"></i>
+                {{#tr}}Mute this user{{/tr}}
             </a>
         </li>
         {{else}}
-        <li>
-            <a tabindex="0" class="invisible_mode_turn_on">
-                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Go invisible{{/tr}}
+        <li class="user-info-popover-content__link-item">
+            <a href="" class="narrow_to_messages_sent unmute_user">
+                <i class="svg-icon svg-icon--visibility-off"></i>
+                {{#tr}}Unmute this user{{/tr}}
             </a>
         </li>
         {{/if}}
+    </ul>
+    {{/unless}}
     {{/if}}
 
-
-    {{#unless spectator_view}}
-        <hr />
-        <li>
-            <a tabindex="0" class="view_full_user_profile">
-                {{#if is_me}}
-                    <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View your profile{{/tr}}
-                {{else}}
-                    <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View full profile{{/tr}}
-                {{/if}}
-            </a>
-        </li>
-        {{#if can_send_private_message}}
-            <li>
-                <a tabindex="0" class="{{ private_message_class }}">
-                    <i class="fa fa-comment" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
-                </a>
-            </li>
-        {{/if}}
-        {{#unless is_me}}
-        <li>
-            {{#if has_message_context}}
-            <a tabindex="0" class="mention_user">
-                <i class="fa fa-at" aria-hidden="true"></i>
-                {{#if is_bot}}{{#tr}}Reply mentioning bot{{/tr}}{{else}}{{#tr}}Reply mentioning user{{/tr}}{{/if}}
-                {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
-            </a>
-            {{else}}
-            <a tabindex="0" class="copy_mention_syntax" data-clipboard-text="{{ user_mention_syntax }}">
-                <i class="fa fa-at" aria-hidden="true"></i>
-                {{#tr}}Copy mention syntax{{/tr}}
-                {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
-            </a>
-            {{/if}}
-        </li>
-        {{/unless}}
-        {{#if is_me}}
-        <li>
-            <a href="/#settings/profile">
-                <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Edit your profile{{/tr}}
-            </a>
-        </li>
-        {{/if}}
-        <hr />
-        <li>
-            <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
-                <i class="fa fa-envelope" aria-hidden="true"></i>
-                {{#if is_me}}
-                    {{#tr}}View messages with yourself{{/tr}}
-                {{else}}
-                    {{#tr}}View private messages{{/tr}}
-                {{/if}}
-            </a>
-        </li>
-        <li>
-            <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
-                <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr}}View messages sent{{/tr}}
-            </a>
-        </li>
     {{/unless}}
-</ul>
+</section>

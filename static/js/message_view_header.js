@@ -175,6 +175,9 @@ export function initialize() {
         exit_search();
         e.preventDefault();
         e.stopPropagation();
+
+        // clear search input
+        document.querySelector("#search_query").value = "";
     });
 }
 
@@ -196,6 +199,7 @@ export function maybe_rerender_title_area_for_stream(modified_sub) {
 export function open_search_bar_and_close_narrow_description() {
     reset_searchbox_text();
     $(".navbar-search").addClass("expanded");
+    $(".header__searchbox-wrap").addClass("expanded");
     $("#message_view_header").addClass("hidden");
 }
 
@@ -203,6 +207,7 @@ export function close_search_bar_and_open_narrow_description() {
     const filter = narrow_state.filter();
     if (!(filter && !filter.is_common_narrow())) {
         $(".navbar-search").removeClass("expanded");
+        $(".header__searchbox-wrap").removeClass("expanded");
         $("#message_view_header").removeClass("hidden");
     }
 }

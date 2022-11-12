@@ -1,72 +1,76 @@
 <div class="header">
-    <nav class="header-main rightside-userlist" id="top_navbar">
-        <div class="column-left">
-            <a class="brand no-style" href="#">
-                <img id="realm-logo" src="" alt="" class="nav-logo no-drag"/>
+    <nav class="header__inner header-main rightside-userlist" id="top_navbar">
+        <div class="header__left">
+            <a class="header__logo" href="#">
+                <img id="realm-logo" class="no-drag" src="" alt="" />
             </a>
-        </div>
-        <div class="column-middle" id="navbar-middle">
-            <div class="column-middle-inner">
-                <div id="streamlist-toggle" {{#if embedded}}class="hide-streamlist-toggle-visibility"{{/if}} title="{{t 'Stream list' }} (q)">
-                    <a id="streamlist-toggle-button" role="button" tabindex="0"><i class="fa fa-reorder" aria-hidden="true"></i>
-                        <span id="streamlist-toggle-unreadcount">0</span>
-                    </a>
-                </div>
-                <div class="top-navbar-border top-navbar-container">
-                    <div id="message_view_header" class="notdisplayed">
-                    </div>
-                    {{#if search_pills_enabled }}
-                    <div id="searchbox">
-                        <form id="searchbox_form" class="form-search navbar-search">
-                            <div id="search_arrows" class="pill-container input-append">
-                                <span class="search_icon search_open" ><i class="fa fa-search" aria-hidden="true"></i></span>
-                                <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{t 'Search' }}"
-                                  autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)">
-                                </div>
-                                <button class="btn search_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}">
-                                    <i class="fa fa-remove" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    {{else}}
-                    <div id="searchbox_legacy">
-                        <form id="searchbox_form" class="form-search navbar-search">
-                            <div id="search_arrows" class="input-append">
-                                <span class="search_icon search_open" ><i class="fa fa-search" aria-hidden="true"></i></span>
-                                <input class="search-query input-block-level home-page-input" id="search_query" type="text" placeholder="{{t 'Search' }}"
-                                  autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)"/>
-                                <button class="btn search_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                            </div>
-                        </form>
-                    </div>
-                    {{/if}}
-                </div>
+            <div id="streamlist-toggle" {{#if embedded}}class="hide-streamlist-toggle-visibility" {{/if}} title="{{t 'Stream list' }} (q)">
+                <a id="streamlist-toggle-button" role="button" tabindex="0"><i class="fa fa-reorder" aria-hidden="true"></i>
+                    <span id="streamlist-toggle-unreadcount">0</span>
+                </a>
             </div>
         </div>
-        <div class="column-right">
-            <div class="only-visible-for-spectators">
-                <div class="spectator_login_buttons hide-xl">
-                    <a href="/register"  class="signup_button">
-                        <span>{{t 'Sign up' }}</span>
-                    </a>
-                    <div class="divider">|</div>
-                    <a class="login_button">
-                        <span>{{t 'Log in' }}</span>
-                    </a>
+        <div class="header__middle" id="navbar-middle">
+            <div class="header__middle-inner">
+                <div id="message_view_header" class="header__stream-info notdisplayed"></div>
+                {{#if search_pills_enabled }}
+                <div class="header__searchbox-wrap" id="searchbox">
+                    <span class="search_icon search_closed"><i class="fa fa-search" aria-hidden="true"></i></span>
+                    <form id="searchbox_form" class="form-search navbar-search">
+                        <div id="search_arrows" class="pill-container input-append">
+                            <span class="search_icon search_open"><i class="fa fa-search" aria-hidden="true"></i></span>
+                            <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{t 'Search' }}" autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)">
+                            </div>
+                            <button class="btn search_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}">
+                                <i class="fa fa-remove" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="spectator_narrow_login_button hide show-xl" data-tippy-content="{{t 'Log in' }}" data-tippy-placement="bottom">
+                {{else}}
+                <div class="header__searchbox-wrap" id="searchbox_legacy">
+                    <form id="searchbox_form" class="header-search form-search navbar-search">
+                        <div id="search_arrows" class="header-search__inner input-append navbar-click-opens-search">
+                            <i class="header-search__search-icon svg-icon svg-icon--search search_closed"></i>
+                            <input class="header-search__input search-query input-block-level home-page-input search_closed" id="search_query" type="text" placeholder="{{t 'Search' }}" autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)" />
+                            <button class="header-search__exit-button search_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}">
+                                <i class="svg-icon svg-icon--x"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        <div class="header__right">
+            <div class="only-visible-for-spectators">
+                <div class="header__login-buttons">
+                    <a href="/register" class="signup_button">
+                        <span class="signup_button__text">{{t 'Sign up' }}</span>
+                    </a>
                     <a class="login_button">
-                        <i class="fa fa-sign-in"></i>
+                        <i class="svg-icon svg-icon--log-in"></i>
+                        <span class="login_button__text">{{t 'Log in' }}</span>
                     </a>
                 </div>
             </div>
             <div id="userlist-toggle" title="{{t 'User list' }} (w)" class="hidden-for-spectators">
-                <a id="userlist-toggle-button" role="button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
+                <a id="userlist-toggle-button" class="header-button" role="button" tabindex="0">
+                    <i class="svg-icon svg-icon--users" aria-hidden="true"></i>
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
             </div>
-            <div id="navbar-buttons" {{#if embedded}}class="hide-navbar-buttons-visibility"{{/if}}>
+            <a class="header-button hidden-for-spectators hide-sm" tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
+                <i class="svg-icon svg-icon--keyboard"></i>
+            </a>
+            <a class="header-button hidden-for-spectators hide-sm" href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <i class="svg-icon svg-icon--help"></i>
+            </a>
+            <div id="navbar-buttons" {{#if embedded}}class="hide-navbar-buttons-visibility" {{/if}}></div>
+            <div id="personal-menu" class="dropdown actual-dropdown-menu hidden-for-spectators" role="navigation">
+                <a class="header-button dropdown-toggle" tabindex="0" role="button" data-target="nada" data-toggle="dropdown" title="{{t 'Menu' }} (g)">
+                    <div class="header-button__avatar" style="background-image: url('{{user_avatar}}');"></div>
+                </a>
             </div>
         </div>
     </nav>

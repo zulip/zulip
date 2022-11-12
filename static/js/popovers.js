@@ -251,6 +251,7 @@ function render_user_info_popover(
         invisible_mode = !user_settings.presence_enabled;
     }
 
+    const is_muted = muted_users.is_user_muted(user.user_id);
     const muting_allowed = !is_me && !user.is_bot;
     const is_active = people.is_active_user_for_popover(user.user_id);
     const is_system_bot = user.is_system_bot;
@@ -306,6 +307,9 @@ function render_user_info_popover(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
+        muting_allowed,
+        can_mute: muting_allowed && !is_muted,
+        can_unmute: muting_allowed && !is_muted,
     };
 
     if (user.is_bot) {
@@ -329,8 +333,16 @@ function render_user_info_popover(
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
             // See the load_medium_avatar comment for important background.
-            user_avatar: people.small_avatar_url_for_person(user),
             user_is_guest: user.is_guest,
+            user_avatar: people.small_avatar_url_for_person(user),
+            is_active,
+            is_bot: user.is_bot,
+            user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+            user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
+            user_full_name: user.full_name,
+            user_type: people.get_user_type(user.user_id),
+            is_me,
+            spectator_view,
         }),
         html: true,
         trigger: "manual",
@@ -1045,7 +1057,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
         if (overlays.settings_open()) {
@@ -1057,7 +1069,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
         if (overlays.settings_open()) {
@@ -1095,18 +1107,20 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".info_popover_actions .clear_status", (e) => {
+    $("body").on("click", ".info_popover_actions .mute_user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("section"));
+        hide_all_user_info_popovers();
+        e.stopPropagation();
         e.preventDefault();
-        const me = elem_to_user_id($(e.target).parents("ul"));
-        user_status.server_update_status({
-            user_id: me,
-            status_text: "",
-            emoji_name: "",
-            emoji_code: "",
-            success() {
-                $(".info_popover_actions #status_message").empty();
-            },
-        });
+        muted_users_ui.confirm_mute_user(user_id);
+    });
+
+    $("body").on("click", ".info_popover_actions .unmute_user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("section"));
+        hide_all_user_info_popovers();
+        muted_users_ui.unmute_user(user_id);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".view_user_profile", (e) => {
@@ -1120,20 +1134,6 @@ export function register_click_handlers() {
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
-
-    $("body").on("click", ".invisible_mode_turn_on", (e) => {
-        hide_all();
-        user_status.server_invisible_mode_on();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".invisible_mode_turn_off", (e) => {
-        hide_all();
-        user_status.server_invisible_mode_off();
-        e.stopPropagation();
-        e.preventDefault();
-    });
 
     function open_user_status_modal(e) {
         hide_all();

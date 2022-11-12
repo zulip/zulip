@@ -192,30 +192,6 @@ $user_status_emoji_width: 24px;
     }
 }
 
-#userlist-toggle {
-    display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
-    text-align: center;
-    vertical-align: middle;
-    border-left: 1px solid hsl(0, 0%, 88%);
-}
-
-#userlist-toggle-button {
-    text-decoration: none;
-    color: hsl(0, 0%, 60%);
-    display: block;
-    width: 45px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
-
-    &:hover {
-        color: inherit;
-    }
-}
-
 .right-sidebar-items:first-of-type #userlist-header {
     border-top: none;
 }
@@ -288,19 +264,6 @@ $user_status_emoji_width: 24px;
         overflow: hidden;
         padding-right: 20px;
         width: calc(100% - 40px - 3px);
-    }
-}
-
-@media (width < $sm_min) {
-    #userlist-toggle {
-        height: 30px;
-        line-height: 30px;
-    }
-
-    #userlist-toggle-button {
-        height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
     }
 }
 

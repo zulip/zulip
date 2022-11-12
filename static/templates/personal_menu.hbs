@@ -1,0 +1,157 @@
+<div class="dropdown-menu" aria-labelledby="settings-dropdown">
+    <div class="arrow"></div>
+    <nav class="dropdown-menu__inner">
+        <header class="user-info-popover-header">
+            <div class="user-info-popover-header__avatar">
+                <div class="user-info-popover-header__avatar-image{{#if user_is_guest}} guest-avatar{{/if}}" style="background-image: url('{{user_avatar}}');"></div>
+
+                {{#if is_active }}
+                <span class="user-info-popover-header__status {{user_circle_class}} user_circle tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                {{/if}}
+
+            </div>
+            <div class="user-info-popover-header__text-area">
+                <p class="user-info-popover-header__full-name">{{user_full_name}}</p>
+                <p class="user-info-popover-header__user-type">{{user_type}}</p>
+            </div>
+        </header>
+        <section class="user-info-popover-content info_popover_actions" data-user-id="{{user_id}}">
+            <ul class="popover-list">
+                {{#if status_content_available}}
+                <li class="user-info-popover-content__text-item">
+                    <span>
+                        {{#if status_emoji_info}}
+                        {{#if status_emoji_info.emoji_alt_code}}
+                        <span class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</span>
+                        {{else if status_emoji_info.url}}
+                        <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                        {{else}}
+                        <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
+                        {{/if}}
+                        {{/if}}
+                        <span class="status_text">
+                            {{status_text}}
+                        </span>
+                    </span>
+                    <a href="" class="clear_status">
+                        <i class="svg-icon svg-icon--x-circle"></i>
+                    </a>
+                </li>
+                <li class="user-info-popover-content__link-item hidden-for-spectators">
+                    <a href="" class="update_status_text">
+                        <i class="svg-icon svg-icon--smile"></i>
+                        {{#tr}}Change my status{{/tr}}
+                    </a>
+                </li>
+                {{else}}
+                <li class="user-info-popover-content__link-item hidden-for-spectators">
+                    <a href="" class="update_status_text">
+                        <i class="svg-icon svg-icon--smile"></i>
+                        {{#tr}}Set my status{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+
+                {{#if invisible_mode}}
+                <li class="user-info-popover-content__link-item hidden-for-spectators">
+                    <a href="" class="invisible_mode_turn_off">
+                        <i class="svg-icon svg-icon--play-circle"></i>
+                        {{#tr}}Set myself visible{{/tr}}
+                    </a>
+                </li>
+                {{else}}
+                <li class="user-info-popover-content__link-item hidden-for-spectators">
+                    <a href="" class="invisible_mode_turn_on">
+                        <i class="svg-icon svg-icon--stop-circle"></i>
+                        {{#tr}}Set myself invisible{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+
+            <ul class="popover-list__list">
+                <li class="user-info-popover-content__text-item hidden-for-spectators">
+                    <i class="svg-icon svg-icon--clock"></i>
+                    {{#tr}}{user_time} local time{{/tr}}
+                </li>
+                <li class="user-info-popover-content__link-item">
+                    <a tabindex="0" class="view_full_user_profile">
+                        <i class="svg-icon svg-icon--account"></i>
+                        {{#tr}}My profile{{/tr}}
+                    </a>
+                </li>
+                <li class="user-info-popover-content__link-item">
+                    <a tabindex="0" href="#settings/profile">
+                        <i class="svg-icon svg-icon--tool"></i>
+                        {{#tr}}Personal settings{{/tr}}
+                    </a>
+                </li>
+            </ul>
+            <ul class="popover-list__list">
+                <li class="user-info-popover-content__link-item">
+                    <a href="{{ my_user_id }}" class="narrow_to_messages_sent">
+                        <i class="svg-icon svg-icon--message-square"></i>
+                        {{#tr}}Messages sent by me{{/tr}}
+                    </a>
+                </li>
+                <li class="user-info-popover-content__link-item">
+                    <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
+                        <i class="svg-icon svg-icon--mail"></i>
+                        {{#tr}}Private Message with myself{{/tr}}
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="popover-list__list">
+                <li class="popover-list__item" role="presentation">
+                    <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
+                        <i class="svg-icon svg-icon--help"></i>
+                        {{t 'Help center' }}
+                    </a>
+                </li>
+                <li class="popover-list__item" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
+                        <i class="svg-icon svg-icon--keyboard"></i>
+                        {{t 'Keyboard shortcuts' }}
+                    </a>
+                </li>
+                <li class="popover-list__item hidden-for-spectators" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
+                        <i class="svg-icon svg-icon--edit"></i>
+                        {{t 'Message formatting' }}
+                    </a>
+                </li>
+                <li class="popover-list__item" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
+                        <i class="svg-icon svg-icon--manage-search"></i>
+                        {{t 'Search operators' }}
+                    </a>
+                </li>
+                <li class="popover-list__item" role="presentation">
+                    <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
+                        <i class="svg-icon svg-icon--life-buoy"></i>
+                        {{t 'Contact support' }}
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="popover-list__list">
+                {{#if spectator_view}}
+                <li class="popover-list__item" role="presentation">
+                    <a href="{{login_link}}" role="menuitem">
+                        <i class="svg-icon svg-icon--power" aria-hidden="true"></i>
+                        {{t 'Log in' }}
+                    </a>
+                </li>
+                {{else}}
+                <li class="popover-list__item" role="presentation">
+                    <a href="#logout" class="logout_button hidden-for-spectators" role="menuitem">
+                        <i class="svg-icon svg-icon--power" aria-hidden="true"></i>
+                        {{t 'Log out' }}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+        </section>
+    </nav>
+</div>
