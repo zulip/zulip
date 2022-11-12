@@ -40,7 +40,6 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
     subscribed = []
     for stream in get_web_public_streams_queryset(realm):
-
         sub = SubscriptionStreamDict(
             audible_notifications=True,
             desktop_notifications=True,
@@ -50,8 +49,10 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             pin_to_top=False,
             push_notifications=True,
             wildcard_mentions_notify=True,
+
             color=get_next_color(),
-            email_address="",
+            email_address= "",
+
             can_remove_subscribers_group_id=stream.can_remove_subscribers_group_id,
             date_created=datetime_to_timestamp(stream.date_created),
             description=stream.description,
@@ -65,10 +66,8 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             rendered_description=stream.rendered_description,
             stream_id=stream.id,
             stream_post_policy=stream.stream_post_policy,
-            stream_weekly_traffic=get_average_weekly_stream_traffic(
-                stream.id, stream.date_created, {}
-            ),
-        )
+            stream_weekly_traffic=get_average_weekly_stream_traffic(stream.id, stream.date_created, {}),
+            )
         subscribed.append(sub)
 
     return SubscriptionInfo(subscriptions=subscribed, unsubscribed=[], never_subscribed=[])
@@ -92,16 +91,15 @@ def build_stream_dict_for_sub(
         can_remove_subscribers_group_id=raw_stream_dict["can_remove_subscribers_group_id"],
         color=sub_dict["color"],
         wildcard_mentions_notify=sub_dict["wildcard_mentions_notify"],
+
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
         description=raw_stream_dict["description"],
         email_address=encode_email_address_helper(
-            raw_stream_dict["name"], raw_stream_dict["email_token"], show_sender=True
-        ),
+            raw_stream_dict["name"], raw_stream_dict["email_token"], show_sender=True),
         first_message_id=raw_stream_dict["first_message_id"],
         history_public_to_subscribers=raw_stream_dict["history_public_to_subscribers"],
         invite_only=raw_stream_dict["invite_only"],
-        is_announcement_only=raw_stream_dict["stream_post_policy"]
-        == Stream.STREAM_POST_POLICY_ADMINS,
+        is_announcement_only=raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS,
         is_web_public=raw_stream_dict["is_web_public"],
         message_retention_days=raw_stream_dict["message_retention_days"],
         name=raw_stream_dict["name"],
@@ -109,17 +107,14 @@ def build_stream_dict_for_sub(
         stream_id=raw_stream_dict["id"],
         stream_post_policy=raw_stream_dict["stream_post_policy"],
         stream_weekly_traffic=get_average_weekly_stream_traffic(
-            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-        ),
+            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic),
     )
-
 
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: Dict[int, int],
 ) -> NeverSubscribedStreamDict:
-    """returns the NeverSubscripedStreamDict"""
-
+    """returns the NeverSubscripedStreamDict"""  
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
         can_remove_subscribers_group_id=raw_stream_dict["can_remove_subscribers_group_id"],
@@ -128,8 +123,7 @@ def build_stream_dict_for_never_sub(
         first_message_id=raw_stream_dict["first_message_id"],
         history_public_to_subscribers=raw_stream_dict["history_public_to_subscribers"],
         invite_only=raw_stream_dict["invite_only"],
-        is_announcement_only=raw_stream_dict["stream_post_policy"]
-        == Stream.STREAM_POST_POLICY_ADMINS,
+        is_announcement_only=raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS,
         is_web_public=raw_stream_dict["is_web_public"],
         message_retention_days=raw_stream_dict["message_retention_days"],
         name=raw_stream_dict["name"],
@@ -137,10 +131,8 @@ def build_stream_dict_for_never_sub(
         stream_id=raw_stream_dict["id"],
         stream_post_policy=raw_stream_dict["stream_post_policy"],
         stream_weekly_traffic=get_average_weekly_stream_traffic(
-            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-        ),
+            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic),
     )
-
 
 def validate_user_access_to_subscribers(
     user_profile: Optional[UserProfile], stream: Stream
@@ -166,8 +158,7 @@ def validate_user_access_to_subscribers(
 def validate_user_access_to_subscribers_helper(
     user_profile: Optional[UserProfile],
     stream_dict: Mapping[str, Any],
-    check_user_subscribed: Callable[[UserProfile], bool],
-) -> None:
+    check_user_subscribed: Callable[[UserProfile], bool],) -> None:
     """Helper for validate_user_access_to_subscribers that doesn't require
     a full stream object.  This function is a bit hard to read,
     because it is carefully optimized for performance in the two code
@@ -179,7 +170,6 @@ def validate_user_access_to_subscribers_helper(
     * In `validate_user_access_to_subscribers`, we want to only check
     if the user is subscribed when we absolutely have to, since it
     costs a database query.
-
     The `check_user_subscribed` argument is a function that reports
     whether the user is subscribed to the stream.
 
@@ -219,12 +209,10 @@ def validate_user_access_to_subscribers_helper(
     if stream_dict["invite_only"] and not check_user_subscribed(user_profile):
         raise JsonableError(_("Unable to retrieve subscribers for private stream"))
 
-
 def get_validated_stream(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
-    subscribed_stream_ids: Set[int],
-) -> List[Stream]:
+    subscribed_stream_ids: Set[int])-> List[Stream]:
     """returns the list of all validated streams"""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
@@ -242,8 +230,7 @@ def get_validated_stream(
         target_stream_dicts.append(stream_dict)
     return target_stream_dicts
 
-
-def query_select_by_recipient_ids(recipient_ids: List[Stream]) -> List[tuple]:
+def query_select_by_recipient_ids(recipient_ids: List[int]) -> List[tuple]:
     """
     The raw SQL below leads to more than a 2x speedup when tested with
     20k+ total subscribers.  (For large realms with lots of default
@@ -273,14 +260,13 @@ def query_select_by_recipient_ids(recipient_ids: List[Stream]) -> List[tuple]:
     cursor.close()
     return rows
 
-
 def bulk_get_subscriber_user_ids(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
     subscribed_stream_ids: Set[int],
 ) -> Dict[int, List[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
-
+  
     target_stream_dicts = get_validated_stream(stream_dicts, user_profile, subscribed_stream_ids)
 
     recip_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in target_stream_dicts}
@@ -290,7 +276,6 @@ def bulk_get_subscriber_user_ids(
     result: Dict[int, List[int]] = {stream["id"]: [] for stream in stream_dicts}
     if not recipient_ids:
         return result
-
     rows = query_select_by_recipient_ids(recipient_ids)
     """
     Using groupby/itemgetter here is important for performance, at scale.
@@ -301,7 +286,6 @@ def bulk_get_subscriber_user_ids(
         stream_id = recip_to_stream_id[recip_id]
         result[stream_id] = list(user_profile_ids)
     return result
-
 
 def get_subscribers_query(
     stream: Stream, requesting_user: Optional[UserProfile]
@@ -314,10 +298,8 @@ def get_subscribers_query(
     validate_user_access_to_subscribers(requesting_user, stream)
     return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
 
-
-def get_active_stream_subscriptions(
-    user_profile: UserProfile,
-) -> Tuple[Dict[int, int], Dict[int, RawStreamDict], List[RawSubscriptionDict], QuerySet[Stream]]:
+def get_active_stream_subscriptions(user_profile: UserProfile) -> Tuple[
+    Dict[int, int], Dict[int, RawStreamDict], List[RawSubscriptionDict], QuerySet[Stream]]:
     """extract all active subscription_stream given a UserProfile"""
     realm = user_profile.realm
     # The realm_id and recipient_id are generally not needed in the API.
@@ -339,13 +321,11 @@ def get_active_stream_subscriptions(
     # performance impact for loading / for users with large numbers of
     # subscriptions, so it's worth optimizing.
     sub_dicts_query: Iterable[RawSubscriptionDict] = (
-        get_stream_subscriptions_for_user(user_profile)
-        .values(
+        get_stream_subscriptions_for_user(user_profile).values(
             *Subscription.API_FIELDS,
             "recipient_id",
             "active",
-        )
-        .order_by("recipient_id")
+        ).order_by("recipient_id")
     )
 
     # We only care about subscriptions for active streams.
@@ -356,37 +336,29 @@ def get_active_stream_subscriptions(
     ]
     return (recip_id_to_stream_id, all_streams_map, sub_dicts, all_streams)
 
-
 def extract_subscriptions_in_3_groups(
-    user_profile: UserProfile,
-    recip_id_to_stream_id: Dict[int, int],
-    all_streams_map: Dict[int, RawStreamDict],
-    sub_dicts: List[RawSubscriptionDict],
-    all_streams: QuerySet[Stream],
-) -> Tuple[
-    List[SubscriptionStreamDict], List[SubscriptionStreamDict], List[NeverSubscribedStreamDict]
-]:
+    user_profile: UserProfile, recip_id_to_stream_id: Dict[int, int], 
+    all_streams_map: Dict[int, RawStreamDict], sub_dicts: List[RawSubscriptionDict], 
+    all_streams: QuerySet[Stream]) -> Tuple[List[SubscriptionStreamDict], 
+        List[SubscriptionStreamDict], 
+        List[NeverSubscribedStreamDict]]:
     """returns subscribed, unsubscribed, and never_subscribed list"""
-
+    
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
     subscribed: List[SubscriptionStreamDict] = []
     unsubscribed: List[SubscriptionStreamDict] = []
     never_subscribed: List[NeverSubscribedStreamDict] = []
-
     traffic_stream_ids = {recip_id_to_stream_id[sub_dict["recipient_id"]] for sub_dict in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
-
     sub_unsub_stream_ids = set()
     for sub_dict in sub_dicts:
         stream_id = recip_id_to_stream_id[sub_dict["recipient_id"]]
         sub_unsub_stream_ids.add(stream_id)
-
         stream_dict = build_stream_dict_for_sub(
             sub_dict=sub_dict,
             raw_stream_dict=all_streams_map[stream_id],
-            recent_traffic=recent_traffic,
-        )
+            recent_traffic=recent_traffic)
 
         if sub_dict["active"]:
             subscribed.append(stream_dict)
@@ -407,12 +379,10 @@ def extract_subscriptions_in_3_groups(
         is_public = not raw_stream_dict["invite_only"]
         if is_public or user_profile.is_realm_admin:
             slim_stream_dict = build_stream_dict_for_never_sub(
-                raw_stream_dict=raw_stream_dict, recent_traffic=recent_traffic
-            )
+                raw_stream_dict=raw_stream_dict, recent_traffic=recent_traffic)
 
             never_subscribed.append(slim_stream_dict)
     return (subscribed, unsubscribed, never_subscribed)
-
 
 def gather_subscriptions_helper(
     user_profile: UserProfile,
@@ -420,31 +390,22 @@ def gather_subscriptions_helper(
 ) -> SubscriptionInfo:
     """returns a complete subscriptionInfo object with include_subscribers set to True"""
 
-    (
-        recip_id_to_stream_id,
-        all_streams_map,
-        sub_dicts,
-        all_streams,
-    ) = get_active_stream_subscriptions(user_profile)
+    recip_id_to_stream_id, all_streams_map, sub_dicts, all_streams = get_active_stream_subscriptions(user_profile)
 
     subscribed, unsubscribed, never_subscribed = extract_subscriptions_in_3_groups(
-        user_profile, recip_id_to_stream_id, all_streams_map, sub_dicts, all_streams
-    )
+        user_profile, recip_id_to_stream_id, all_streams_map, sub_dicts, all_streams)
 
     if include_subscribers:
         # The highly optimized bulk_get_subscriber_user_ids wants to know which
         # streams we are subscribed to, for validation purposes, and it uses that
         # info to know if it's allowed to find OTHER subscribers.
         subscribed_stream_ids = {
-            # get_stream_id(sub_dict) for sub_dict in sub_dicts if sub_dict["active"]
-            recip_id_to_stream_id[sub_dict["recipient_id"]]
-            for sub_dict in sub_dicts
-            if sub_dict["active"]
+            #get_stream_id(sub_dict) for sub_dict in sub_dicts if sub_dict["active"]
+            recip_id_to_stream_id[sub_dict["recipient_id"]] for sub_dict in sub_dicts if sub_dict["active"]
         }
 
         subscriber_map = bulk_get_subscriber_user_ids(
-            all_streams, user_profile, subscribed_stream_ids
-        )
+            all_streams,user_profile, subscribed_stream_ids)
 
         for lst in [subscribed, unsubscribed]:
             for stream_dict in lst:
@@ -462,11 +423,8 @@ def gather_subscriptions_helper(
     never_subscribed.sort(key=lambda x: x["name"])
 
     return SubscriptionInfo(
-        subscriptions=subscribed,
-        unsubscribed=unsubscribed,
-        never_subscribed=never_subscribed,
+        subscriptions=subscribed, unsubscribed=unsubscribed, never_subscribed=never_subscribed,
     )
-
 
 def gather_subscriptions(
     user_profile: UserProfile,
@@ -474,8 +432,7 @@ def gather_subscriptions(
 ) -> Tuple[List[SubscriptionStreamDict], List[SubscriptionStreamDict]]:
     """returns subscribed and unsubscribe with include_subscribers set to False"""
     helper_result = gather_subscriptions_helper(
-        user_profile, include_subscribers=include_subscribers
-    )
+        user_profile, include_subscribers=include_subscribers)
     subscribed = helper_result.subscriptions
     unsubscribed = helper_result.unsubscribed
     return (subscribed, unsubscribed)
