@@ -2882,11 +2882,11 @@ class SAMLSPInitiatedLogout:
     @classmethod
     def slo_request_to_idp(
         cls, request: HttpRequest, return_to: Optional[str] = None
-    ) -> Optional[HttpResponse]:
+    ) -> HttpResponse:
         """
         Generates the redirect to the IdP's SLO endpoint with
-        the appropriately generated LogoutRequest or None if the session
-        wasn't authenticated via SAML.
+        the appropriately generated LogoutRequest. This should only be called
+        on requests with a session that was indeed obtained via SAML.
         """
 
         user_profile = request.user
@@ -2900,7 +2900,7 @@ class SAMLSPInitiatedLogout:
 
         idp_name = cls.get_logged_in_user_idp(request)
         if idp_name is None:
-            return None
+            raise AssertionError("User not logged in via SAML")
 
         idp = saml_backend.get_idp(idp_name)
         auth = saml_backend._create_saml_auth(idp)
