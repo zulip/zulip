@@ -1538,6 +1538,15 @@ $option_title_width: 180px;
         }
     }
 
+    .dropdown-toggle span {
+        /* Uses ellipsis to truncate text after 20 characters. */
+        display: inline-block;
+        max-width: 20ch;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
     button.multiselect_btn {
         /* Matches the dropdown input margin so as to keep it aligned */
         margin-left: 9px;
