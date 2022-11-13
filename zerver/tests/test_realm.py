@@ -399,6 +399,8 @@ class RealmTest(ZulipTestCase):
 
     def test_do_send_realm_reactivation_email(self) -> None:
         realm = get_realm("zulip")
+        do_deactivate_realm(realm, acting_user=None)
+        self.assertEqual(realm.deactivated, True)
         iago = self.example_user("iago")
         do_send_realm_reactivation_email(realm, acting_user=iago)
         from django.core.mail import outbox
