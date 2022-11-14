@@ -66,3 +66,4 @@ Additional tabs showing:
 
 * [Edit your profile](/help/edit-your-profile)
 * [Custom profile fields](/help/custom-profile-fields)
+* [User cards](/help/user-cards)
