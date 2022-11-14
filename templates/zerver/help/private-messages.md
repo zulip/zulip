@@ -29,8 +29,9 @@ and do not appear in your list of streams.
 
 !!! tip ""
 
-    You can also click on any user in the right sidebar, or click on a
-    user's profile picture or name, and select **Send private message**.
+      You can also click on any user in the right sidebar to start composing
+      a private message to them. Or open their **user card** by clicking on
+      their profile picture or name, and select **Send private message**.
 
 {tab|mobile}
 

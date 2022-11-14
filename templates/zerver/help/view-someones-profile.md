@@ -47,7 +47,8 @@ Additional tabs showing:
 !!! Tip ""
 
     You can also click on a user's profile picture or name on a
-    message they sent, and skip to the last step.
+    message they sent to open their **user card**, and skip to
+    the last step.
 
 {tab|mobile}
 

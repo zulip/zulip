@@ -23,7 +23,7 @@ You can set a status emoji, status message, or both.
 
 {tab|desktop-web}
 
-{!self-user-actions-menu.md!}
+{!self-user-card.md!}
 
 1. Click **Set a status**.
 
@@ -52,8 +52,8 @@ and compose box.
 
 You can view status messages by hovering over your or anyone else's name in the
 left or right sidebar, or by clicking the user's name or avatar in the main
-message feed. If someone hasn't set a message as part of their status, then no
-status message will appear.
+message feed to open their **user card**. If someone hasn't set a message as
+part of their status, then no status message will appear.
 
 ## Availability
 
@@ -88,7 +88,7 @@ the UI will be frozen as the approximate time you enabled this setting.
 
 {tab|desktop-web}
 
-{!self-user-actions-menu.md!}
+{!self-user-card.md!}
 
 1. To enable, you'll select **Go invisible**.
 

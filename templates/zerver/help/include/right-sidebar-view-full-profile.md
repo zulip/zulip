@@ -1,3 +1,3 @@
-{!right-sidebar-profile-menu.md!}
+{!right-sidebar-user-card.md!}
 
 1. Click **View full profile**.

@@ -386,7 +386,7 @@ export function initialize() {
             "#add-new-custom-profile-field-form .display_in_profile_summary_tooltip",
         ],
         content: $t({
-            defaultMessage: "Only 2 custom profile fields can be displayed in the profile summary.",
+            defaultMessage: "Only 2 custom profile fields can be displayed on the user card.",
         }),
         appendTo: () => document.body,
         onTrigger(instance) {

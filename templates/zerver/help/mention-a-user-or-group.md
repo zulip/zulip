@@ -23,7 +23,7 @@ messages and alert words.
 
 {start_tabs}
 
-{!right-sidebar-profile-menu.md!}
+{!right-sidebar-user-card.md!}
 
 1. Select **Copy mention syntax** to add it to your clipboard.
 
@@ -35,7 +35,8 @@ messages and alert words.
 
 {start_tabs}
 
-1. Click on a user's profile picture or name on a message they sent.
+1. Click on a user's profile picture or name on a message they sent
+   to open their **user card**.
 
 1. Select **Reply mentioning user** to start a reply to the conversation
    with a mention inserted into the compose box.

@@ -56,13 +56,13 @@ There are several different types of fields available.
 * **Person picker**: For selecting one or more users, like "Manager" or
     "Direct reports".
 
-## Display custom fields in user profile summaries
+## Display custom fields on user card
 
-Organizations may find it useful to display additional fields in a user's
-profile summary, such as pronouns, GitHub username, job title, team, etc.
+Organizations may find it useful to display additional fields on the
+user card, such as pronouns, GitHub username, job title, team, etc.
 
 All field types other than "Long text" or "Person" have a checkbox option
-that controls whether to display a custom field in a user's profile summary.
+that controls whether to display a custom field on the user card.
 There's a limit to the number of custom profile fields that can be displayed
 at a time. If the maximum number of fields is already selected, all unselected
 checkboxes will be disabled.
@@ -74,14 +74,14 @@ checkboxes will be disabled.
 1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
    icon for the profile field you want to edit.
 
-1. Toggle **Display in profile summary**.
+1. Toggle **Display on user card**.
 
 4. Click **Save changes**.
 
 !!! tip ""
 
     You can also choose which custom profile fields will be displayed by toggling
-    the checkboxes in the **Summary** column of the **Custom profile fields** table.
+    the checkboxes in the **Card** column of the **Custom profile fields** table.
 
 {end_tabs}
 
