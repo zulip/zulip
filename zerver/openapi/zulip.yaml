@@ -9817,7 +9817,7 @@ paths:
                           An array of dictionaries where each dictionary contains the
                           details of a single custom profile field that is available to users
                           in this Zulip organization. This must be combined with the custom profile
-                          field values on individual user objects to display users' full profiles.
+                          field values on individual user objects to display users' profiles.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
                       custom_profile_field_types:

@@ -79,7 +79,7 @@ This method is useful if you need to remove one user from multiple streams.
 
 {start_tabs}
 
-{!right-sidebar-view-full-profile.md!}
+{!right-sidebar-view-profile.md!}
 
 1. Select the **Streams** tab.
 
