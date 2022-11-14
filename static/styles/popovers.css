@@ -302,7 +302,8 @@ ul {
     }
 }
 
-.user_profile_presence {
+.user_profile_presence,
+.popover_user_presence {
     width: 8px;
     height: 8px;
     margin: 0 5px;
@@ -350,8 +351,8 @@ ul {
         justify-content: center;
     }
 
-    .popover_user_presence {
-        margin: 5px 10px;
+    .user_profile_presence {
+        margin: 5px;
         vertical-align: middle;
     }
 
