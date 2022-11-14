@@ -1,10 +1,21 @@
 # Marking messages as unread
 
-Zulip lets you manually mark messages as unread, which makes it easy to return
-to a conversation later.
+Zulip lets you manually mark messages as unread. Specifically, Zulip offers a
+**Mark as unread from here** option, which lets you mark the selected message
+and all newer messages in your current view as unread.
 
-Specifically, Zulip offers a **Mark as unread from here** option, which lets you
-mark the selected message and all newer messages in your current view as unread.
+There are many ways to use this feature, including:
+
+- When you don't have time to read a conversation carefully, or to follow up on
+  action items, mark messages as unread to return to them later.
+
+- You can mark messages as unread when you [subscribe to a
+  stream](/help/browse-and-subscribe-to-streams). This makes it
+  [convenient](/help/reading-strategies) to review all the recent
+  conversations in that stream.
+
+- Mark the results of your [search](/help/search-for-messages) as unread to
+  review them at leisure.
 
 ## Mark as unread from selected message
 
