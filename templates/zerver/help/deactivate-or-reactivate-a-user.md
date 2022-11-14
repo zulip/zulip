@@ -32,7 +32,7 @@ When you deactivate a user:
 
 {start_tabs}
 
-{tab|via-user-profile}
+{tab|via-user-card}
 
 {!manage-this-user.md!}
 
