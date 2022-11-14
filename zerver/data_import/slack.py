@@ -1146,6 +1146,10 @@ def build_reactions(
             continue
 
         for slack_user_id in slack_reaction["users"]:
+            if slack_user_id not in slack_user_id_to_zulip_user_id:
+                # Deleted users still have reaction references but no profile, so we skip
+                continue
+
             reaction_id = NEXT_ID("reaction")
             reaction = Reaction(
                 id=reaction_id,
