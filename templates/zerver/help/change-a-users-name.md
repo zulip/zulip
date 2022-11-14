@@ -12,7 +12,7 @@ Organization administrators can always change any user's name.
 
 {start_tabs}
 
-{tab|via-user-profile}
+{tab|via-user-card}
 
 {!manage-this-user.md!}
 

@@ -75,7 +75,7 @@ TAB_SECTION_LABELS = {
     "public-streams": "Public streams",
     "private-streams": "Private streams",
     "web-public-streams": "Web-public streams",
-    "via-user-profile": "Via the user's profile",
+    "via-user-card": "Via user card",
     "via-organization-settings": "Via organization settings",
     "via-personal-settings": "Via personal settings",
     "default-subdomain": "Default subdomain",

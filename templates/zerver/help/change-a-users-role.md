@@ -19,7 +19,7 @@ organization](/help/deactivate-your-organization) instead).
 
 {start_tabs}
 
-{tab|via-user-profile}
+{tab|via-user-card}
 
 {!manage-this-user.md!}
 
