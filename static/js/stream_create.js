@@ -40,7 +40,7 @@ class StreamSubscriptionError {
         $("#stream_subscription_error").show();
     }
 
-    cant_create_stream_without_susbscribing() {
+    cant_create_stream_without_subscribing() {
         $("#stream_subscription_error").text(
             $t({
                 defaultMessage:
@@ -359,7 +359,7 @@ export function set_up_handlers() {
             return;
         }
         if (!principals.includes(people.my_current_user_id()) && !page_params.is_admin) {
-            stream_subscription_error.cant_create_stream_without_susbscribing();
+            stream_subscription_error.cant_create_stream_without_subscribing();
             return;
         }
 
