@@ -59,7 +59,7 @@ export function field_type_id_to_string(type_id) {
     return undefined;
 }
 
-// Checking custom profile field type is valid for showing display in profile summary checkbox field.
+// Checking custom profile field type is valid for showing display on user card checkbox field.
 function is_valid_to_display_in_summary(field_type) {
     if (field_type === field_types.LONG_TEXT.id || field_type === field_types.USER.id) {
         return false;
@@ -246,7 +246,7 @@ function set_up_create_field_form() {
         $("#profile_field_hint").val(default_hint);
     }
 
-    // Not showing "display in profile summary" option for long text/user profile field.
+    // Not showing "display on user card" option for long text/user profile field.
     if (is_valid_to_display_in_summary(profile_field_type)) {
         $("#profile_field_display_in_profile_summary").closest(".input-group").show();
         const check_display_in_profile_summary_by_default =
@@ -310,8 +310,7 @@ function open_custom_profile_field_form_modal() {
         clear_form_data();
 
         // If we already have 2 custom profile fields configured to be
-        // displayed in the user profile summary, disable the input to
-        // change it.
+        // displayed on the user card, disable the input to change it.
         $("#add-new-custom-profile-field-form #profile_field_display_in_profile_summary").prop(
             "disabled",
             display_in_profile_summary_fields_limit_reached,
@@ -469,8 +468,8 @@ function open_edit_form_modal(e) {
     function set_initial_values_of_profile_field() {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
 
-        // If its passes or equals the max limit we are disabling option for display custom profile field
-        // in user profile summary and adding tooptip except already checked field.
+        // If it exceeds or equals the max limit, we are disabling option for display custom
+        // profile field on user card and adding tooptip, unless the field is already checked.
         if (display_in_profile_summary_fields_limit_reached && !field.display_in_profile_summary) {
             $profile_field_form
                 .find("input[name=display_in_profile_summary]")
@@ -565,8 +564,8 @@ function open_edit_form_modal(e) {
     });
 }
 
-// If passes or equals the max limit, we are disabling option for
-// display custom profile field in user profile summary and adding tooltip.
+// If exceeds or equals the max limit, we are disabling option for
+// display custom profile field on user card and adding tooltip.
 function update_profile_fields_checkboxes() {
     // Disabling only uncheck checkboxes in table, so user should able uncheck checked checkboxes.
     $("#admin_profile_fields_table .display_in_profile_summary_checkbox_false").prop(

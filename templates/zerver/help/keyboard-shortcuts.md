@@ -139,7 +139,7 @@ below, and add more to your repertoire as needed.
 
 ### For a selected message (outlined in blue)
 
-* **Show sender's profile**: <kbd>U</kbd>
+* **Show message sender's user card**: <kbd>U</kbd>
 
 * **View image**: <kbd>V</kbd>
 

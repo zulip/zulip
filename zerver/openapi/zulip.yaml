@@ -15593,7 +15593,7 @@ components:
         display_in_profile_summary:
           type: boolean
           description: |
-            Whether the custom profile field, display or not in the user profile summary.
+            Whether the custom profile field, display or not on the user card.
 
             Currently it's value not allowed to be `true` of `Long text` and `Person picker`
             [profile field types](/help/custom-profile-fields#profile-field-types).
