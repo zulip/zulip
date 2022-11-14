@@ -94,6 +94,7 @@
 
 ## People
 * [Status and availability](/help/status-and-availability)
+* [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
 * [Private messages](/help/private-messages)
 
