@@ -103,7 +103,7 @@ the UI will be frozen as the approximate time you enabled this setting.
 
 {!mobile-profile-menu.md!}
 
-1. Toggle **Set yourself to away**.
+1. Toggle **Invisible mode**.
 
 {end_tabs}
 
