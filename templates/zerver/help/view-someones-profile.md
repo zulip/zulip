@@ -42,7 +42,7 @@ Additional tabs showing:
 
 {tab|desktop-web}
 
-{!right-sidebar-view-full-profile.md!}
+{!right-sidebar-view-profile.md!}
 
 !!! Tip ""
 
