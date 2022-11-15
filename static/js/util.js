@@ -360,3 +360,24 @@ export function get_time_from_date_muted(date_muted) {
     }
     return date_muted * 1000;
 }
+
+export function call_function_periodically(callback, delay) {
+    // We previously used setInterval for this purpose, but
+    // empirically observed that after unsuspend, Chrome can end
+    // up trying to "catch up" by doing dozens of these requests
+    // at once, wasting resources as well as hitting rate limits
+    // on the server. We have not been able to reproduce this
+    // reliably enough to be certain whether the setInterval
+    // requests are those that would have happened while the
+    // laptop was suspended or during a window after unsuspend
+    // before the user focuses the browser tab.
+
+    // But using setTimeout this instead ensures that we're only
+    // scheduling a next call if the browser will actually be
+    // calling "callback".
+    setTimeout(() => {
+        call_function_periodically(callback, delay);
+    }, delay);
+
+    callback();
+}
