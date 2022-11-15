@@ -298,6 +298,10 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
         assert invite is not None
+
+        # This should be impossible, because revoking a multiuse invite
+        # deletes the Confirmation object, so it couldn't have been fetched above.
+        assert invite.status != confirmation_settings.STATUS_REVOKED
         invites.append(
             dict(
                 invited_by_user_id=invite.referred_by.id,
