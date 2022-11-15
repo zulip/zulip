@@ -134,14 +134,10 @@ def maybe_send_resolve_topic_notifications(
     changed_messages: List[Message],
 ) -> bool:
     """Returns True if resolve topic notifications were in fact sent."""
-
     # Note that topics will have already been stripped in check_update_message.
     #
     # This logic is designed to treat removing a weird "✔ ✔✔ "
     # prefix as unresolving the topic.
-    if old_topic.lstrip(RESOLVED_TOPIC_PREFIX) != new_topic.lstrip(RESOLVED_TOPIC_PREFIX):
-        return False
-
     topic_resolved: bool = new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
         RESOLVED_TOPIC_PREFIX
     )
