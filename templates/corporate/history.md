@@ -79,7 +79,7 @@ In its early days, the Zulip community was focused on three main goals:
 - **Building a vibrant community around the project**, with effort and
   care dedicated to making it [easy to get
   started](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
-  contributing to Zulip. They Zulip development community gathered at
+  contributing to Zulip. The Zulip development community gathered at
   PyCon sprints [in
   2016](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
   and led the largest PyCon sprint ever [in
