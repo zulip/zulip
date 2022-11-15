@@ -61,19 +61,16 @@ cd "$BASEDIR"
 git checkout-index -f -a --prefix "$OUTPUT_DIR/$prefix/"
 
 # Add the Git version information file
-./tools/cache-zulip-git-version
 if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    # We override the merge-base, to avoid having to push the commits before building the tarball.
+    OVERRIDE_MERGE_BASE="$version" ./tools/cache-zulip-git-version
     generated_version=$(head -n1 zulip-git-version)
-    base_version=$(head -n2 zulip-git-version | tail -n1)
     if [ "$generated_version" != "$version" ]; then
         echo "Version $version looks like a release version, but is not tagged yet!  Got $generated_version"
         exit 1
     fi
-    if [ "$base_version" != "$version" ]; then
-        remote="$(git config zulip.zulipRemote)" || remote=upstream
-        echo "Commit for $version have not been pushed to remote $remote -- 'branched from' reports $base_version, not $version"
-        exit 1
-    fi
+else
+    ./tools/cache-zulip-git-version
 fi
 mv zulip-git-version "$OUTPUT_DIR/$prefix/"
 
