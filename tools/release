@@ -102,10 +102,6 @@ sleep 15
 
 git tag "$version"
 
-# Commits need to be pushed to the remote so that "branched from" is correct
-remote="$(git config zulip.zulipRemote)" || remote=upstream
-git push "$remote" "$branch:$branch"
-
 OUTPUT_DIR=$(mktemp -d)
 export OUTPUT_DIR
 
@@ -119,6 +115,9 @@ fi
 
 ./tools/upload-release "$TARBALL"
 
+# Push the commits
+remote="$(git config zulip.zulipRemote)" || remote=upstream
+git push "$remote" "$branch:$branch"
 git push "$remote" "$version"
 
 # Upload to Github
