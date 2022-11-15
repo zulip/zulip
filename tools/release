@@ -57,8 +57,9 @@ fi
 # Check the date is correct for the release
 release_line=$(grep -x -E -m 1 -o "### $version -- ([0-9-]+)" docs/overview/changelog.md) \
     || fail "docs/overview/changelog.md does not contain a line for $version"
-[ "$release_line" == "### $version -- $(TZ=America/Los_Angeles date +%F)" ] \
-    || fail "Date in docs/overview/changelog.md does not match $(date +%F)"
+expected_date="$(TZ=America/Los_Angeles date +%F)"
+[ "$release_line" == "### $version -- $expected_date" ] \
+    || fail "Date in docs/overview/changelog.md does not match '$expected_date'"
 
 extract_version() {
     setting="$1"
