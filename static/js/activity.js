@@ -15,6 +15,7 @@ import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
+import * as util from "./util";
 import * as watchdog from "./watchdog";
 
 export let user_cursor;
@@ -242,32 +243,10 @@ export function initialize() {
     buddy_list.start_scroll_handler();
 
     function get_full_presence_list_update() {
-        // Schedule the next presence update request to the server.
-        // This implementation aims to simulate setInterval; in
-        // particular, we schedule the next request immediately,
-        // rather than waiting for the current request to
-        // finish/succeed.
-        //
-        // We previously used setInterval for this purpose, but
-        // empirically observed that after unsuspend, Chrome can end
-        // up trying to "catch up" by doing dozens of these requests
-        // at once, wasting resources as well as hitting rate limits
-        // on the server. We have not been able to reproduce this
-        // reliably enough to be certain whether the setInterval
-        // requests are those that would have happened while the
-        // laptop was suspended or during a window after unsuspend
-        // before the user focuses the browser tab.
-        //
-        // But using setTimeout this instead ensures that we're only
-        // scheduling a next request if the browser will actually be
-        // calling send_presence_to_server.
-        setTimeout(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
-
         send_presence_to_server(true);
     }
 
-    // Schedule our first full presence update.
-    setTimeout(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
+    util.call_function_periodically(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
