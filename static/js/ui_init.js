@@ -609,8 +609,8 @@ export function initialize_everything() {
     settings.initialize();
     initialize_navbar();
     initialize_message_feed_errors();
-    realm_logo.render();
 
+    realm_logo.initialize();
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
