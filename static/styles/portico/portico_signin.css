@@ -4,7 +4,7 @@ html {
 
 .flex {
     display: flex;
-    padding: 80px 0;
+    padding: 110px 0 80px;
     align-items: center;
     justify-content: center;
 
@@ -16,14 +16,20 @@ html {
 }
 
 .white-box {
-    position: relative;
-    padding: 30px;
-    min-width: 0;
-
+    padding: 0;
+    width: 90%;
+    max-width: 1000px;
     background-color: hsl(0, 0%, 100%);
-    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
-    border: 1px solid hsl(0, 0%, 87%);
-    border-radius: 4px;
+    border-radius: 6px;
+    overflow: hidden;
+
+    a {
+        color: hsla(217, 100%, 50%, 1);
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
 
 .bottom-text {
@@ -31,15 +37,6 @@ html {
     margin-top: 20px;
     font-weight: 500;
     font-size: 0.9em;
-
-    a {
-        color: hsl(164, 100%, 23%);
-
-        &:hover {
-            text-decoration: none;
-            color: hsl(156, 62%, 61%);
-        }
-    }
 }
 
 .bottom-text-large {
@@ -47,15 +44,6 @@ html {
     margin-top: 20px;
     font-weight: 500;
     font-size: 1.2em;
-
-    a {
-        color: hsl(164, 100%, 23%);
-
-        &:hover {
-            text-decoration: none;
-            color: hsl(156, 62%, 61%);
-        }
-    }
 }
 
 .grey {
@@ -67,6 +55,11 @@ html {
 }
 
 .app-main {
+    &.white-box {
+        display: grid;
+        grid-template-columns: minmax(300px,45%) 1fr;
+    }
+
     .login-page-header {
         font-size: 1.5em;
         font-weight: 300;
@@ -152,6 +145,7 @@ html {
     &.dev-login {
         margin-top: 20px;
         border: none;
+        display: unset;
 
         .login-form {
             width: auto;
@@ -209,17 +203,20 @@ html {
         .invite-required {
             display: block;
 
-            color: hsl(0, 0%, 67%);
             font-weight: normal;
         }
     }
 
     .invite-required {
         display: none;
-        line-height: 1;
+
+        font-size: 0.9em;
+        font-weight: 400;
+        line-height: 150%;
+        color: hsl(0, 100%, 70%);
 
         i {
-            margin-right: 5px;
+            margin-right: 10px;
         }
     }
 }
@@ -230,15 +227,6 @@ html {
 
     font-weight: 300;
     font-size: 2em;
-}
-
-.forgot-password-container {
-    width: 503px;
-
-    h3,
-    form {
-        margin-bottom: 0;
-    }
 }
 
 .deactivated-realm-container {
@@ -260,7 +248,8 @@ html {
 
 .register-form {
     &.new-style {
-        text-align: left;
+        display: grid;
+        grid-template-columns: 45% 1fr;
         color: hsl(0, 0%, 45%);
     }
 
@@ -277,10 +266,6 @@ html {
 
     button {
         margin-top: 22px;
-    }
-
-    .new-organization-button {
-        margin-top: 25px;
     }
 }
 
@@ -357,39 +342,47 @@ html {
     position: relative;
 }
 
+button {
+    display: inline-block;
+    vertical-align: top;
+    margin: 20px 0 5px;
+    padding: 15px 22px;
+
+    font-family: "Source Sans 3", sans-serif;
+
+    font-size: 1rem;
+    font-weight: 400;
+    box-sizing: border-box;
+    outline: none;
+    color: hsl(216, 100%, 100%);
+    background-color: hsl(215, 93%, 54%);
+    border: none;
+    border-radius: 5px;
+    transition: transform 0.2s;
+
+    &:active {
+        transform: scale(0.925);
+    }
+
+    &.full-width {
+        width: 100%;
+    }
+}
+
 .new-style {
-    button {
-        display: inline-block;
-        vertical-align: top;
-        padding: 13px 22px;
-
-        font-family: "Source Sans 3", sans-serif;
-
-        font-size: 1.2rem;
-        font-weight: 400;
-        box-sizing: border-box;
-        outline: none;
-        color: hsl(0, 0%, 100%);
-        background-color: hsl(213, 23%, 25%);
-
-        margin: 25px 0 5px;
-        height: 50px;
-
-        border: none;
-        border-radius: 4px;
-
-        transition: all 0.3s ease;
+    .light-blue-button {
+        color: hsl(215, 93%, 54%);
+        background-color: hsl(216, 100%, 97%);
+        border: solid 1px hsla(0, 0%, 100%, 0);
+        border-radius: 5px;
+        transition: transform 0.2s;
 
         &:hover {
-            background-color: hsl(213, 33%, 31%);
+            border-color: hsl(215, 93%, 54%);
         }
 
         &:active {
-            background-color: hsl(214, 28%, 16%);
-        }
-
-        &:focus {
-            outline: 3px solid hsl(213, 81%, 79%);
+            transform: scale(0.925);
         }
 
         &.full-width {
@@ -438,7 +431,7 @@ html {
             background-color: transparent;
 
             border: none;
-            color: hsl(0, 44%, 54%);
+            color: hsl(0, 100%, 70%);
         }
 
         &.alert-error {
@@ -451,19 +444,14 @@ html {
     }
 
     .get-started {
-        font-size: 2.5rem;
-        text-align: center;
-        color: hsl(0, 0%, 40%);
-        margin-bottom: 20px;
-    }
-
-    .right-side .alert {
-        max-width: 328px;
+        font-size: 1.75rem;
+        color: hsl(0, 0%, 20%);
+        font-weight: 800;
+        margin: 1.5rem 0 1.25rem 5px;
     }
 
     .input-box {
         position: relative;
-        display: inline-block;
         vertical-align: top;
 
         input[type="text"],
@@ -479,13 +467,20 @@ html {
             line-height: normal;
             height: auto;
 
-            width: 280px;
+            min-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
 
-            border: 1px solid hsl(0, 0%, 87%);
+            border: 1px solid hsla(0, 0%, 100%, 0);
+            background: hsla(0, 0%, 0%, 0.025);
             box-shadow: none;
             border-radius: 4px;
 
             transition: border 0.3s ease;
+
+            &::placeholder {
+                font-size: 1rem;
+            }
 
             &:focus:invalid {
                 box-shadow: none;
@@ -493,7 +488,7 @@ html {
             }
 
             &:focus {
-                border: 1px solid hsl(0, 0%, 53%);
+                border: 1px solid hsl(0, 0%, 75%);
             }
         }
 
@@ -552,7 +547,7 @@ html {
             display: block;
             padding: 0;
 
-            color: hsl(1.1, 44.7%, 50.4%);
+            color: hsl(0, 100%, 70%);
             font-size: 0.7em;
             font-weight: 600;
             text-align: left;
@@ -568,10 +563,20 @@ html {
             top: 0;
             right: 0;
             text-align: right;
-            color: hsl(1.1, 44.7%, 50.4%);
+            color: hsl(0, 100%, 70%);
             font-size: 0.7em;
             font-weight: 600;
             padding-left: 0;
+        }
+
+        &.horizontal {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+
+            .inline-block {
+                flex-grow: 1;
+            }
         }
     }
 
@@ -622,8 +627,9 @@ html {
     .or {
         width: 100%;
         display: block;
-        margin: 10px auto;
-        color: hsl(0, 0%, 34%);
+        margin: 20px auto;
+        color: hsl(0, 0%, 70%);
+        font-size: 12px;
         font-weight: 600;
         text-align: center;
         position: relative;
@@ -655,83 +661,105 @@ html {
     text-align: center;
 }
 
-.split-view {
-    .org-header {
-        text-align: left;
+.org-info-card {
+    --avatar-size :60px;
 
-        .info-box {
-            display: inline-block;
-            position: relative;
-            margin: 20px 0 0 20px;
-            width: calc(100% - 125px);
+    display: grid;
+    grid-template-columns: var(--avatar-size) 1fr;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding: 1.5rem 7%;
+    border-radius: 8px;
+    /* border: solid 1px hsla(0, 0%, 100%, 0.25); */
+    background: linear-gradient(135deg, hsla(0, 0%, 100%, 0.05) 10%, hsla(0, 0%, 100%, 0.085) 90%);
+    box-shadow: 8px 13px 18px 5px hsla(0, 0%, 0%, 0.065);
 
-            /* full width minus the avatar + padding + borders */
-            text-align: left;
-        }
+    &__avatar {
+        grid-column: 1;
+        border-radius: 8px;
+        width: var(--avatar-size);
+        height: var(--avatar-size);
     }
 
-    .left-side {
-        width: 500px;
-        border-right: 1px solid hsl(0, 0%, 93%);
-        position: relative;
-        left: -1px;
-
-        .description {
-            text-align: left;
-            font-weight: normal;
-
-            margin-top: 20px;
-            margin-right: 10px;
-        }
-
-        + .right-side {
-            border-left: 1px solid hsl(0, 0%, 93%);
-            /* this is to make sure the borders of the left and right side overlap
-               each other. */
-            padding-left: 15px;
-            margin-left: -5px;
-        }
+    &__info {
+        grid-column: 2;
     }
 
-    .right-side .form-inline {
-        width: 328px;
-    }
-}
-
-.split-view .right-side,
-.split-view .left-side {
-    display: inline-block;
-    vertical-align: top;
-}
-
-.split-view .org-header .avatar,
-.register-page-container .org-header .avatar {
-    display: inline-block;
-    vertical-align: top;
-
-    width: 100px;
-    height: 100px;
-}
-
-.info-box {
-    .organization-name,
-    .organization-path {
-        max-width: 100%;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
+    &__name {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 140%;
     }
 
-    .organization-name {
-        font-size: 1.5em;
+    &__path {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 140%;
+        opacity: 0.75;
+    }
+
+    &__description {
+        grid-column: 1 / 3;
+        font-size: 0.85em;
         font-weight: 300;
-        line-height: 1.2;
+        line-height: 150%;
+
+        p {
+            margin-bottom: 0;
+        }
     }
 
-    .organization-path {
-        font-weight: 400;
-        color: hsl(0, 0%, 47%);
-        margin-top: 5px;
+    &__form {
+        margin: 0;
+        padding-top: 0.5rem;
+        grid-column: 1 / 3;
+    }
+
+    &__button {
+        width: 100%;
+        margin: 0 0 0 auto;
+        padding: 1em;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: hsl(215, 93%, 54%);
+        background-color: hsl(0, 0%, 100%);
+        border-radius: 30px;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.login {
+    &__header {
+        text-align: center;
+        margin-bottom: 1rem;
+
+        .logo {
+            height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .get-started {
+            margin: 0 0 1rem;
+            font-size: 2rem;
+            color: hsl(0, 0%, 100%);
+        }
+    }
+}
+
+.split-view {
+    .left-side {
+        padding: 2.5rem 7%;
+        background: linear-gradient(135deg, hsl(212, 100%, 65%) 20%, hsl(234, 79%, 54%) 90%);
+        color: hsl(0, 0%, 100%);
+    }
+
+    .right-side {
+        padding: 2rem 10%;
     }
 }
 
@@ -739,39 +767,31 @@ html {
     max-width: 500px;
 }
 
-.anonymous_access_form {
-    button {
-        /* Avoid excessive space at top of login form */
-        margin-top: 0;
-    }
-}
-
 button.login-social-button {
-    width: 328px;
+    width: 100%;
     height: auto;
-    /* Using 44px gives us more space between text and icon so that they don't overlap. */
-    /* Tested in Russian laguange which has the maximum text. */
-    padding-left: 44px;
     line-height: 1;
+    font-size: 15px;
+    background-color: hsla(0, 0%, 100%, 0);
+    border-radius: 30px;
+    border: solid 1px hsl(0, 0%, 87%);
+    margin: 0;
 
-    background-size: auto 60%;
-    background-repeat: no-repeat;
-    background-position: 13px 50%;
-    background-color: hsl(0, 0%, 100%);
-    box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.3), 0 0 5px hsla(0, 0%, 0%, 0.1);
-    margin-left: 0;
-    margin-top: 0;
-
-    color: hsl(0, 0%, 34%);
+    color: hsl(0, 0%, 45%);
 
     &:hover {
-        background-color: hsl(0, 0%, 98%);
-        box-shadow: 1px 2px 5px hsla(0, 0%, 0%, 0.2);
+        background-color: hsla(0, 0%, 0%, 0.035);
     }
 
-    &:active {
-        background-color: hsl(0, 0%, 93%);
-        box-shadow: 0 1px 1px hsla(0, 0%, 0%, 0.3);
+    span {
+        display: inline-block;
+        vertical-align: middle;
+        width: 1.25em;
+        height: 1.25em;
+        margin-right: 10px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
     }
 }
 
@@ -784,7 +804,7 @@ button#register_auth_button_gitlab {
 
 .login-page-container .right-side .actions,
 .back-to-login-wrapper {
-    margin: 20px 0 0;
+    margin: 30px 5px 0;
     text-align: left;
 }
 
@@ -801,18 +821,14 @@ button#register_auth_button_gitlab {
 
 .split-view .actions a,
 .back-to-login {
-    color: hsl(164, 100%, 23%);
+    color: hsla(217, 100%, 50%, 1);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.8em;
     line-height: 1.5;
-    vertical-align: top;
-
-    transition: color 0.2s ease;
 
     &:hover {
-        text-decoration: none;
-        color: hsl(156, 62%, 61%);
+        text-decoration: underline;
     }
 }
 
@@ -1127,101 +1143,31 @@ button#register_auth_button_gitlab {
     }
 }
 
+.text-error {
+    color: hsl(0, 100%, 70%);
+}
+
 /* -- media queries -- */
-
-@media (width <= 950px) {
-    .split-view .left-side {
-        width: 400px;
-    }
-}
-
-@media (width <= 850px) {
-    .split-view .left-side {
-        width: 350px;
-    }
-}
 
 @media (width <= 815px) {
     .flex {
         min-height: calc(100vh - 530px);
     }
+
+    .white-box {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (width <= 795px) {
-    .register-account #registration {
-        padding: 10px;
-    }
-
-    .register-page-container,
-    .login-page-container {
-        width: 400px;
-        text-align: center;
-    }
-
-    .split-view {
-        .org-header {
-            .avatar {
-                width: 50px;
-                height: 50px;
-            }
-
-            .info-box {
-                margin-top: 0;
-
-                .organization-path {
-                    margin-top: 0;
-                }
-            }
-        }
-
-        .left-side,
-        .right-side {
-            display: block;
-            margin: 0 auto !important;
-            max-width: 100%;
-        }
-
-        .left-side + .right-side {
-            border-left: none;
-            padding: 0;
-            margin: 0 auto;
-        }
-
-        .left-side {
-            border: none;
-            margin-right: 0;
-            min-height: 0;
-            margin-bottom: 20px;
-            width: 324px;
-
-            .description {
-                margin: 20px 0;
-
-                a {
-                    color: hsl(200, 100%, 36%);
-                }
-            }
-        }
-
-        .right-side {
-            width: 324px;
-        }
+    .white-box {
+        grid-template-columns: 1fr !important;
     }
 }
 
 @media (width <= 500px) {
     .new-style .get-started {
         font-size: 1.6em;
-    }
-
-    .app-main.register-page-container,
-    .app-main.login-page-container,
-    .app-main.find-account-page-container,
-    .app-main.goto-account-page-container,
-    .app-main.forgot-password-container {
-        display: inline-block;
-        padding: 20px;
-        width: calc(100% - 40px);
     }
 
     .forgot-password-container form {
@@ -1232,10 +1178,6 @@ button#register_auth_button_gitlab {
         button {
             width: 328px;
         }
-    }
-
-    .white-box {
-        box-shadow: none;
     }
 
     .account-creation {

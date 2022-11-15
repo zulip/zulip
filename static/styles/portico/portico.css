@@ -837,11 +837,6 @@ input#terminal:checked ~ #tab-terminal {
     }
 }
 
-.register-form {
-    display: inline-block;
-    text-align: center;
-}
-
 .register-button {
     margin-left: 10px;
 }
@@ -858,8 +853,7 @@ input.new-organization-button {
 
 .login-form {
     margin: auto;
-    /* plus input padding. */
-    width: calc(300px - -28px);
+    width: 100%;
     margin-bottom: 10px;
 }
 
@@ -870,12 +864,15 @@ input.new-organization-button {
     }
 }
 
+.login-social-wrap {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
 .login-social {
-    max-width: 100%;
-    min-width: 300px;
-    margin: auto;
+    margin: 0;
     text-align: center;
-    margin-top: 10px;
 }
 
 .app-main,
