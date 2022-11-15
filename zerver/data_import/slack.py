@@ -42,6 +42,7 @@ from zerver.data_import.slack_message_conversion import (
 )
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
+from zerver.lib.storage import static_path
 from zerver.lib.upload import resize_logo, sanitize_name
 from zerver.models import (
     CustomProfileField,
@@ -61,13 +62,12 @@ SlackToZulipRecipientT = Dict[str, int]
 # Generic type for SlackBotEmail class
 SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
 
-# Initialize iamcal emoji data, because Slack seems to use emoji naming from iamcal.
-# According to https://emojipedia.org/slack/, Slack's emoji shortcodes are
-# derived from https://github.com/iamcal/emoji-data.
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
-NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")
-EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, "emoji-datasource-google", "emoji.json")
-with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
+# We can look up unicode codepoints for Slack emoji using iamcal emoji
+# data. https://emojipedia.org/slack/, documents Slack's emoji names
+# are derived from https://github.com/iamcal/emoji-data; this seems
+# likely to remain true since Cal is a Slack's cofounder.
+emoji_data_file_path = static_path("generated/emoji/emoji-datasource-google-emoji.json")
+with open(emoji_data_file_path, "rb") as emoji_data_file:
     emoji_data = orjson.loads(emoji_data_file.read())
 
 
