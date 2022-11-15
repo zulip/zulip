@@ -46,15 +46,13 @@ was maintained by the project's founder and leader [Tim
 Abbott](/team/#the-core-team) on nights and weekends. In the months following
 the open-source release, the project quickly gained contributors and users.
 
-It soon became clear that guiding the contributor community in
-developing a world-class team chat product would require leadership
-from a dedicated team. Thus, in April 2016, Tim Abbott founded a
-[mission-driven](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)
-company, Kandra Labs, to steward and financially sustain Zulip’s
-development. Incorporating as a business has helped Zulip attract top
-talent, and has made Zulip eligible for [large innovation
-grants](https://seedfund.nsf.gov/) from the US National Science
-Foundation, which Kandra Labs was awarded in 2017 and 2018.
+It soon became clear that guiding the contributor community in developing a
+world-class team chat product would require leadership from a dedicated team.
+Thus, in April 2016, Tim Abbott founded a [mission-driven](/values/) company,
+Kandra Labs, to steward and financially sustain Zulip’s development.
+Incorporating as a business has helped Zulip attract top talent, and has made
+Zulip eligible for [large innovation grants](https://seedfund.nsf.gov/) from the
+US National Science Foundation, which Kandra Labs was awarded in 2017 and 2018.
 
 ## Early days as an open-source company
 
