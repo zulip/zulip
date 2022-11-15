@@ -246,10 +246,19 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
         blueslip.log("Retrying on-focus page reload");
         window.location.reload(true);
     });
-    setInterval(() => {
+
+    function retry_reload() {
+        // Schedule the next attempt to reload. This implementation
+        // aims to simulate setInterval, which was used previously.
+        //
+        // See comment for get_full_presence_list_update in
+        // activity.js for more details.
+        setTimeout(retry_reload, 30000);
+
         blueslip.log("Retrying page reload due to 30s timer");
         window.location.reload(true);
-    }, 30000);
+    }
+    setTimeout(retry_reload, 30000);
 
     try {
         server_events.cleanup_event_queue();
