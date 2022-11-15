@@ -17,7 +17,7 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
 from zerver.actions.users import do_change_user_role
-from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
+from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
@@ -2754,7 +2754,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_success(result)
 
-        new_topic_name = truncate_topic(resolved_topic)
+        new_topic_name = "✔ " + "a" * 57 + "…"
         messages = get_topic_messages(user_profile, stream, new_topic_name)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")

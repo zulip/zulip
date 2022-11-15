@@ -974,7 +974,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
-        self.assertEqual(sent_message.topic_name(), "A" * (MAX_TOPIC_NAME_LENGTH - 3) + "...")
+        self.assertEqual(sent_message.topic_name(), "A" * (MAX_TOPIC_NAME_LENGTH - 1) + "…")
 
     def test_send_forged_message_as_not_superuser(self) -> None:
         self.login("hamlet")

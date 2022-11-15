@@ -352,7 +352,7 @@ A trivial change that should probably be ignored.
         )
 
     def test_merge_request_reopened_event_message(self) -> None:
-        expected_topic = "my-awesome-project / MR #1 Update the README with author ..."
+        expected_topic = "my-awesome-project / MR #1 Update the README with author na…"
         expected_message = "Eeshan Garg reopened [MR #1](https://gitlab.com/eeshangarg/my-awesome-project/merge_requests/1)."
 
         self.check_webhook(
@@ -360,7 +360,7 @@ A trivial change that should probably be ignored.
         )
 
     def test_merge_request_approved_event_message(self) -> None:
-        expected_topic = "my-awesome-project / MR #1 Update the README with author ..."
+        expected_topic = "my-awesome-project / MR #1 Update the README with author na…"
         expected_message = "Eeshan Garg approved [MR #1](https://gitlab.com/eeshangarg/my-awesome-project/merge_requests/1)."
 
         self.check_webhook(
@@ -601,7 +601,7 @@ A trivial change that should probably be ignored.
         self.check_webhook("system_hook__merge_request_closed", expected_topic, expected_message)
 
     def test_merge_request_unapproved_event_message(self) -> None:
-        expected_topic = "my-awesome-project / MR #1 Update the README with author ..."
+        expected_topic = "my-awesome-project / MR #1 Update the README with author na…"
         expected_message = "Eeshan Garg unapproved [MR #1](https://gitlab.com/eeshangarg/my-awesome-project/merge_requests/1)."
 
         self.check_webhook(

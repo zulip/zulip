@@ -38,7 +38,7 @@ class ZenDeskHookTests(WebhookTestCase):
         self.TICKET_TITLE = "Test ticket" + "!" * 80
         self.MESSAGE = "some message"
         self.do_test(
-            expected_topic="#4: Test ticket" + "!" * 42 + "...",
+            expected_topic="#4: Test ticket" + "!" * 44 + "…",
             expected_message="some message",
         )
 
