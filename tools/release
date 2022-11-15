@@ -16,13 +16,18 @@ fail() {
 version="$1"
 
 # Check version is a form we expect
-[[ "$version" =~ ^[0-9]+\.[0-9]+$ ]] \
+[[ "$version" =~ ^[0-9]+\.[0-9]+(-[a-z0-9]+)?$ ]] \
     || fail "Version $version does not look like a full release!"
 
 # Check we're on `main` or `\d+\.x`
 branch=$(git rev-parse --abbrev-ref HEAD)
-[ "$branch" == "main" ] || [[ "$branch" =~ ^[0-9]+\.x$ ]] \
+[ "$branch" == "main" ] || [[ "$branch" =~ ^[0-9]+\.x$ ]] || [ "$branch" == "${version}-branch" ] \
     || fail "Current branch '$branch' is not 'main' or a release branch"
+
+is_prerelease=
+if [[ "$version" =~ -[0-9a-z]+$ ]]; then
+    is_prerelease=1
+fi
 
 is_major_release=
 if [[ "$version" =~ ^[0-9]+\.0$ ]]; then
@@ -30,7 +35,11 @@ if [[ "$version" =~ ^[0-9]+\.0$ ]]; then
         || fail "Did not expect $version to be released from $branch, expected main"
     is_major_release=1
 else
-    expected_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
+    if [ -n "$is_prerelease" ]; then
+        expected_branch="${version}-branch"
+    else
+        expected_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
+    fi
     [ "$branch" == "$expected_branch" ] \
         || fail "Did not expect $version to be released from $branch, expected $expected_branch"
 fi
@@ -72,19 +81,22 @@ extract_version() {
 # Check ZULIP_VERSION and LATEST_RELEASE_VERSION are set appropriately
 [ "$(extract_version "ZULIP_VERSION")" == "$version" ] \
     || fail "ZULIP_VERSION in version.py does not match $version"
-[ "$(extract_version "LATEST_RELEASE_VERSION")" == "$version" ] \
-    || fail "LATEST_RELEASE_VERSION in version.py does not match $version"
 
-if [ -n "$is_major_release" ]; then
-    [ "$(extract_version "LATEST_MAJOR_VERSION")" == "$version" ] \
-        || fail "LATEST_MAJOR_VERSION in version.py does not match $version"
+if [ -z "$is_prerelease" ]; then
+    [ "$(extract_version "LATEST_RELEASE_VERSION")" == "$version" ] \
+        || fail "LATEST_RELEASE_VERSION in version.py does not match $version"
 
-    # Check that there is an API version bump, which is documented
-    changed_api_level=$(git diff-tree -G API_FEATURE_LEVEL HEAD -- version.py)
-    [ -n "$changed_api_level" ] || fail "$version did not adjust API_FEATURE_LEVEL in version.py"
-    feature_level="$(extract_version "API_FEATURE_LEVEL")"
-    grep -q -F -x "**Feature level $feature_level**" templates/zerver/api/changelog.md \
-        || fail "Feature level $feature_level is not documented in templates/zerver/api/changelog.md"
+    if [ -n "$is_major_release" ]; then
+        [ "$(extract_version "LATEST_MAJOR_VERSION")" == "$version" ] \
+            || fail "LATEST_MAJOR_VERSION in version.py does not match $version"
+
+        # Check that there is an API version bump, which is documented
+        changed_api_level=$(git diff-tree -G API_FEATURE_LEVEL HEAD -- version.py)
+        [ -n "$changed_api_level" ] || fail "$version did not adjust API_FEATURE_LEVEL in version.py"
+        feature_level="$(extract_version "API_FEATURE_LEVEL")"
+        grep -q -F -x "**Feature level $feature_level**" templates/zerver/api/changelog.md \
+            || fail "Feature level $feature_level is not documented in templates/zerver/api/changelog.md"
+    fi
 fi
 
 # Check we are auth'd to Github, so we can upload the release
@@ -121,7 +133,12 @@ git push "$remote" "$branch:$branch"
 git push "$remote" "$version"
 
 # Upload to Github
+params=()
+if [ -n "$is_prerelease" ]; then
+    params+=("--prerelease")
+fi
 gh release create "$version" \
     --title "Zulip Server $version" \
     --notes-file <(echo "$changelog") \
+    "${params[@]}" \
     "$TARBALL"
