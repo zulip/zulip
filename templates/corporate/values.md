@@ -1,6 +1,3 @@
-On this page, we want to share the values that are behind everything we do as we
-work to build the world’s best team chat software.
-
 ## Building software that will always be there for our users
 
 When choosing software that will be core to how one’s organization operates,
@@ -22,7 +19,7 @@ version as a demo for their non-open-source paid product. In contrast, we are
 committed to keeping Zulip [100% open
 source](https://github.com/zulip/zulip#readme).
 
-When you [self-host Zulip](/self-hosting/), you get you get all the
+When you [self-host Zulip](/self-hosting/), you get all the
 [features](/features/) of our cloud offering. We work hard to [make it
 easy](https://zulip.readthedocs.io/en/latest/production/install.html) to set up
 and run a self-hosted Zulip installation without paying us a dime, which is why
