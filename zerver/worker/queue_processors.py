@@ -523,20 +523,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
         # deduplicate them for insertion into the database.
         for event in user_activity_events:
             user_profile_id = event["user_profile_id"]
-
-            if "client_id" not in event:
-                # This is for compatibility with older events still stuck in the queue,
-                # that used the client name in event["client"] instead of having
-                # event["client_id"] directly.
-                #
-                # TODO/compatibility: We can delete this once it is no
-                # longer possible to directly upgrade from 2.1 to main.
-                if event["client"] not in self.client_id_map:
-                    client = get_client(event["client"])
-                    self.client_id_map[event["client"]] = client.id
-                client_id = self.client_id_map[event["client"]]
-            else:
-                client_id = event["client_id"]
+            client_id = event["client_id"]
 
             key_tuple = (user_profile_id, client_id, event["query"])
             if key_tuple not in uncommitted_events:
@@ -779,15 +766,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
     def consume(self, event: Dict[str, Any]) -> None:
         try:
             if event.get("type", "add") == "remove":
-                message_ids = event.get("message_ids")
-                if message_ids is None:
-                    # TODO/compatibility: Previously, we sent only one `message_id` in
-                    # a payload for notification remove events. This was later changed
-                    # to send a list of `message_ids` (with that field name), but we need
-                    # compatibility code for events present in the queue during upgrade.
-                    # Remove this when one can no longer upgrade from 1.9.2 (or earlier)
-                    # to any version after 2.0.0
-                    message_ids = [event["message_id"]]
+                message_ids = event["message_ids"]
                 handle_remove_push_notification(event["user_profile_id"], message_ids)
             else:
                 handle_push_notification(event["user_profile_id"], event)
