@@ -194,7 +194,7 @@ def normalize_body(body: str) -> str:
 
 
 def truncate_topic(topic: str) -> str:
-    return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
+    return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "…")
 
 
 def messages_for_ids(
