@@ -421,6 +421,11 @@ def dump_emojis(cache_path: str) -> None:
     setup_emoji_farms(cache_path, emoji_data)
     setup_old_emoji_farm(cache_path, emoji_map, emoji_data)
 
+    # This file is needed to translate emoji when importing data from Slack.
+    shutil.copyfile(
+        EMOJI_DATA_FILE_PATH, os.path.join(cache_path, "emoji-datasource-google-emoji.json")
+    )
+
     # Generate various map files.
     generate_map_files(cache_path, emoji_catalog)
 
