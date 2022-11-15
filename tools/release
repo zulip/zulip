@@ -27,11 +27,12 @@ branch=$(git rev-parse --abbrev-ref HEAD)
 is_major_release=
 if [[ "$version" =~ ^[0-9]+\.0$ ]]; then
     [ "$branch" == "main" ] \
-        || fail "Did not expect $version to be released from $branch"
+        || fail "Did not expect $version to be released from $branch, expected main"
     is_major_release=1
 else
-    [ "$branch" == "$(echo "$version" | perl -ple 's/\..*/.x/')" ] \
-        || fail "Did not expect $version to be released from $branch"
+    expected_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
+    [ "$branch" == "$expected_branch" ] \
+        || fail "Did not expect $version to be released from $branch, expected $expected_branch"
 fi
 
 # shellcheck source=lib/git-tools.bash
