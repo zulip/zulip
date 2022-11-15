@@ -32,6 +32,12 @@ There are many ways to use this feature, including:
     You can also mark messages as unread by selecting a message, and using the
     <kbd>Shift</kbd> + <kbd>U</kbd> shortcut.
 
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **Mark as unread from here**.
+
 {end_tabs}
 
 ## Related articles
