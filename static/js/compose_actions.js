@@ -73,7 +73,7 @@ export const _get_focus_area = get_focus_area;
 
 export function set_focus(msg_type, opts) {
     const focus_area = get_focus_area(msg_type, opts);
-    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+    if (window.getSelection().toString() === "" && opts.trigger !== "message click") {
         const $elt = $(focus_area);
         $elt.trigger("focus").trigger("select");
     }
