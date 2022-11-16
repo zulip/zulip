@@ -25,6 +25,10 @@ format used by the Zulip server that they are interacting with.
 * [`GET /messages`](/api/get-messages): The new `include_anchor`
   parameter controls whether a message with ID matching the specified
   `anchor` should be included.
+* The `update_message_flags` event sent by [`POST
+  /messages/flags`](/api/update-message-flags) no longer redundantly
+  lists messages where the flag was set to the same state it was
+  already in.
 
 **Feature level 154**
 
