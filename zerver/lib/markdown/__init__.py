@@ -26,7 +26,6 @@ from typing import (
     Union,
 )
 from urllib.parse import urlencode, urljoin, urlsplit
-from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -1713,7 +1712,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # a blank line intentionally.
         #
         # This is a new blockquote. Create a new parent element.
-        quote = etree.SubElement(parent, "blockquote")
+        quote = SubElement(parent, "blockquote")
 
         # Recursively parse block with blockquote as parent.
         # change parser state so blockquotes embedded in lists use p tags
