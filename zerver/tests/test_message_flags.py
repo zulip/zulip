@@ -1908,9 +1908,7 @@ class MarkUnreadTest(ZulipTestCase):
             )
         self.assert_json_success(result)
         event = events[0]["event"]
-        self.assertEqual(
-            event["messages"], subscribed_stream_message_ids + unsubscribed_stream_message_ids
-        )
+        self.assertEqual(event["messages"], subscribed_stream_message_ids)
 
         for message_id in subscribed_stream_message_ids + unsubscribed_stream_message_ids:
             um = UserMessage.objects.get(

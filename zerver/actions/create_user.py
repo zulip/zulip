@@ -62,7 +62,9 @@ ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
 DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 
 
-def create_historical_user_messages(*, user_id: int, message_ids: Iterable[int]) -> None:
+def create_historical_user_messages(
+    *, user_id: int, message_ids: Iterable[int], flags: int = DEFAULT_HISTORICAL_FLAGS
+) -> None:
     # Users can see and interact with messages sent to streams with
     # public history for which they do not have a UserMessage because
     # they were not a subscriber at the time the message was sent.
@@ -71,7 +73,7 @@ def create_historical_user_messages(*, user_id: int, message_ids: Iterable[int])
     # these have the special historical flag which keeps track of the
     # fact that the user did not receive the message at the time it was sent.
     UserMessage.objects.bulk_create(
-        UserMessage(user_profile_id=user_id, message_id=message_id, flags=DEFAULT_HISTORICAL_FLAGS)
+        UserMessage(user_profile_id=user_id, message_id=message_id, flags=flags)
         for message_id in message_ids
     )
 
