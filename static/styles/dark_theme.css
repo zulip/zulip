@@ -1013,6 +1013,14 @@ body.dark-theme {
         border: 1px solid hsl(49, 38%, 46%);
     }
 
+    #request-progress-status-banner {
+        background-color: hsl(212, 32%, 14%);
+
+        .alert-content {
+            color: hsl(236, 33%, 90%);
+        }
+    }
+
     .alert.home-error-bar {
         color: hsl(236, 33%, 90%);
         background-color: hsla(35, 84%, 62%, 0.25);
@@ -1160,6 +1168,7 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
+    .alert-zulip-logo,
     .top-messages-logo,
     .bottom-messages-logo {
         svg path {
@@ -1229,6 +1238,7 @@ body.dark-theme {
         color: hsl(200, 79%, 66%);
     }
 
+    #request-progress-status-banner .loading-indicator,
     #loading_older_messages_indicator,
     #recent_topics_loading_messages_indicator {
         path {
