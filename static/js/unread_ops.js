@@ -14,7 +14,6 @@ import * as notifications from "./notifications";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
-import * as reload from "./reload";
 import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -22,28 +21,92 @@ import * as unread_ui from "./unread_ui";
 const NUM_OF_MESSAGES_UPDATED_PER_BATCH = 5000;
 let loading_indicator_displayed = false;
 
-export function mark_all_as_read() {
-    unread.declare_bankruptcy();
-    unread_ui.update_unread_counts();
-
+export function mark_all_as_read(args = {}) {
+    args = {
+        anchor: "first_unread",
+        include_anchor: true,
+        messages_read_till_now: 0,
+        ...args,
+    };
+    const request = {
+        anchor: args.anchor,
+        include_anchor: args.include_anchor,
+        num_before: 0,
+        num_after: NUM_OF_MESSAGES_UPDATED_PER_BATCH,
+        op: "add",
+        flag: "read",
+        // Since there's a database index on is:unread, it's a fast
+        // search query and thus worth including here as an optimization.
+        narrow: JSON.stringify([{operator: "is", operand: "unread", negated: false}]),
+    };
     channel.post({
-        url: "/json/mark_all_as_read",
-        success: () => {
-            // After marking all messages as read, we reload the browser.
-            // This is useful to avoid leaving ourselves deep in the past.
-            // This is also the currently intended behavior in case of partial success,
-            // (response code 200 with result "partially_completed")
-            // where the request times out after marking some messages as read,
-            // so we don't need to distinguish that scenario here.
-            // TODO: The frontend handling of partial success can be improved
-            // by re-running the request in a loop, while showing some status indicator
-            // to the user.
-            reload.initiate({
-                immediate: true,
-                save_pointer: false,
-                save_narrow: true,
-                save_compose: true,
-            });
+        url: "/json/messages/flags/narrow",
+        data: request,
+        success(data) {
+            const messages_read_till_now = args.messages_read_till_now + data.updated_count;
+
+            if (!data.found_newest) {
+                // If we weren't able to make everything as read in a
+                // single API request, then show a loading indicator.
+                ui_report.loading(
+                    $t_html(
+                        {defaultMessage: "Working… {N} messages marked as read so far."},
+                        {N: messages_read_till_now},
+                    ),
+                    $("#request-progress-status-banner"),
+                );
+                if (!loading_indicator_displayed) {
+                    loading.make_indicator(
+                        $("#request-progress-status-banner .loading-indicator"),
+                        {abs_positioned: true},
+                    );
+                    loading_indicator_displayed = true;
+                }
+
+                mark_all_as_read({
+                    include_anchor: false,
+                    anchor: data.last_processed_id,
+                    messages_read_till_now,
+                });
+            } else {
+                if (loading_indicator_displayed) {
+                    // Only show the success message if a progress banner was displayed.
+                    ui_report.loading(
+                        $t_html(
+                            {defaultMessage: "Done! {N} messages marked as read."},
+                            {N: messages_read_till_now},
+                        ),
+                        $("#request-progress-status-banner"),
+                        true,
+                    );
+                    loading_indicator_displayed = false;
+                }
+
+                if (unread.old_unreads_missing) {
+                    // In the rare case that the user had more than
+                    // 50K total unreads on the server, the client
+                    // won't have known about all of them; this was
+                    // communicated to the client via
+                    // unread.old_unreads_missing.
+                    //
+                    // However, since we know we just marked
+                    // **everything** as read, we know that we now
+                    // have a correct data set of unreads.
+                    unread.clear_old_unreads_missing();
+                    blueslip.log("Cleared old_unreads_missing after bankruptcy.");
+                }
+            }
+        },
+        error(xhr) {
+            // If we hit the rate limit, just continue without showing any error.
+            if (xhr.responseJSON.code === "RATE_LIMIT_HIT") {
+                const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
+                setTimeout(() => mark_all_as_read(args), milliseconds_to_wait);
+            } else {
+                // TODO: Ideally this would be a ui_report.error();
+                // the user needs to know that our operation failed.
+                blueslip.error("Failed to mark messages as read: " + xhr.responseText);
+            }
         },
     });
 }
