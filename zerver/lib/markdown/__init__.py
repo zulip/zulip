@@ -2282,15 +2282,15 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
         return reg
 
-    def register_linkifiers(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
+    def register_linkifiers(self, registry: markdown.util.Registry) -> markdown.util.Registry:
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
-            inlinePatterns.register(
+            registry.register(
                 LinkifierPattern(pattern, linkifier["url_format"], self),
                 f"linkifiers/{pattern}",
                 45,
             )
-        return inlinePatterns
+        return registry
 
     def build_treeprocessors(self) -> markdown.util.Registry:
         # Here we build all the processors from upstream, plus a few of our own.
