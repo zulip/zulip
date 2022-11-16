@@ -36,7 +36,7 @@ preparing a new release.
   Transifex and commit them.
 - Use `build-release-tarball` to generate a pre-release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
-  release, on Ubuntu 20.04.
+  release, on Ubuntu 20.04 or 22.04.
 - Repeat until release is ready.
 - Send around the Paper blog post draft for review.
 - Move the blog post draft to Ghost:
