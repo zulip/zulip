@@ -424,9 +424,15 @@ function format_conversation(conversation_data) {
         context.pm_url = last_msg.pm_with_url;
         context.is_group = last_msg.display_recipient.length > 2;
 
-        // Display in most recent sender first order
-        all_senders = last_msg.display_recipient;
-        senders = all_senders.slice(-MAX_AVATAR).map((sender) => sender.id);
+        // Don't show participant avatars for PMs.
+        // "Participants" column on "Recent topics" does not provide accurate information for PM conversations.
+        // In particular, it duplicates the PM recipients list under "Topics"
+        // (with the addition of the current user), but does not depend on who sent messages to the thread.
+        // TODO: https://github.com/zulip/zulip/issues/23563
+        all_senders = [];
+        senders = [];
+        extra_sender_ids = [];
+        displayed_other_senders = [];
 
         if (!context.is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
@@ -439,12 +445,6 @@ function format_conversation(conversation_data) {
                 context.user_circle_class = buddy_data.get_user_circle_class(user_id);
             }
         }
-
-        // Collect extra senders fullname for tooltip.
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids
-            .slice(-MAX_EXTRA_SENDERS)
-            .map((sender) => sender.id);
     }
 
     context.senders = people.sender_info_for_recent_topics_row(senders);
