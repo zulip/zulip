@@ -7,6 +7,28 @@ up-to-date list of raw changes.
 
 ## Zulip 5.x series
 
+### 5.7 -- 2022-11-16
+
+- CVE-2022-41914: Fixed the verification of the SCIM account
+  management bearer tokens to use a constant-time comparator. Zulip
+  Server 5.0 through 5.6 checked SCIM bearer tokens using a comparator
+  that did not run in constant time. For organizations with SCIM
+  account management enabled, this bug theoretically allowed an
+  attacker to steal the SCIM bearer token, and use it to read and
+  update the Zulip organization’s user accounts. In practice, this
+  vulnerability may not have been practical or exploitable. Zulip
+  Server installations which have not explicitly enabled SCIM are not
+  affected.
+- Fixed an error with deactivating users with `manage.py sync_ldap_user_data`
+  when `LDAP_DEACTIVATE_NON_MATCHING_USERS` was enabled.
+- Fixed several subtle bugs that could lead to browsers reloading
+  repeatedly when the server was updated.
+- Fixed a live-update bug when changing certain notifications
+  settings.
+- Improved error logs when sending push notifications to the push
+  notifications service fails.
+- Upgraded Python requirements.
+
 ### 5.6 -- 2022-08-24
 
 - CVE-2022-36048: Change the Markdown renderer to only rewrite known
