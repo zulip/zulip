@@ -230,3 +230,87 @@ $alert-error-red: hsl(0, 80%, 40%);
         margin-left: 0;
     }
 }
+
+#request-progress-status-banner {
+    display: none;
+    align-items: center;
+    padding: 5px 10px;
+    margin-top: 10px;
+    grid-template-columns: 80px auto 50px;
+
+    &.show {
+        display: grid !important;
+    }
+
+    &.alert-loading {
+        .alert-zulip-logo,
+        .loading-indicator {
+            display: block;
+        }
+
+        /* Hide exit button since clicking it will be useless in
+           this scenario. */
+        .exit {
+            display: none;
+        }
+    }
+
+    &.alert-success .success-indicator {
+        display: block;
+    }
+
+    &.alert-loading,
+    &.alert-success {
+        border-color: hsl(156, 28%, 70%);
+        box-shadow: 0 0 2px hsl(156, 28%, 70%);
+
+        .exit {
+            color: hsl(156, 30%, 50%);
+        }
+    }
+
+    &::before {
+        content: "";
+        margin-left: 0;
+    }
+
+    .alert-zulip-logo {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+    }
+
+    .loading-indicator {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+    }
+
+    .success-indicator {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+        padding: 7px;
+        font-size: 1.5em;
+        line-height: 0;
+        color: hsl(156, 30%, 50%);
+    }
+
+    .alert-content {
+        grid-column: 2 / 3;
+        grid-row-start: 1;
+        color: hsl(0, 0%, 20%);
+    }
+
+    .exit {
+        float: unset;
+        margin: 0;
+        margin-left: auto;
+        grid-column: 3 / 4;
+        grid-row-start: 1;
+        line-height: 0;
+    }
+}

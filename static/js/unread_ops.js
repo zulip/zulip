@@ -1,4 +1,9 @@
+import $ from "jquery";
+
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {$t_html} from "./i18n";
+import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
@@ -10,8 +15,12 @@ import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
+import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+
+const NUM_OF_MESSAGES_UPDATED_PER_BATCH = 5000;
+let loading_indicator_displayed = false;
 
 export function mark_all_as_read() {
     unread.declare_bankruptcy();
@@ -47,17 +56,98 @@ function process_newly_read_message(message, options) {
     recent_topics_ui.update_topic_unread_count(message);
 }
 
-export function mark_as_unread_from_here(message_id) {
-    /* TODO: This algorithm is not correct if we don't have full data for
-       the current narrow loaded from the server.
-
-       Currently, we turn off the feature when fetch_status suggests
-       we are in that that situation, but we plan to replace this
-       logic with asking the server to do the marking as unread.
-     */
-    const message_ids = message_lists.current.ids_greater_or_equal_than(message_id);
+export function mark_as_unread_from_here(
+    message_id,
+    include_message = true,
+    messages_marked_unread_till_now = 0,
+    narrow,
+) {
+    if (narrow === undefined) {
+        narrow = JSON.stringify(message_lists.current.data.filter.operators());
+    }
     message_lists.current.prevent_reading();
-    message_flags.mark_as_unread(message_ids);
+    const opts = {
+        anchor: message_id,
+        include_anchor: include_message,
+        num_before: 0,
+        num_after: NUM_OF_MESSAGES_UPDATED_PER_BATCH,
+        narrow,
+        op: "remove",
+        flag: "read",
+    };
+    channel.post({
+        url: "/json/messages/flags/narrow",
+        data: opts,
+        success(data) {
+            messages_marked_unread_till_now += data.updated_count;
+
+            if (!data.found_newest) {
+                // If we weren't able to complete the request fully in
+                // the current batch, show a progress indicator.
+                ui_report.loading(
+                    $t_html(
+                        {
+                            defaultMessage: "Working… {N} messages marked as unread so far.",
+                        },
+                        {N: messages_marked_unread_till_now},
+                    ),
+                    $("#request-progress-status-banner"),
+                );
+                if (!loading_indicator_displayed) {
+                    loading.make_indicator(
+                        $("#request-progress-status-banner .loading-indicator"),
+                        {abs_positioned: true},
+                    );
+                    loading_indicator_displayed = true;
+                }
+                mark_as_unread_from_here(
+                    data.last_processed_id,
+                    false,
+                    messages_marked_unread_till_now,
+                    narrow,
+                );
+            } else if (loading_indicator_displayed) {
+                // If we were showing a loading indicator, then
+                // display that we finished. For the common case where
+                // the operation succeeds in a single batch, we don't
+                // bother distracting the user with the indication;
+                // the success will be obvious from the UI updating.
+                loading_indicator_displayed = false;
+                ui_report.loading(
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "Done! {messages_marked_unread_till_now} messages marked as unread.",
+                        },
+                        {messages_marked_unread_till_now},
+                    ),
+                    $("#request-progress-status-banner"),
+                    true,
+                );
+            }
+        },
+        error(xhr) {
+            // If we hit the rate limit, just continue without showing any error.
+            if (xhr.responseJSON.code === "RATE_LIMIT_HIT") {
+                const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
+                setTimeout(
+                    () =>
+                        mark_as_unread_from_here(
+                            message_id,
+                            false,
+                            messages_marked_unread_till_now,
+                            narrow,
+                        ),
+                    milliseconds_to_wait,
+                );
+            } else {
+                // TODO: Ideally, this case would communicate the
+                // failure to the user, with some manual retry
+                // offered, since the most likely cause is a 502.
+                blueslip.error("Unexpected error marking messages as unread: " + xhr.responseText);
+            }
+        },
+    });
 }
 
 export function resume_reading() {
