@@ -104,6 +104,5 @@ preparing a new release.
 - _Minor releases only (e.g. 3.2):_
   - On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g. `3.2+git`.
-  - On main, update `LATEST_RELEASE_VERSION` with the released version.
-  - On main, cherry-pick the changelog changes from the release
-    branch.
+  - On main, update `LATEST_RELEASE_VERSION` with the released
+    version, as well as the changelog changes from the release branch.
