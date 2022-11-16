@@ -18,7 +18,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
-from markupsafe import Markup as mark_safe
+from markupsafe import Markup
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
@@ -75,9 +75,9 @@ def email_is_not_mit_mailing_list(email: str) -> None:
             DNS.dnslookup(f"{address.username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
-                # This error is mark_safe only because 1. it needs to render HTML
+                # This error is Markup only because 1. it needs to render HTML
                 # 2. It's not formatted with any user input.
-                raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
+                raise ValidationError(Markup(MIT_VALIDATION_ERROR))
             else:
                 raise AssertionError("Unexpected DNS error")
 
