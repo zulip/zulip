@@ -1089,7 +1089,7 @@ class ValidatorTestCase(ZulipTestCase):
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
             x["a"].get("a")
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
-            "a" in x["a"]
+            _ = "a" in x["a"]
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
             x["a"].keys()
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
