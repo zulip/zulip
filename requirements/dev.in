@@ -23,9 +23,6 @@ fakeldap
 # For testing mock http requests
 responses<0.22.0  # https://github.com/getsentry/responses/pull/593
 
-# For sorting imports
-isort
-
 # For doing highly usable Python profiling
 line-profiler
 

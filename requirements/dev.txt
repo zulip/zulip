@@ -710,10 +710,6 @@ isodate==0.6.1 \
     # via
     #   openapi-core
     #   python3-saml
-isort==5.10.1 \
-    --hash=sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7 \
-    --hash=sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951
-    # via -r requirements/dev.in
 itemadapter==0.7.0 \
     --hash=sha256:0e0ab4ddf92c71af57c2386952a61756ae2ecf6c65f976ffaee9ba91ae87a91c \
     --hash=sha256:32c061ec9ab47d5343e8011b268730f48ff632a0192b95292d118b18dbd7687a
