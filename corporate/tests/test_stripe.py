@@ -622,7 +622,7 @@ class StripeTestCase(ZulipTestCase):
         free_trial: bool,
     ) -> None:
         class StripeMock(Mock):
-            def __init__(self, depth: int = 1):
+            def __init__(self, depth: int = 1) -> None:
                 super().__init__(spec=stripe.Card)
                 self.id = "id"
                 self.created = "1000"
