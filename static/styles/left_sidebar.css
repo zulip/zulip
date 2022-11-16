@@ -633,7 +633,9 @@ li.topic-list-item {
     cursor: pointer;
     padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
     position: sticky;
-    top: 0;
+    /* Ideally, 0px should work here, but maybe simplebar is doing something
+       that is creating `0.5px` extra gap in zoomed-in windows. */
+    top: -0.5px;
     background: hsl(0, 0%, 100%);
     z-index: 1;
 
