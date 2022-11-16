@@ -105,6 +105,7 @@ select = [
     "C", # comprehensions
     "E", # style errors
     "F", # flakes
+    "I", # import sorting
     "M", # meta
     "N", # naming
     "U", # upgrade
@@ -127,4 +128,8 @@ ignore = [
     "N818", # Exception name should be named with an Error suffix
 ]
 line-length = 100
+src = [".", "tools", "tools/setup/emoji"]
 target-version = "py38"
+
+[tool.ruff.isort]
+known-third-party = ["zulip"]
