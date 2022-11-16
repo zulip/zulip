@@ -109,6 +109,7 @@ select = [
     "N", # naming
     "U", # upgrade
     "W", # style warnings
+    "YTT", # sys.version
 ]
 ignore = [
     "ANN101", # Missing type annotation for `self` in method
