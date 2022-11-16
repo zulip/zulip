@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from markupsafe import Markup as mark_safe
+from markupsafe import Markup
 from psycopg2.sql import SQL, Composable, Literal
 
 from analytics.lib.counts import COUNT_STATS
@@ -305,7 +305,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     return content
 
 
-def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
+def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     day_end = timestamp_to_datetime(time.time())
     day_start = day_end - timedelta(hours=24)
 
@@ -357,7 +357,7 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
     output += f"\nTotal duration:                      {total_duration}\n"
     output += f"\nTotal duration in minutes:           {total_duration.total_seconds() / 60.}\n"
     output += f"Total duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}"
-    content = mark_safe("<pre>" + output + "</pre>")
+    content = Markup("<pre>" + output + "</pre>")
     return content, realm_minutes
 
 
@@ -372,7 +372,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         cursor.close()
 
         def fix_rows(
-            i: int, fixup_func: Union[Callable[[str], mark_safe], Callable[[datetime], str]]
+            i: int, fixup_func: Union[Callable[[str], Markup], Callable[[datetime], str]]
         ) -> None:
             for row in rows:
                 row[i] = fixup_func(row[i])

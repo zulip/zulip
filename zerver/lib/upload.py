@@ -23,7 +23,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.core.signing import BadSignature, TimestampSigner
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from markupsafe import Markup as mark_safe
+from markupsafe import Markup
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
 from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
@@ -112,7 +112,7 @@ def sanitize_name(value: str) -> str:
     value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
     assert value not in {"", ".", ".."}
-    return mark_safe(value)
+    return Markup(value)
 
 
 class BadImageError(JsonableError):
