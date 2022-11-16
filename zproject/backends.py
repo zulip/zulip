@@ -1306,10 +1306,8 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: Optional[str]
     multiuse_object_key: str
     full_name_validated: bool
-    # TODO: This currently does not get plumbed through to the final session
-    # in the desktop flow, but it should.
-    # Also, the mobile app doesn't actually use a session, so this
-    # data is not applicable there either.
+    # The mobile app doesn't actually use a session, so this
+    # data is not applicable there.
     params_to_store_in_authenticated_session: Dict[str, str]
 
 

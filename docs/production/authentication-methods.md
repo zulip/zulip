@@ -712,8 +712,9 @@ Logout endpoint with a `LogoutRequest`. If a successful
 `LogoutResponse` is received back, their current Zulip session will be
 terminated.
 
-Note that this doesn't work in the case of desktop and mobile application
-and is reserved to the browser.
+Note that this doesn't work when logging out of the mobile application
+since the app doesn't use sessions and relies on just having the user's
+API key.
 
 #### Caveats
 
