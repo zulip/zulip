@@ -339,16 +339,16 @@ class QueueProcessingWorker(ABC):
                 # especially since the queue might go idle until new events come in.
                 self.update_statistics()
                 self.idle = True
-                return
-
-            self.consume_iteration_counter += 1
-            if (
-                self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
-                or time.time() - self.last_statistics_update_time
-                >= self.MAX_SECONDS_BEFORE_UPDATE_STATS
-            ):
-                self.consume_iteration_counter = 0
-                self.update_statistics()
+            else:
+                self.consume_iteration_counter += 1
+                if (
+                    self.consume_iteration_counter
+                    >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
+                    or time.time() - self.last_statistics_update_time
+                    >= self.MAX_SECONDS_BEFORE_UPDATE_STATS
+                ):
+                    self.consume_iteration_counter = 0
+                    self.update_statistics()
 
     def consume_single_event(self, event: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
