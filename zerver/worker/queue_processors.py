@@ -58,9 +58,12 @@ from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db import reset_queries
 from zerver.lib.digest import bulk_handle_digest_email
-from zerver.lib.email_mirror import decode_stream_email_address, is_missed_message_address
+from zerver.lib.email_mirror import (
+    decode_stream_email_address,
+    is_missed_message_address,
+    rate_limit_mirror_by_realm,
+)
 from zerver.lib.email_mirror import process_message as mirror_email
-from zerver.lib.email_mirror import rate_limit_mirror_by_realm
 from zerver.lib.email_notifications import handle_missedmessage_emails
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.exceptions import RateLimited
