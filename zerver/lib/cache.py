@@ -748,7 +748,7 @@ def flush_submessage(*, instance: "SubMessage", **kwargs: object) -> None:
 class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
     def __init__(
         self, function: Callable[ParamT, ReturnT], cached_function: "_lru_cache_wrapper[ReturnT]"
-    ):
+    ) -> None:
         self.key_prefix = KEY_PREFIX
         self.function = function
         self.cached_function = cached_function
