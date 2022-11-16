@@ -4,7 +4,7 @@ import tippy from "tippy.js";
 
 import {$t} from "./i18n";
 
-export const status_classes = "alert-error alert-success alert-info alert-warning";
+export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 
 // TODO: Move this to the portico codebase.
 export function autofocus(selector: string): void {
