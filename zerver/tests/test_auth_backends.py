@@ -2125,6 +2125,34 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.client_get(result["Location"])
         self.assert_logged_in_user_id(None)
 
+    def test_saml_sp_initiated_logout_desktop_flow(self) -> None:
+        desktop_flow_otp = "1234abcd" * 8
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        with self.assertLogs(self.logger_string, level="INFO"):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                expect_choose_email_screen=False,
+                desktop_flow_otp=desktop_flow_otp,
+            )
+            # Flush the session to have a clean slate - since up till now
+            # we were simulating the part of the flow that happens in the browser.
+            # Now we will simulating the last part of the flow, which gets executed
+            # in the desktop application - thus with a separate session.
+            self.client.session.flush()
+            self.verify_desktop_flow_end_page(result, self.email, desktop_flow_otp)
+
+        # Now we have a desktop app logged in session. Verify that the logout
+        # request will trigger the SAML SLO flow - it should if we correctly
+        # plumbed through the information about the SAML authentication to the
+        # session in the app.
+        result = self.client_post("/accounts/logout/")
+        # A redirect to the IdP is returned.
+        self.assertEqual(result.status_code, 302)
+        self.assertIn(
+            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS["test_idp"]["slo_url"], result["Location"]
+        )
+
     def test_saml_sp_initiated_logout_invalid_logoutresponse(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
