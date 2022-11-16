@@ -758,6 +758,7 @@ a.compose_control_button.hide {
     #compose-textarea,
     #preview_message_area {
         max-height: none !important;
+        height: 0px;
         flex: 1;
     }
 }
