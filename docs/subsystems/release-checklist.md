@@ -58,15 +58,20 @@ preparing a new release.
     level for the final release, and document a reserved range.
 - Run `tools/release` with the release version.
 - Update the [Docker image](https://github.com/zulip/docker-zulip):
-  - Update `ZULIP_GIT_REF` in `Dockerfile`
-  - Update `README.md`
-  - Update the image in `docker-compose.yml`, as well as the `ZULIP_GIT_REF`
-  - Update the image in `kubernetes/zulip-rc.yml`
+  - Commit the Docker updates:
+    - Update `ZULIP_GIT_REF` in `Dockerfile`
+    - Update `README.md`
+    - Update the image in `docker-compose.yml`, as well as the `ZULIP_GIT_REF`
+  - Commit the Helm updates:
+    - Add a new entry to `kubernetes/chart/zulip/CHANGELOG.md`
+    - Update the `appVersion` in `kubernetes/chart/zulip/Chart.yaml`
+    - Update the `tag` in `kubernetes/chart/zulip/values.yaml`
+    - Update the docs by running `helm-docs`
+    - Update the `image` in `kubernetes/manual/zulip-rc.yml`
   - Build the image: `docker build . -t zulip/docker-zulip:4.11-0 --no-cache`
   - Also tag it with `latest`: `docker build . -t zulip/docker-zulip:latest`
   - Push those tags: `docker push zulip/docker-zulip:4.11-0; docker push zulip/docker-zulip:latest`
-  - Update the latest version in [the README in Docker Hub](https://hub.docker.com/repository/docker/zulip/docker-zulip).
-  - Commit the changes and push them to `main`.
+  - Push the commits to `main`.
 - Publish the blog post; check the box to "send by email."
 - Announce the release, pointing to the blog post, via:
   - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
