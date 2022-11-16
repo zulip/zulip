@@ -1120,14 +1120,22 @@ def build_reactions(
     for realm_emoji in zerver_realmemoji:
         realmemoji[realm_emoji["name"]] = realm_emoji["id"]
 
+    # Slack's data exports use encode skin tone variants on emoji
+    # reactions like this: `clap::skin-tone-2`. For now, we only
+    # use the name of the base emoji, since Zulip's emoji
+    # reactions system doesn't yet support skin tone modifiers.
+    # We need to merge and dedup reactions, as someone may have
+    # reacted to `clap::skin-tone-1` and `clap::skin-tone-2`, etc.
+    merged_reactions = defaultdict(set)
+    for slack_reaction in reactions:
+        emoji_name = slack_reaction["name"].split("::", maxsplit=1)[0]
+        merged_reactions[emoji_name].update(slack_reaction["users"])
+    reactions = [{"name": k, "users": v, "count": len(v)} for k, v in merged_reactions.items()]
+
     # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
-        # Slack's data exports use encode skin tone variants on emoji
-        # reactions like this: `clap::skin-tone-2`. For now, we only
-        # use the name of the base emoji, since Zulip's emoji
-        # reactions system doesn't yet support skin tone modifiers.
-        emoji_name = slack_reaction["name"].split("::", maxsplit=1)[0]
+        emoji_name = slack_reaction["name"]
         if emoji_name in slack_emoji_name_to_codepoint:
             emoji_code = slack_emoji_name_to_codepoint[emoji_name]
             try:
