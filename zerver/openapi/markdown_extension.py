@@ -437,11 +437,11 @@ class APIMarkdownExtension(Extension):
 
 class BasePreprocessor(Preprocessor):
     def __init__(
-        self, REGEXP: Pattern[str], md: markdown.Markdown, config: Mapping[str, Any]
+        self, regexp: Pattern[str], md: markdown.Markdown, config: Mapping[str, Any]
     ) -> None:
         super().__init__(md)
         self.api_url = config["api_url"]
-        self.REGEXP = REGEXP
+        self.REGEXP = regexp
 
     def run(self, lines: List[str]) -> List[str]:
         done = False
