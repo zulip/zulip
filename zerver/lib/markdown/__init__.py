@@ -386,7 +386,7 @@ class ResultWithFamily(Generic[T]):
     family: ElementFamily
     result: T
 
-    def __init__(self, family: ElementFamily, result: T):
+    def __init__(self, family: ElementFamily, result: T) -> None:
         self.family = family
         self.result = result
 
@@ -395,7 +395,7 @@ class ElementPair:
     parent: Optional["ElementPair"]
     value: Element
 
-    def __init__(self, parent: Optional["ElementPair"], value: Element):
+    def __init__(self, parent: Optional["ElementPair"], value: Element) -> None:
         self.parent = parent
         self.value = value
 
