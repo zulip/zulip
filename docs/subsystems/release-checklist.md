@@ -81,8 +81,8 @@ preparing a new release.
 ### Post-release
 
 - The DigitalOcean one-click image will report in an internal channel
-  once it is built, and how to test it. Verify it, then publish it
-  publish it to DigitalOcean marketplace.
+  once it is built, and how to test it. Verify it, then publish it to
+  DigitalOcean marketplace.
 - _Major releases only:_
   - Create a release branch (e.g. `4.x`).
   - On the release branch, update `ZULIP_VERSION` in `version.py` to
