@@ -73,13 +73,13 @@ class MockLDAP(fakeldap.MockLDAP):
     class LDAPError(ldap.LDAPError):
         pass
 
-    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):
+    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):  # noqa: N801
         pass
 
-    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):
+    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):  # noqa: N801
         pass
 
-    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):
+    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):  # noqa: N801
         pass
 
 
