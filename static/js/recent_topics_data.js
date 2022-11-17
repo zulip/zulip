@@ -4,9 +4,6 @@ import {get_key_from_message} from "./recent_topics_util";
 export const topics = new Map(); // Key is stream-id:topic.
 
 export function process_message(msg) {
-    // This function returns if topic_data
-    // has changed or not.
-
     // Initialize topic and pm data
     // Key for private message is the user id's
     // to whom the message is begin sent.
@@ -34,7 +31,6 @@ export function process_message(msg) {
     // message fetched in the topic. Ideally we would want this to be attached
     // to topic info fetched from backend, which is currently not a thing.
     topic_data.participated = is_ours || topic_data.participated;
-    return true;
 }
 
 function get_sorted_topics() {
