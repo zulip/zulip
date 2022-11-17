@@ -368,7 +368,6 @@ ul {
 
     .name {
         color: hsl(0, 0%, 20%);
-        width: 120px;
         font-weight: 600;
         margin-right: 10px;
     }
@@ -450,7 +449,7 @@ ul {
 
     .col-left {
         padding: 0 10px 0 0;
-        word-break: break-all;
+        overflow-wrap: anywhere;
     }
 
     .col-right {
