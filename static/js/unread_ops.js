@@ -250,6 +250,9 @@ export function process_read_messages_event(message_ids) {
 
         const message = message_store.get(message_id);
 
+        // TODO: This ends up doing one in-place rerender operation on
+        // recent conversations per message, not a single global
+        // rerender or one per conversation.
         if (message) {
             process_newly_read_message(message, options);
         }
@@ -293,22 +296,12 @@ export function process_unread_messages_event({message_ids, message_details}) {
             unread: true,
             user_ids_string,
         });
-
-        if (message_info.type === "stream") {
-            // TODO: Rather than passing a fake partial message, we
-            // should probably define a proper type for unread message
-            // data where we don't have the full message object, that
-            // we can use both in this function and pass to recent
-            // topics here.
-            recent_topics_ui.update_topic_unread_count({
-                stream_id: message_info.stream_id,
-                topic: message_info.topic,
-                type: message_info.type,
-            });
-        }
     }
 
     /*
+        A batch of messages marked as unread can be 1000+ messages, so
+        we do want to do a bulk operation for these UI updates.
+
         We use a big-hammer approach now to updating the message view.
         This is relatively harmless, since the only time we are called is
         when the user herself marks her message as unread.  But we
@@ -316,8 +309,12 @@ export function process_unread_messages_event({message_ids, message_details}) {
         have a final scheme for how best to structure the HTML within
         the message to indicate read-vs.-unread.  Currently we use a
         green border, but that may change.
+
+        The main downside of doing a full rerender is that it can be
+        user-visible in the form of users' avatars flickering.
     */
     message_live_update.rerender_messages_view();
+    recent_topics_ui.complete_rerender();
 
     if (
         !message_lists.current.can_mark_messages_read() &&
