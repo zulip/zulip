@@ -28,7 +28,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
-    BadNarrowOperator,
+    BadNarrowOperatorError,
     NarrowBuilder,
     build_narrow_filter,
     exclude_muting_conditions,
@@ -109,7 +109,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_not_defined_operator(self) -> None:
         term = dict(operator="not-defined", operand="any")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_stream_operator(self) -> None:
         term = dict(operator="stream", operand="Scotland")
@@ -123,7 +123,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = dict(operator="stream", operand="NonExistingStream")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = dict(operator="is", operand="private")
@@ -133,7 +133,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = dict(operator="streams", operand="invalid_operands")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_streams_operator_and_public_stream_operand(self) -> None:
         term = dict(operator="streams", operand="public")
@@ -261,7 +261,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator="is", operand="non_supported")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
         term = dict(operator="topic", operand="lunch")
@@ -291,7 +291,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = dict(operator="sender", operand="non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self) -> None:
         term = dict(operator="pm-with", operand=self.othello_email)
@@ -375,13 +375,13 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_pm_with_operator_with_comma_noise(self) -> None:
         term = dict(operator="pm-with", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_pm_with_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
         term = dict(operator="pm-with", operand=self.othello_email + ",non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_id_operator(self) -> None:
         term = dict(operator="id", operand=555)
@@ -389,10 +389,10 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_id_operator_invalid(self) -> None:
         term = dict(operator="id", operand="")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
         term = dict(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator="id", operand=555, negated=True)
@@ -419,7 +419,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self) -> None:
@@ -475,7 +475,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
         term = dict(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_in_operator(self) -> None:
         mute_stream(self.realm, self.user_profile, "Verona")
@@ -503,7 +503,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
         term = dict(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_near_operator(self) -> None:
         term = dict(operator="near", operand="operand")
@@ -518,7 +518,7 @@ class NarrowBuilderTest(ZulipTestCase):
         def _build_query(term: Dict[str, Any]) -> Select:
             return builder.add_term(self.raw_query, term)
 
-        self.assertRaises(BadNarrowOperator, _build_query, term)
+        self.assertRaises(BadNarrowOperatorError, _build_query, term)
 
     def _do_add_term_test(
         self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None

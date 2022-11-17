@@ -58,11 +58,11 @@ class StateHandler:
         return is_key_in_bot_storage(self.user_profile, key)
 
 
-class EmbeddedBotQuitException(Exception):
+class EmbeddedBotQuitError(Exception):
     pass
 
 
-class EmbeddedBotEmptyRecipientsList(Exception):
+class EmbeddedBotEmptyRecipientsListError(Exception):
     pass
 
 
@@ -102,7 +102,7 @@ class EmbeddedBotHandler:
         recipients = ",".join(message["to"]).split(",")
 
         if len(message["to"]) == 0:
-            raise EmbeddedBotEmptyRecipientsList(_("Message must have recipients!"))
+            raise EmbeddedBotEmptyRecipientsListError(_("Message must have recipients!"))
         elif len(message["to"]) == 1:
             recipient_user = get_active_user(recipients[0], self.user_profile.realm)
             message_id = internal_send_private_message(
@@ -151,4 +151,4 @@ class EmbeddedBotHandler:
             raise
 
     def quit(self, message: str = "") -> None:
-        raise EmbeddedBotQuitException(message)
+        raise EmbeddedBotQuitError(message)

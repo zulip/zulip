@@ -15,7 +15,7 @@ from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
     INVALID_JSON_MESSAGE,
     MISSING_EVENT_HEADER_MESSAGE,
-    MissingHTTPEventHeader,
+    MissingHTTPEventHeaderError,
     get_fixture_http_headers,
     standardize_headers,
     validate_extract_webhook_http_header,
@@ -46,7 +46,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         request.path = "some/random/path"
 
         exception_msg = "Missing the HTTP event header 'X-Custom-Header'"
-        with self.assertRaisesRegex(MissingHTTPEventHeader, exception_msg):
+        with self.assertRaisesRegex(MissingHTTPEventHeaderError, exception_msg):
             validate_extract_webhook_http_header(request, "X-Custom-Header", "test_webhook")
 
         msg = self.get_last_message()

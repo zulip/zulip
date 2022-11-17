@@ -87,7 +87,7 @@ from markdown.preprocessors import Preprocessor
 from pygments.lexers import find_lexer_class_by_name
 from pygments.util import ClassNotFound
 
-from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 from zerver.lib.tex import render_tex
 
@@ -137,7 +137,7 @@ Missing required -X argument in curl command:
         regex = r'curl [-](sS)?X "?(GET|DELETE|PATCH|POST)"?'
         if line.startswith("curl"):
             if re.search(regex, line) is None:
-                raise MarkdownRenderingException(error_msg.format(command=line.strip()))
+                raise MarkdownRenderingError(error_msg.format(command=line.strip()))
 
 
 CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {

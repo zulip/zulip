@@ -1,7 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
@@ -32,7 +32,7 @@ def api_freshping_webhook(
     subject = get_subject_for_http_request(payload)
     check_state_name = payload["webhook_event_data"]["check_state_name"].tame(check_string)
     if check_state_name not in CHECK_STATE_NAME_TO_EVENT_TYPE:
-        raise UnsupportedWebhookEventType(check_state_name)
+        raise UnsupportedWebhookEventTypeError(check_state_name)
 
     check_send_webhook_message(
         request,

@@ -248,13 +248,13 @@ class UpgradeWithExistingPlanError(BillingError):
         )
 
 
-class InvalidBillingSchedule(Exception):
+class InvalidBillingScheduleError(Exception):
     def __init__(self, billing_schedule: int) -> None:
         self.message = f"Unknown billing_schedule: {billing_schedule}"
         super().__init__(self.message)
 
 
-class InvalidTier(Exception):
+class InvalidTierError(Exception):
     def __init__(self, tier: int) -> None:
         self.message = f"Unknown tier: {tier}"
         super().__init__(self.message)
@@ -570,16 +570,16 @@ def get_price_per_license(
         elif billing_schedule == CustomerPlan.MONTHLY:
             price_per_license = 800
         else:  # nocoverage
-            raise InvalidBillingSchedule(billing_schedule)
+            raise InvalidBillingScheduleError(billing_schedule)
     elif tier == CustomerPlan.PLUS:
         if billing_schedule == CustomerPlan.ANNUAL:
             price_per_license = 16000
         elif billing_schedule == CustomerPlan.MONTHLY:
             price_per_license = 1600
         else:  # nocoverage
-            raise InvalidBillingSchedule(billing_schedule)
+            raise InvalidBillingScheduleError(billing_schedule)
     else:
-        raise InvalidTier(tier)
+        raise InvalidTierError(tier)
 
     if discount is not None:
         price_per_license = calculate_discounted_price_per_license(price_per_license, discount)
@@ -602,7 +602,7 @@ def compute_plan_parameters(
     elif billing_schedule == CustomerPlan.MONTHLY:
         period_end = add_months(billing_cycle_anchor, 1)
     else:  # nocoverage
-        raise InvalidBillingSchedule(billing_schedule)
+        raise InvalidBillingScheduleError(billing_schedule)
 
     price_per_license = get_price_per_license(tier, billing_schedule, discount)
 
