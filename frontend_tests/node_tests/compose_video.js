@@ -16,7 +16,7 @@ mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });
 set_global("document", {
-    querySelector: () => {},
+    querySelector() {},
 });
 set_global("navigator", {});
 set_global(
@@ -82,8 +82,8 @@ test("videos", ({override}) => {
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault: () => {},
-            stopPropagation: () => {},
+            preventDefault() {},
+            stopPropagation() {},
             target: {
                 to_$: () => $textarea,
             },
@@ -106,8 +106,8 @@ test("videos", ({override}) => {
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault: () => {},
-            stopPropagation: () => {},
+            preventDefault() {},
+            stopPropagation() {},
             target: {
                 to_$: () => $textarea,
             },
@@ -144,8 +144,8 @@ test("videos", ({override}) => {
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault: () => {},
-            stopPropagation: () => {},
+            preventDefault() {},
+            stopPropagation() {},
             target: {
                 to_$: () => $textarea,
             },
@@ -173,7 +173,7 @@ test("videos", ({override}) => {
         channel.post = (payload) => {
             assert.equal(payload.url, "/json/calls/zoom/create");
             payload.success({url: "example.zoom.com"});
-            return {abort: () => {}};
+            return {abort() {}};
         };
 
         handler(ev);
@@ -190,8 +190,8 @@ test("videos", ({override}) => {
         $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
-            preventDefault: () => {},
-            stopPropagation: () => {},
+            preventDefault() {},
+            stopPropagation() {},
             target: {
                 to_$: () => $textarea,
             },

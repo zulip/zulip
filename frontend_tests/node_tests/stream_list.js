@@ -379,7 +379,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     mock_template("filter_topics", false, () => "filter-topics-stub");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({
-        append: (html) => {
+        append(html) {
             assert.equal(html, "filter-topics-stub");
             filter_topics_appended = true;
         },

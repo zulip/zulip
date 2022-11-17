@@ -614,13 +614,13 @@ export function initialize() {
             arrow: true,
             placement,
             showOnCreate: true,
-            onHidden: (instance) => {
+            onHidden(instance) {
                 instance.destroy();
                 if (is_custom_observer_needed) {
                     observer.disconnect();
                 }
             },
-            onShow: (instance) => {
+            onShow(instance) {
                 if (!is_custom_observer_needed) {
                     return;
                 }

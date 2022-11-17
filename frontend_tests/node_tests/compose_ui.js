@@ -459,7 +459,7 @@ run_test("format_text", ({override}) => {
 
     const $textarea = $("#compose-textarea");
     $textarea.get = () => ({
-        setSelectionRange: () => {},
+        setSelectionRange() {},
     });
 
     function init_textarea(val, range) {

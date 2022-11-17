@@ -12,7 +12,7 @@ let $window_stub;
 set_global("to_$", () => $window_stub);
 
 mock_esm("../../static/js/search", {
-    update_button_visibility: () => {},
+    update_button_visibility() {},
 });
 set_global("document", "document-stub");
 const history = set_global("history", {});
@@ -30,7 +30,7 @@ const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const ui_util = mock_esm("../../static/js/ui_util");
 const ui_report = mock_esm("../../static/js/ui_report");
 mock_esm("../../static/js/top_left_corner", {
-    handle_narrow_deactivated: () => {},
+    handle_narrow_deactivated() {},
 });
 set_global("favicon", {});
 
@@ -152,10 +152,10 @@ function test_helper({override, change_tab}) {
     }
 
     return {
-        clear_events: () => {
+        clear_events() {
             events = [];
         },
-        assert_events: (expected_events) => {
+        assert_events(expected_events) {
             assert.deepEqual(events, expected_events);
         },
         get_narrow_terms: () => narrow_terms,

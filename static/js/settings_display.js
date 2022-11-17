@@ -144,7 +144,7 @@ export function launch_default_language_setting_modal() {
         focus_submit_on_open: true,
         single_footer_button: true,
         post_render: default_language_modal_post_render,
-        on_click: () => {},
+        on_click() {},
     });
 }
 

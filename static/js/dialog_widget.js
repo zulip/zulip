@@ -153,7 +153,7 @@ export function launch(conf) {
 
     overlays.open_modal("dialog_widget_modal", {
         autoremove: true,
-        on_show: () => {
+        on_show() {
             if (conf.focus_submit_on_open) {
                 $submit_button.trigger("focus");
             }

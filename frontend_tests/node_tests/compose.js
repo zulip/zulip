@@ -14,7 +14,7 @@ const {page_params, user_settings} = require("../zjsunit/zpage_params");
 const noop = () => {};
 
 set_global("document", {
-    querySelector: () => {},
+    querySelector() {},
 });
 set_global("navigator", {});
 set_global(
@@ -439,7 +439,7 @@ test_ui("initialize", ({override}) => {
         assert.equal(config.mode, "compose");
         setup_upload_called = true;
         return {
-            cancelAll: () => {
+            cancelAll() {
                 uppy_cancel_all_called = true;
             },
         };
