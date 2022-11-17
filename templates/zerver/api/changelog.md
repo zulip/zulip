@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 156**
+
+No changes; feature level used for Zulip 6.0 release.
+
 **Feature level 155**
 
 * [`GET /messages`](/api/get-messages): The new `include_anchor`

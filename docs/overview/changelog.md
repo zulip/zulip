@@ -1,15 +1,13 @@
 # Version history
 
-This page the release history for the Zulip server. See also the
-[Zulip release lifecycle](../overview/release-lifecycle.md).
+This page contains the release history for the Zulip 6.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of all changes.
 
 ## Zulip 6.x series
 
-### 6.0 -- unreleased
-
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of raw changes.
+### 6.0 -- 2022-11-17
 
 #### Highlights
 
@@ -98,6 +96,7 @@ log][commit-log] for an up-to-date list of raw changes.
   coming releases, we plan to migrate all Zulip permissions settings
   to be based on this more flexible groups-based system. We currently
   expect this migration to be fully backwards-compatible.
+- Added a new compliance export management command.
 - Zulip's automated emails use the `X-Auto-Response-Suppress` header
   to reduce auto-responder replies.
 - Changed various icons to be more intuitive. The bell-based icon for
@@ -175,6 +174,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fixed several subtle bugs with confirmation links.
 - Fixed a subtle performance issue for full-text search for uncommon words.
 - Fixed the estimator for the size of public data exports.
+- Fixed "mark all as read" requiring a browser reload.
 - Major improvements to our documentation for setting up the development
   environment and for joining the project as a new contributor.
 - Extracted several JavaScript modules to share code with the mobile
@@ -201,6 +201,8 @@ log][commit-log] for an up-to-date list of raw changes.
   million messages in the database. The new column is not yet used in
   this release, so this migration can be run in the background for
   installations hoping to avoid extended downtime.
+- Custom profile fields with "Pronouns" in their name and the "short
+  text" field type were converted to the new "Pronouns" field type.
 
 [docker-zulip-upgrade-database]: https://github.com/zulip/docker-zulip/#upgrading-zulipzulip-postgresql-to-14
 
@@ -2937,17 +2939,16 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 6.0](#upgrade-notes-for-60)
-
-* [Upgrade notes for 5.0](#upgrade-notes-for-50)
-* [Upgrade notes for 4.0](#upgrade-notes-for-40)
-* [Upgrade notes for 3.0](#upgrade-notes-for-30)
-* [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
-* [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
-* [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
-* [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
-* [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
-* [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
+- [Upgrade notes for 6.0](#upgrade-notes-for-60)
+- [Upgrade notes for 5.0](#upgrade-notes-for-50)
+- [Upgrade notes for 4.0](#upgrade-notes-for-40)
+- [Upgrade notes for 3.0](#upgrade-notes-for-30)
+- [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
+- [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
+- [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
+- [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
+- [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
+- [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [commit-log]: https://github.com/zulip/zulip/commits/main
