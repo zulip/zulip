@@ -350,10 +350,28 @@ class EventQueue:
         event["id"] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
-        if full_event_type == "restart" or full_event_type.startswith("flags/"):
+        if full_event_type == "restart" or (
+            full_event_type.startswith("flags/")
+            and not full_event_type.startswith("flags/remove/read")
+        ):
+            # virtual_events are an optimization that allows certain
+            # simple events, such as update_message_flags events that
+            # simply contain a list of message IDs to operate on, to
+            # be compressed together. This is primarily useful for
+            # flags/add/read, where normal Zulip usage will result in
+            # many small flags/add/read events as users scroll.
+            #
+            # We need to exclude flags/remove/read, because it has an
+            # extra message_details field that cannot be compressed.
+            #
+            # BUG: This compression algorithm is incorrect in the
+            # presence of mark-as-unread, since it does not respect
+            # the ordering of "mark as read" and "mark as unread"
+            # updates for a given message.
             if full_event_type not in self.virtual_events:
                 self.virtual_events[full_event_type] = copy.deepcopy(event)
                 return
+
             # Update the virtual event with the values from the event
             virtual_event = self.virtual_events[full_event_type]
             virtual_event["id"] = event["id"]
