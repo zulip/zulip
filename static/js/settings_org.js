@@ -887,7 +887,7 @@ export function init_dropdown_widgets() {
             name: x.name,
             value: x.stream_id.toString(),
         })),
-        on_update: () => {
+        on_update() {
             save_discard_widget_status_handler($("#org-notifications"));
         },
         default_text: $t({defaultMessage: "Disabled"}),
@@ -913,7 +913,7 @@ export function init_dropdown_widgets() {
             value: x,
         })),
         value: page_params.realm_default_code_block_language,
-        on_update: () => {
+        on_update() {
             save_discard_widget_status_handler($("#org-other-settings"));
         },
         default_text: $t({defaultMessage: "No language set"}),

@@ -101,7 +101,7 @@ async function renderGIPHYGrid(targetEl) {
                 // Hide the creator attribution that appears over a
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
-                onGifClick: (props) => {
+                onGifClick(props) {
                     let $textarea = $("#compose-textarea");
                     if (edit_message_id !== undefined) {
                         $textarea = $(
@@ -115,7 +115,7 @@ async function renderGIPHYGrid(targetEl) {
                     );
                     hide_giphy_popover();
                 },
-                onGifVisible: (gif, e) => {
+                onGifVisible(gif, e) {
                     // Set tabindex for all the GIFs that
                     // are visible to the user. This allows
                     // user to navigate the GIFs using tab.
@@ -134,7 +134,7 @@ async function renderGIPHYGrid(targetEl) {
     window.addEventListener("resize", resizeRender, false);
     const remove = render();
     return {
-        remove: () => {
+        remove() {
             remove();
             window.removeEventListener("resize", resizeRender, false);
         },

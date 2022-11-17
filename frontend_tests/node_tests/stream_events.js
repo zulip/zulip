@@ -26,10 +26,10 @@ const message_view_header = mock_esm("../../static/js/message_view_header", {
     maybe_rerender_title_area_for_stream() {},
 });
 mock_esm("../../static/js/recent_topics_ui", {
-    complete_rerender: () => {},
+    complete_rerender() {},
 });
 mock_esm("../../static/js/settings_notifications", {
-    update_page: () => {},
+    update_page() {},
 });
 
 mock_esm("../../static/js/overlays", {streams_open: () => true});

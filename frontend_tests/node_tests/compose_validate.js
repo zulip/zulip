@@ -486,7 +486,7 @@ test_ui("test_check_overflow_text", () => {
     );
     assert.ok($send_button.prop("disabled"));
 
-    $("#compose-send-status").stop = () => ({fadeOut: () => {}});
+    $("#compose-send-status").stop = () => ({fadeOut() {}});
 
     // Indicator should show orange colored text
     $textarea.val("a".repeat(9000 + 1));
