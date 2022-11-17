@@ -476,7 +476,7 @@ Daily full-database backups will be taken at 0200 UTC, and every WAL
 archive file will be written to S3 as it is saved by PostgreSQL; these
 are written every 16KiB of the WAL. This means that if there are
 periods of slow activity, it may be minutes before the backup is saved
-into S3 -- see [`archive_timeout`][archive-timout] for how to set an
+into S3 -- see [`archive_timeout`][archive-timeout] for how to set an
 upper bound on this. On an active Zulip server, this also means the
 Zulip server will be regularly sending PutObject requests to S3,
 possibly thousands of times per day.
