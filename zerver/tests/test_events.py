@@ -182,7 +182,7 @@ from zerver.lib.event_schema import (
     check_user_topic,
 )
 from zerver.lib.events import (
-    RestartEventException,
+    RestartEventError,
     apply_events,
     fetch_initial_state_data,
     post_process_state,
@@ -2499,7 +2499,7 @@ class NormalActionsTest(BaseAction):
         check_has_zoom_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:
-        with self.assertRaises(RestartEventException):
+        with self.assertRaises(RestartEventError):
             self.verify_action(lambda: send_restart_events(immediate=True))
 
     def test_display_setting_event_not_sent(self) -> None:

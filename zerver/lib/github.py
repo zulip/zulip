@@ -43,14 +43,14 @@ PLATFORM_TO_SETUP_FILE = {
 }
 
 
-class InvalidPlatform(Exception):
+class InvalidPlatformError(Exception):
     pass
 
 
 @cache_with_key(lambda platform: f"download_link:{platform}", timeout=60 * 30)
 def get_latest_github_release_download_link_for_platform(platform: str) -> str:
     if platform not in PLATFORM_TO_SETUP_FILE:
-        raise InvalidPlatform()
+        raise InvalidPlatformError()
 
     latest_version = get_latest_github_release_version_for_repo("zulip-desktop")
     if latest_version:

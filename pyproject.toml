@@ -125,7 +125,6 @@ ignore = [
     "E731", # Do not assign a lambda expression, use a def
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
-    "N818", # Exception name should be named with an Error suffix
 ]
 line-length = 100
 src = [".", "tools", "tools/setup/emoji"]

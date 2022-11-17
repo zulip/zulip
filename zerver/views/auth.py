@@ -33,7 +33,7 @@ from typing_extensions import Concatenate, ParamSpec
 
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     create_confirmation_link,
     get_object_from_key,
     render_confirmation_key_error,
@@ -54,7 +54,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     PasswordAuthDisabledError,
     PasswordResetRequiredError,
-    RateLimited,
+    RateLimitedError,
     RealmDeactivatedError,
     UserDeactivatedError,
 )
@@ -200,7 +200,7 @@ def maybe_send_to_registration(
             confirmation_obj = get_object_from_key(
                 multiuse_object_key, [Confirmation.MULTIUSE_INVITE], mark_object_used=False
             )
-        except ConfirmationKeyException as exception:
+        except ConfirmationKeyError as exception:
             return render_confirmation_key_error(request, exception)
 
         assert isinstance(confirmation_obj, MultiuseInvite)
@@ -1037,7 +1037,7 @@ def password_reset(request: HttpRequest) -> HttpResponse:
             form_class=ZulipPasswordResetForm,
             success_url="/accounts/password/reset/done/",
         )(request)
-    except RateLimited as e:
+    except RateLimitedError as e:
         assert e.secs_to_freedom is not None
         return render(
             request,

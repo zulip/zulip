@@ -49,7 +49,7 @@ from zerver.decorator import (
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
-    OrganizationOwnerRequired,
+    OrganizationOwnerRequiredError,
     ResourceNotFoundError,
 )
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
@@ -72,7 +72,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.subscription_info import gather_subscriptions
-from zerver.lib.timeout import TimeoutExpired, timeout
+from zerver.lib.timeout import TimeoutExpiredError, timeout
 from zerver.lib.topic import (
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
@@ -346,7 +346,7 @@ def update_stream_backend(
 
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError()
         user_profile.realm.ensure_not_on_limited_plan()
         new_message_retention_days_value = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
@@ -889,7 +889,7 @@ def delete_in_topic(
 
     try:
         timeout(50, delete_in_batches)
-    except TimeoutExpired:
+    except TimeoutExpiredError:
         return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
 
     return json_success(request)

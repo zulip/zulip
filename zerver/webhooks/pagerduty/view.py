@@ -4,7 +4,7 @@ from typing import Dict, Union
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
@@ -250,7 +250,7 @@ def api_pagerduty_webhook(
                 break
 
             if message_type not in PAGER_DUTY_EVENT_NAMES:
-                raise UnsupportedWebhookEventType(message_type)
+                raise UnsupportedWebhookEventTypeError(message_type)
 
             format_dict = build_pagerduty_formatdict(message)
             send_formated_pagerduty(request, user_profile, message_type, format_dict)
@@ -264,7 +264,7 @@ def api_pagerduty_webhook(
                 break
 
             if message_event not in PAGER_DUTY_EVENT_NAMES_V2:
-                raise UnsupportedWebhookEventType(message_event)
+                raise UnsupportedWebhookEventTypeError(message_event)
 
             format_dict = build_pagerduty_formatdict_v2(message)
             send_formated_pagerduty(request, user_profile, message_event, format_dict)
@@ -275,7 +275,7 @@ def api_pagerduty_webhook(
             event_type = event.get("event_type").tame(check_none_or(check_string))
 
             if event_type not in PAGER_DUTY_EVENT_NAMES_V3:
-                raise UnsupportedWebhookEventType(event_type)
+                raise UnsupportedWebhookEventTypeError(event_type)
 
             format_dict = build_pagerduty_formatdict_v3(event)
             send_formated_pagerduty(request, user_profile, event_type, format_dict)

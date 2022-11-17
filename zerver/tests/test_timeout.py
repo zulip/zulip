@@ -2,7 +2,7 @@ import time
 import traceback
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timeout import TimeoutExpired, timeout
+from zerver.lib.timeout import TimeoutExpiredError, timeout
 
 
 class TimeoutTestCase(ZulipTestCase):
@@ -25,7 +25,7 @@ class TimeoutTestCase(ZulipTestCase):
         try:
             timeout(1, lambda: self.sleep_x_seconds_y_times(0.1, 50))
             raise AssertionError("Failed to raise a timeout")
-        except TimeoutExpired as exc:
+        except TimeoutExpiredError as exc:
             tb = traceback.format_tb(exc.__traceback__)
             self.assertIn("in sleep_x_seconds_y_times", tb[-1])
             self.assertIn("time.sleep(x)", tb[-1])
@@ -46,8 +46,8 @@ class TimeoutTestCase(ZulipTestCase):
             try:
                 timeout(1, lambda: self.sleep_x_seconds_y_times(5, 1))
                 raise AssertionError("Failed to raise a timeout")
-            except TimeoutExpired as exc:
+            except TimeoutExpiredError as exc:
                 tb = traceback.format_tb(exc.__traceback__)
                 self.assertNotIn("in sleep_x_seconds_y_times", tb[-1])
-                self.assertIn("raise TimeoutExpired", tb[-1])
+                self.assertIn("raise TimeoutExpiredError", tb[-1])
         self.assertEqual(m.output, ["WARNING:root:Failed to time out backend thread"])

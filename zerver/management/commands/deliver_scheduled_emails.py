@@ -15,7 +15,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.send_email import EmailNotDeliveredException, deliver_scheduled_emails
+from zerver.lib.send_email import EmailNotDeliveredError, deliver_scheduled_emails
 from zerver.models import ScheduledEmail
 
 ## Setup ##
@@ -46,7 +46,7 @@ Usage: ./manage.py deliver_scheduled_emails
                     if job:
                         try:
                             deliver_scheduled_emails(job)
-                        except EmailNotDeliveredException:
+                        except EmailNotDeliveredError:
                             logger.warning("%r not delivered", job)
                     else:
                         time.sleep(10)

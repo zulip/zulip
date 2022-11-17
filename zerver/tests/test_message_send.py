@@ -63,7 +63,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.message_send import InvalidMirrorInput
+from zerver.views.message_send import InvalidMirrorInputError
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo
@@ -1098,7 +1098,7 @@ class MessagePOSTTest(ZulipTestCase):
     def test_send_message_create_mirrored_message_user_returns_invalid_input(
         self, create_mirrored_message_users_mock: Any
     ) -> None:
-        create_mirrored_message_users_mock.side_effect = InvalidMirrorInput()
+        create_mirrored_message_users_mock.side_effect = InvalidMirrorInputError()
         result = self.api_post(
             self.mit_user("starnine"),
             "/api/v1/messages",

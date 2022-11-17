@@ -22,7 +22,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
-from zerver.lib.timeout import TimeoutExpired
+from zerver.lib.timeout import TimeoutExpiredError
 from zerver.lib.user_topics import add_topic_mute
 from zerver.models import (
     Message,
@@ -688,7 +688,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
 
     def test_mark_all_as_read_timeout_response(self) -> None:
         self.login("hamlet")
-        with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpired):
+        with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpiredError):
             result = self.client_post("/json/mark_all_as_read", {})
             self.assertEqual(result.status_code, 200)
 

@@ -5,7 +5,7 @@ from typing import Callable, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
@@ -759,7 +759,7 @@ def api_github_webhook(
     """
     header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
     if header_event is None:
-        raise UnsupportedWebhookEventType("no header provided")
+        raise UnsupportedWebhookEventTypeError("no header provided")
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
@@ -832,7 +832,7 @@ def get_zulip_event_name(
         else:
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
-            raise UnsupportedWebhookEventType(f"unsupported team action {action}")
+            raise UnsupportedWebhookEventTypeError(f"unsupported team action {action}")
     elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
         return header_event
     elif header_event in IGNORED_EVENTS:
@@ -841,4 +841,4 @@ def get_zulip_event_name(
     complete_event = "{}:{}".format(
         header_event, payload.get("action", "???").tame(check_string)
     )  # nocoverage
-    raise UnsupportedWebhookEventType(complete_event)
+    raise UnsupportedWebhookEventTypeError(complete_event)
