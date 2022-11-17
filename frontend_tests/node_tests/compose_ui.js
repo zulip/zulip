@@ -152,23 +152,17 @@ run_test("smart_insert", ({override}) => {
     // like emojis and file links.
 });
 
-run_test("replace_syntax", ({override}) => {
+run_test("replace_syntax", () => {
     $("#compose-textarea").val("abcabc");
-    $("#compose-textarea")[0] = "compose-textarea";
-    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
-        assert.equal(elt, "compose-textarea");
-        assert.equal(old_syntax, "a");
-        assert.equal(new_syntax(), "A");
-    });
     compose_ui.replace_syntax("a", "A");
+    assert.equal($("#compose-textarea").val(), "Abcabc");
 
-    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
-        assert.equal(elt, "compose-textarea");
-        assert.equal(old_syntax, "Bca");
-        assert.equal(new_syntax(), "$$\\pi$$");
-    });
+    compose_ui.replace_syntax(/b/g, "B");
+    assert.equal($("#compose-textarea").val(), "ABcaBc");
+
     // Verify we correctly handle `$`s in the replacement syntax
     compose_ui.replace_syntax("Bca", "$$\\pi$$");
+    assert.equal($("#compose-textarea").val(), "A$$\\pi$$Bc");
 });
 
 run_test("compute_placeholder_text", () => {
@@ -259,8 +253,15 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     let textarea_val = "";
     let textarea_caret_pos;
 
-    $("#compose-textarea").val = function () {
-        return textarea_val;
+    $("#compose-textarea").val = function (...args) {
+        if (args.length === 0) {
+            return textarea_val;
+        }
+
+        textarea_val = args[0];
+        textarea_caret_pos = textarea_val.length;
+
+        return this;
     };
 
     $("#compose-textarea").caret = function (arg) {
@@ -288,6 +289,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     override(text_field_edit, "insert", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "translated: [Quoting…]\n");
+        $("#compose-textarea").caret(syntax);
     });
 
     function set_compose_content_with_caret(content) {
@@ -296,6 +298,14 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         textarea_val = content;
         textarea_caret_pos = caret_position;
         $("#compose-textarea").trigger("focus");
+    }
+
+    function get_compose_content_with_caret() {
+        const content =
+            textarea_val.slice(0, textarea_caret_pos) +
+            "%" +
+            textarea_val.slice(textarea_caret_pos); // insert the "%"
+        return content;
     }
 
     function reset_test_state() {
@@ -308,27 +318,17 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         $("#compose-textarea").trigger("blur");
     }
 
-    function override_with_quote_text(quote_text) {
-        override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, "compose-textarea");
-            assert.equal(old_syntax, "translated: [Quoting…]");
-            assert.equal(
-                new_syntax(),
-                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n" +
-                    "```quote\n" +
-                    `${quote_text}\n` +
-                    "```",
-            );
-        });
-    }
-    let quote_text = "Testing caret position";
-    override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
     compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "hello \ntranslated: [Quoting…]\n%there");
 
     success_function({
-        raw_content: quote_text,
+        raw_content: "Testing caret position",
     });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "hello \ntranslated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting caret position\n```\n%there",
+    );
 
     reset_test_state();
 
@@ -336,12 +336,15 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // add a newline before the quoted message.
     set_compose_content_with_caret("%hello there");
     compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "translated: [Quoting…]\n%hello there");
 
-    quote_text = "Testing with caret initially positioned at 0.";
-    override_with_quote_text(quote_text);
     success_function({
-        raw_content: quote_text,
+        raw_content: "Testing with caret initially positioned at 0.",
     });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with caret initially positioned at 0.\n```\n%hello there",
+    );
 
     override_rewire(compose_actions, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
@@ -356,12 +359,15 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // quoting a message, the quoted message should be placed
     // at the beginning of compose-box.
     compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "translated: [Quoting…]\n%");
 
-    quote_text = "Testing with compose-box closed initially.";
-    override_with_quote_text(quote_text);
     success_function({
-        raw_content: quote_text,
+        raw_content: "Testing with compose-box closed initially.",
     });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box closed initially.\n```\n%",
+    );
 
     reset_test_state();
 
@@ -371,12 +377,15 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // message should start from the beginning of compose-box.
     set_compose_content_with_caret("  \n\n \n %");
     compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "translated: [Quoting…]\n%");
 
-    quote_text = "Testing with compose-box containing whitespaces and newlines only.";
-    override_with_quote_text(quote_text);
     success_function({
-        raw_content: quote_text,
+        raw_content: "Testing with compose-box containing whitespaces and newlines only.",
     });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box containing whitespaces and newlines only.\n```\n%",
+    );
 });
 
 run_test("set_compose_box_top", () => {
