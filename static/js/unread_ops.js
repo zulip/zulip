@@ -18,8 +18,15 @@ import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
-const NUM_OF_MESSAGES_UPDATED_PER_BATCH = 5000;
 let loading_indicator_displayed = false;
+
+// We might want to use a slightly smaller batch for the first
+// request, because empirically, the first request can be
+// significantly slower, likely due to the database warming up its
+// cache with your UserMessage rows. We don't do that, just because
+// the progress indicator experience of 1000, 3000, etc. feels weird.
+const INITIAL_BATCH_SIZE = 1000;
+const FOLLOWUP_BATCH_SIZE = 1000;
 
 export function mark_all_as_read(args = {}) {
     args = {
@@ -29,6 +36,7 @@ export function mark_all_as_read(args = {}) {
         // unread not being processed.
         anchor: "oldest",
         messages_read_till_now: 0,
+        num_after: INITIAL_BATCH_SIZE,
         ...args,
     };
     const request = {
@@ -39,7 +47,7 @@ export function mark_all_as_read(args = {}) {
         // unconditionally false.
         include_anchor: false,
         num_before: 0,
-        num_after: NUM_OF_MESSAGES_UPDATED_PER_BATCH,
+        num_after: args.num_after,
         op: "add",
         flag: "read",
         // Since there's a database index on is:unread, it's a fast
@@ -76,6 +84,7 @@ export function mark_all_as_read(args = {}) {
                 mark_all_as_read({
                     anchor: data.last_processed_id,
                     messages_read_till_now,
+                    num_after: FOLLOWUP_BATCH_SIZE,
                 });
             } else {
                 if (loading_indicator_displayed) {
@@ -133,8 +142,9 @@ function process_newly_read_message(message, options) {
 
 export function mark_as_unread_from_here(
     message_id,
-    include_message = true,
+    include_anchor = true,
     messages_marked_unread_till_now = 0,
+    num_after = INITIAL_BATCH_SIZE - 1,
     narrow,
 ) {
     if (narrow === undefined) {
@@ -143,9 +153,9 @@ export function mark_as_unread_from_here(
     message_lists.current.prevent_reading();
     const opts = {
         anchor: message_id,
-        include_anchor: include_message,
+        include_anchor,
         num_before: 0,
-        num_after: NUM_OF_MESSAGES_UPDATED_PER_BATCH,
+        num_after,
         narrow,
         op: "remove",
         flag: "read",
@@ -180,6 +190,7 @@ export function mark_as_unread_from_here(
                     data.last_processed_id,
                     false,
                     messages_marked_unread_till_now,
+                    FOLLOWUP_BATCH_SIZE,
                     narrow,
                 );
             } else if (loading_indicator_displayed) {
