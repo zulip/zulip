@@ -27,11 +27,6 @@ const message_lists = mock_esm("../../static/js/message_lists", {
         view: {
             message_containers: {},
         },
-        data: {
-            fetch_status: {
-                has_found_newest: () => true,
-            },
-        },
     },
 });
 mock_esm("../../static/js/message_viewport", {
