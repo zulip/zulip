@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_esm("../../static/js/resize", {
-    resize_stream_filters_container: () => {},
+    resize_stream_filters_container() {},
 });
 
 const all_messages_data = mock_esm("../../static/js/all_messages_data");
@@ -38,7 +38,7 @@ const typing_events = mock_esm("../../static/js/typing_events");
 const ui_util = mock_esm("../../static/js/ui_util");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 mock_esm("../../static/js/recent_topics_util", {
-    is_visible: () => {},
+    is_visible() {},
 });
 
 //
@@ -98,13 +98,13 @@ function test_helper() {
     $("#mark_as_read_turned_off_banner").toggleClass = () => {};
 
     return {
-        clear: () => {
+        clear() {
             events = [];
         },
-        push_event: (event) => {
+        push_event(event) {
             events.push(event);
         },
-        assert_events: (expected_events) => {
+        assert_events(expected_events) {
             assert.deepEqual(events, expected_events);
         },
     };

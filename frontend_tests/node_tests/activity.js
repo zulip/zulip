@@ -322,7 +322,7 @@ test("handlers", ({override, mock_template}) => {
     (function test_click_filter() {
         init();
         const e = {
-            stopPropagation: () => {},
+            stopPropagation() {},
         };
 
         const handler = $(".user-list-filter").get_on_handler("focus");
