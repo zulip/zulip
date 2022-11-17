@@ -5,7 +5,7 @@ from typing import Dict, Optional, Sequence, Tuple
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -21,11 +21,11 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-class SuppressedEvent(Exception):
+class SuppressedEventError(Exception):
     pass
 
 
-class NotImplementedEventType(SuppressedEvent):
+class NotImplementedEventTypeError(SuppressedEventError):
     pass
 
 
@@ -63,7 +63,7 @@ def api_stripe_webhook(
 ) -> HttpResponse:
     try:
         topic, body = topic_and_body(payload)
-    except SuppressedEvent:  # nocoverage
+    except SuppressedEventError:  # nocoverage
         return json_success(request)
     check_send_webhook_message(
         request, user_profile, topic, body, payload["type"].tame(check_string)
@@ -98,7 +98,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             blacklist
         )
         if not previous_attributes:  # nocoverage
-            raise SuppressedEvent()
+            raise SuppressedEventError()
         return "".join(
             "\n* "
             + attribute.replace("_", " ").capitalize()
@@ -119,18 +119,18 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         if resource == "account":
             if event == "updated":
                 if "previous_attributes" not in payload["data"]:
-                    raise SuppressedEvent()
+                    raise SuppressedEventError()
                 topic = "account updates"
                 body = update_string()
         else:
             # Part of Stripe Connect
-            raise NotImplementedEventType()
+            raise NotImplementedEventTypeError()
     if category == "application_fee":  # nocoverage
         # Part of Stripe Connect
-        raise NotImplementedEventType()
+        raise NotImplementedEventTypeError()
     if category == "balance":  # nocoverage
         # Not that interesting to most businesses, I think
-        raise NotImplementedEventType()
+        raise NotImplementedEventTypeError()
     if category == "charge":
         if resource == "charge":
             if not topic:  # only in legacy fixtures
@@ -160,10 +160,10 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category == "checkout_beta":  # nocoverage
         # Not sure what this is
-        raise NotImplementedEventType()
+        raise NotImplementedEventTypeError()
     if category == "coupon":  # nocoverage
         # Not something that likely happens programmatically
-        raise NotImplementedEventType()
+        raise NotImplementedEventTypeError()
     if category == "customer":
         if resource == "customer":
             # Running into the 60 character topic limit.
@@ -260,10 +260,10 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category.startswith("issuing"):  # nocoverage
         # Not implemented
-        raise NotImplementedEventType()
+        raise NotImplementedEventTypeError()
     if category.startswith("order"):  # nocoverage
         # Not implemented
-        raise NotImplementedEventType()
+        raise NotImplementedEventTypeError()
     if category in [
         "payment_intent",
         "payout",
@@ -282,10 +282,10 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         # Not implemented. In theory doing something like
         #   body = default_body()
         # may not be hard for some of these
-        raise NotImplementedEventType()
+        raise NotImplementedEventTypeError()
 
     if body is None:
-        raise UnsupportedWebhookEventType(event_type)
+        raise UnsupportedWebhookEventTypeError(event_type)
     return (topic, body)
 
 

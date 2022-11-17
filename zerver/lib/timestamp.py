@@ -2,13 +2,13 @@ import calendar
 import datetime
 
 
-class TimeZoneNotUTCException(Exception):
+class TimeZoneNotUTCError(Exception):
     pass
 
 
 def verify_UTC(dt: datetime.datetime) -> None:
     if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) != datetime.timezone.utc.utcoffset(dt):
-        raise TimeZoneNotUTCException(f"Datetime {dt} does not have a UTC time zone.")
+        raise TimeZoneNotUTCError(f"Datetime {dt} does not have a UTC time zone.")
 
 
 def convert_to_UTC(dt: datetime.datetime) -> datetime.datetime:

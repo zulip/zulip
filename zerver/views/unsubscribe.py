@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
+from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.context_processors import common_context
 from zerver.lib.send_email import clear_scheduled_emails
@@ -21,7 +21,7 @@ def process_unsubscribe(
         user_profile = get_object_from_key(
             confirmation_key, [Confirmation.UNSUBSCRIBE], mark_object_used=False
         )
-    except ConfirmationKeyException:
+    except ConfirmationKeyError:
         return render(request, "zerver/unsubscribe_link_error.html")
 
     assert isinstance(user_profile, UserProfile)

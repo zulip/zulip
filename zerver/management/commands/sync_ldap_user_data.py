@@ -9,7 +9,7 @@ from django.db import transaction
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
-from zproject.backends import ZulipLDAPException, sync_user_from_ldap
+from zproject.backends import ZulipLDAPError, sync_user_from_ldap
 
 ## Setup ##
 logger = logging.getLogger("zulip.sync_ldap_user_data")
@@ -29,7 +29,7 @@ def sync_ldap_user_data(
             # does not exist.
             try:
                 sync_user_from_ldap(u, logger)
-            except ZulipLDAPException as e:
+            except ZulipLDAPError as e:
                 logger.error("Error attempting to update user %s:", u.delivery_email)
                 logger.error(e.args[0])
 

@@ -2,7 +2,10 @@ import requests
 import responses
 
 from zerver.lib.cache import cache_delete
-from zerver.lib.github import InvalidPlatform, get_latest_github_release_download_link_for_platform
+from zerver.lib.github import (
+    InvalidPlatformError,
+    get_latest_github_release_download_link_for_platform,
+)
 from zerver.lib.test_classes import ZulipTestCase
 
 logger_string = "zerver.lib.github"
@@ -81,5 +84,5 @@ class GitHubTestCase(ZulipTestCase):
                 [f"ERROR:{logger_string}:App download link is broken {download_link}"],
             )
 
-        with self.assertRaises(InvalidPlatform):
+        with self.assertRaises(InvalidPlatformError):
             get_latest_github_release_download_link_for_platform("plan9")

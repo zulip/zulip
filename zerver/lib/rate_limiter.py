@@ -11,7 +11,7 @@ from django.conf import settings
 from django.http import HttpRequest
 
 from zerver.lib.cache import cache_with_key
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.utils import statsd
 from zerver.models import UserProfile
@@ -27,7 +27,7 @@ KEY_PREFIX = ""
 logger = logging.getLogger(__name__)
 
 
-class RateLimiterLockingException(Exception):
+class RateLimiterLockingError(Exception):
     pass
 
 
@@ -61,7 +61,7 @@ class RateLimitedObject(ABC):
         # Abort this request if the user is over their rate limits
         if ratelimited:
             # Pass information about what kind of entity got limited in the exception:
-            raise RateLimited(time)
+            raise RateLimitedError(time)
 
         calls_remaining, seconds_until_reset = self.api_calls_left()
 
@@ -483,7 +483,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                     break
                 except redis.WatchError:  # nocoverage # Ideally we'd have a test for this.
                     if count > 10:
-                        raise RateLimiterLockingException()
+                        raise RateLimiterLockingError()
                     count += 1
 
                     continue
@@ -500,7 +500,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         else:
             try:
                 cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
-            except RateLimiterLockingException:
+            except RateLimiterLockingError:
                 logger.warning("Deadlock trying to incr_ratelimit for %s", entity_key)
                 # rate-limit users who are hitting the API so hard we can't update our stats.
                 ratelimited = True
@@ -536,7 +536,7 @@ class RateLimitedSpectatorAttachmentAccessByFile(RateLimitedObject):
 def rate_limit_spectator_attachment_access_by_file(path_id: str) -> None:
     ratelimited, _ = RateLimitedSpectatorAttachmentAccessByFile(path_id).rate_limit()
     if ratelimited:
-        raise RateLimited
+        raise RateLimitedError
 
 
 def is_local_addr(addr: str) -> bool:
@@ -579,7 +579,7 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
 
 def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> None:
-    """Returns whether or not a user was rate limited. Will raise a RateLimited exception
+    """Returns whether or not a user was rate limited. Will raise a RateLimitedError exception
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
     if not should_rate_limit(request):

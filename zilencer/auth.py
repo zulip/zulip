@@ -14,7 +14,7 @@ from zerver.decorator import get_basic_credentials, process_client
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
-    RateLimited,
+    RateLimitedError,
     RemoteServerDeactivatedError,
     UnauthorizedError,
 )
@@ -60,7 +60,7 @@ def rate_limit_remote_server(
 
     try:
         RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
-    except RateLimited as e:
+    except RateLimitedError as e:
         logger.warning("Remote server %s exceeded rate limits on domain %s", remote_server, domain)
         raise e
 

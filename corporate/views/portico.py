@@ -9,7 +9,10 @@ from django.template.response import TemplateResponse
 
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics
-from zerver.lib.github import InvalidPlatform, get_latest_github_release_download_link_for_platform
+from zerver.lib.github import (
+    InvalidPlatformError,
+    get_latest_github_release_download_link_for_platform,
+)
 from zerver.lib.realm_description import get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.subdomains import is_subdomain_root_or_alias
@@ -30,7 +33,7 @@ def app_download_link_redirect(request: HttpRequest, platform: str) -> HttpRespo
     try:
         download_link = get_latest_github_release_download_link_for_platform(platform)
         return HttpResponseRedirect(download_link, status=302)
-    except InvalidPlatform:
+    except InvalidPlatformError:
         return TemplateResponse(request, "404.html", status=404)
 
 

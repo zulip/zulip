@@ -13,7 +13,7 @@ from django.utils.translation import gettext_lazy
 
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     get_object_from_key,
     render_confirmation_key_error,
 )
@@ -33,7 +33,7 @@ from zerver.lib.email_validation import (
     validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited, UserDeactivatedError
+from zerver.lib.exceptions import JsonableError, RateLimitedError, UserDeactivatedError
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
@@ -65,7 +65,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
         email_change_object = get_object_from_key(
             confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
         )
-    except ConfirmationKeyException as exception:
+    except ConfirmationKeyError as exception:
         return render_confirmation_key_error(request, exception)
 
     assert isinstance(email_change_object, EmailChangeStatus)
@@ -244,7 +244,7 @@ def json_change_settings(
                 return_data=return_data,
             ):
                 raise JsonableError(_("Wrong password!"))
-        except RateLimited as e:
+        except RateLimitedError as e:
             assert e.secs_to_freedom is not None
             secs_to_freedom = int(e.secs_to_freedom)
             raise JsonableError(
@@ -300,7 +300,7 @@ def json_change_settings(
                 user_profile, domain="email_change_by_user"
             ).rate_limit()
             if ratelimited:
-                raise RateLimited(time_until_free)
+                raise RateLimitedError(time_until_free)
 
             do_start_email_change_process(user_profile, new_email)
 

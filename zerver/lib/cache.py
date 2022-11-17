@@ -44,11 +44,6 @@ ReturnT = TypeVar("ReturnT")
 
 logger = logging.getLogger()
 
-
-class NotFoundInCache(Exception):
-    pass
-
-
 remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
 remote_cache_total_requests = 0
@@ -151,7 +146,7 @@ def cache_with_key(
 
             try:
                 val = cache_get(key, cache_name=cache_name)
-            except InvalidCacheKeyException:
+            except InvalidCacheKeyError:
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
                 return func(*args, **kwargs)
@@ -190,7 +185,7 @@ def cache_with_key(
     return decorator
 
 
-class InvalidCacheKeyException(Exception):
+class InvalidCacheKeyError(Exception):
     pass
 
 
@@ -215,9 +210,9 @@ def validate_cache_key(key: str) -> None:
     # The regex checks "all characters between ! and ~ in the ascii table",
     # which happens to be the set of all "nice" ascii characters.
     if not bool(re.fullmatch(r"([!-~])+", key)):
-        raise InvalidCacheKeyException("Invalid characters in the cache key: " + key)
+        raise InvalidCacheKeyError("Invalid characters in the cache key: " + key)
     if len(key) > MEMCACHED_MAX_KEY_LENGTH:
-        raise InvalidCacheKeyException(f"Cache key too long: {key} Length: {len(key)}")
+        raise InvalidCacheKeyError(f"Cache key too long: {key} Length: {len(key)}")
 
 
 def cache_set(
@@ -262,7 +257,7 @@ def safe_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Di
         # to do normal cache_get_many to avoid the overhead of
         # validating all the keys here.
         return cache_get_many(keys, cache_name)
-    except InvalidCacheKeyException:
+    except InvalidCacheKeyError:
         stack_trace = traceback.format_exc()
         good_keys, bad_keys = filter_good_and_bad_keys(keys)
 
@@ -295,7 +290,7 @@ def safe_cache_set_many(
         # to do normal cache_set_many to avoid the overhead of
         # validating all the keys here.
         return cache_set_many(items, cache_name, timeout)
-    except InvalidCacheKeyException:
+    except InvalidCacheKeyError:
         stack_trace = traceback.format_exc()
 
         good_keys, bad_keys = filter_good_and_bad_keys(list(items.keys()))
@@ -330,7 +325,7 @@ def filter_good_and_bad_keys(keys: List[str]) -> Tuple[List[str], List[str]]:
         try:
             validate_cache_key(key)
             good_keys.append(key)
-        except InvalidCacheKeyException:
+        except InvalidCacheKeyError:
             bad_keys.append(key)
 
     return good_keys, bad_keys

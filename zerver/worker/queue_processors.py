@@ -54,7 +54,7 @@ from zerver.actions.presence import do_update_user_presence
 from zerver.actions.realm_export import notify_realm_export
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.context_processors import common_context
-from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
+from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitError, get_bot_handler
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db import reset_queries
 from zerver.lib.digest import bulk_handle_digest_email
@@ -66,7 +66,7 @@ from zerver.lib.email_mirror import (
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.email_notifications import handle_missedmessage_emails
 from zerver.lib.error_notify import do_report_error
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.lib.push_notifications import (
@@ -79,7 +79,7 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import SimpleQueueClient, retry_event
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import (
-    EmailNotDeliveredException,
+    EmailNotDeliveredError,
     FromAddress,
     handle_send_email_format_changes,
     initialize_connection,
@@ -110,7 +110,7 @@ from zerver.models import (
 logger = logging.getLogger(__name__)
 
 
-class WorkerTimeoutException(Exception):
+class WorkerTimeoutError(Exception):
     def __init__(self, queue_name: str, limit: int, event_count: int) -> None:
         self.queue_name = queue_name
         self.limit = limit
@@ -120,7 +120,7 @@ class WorkerTimeoutException(Exception):
         return f"Timed out in {self.queue_name} after {self.limit * self.event_count} seconds processing {self.event_count} events"
 
 
-class InterruptConsumeException(Exception):
+class InterruptConsumeError(Exception):
     """
     This exception is to be thrown inside event consume function
     if the intention is to simply interrupt the processing
@@ -130,7 +130,7 @@ class InterruptConsumeException(Exception):
     pass
 
 
-class WorkerDeclarationException(Exception):
+class WorkerDeclarationError(Exception):
     pass
 
 
@@ -198,7 +198,7 @@ def retry_send_email_failures(
         except (
             socket.gaierror,
             socket.timeout,
-            EmailNotDeliveredException,
+            EmailNotDeliveredError,
         ) as e:
             error_class_name = type(e).__name__
 
@@ -230,7 +230,7 @@ class QueueProcessingWorker(ABC):
     def __init__(self) -> None:
         self.q: Optional[SimpleQueueClient] = None
         if not hasattr(self, "queue_name"):
-            raise WorkerDeclarationException("Queue worker declared without queue_name")
+            raise WorkerDeclarationError("Queue worker declared without queue_name")
 
         self.initialize_statistics()
 
@@ -360,10 +360,10 @@ class QueueProcessingWorker(ABC):
     def timer_expired(
         self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
     ) -> None:
-        raise WorkerTimeoutException(self.queue_name, limit, len(events))
+        raise WorkerTimeoutError(self.queue_name, limit, len(events))
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
-        if isinstance(exception, InterruptConsumeException):
+        if isinstance(exception, InterruptConsumeError):
             # The exception signals that no further error handling
             # is needed and the worker can proceed.
             return
@@ -376,7 +376,7 @@ class QueueProcessingWorker(ABC):
                     "queue_name": self.queue_name,
                 },
             )
-            if isinstance(exception, WorkerTimeoutException):
+            if isinstance(exception, WorkerTimeoutError):
                 with sentry_sdk.push_scope() as scope:
                     scope.fingerprint = ["worker-timeout", self.queue_name]
                     logging.exception(exception, stack_info=True)
@@ -825,7 +825,7 @@ class MirrorWorker(QueueProcessingWorker):
             recipient_realm = decode_stream_email_address(rcpt_to)[0].realm
             try:
                 rate_limit_mirror_by_realm(recipient_realm)
-            except RateLimited:
+            except RateLimitedError:
                 logger.warning(
                     "MirrorWorker: Rejecting an email from: %s to realm: %s - rate limited.",
                     msg["From"],
@@ -888,7 +888,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             event["message_id"],
             event["urls"],
         )
-        raise InterruptConsumeException
+        raise InterruptConsumeError
 
 
 @assign_queue("outgoing_webhooks")
@@ -939,7 +939,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                     message=message,
                     bot_handler=self.get_bot_api_client(user_profile),
                 )
-            except EmbeddedBotQuitException as e:
+            except EmbeddedBotQuitError as e:
                 logging.warning("%s", e)
 
 

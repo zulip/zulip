@@ -26,7 +26,7 @@ from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.send_email import FromAddress, send_email
@@ -344,7 +344,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             try:
                 rate_limit_password_reset_form_by_email(email)
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-            except RateLimited:
+            except RateLimitedError:
                 logging.info(
                     "Too many password reset attempts for email %s from %s",
                     email,
@@ -418,7 +418,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
 def rate_limit_password_reset_form_by_email(email: str) -> None:
     ratelimited, secs_to_freedom = RateLimitedPasswordResetByEmail(email).rate_limit()
     if ratelimited:
-        raise RateLimited(secs_to_freedom)
+        raise RateLimitedError(secs_to_freedom)
 
 
 class CreateUserForm(forms.Form):
@@ -447,7 +447,7 @@ class OurAuthenticationForm(AuthenticationForm):
                     realm=realm,
                     return_data=return_data,
                 )
-            except RateLimited as e:
+            except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
                 secs_to_freedom = int(e.secs_to_freedom)
                 error_message = _(
