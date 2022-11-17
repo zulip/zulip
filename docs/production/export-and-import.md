@@ -41,6 +41,9 @@ service (or back):
   tool isn't applicable, including situations where an easily
   machine-parsable export format is desired.
 
+- [Compliance exports](#compliance-exports) allow a server
+  administrator to export messages matching a search query.
+
 - Zulip also has an [HTML archive
   tool](https://github.com/zulip/zulip-archive), which is primarily
   intended for public archives, but can also be useful to
@@ -443,6 +446,35 @@ rm -rf /home/zulip/uploads/*/2/
 ```
 
 Once that's done, you can simply re-run the import process.
+
+## Compliance exports
+
+In some circumstances, corporate or legal compliance may require
+performing selective data exports. This can be done with the
+`export_search` command-line tool, which lets you specify the
+following parameters when exporting messages:
+
+- Search keywords in the message text.
+- Message sender.
+- Time range for when messages were sent.
+
+For example, to search for messages containing the word "wonderland"
+between November 1st and 6th, from `alice@example.com`:
+
+```console
+$ /home/zulip/deployments/current/manage.py export_search --output compliance-export.json
+    -r zulip \
+    --after '2022-11-01 00:00:00' --before '2022-11-06 14:00:00' \
+    --sender alice@example.com \
+    wonderland
+```
+
+The results are written to a JSON file. The contents of previous
+versions of edited messages are not searched, nor are deleted
+messages.
+
+See `/home/zulip/deployments/current/manage.py export_search --help`
+for more details on supported options.
 
 ## Database-only backup tools
 
