@@ -38,17 +38,17 @@ from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.exceptions import (
     AccessDeniedError,
-    AnomalousWebhookPayload,
+    AnomalousWebhookPayloadError,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
     InvalidJSONError,
     JsonableError,
-    OrganizationAdministratorRequired,
-    OrganizationMemberRequired,
-    OrganizationOwnerRequired,
+    OrganizationAdministratorRequiredError,
+    OrganizationMemberRequiredError,
+    OrganizationOwnerRequiredError,
     RealmDeactivatedError,
     UnauthorizedError,
-    UnsupportedWebhookEventType,
+    UnsupportedWebhookEventTypeError,
     UserDeactivatedError,
     WebhookError,
 )
@@ -139,7 +139,7 @@ def require_realm_owner(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError()
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -157,7 +157,7 @@ def require_realm_admin(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_admin:
-            raise OrganizationAdministratorRequired()
+            raise OrganizationAdministratorRequiredError()
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -175,7 +175,7 @@ def require_organization_member(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if user_profile.role > UserProfile.ROLE_MEMBER:
-            raise OrganizationMemberRequired()
+            raise OrganizationMemberRequiredError()
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -303,15 +303,15 @@ def log_unsupported_webhook_event(summary: str) -> None:
     # webhook integrations (e.g. GitHub) that need to log an unsupported
     # event based on attributes nested deep within a complicated JSON
     # payload. In such cases, the error message we want to log may not
-    # really fit what a regular UnsupportedWebhookEventType exception
+    # really fit what a regular UnsupportedWebhookEventTypeError exception
     # represents.
     webhook_unsupported_events_logger.exception(summary, stack_info=True)
 
 
 def log_exception_to_webhook_logger(err: Exception) -> None:
-    if isinstance(err, AnomalousWebhookPayload):
+    if isinstance(err, AnomalousWebhookPayloadError):
         webhook_anomalous_payloads_logger.exception(str(err), stack_info=True)
-    elif isinstance(err, UnsupportedWebhookEventType):
+    elif isinstance(err, UnsupportedWebhookEventTypeError):
         webhook_unsupported_events_logger.exception(str(err), stack_info=True)
     else:
         webhook_logger.exception(str(err), stack_info=True)

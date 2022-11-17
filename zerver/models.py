@@ -81,7 +81,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -3506,7 +3506,7 @@ def validate_attachment_request_for_spectator_access(
             from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 
             rate_limit_spectator_attachment_access_by_file(attachment.path_id)
-        except RateLimited:
+        except RateLimitedError:
             return False
 
     return True
@@ -4672,7 +4672,7 @@ class BotConfigData(models.Model):
         unique_together = ("bot_profile", "key")
 
 
-class InvalidFakeEmailDomain(Exception):
+class InvalidFakeEmailDomainError(Exception):
     pass
 
 
@@ -4688,7 +4688,7 @@ def get_fake_email_domain(realm: Realm) -> str:
         # Check that the fake email domain can be used to form valid email addresses.
         validate_email(Address(username="bot", domain=settings.FAKE_EMAIL_DOMAIN).addr_spec)
     except ValidationError:
-        raise InvalidFakeEmailDomain(
+        raise InvalidFakeEmailDomainError(
             settings.FAKE_EMAIL_DOMAIN + " is not a valid domain. "
             "Consider setting the FAKE_EMAIL_DOMAIN setting."
         )

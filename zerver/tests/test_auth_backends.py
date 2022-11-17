@@ -71,7 +71,7 @@ from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
@@ -127,6 +127,8 @@ from zproject.backends import (
     GitHubAuthBackend,
     GitLabAuthBackend,
     GoogleAuthBackend,
+    NoMatchingLDAPUserError,
+    OutsideLDAPDomainError,
     PopulateUserLDAPError,
     RateLimitedAuthenticationByUsername,
     SAMLAuthBackend,
@@ -136,9 +138,7 @@ from zproject.backends import (
     ZulipDummyBackend,
     ZulipLDAPAuthBackend,
     ZulipLDAPConfigurationError,
-    ZulipLDAPException,
-    ZulipLDAPExceptionNoMatchingLDAPUser,
-    ZulipLDAPExceptionOutsideDomain,
+    ZulipLDAPError,
     ZulipLDAPUser,
     ZulipLDAPUserPopulator,
     ZulipRemoteUserBackend,
@@ -672,9 +672,9 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                     self.assertIsNone(attempt_authentication(username, wrong_password))
                     # 2 failed attempts is the limit, so the next ones should get blocked,
                     # even with the correct password.
-                    with self.assertRaises(RateLimited):
+                    with self.assertRaises(RateLimitedError):
                         attempt_authentication(username, correct_password)
-                    with self.assertRaises(RateLimited):
+                    with self.assertRaises(RateLimitedError):
                         attempt_authentication(username, wrong_password)
 
                 # After enough time passes, more authentication attempts can be made:
@@ -690,7 +690,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                     self.assertIsNone(attempt_authentication(username, wrong_password))
                     self.assertIsNone(attempt_authentication(username, wrong_password))
                     # But the third attempt goes over the limit:
-                    with self.assertRaises(RateLimited):
+                    with self.assertRaises(RateLimitedError):
                         attempt_authentication(username, wrong_password)
 
                     # Resetting the password also clears the rate-limit
@@ -5529,7 +5529,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             self.assertEqual(self.backend.django_to_ldap_username("hamlet"), "hamlet")
             self.assertEqual(self.backend.django_to_ldap_username("hamlet@zulip.com"), "hamlet")
             with self.assertRaisesRegex(
-                ZulipLDAPExceptionOutsideDomain,
+                OutsideLDAPDomainError,
                 "Email hamlet@example.com does not match LDAP domain zulip.com.",
             ):
                 self.backend.django_to_ldap_username("hamlet@example.com")
@@ -5556,7 +5556,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             self.backend.django_to_ldap_username("hamlet@zulip.com"), self.ldap_username("hamlet")
         )
         # If there are no matches through the email search, raise exception:
-        with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
+        with self.assertRaises(NoMatchingLDAPUserError):
             self.backend.django_to_ldap_username("no_such_email@example.com")
 
         self.assertEqual(
@@ -5564,7 +5564,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
         )
 
         with self.assertLogs(level="WARNING") as m:
-            with self.assertRaises(ZulipLDAPExceptionNoMatchingLDAPUser):
+            with self.assertRaises(NoMatchingLDAPUserError):
                 self.backend.django_to_ldap_username("shared_email@zulip.com")
         self.assertEqual(
             m.output,
@@ -5938,19 +5938,19 @@ class TestLDAP(ZulipLDAPTestCase):
             realm.save()
 
             email = "spam@mailnator.com"
-            with self.assertRaisesRegex(ZulipLDAPException, "Email validation failed."):
+            with self.assertRaisesRegex(ZulipLDAPError, "Email validation failed."):
                 self.backend.get_or_build_user(email, _LDAPUser())
 
             realm.emails_restricted_to_domains = True
             realm.save(update_fields=["emails_restricted_to_domains"])
 
             email = "spam+spam@mailnator.com"
-            with self.assertRaisesRegex(ZulipLDAPException, "Email validation failed."):
+            with self.assertRaisesRegex(ZulipLDAPError, "Email validation failed."):
                 self.backend.get_or_build_user(email, _LDAPUser())
 
             email = "spam@acme.com"
             with self.assertRaisesRegex(
-                ZulipLDAPException, "This email domain isn't allowed in this organization."
+                ZulipLDAPError, "This email domain isn't allowed in this organization."
             ):
                 self.backend.get_or_build_user(email, _LDAPUser())
 
@@ -6167,7 +6167,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_too_short_name(self) -> None:
         self.change_ldap_user_attr("hamlet", "cn", "a")
 
-        with self.assertRaises(ZulipLDAPException), self.assertLogs(
+        with self.assertRaises(ZulipLDAPError), self.assertLogs(
             "django_auth_ldap", "WARNING"
         ) as warn_log:
             self.perform_ldap_sync(self.example_user("hamlet"))
@@ -6417,7 +6417,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             }
         ):
             with self.assertRaisesRegex(
-                ZulipLDAPException, "Custom profile field with name non_existent not found"
+                ZulipLDAPError, "Custom profile field with name non_existent not found"
             ), self.assertLogs("django_auth_ldap", "WARNING") as warn_log:
                 self.perform_ldap_sync(self.example_user("hamlet"))
             self.assertEqual(
@@ -6437,7 +6437,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             }
         ):
             with self.assertRaisesRegex(
-                ZulipLDAPException, "Invalid data for birthday field"
+                ZulipLDAPError, "Invalid data for birthday field"
             ), self.assertLogs("django_auth_ldap", "WARNING") as warn_log:
                 self.perform_ldap_sync(self.example_user("hamlet"))
             self.assertEqual(

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Protocol
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
@@ -169,7 +169,7 @@ def repo_push_branch_data(payload: WildValue, change: WildValue) -> Dict[str, st
         body = get_remove_branch_event_message(user_name, branch_name)
     else:
         message = "{}.{}".format(payload["eventKey"].tame(check_string), event_type)  # nocoverage
-        raise UnsupportedWebhookEventType(message)
+        raise UnsupportedWebhookEventTypeError(message)
 
     subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repo_name, branch=branch_name)
     return {"subject": subject, "body": body}
@@ -186,7 +186,7 @@ def repo_push_tag_data(payload: WildValue, change: WildValue) -> Dict[str, str]:
         action = "removed"
     else:
         message = "{}.{}".format(payload["eventKey"].tame(check_string), event_type)  # nocoverage
-        raise UnsupportedWebhookEventType(message)
+        raise UnsupportedWebhookEventTypeError(message)
 
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = get_push_tag_event_message(get_user_name(payload), tag_name, action=action)
@@ -213,7 +213,7 @@ def repo_push_handler(
             message = "{}.{}".format(
                 payload["eventKey"].tame(check_string), event_target_type
             )  # nocoverage
-            raise UnsupportedWebhookEventType(message)
+            raise UnsupportedWebhookEventTypeError(message)
     return data
 
 
@@ -446,7 +446,7 @@ def api_bitbucket3_webhook(
         assert eventkey is not None
     handler = EVENT_HANDLER_MAP.get(eventkey)
     if handler is None:
-        raise UnsupportedWebhookEventType(eventkey)
+        raise UnsupportedWebhookEventTypeError(eventkey)
 
     data = handler(payload, branches=branches, include_title=user_specified_topic)
     for element in data:

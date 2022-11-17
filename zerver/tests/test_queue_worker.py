@@ -17,9 +17,9 @@ from django.test import override_settings
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
-from zerver.lib.rate_limiter import RateLimiterLockingException
+from zerver.lib.rate_limiter import RateLimiterLockingError
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
-from zerver.lib.send_email import EmailNotDeliveredException, FromAddress
+from zerver.lib.send_email import EmailNotDeliveredError, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import (
@@ -507,10 +507,10 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
-                # If RateLimiterLockingException is thrown, we rate-limit the new message:
+                # If RateLimiterLockingError is thrown, we rate-limit the new message:
                 with patch(
                     "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
-                    side_effect=RateLimiterLockingException,
+                    side_effect=RateLimiterLockingError,
                 ):
                     with self.assertLogs("zerver.lib.rate_limiter", "WARNING") as mock_warn:
                         fake_client.enqueue("email_mirror", data[0])
@@ -553,14 +553,14 @@ class WorkerTest(ZulipTestCase):
             worker = queue_processors.EmailSendingWorker()
             worker.setup()
             with patch(
-                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredException
+                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError
             ), mock_queue_publish(
                 "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
             ), self.assertLogs(
                 level="ERROR"
             ) as m:
                 worker.start()
-                self.assertIn("failed due to exception EmailNotDeliveredException", m.output[0])
+                self.assertIn("failed due to exception EmailNotDeliveredError", m.output[0])
 
         self.assertEqual(data["failed_tries"], 1 + MAX_REQUEST_RETRIES)
 
@@ -764,7 +764,7 @@ class WorkerTest(ZulipTestCase):
             def consume(self, data: Mapping[str, Any]) -> None:
                 pass  # nocoverage # this is intentionally not called
 
-        with self.assertRaises(queue_processors.WorkerDeclarationException):
+        with self.assertRaises(queue_processors.WorkerDeclarationError):
             TestWorker()
 
     def test_get_active_worker_queues(self) -> None:

@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import return_success_on_head_request, webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_string, to_wild_value
@@ -42,4 +42,4 @@ def get_subject_and_body(payload: WildValue, action_type: str) -> Optional[Tuple
     if action_type in SUPPORTED_BOARD_ACTIONS:
         return process_board_action(payload, action_type)
 
-    raise UnsupportedWebhookEventType(action_type)
+    raise UnsupportedWebhookEventTypeError(action_type)

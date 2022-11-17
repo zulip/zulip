@@ -21,7 +21,7 @@ class PushBouncerSession(OutgoingSession):
         super().__init__(role="push_bouncer", timeout=30)
 
 
-class PushNotificationBouncerException(Exception):
+class PushNotificationBouncerError(Exception):
     pass
 
 
@@ -87,7 +87,7 @@ def send_to_push_bouncer(
         msg = result_dict["msg"]
         if "code" in result_dict and result_dict["code"] == "INVALID_ZULIP_SERVER":
             # Invalid Zulip server credentials should email this server's admins
-            raise PushNotificationBouncerException(
+            raise PushNotificationBouncerError(
                 _("Push notifications bouncer error: {}").format(msg)
             )
         else:
@@ -99,7 +99,7 @@ def send_to_push_bouncer(
         # Anything else is unexpected and likely suggests a bug in
         # this version of Zulip, so we throw an exception that will
         # email the server admins.
-        raise PushNotificationBouncerException(
+        raise PushNotificationBouncerError(
             f"Push notification bouncer returned unexpected status code {res.status_code}"
         )
 

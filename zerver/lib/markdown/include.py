@@ -7,7 +7,7 @@ from markdown import Extension, Markdown
 from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
 
-from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
+from zerver.lib.exceptions import InvalidMarkdownIncludeStatementError
 from zerver.lib.markdown.priorities import BLOCK_PROCESSOR_PRIORITIES
 
 
@@ -39,7 +39,7 @@ class IncludeBlockProcessor(BlockProcessor):
             with open(os.path.normpath(os.path.join(self.base_path, m[1]))) as f:
                 lines = f.read().splitlines()
         except OSError as e:
-            raise InvalidMarkdownIncludeStatement(m[0].strip()) from e
+            raise InvalidMarkdownIncludeStatementError(m[0].strip()) from e
 
         for prep in self.parser.md.preprocessors:
             lines = prep.run(lines)

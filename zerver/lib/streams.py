@@ -9,8 +9,8 @@ from django.utils.translation import gettext as _
 from zerver.actions.default_streams import get_default_streams_for_realm
 from zerver.lib.exceptions import (
     JsonableError,
-    OrganizationAdministratorRequired,
-    OrganizationOwnerRequired,
+    OrganizationAdministratorRequiredError,
+    OrganizationOwnerRequiredError,
 )
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import (
@@ -318,7 +318,7 @@ def check_stream_access_for_delete_or_update(
     if sub is None and stream.invite_only:
         raise JsonableError(error)
 
-    raise OrganizationAdministratorRequired()
+    raise OrganizationAdministratorRequiredError()
 
 
 def access_stream_for_delete_or_update(
@@ -739,7 +739,7 @@ def list_to_streams(
 
         if message_retention_days_not_none:
             if not user_profile.is_realm_owner:
-                raise OrganizationOwnerRequired()
+                raise OrganizationOwnerRequiredError()
 
             user_profile.realm.ensure_not_on_limited_plan()
 

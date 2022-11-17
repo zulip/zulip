@@ -628,9 +628,9 @@ Many third-party services have dozens of different event types. In
 some cases, we may choose to explicitly ignore specific events. In
 other cases, there may be events that are new or events that we don't
 know about. In such cases, we recommend raising
-`UnsupportedWebhookEventType` (found in `zerver/lib/exceptions.py`),
+`UnsupportedWebhookEventTypeError` (found in `zerver/lib/exceptions.py`),
 with a string describing the unsupported event type, like so:
 
 ```
-raise UnsupportedWebhookEventType(event_type)
+raise UnsupportedWebhookEventTypeError(event_type)
 ```

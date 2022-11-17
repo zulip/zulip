@@ -4,7 +4,7 @@ from typing import Optional
 
 try:
     from tools.lib.template_parser import (
-        TemplateParserException,
+        TemplateParserError,
         is_django_block_tag,
         tokenize,
         validate,
@@ -21,7 +21,7 @@ class ParserTest(unittest.TestCase):
         fn: Optional[str] = None,
         text: Optional[str] = None,
     ) -> None:
-        with self.assertRaisesRegex(TemplateParserException, error):
+        with self.assertRaisesRegex(TemplateParserError, error):
             validate(fn=fn, text=text)
 
     def test_is_django_block_tag(self) -> None:

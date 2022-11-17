@@ -2,7 +2,7 @@ import re
 from collections import defaultdict
 from typing import Dict, List
 
-from .template_parser import FormattedException, Token, tokenize
+from .template_parser import FormattedError, Token, tokenize
 
 
 class TagInfo:
@@ -83,7 +83,7 @@ def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
 
         try:
             list_tags = tokenize(text)
-        except FormattedException as e:
+        except FormattedError as e:
             raise Exception(
                 f"""
                 fn: {fn}

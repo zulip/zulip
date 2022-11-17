@@ -15,7 +15,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.decorator import require_member_or_admin, require_realm_admin
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
@@ -34,7 +34,7 @@ def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
         invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]
         and not user_profile.is_realm_owner
     ):
-        raise OrganizationOwnerRequired()
+        raise OrganizationOwnerRequiredError()
 
 
 @require_member_or_admin
