@@ -10,7 +10,11 @@ from django.utils.translation import gettext as _
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.create_user import create_historical_user_messages
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import access_message, format_unread_message_details, get_raw_unread_data
+from zerver.lib.message import (
+    bulk_access_messages,
+    format_unread_message_details,
+    get_raw_unread_data,
+)
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
@@ -305,10 +309,17 @@ def do_update_message_flags(
             #
             # See create_historical_user_messages for a more detailed
             # explanation.
-            historical_message_ids = list(set(messages) - um_message_ids)
-
-            for message_id in historical_message_ids:
-                access_message(user_profile, message_id)
+            historical_message_ids = set(messages) - um_message_ids
+            historical_messages = bulk_access_messages(
+                user_profile,
+                list(
+                    Message.objects.filter(id__in=historical_message_ids).prefetch_related(
+                        "recipient"
+                    )
+                ),
+            )
+            if len(historical_messages) != len(historical_message_ids):
+                raise JsonableError(_("Invalid message(s)"))
 
             create_historical_user_messages(
                 user_id=user_profile.id, message_ids=historical_message_ids
