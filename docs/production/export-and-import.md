@@ -192,8 +192,6 @@ data includes:
   filenames are computed using a hash of `avatar_salt` and user's
   email), etc.
 
-[export-import]: export-and-import.md
-
 ### Restore from manual backups
 
 To restore from a manual backup, the process is basically the reverse of the above:
