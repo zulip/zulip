@@ -19,7 +19,7 @@ const settings_config = zrequire("settings_config");
 
 const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 mock_esm("../../static/js/spectators", {
-    login_to_access: () => {},
+    login_to_access() {},
 });
 
 function empty_narrow_html(title, html, search_data) {

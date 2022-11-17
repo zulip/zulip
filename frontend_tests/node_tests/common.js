@@ -9,7 +9,7 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 
 mock_esm("tippy.js", {
-    default: (arg) => {
+    default(arg) {
         arg._tippy = {setContent: noop};
         return arg._tippy;
     },
@@ -158,8 +158,8 @@ run_test("show password", () => {
     }
 
     const ev = {
-        preventDefault: () => {},
-        stopPropagation: () => {},
+        preventDefault() {},
+        stopPropagation() {},
     };
 
     set_attribute("password");
