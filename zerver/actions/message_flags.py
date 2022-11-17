@@ -264,10 +264,11 @@ def do_update_message_flags(
         raise JsonableError(_("Flag not editable: '{}'").format(flag))
     if operation not in ("add", "remove"):
         raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
+    is_adding = operation == "add"
     flagattr = getattr(UserMessage.flags, flag)
 
     with transaction.atomic(savepoint=False):
-        if flag == "read" and operation == "remove":
+        if flag == "read" and not is_adding:
             # We have an invariant that all stream messages marked as
             # unread must be in streams the user is subscribed to.
             #
@@ -294,7 +295,7 @@ def do_update_message_flags(
         )
 
         um_message_ids = {um.message_id for um in query}
-        if flag == "read" and operation == "add":
+        if flag == "read" and is_adding:
             # When marking messages as read, creating "historical"
             # UserMessage rows would be a waste of storage, because
             # `flags.read | flags.historical` is exactly the flags we
@@ -325,9 +326,9 @@ def do_update_message_flags(
                 user_id=user_profile.id, message_ids=historical_message_ids
             )
 
-        if operation == "add":
+        if is_adding:
             count = query.update(flags=F("flags").bitor(flagattr))
-        elif operation == "remove":
+        else:
             count = query.update(flags=F("flags").bitand(~flagattr))
 
     event = {
@@ -339,7 +340,7 @@ def do_update_message_flags(
         "all": False,
     }
 
-    if flag == "read" and operation == "remove":
+    if flag == "read" and not is_adding:
         # When removing the read flag (i.e. marking messages as
         # unread), extend the event with an additional object with
         # details on the messages required to update the client's
@@ -349,7 +350,7 @@ def do_update_message_flags(
 
     send_event(user_profile.realm, event, [user_profile.id])
 
-    if flag == "read" and operation == "add":
+    if flag == "read" and is_adding:
         event_time = timezone_now()
         do_clear_mobile_push_notifications_for_ids([user_profile.id], messages)
 
