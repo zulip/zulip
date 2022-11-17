@@ -50,7 +50,10 @@ export function mark_all_as_read(args = {}) {
                 // single API request, then show a loading indicator.
                 ui_report.loading(
                     $t_html(
-                        {defaultMessage: "Working… {N} messages marked as read so far."},
+                        {
+                            defaultMessage:
+                                "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}",
+                        },
                         {N: messages_read_till_now},
                     ),
                     $("#request-progress-status-banner"),
@@ -73,7 +76,10 @@ export function mark_all_as_read(args = {}) {
                     // Only show the success message if a progress banner was displayed.
                     ui_report.loading(
                         $t_html(
-                            {defaultMessage: "Done! {N} messages marked as read."},
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}",
+                            },
                             {N: messages_read_till_now},
                         ),
                         $("#request-progress-status-banner"),
@@ -150,7 +156,8 @@ export function mark_as_unread_from_here(
                 ui_report.loading(
                     $t_html(
                         {
-                            defaultMessage: "Working… {N} messages marked as unread so far.",
+                            defaultMessage:
+                                "{N, plural, one {Working… {N} message marked as unread so far.} other {Working… {N} messages marked as unread so far.}}",
                         },
                         {N: messages_marked_unread_till_now},
                     ),
@@ -180,9 +187,9 @@ export function mark_as_unread_from_here(
                     $t_html(
                         {
                             defaultMessage:
-                                "Done! {messages_marked_unread_till_now} messages marked as unread.",
+                                "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}",
                         },
-                        {messages_marked_unread_till_now},
+                        {N: messages_marked_unread_till_now},
                     ),
                     $("#request-progress-status-banner"),
                     true,
