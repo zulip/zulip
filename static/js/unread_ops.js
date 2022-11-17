@@ -28,13 +28,16 @@ export function mark_all_as_read(args = {}) {
         // which would result in muted unreads older than the first
         // unread not being processed.
         anchor: "oldest",
-        include_anchor: true,
         messages_read_till_now: 0,
         ...args,
     };
     const request = {
         anchor: args.anchor,
-        include_anchor: args.include_anchor,
+        // anchor="oldest" is an anchor ID lower than any valid
+        // message ID; and follow-up requests will have already
+        // processed the anchor ID, so we just want this to be
+        // unconditionally false.
+        include_anchor: false,
         num_before: 0,
         num_after: NUM_OF_MESSAGES_UPDATED_PER_BATCH,
         op: "add",
@@ -71,7 +74,6 @@ export function mark_all_as_read(args = {}) {
                 }
 
                 mark_all_as_read({
-                    include_anchor: false,
                     anchor: data.last_processed_id,
                     messages_read_till_now,
                 });
