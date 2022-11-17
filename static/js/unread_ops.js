@@ -23,7 +23,11 @@ let loading_indicator_displayed = false;
 
 export function mark_all_as_read(args = {}) {
     args = {
-        anchor: "first_unread",
+        // We use an anchor of "oldest", not "first_unread", because
+        // "first_unread" will be the oldest non-muted unread message,
+        // which would result in muted unreads older than the first
+        // unread not being processed.
+        anchor: "oldest",
         include_anchor: true,
         messages_read_till_now: 0,
         ...args,
