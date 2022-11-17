@@ -3,7 +3,7 @@ from typing import Tuple
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_string, to_wild_value
@@ -63,6 +63,6 @@ def get_template(request: HttpRequest, payload: WildValue) -> Tuple[str, str]:
     elif event in ALL_EVENT_TYPES:
         message_template += "is now {state}.".format(state=payload["state"].tame(check_string))
     else:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     return message_template, event

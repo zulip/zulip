@@ -17,7 +17,7 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     RealmCreationKey,
     create_confirmation_link,
     get_object_from_key,
@@ -42,12 +42,12 @@ from zerver.forms import (
     RegistrationForm,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
+from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.url_encoding import append_url_query_string
@@ -79,8 +79,8 @@ from zerver.views.auth import (
 )
 from zproject.backends import (
     ExternalAuthResult,
+    NoMatchingLDAPUserError,
     ZulipLDAPAuthBackend,
-    ZulipLDAPExceptionNoMatchingLDAPUser,
     email_auth_enabled,
     email_belongs_to_ldap,
     get_external_method_dicts,
@@ -114,7 +114,7 @@ def get_prereg_key_and_redirect(
     """
     try:
         check_prereg_key(request, confirmation_key)
-    except ConfirmationKeyException as e:
+    except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
     return render(
@@ -127,7 +127,7 @@ def get_prereg_key_and_redirect(
 def check_prereg_key(request: HttpRequest, confirmation_key: str) -> PreregistrationUser:
     """
     Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
-    and raising an appropriate ConfirmationKeyException otherwise.
+    and raising an appropriate ConfirmationKeyError otherwise.
     """
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
@@ -159,7 +159,7 @@ def accounts_register(
 ) -> HttpResponse:
     try:
         prereg_user = check_prereg_key(request, key)
-    except ConfirmationKeyException as e:
+    except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
     email = prereg_user.email
@@ -182,7 +182,7 @@ def accounts_register(
         assert prereg_user.realm is not None
         if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
-                request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
+                request, ConfirmationKeyError(ConfirmationKeyError.DOES_NOT_EXIST)
             )
         realm = prereg_user.realm
         try:
@@ -239,7 +239,7 @@ def accounts_register(
                 if isinstance(backend, LDAPBackend):
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
-                    except ZulipLDAPExceptionNoMatchingLDAPUser:
+                    except NoMatchingLDAPUserError:
                         logging.warning("New account email %s could not be found in LDAP", email)
                         break
 
@@ -607,7 +607,7 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
 def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> HttpResponse:
     try:
         key_record = validate_key(creation_key)
-    except RealmCreationKey.Invalid:
+    except RealmCreationKey.InvalidError:
         return render(
             request,
             "zerver/realm_creation_link_invalid.html",
@@ -626,7 +626,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-            except RateLimited as e:
+            except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
                 return render(
                     request,
@@ -649,7 +649,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
 
             try:
                 send_confirm_registration_email(email, activation_url, request=request)
-            except EmailNotDeliveredException:
+            except EmailNotDeliveredError:
                 logging.error("Error in create_realm")
                 return HttpResponseRedirect("/config-error/smtp")
 
@@ -701,7 +701,7 @@ def accounts_home(
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-            except RateLimited as e:
+            except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
                 return render(
                     request,
@@ -727,7 +727,7 @@ def accounts_home(
             )
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
-            except EmailNotDeliveredException:
+            except EmailNotDeliveredError:
                 logging.error("Error in accounts_home")
                 return HttpResponseRedirect("/config-error/smtp")
 
@@ -757,7 +757,7 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
         if realm != multiuse_object.realm:
             return render(request, "confirmation/link_does_not_exist.html", status=404)
         # Required for OAuth 2
-    except ConfirmationKeyException as exception:
+    except ConfirmationKeyError as exception:
         if realm is None or realm.invite_required:
             return render_confirmation_key_error(request, exception)
     return accounts_home(
@@ -779,7 +779,7 @@ def find_account(
             for i in range(len(emails)):
                 try:
                     rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-                except RateLimited as e:
+                except RateLimitedError as e:
                     assert e.secs_to_freedom is not None
                     return render(
                         request,

@@ -1,6 +1,6 @@
 from django.template.loader import get_template
 
-from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
+from zerver.lib.exceptions import InvalidMarkdownIncludeStatementError
 from zerver.lib.test_classes import ZulipTestCase
 
 
@@ -123,7 +123,7 @@ footer
         }
 
         with self.assertRaisesRegex(
-            InvalidMarkdownIncludeStatement, "Invalid Markdown include statement"
+            InvalidMarkdownIncludeStatementError, "Invalid Markdown include statement"
         ):
             template.render(context)
 

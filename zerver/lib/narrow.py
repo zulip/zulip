@@ -186,7 +186,7 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 
 
-class BadNarrowOperator(JsonableError):
+class BadNarrowOperatorError(JsonableError):
     code = ErrorCode.BAD_NARROW
     data_fields = ["desc"]
 
@@ -284,7 +284,7 @@ class NarrowBuilder:
         method_name = "by_" + operator.replace("-", "_")
         method = getattr(self, method_name, None)
         if method is None:
-            raise BadNarrowOperator("unknown operator " + operator)
+            raise BadNarrowOperatorError("unknown operator " + operator)
 
         if negated:
             maybe_negate = not_
@@ -295,7 +295,7 @@ class NarrowBuilder:
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand not in ["attachment", "image", "link"]:
-            raise BadNarrowOperator("unknown 'has' operand " + operand)
+            raise BadNarrowOperatorError("unknown 'has' operand " + operand)
         col_name = "has_" + operand
         cond = column(col_name, Boolean)
         return query.where(maybe_negate(cond))
@@ -311,7 +311,7 @@ class NarrowBuilder:
         elif operand == "all":
             return query
 
-        raise BadNarrowOperator("unknown 'in' operand " + operand)
+        raise BadNarrowOperatorError("unknown 'in' operand " + operand)
 
     def by_is(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         # This operator class does not support is_web_public_query.
@@ -338,7 +338,7 @@ class NarrowBuilder:
         elif operand == "resolved":
             cond = get_resolved_topic_condition_sa()
             return query.where(maybe_negate(cond))
-        raise BadNarrowOperator("unknown 'is' operand " + operand)
+        raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
@@ -371,9 +371,9 @@ class NarrowBuilder:
             stream = get_stream_by_narrow_operand_access_unchecked(operand, self.realm)
 
             if self.is_web_public_query and not stream.is_web_public:
-                raise BadNarrowOperator("unknown web-public stream " + str(operand))
+                raise BadNarrowOperatorError("unknown web-public stream " + str(operand))
         except Stream.DoesNotExist:
-            raise BadNarrowOperator("unknown stream " + str(operand))
+            raise BadNarrowOperatorError("unknown stream " + str(operand))
 
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to "social" to also show messages to
@@ -412,7 +412,7 @@ class NarrowBuilder:
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
         else:
-            raise BadNarrowOperator("unknown streams operand " + operand)
+            raise BadNarrowOperatorError("unknown streams operand " + operand)
 
         recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
         cond = column("recipient_id", Integer).in_(recipient_ids)
@@ -472,7 +472,7 @@ class NarrowBuilder:
             else:
                 sender = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
-            raise BadNarrowOperator("unknown user " + str(operand))
+            raise BadNarrowOperatorError("unknown user " + str(operand))
 
         cond = column("sender_id", Integer) == literal(sender.id)
         return query.where(maybe_negate(cond))
@@ -484,7 +484,7 @@ class NarrowBuilder:
         self, query: Select, operand: Union[int, str], maybe_negate: ConditionTransform
     ) -> Select:
         if not str(operand).isdigit():
-            raise BadNarrowOperator("Invalid message ID")
+            raise BadNarrowOperatorError("Invalid message ID")
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
@@ -520,7 +520,7 @@ class NarrowBuilder:
                 allow_deactivated=True,
             )
         except (JsonableError, ValidationError):
-            raise BadNarrowOperator("unknown user in " + str(operand))
+            raise BadNarrowOperatorError("unknown user in " + str(operand))
 
         # Group DM
         if recipient.type == Recipient.HUDDLE:
@@ -576,7 +576,7 @@ class NarrowBuilder:
             else:
                 narrow_profile = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
-            raise BadNarrowOperator("unknown user " + str(operand))
+            raise BadNarrowOperatorError("unknown user " + str(operand))
 
         self_recipient_ids = [
             recipient_tuple["recipient_id"]

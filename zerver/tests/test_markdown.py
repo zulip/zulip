@@ -21,7 +21,7 @@ from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
-from zerver.lib.exceptions import JsonableError, MarkdownRenderingException
+from zerver.lib.exceptions import JsonableError, MarkdownRenderingError
 from zerver.lib.markdown import (
     MarkdownListPreprocessor,
     MessageRenderingResult,
@@ -2900,7 +2900,7 @@ class MarkdownApiTests(ZulipTestCase):
 class MarkdownErrorTests(ZulipTestCase):
     def test_markdown_error_handling(self) -> None:
         with self.simulated_markdown_failure():
-            with self.assertRaises(MarkdownRenderingException):
+            with self.assertRaises(MarkdownRenderingError):
                 markdown_convert_wrapper("")
 
     def test_send_message_errors(self) -> None:
@@ -2921,7 +2921,7 @@ class MarkdownErrorTests(ZulipTestCase):
         with mock.patch("zerver.lib.markdown.timeout", return_value=msg), mock.patch(
             "zerver.lib.markdown.markdown_logger"
         ):
-            with self.assertRaises(MarkdownRenderingException):
+            with self.assertRaises(MarkdownRenderingError):
                 markdown_convert_wrapper(msg)
 
     def test_curl_code_block_validation(self) -> None:
@@ -2936,7 +2936,7 @@ class MarkdownErrorTests(ZulipTestCase):
             "```",
         ]
 
-        with self.assertRaises(MarkdownRenderingException):
+        with self.assertRaises(MarkdownRenderingError):
             processor.run(markdown_input)
 
     def test_curl_code_block_without_validation(self) -> None:

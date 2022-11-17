@@ -66,7 +66,7 @@ from zerver.lib.streams import (
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.test_console_output import (
     ExtraConsoleOutputFinder,
-    ExtraConsoleOutputInTestException,
+    ExtraConsoleOutputInTestError,
     tee_stderr_and_find_extra_console_output,
     tee_stdout_and_find_extra_console_output,
 )
@@ -192,7 +192,7 @@ Output:
 {extra_output_finder.full_extra_output.decode(errors="replace")}
 --------------------------------------------
 """
-            raise ExtraConsoleOutputInTestException(exception_message)
+            raise ExtraConsoleOutputInTestError(exception_message)
         return test_result
 
     """

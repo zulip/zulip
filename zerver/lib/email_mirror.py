@@ -20,7 +20,7 @@ from zerver.lib.email_mirror_helpers import (
     get_email_gateway_message_string_from_address,
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
@@ -534,4 +534,4 @@ def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
     ratelimited, secs_to_freedom = RateLimitedRealmMirror(recipient_realm).rate_limit()
 
     if ratelimited:
-        raise RateLimited(secs_to_freedom)
+        raise RateLimitedError(secs_to_freedom)

@@ -4,7 +4,7 @@ from typing import Callable, Dict, Iterable, Iterator, List, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
@@ -695,7 +695,7 @@ def send_stream_messages_for_actions(
     body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
     topic_func = get_topic_function_based_on_type(payload, action)
     if body_func is None or topic_func is None:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     topic = topic_func(payload, action)
     body = body_func(payload, action)
