@@ -111,6 +111,7 @@ log][commit-log] for an up-to-date list of raw changes.
   view.
 - Added an automated notification to the "stream events" topic when
   changing a stream's privacy settings.
+- Added support for conveniently overriding the default rate-limiting rules.
 - Improved the search typeahead to show profile pictures for users.
 - Improved typeahead matching algorithm for stream/user/emoji names
   containing multiple spaces and other corner cases.
@@ -128,26 +129,35 @@ log][commit-log] for an up-to-date list of raw changes.
   message or personal mention. These users are now automatically soft
   reactivated at the time of the notification, for a smoother
   experience when they log in.
+- Improved the Tornado server-to-client push system's sharding system
+  to support realm regular expressions and experimental support for
+  splitting a single realm across multiple push server processes.
 - Improved user deactivation modal to provide details about bots and
   invitations that will be disabled.
 - Improve matching algorithm for left sidebar stream filtering.
-- Improved several integrations, including Harbor, NewRelic, and the
-  Slack compatible incoming webhook.
+- Improved several integrations, including CircleCI, Grafana, Harbor,
+  NewRelic, and the Slack compatible incoming webhook. Git webhooks
+  now use a consistent algorithm for choosing shortened commit IDs to
+  display.
 - Improved mention typeahead and rendering for cases where mention
   syntax appears next to symbols.
 - Improved browser window titles used by the app to be clearer.
 - Improved the language in message notification emails explaining
   why the notification was sent.
+- Improved interface for accessing stream email addresses.
 - Reordered the organization settings panels to be more intuitive.
 - Increased timeout for processing slow requests from 20s to 60s.
+- Removed the "user list in left sidebar in narrow windows" setting.
 - Removed limits that prevented replying to Zulip email notifications multiple
   times or, several days after receiving them.
 - Fixed numerous bugs and performance issues with the Rocket.Chat data
-  import tool.
+  import tool. Improved importing emoji from Slack.
 - Fixed several bugs where drafts could fail to be saved.
 - Fixed a bug where copy-paste would incorrectly copy an entire message.
 - Fixed the app's main loading page to not suggest reloading until
   several seconds have passed.
+- Fixed multiple bugs that could cause the web app to flood the server
+  with requests after the computer wakes up from suspend.
 - Fixed a bug where public streams imported from other chat systems
   could incorrectly be configured as public streams without shared
   history, a configuration not otherwise possible in Zulip.
@@ -160,6 +170,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fixed many CSS corner cases issues involving content overflowing containers.
 - Fixed entering an emoji in the mobile web app using an emoji
   keyboard.
+- Fixed Enter being processed incorrectly when inputting a character
+  into Zulip phonetically via an IME composing session.
 - Fixed several subtle bugs with confirmation links.
 - Fixed a subtle performance issue for full-text search for uncommon words.
 - Fixed the estimator for the size of public data exports.
@@ -167,6 +179,8 @@ log][commit-log] for an up-to-date list of raw changes.
   environment and for joining the project as a new contributor.
 - Extracted several JavaScript modules to share code with the mobile
   app.
+- Replaced several Python linters with Ruff, an incredibly fast
+  Python linter written in Rust.
 - Upgraded many third-party dependencies including Django 4.1, and
   substantially modernized the Python codebase.
 
