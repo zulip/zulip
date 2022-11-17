@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-17 06:47+0000\n"
+"POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Cosmic Sound <cosmin@uhl-services.ch>, 2022\n"
 "Language-Team: Romanian (http://www.transifex.com/zulip/zulip/language/ro/)\n"
@@ -895,7 +895,7 @@ msgstr "Reîncerc în curând..."
 msgid "Try now."
 msgstr "Încearcă acum."
 
-#: templates/zerver/app/index.html:188 templates/zerver/app/index.html:190
+#: templates/zerver/app/index.html:202 templates/zerver/app/index.html:204
 msgid "Messages"
 msgstr "Mesaje"
 
@@ -4387,20 +4387,20 @@ msgstr "un sistem de operare necunoscut"
 msgid "An unknown browser"
 msgstr "Un browser necunoscut"
 
-#: zerver/tornado/event_queue.py:656
+#: zerver/tornado/event_queue.py:674
 msgid "Missing 'queue_id' argument"
 msgstr "Lipsește argumentul 'queue_id' "
 
-#: zerver/tornado/event_queue.py:659
+#: zerver/tornado/event_queue.py:677
 msgid "Missing 'last_event_id' argument"
 msgstr "Lipsește argumentul 'last_event_id'"
 
-#: zerver/tornado/event_queue.py:666
+#: zerver/tornado/event_queue.py:684
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr "Un eveniment mai nou decât  {event_id} a fost șters!"
 
-#: zerver/tornado/event_queue.py:676
+#: zerver/tornado/event_queue.py:694
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr "Evenimentul {event_id} nu a fost în această listă"

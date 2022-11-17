@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-17 06:47+0000\n"
+"POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Taiki Choda, 2022\n"
 "Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
@@ -900,7 +900,7 @@ msgstr "すぐに再試行します…"
 msgid "Try now."
 msgstr "いますぐ"
 
-#: templates/zerver/app/index.html:188 templates/zerver/app/index.html:190
+#: templates/zerver/app/index.html:202 templates/zerver/app/index.html:204
 msgid "Messages"
 msgstr "メッセージ"
 
@@ -4392,20 +4392,20 @@ msgstr "不明なOS"
 msgid "An unknown browser"
 msgstr "不明なブラウザ"
 
-#: zerver/tornado/event_queue.py:656
+#: zerver/tornado/event_queue.py:674
 msgid "Missing 'queue_id' argument"
 msgstr "'queue_id' 引数がありません"
 
-#: zerver/tornado/event_queue.py:659
+#: zerver/tornado/event_queue.py:677
 msgid "Missing 'last_event_id' argument"
 msgstr "'last_event_id' 引数がありません"
 
-#: zerver/tornado/event_queue.py:666
+#: zerver/tornado/event_queue.py:684
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr "{event_id}より新しいイベントはすでにpruneされています。"
 
-#: zerver/tornado/event_queue.py:676
+#: zerver/tornado/event_queue.py:694
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr "イベント {event_id}はこのキューに存在しません"
