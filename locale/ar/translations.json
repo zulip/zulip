@@ -162,8 +162,8 @@
   "Are you sure you want to unstar all starred messages?  This action cannot be undone.": "هل أنت متأكد أنك تريد إلغاء النجمة عن جميع الرسائل المميزة بنجمة؟ لا يمكن التراجع عن هذا الإجراء بعد القيام به.",
   "Ask me later": "اسالني لاحقا",
   "At the office": "في المكتب",
+  "Audible": "",
   "Audible desktop notifications": "إشعارات سطح المكتب المسموعة",
-  "Audio": "صوتي",
   "August": "آب",
   "Authentication methods": "طرق المصادقة",
   "Author": "مؤلف",
@@ -189,6 +189,7 @@
   "Cancel": "إلغاء",
   "Cancel compose": "إلغاء التأليف",
   "Cancel compose and save draft": "إلغاء التأليف وحفظ المسودة",
+  "Card": "",
   "Center the view around message ID <z-value></z-value>.": "قم بتوسيط العرض حول الـ ID الخاص بالرسالة<z-value></z-value> .",
   "Change": "تغيير",
   "Change color": "غير اللون",
@@ -242,6 +243,7 @@
   "Convert emoticons before sending (<code>:)</code> becomes \ud83d\ude03)": "تحويل الرموز قبل الإرسال (<code>:)</code> تصبح 😃)",
   "Cookie Bot": "بوت ملفات تعريف الارتباط",
   "Copied!": "نسخ!",
+  "Copy address": "",
   "Copy and close": "نسخ وإغلاق",
   "Copy code": "نسخ الشِفرة",
   "Copy link": "نسخ الرابط",
@@ -333,9 +335,9 @@
   "Discard": "تجاهل",
   "Dismiss for a week": "طرد لمدة أسبوع",
   "Display availability to other users": "إظهار التوفر للمستخدمين الآخرين",
-  "Display in profile summary": "إظهار في ملخص الملف الشخصي",
   "Display my availability to other users": "إظهار توفري للمستخدمين الآخرين",
   "Display names of reacting users when few users have reacted to a message": "إظهار اسماء المستخدمين المتفاعلين عندما يتفاعل عدد قليل من المستخدمين للرسالة",
+  "Display on user card": "",
   "Display settings": "اعدادات العرض",
   "Do you want to add everyone?": "هل تريد إضافة الجميع؟",
   "Domain": "مجال",
@@ -379,6 +381,7 @@
   "Email address": "عنوان البريد الإلكتروني",
   "Email address changes are disabled in this organization.": "تم تعطيل التغييرات على عنوان البريد الإلكتروني في هذه المنظمة.",
   "Email copied": "تم نسخ البريد الإلكتروني",
+  "Email footers (e.g., signature)": "",
   "Email message notifications": "إشعارات رسائل البريد الإلكتروني",
   "Email notifications": "إشعارات البريد الالكتروني",
   "Emails (one on each line or comma-separated)": "رسائل البريد الإلكتروني (واحدة في كل سطر أو مفصولة بفواصل)",
@@ -479,8 +482,10 @@
   "GIPHY attribution": "إسناد GIPHY",
   "GIPHY integration": "دمج GIPHY",
   "General": "عام",
+  "Generate email address": "",
   "Generate invite link": "إنشاء رابط الدعوة",
   "Generate new API key": "إنشاء مفتاح API جديد",
+  "Generate stream email address": "",
   "Generating link...": "جارٍ إنشاء الارتباط...",
   "Generic": "نوعي",
   "Get API key": "الحصول على مفتاح API",
@@ -755,7 +760,7 @@
   "Once you leave this stream, you will not be able to rejoin.": "بمجرد مغادرة هذه الغرفة، لن تتمكن من الانضمام مرة أخرى.",
   "One or more email addresses...": "عنوان بريد إلكتروني واحد أو أكثر ...",
   "One or more of these users do not exist!": "واحد أو أكثر من هؤلاء المستخدمين غير موجود!",
-  "Only 2 custom profile fields can be displayed in the profile summary.": "يمكن إظهار فقط خانتين مخصصتين من الملف الشخصي في ملخص الملف الشخصي. ",
+  "Only 2 custom profile fields can be displayed on the user card.": "",
   "Only full members belonging to the group, organization administrators and moderators can modify a group.": "يمكن فقط للأعضاء الكاملين الذين ينتمون إلى المجموعة ومسؤولي المنظمة والوسطاء التعديل على المجموعة.",
   "Only group members can add users to a group.": "يمكن فقط لأعضاء المجموعة إضافة مستخدمين للمجموعة.",
   "Only group members, organization administrators and moderators can modify a group.": "يمكن فقط لأعضاء المجموعة ومسؤولي المنظمة والوسطاء التعديل المجموعة.",
@@ -859,6 +864,7 @@
   "Question": "سؤال",
   "Quote and reply or forward": "اقتبس ورد أو أعد التوجيه",
   "Quote and reply to message": "اقتبس ورد على الرسالة",
+  "Quoted original email (in replies)": "",
   "React to selected message with": "تفاعل مع الرسالة المحددة مع",
   "Reactivate": "اعادة تنشيط",
   "Reactivate bot": "إعادة تنشيط البوت",
@@ -958,14 +964,13 @@
   "Show images in thread": "إظهار الصور في الموضوع",
   "Show keyboard shortcuts": "إظهار اختصارات لوحة المفاتيح",
   "Show less": "عرض أقل",
-  "Show message sender's profile": "إظهار ملف تعريف مرسل الرسالة",
+  "Show message sender's user card": "",
   "Show more": "أظهر المزيد",
   "Show password": "عرض كلمة المرور",
   "Show previews of linked websites": "عرض معاينات من المواقع المرتبطة",
   "Show previews of uploaded and linked images": "إظهار معاينات الصور التي تم تحميلها وربطها",
   "Show starred message count": "إظهار عدد الرسائل المميزة بنجمة",
   "Show status text": "إظهار نص الحالة",
-  "Show user list on left sidebar in narrow windows": "إظهار قائمة المستخدمين على الشريط الجانبي الأيسر في النوافذ الضيقة",
   "Show/change your API key": "إظهار / تغيير مفتاح API الخاص بك",
   "Sign up": "سجل",
   "Silent mentions do not trigger notifications.": "لا تؤدي الإشارات المكتومة إلى إرسال الإشعارات.",
@@ -988,6 +993,7 @@
   "Stream created recently": "تم إنشاء الغرفة مؤخرًا",
   "Stream creation": "إنشاء غرفة",
   "Stream description": "وصف الغرفة",
+  "Stream email address:": "",
   "Stream list": "قائمة الغرف",
   "Stream name": "اسم الغرفة",
   "Stream permissions": "أذونات الغرفة",
@@ -1005,7 +1011,6 @@
   "Subscriber count": "عدد المشتركين",
   "Subscribers": "مشتركين",
   "Successfully subscribed users:": "المستخدمون المشتركون بنجاح:",
-  "Summary": "الملخص",
   "Sunday": "الأحد",
   "Support Zulip": "دعم \"زوليب\"",
   "Switch between tabs": "التبديل بين علامات التبويب",
@@ -1021,6 +1026,7 @@
   "The group description cannot contain newline characters.": "لا يمكن أن يحتوي وصف المجموعة على رموز سطر جديد.",
   "The recipient {recipient} is not valid": "المستلم {recipient} غير صالح",
   "The recipients {recipients} are not valid": "المستلمون {recipients} غير صالحين",
+  "The sender's email address": "",
   "The stream description cannot contain newline characters.": "لا يمكن أن يحتوي وصف الغرفة على سطر جديد.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "سيتم مسح كلمة المرور الخاصة بهم من أنظمتنا، وسيتم تعطيل أي روبوتات طوروها.",
   "Theme": "سمة",
@@ -1118,6 +1124,7 @@
   "Uploading\u2026": "جارٍ الرفع…",
   "Usage statistics": "إحصائيات الاستخدام",
   "Use full width on wide screens": "استخدم العرض الكامل على الشاشات الواسعة",
+  "Use html encoding (not recommended)": "",
   "Use organization level settings {org_level_message_retention_setting}": "استخدم إعدادات مستوى المنظمة {org_level_message_retention_setting}",
   "Use stream settings to unsubscribe from private streams.": "استخدم إعدادات الغرفة لإلغاء الاشتراك في الغرف الخاصة.",
   "User": "المستعمل",
@@ -1147,7 +1154,6 @@
   "View drafts": "عرض المسودات",
   "View edit history": "عرض سجل التعديل",
   "View file": "استعراض الملف",
-  "View full profile": "عرض الملف الشخصي كامل",
   "View in playground": "عرض في مكان تجربة الشِفرة",
   "View in {name}": "عرض في {name}",
   "View in {playground_name}": "عرض في {playground_name}",
@@ -1155,11 +1161,12 @@
   "View messages sent": "عرض الرسائل المرسلة",
   "View messages with yourself": "",
   "View private messages": "عرض الرسائل الخاصة",
+  "View profile": "",
   "View read receipts": "عرض مؤشر القراءة",
   "View recent conversations": "",
   "View stream": "عرض الغرفة",
   "View stream messages": "عرض رسائل الغرفة",
-  "View user profile": "عرض ملف تعريف المستخدم",
+  "View user card": "",
   "View your profile": "عرض ملف التعريف الخاص بك",
   "Visual": "المرئية",
   "Visual desktop notifications": "إشعارات سطح المكتب المرئية",
@@ -1176,6 +1183,7 @@
   "What pronouns should people use to refer to you?": "ما هي الضمائر التي يجب أن يستخدمها الناس للإشارة إليك؟",
   "When you deactivate <z-user></z-user>, they will be immediately logged out.": "عندما تلغي التنشيط <z-user></z-user>، سيتم تسجيل خروجهم على الفور.",
   "Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.": "ما إذا كانت إشارات أحرف البدل مثل @all يتم التعامل معها على أنها إشارات لغرض الإشعارات.",
+  "Which parts of the email should be included in the Zulip message sent to this stream?": "",
   "Who can access the stream?": "من يمكنه الوصول إلى الغرفة؟",
   "Who can access user email addresses": "من يمكنه الوصول إلى عناوين البريد الإلكتروني للمستخدم",
   "Who can add bots": "من يمكنه إضافة الروبوتات",
@@ -1208,6 +1216,8 @@
   "You and": "انت و",
   "You and {display_reply_to}": "أنت و {display_reply_to}",
   "You and {recipients}": "أنت و {recipients}",
+  "You are not allowed to send group private messages in this organization.": "",
+  "You are not allowed to send private messages in this organization.": "",
   "You are not currently subscribed to this stream.": "أنت غير مشترك حاليا في هذه الغرفة.",
   "You are not subscribed to stream {stream_name}": "أنت غير مشترك في الغرفة {stream_name}",
   "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.": "أنت ترسل رسالة إلى موضوع تم حله. يمكنك الإرسال والموضوع كما هو أو إلغاء حل الموضوع أولاً.",
@@ -1217,6 +1227,7 @@
   "You can combine search operators as needed.": "",
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "يمكنك الوصول الكامل إلى هذا المجتمع والمشاركة في المحادثات من خلال إنشاء حساب Zulip في هذه المنظمة.",
   "You can reactivate deactivated users from <z-link>organization settings</z-link>.": "يمكنك إعادة تنشيط المستخدمين المعطلين من <z-link>إعدادات المنظمة</z-link>.",
+  "You can use email to send messages to Zulip streams.": "",
   "You cannot create a stream with no subscribers!": "لا يمكنك إنشاء غرفة بدون مشتركين!",
   "You cannot create a user_group with no members!": "لا يمكنك إنشاء مجموعة مستخدمين بدون اعضاء!",
   "You cannot send messages to deactivated users.": "لا يمكنك إرسال رسائل للمستخدمين المعطلين.",
@@ -1225,10 +1236,10 @@
   "You get": "لقد حصلت",
   "You have muted <z-stream-topic></z-stream-topic>.": "لقد كتمت <z-stream-topic></z-stream-topic>.",
   "You have no active bots.": "ليس لديك روبوتات نشطة.",
-  "You have no group private messages with this person yet!": "ليس لديك مجموعة رسائل خاصة مع هذا الشخص حتى الآن!",
+  "You have no group private messages with {person} yet.": "",
   "You have no inactive bots.": "ليس لديك روبوتات غير نشطة.",
-  "You have no private messages with these people yet!": "ليس لديك رسائل خاصة مع هؤلاء الأشخاص حتى الآن!",
-  "You have no private messages with this person yet!": "ليس لديك رسائل خاصة مع هذا الشخص حتى الآن!",
+  "You have no private messages with these users yet.": "",
+  "You have no private messages with {person} yet.": "",
   "You have no private messages yet!": "ليس لديك رسائل خاصة حتى الآن!",
   "You have no unread messages!": "ليس لديك رسائل غير مقروءة!",
   "You have not muted any topics yet.": "لم تقم بكتم أي مواضيع حتى الآن.",
@@ -1237,7 +1248,7 @@
   "You have not uploaded any files.": "لم تقم برفع أي ملفات.",
   "You have nothing to send!": "ليس لديك شيء لإرساله!",
   "You haven't been mentioned yet!": "لم يتم ذكرك بعد!",
-  "You haven't received any messages sent by this user yet!": "لم تتلق أي رسائل أرسلها هذا المستخدم حتى الآن!",
+  "You haven't received any messages sent by {person} yet.": "",
   "You haven't starred anything yet!": "لم تقم بتمييز أي شيء بنجمة بعد!",
   "You must be an organization administrator to create a stream without subscribing.": "يجب أن تكون مسؤول منظمة لإنشاء غرفة بدون اشتراك.",
   "You need to be running Zephyr mirroring in order to send messages!": "تحتاج إلى تشغيل Zephyr mirroring من أجل إرسال الرسائل!",
