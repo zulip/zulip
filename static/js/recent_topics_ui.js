@@ -298,10 +298,17 @@ export function process_messages(messages) {
     // the UX can be bad if user wants to scroll down the list as
     // the UI will be returned to the beginning of the list on every
     // update.
+    let conversation_data_updated = false;
     if (messages.length > 0) {
         for (const msg of messages) {
-            process_message(msg);
+            if (process_message(msg)) {
+                conversation_data_updated = true;
+            }
         }
+    }
+
+    // Only rerender if conversation data actually changed.
+    if (conversation_data_updated) {
         complete_rerender();
     }
 }
