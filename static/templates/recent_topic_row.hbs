@@ -70,8 +70,6 @@
     </td>
     <td class='recent_topic_users'>
         <ul class="recent_topics_participants">
-            {{#if is_private}}
-            {{else}}
             {{#if other_senders_count}}
             <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tooltip-template-id="recent_topics_participant_overflow_tooltip:{{conversation_key}}">
                 <span class="recent_topics_participant_overflow">+{{other_senders_count}}</span>
@@ -89,7 +87,6 @@
                 </li>
                 {{/if}}
             {{/each}}
-            {{/if}}
         </ul>
     </td>
     <td class="recent_topic_timestamp">
