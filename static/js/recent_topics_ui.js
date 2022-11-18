@@ -568,7 +568,14 @@ export function inplace_rerender(topic_key) {
     topics_widget.filter_and_sort();
     const current_topics_list = topics_widget.get_current_list();
     if (is_topic_rendered && filters_should_hide_topic(topic_data)) {
-        const row_is_focused = get_focused_row_message().id === topic_data.last_msg_id;
+        // Since the row needs to be removed from DOM, we need to adjust `row_focus`
+        // if the row being removed is focused and is the last row in the list.
+        // This prevents the row_focus either being reset to the first row or
+        // middle of the visible table rows.
+        // We need to get the current focused row details from DOM since we cannot
+        // rely on `current_topics_list` since it has already been updated and row
+        // doesn't exist inside it.
+        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
         if (row_is_focused && row_focus >= current_topics_list.length) {
             row_focus = current_topics_list.length - 1;
         }
