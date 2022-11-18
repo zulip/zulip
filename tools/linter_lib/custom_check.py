@@ -414,12 +414,6 @@ python_rules = RuleList(
         },
         {
             "pattern": r"\S[\t ]*#[\t ]*type:(?![\t ]*ignore)",
-            "exclude": {
-                "scripts/lib/hash_reqs.py",
-                "scripts/lib/setup_venv.py",
-                "scripts/lib/zulip_tools.py",
-                "tools/lib/provision.py",
-            },
             "description": "Comment-style variable type annotation. Use Python 3.6 style annotations instead.",
             "good_lines": ["a: List[int] = []"],
             "bad_lines": ["a = []  # type: List[int]"],
