@@ -75,8 +75,6 @@ uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
 
-[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
-
 ## S3 bucket policy
 
 The best way to do the S3 integration with Amazon is to create a new
