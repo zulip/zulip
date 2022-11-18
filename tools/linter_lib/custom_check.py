@@ -277,12 +277,6 @@ python_rules = RuleList(
             "bad_lines": ["def foo(self: Any):"],
         },
         {
-            "pattern": "assertEquals[(]",
-            "description": "Use assertEqual, not assertEquals (which is deprecated).",
-            "good_lines": ["assertEqual(1, 2)"],
-            "bad_lines": ["assertEquals(1, 2)"],
-        },
-        {
             "pattern": r"assertEqual[(]len[(][^\n ]*[)],",
             "description": "Use the assert_length helper instead of assertEqual(len(..), ..).",
             "good_lines": ["assert_length(data, 2)"],
