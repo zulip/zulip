@@ -87,10 +87,10 @@ The file uploads bucket should have a policy of:
 ```json
 {
     "Version": "2012-10-17",
-    "Id": "Policy1468991802321",
+    "Id": "Policy1468991802320",
     "Statement": [
         {
-            "Sid": "",
+            "Sid": "Stmt1468991795370",
             "Effect": "Allow",
             "Principal": {
                 "AWS": "ARN_PRINCIPAL_HERE"
@@ -103,7 +103,7 @@ The file uploads bucket should have a policy of:
             "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
         },
         {
-            "Sid": "Stmt1468991795389",
+            "Sid": "Stmt1468991795371",
             "Effect": "Allow",
             "Principal": {
                 "AWS": "ARN_PRINCIPAL_HERE"
@@ -125,7 +125,7 @@ policy should be:
 ```json
 {
     "Version": "2012-10-17",
-    "Id": "Policy1468991802322",
+    "Id": "Policy1468991802321",
     "Statement": [
         {
             "Sid": "Stmt1468991795380",
