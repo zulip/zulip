@@ -29,11 +29,11 @@ export function autosize_textarea($textarea) {
     }
 }
 
-export function smart_insert($textarea, syntax) {
-    function is_space(c) {
-        return c === " " || c === "\t" || c === "\n";
-    }
+function is_space(c) {
+    return c === " " || c === "\t" || c === "\n";
+}
 
+export function smart_insert_inline($textarea, syntax) {
     const pos = $textarea.caret();
     const before_str = $textarea.val().slice(0, pos);
     const after_str = $textarea.val().slice(pos);
@@ -67,11 +67,39 @@ export function smart_insert($textarea, syntax) {
     autosize_textarea($textarea);
 }
 
-export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea")) {
+export function smart_insert_block($textarea, syntax) {
+    function is_newline(c) {
+        return c === "\n" || c === "\r";
+    }
+    const pos = $textarea.caret();
+    const before_str = $textarea.val().slice(0, pos);
+
+    // Replace any number of newlines at the end of the content before
+    // the insert with exactly two newlines.
+    if (pos > 0 && is_newline(before_str.slice(-1))) {
+        $textarea.val(before_str.trimEnd() + "\n\n");
+    }
+
+    // text-field-edit ensures `$textarea` is focused before inserting
+    // the new syntax.
+    insert($textarea[0], syntax);
+
+    autosize_textarea($textarea);
+}
+
+export function insert_syntax_and_focus(
+    syntax,
+    $textarea = $("#compose-textarea"),
+    content_param = "inline",
+) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
-    // wrapper around smart_insert.
-    smart_insert($textarea, syntax);
+    // wrapper around smart_insert_inline & smart_insert_block.
+    if (content_param === "inline") {
+        smart_insert_inline($textarea, syntax);
+    } else if (content_param === "block") {
+        smart_insert_block($textarea, syntax);
+    }
 }
 
 export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {

@@ -108,7 +108,7 @@ run_test("insert_syntax_and_focus", ({override}) => {
     compose_ui.insert_syntax_and_focus(":octopus:");
 });
 
-run_test("smart_insert", ({override}) => {
+run_test("smart_insert_inline", ({override}) => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
     function override_with_expected_syntax(expected_syntax) {
@@ -118,38 +118,60 @@ run_test("smart_insert", ({override}) => {
         });
     }
     override_with_expected_syntax(" :smile: ");
-    compose_ui.smart_insert($textbox, ":smile:");
+    compose_ui.smart_insert_inline($textbox, ":smile:");
 
     override_with_expected_syntax(" :airplane: ");
-    compose_ui.smart_insert($textbox, ":airplane:");
+    compose_ui.smart_insert_inline($textbox, ":airplane:");
 
     $textbox.caret(0);
     override_with_expected_syntax(":octopus: ");
-    compose_ui.smart_insert($textbox, ":octopus:");
+    compose_ui.smart_insert_inline($textbox, ":octopus:");
 
     $textbox.caret($textbox.val().length);
     override_with_expected_syntax(" :heart: ");
-    compose_ui.smart_insert($textbox, ":heart:");
+    compose_ui.smart_insert_inline($textbox, ":heart:");
 
     // Test handling of spaces for ```quote
     $textbox = make_textbox("");
     $textbox.caret(0);
     override_with_expected_syntax("```quote\nquoted message\n```\n");
-    compose_ui.smart_insert($textbox, "```quote\nquoted message\n```\n");
+    compose_ui.smart_insert_inline($textbox, "```quote\nquoted message\n```\n");
 
     $textbox = make_textbox("");
     $textbox.caret(0);
     override_with_expected_syntax("translated: [Quoting…]\n");
-    compose_ui.smart_insert($textbox, "translated: [Quoting…]\n");
+    compose_ui.smart_insert_inline($textbox, "translated: [Quoting…]\n");
 
     $textbox = make_textbox("abc");
     $textbox.caret(3);
     override_with_expected_syntax(" test with space ");
-    compose_ui.smart_insert($textbox, " test with space");
+    compose_ui.smart_insert_inline($textbox, " test with space");
 
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
     // like emojis and file links.
+});
+
+run_test("smart_insert_block", ({override}) => {
+    let $textbox = make_textbox("abc");
+    $textbox.caret(4);
+    function override_with_expected_syntax(expected_syntax) {
+        override(text_field_edit, "insert", (elt, syntax) => {
+            assert.equal(elt, "textarea");
+            assert.equal(syntax, expected_syntax);
+        });
+    }
+
+    // Test handling of spaces for ```quote
+    $textbox = make_textbox("");
+    $textbox.caret(0);
+    override_with_expected_syntax("```quote\nquoted message\n```\n");
+    compose_ui.smart_insert_block($textbox, "```quote\nquoted message\n```\n");
+
+    $textbox = make_textbox("");
+    $textbox.caret(0);
+    override_with_expected_syntax("translated: [Quoting…]\n");
+    compose_ui.smart_insert_block($textbox, "translated: [Quoting…]\n");
 });
 
 run_test("replace_syntax", ({override}) => {
@@ -317,7 +339,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
                 "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n" +
                     "```quote\n" +
                     `${quote_text}\n` +
-                    "```",
+                    "```\n",
             );
         });
     }

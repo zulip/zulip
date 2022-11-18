@@ -542,7 +542,7 @@ export function quote_and_reply(opts) {
         // can have other unintended consequences.)
 
         if ($textarea.caret() !== 0) {
-            // Insert a newline before quoted message if there is
+            // Insert 2 newlines before quoted message if there is
             // already some content in the compose box and quoted
             // message is not being inserted at the beginning.
             $textarea.caret("\n");
@@ -551,7 +551,7 @@ export function quote_and_reply(opts) {
         respond_to_message(opts);
     }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea);
+    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea, "block");
 
     function replace_content(message) {
         // Final message looks like:
@@ -569,7 +569,7 @@ export function quote_and_reply(opts) {
         );
         content += "\n";
         const fence = fenced_code.get_unused_fence(message.raw_content);
-        content += `${fence}quote\n${message.raw_content}\n${fence}`;
+        content += `${fence}quote\n${message.raw_content}\n${fence}\n`;
 
         const placeholder_offset = $textarea.val().indexOf(quoting_placeholder);
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
