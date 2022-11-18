@@ -1,12 +1,15 @@
 import * as people from "./people";
 import {get_key_from_message} from "./recent_topics_util";
 
-export const topics = new Map(); // Key is stream-id:topic.
+export const topics = new Map();
+// For stream messages, key is stream-id:topic.
+// For pms, key is the user IDs to whom the message is being sent.
 
 export function process_message(msg) {
-    // Initialize topic and pm data
-    // Key for private message is the user id's
-    // to whom the message is begin sent.
+    // Return whether any conversation data is updated.
+    let conversation_data_updated = false;
+
+    // Initialize conversation data
     const key = get_key_from_message(msg);
     if (!topics.has(key)) {
         topics.set(key, {
@@ -14,9 +17,9 @@ export function process_message(msg) {
             participated: false,
             type: msg.type,
         });
+        conversation_data_updated = true;
     }
-    // Update topic data
-    const is_ours = people.is_my_user_id(msg.sender_id);
+    // Update conversation data
     const topic_data = topics.get(key);
     if (topic_data.last_msg_id < msg.id) {
         // NOTE: This also stores locally echoed msg_id which
@@ -24,13 +27,18 @@ export function process_message(msg) {
         // We store it now and reify it when response is available
         // from server.
         topic_data.last_msg_id = msg.id;
+        conversation_data_updated = true;
     }
     // TODO: Add backend support for participated topics.
     // Currently participated === recently participated
     // i.e. Only those topics are participated for which we have the user's
     // message fetched in the topic. Ideally we would want this to be attached
     // to topic info fetched from backend, which is currently not a thing.
-    topic_data.participated = is_ours || topic_data.participated;
+    if (!topic_data.participated && people.is_my_user_id(msg.sender_id)) {
+        topic_data.participated = true;
+        conversation_data_updated = true;
+    }
+    return conversation_data_updated;
 }
 
 function get_sorted_topics() {
