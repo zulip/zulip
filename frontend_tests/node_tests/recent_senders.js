@@ -26,6 +26,9 @@ function make_stream_message({stream_id, topic, sender_id}) {
 mock_esm("../../static/js/message_store", {
     get: (message_id) => messages.get(message_id),
 });
+mock_esm("../../static/js/people", {
+    my_current_user_id: () => 1,
+});
 
 const rs = zrequire("recent_senders");
 zrequire("message_util.js");
@@ -309,4 +312,39 @@ test("process_stream_message", () => {
         rs.compare_by_recency({user_id: sender2}, {user_id: sender1}, stream3, "bogus") < 0,
         true,
     );
+});
+
+test("process_pms", () => {
+    const sender1 = 1; // Current user id
+    const sender2 = 2;
+    const sender3 = 3;
+
+    const user_ids_string = "2,3,4";
+    rs.process_private_message({
+        to_user_ids: user_ids_string,
+        sender_id: sender2,
+        id: 1,
+    });
+    rs.process_private_message({
+        to_user_ids: user_ids_string,
+        sender_id: sender3,
+        id: 2,
+    });
+    rs.process_private_message({
+        to_user_ids: user_ids_string,
+        sender_id: sender1,
+        id: 3,
+    });
+
+    // Recent topics displays avatars in the opposite order to this since
+    // that was simpler to implement in HTML.
+    assert.deepEqual(rs.get_pm_recent_senders(user_ids_string), {
+        participants: [1, 3, 2],
+        non_participants: [4],
+    });
+    // PM doesn't exist.
+    assert.deepEqual(rs.get_pm_recent_senders("1000,2000"), {
+        participants: [],
+        non_participants: [],
+    });
 });

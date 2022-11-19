@@ -15,6 +15,7 @@ mock_esm("../../static/js/stream_topic_history", {
 
 mock_esm("../../static/js/recent_senders", {
     process_stream_message: noop,
+    process_private_message: noop,
 });
 
 set_global("document", "document-stub");

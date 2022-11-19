@@ -428,10 +428,6 @@ function format_conversation(conversation_data) {
         context.pm_url = last_msg.pm_with_url;
         context.is_group = last_msg.display_recipient.length > 2;
 
-        // Display in most recent sender first order
-        all_senders = last_msg.display_recipient;
-        senders = all_senders.slice(-MAX_AVATAR).map((sender) => sender.id);
-
         if (!context.is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
             const user = people.get_by_user_id(user_id);
@@ -444,6 +440,17 @@ function format_conversation(conversation_data) {
             }
         }
 
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        // To match the behavior for streams, we display the set of users who've actually
+        // participated, with the most recent participants first. It could make sense to
+        // display the other recipients on the PM conversation with different styling,
+        // but it's important to not destroy the information of "who's actually talked".
+        all_senders = recent_senders
+            .get_pm_recent_senders(context.user_ids_string)
+            .participants.reverse();
+        senders = all_senders.slice(-MAX_AVATAR);
         // Collect extra senders fullname for tooltip.
         extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
         displayed_other_senders = extra_sender_ids
