@@ -65,6 +65,7 @@ export function process_new_message(message) {
 
             pm_conversations.process_message(message);
 
+            recent_senders.process_private_message(message);
             if (people.is_my_user_id(message.sender_id)) {
                 for (const recip of message.display_recipient) {
                     message_user_ids.add_user_id(recip.id);
