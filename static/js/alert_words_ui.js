@@ -70,7 +70,10 @@ function remove_alert_word(alert_word) {
         data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
             update_alert_word_status(
-                $t({defaultMessage: "Alert word removed successfully!"}),
+                $t(
+                    {defaultMessage: `Alert word "{alert_word}" removed successfully!`},
+                    {alert_word},
+                ),
                 false,
             );
         },
