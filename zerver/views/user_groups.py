@@ -74,7 +74,7 @@ def edit_user_group(
         do_update_user_group_name(user_group, name, acting_user=user_profile)
 
     if description != user_group.description:
-        do_update_user_group_description(user_group, description)
+        do_update_user_group_description(user_group, description, acting_user=user_profile)
 
     return json_success(request)
 

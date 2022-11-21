@@ -145,7 +145,9 @@ def do_update_user_group_name(
     do_send_user_group_update_event(user_group, dict(name=name))
 
 
-def do_update_user_group_description(user_group: UserGroup, description: str) -> None:
+def do_update_user_group_description(
+    user_group: UserGroup, description: str, *, acting_user: Optional[UserProfile]
+) -> None:
     user_group.description = description
     user_group.save(update_fields=["description"])
     do_send_user_group_update_event(user_group, dict(description=description))

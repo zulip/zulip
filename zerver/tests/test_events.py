@@ -1293,7 +1293,9 @@ class NormalActionsTest(BaseAction):
 
         # Test description update
         description = "Backend team to deal with backend code."
-        events = self.verify_action(lambda: do_update_user_group_description(backend, description))
+        events = self.verify_action(
+            lambda: do_update_user_group_description(backend, description, acting_user=None)
+        )
         check_user_group_update("events[0]", events[0], "description")
 
         # Test add members
