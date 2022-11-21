@@ -890,11 +890,6 @@ li.actual-dropdown-menu i {
     padding: 6px 12px;
 }
 
-#settings_content .dependent-block,
-#invite-user .dependent-block {
-    margin: 15px 0 -5px 23px;
-}
-
 .message_area_padder {
     /* The height of the header and the message_view_header plus a small gap */
     margin-top: 57px;
