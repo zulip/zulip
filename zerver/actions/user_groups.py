@@ -15,6 +15,7 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     GroupGroupMembership,
     Realm,
+    RealmAuditLog,
     UserGroup,
     UserGroupMembership,
     UserProfile,
@@ -56,6 +57,28 @@ def create_user_group_in_database(
     UserGroupMembership.objects.bulk_create(
         UserGroupMembership(user_profile=member, user_group=user_group) for member in members
     )
+
+    creation_time = timezone_now()
+    audit_log_entries = [
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_GROUP_CREATED,
+            event_time=creation_time,
+            modified_user_group=user_group,
+        )
+    ] + [
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=creation_time,
+            modified_user=member,
+            modified_user_group=user_group,
+        )
+        for member in members
+    ]
+    RealmAuditLog.objects.bulk_create(audit_log_entries)
     return user_group
 
 

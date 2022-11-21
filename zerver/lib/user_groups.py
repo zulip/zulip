@@ -2,12 +2,20 @@ from typing import Dict, Iterable, List, Mapping, Sequence, TypedDict
 
 from django.db import transaction
 from django.db.models import F, QuerySet
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.exceptions import JsonableError
-from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
+from zerver.models import (
+    GroupGroupMembership,
+    Realm,
+    RealmAuditLog,
+    UserGroup,
+    UserGroupMembership,
+    UserProfile,
+)
 
 
 class UserGroupDict(TypedDict):
@@ -316,7 +324,18 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         everyone_on_internet_system_group,
     ]
 
+    creation_time = timezone_now()
     UserGroup.objects.bulk_create(system_user_groups_list)
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=realm,
+            acting_user=None,
+            event_type=RealmAuditLog.USER_GROUP_CREATED,
+            event_time=creation_time,
+            modified_user_group=user_group,
+        )
+        for user_group in system_user_groups_list
+    )
 
     groups_with_updated_settings = []
     system_groups_name_dict = get_role_based_system_groups_dict(realm)

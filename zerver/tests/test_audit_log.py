@@ -45,6 +45,7 @@ from zerver.actions.streams import (
     do_deactivate_stream,
     do_rename_stream,
 )
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_password,
@@ -61,6 +62,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
+from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     EmojiInfo,
@@ -71,6 +73,7 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
+    UserGroup,
     UserProfile,
     get_realm,
     get_realm_domains,
@@ -985,3 +988,60 @@ class TestRealmAuditLog(ZulipTestCase):
             ).count(),
             1,
         )
+
+    def test_system_user_groups_creation(self) -> None:
+        realm = Realm.objects.create(string_id="test", name="foo")
+        now = timezone_now()
+        create_system_user_groups_for_realm(realm)
+
+        # The expected number of system user group is the total number of roles
+        # from UserGroup.SYSTEM_USER_GROUP_ROLE_MAP in addition to
+        # full_members_system_group, everyone_on_internet_system_group and
+        # nobody_system_group.
+        expected_system_user_group_count = len(UserGroup.SYSTEM_USER_GROUP_ROLE_MAP) + 3
+
+        system_user_group_ids = sorted(
+            UserGroup.objects.filter(
+                realm=realm,
+                is_system_group=True,
+            ).values_list("id", flat=True)
+        )
+        self.assert_length(system_user_group_ids, expected_system_user_group_count)
+
+        logged_system_group_ids = sorted(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.USER_GROUP_CREATED,
+                event_time__gte=now,
+                acting_user=None,
+            ).values_list("modified_user_group_id", flat=True)
+        )
+        self.assertListEqual(logged_system_group_ids, system_user_group_ids)
+
+    def test_user_group_creation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        now = timezone_now()
+        user_group = check_add_user_group(
+            hamlet.realm, "empty", [hamlet, cordelia], acting_user=hamlet, description="lorem"
+        )
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=RealmAuditLog.USER_GROUP_CREATED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertEqual(audit_log_entries[0].modified_user_group, user_group)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        )
+        self.assert_length(audit_log_entries, 2)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(audit_log_entries[1].modified_user, cordelia)
