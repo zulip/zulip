@@ -348,12 +348,6 @@ blockquote:before,
 blockquote:after {
   content: "";
 }
-address {
-  display: block;
-  margin-bottom: 20px;
-  font-style: normal;
-  line-height: 20px;
-}
 code,
 pre {
   padding: 0 3px 2px;
