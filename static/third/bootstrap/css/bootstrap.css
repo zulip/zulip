@@ -1094,23 +1094,6 @@ input.search-query {
 .navbar .input-append .btn-group {
   margin-top: 0;
 }
-.navbar-search {
-  position: relative;
-  float: left;
-  margin-top: 5px;
-  margin-bottom: 0;
-}
-.navbar-search .search-query {
-  margin-bottom: 0;
-  padding: 4px 14px;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  font-weight: normal;
-  line-height: 1;
-  -webkit-border-radius: 15px;
-  -moz-border-radius: 15px;
-  border-radius: 15px;
-}
 .navbar .nav {
   position: relative;
   left: 0;
