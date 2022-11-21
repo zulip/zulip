@@ -22,9 +22,6 @@ nav,
 section {
   display: block;
 }
-audio:not([controls]) {
-  display: none;
-}
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
