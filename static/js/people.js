@@ -287,6 +287,17 @@ export function get_user_time(user_id) {
     const user_pref = get_user_time_preferences(user_id);
     if (user_pref) {
         const current_date = utcToZonedTime(new Date(), user_pref.timezone);
+        // In theory, utcToZonedTime should always return a Date
+        // object. However, we have reports from users in the wild
+        // seeing this returning `undefined`. To avoid throwing an
+        // exception, we check whether we got a Date object back,
+        // including a NaN check, which covers the case where we
+        // called `Date("foo")`.
+        // eslint-disable-next-line unicorn/prefer-number-properties
+        if (!(current_date instanceof Date) || isNaN(current_date)) {
+            blueslip.error(`Got invalid date for timezone: ${user_pref.timezone}`);
+            return undefined;
+        }
         return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
     }
     return undefined;
