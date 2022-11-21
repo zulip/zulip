@@ -2,10 +2,7 @@ import $ from "jquery";
 
 import render_gear_menu from "../templates/gear_menu.hbs";
 
-import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
-import * as message_viewport from "./message_viewport";
-import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
 
@@ -80,14 +77,7 @@ in static/js/info_overlay.js.  They are dispatched
 using a click handler in static/js/click_handlers.js.
 The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
-
 */
-
-// We want to remember how far we were scrolled on each 'tab'.
-// To do so, we need to save away the old position of the
-// scrollbar when we switch to a new tab (and restore it
-// when we switch back.)
-const scroll_positions = new Map();
 
 export function update_org_settings_menu_item() {
     const $item = $(".admin-menu-item").expectOne();
@@ -156,38 +146,6 @@ export function initialize() {
     });
     $("#navbar-buttons").html(rendered_gear_menu);
     update_org_settings_menu_item();
-
-    $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
-        // Save the position of our old tab away, before we switch
-        const old_tab = $(e.relatedTarget).attr("href");
-        scroll_positions.set(old_tab, message_viewport.scrollTop());
-    });
-    $('#gear-menu a[data-toggle="tab"]').on("shown", (e) => {
-        const target_tab = $(e.target).attr("href");
-        // Hide all our error messages when switching tabs
-        $(".alert").removeClass("show");
-
-        // Set the URL bar title to show the sub-page you're currently on.
-        let browser_url = target_tab;
-        if (browser_url === "#message_feed_container") {
-            browser_url = "";
-        }
-        hashchange.changehash(browser_url);
-
-        // After we show the new tab, restore its old scroll position
-        // (we apparently have to do this after setting the hash,
-        // because otherwise that action may scroll us somewhere.)
-        if (target_tab === "#message_feed_container") {
-            if (scroll_positions.has(target_tab)) {
-                message_viewport.scrollTop(scroll_positions.get(target_tab));
-            } else {
-                navigate.scroll_to_selected();
-            }
-        }
-    });
-
-    // The admin and settings pages are generated client-side through
-    // templates.
 }
 
 export function open() {

@@ -546,6 +546,10 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
+
+        .column-middle-inner {
+            overflow: auto;
+        }
     }
 }
 

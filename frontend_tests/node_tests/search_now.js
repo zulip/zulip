@@ -9,14 +9,9 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.search_pills_enabled = false;
 
-const noop = () => {};
-
 const narrow = mock_esm("../../static/js/narrow");
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const search_suggestion = mock_esm("../../static/js/search_suggestion");
-mock_esm("../../static/js/ui_util", {
-    change_tab_to: noop,
-});
 
 const Filter = {};
 

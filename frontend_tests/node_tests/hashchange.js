@@ -137,10 +137,6 @@ function test_helper({override, change_tab}) {
     stub(ui_report, "error");
 
     if (change_tab) {
-        override(ui_util, "change_tab_to", (hash) => {
-            events.push("change_tab_to " + hash);
-        });
-
         override(narrow, "activate", (terms) => {
             narrow_terms = terms;
             events.push("narrow.activate");
@@ -190,7 +186,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         [narrow, "deactivate"],
         [floating_recipient_bar, "update"],
     ]);
@@ -200,7 +195,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         [narrow, "deactivate"],
         [floating_recipient_bar, "update"],
     ]);
@@ -225,7 +219,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         "narrow.activate",
         [floating_recipient_bar, "update"],
     ]);
@@ -239,7 +232,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         "narrow.activate",
         [floating_recipient_bar, "update"],
     ]);
@@ -254,7 +246,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         [ui_report, "error"],
     ]);
 
