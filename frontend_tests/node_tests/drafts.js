@@ -413,7 +413,7 @@ test("catch_buggy_draft_error", () => {
     // An error is logged but the draft isn't fixed in this codepath.
     blueslip.expect(
         "error",
-        "Cannot compare strings; at least one value is undefined: undefined, old_topic",
+        "Cannot compare strings; at least one value is undefined: (undefined), old_topic",
     );
     drafts.rename_stream_recipient(
         stream_B.stream_id,
