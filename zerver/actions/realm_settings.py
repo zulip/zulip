@@ -115,7 +115,7 @@ def do_set_realm_property(
             send_user_email_update_event(user_profile)
 
     if name == "waiting_period_threshold":
-        update_users_in_full_members_system_group(realm)
+        update_users_in_full_members_system_group(realm, acting_user=acting_user)
 
 
 def do_set_realm_authentication_methods(

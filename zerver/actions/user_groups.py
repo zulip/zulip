@@ -27,7 +27,7 @@ class MemberGroupUserDict(TypedDict):
 
 @transaction.atomic(savepoint=False)
 def update_users_in_full_members_system_group(
-    realm: Realm, affected_user_ids: Sequence[int] = []
+    realm: Realm, affected_user_ids: Sequence[int] = [], *, acting_user: Optional[UserProfile]
 ) -> None:
     full_members_system_group = UserGroup.objects.get(
         realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
@@ -91,7 +91,7 @@ def update_users_in_full_members_system_group(
 
 def promote_new_full_members() -> None:
     for realm in Realm.objects.filter(deactivated=False).exclude(waiting_period_threshold=0):
-        update_users_in_full_members_system_group(realm)
+        update_users_in_full_members_system_group(realm, acting_user=None)
 
 
 def do_send_create_user_group_event(
