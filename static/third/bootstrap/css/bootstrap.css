@@ -845,35 +845,14 @@ input.search-query {
   -moz-border-radius: 15px;
   border-radius: 15px;
 }
-/* Allow for input prepend/append in search forms */
-.form-search .input-append .search-query {
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  border-radius: 0;
-}
-.form-search .input-append .search-query {
-  -webkit-border-radius: 14px 0 0 14px;
-  -moz-border-radius: 14px 0 0 14px;
-  border-radius: 14px 0 0 14px;
-}
-.form-search .input-append .btn {
-  -webkit-border-radius: 0 14px 14px 0;
-  -moz-border-radius: 0 14px 14px 0;
-  border-radius: 0 14px 14px 0;
-}
-.form-search input,
 .form-inline input,
 .form-horizontal input,
-.form-search textarea,
 .form-inline textarea,
 .form-horizontal textarea,
-.form-search select,
 .form-inline select,
 .form-horizontal select,
-.form-search .help-inline,
 .form-inline .help-inline,
 .form-horizontal .help-inline,
-.form-search .input-append,
 .form-inline .input-append,
 .form-horizontal .input-append {
   display: inline-block;
@@ -884,31 +863,23 @@ input.search-query {
   margin-bottom: 0;
   vertical-align: middle;
 }
-.form-search .hide,
 .form-inline .hide,
 .form-horizontal .hide {
   display: none;
 }
-.form-search label,
 .form-inline label,
-.form-search .btn-group,
 .form-inline .btn-group {
   display: inline-block;
 }
-.form-search .input-append,
 .form-inline .input-append {
   margin-bottom: 0;
 }
-.form-search .radio,
-.form-search .checkbox,
 .form-inline .radio,
 .form-inline .checkbox {
   padding-left: 0;
   margin-bottom: 0;
   vertical-align: middle;
 }
-.form-search .radio input[type="radio"],
-.form-search .checkbox input[type="checkbox"],
 .form-inline .radio input[type="radio"],
 .form-inline .checkbox input[type="checkbox"] {
   float: left;
