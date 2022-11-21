@@ -9948,10 +9948,10 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-text-field-edit@^3.1.0:
-  version "3.1.9001"
-  resolved "https://registry.yarnpkg.com/text-field-edit/-/text-field-edit-3.1.9001.tgz#479bbc6ed4c5a1dd721118daf9b13fd785cda257"
-  integrity sha512-5xSqH9HMiW4r/YDoz/DMX895elwenTCV/xwjGSmhVol62YFTHivbZi3T0jKm0Oyzj63RA2C0XAnWMQSC0SO/JA==
+text-field-edit@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/text-field-edit/-/text-field-edit-3.2.0.tgz#677f5b3a7cd220d37f6f1b85c51850f60d9da871"
+  integrity sha512-HVgVoOMAIgsXFsGuzkghk0NQPO8DrfNeHtRSbKEUQAkLOeY+Mb2ofK/AGZByxObPNo3vqODyghl+9VXUjHypig==
 
 text-hex@1.0.x:
   version "1.0.0"
