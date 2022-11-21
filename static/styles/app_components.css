@@ -448,6 +448,10 @@ div.overlay {
     }
 }
 
+.dependent-settings-block {
+    margin: 15px 0 -5px 23px;
+}
+
 @media (width < $md_min) {
     /* Override Bootstrap's responsive grid to display input at full width */
     .input-append .stream-list-filter {

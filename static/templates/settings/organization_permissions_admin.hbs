@@ -28,7 +28,7 @@
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
                         <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
                     </select>
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <p id="allowed_domains_label" class="inline-block"></p>
                         {{#if is_owner }}
                         <a id="show_realm_domains_modal" role="button">{{t "[Configure]" }}</a>
@@ -46,7 +46,7 @@
                         <option value="custom_days">{{t "Custom" }}</option>
                     </select>
                     {{!-- This setting is hidden unless `custom_days` --}}
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <label for="id_realm_waiting_period_threshold" class="inline-block">{{t "Waiting period (days)" }}:</label>
                         <input type="text" id="id_realm_waiting_period_threshold"
                           name="realm_waiting_period_threshold"
@@ -161,7 +161,7 @@
                             <option value="{{value}}">{{text}}</option>
                         {{/each}}
                     </select>
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
                             {{t 'Duration editing is allowed after posting (minutes)'}}:&nbsp;
                         </label>
@@ -226,7 +226,7 @@
                             <option value="{{value}}">{{text}}</option>
                         {{/each}}
                     </select>
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
                             {{t "Duration deletion is allowed after posting (minutes)" }}:
                         </label>
