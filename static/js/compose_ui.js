@@ -84,7 +84,7 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
     // replace() function treating `$`s in new_syntax as special syntax.  See
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
     // for details.
-    replace($textarea[0], old_syntax, () => new_syntax);
+    replace($textarea[0], old_syntax, () => new_syntax, "after-replacement");
 }
 
 export function compute_placeholder_text(opts) {
