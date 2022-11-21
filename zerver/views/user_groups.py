@@ -135,7 +135,7 @@ def add_members_to_group_backend(
             )
 
     user_profile_ids = [user.id for user in user_profiles]
-    bulk_add_members_to_user_group(user_group, user_profile_ids)
+    bulk_add_members_to_user_group(user_group, user_profile_ids, acting_user=user_profile)
     return json_success(request)
 
 

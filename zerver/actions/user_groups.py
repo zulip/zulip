@@ -86,7 +86,9 @@ def update_users_in_full_members_system_group(
         remove_members_from_user_group(full_members_system_group, old_full_member_ids)
 
     if len(new_full_members) > 0:
-        bulk_add_members_to_user_group(full_members_system_group, new_full_member_ids)
+        bulk_add_members_to_user_group(
+            full_members_system_group, new_full_member_ids, acting_user=acting_user
+        )
 
 
 def promote_new_full_members() -> None:
@@ -163,7 +165,9 @@ def do_send_user_group_members_update_event(
 
 
 @transaction.atomic(savepoint=False)
-def bulk_add_members_to_user_group(user_group: UserGroup, user_profile_ids: List[int]) -> None:
+def bulk_add_members_to_user_group(
+    user_group: UserGroup, user_profile_ids: List[int], *, acting_user: Optional[UserProfile]
+) -> None:
     memberships = [
         UserGroupMembership(user_group_id=user_group.id, user_profile_id=user_id)
         for user_id in user_profile_ids
