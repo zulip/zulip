@@ -18,6 +18,7 @@ import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -43,6 +44,7 @@ import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let topics_widget;
+let message_list_displayed_before;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -893,8 +895,16 @@ export function hide() {
     // before it completely re-rerenders.
     message_view_header.render_title_area();
 
-    // Fire our custom event
-    $("#message_feed_container").trigger("message_feed_shown");
+    if (!message_list_displayed_before) {
+        // Hack: If the app is loaded directly to recent topics, then we
+        // need to arrange to call navbar_alerts.resize_app when we first
+        // visit a message list. This is a workaround for bugs where the
+        // floating recipient bar will be invisible (as well as other
+        // alignment issues) when they are initially rendered in the
+        // background because recent topics is displayed.
+        message_list_displayed_before = true;
+        navbar_alerts.resize_app();
+    }
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.

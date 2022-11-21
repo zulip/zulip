@@ -671,7 +671,6 @@ export function initialize_everything() {
 
     // All overlays must be initialized before hashchange.js
     hashchange.initialize();
-    resize.initialize();
 
     unread_ui.initialize();
     activity.initialize();
