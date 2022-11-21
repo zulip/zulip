@@ -1999,8 +1999,10 @@ div.focused_table {
     }
 
     .navbar-search.expanded {
+        float: left;
         overflow: hidden;
         margin-top: 0;
+        margin-bottom: 0;
         width: calc(100% - 2px);
         position: absolute;
 
