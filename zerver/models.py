@@ -4570,6 +4570,18 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_PROPERTY_CHANGED = 607
     STREAM_GROUP_BASED_SETTING_CHANGED = 608
 
+    USER_GROUP_CREATED = 701
+    USER_GROUP_DELETED = 702
+    USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED = 703
+    USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED = 704
+    USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED = 705
+    USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED = 706
+    USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED = 707
+    USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED = 708
+    # 709 to 719 reserved for membership changes
+    USER_GROUP_NAME_CHANGED = 720
+    USER_GROUP_DESCRIPTION_CHANGED = 721
+
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
@@ -4632,13 +4644,14 @@ class RealmAuditLog(AbstractRealmAuditLog):
     * acting_user is the user who initiated the state change
     * modified_user (if present) is the user being modified
     * modified_stream (if present) is the stream being modified
+    * modified_user_group (if present) is the user group being modified
 
     For example:
     * When a user subscribes another user to a stream, modified_user,
       acting_user, and modified_stream will all be present and different.
     * When an administrator changes an organization's realm icon,
-      acting_user is that administrator and both modified_user and
-      modified_stream will be None.
+      acting_user is that administrator and modified_user,
+      modified_stream and modified_user_group will be None.
     """
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
@@ -4659,6 +4672,11 @@ class RealmAuditLog(AbstractRealmAuditLog):
         null=True,
         on_delete=CASCADE,
     )
+    modified_user_group = models.ForeignKey(
+        UserGroup,
+        null=True,
+        on_delete=CASCADE,
+    )
     event_last_message_id = models.IntegerField(null=True)
 
     def __str__(self) -> str:
@@ -4666,6 +4684,8 @@ class RealmAuditLog(AbstractRealmAuditLog):
             return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
         if self.modified_stream is not None:
             return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
+        if self.modified_user_group is not None:
+            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
         return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
 
     class Meta:

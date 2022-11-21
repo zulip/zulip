@@ -1126,6 +1126,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             data, "zerver_realmauditlog", "acting_user", related_table="user_profile"
         )
         re_map_foreign_keys(data, "zerver_realmauditlog", "modified_stream", related_table="stream")
+        re_map_foreign_keys(
+            data, "zerver_realmauditlog", "modified_user_group", related_table="usergroup"
+        )
         update_model_ids(RealmAuditLog, data, related_table="realmauditlog")
         bulk_import_model(data, RealmAuditLog)
     else:
