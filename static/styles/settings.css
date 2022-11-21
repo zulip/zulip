@@ -1240,6 +1240,7 @@ $option_title_width: 180px;
         font-size: 1.2em;
         font-weight: normal;
         line-height: 1.2;
+        margin: 10px 0;
     }
 
     .sidebar-wrapper {
