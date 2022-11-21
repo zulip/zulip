@@ -83,7 +83,9 @@ def update_users_in_full_members_system_group(
     new_full_member_ids = [user["id"] for user in new_full_members]
 
     if len(old_full_members) > 0:
-        remove_members_from_user_group(full_members_system_group, old_full_member_ids)
+        remove_members_from_user_group(
+            full_members_system_group, old_full_member_ids, acting_user=acting_user
+        )
 
     if len(new_full_members) > 0:
         bulk_add_members_to_user_group(
@@ -178,7 +180,9 @@ def bulk_add_members_to_user_group(
 
 
 @transaction.atomic(savepoint=False)
-def remove_members_from_user_group(user_group: UserGroup, user_profile_ids: List[int]) -> None:
+def remove_members_from_user_group(
+    user_group: UserGroup, user_profile_ids: List[int], *, acting_user: Optional[UserProfile]
+) -> None:
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id, user_profile_id__in=user_profile_ids
     ).delete()

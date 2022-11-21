@@ -452,7 +452,9 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(user_profile, client_descriptor.event_queue.id)
-        remove_members_from_user_group(hamlet_and_cordelia, [user_profile.id, cordelia.id])
+        remove_members_from_user_group(
+            hamlet_and_cordelia, [user_profile.id, cordelia.id], acting_user=None
+        )
 
         # Test the hook with a stream message with stream_push_notify
         change_subscription_properties(user_profile, stream, sub, {"push_notifications": True})

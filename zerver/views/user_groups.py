@@ -153,7 +153,7 @@ def remove_members_from_group_backend(
             raise JsonableError(_("There is no member '{}' in this user group").format(member))
 
     user_profile_ids = [user.id for user in user_profiles]
-    remove_members_from_user_group(user_group, user_profile_ids)
+    remove_members_from_user_group(user_group, user_profile_ids, acting_user=user_profile)
     return json_success(request)
 
 
