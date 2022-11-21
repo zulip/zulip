@@ -2265,7 +2265,7 @@ class MarkdownTest(ZulipTestCase):
 
     def create_user_group_for_test(self, user_group_name: str) -> UserGroup:
         othello = self.example_user("othello")
-        return create_user_group(user_group_name, [othello], get_realm("zulip"))
+        return create_user_group(user_group_name, [othello], get_realm("zulip"), acting_user=None)
 
     def test_user_group_mention_single(self) -> None:
         sender_user_profile = self.example_user("othello")

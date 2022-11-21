@@ -2417,9 +2417,14 @@ class StreamAdminTest(ZulipTestCase):
     def test_can_remove_subscribers_group(self) -> None:
         realm = get_realm("zulip")
         leadership_group = create_user_group(
-            "leadership", [self.example_user("iago"), self.example_user("shiva")], realm
+            "leadership",
+            [self.example_user("iago"), self.example_user("shiva")],
+            realm,
+            acting_user=None,
         )
-        managers_group = create_user_group("managers", [self.example_user("hamlet")], realm=realm)
+        managers_group = create_user_group(
+            "managers", [self.example_user("hamlet")], realm=realm, acting_user=None
+        )
         add_subgroups_to_user_group(managers_group, [leadership_group])
         cordelia = self.example_user("cordelia")
 

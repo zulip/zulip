@@ -430,7 +430,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Test with a user group mention
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [user_profile, cordelia], cordelia.realm
+            "hamlet_and_cordelia", [user_profile, cordelia], cordelia.realm, acting_user=None
         )
         client_descriptor = allocate_event_queue(user_profile)
         self.assertTrue(client_descriptor.event_queue.empty())

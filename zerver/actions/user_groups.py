@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, Sequence, TypedDict
+from typing import Dict, List, Optional, Sequence, TypedDict
 
 import django.db.utils
 from django.db import transaction
@@ -113,10 +113,17 @@ def do_send_create_user_group_event(
 
 
 def check_add_user_group(
-    realm: Realm, name: str, initial_members: List[UserProfile], description: str
+    realm: Realm,
+    name: str,
+    initial_members: List[UserProfile],
+    description: str,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     try:
-        user_group = create_user_group(name, initial_members, realm, description=description)
+        user_group = create_user_group(
+            name, initial_members, realm, description=description, acting_user=acting_user
+        )
         do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{}' already exists.").format(name))

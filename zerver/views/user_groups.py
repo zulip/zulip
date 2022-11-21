@@ -43,7 +43,9 @@ def add_user_group(
     description: str = REQ(),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    check_add_user_group(user_profile.realm, name, user_profiles, description)
+    check_add_user_group(
+        user_profile.realm, name, user_profiles, description, acting_user=user_profile
+    )
     return json_success(request)
 
 
