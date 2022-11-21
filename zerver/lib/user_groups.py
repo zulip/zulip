@@ -313,6 +313,8 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         can_mention_group_id=initial_group_setting_value,
     )
     # Order of this list here is important to create correct GroupGroupMembership objects
+    # Note that because we do not create user memberships here, no audit log entries for
+    # user memberships are populated either.
     system_user_groups_list = [
         nobody_system_group,
         role_system_groups_dict[UserProfile.ROLE_REALM_OWNER],

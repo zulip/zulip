@@ -240,6 +240,18 @@ def bulk_add_members_to_user_group(
         for user_id in user_profile_ids
     ]
     UserGroupMembership.objects.bulk_create(memberships)
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=user_group.realm,
+            modified_user_id=user_id,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=now,
+            acting_user=acting_user,
+        )
+        for user_id in user_profile_ids
+    )
 
     do_send_user_group_members_update_event("add_members", user_group, user_profile_ids)
 
@@ -251,6 +263,18 @@ def remove_members_from_user_group(
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id, user_profile_id__in=user_profile_ids
     ).delete()
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=user_group.realm,
+            modified_user_id=user_id,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+            event_time=now,
+            acting_user=acting_user,
+        )
+        for user_id in user_profile_ids
+    )
 
     do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
 

@@ -467,6 +467,14 @@ def do_create_user(
 
         system_user_group = get_system_user_group_for_user(user_profile)
         UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            modified_user_group=system_user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=event_time,
+            acting_user=acting_user,
+        )
 
         if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
             full_members_system_group = UserGroup.objects.get(
@@ -476,6 +484,14 @@ def do_create_user(
             )
             UserGroupMembership.objects.create(
                 user_profile=user_profile, user_group=full_members_system_group
+            )
+            RealmAuditLog.objects.create(
+                realm=user_profile.realm,
+                modified_user=user_profile,
+                modified_user_group=full_members_system_group,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time=event_time,
+                acting_user=acting_user,
             )
 
     # Note that for bots, the caller will send an additional event
