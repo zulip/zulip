@@ -2425,7 +2425,7 @@ class StreamAdminTest(ZulipTestCase):
         managers_group = create_user_group(
             "managers", [self.example_user("hamlet")], realm=realm, acting_user=None
         )
-        add_subgroups_to_user_group(managers_group, [leadership_group])
+        add_subgroups_to_user_group(managers_group, [leadership_group], acting_user=None)
         cordelia = self.example_user("cordelia")
 
         stream = self.make_stream("public_stream")

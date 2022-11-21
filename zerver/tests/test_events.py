@@ -1318,7 +1318,9 @@ class NormalActionsTest(BaseAction):
         )
 
         # Test add subgroups
-        events = self.verify_action(lambda: add_subgroups_to_user_group(backend, [api_design]))
+        events = self.verify_action(
+            lambda: add_subgroups_to_user_group(backend, [api_design], acting_user=None)
+        )
         check_user_group_add_subgroups("events[0]", events[0])
 
         # Test remove subgroups

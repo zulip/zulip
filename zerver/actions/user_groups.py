@@ -202,7 +202,9 @@ def do_send_subgroups_update_event(
 
 
 @transaction.atomic
-def add_subgroups_to_user_group(user_group: UserGroup, subgroups: List[UserGroup]) -> None:
+def add_subgroups_to_user_group(
+    user_group: UserGroup, subgroups: List[UserGroup], *, acting_user: Optional[UserProfile]
+) -> None:
     group_memberships = [
         GroupGroupMembership(supergroup=user_group, subgroup=subgroup) for subgroup in subgroups
     ]

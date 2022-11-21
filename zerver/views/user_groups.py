@@ -174,7 +174,7 @@ def add_subgroups_to_group_backend(
                 )
             )
 
-    add_subgroups_to_user_group(user_group, subgroups)
+    add_subgroups_to_user_group(user_group, subgroups, acting_user=user_profile)
     return json_success(request)
 
 
