@@ -215,7 +215,9 @@ def add_subgroups_to_user_group(
 
 
 @transaction.atomic
-def remove_subgroups_from_user_group(user_group: UserGroup, subgroups: List[UserGroup]) -> None:
+def remove_subgroups_from_user_group(
+    user_group: UserGroup, subgroups: List[UserGroup], *, acting_user: Optional[UserProfile]
+) -> None:
     GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
 
     subgroup_ids = [subgroup.id for subgroup in subgroups]

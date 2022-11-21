@@ -195,7 +195,7 @@ def remove_subgroups_from_group_backend(
                 )
             )
 
-    remove_subgroups_from_user_group(user_group, subgroups)
+    remove_subgroups_from_user_group(user_group, subgroups, acting_user=user_profile)
     return json_success(request)
 
 
