@@ -26,7 +26,6 @@ import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_report from "./ui_report";
-import * as ui_util from "./ui_util";
 import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 
@@ -91,7 +90,6 @@ export function save_narrow(operators) {
 
 function show_all_message_view() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
-    ui_util.change_tab_to("#message_feed_container");
     narrow.deactivate(coming_from_recent_topics);
     top_left_corner.handle_narrow_deactivated();
     floating_recipient_bar.update();
@@ -138,7 +136,6 @@ function do_hashchange_normal(from_reload) {
     switch (hash[0]) {
         case "#narrow": {
             maybe_hide_recent_topics();
-            ui_util.change_tab_to("#message_feed_container");
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.
