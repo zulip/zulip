@@ -190,7 +190,7 @@ export function scroll_finished() {
     actively_scrolling = false;
     hide_scroll_to_bottom();
 
-    if (!$("#message_feed_container").hasClass("active")) {
+    if (recent_topics_util.is_visible()) {
         return;
     }
 
