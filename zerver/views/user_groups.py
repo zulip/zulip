@@ -71,7 +71,7 @@ def edit_user_group(
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
     if name != user_group.name:
-        do_update_user_group_name(user_group, name)
+        do_update_user_group_name(user_group, name, acting_user=user_profile)
 
     if description != user_group.description:
         do_update_user_group_description(user_group, description)

@@ -1286,7 +1286,9 @@ class NormalActionsTest(BaseAction):
 
         # Test name update
         backend = UserGroup.objects.get(name="backend")
-        events = self.verify_action(lambda: do_update_user_group_name(backend, "backendteam"))
+        events = self.verify_action(
+            lambda: do_update_user_group_name(backend, "backendteam", acting_user=None)
+        )
         check_user_group_update("events[0]", events[0], "name")
 
         # Test description update

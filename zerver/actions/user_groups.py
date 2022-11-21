@@ -134,7 +134,9 @@ def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, str])
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
-def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
+def do_update_user_group_name(
+    user_group: UserGroup, name: str, *, acting_user: Optional[UserProfile]
+) -> None:
     try:
         user_group.name = name
         user_group.save(update_fields=["name"])
