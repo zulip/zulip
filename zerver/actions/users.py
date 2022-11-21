@@ -345,7 +345,28 @@ def do_change_user_role(
     ).delete()
 
     system_group = get_system_user_group_for_user(user_profile)
+    now = timezone_now()
     UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_group)
+    RealmAuditLog.objects.bulk_create(
+        [
+            RealmAuditLog(
+                realm=user_profile.realm,
+                modified_user=user_profile,
+                modified_user_group=old_system_group,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+                event_time=now,
+                acting_user=acting_user,
+            ),
+            RealmAuditLog(
+                realm=user_profile.realm,
+                modified_user=user_profile,
+                modified_user_group=system_group,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time=now,
+                acting_user=acting_user,
+            ),
+        ]
+    )
 
     do_send_user_group_members_update_event("remove_members", old_system_group, [user_profile.id])
 
