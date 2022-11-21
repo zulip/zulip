@@ -231,9 +231,7 @@ a.text-success:focus {
 h1,
 h2,
 h3,
-h4,
-h5,
-h6 {
+h4 {
   margin: 10px 0;
   font-family: inherit;
   font-weight: bold;
@@ -244,9 +242,7 @@ h6 {
 h1 small,
 h2 small,
 h3 small,
-h4 small,
-h5 small,
-h6 small {
+h4 small {
   font-weight: normal;
   line-height: 1;
   color: #999999;
@@ -267,12 +263,6 @@ h3 {
 }
 h4 {
   font-size: 17.5px;
-}
-h5 {
-  font-size: 14px;
-}
-h6 {
-  font-size: 11.9px;
 }
 h1 small {
   font-size: 24.5px;
