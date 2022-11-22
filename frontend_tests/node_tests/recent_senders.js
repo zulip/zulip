@@ -92,11 +92,11 @@ test("update_topics_of_deleted_message_ids", () => {
     rs.update_topics_of_deleted_message_ids([message.id]);
     assert.deepEqual(rs.get_topic_recent_senders(stream_id, topic), []);
 
-    rs.process_message_for_senders(message);
+    rs.process_stream_message(message);
     assert.deepEqual(rs.get_topic_recent_senders(stream_id, topic), [sender_id]);
 });
 
-test("process_message_for_senders", () => {
+test("process_stream_message", () => {
     const stream1 = 1;
     const stream2 = 2;
     const stream3 = 3;
@@ -125,8 +125,8 @@ test("process_message_for_senders", () => {
         sender_id: sender2,
     });
 
-    rs.process_message_for_senders(message1);
-    rs.process_message_for_senders(message2);
+    rs.process_stream_message(message1);
+    rs.process_stream_message(message2);
 
     // Users have posted in only one of the streams
     assert.equal(
@@ -151,7 +151,7 @@ test("process_message_for_senders", () => {
         sender_id: sender3,
     });
 
-    rs.process_message_for_senders(message3);
+    rs.process_stream_message(message3);
     assert.equal(
         rs.compare_by_recency({user_id: sender3}, {user_id: sender2}, stream1, topic2) < 0,
         true,
@@ -164,7 +164,7 @@ test("process_message_for_senders", () => {
         sender_id: sender2,
     });
 
-    rs.process_message_for_senders(message4);
+    rs.process_stream_message(message4);
     assert.equal(
         rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) > 0,
         true,
@@ -177,7 +177,7 @@ test("process_message_for_senders", () => {
         sender_id: sender1,
     });
 
-    rs.process_message_for_senders(message5);
+    rs.process_stream_message(message5);
     assert.equal(
         rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) < 0,
         true,
@@ -200,9 +200,9 @@ test("process_message_for_senders", () => {
         sender_id: sender3,
     });
 
-    rs.process_message_for_senders(message6);
-    rs.process_message_for_senders(message7);
-    rs.process_message_for_senders(message8);
+    rs.process_stream_message(message6);
+    rs.process_stream_message(message7);
+    rs.process_stream_message(message8);
 
     // topic3 has a message in it, but sender1 nor sender2 have participated, so sort by stream
     assert.equal(
@@ -223,7 +223,7 @@ test("process_message_for_senders", () => {
         sender_id: sender3,
     });
 
-    rs.process_message_for_senders(message9);
+    rs.process_stream_message(message9);
 
     // Test topic change
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "3");
