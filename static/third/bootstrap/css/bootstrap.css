@@ -83,7 +83,6 @@ button,
 input[type="button"],
 input[type="reset"],
 input[type="submit"],
-input[type="radio"],
 input[type="checkbox"] {
   cursor: pointer;
 }
@@ -632,7 +631,6 @@ input[type="color"]:focus {
   -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
 }
-input[type="radio"],
 input[type="checkbox"] {
   margin: 4px 0 0;
   *margin-top: 0;
@@ -648,7 +646,6 @@ input[type="image"],
 input[type="submit"],
 input[type="reset"],
 input[type="button"],
-input[type="radio"],
 input[type="checkbox"] {
   width: auto;
 }
@@ -673,7 +670,6 @@ select[size] {
 }
 select:focus,
 input[type="file"]:focus,
-input[type="radio"]:focus,
 input[type="checkbox"]:focus {
   outline: thin dotted #333;
   outline: 5px auto -webkit-focus-ring-color;
@@ -691,24 +687,20 @@ input::-webkit-input-placeholder,
 textarea::-webkit-input-placeholder {
   color: #999999;
 }
-.radio,
 .checkbox {
   min-height: 20px;
   padding-left: 20px;
 }
-.radio input[type="radio"],
 .checkbox input[type="checkbox"] {
   float: left;
   margin-left: -20px;
 }
-.radio.inline,
 .checkbox.inline {
   display: inline-block;
   padding-top: 5px;
   margin-bottom: 0;
   vertical-align: middle;
 }
-.radio.inline + .radio.inline,
 .checkbox.inline + .checkbox.inline {
   margin-left: 10px;
 }
@@ -731,9 +723,7 @@ textarea[readonly] {
   cursor: not-allowed;
   background-color: #eeeeee;
 }
-input[type="radio"][disabled],
 input[type="checkbox"][disabled],
-input[type="radio"][readonly],
 input[type="checkbox"][readonly] {
   background-color: transparent;
 }
@@ -864,13 +854,11 @@ input.search-query {
 .form-inline .input-append {
   margin-bottom: 0;
 }
-.form-inline .radio,
 .form-inline .checkbox {
   padding-left: 0;
   margin-bottom: 0;
   vertical-align: middle;
 }
-.form-inline .radio input[type="radio"],
 .form-inline .checkbox input[type="checkbox"] {
   float: left;
   margin-right: 3px;
@@ -1866,8 +1854,7 @@ button.close {
   }
 }
 @media (max-width: 480px) {
-  input[type="checkbox"],
-  input[type="radio"] {
+  input[type="checkbox"] {
     border: 1px solid #ccc;
   }
   .media .pull-left,
