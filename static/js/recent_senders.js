@@ -91,7 +91,7 @@ function add_topic_message({stream_id, topic, sender_id, message_id}) {
     id_tracker.add(message_id);
 }
 
-export function process_message_for_senders(message) {
+export function process_stream_message(message) {
     const stream_id = message.stream_id;
     const topic = message.topic;
     const sender_id = message.sender_id;
