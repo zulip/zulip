@@ -1,3 +1,4 @@
+include /etc/nginx/zulip-include/s3-cache;
 include /etc/nginx/zulip-include/upstreams;
 include /etc/zulip/nginx_sharding_map.conf;
 

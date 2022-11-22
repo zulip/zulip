@@ -165,9 +165,9 @@ from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
     serve_file_download_backend,
+    serve_file_unauthed_from_token,
     serve_file_url_backend,
     serve_local_avatar_unauthed,
-    serve_local_file_unauthed,
     upload_file_backend,
 )
 from zerver.views.user_groups import (
@@ -639,8 +639,8 @@ urls += [
 urls += [
     path(
         "user_uploads/temporary/<token>/<filename>",
-        serve_local_file_unauthed,
-        name="local_file_unauthed",
+        serve_file_unauthed_from_token,
+        name="file_unauthed_from_token",
     ),
     rest_path(
         "user_uploads/download/<realm_id_str>/<path:filename>",

@@ -69,6 +69,18 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
 
+  $s3_memory_cache_size = zulipconf('application_server', 's3_memory_cache_size', '1M')
+  $s3_disk_cache_size = zulipconf('application_server', 's3_disk_cache_size', '200M')
+  $s3_cache_inactive_time = zulipconf('application_server', 's3_cache_inactive_time', '30d')
+  file { '/etc/nginx/zulip-include/s3-cache':
+    require => [Package[$zulip::common::nginx], File['/srv/zulip-uploaded-files-cache']],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/nginx/s3-cache.template.erb'),
+    notify  => Service['nginx'],
+  }
+
   file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
     ensure  => file,
     require => Package[$zulip::common::nginx],
@@ -200,7 +212,12 @@ class zulip::app_frontend_base {
     group  => 'zulip',
     mode   => '0755',
   }
-
+  file { '/srv/zulip-uploaded-files-cache':
+    ensure => directory,
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0755',
+  }
   file { '/var/log/zulip/queue_error':
     ensure => directory,
     owner  => 'zulip',
