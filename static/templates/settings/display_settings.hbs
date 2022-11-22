@@ -46,7 +46,7 @@
             <label class="emoji-theme title">{{t "Emoji theme" }}</label>
             <div class="emojiset_choices grey-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
                 {{#each settings_object.emojiset_choices}}
-                    <label>
+                    <label class="display-settings-radio-choice-label">
                         <input type="radio" class="setting_emojiset_choice" name="emojiset" value="{{this.key}}"/>
                         <span>{{this.text}}</span>
                         <span class="right">
@@ -84,7 +84,7 @@
             <label class="title">{{t "User list style" }}</label>
             <div class="user_list_style_values grey-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
                 {{#each user_list_style_values}}
-                    <label>
+                    <label class="display-settings-radio-choice-label">
                         <input type="radio" class="setting_user_list_style_choice" name="user_list_style" value="{{this.code}}"/>
                         <span>{{this.description}}</span>
                         <span class="right preview">
