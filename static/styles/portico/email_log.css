@@ -15,4 +15,24 @@
     .hide {
         display: none;
     }
+
+    #forward_email_modal {
+        label.radio {
+            padding-left: 20px;
+        }
+
+        input[type="radio"] {
+            float: left;
+            width: auto;
+            cursor: pointer;
+            margin: 4px 0 0 -20px;
+            line-height: normal;
+
+            &:focus {
+                outline: 1px dotted hsl(0, 0%, 20%);
+                outline: 5px auto -webkit-focus-ring-color;
+                outline-offset: -2px;
+            }
+        }
+    }
 }
