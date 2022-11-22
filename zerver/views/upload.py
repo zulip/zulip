@@ -88,42 +88,40 @@ def internal_nginx_redirect(internal_path: str) -> HttpResponse:
     return response
 
 
-def serve_s3(
-    request: HttpRequest, url_path: str, url_only: bool, download: bool = False
-) -> HttpResponse:
-    url = get_signed_upload_url(url_path, download=download)
-    if url_only:
-        return json_success(request, data=dict(url=url))
+def serve_s3(request: HttpRequest, path_id: str, download: bool = False) -> HttpResponse:
+    url = get_signed_upload_url(path_id)
+    assert url.startswith("https://")
 
-    return redirect(url)
+    if settings.DEVELOPMENT:
+        # In development, we do not have the nginx server to offload
+        # the response to; serve a redirect to the short-lived S3 URL.
+        # This means the content cannot be cached by the browser, but
+        # this is acceptable in development.
+        return redirect(url)
+
+    response = internal_nginx_redirect("/internal/s3/" + url[len("https://") :])
+    patch_disposition_header(response, path_id, download)
+    patch_cache_control(response, private=True, immutable=True)
+    return response
 
 
-def serve_local(
-    request: HttpRequest, path_id: str, url_only: bool, download: bool = False
-) -> HttpResponseBase:
+def serve_local(request: HttpRequest, path_id: str, download: bool = False) -> HttpResponseBase:
     assert settings.LOCAL_FILES_DIR is not None
     local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
     assert_is_local_storage_path("files", local_path)
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
 
-    if url_only:
-        url = generate_unauthed_file_access_url(path_id)
-        return json_success(request, data=dict(url=url))
-
-    mimetype, encoding = guess_type(local_path)
-    attachment = download or mimetype not in INLINE_MIME_TYPES
-
     if settings.DEVELOPMENT:
         # In development, we do not have the nginx server to offload
         # the response to; serve it directly ourselves.
         # FileResponse handles setting Content-Disposition, etc.
-        response: HttpResponseBase = FileResponse(open(local_path, "rb"), as_attachment=attachment)
+        response: HttpResponseBase = FileResponse(open(local_path, "rb"), as_attachment=download)
         patch_cache_control(response, private=True, immutable=True)
         return response
 
-    response = internal_nginx_redirect(quote(f"/internal/uploads/{path_id}"))
-    patch_disposition_header(response, local_path, attachment)
+    response = internal_nginx_redirect(quote(f"/internal/local/uploads/{path_id}"))
+    patch_disposition_header(response, local_path, download)
     patch_cache_control(response, private=True, immutable=True)
     return response
 
@@ -170,25 +168,32 @@ def serve_file(
         return HttpResponseNotFound(_("<p>File not found.</p>"))
     if not is_authorized:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
+    if url_only:
+        url = generate_unauthed_file_access_url(path_id)
+        return json_success(request, data=dict(url=url))
+
+    mimetype, encoding = guess_type(path_id)
+    download = download or mimetype not in INLINE_MIME_TYPES
+
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, url_only, download=download)
+        return serve_local(request, path_id, download=download)
+    else:
+        return serve_s3(request, path_id, download=download)
 
-    return serve_s3(request, path_id, url_only, download=download)
 
-
-LOCAL_FILE_ACCESS_TOKEN_SALT = "local_file_"
+USER_UPLOADS_ACCESS_TOKEN_SALT = "user_uploads_"
 
 
 def generate_unauthed_file_access_url(path_id: str) -> str:
-    signed_data = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT).sign(path_id)
+    signed_data = TimestampSigner(salt=USER_UPLOADS_ACCESS_TOKEN_SALT).sign(path_id)
     token = base64.b16encode(signed_data.encode()).decode()
 
     filename = path_id.split("/")[-1]
-    return reverse("local_file_unauthed", args=[token, filename])
+    return reverse("file_unauthed_from_token", args=[token, filename])
 
 
-def get_local_file_path_id_from_token(token: str) -> Optional[str]:
-    signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
+def get_file_path_id_from_token(token: str) -> Optional[str]:
+    signer = TimestampSigner(salt=USER_UPLOADS_ACCESS_TOKEN_SALT)
     try:
         signed_data = base64.b16decode(token).decode()
         path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
@@ -198,14 +203,22 @@ def get_local_file_path_id_from_token(token: str) -> Optional[str]:
     return path_id
 
 
-def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponseBase:
-    path_id = get_local_file_path_id_from_token(token)
+def serve_file_unauthed_from_token(
+    request: HttpRequest, token: str, filename: str
+) -> HttpResponseBase:
+    path_id = get_file_path_id_from_token(token)
     if path_id is None:
         raise JsonableError(_("Invalid token"))
     if path_id.split("/")[-1] != filename:
         raise JsonableError(_("Invalid filename"))
 
-    return serve_local(request, path_id, url_only=False)
+    mimetype, encoding = guess_type(path_id)
+    download = mimetype not in INLINE_MIME_TYPES
+
+    if settings.LOCAL_UPLOADS_DIR is not None:
+        return serve_local(request, path_id, download=download)
+    else:
+        return serve_s3(request, path_id, download=download)
 
 
 def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponseBase:
@@ -232,7 +245,7 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
     if settings.DEVELOPMENT:
         response: HttpResponseBase = FileResponse(open(local_path, "rb"))
     else:
-        response = internal_nginx_redirect(quote(f"/internal/user_avatars/{path}"))
+        response = internal_nginx_redirect(quote(f"/internal/local/user_avatars/{path}"))
 
     # We do _not_ mark the contents as immutable for caching purposes,
     # since the path for avatar images is hashed only by their user-id

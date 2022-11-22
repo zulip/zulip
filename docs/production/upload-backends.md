@@ -55,6 +55,36 @@ uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
 
+## S3 local caching
+
+For performance reasons, Zulip stores a cache of recently served user
+uploads on disk locally, even though the durable storage is kept in
+S3. There are a number of parameters which control the size and usage
+of this cache, which is maintained by nginx:
+
+- `s3_memory_cache_size` controls the in-memory size of the cache
+  _index_; the default is 1MB, which is enough to store about 8 thousand
+  entries.
+- `s3_disk_cache_size` controls the on-disk size of the cache
+  _contents_; the default is 200MB.
+- `s3_cache_inactive_time` controls the longest amount of time an
+  entry will be cached since last use; the default is 30 days. Since
+  the contents of the cache are immutable, this serves only as a
+  potential additional limit on the size of the contents on disk;
+  `s3_disk_cache_size` is expected to be the primary control for cache
+  sizing.
+
+These defaults are likely sufficient for small-to-medium deployments.
+Large deployments, or deployments with image-heavy use cases, will
+want to increase `s3_disk_cache_size`, potentially to be several
+gigabytes. `s3_memory_cache_size` should potentially be increased,
+based on estimating the number of files that the larger disk cache
+will hold.
+
+You may also wish to increase the cache sizes if the S3 storage (or
+S3-compatible equivalent) is not closely located to your Zulip server,
+as cache misses will be more expensive.
+
 ## S3 bucket policy
 
 The best way to do the S3 integration with Amazon is to create a new IAM user
