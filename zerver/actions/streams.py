@@ -778,10 +778,10 @@ def do_change_subscription_property(
         modified_user=user_profile,
         acting_user=acting_user,
         modified_stream=stream,
+        old_value=old_value,
+        new_value=database_value,
         extra_data=orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: database_value,
                 "property": database_property_name,
             }
         ).decode(),
@@ -876,10 +876,10 @@ def do_change_stream_permission(
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
                 event_time=event_time,
+                old_value=str(old_invite_only_value),
+                new_value=str(stream.invite_only),
                 extra_data=orjson.dumps(
                     {
-                        RealmAuditLog.OLD_VALUE: old_invite_only_value,
-                        RealmAuditLog.NEW_VALUE: stream.invite_only,
                         "property": "invite_only",
                     }
                 ).decode(),
@@ -892,10 +892,10 @@ def do_change_stream_permission(
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
                 event_time=event_time,
+                old_value=str(old_history_public_to_subscribers_value),
+                new_value=str(stream.history_public_to_subscribers),
                 extra_data=orjson.dumps(
                     {
-                        RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
-                        RealmAuditLog.NEW_VALUE: stream.history_public_to_subscribers,
                         "property": "history_public_to_subscribers",
                     }
                 ).decode(),
@@ -920,10 +920,10 @@ def do_change_stream_permission(
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
                 event_time=event_time,
+                old_value=str(old_is_web_public_value),
+                new_value=str(stream.is_web_public),
                 extra_data=orjson.dumps(
                     {
-                        RealmAuditLog.OLD_VALUE: old_is_web_public_value,
-                        RealmAuditLog.NEW_VALUE: stream.is_web_public,
                         "property": "is_web_public",
                     }
                 ).decode(),
@@ -1036,10 +1036,10 @@ def do_change_stream_post_policy(
             modified_stream=stream,
             event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
             event_time=timezone_now(),
+            old_value=str(old_post_policy),
+            new_value=str(stream_post_policy),
             extra_data=orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: old_post_policy,
-                    RealmAuditLog.NEW_VALUE: stream_post_policy,
                     "property": "stream_post_policy",
                 }
             ).decode(),
@@ -1088,12 +1088,8 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         modified_stream=stream,
         event_type=RealmAuditLog.STREAM_NAME_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_name,
-                RealmAuditLog.NEW_VALUE: new_name,
-            }
-        ).decode(),
+        old_value=old_name,
+        new_value=new_name,
     )
 
     assert stream.recipient_id is not None
@@ -1198,10 +1194,10 @@ def do_change_stream_description(
             modified_stream=stream,
             event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
             event_time=timezone_now(),
+            old_value=old_description,
+            new_value=new_description,
             extra_data=orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: old_description,
-                    RealmAuditLog.NEW_VALUE: new_description,
                     "property": "description",
                 }
             ).decode(),
@@ -1283,12 +1279,10 @@ def do_change_stream_message_retention_days(
             modified_stream=stream,
             event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED,
             event_time=timezone_now(),
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_message_retention_days_value,
-                    RealmAuditLog.NEW_VALUE: message_retention_days,
-                }
-            ).decode(),
+            old_value=str(old_message_retention_days_value)
+            if old_message_retention_days_value is not None
+            else None,
+            new_value=str(message_retention_days) if message_retention_days is not None else None,
         )
 
     event = dict(
@@ -1324,12 +1318,8 @@ def do_change_can_remove_subscribers_group(
         modified_stream=stream,
         event_type=RealmAuditLog.STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_user_group_id,
-                RealmAuditLog.NEW_VALUE: user_group.id,
-            }
-        ).decode(),
+        old_value=str(old_user_group_id),
+        new_value=str(user_group.id),
     )
     event = dict(
         op="update",

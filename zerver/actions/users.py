@@ -204,10 +204,10 @@ def do_change_user_role(
         acting_user=acting_user,
         event_type=RealmAuditLog.USER_ROLE_CHANGED,
         event_time=timezone_now(),
+        old_value=str(old_value),
+        new_value=str(value),
         extra_data=orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             }
         ).decode(),

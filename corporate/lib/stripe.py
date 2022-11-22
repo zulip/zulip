@@ -329,6 +329,7 @@ def do_create_stripe_customer(user: UserProfile, payment_method: Optional[str] =
             acting_user=user,
             event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
             event_time=event_time,
+            new_value=stripe_customer.id,
         )
         if payment_method is not None:
             RealmAuditLog.objects.create(

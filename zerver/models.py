@@ -4268,13 +4268,14 @@ class AbstractRealmAuditLog(models.Model):
 
     # Keys within extra_data, when extra_data is a json dict. Keys are strings because
     # json keys must always be strings.
-    OLD_VALUE = "1"
-    NEW_VALUE = "2"
     ROLE_COUNT = "10"
     ROLE_COUNT_HUMANS = "11"
     ROLE_COUNT_BOTS = "12"
 
     extra_data = models.TextField(null=True)
+
+    old_value = models.TextField(null=True)
+    new_value = models.TextField(null=True)
 
     # Event types
     USER_CREATED = 101

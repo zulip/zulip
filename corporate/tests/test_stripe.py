@@ -816,7 +816,7 @@ class StripeTest(StripeTestCase):
         # Check RealmAuditLog
         audit_log_entries = list(
             RealmAuditLog.objects.filter(acting_user=user)
-            .values_list("event_type", "event_time")
+            .values_list("event_type", "event_time", "new_value")
             .order_by("id")
         )
         self.assertEqual(
@@ -825,12 +825,13 @@ class StripeTest(StripeTestCase):
                 (
                     RealmAuditLog.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
+                    stripe_customer.stripe_id,
                 ),
-                (RealmAuditLog.STRIPE_CARD_CHANGED, self.now),
-                (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
+                (RealmAuditLog.STRIPE_CARD_CHANGED, self.now, None),
+                (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now, None),
             ],
         )
-        self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
+        self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED, None)
         self.assertEqual(
             orjson.loads(
                 assert_is_not_none(

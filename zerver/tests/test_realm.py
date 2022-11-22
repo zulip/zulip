@@ -751,11 +751,8 @@ class RealmTest(ZulipTestCase):
             event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {
-            "old_value": Realm.ORG_TYPES["business"]["id"],
-            "new_value": Realm.ORG_TYPES["government"]["id"],
-        }
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.old_value, str(Realm.ORG_TYPES["business"]["id"]))
+        self.assertEqual(realm_audit_log.new_value, str(Realm.ORG_TYPES["government"]["id"]))
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["government"]["id"])
 
@@ -773,11 +770,8 @@ class RealmTest(ZulipTestCase):
             event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {
-            "old_value": Realm.PLAN_TYPE_SELF_HOSTED,
-            "new_value": Realm.PLAN_TYPE_STANDARD,
-        }
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.old_value, str(Realm.PLAN_TYPE_SELF_HOSTED))
+        self.assertEqual(realm_audit_log.new_value, str(Realm.PLAN_TYPE_STANDARD))
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)

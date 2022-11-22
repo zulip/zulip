@@ -1,6 +1,5 @@
 from typing import Optional, Union
 
-import orjson
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -23,6 +22,8 @@ def do_change_bot_owner(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
         event_time=event_time,
+        old_value=str(previous_owner.id) if previous_owner is not None else None,
+        new_value=str(bot_owner.id),
     )
 
     update_users = bot_owner_user_ids(user_profile)
@@ -104,12 +105,8 @@ def do_change_default_sending_stream(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-            }
-        ).decode(),
+        old_value=str(old_value),
+        new_value=None if stream is None else str(stream.id),
     )
 
     if user_profile.is_bot:
@@ -149,12 +146,8 @@ def do_change_default_events_register_stream(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-            }
-        ).decode(),
+        old_value=str(old_value),
+        new_value=None if stream is None else str(stream.id),
     )
 
     if user_profile.is_bot:
@@ -195,12 +188,8 @@ def do_change_default_all_public_streams(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-            }
-        ).decode(),
+        old_value=str(old_value),
+        new_value=str(value),
     )
 
     if user_profile.is_bot:

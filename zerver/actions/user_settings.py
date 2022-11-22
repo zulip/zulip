@@ -54,6 +54,7 @@ def send_user_email_update_event(user_profile: UserProfile) -> None:
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
 
+    old_email = user_profile.delivery_email
     user_profile.delivery_email = new_email
     if user_profile.email_address_is_realm_public():
         user_profile.email = new_email
@@ -86,6 +87,8 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_EMAIL_CHANGED,
         event_time=event_time,
+        old_value=old_email,
+        new_value=new_email,
     )
 
 
@@ -199,6 +202,7 @@ def check_change_bot_full_name(
 
 @transaction.atomic(durable=True)
 def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
+    old_tos = user_profile.tos_version
     user_profile.tos_version = tos_version
     user_profile.save(update_fields=["tos_version"])
     event_time = timezone_now()
@@ -208,6 +212,8 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
         event_time=event_time,
+        old_value=old_tos,
+        new_value=tos_version,
     )
 
 
@@ -303,6 +309,7 @@ def do_change_avatar_fields(
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
+    old_source = user_profile.avatar_source
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
@@ -314,6 +321,8 @@ def do_change_avatar_fields(
         extra_data=str({"avatar_source": avatar_source}),
         event_time=event_time,
         acting_user=acting_user,
+        old_value=old_source,
+        new_value=avatar_source,
     )
 
     if not skip_notify:
@@ -375,10 +384,10 @@ def do_change_user_setting(
             event_time=event_time,
             acting_user=acting_user,
             modified_user=user_profile,
+            old_value=str(old_value),
+            new_value=str(setting_value),
             extra_data=orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: setting_value,
                     "property": setting_name,
                 }
             ).decode(),

@@ -524,12 +524,12 @@ class StreamAdminTest(ZulipTestCase):
 
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
                 "property": "history_public_to_subscribers",
             }
         ).decode()
         self.assertEqual(history_public_to_subscribers_log.extra_data, expected_extra_data)
+        self.assertEqual(history_public_to_subscribers_log.old_value, "False")
+        self.assertEqual(history_public_to_subscribers_log.new_value, "True")
 
         invite_only_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -539,12 +539,12 @@ class StreamAdminTest(ZulipTestCase):
 
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
                 "property": "invite_only",
             }
         ).decode()
         self.assertEqual(invite_only_log.extra_data, expected_extra_data)
+        self.assertEqual(invite_only_log.old_value, "True")
+        self.assertEqual(invite_only_log.new_value, "False")
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         params = {
@@ -589,12 +589,12 @@ class StreamAdminTest(ZulipTestCase):
 
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
                 "property": "history_public_to_subscribers",
             }
         ).decode()
         self.assertEqual(history_public_to_subscribers_log.extra_data, expected_extra_data)
+        self.assertEqual(history_public_to_subscribers_log.old_value, "True")
+        self.assertEqual(history_public_to_subscribers_log.new_value, "False")
 
         invite_only_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -604,12 +604,12 @@ class StreamAdminTest(ZulipTestCase):
 
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
                 "property": "invite_only",
             }
         ).decode()
         self.assertEqual(invite_only_log.extra_data, expected_extra_data)
+        self.assertEqual(invite_only_log.old_value, "False")
+        self.assertEqual(invite_only_log.new_value, "True")
 
         default_stream = self.make_stream("default_stream", realm=realm)
         do_add_default_stream(default_stream)
@@ -709,12 +709,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
                 "property": "invite_only",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, "True")
+        self.assertEqual(realm_audit_log.new_value, "False")
 
     def test_make_stream_private_with_public_history(self) -> None:
         # Convert a public stream to a private stream with shared history
@@ -750,12 +750,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
                 "property": "invite_only",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, "False")
+        self.assertEqual(realm_audit_log.new_value, "True")
 
         # Convert a private stream with protected history to a private stream
         # with shared history.
@@ -791,12 +791,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
                 "property": "history_public_to_subscribers",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, "False")
+        self.assertEqual(realm_audit_log.new_value, "True")
 
     def test_make_stream_web_public(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -876,12 +876,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
                 "property": "is_web_public",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, "False")
+        self.assertEqual(realm_audit_log.new_value, "True")
 
     def test_change_history_access_for_private_streams(self) -> None:
         user_profile = self.example_user("iago")
@@ -915,12 +915,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
                 "property": "history_public_to_subscribers",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, "False")
+        self.assertEqual(realm_audit_log.new_value, "True")
 
         params = {
             "history_public_to_subscribers": orjson.dumps(False).decode(),
@@ -947,12 +947,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
                 "property": "history_public_to_subscribers",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, "True")
+        self.assertEqual(realm_audit_log.new_value, "False")
 
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
@@ -1641,12 +1641,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: "Test description",
-                RealmAuditLog.NEW_VALUE: "a multi line description",
                 "property": "description",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, "Test description")
+        self.assertEqual(realm_audit_log.new_value, "a multi line description")
 
         # Verify that we don't render inline URL previews in this code path.
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
@@ -1705,12 +1705,12 @@ class StreamAdminTest(ZulipTestCase):
         assert realm_audit_log is not None
         expected_extra_data = orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: Stream.STREAM_POST_POLICY_EVERYONE,
-                RealmAuditLog.NEW_VALUE: Stream.STREAM_POST_POLICY_ADMINS,
                 "property": "stream_post_policy",
             }
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.old_value, str(Stream.STREAM_POST_POLICY_EVERYONE))
+        self.assertEqual(realm_audit_log.new_value, str(Stream.STREAM_POST_POLICY_ADMINS))
 
     def test_change_stream_post_policy_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1771,12 +1771,12 @@ class StreamAdminTest(ZulipTestCase):
             assert realm_audit_log is not None
             expected_extra_data = orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: old_post_policy,
-                    RealmAuditLog.NEW_VALUE: policy,
                     "property": "stream_post_policy",
                 }
             ).decode()
             self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+            self.assertEqual(realm_audit_log.old_value, str(old_post_policy))
+            self.assertEqual(realm_audit_log.new_value, str(policy))
 
     def test_change_stream_message_retention_days_notifications(self) -> None:
         user_profile = self.example_user("desdemona")
@@ -1803,10 +1803,9 @@ class StreamAdminTest(ZulipTestCase):
             event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = orjson.dumps(
-            {RealmAuditLog.OLD_VALUE: None, RealmAuditLog.NEW_VALUE: 2}
-        ).decode()
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertIsNone(realm_audit_log.extra_data)
+        self.assertIsNone(realm_audit_log.old_value)
+        self.assertEqual(realm_audit_log.new_value, "2")
 
         # Go from 2 days to 8 days
         result = self.client_patch(
@@ -1826,10 +1825,9 @@ class StreamAdminTest(ZulipTestCase):
             event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = orjson.dumps(
-            {RealmAuditLog.OLD_VALUE: 2, RealmAuditLog.NEW_VALUE: 8}
-        ).decode()
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertIsNone(realm_audit_log.extra_data)
+        self.assertEqual(realm_audit_log.old_value, "2")
+        self.assertEqual(realm_audit_log.new_value, "8")
 
         # Go from 8 days to realm default (None on stream, forever/-1 on realm)
         result = self.client_patch(
@@ -1850,13 +1848,9 @@ class StreamAdminTest(ZulipTestCase):
             event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: 8,
-                RealmAuditLog.NEW_VALUE: None,
-            }
-        ).decode()
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertIsNone(realm_audit_log.extra_data)
+        self.assertEqual(realm_audit_log.old_value, "8")
+        self.assertIsNone(realm_audit_log.new_value, None)
 
     def test_change_stream_message_retention_days(self) -> None:
         user_profile = self.example_user("desdemona")

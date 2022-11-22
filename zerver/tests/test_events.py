@@ -2608,10 +2608,10 @@ class RealmPropertyActionTest(BaseAction):
                     event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                     event_time__gte=now,
                     acting_user=self.user_profile,
+                    old_value=old_value,
+                    new_value=val,
                     extra_data=orjson.dumps(
                         {
-                            RealmAuditLog.OLD_VALUE: old_value,
-                            RealmAuditLog.NEW_VALUE: val,
                             "property": name,
                         }
                     ).decode(),
@@ -2692,10 +2692,10 @@ class RealmPropertyActionTest(BaseAction):
                     event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
                     event_time__gte=now,
                     acting_user=self.user_profile,
+                    old_value=old_value,
+                    new_value=val,
                     extra_data=orjson.dumps(
                         {
-                            RealmAuditLog.OLD_VALUE: old_value,
-                            RealmAuditLog.NEW_VALUE: val,
                             "property": name,
                         }
                     ).decode(),

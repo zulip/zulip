@@ -85,10 +85,10 @@ def do_set_realm_property(
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
+        old_value=old_value,
+        new_value=value,
         extra_data=orjson.dumps(
             {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
                 "property": name,
             }
         ).decode(),
@@ -133,10 +133,10 @@ def do_set_realm_authentication_methods(
             event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
+            old_value=orjson.dumps(old_value).decode(),
+            new_value=orjson.dumps(updated_value).decode(),
             extra_data=orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: updated_value,
                     "property": "authentication_methods",
                 }
             ).decode(),
@@ -181,10 +181,10 @@ def do_set_realm_stream(
             event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time=event_time,
             acting_user=acting_user,
+            old_value=str(old_value),
+            new_value=str(stream_id),
             extra_data=orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: stream_id,
                     "property": field,
                 }
             ).decode(),
@@ -233,10 +233,10 @@ def do_set_realm_user_default_setting(
             event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
             event_time=event_time,
             acting_user=acting_user,
+            old_value=old_value,
+            new_value=value,
             extra_data=orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: value,
                     "property": name,
                 }
             ).decode(),
@@ -370,7 +370,8 @@ def do_change_realm_org_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data=str({"old_value": old_value, "new_value": org_type}),
+        old_value=str(old_value),
+        new_value=str(org_type),
     )
 
     event = dict(type="realm", op="update", property="org_type", value=org_type)
@@ -382,7 +383,6 @@ def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.plan_type
-
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         # We do not allow public access on limited plans.
         do_set_realm_property(realm, "enable_spectator_access", False, acting_user=acting_user)
@@ -394,7 +394,8 @@ def do_change_realm_plan_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data=str({"old_value": old_value, "new_value": plan_type}),
+        old_value=str(old_value),
+        new_value=str(plan_type),
     )
 
     if plan_type == Realm.PLAN_TYPE_PLUS:
