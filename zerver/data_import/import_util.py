@@ -28,7 +28,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as stream_colors
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
     Huddle,
@@ -203,7 +203,7 @@ def make_user_messages(
 
 
 def build_subscription(recipient_id: int, user_id: int, subscription_id: int) -> ZerverFieldsT:
-    subscription = Subscription(color=random.choice(stream_colors), id=subscription_id)
+    subscription = Subscription(color=random.choice(STREAM_COLORS), id=subscription_id)
     subscription_dict = model_to_dict(subscription, exclude=["user_profile", "recipient_id"])
     subscription_dict["user_profile"] = user_id
     subscription_dict["recipient"] = recipient_id

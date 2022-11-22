@@ -51,7 +51,7 @@ from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
-    InvalidFakeEmailDomain,
+    InvalidFakeEmailDomainError,
     Message,
     PreregistrationUser,
     Realm,
@@ -2304,12 +2304,12 @@ class FakeEmailDomainTest(ZulipTestCase):
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
-        with self.assertRaises(InvalidFakeEmailDomain):
+        with self.assertRaises(InvalidFakeEmailDomainError):
             get_fake_email_domain(realm)
 
     @override_settings(FAKE_EMAIL_DOMAIN="127.0.0.1", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain_ip(self) -> None:
-        with self.assertRaises(InvalidFakeEmailDomain):
+        with self.assertRaises(InvalidFakeEmailDomainError):
             realm = get_realm("zulip")
             get_fake_email_domain(realm)
 

@@ -76,7 +76,7 @@ from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
-class RestartEventException(Exception):
+class RestartEventError(Exception):
     """
     Special error for handling restart events in apply_events.
     """
@@ -646,7 +646,7 @@ def apply_events(
 ) -> None:
     for event in events:
         if event["type"] == "restart":
-            raise RestartEventException()
+            raise RestartEventError()
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -1483,7 +1483,7 @@ def do_events_register(
                 slim_presence=slim_presence,
                 include_subscribers=include_subscribers,
             )
-        except RestartEventException:
+        except RestartEventError:
             # This represents a rare race condition, where Tornado
             # restarted (and sent `restart` events) while we were waiting
             # for fetch_initial_state_data to return. To avoid the client

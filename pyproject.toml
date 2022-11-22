@@ -100,21 +100,35 @@ django_settings_module = "zproject.settings"
 [tool.ruff]
 # See https://github.com/charliermarsh/ruff#rules for error code definitions.
 select = [
+    "ANN", # annotations
     "B", # bugbear
     "C", # comprehensions
     "E", # style errors
     "F", # flakes
+    "I", # import sorting
     "M", # meta
+    "N", # naming
     "U", # upgrade
     "W", # style warnings
+    "YTT", # sys.version
 ]
 ignore = [
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in classmethod
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "B006", # Do not use mutable data structures for argument defaults
     "B007", # Loop control variable not used within the loop body
+    "B008", # Do not perform function calls in argument defaults.
     "C408", # Unnecessary `dict` call (rewrite as a literal)
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
+    "N802", # Function name should be lowercase
+    "N806", # Variable in function should be lowercase
 ]
 line-length = 100
+src = [".", "tools", "tools/setup/emoji"]
 target-version = "py38"
+
+[tool.ruff.isort]
+known-third-party = ["zulip"]

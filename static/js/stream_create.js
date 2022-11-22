@@ -372,7 +372,7 @@ export function set_up_handlers() {
             confirm_dialog.launch({
                 html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
                 html_body,
-                on_click: () => {
+                on_click() {
                     create_stream();
                 },
             });

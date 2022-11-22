@@ -29,7 +29,7 @@ from zerver.models import (
 )
 
 
-class ConfirmationKeyException(Exception):
+class ConfirmationKeyError(Exception):
     WRONG_LENGTH = 1
     EXPIRED = 2
     DOES_NOT_EXIST = 3
@@ -40,11 +40,11 @@ class ConfirmationKeyException(Exception):
 
 
 def render_confirmation_key_error(
-    request: HttpRequest, exception: ConfirmationKeyException
+    request: HttpRequest, exception: ConfirmationKeyError
 ) -> HttpResponse:
-    if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
+    if exception.error_type == ConfirmationKeyError.WRONG_LENGTH:
         return render(request, "confirmation/link_malformed.html", status=404)
-    if exception.error_type == ConfirmationKeyException.EXPIRED:
+    if exception.error_type == ConfirmationKeyError.EXPIRED:
         return render(request, "confirmation/link_expired.html", status=404)
     return render(request, "confirmation/link_does_not_exist.html", status=404)
 
@@ -77,16 +77,16 @@ def get_object_from_key(
 
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
-        raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
+        raise ConfirmationKeyError(ConfirmationKeyError.WRONG_LENGTH)
     try:
         confirmation = Confirmation.objects.get(
             confirmation_key=confirmation_key, type__in=confirmation_types
         )
     except Confirmation.DoesNotExist:
-        raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
+        raise ConfirmationKeyError(ConfirmationKeyError.DOES_NOT_EXIST)
 
     if confirmation.expiry_date is not None and timezone_now() > confirmation.expiry_date:
-        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
+        raise ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
 
     obj = confirmation.content_object
     assert obj is not None
@@ -96,7 +96,7 @@ def get_object_from_key(
     if hasattr(obj, "status") and obj.status in [used_value, revoked_value]:
         # Confirmations where the object has the status attribute are one-time use
         # and are marked after being used (or revoked).
-        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
+        raise ConfirmationKeyError(ConfirmationKeyError.EXPIRED)
 
     if mark_object_used:
         # MultiuseInvite objects do not use the STATUS_USED status, since they are
@@ -240,10 +240,10 @@ def validate_key(creation_key: Optional[str]) -> Optional["RealmCreationKey"]:
     try:
         key_record = RealmCreationKey.objects.get(creation_key=creation_key)
     except RealmCreationKey.DoesNotExist:
-        raise RealmCreationKey.Invalid()
+        raise RealmCreationKey.InvalidError()
     time_elapsed = timezone_now() - key_record.date_created
     if time_elapsed.total_seconds() > settings.REALM_CREATION_LINK_VALIDITY_DAYS * 24 * 3600:
-        raise RealmCreationKey.Invalid()
+        raise RealmCreationKey.InvalidError()
     return key_record
 
 
@@ -266,5 +266,5 @@ class RealmCreationKey(models.Model):
     # is theirs, and skip sending mail to it to confirm that.
     presume_email_valid = models.BooleanField(default=False)
 
-    class Invalid(Exception):
+    class InvalidError(Exception):
         pass

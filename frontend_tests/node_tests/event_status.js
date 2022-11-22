@@ -17,7 +17,7 @@ run_test("initialize_retry_with_another_card_link_click_handler", ({override}) =
         assert.equal(method, "POST");
         set_global("window", {
             location: {
-                replace: (new_location) => {
+                replace(new_location) {
                     assert.equal(new_location, "stripe_session_url");
                 },
             },
@@ -26,7 +26,7 @@ run_test("initialize_retry_with_another_card_link_click_handler", ({override}) =
     });
     event_status.initialize_retry_with_another_card_link_click_handler();
     const retry_click_handler = $("#retry-with-another-card-link").get_on_handler("click");
-    retry_click_handler({preventDefault: () => {}});
+    retry_click_handler({preventDefault() {}});
 });
 
 run_test("check_status", async ({override}) => {
@@ -77,7 +77,7 @@ run_test("check_status", async ({override}) => {
     });
     set_global("window", {
         location: {
-            replace: (new_location) => {
+            replace(new_location) {
                 assert.equal(
                     new_location,
                     "/billing/event_status?stripe_payment_intent_id=spid_1A",
@@ -108,7 +108,7 @@ run_test("check_status", async ({override}) => {
     });
     set_global("window", {
         location: {
-            replace: (new_location) => {
+            replace(new_location) {
                 assert.equal(
                     new_location,
                     "/billing/event_status?stripe_payment_intent_id=spid_1B",
@@ -138,7 +138,7 @@ run_test("check_status", async ({override}) => {
     });
     set_global("window", {
         location: {
-            replace: (new_location) => {
+            replace(new_location) {
                 assert.equal(new_location, "/billing");
             },
         },
@@ -165,7 +165,7 @@ run_test("check_status", async ({override}) => {
     });
     set_global("window", {
         location: {
-            replace: (new_location) => {
+            replace(new_location) {
                 assert.equal(new_location, "/billing?onboarding=true");
             },
         },
@@ -192,7 +192,7 @@ run_test("check_status", async ({override}) => {
     });
     set_global("window", {
         location: {
-            replace: (new_location) => {
+            replace(new_location) {
                 assert.equal(new_location, "/billing#payment-method");
             },
         },
@@ -300,7 +300,7 @@ run_test("check_status", async ({override}) => {
     });
     set_global("window", {
         location: {
-            replace: (new_location) => {
+            replace(new_location) {
                 assert.equal(new_location, "/billing/");
             },
         },

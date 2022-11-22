@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventType
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.request import has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -170,7 +170,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
         # Known but unsupported Pivotal event types
         pass
     else:
-        raise UnsupportedWebhookEventType(event_type)
+        raise UnsupportedWebhookEventTypeError(event_type)
 
     return subject, content, f"{event_type}_v5"
 

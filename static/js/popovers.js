@@ -582,10 +582,7 @@ export function toggle_actions_popover(element, id) {
         const subscribed_to_stream =
             message.type === "stream" && stream_data.is_subscribed(message.stream_id);
         const should_display_mark_as_unread =
-            message_lists.current.data.fetch_status.has_found_newest() &&
-            !message.unread &&
-            not_spectator &&
-            (not_stream_message || subscribed_to_stream);
+            !message.unread && not_spectator && (not_stream_message || subscribed_to_stream);
 
         const should_display_edit_history_option =
             message.edit_history &&

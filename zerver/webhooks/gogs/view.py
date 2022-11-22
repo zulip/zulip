@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Protocol
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
@@ -247,7 +247,7 @@ def gogs_webhook_main(
         )
 
     else:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success(request)

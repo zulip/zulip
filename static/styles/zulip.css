@@ -216,6 +216,7 @@ p.n-margin {
     display: none;
 }
 
+.alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
     width: 24px;

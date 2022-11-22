@@ -298,17 +298,17 @@ export function process_messages(messages) {
     // the UX can be bad if user wants to scroll down the list as
     // the UI will be returned to the beginning of the list on every
     // update.
-    //
-    // Only rerender if topic_data actually
-    // changed.
-    let topic_data_changed = false;
-    for (const msg of messages) {
-        if (process_message(msg)) {
-            topic_data_changed = true;
+    let conversation_data_updated = false;
+    if (messages.length > 0) {
+        for (const msg of messages) {
+            if (process_message(msg)) {
+                conversation_data_updated = true;
+            }
         }
     }
 
-    if (topic_data_changed) {
+    // Only rerender if conversation data actually changed.
+    if (conversation_data_updated) {
         complete_rerender();
     }
 }
@@ -424,9 +424,15 @@ function format_conversation(conversation_data) {
         context.pm_url = last_msg.pm_with_url;
         context.is_group = last_msg.display_recipient.length > 2;
 
-        // Display in most recent sender first order
-        all_senders = last_msg.display_recipient;
-        senders = all_senders.slice(-MAX_AVATAR).map((sender) => sender.id);
+        // Don't show participant avatars for PMs.
+        // "Participants" column on "Recent topics" does not provide accurate information for PM conversations.
+        // In particular, it duplicates the PM recipients list under "Topics"
+        // (with the addition of the current user), but does not depend on who sent messages to the thread.
+        // TODO: https://github.com/zulip/zulip/issues/23563
+        all_senders = [];
+        senders = [];
+        extra_sender_ids = [];
+        displayed_other_senders = [];
 
         if (!context.is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
@@ -439,12 +445,6 @@ function format_conversation(conversation_data) {
                 context.user_circle_class = buddy_data.get_user_circle_class(user_id);
             }
         }
-
-        // Collect extra senders fullname for tooltip.
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids
-            .slice(-MAX_EXTRA_SENDERS)
-            .map((sender) => sender.id);
     }
 
     context.senders = people.sender_info_for_recent_topics_row(senders);
@@ -575,7 +575,14 @@ export function inplace_rerender(topic_key) {
     topics_widget.filter_and_sort();
     const current_topics_list = topics_widget.get_current_list();
     if (is_topic_rendered && filters_should_hide_topic(topic_data)) {
-        const row_is_focused = get_focused_row_message().id === topic_data.last_msg_id;
+        // Since the row needs to be removed from DOM, we need to adjust `row_focus`
+        // if the row being removed is focused and is the last row in the list.
+        // This prevents the row_focus either being reset to the first row or
+        // middle of the visible table rows.
+        // We need to get the current focused row details from DOM since we cannot
+        // rely on `current_topics_list` since it has already been updated and row
+        // doesn't exist inside it.
+        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
         if (row_is_focused && row_focus >= current_topics_list.length) {
             row_focus = current_topics_list.length - 1;
         }

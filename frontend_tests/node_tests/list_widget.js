@@ -25,7 +25,7 @@ mock_jquery((arg) => {
         addClass() {
             return this;
         },
-        replace: (regex, string) => {
+        replace(regex, string) {
             arg = arg.replace(regex, string);
         },
         html: () => arg,
@@ -285,7 +285,7 @@ run_test("no filtering", () => {
     const opts = {
         modifier: (item) => div(item),
         $simplebar_container: $scroll_container,
-        callback_after_render: () => {
+        callback_after_render() {
             callback_called = true;
         },
     };
@@ -329,15 +329,15 @@ function sort_button(opts) {
         closest: lookup(".progressive-table-wrapper", {
             data: lookup("list-widget", opts.list_name),
         }),
-        addClass: (cls) => {
+        addClass(cls) {
             classList.add(cls);
         },
         hasClass: (cls) => classList.has(cls),
-        removeClass: (cls) => {
+        removeClass(cls) {
             classList.delete(cls);
         },
         siblings: lookup(".active", {
-            removeClass: (cls) => {
+            removeClass(cls) {
                 assert.equal(cls, "active");
                 $button.siblings_deactivated = true;
             },
@@ -528,7 +528,7 @@ run_test("clear_event_handlers", () => {
     const opts = {
         name: "list-we-create-twice",
         $parent_container: $sort_container,
-        modifier: () => {},
+        modifier() {},
         filter: {
             $element: $filter_element,
             predicate: /* istanbul ignore next */ () => true,
@@ -640,7 +640,7 @@ run_test("replace_list_data w/filter update", () => {
         modifier: (n) => "(" + n.toString() + ")",
         filter: {
             predicate: (n) => n % 2 === 0,
-            onupdate: () => {
+            onupdate() {
                 num_updates += 1;
             },
         },
@@ -722,7 +722,7 @@ run_test("render item", () => {
             // Return a JQuery stub for the original HTML.
             // We want this to be called when we replace
             // the existing HTML with newly rendered HTML.
-            replaceWith: (html) => {
+            replaceWith(html) {
                 assert.equal(new_html, html);
                 called = true;
                 $container.$appended_data.replace(regex, new_html);
@@ -786,7 +786,7 @@ run_test("render item", () => {
     const widget_2 = ListWidget.create($container, list, {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
-        get_item: (item) => {
+        get_item(item) {
             get_item_called = true;
             return item;
         },

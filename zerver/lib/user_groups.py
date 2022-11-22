@@ -99,13 +99,6 @@ def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.direct_groups.all())
 
 
-def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> int:
-    num_deleted, _ = UserGroupMembership.objects.filter(
-        user_profile=user_profile, user_group=user_group
-    ).delete()
-    return num_deleted
-
-
 def create_user_group(
     name: str,
     members: List[UserProfile],

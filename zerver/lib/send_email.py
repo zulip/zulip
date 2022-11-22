@@ -206,11 +206,11 @@ def build_email(
     return mail
 
 
-class EmailNotDeliveredException(Exception):
+class EmailNotDeliveredError(Exception):
     pass
 
 
-class DoubledEmailArgumentException(CommandError):
+class DoubledEmailArgumentError(CommandError):
     def __init__(self, argument_name: str) -> None:
         msg = (
             f"Argument '{argument_name}' is ambiguously present in both options and email template."
@@ -218,7 +218,7 @@ class DoubledEmailArgumentException(CommandError):
         super().__init__(msg)
 
 
-class NoEmailArgumentException(CommandError):
+class NoEmailArgumentError(CommandError):
     def __init__(self, argument_name: str) -> None:
         msg = f"Argument '{argument_name}' is required in either options or email template."
         super().__init__(msg)
@@ -277,7 +277,7 @@ def send_email(
         # it will only call .close() if it was not open to begin with
         if connection.send_messages([mail]) == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
-            raise EmailNotDeliveredException
+            raise EmailNotDeliveredError
     except smtplib.SMTPResponseException as e:
         logger.exception(
             "Error sending %s email to %s with error code %s: %s",
@@ -287,10 +287,10 @@ def send_email(
             e.smtp_error,
             stack_info=True,
         )
-        raise EmailNotDeliveredException
+        raise EmailNotDeliveredError
     except smtplib.SMTPException as e:
         logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
-        raise EmailNotDeliveredException
+        raise EmailNotDeliveredError
 
 
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
@@ -488,9 +488,9 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
 
 def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     if option and header:
-        raise DoubledEmailArgumentException(name)
+        raise DoubledEmailArgumentError(name)
     if not option and not header:
-        raise NoEmailArgumentException(name)
+        raise NoEmailArgumentError(name)
     return str(option or header)
 
 
@@ -564,7 +564,7 @@ def send_custom_email(
                 context=context,
                 dry_run=options["dry_run"],
             )
-        except EmailNotDeliveredException:
+        except EmailNotDeliveredError:
             pass
 
         if options["dry_run"]:

@@ -37,16 +37,6 @@ function process_result(data, opts) {
         ui_report.hide_error($("#connection-error"));
     }
 
-    if (
-        messages.length === 0 &&
-        message_lists.current === message_list.narrowed &&
-        message_list.narrowed.empty()
-    ) {
-        // Even after trying to load more messages, we have no
-        // messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message();
-    }
-
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     // In some rare situations, we expect to discover new unread
@@ -62,6 +52,12 @@ function process_result(data, opts) {
 
     if (messages.length !== 0) {
         message_util.add_old_messages(messages, opts.msg_list);
+    }
+
+    if (message_lists.current === message_list.narrowed && message_list.narrowed.empty()) {
+        // Even after loading more messages, we have
+        // no messages to display in this narrow.
+        narrow_banner.show_empty_narrow_message();
     }
 
     huddle_data.process_loaded_messages(messages);

@@ -23,7 +23,7 @@ from django.utils.translation import gettext as _
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     create_confirmation_link,
     get_object_from_key,
     one_click_unsubscribe_link,
@@ -67,7 +67,7 @@ from zerver.lib.mobile_auth_otp import (
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.send_email import (
-    EmailNotDeliveredException,
+    EmailNotDeliveredError,
     FromAddress,
     deliver_scheduled_emails,
     send_future_email,
@@ -2160,9 +2160,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         registration_key = url.split("/")[-1]
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
-        with self.assertRaises(ConfirmationKeyException) as cm:
+        with self.assertRaises(ConfirmationKeyError) as cm:
             get_object_from_key(registration_key, [Confirmation.INVITATION], mark_object_used=True)
-        self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
+        self.assertEqual(cm.exception.error_type, ConfirmationKeyError.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path
         email_change_url = create_confirmation_link(prereg_user, Confirmation.EMAIL_CHANGE)
@@ -4093,13 +4093,13 @@ class UserSignUpTest(InviteUserBase):
 
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredException.
+        Make sure we redirect for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=EmailNotDeliveredException,
+            side_effect=EmailNotDeliveredError,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
@@ -4110,13 +4110,13 @@ class UserSignUpTest(InviteUserBase):
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredException.
+        Make sure we redirect for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=EmailNotDeliveredException,
+            side_effect=EmailNotDeliveredError,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:

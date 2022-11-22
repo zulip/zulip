@@ -66,7 +66,7 @@ from zerver.lib.streams import (
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.test_console_output import (
     ExtraConsoleOutputFinder,
-    ExtraConsoleOutputInTestException,
+    ExtraConsoleOutputInTestError,
     tee_stderr_and_find_extra_console_output,
     tee_stdout_and_find_extra_console_output,
 )
@@ -140,7 +140,7 @@ class UploadSerializeMixin(SerializeMixin):
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff: Optional[int] = None
+    maxDiff: Optional[int] = None  # noqa: N815
 
     def setUp(self) -> None:
         super().setUp()
@@ -192,7 +192,7 @@ Output:
 {extra_output_finder.full_extra_output.decode(errors="replace")}
 --------------------------------------------
 """
-            raise ExtraConsoleOutputInTestException(exception_message)
+            raise ExtraConsoleOutputInTestError(exception_message)
         return test_result
 
     """
@@ -1044,12 +1044,14 @@ Output:
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
+        include_anchor: bool = True,
     ) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {
             "anchor": anchor,
             "num_before": num_before,
             "num_after": num_after,
             "use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode(),
+            "include_anchor": orjson.dumps(include_anchor).decode(),
         }
         result = self.client_get("/json/messages", dict(post_params))
         data = result.json()

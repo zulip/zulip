@@ -44,15 +44,15 @@ function test_with(fixture) {
             has_found_newest: () => fixture.has_found_newest,
         },
         empty: () => fixture.empty,
-        all_messages: () => {
+        all_messages() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
         },
-        first: () => {
+        first() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages[0];
         },
-        last: () => {
+        last() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages.at(-1);
         },

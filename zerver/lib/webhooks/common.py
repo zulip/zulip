@@ -57,7 +57,7 @@ def notify_bot_owner_about_invalid_json(
     )
 
 
-class MissingHTTPEventHeader(JsonableError):
+class MissingHTTPEventHeaderError(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
     data_fields = ["header"]
 
@@ -176,7 +176,7 @@ def validate_extract_webhook_http_header(
             request.user, request.user.realm, message_body
         )
 
-        raise MissingHTTPEventHeader(header)
+        raise MissingHTTPEventHeaderError(header)
 
     return extracted_header
 

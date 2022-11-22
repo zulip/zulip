@@ -63,6 +63,12 @@ This is most often used for legal compliance.
             help="Limit to messages on or before this ISO datetime, treated as UTC",
             type=lambda s: datetime.fromisoformat(s).astimezone(timezone.utc),
         )
+        parser.add_argument(
+            "--sender",
+            action="append",
+            metavar="<email>",
+            help="Limit to messages sent by users with any of these emails (may be specified more than once)",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         terms = set()
@@ -92,6 +98,12 @@ This is most often used for legal compliance.
             limits &= Q(date_sent__gt=options["after"])
         if options["before"]:
             limits &= Q(date_sent__lt=options["before"])
+        if options["sender"]:
+            print(options["sender"])
+            limits &= reduce(
+                or_,
+                [Q(sender__delivery_email__iexact=e) for e in options["sender"]],
+            )
 
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
 

@@ -41,15 +41,15 @@ let tippy_args;
 let tippy_show_called;
 let tippy_destroy_called;
 mock_esm("tippy.js", {
-    default: (sel, opts) => {
+    default(sel, opts) {
         assert.equal(sel, tippy_sel);
         assert.deepEqual(opts, tippy_args);
         return [
             {
-                show: () => {
+                show() {
                     tippy_show_called = true;
                 },
-                destroy: () => {
+                destroy() {
                     tippy_destroy_called = true;
                 },
             },

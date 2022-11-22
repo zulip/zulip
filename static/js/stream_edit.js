@@ -527,7 +527,7 @@ export function initialize() {
             close_on_submit: true,
             id: "stream_privacy_modal",
             on_click: change_stream_privacy,
-            post_render: () => {
+            post_render() {
                 $("#stream_privacy_modal .dialog_submit_button").attr("data-stream-id", stream_id);
                 set_stream_message_retention_setting_dropdown(stream);
 
@@ -536,7 +536,7 @@ export function initialize() {
                     change_stream_message_retention_days_block_display_property(dropdown_value);
                 });
             },
-            on_show: () => {
+            on_show() {
                 stream_settings_ui.hide_or_disable_stream_privacy_options_if_required(
                     $("#stream_privacy_modal"),
                 );
@@ -564,7 +564,7 @@ export function initialize() {
             html_body: change_stream_info_modal,
             id: "change_stream_info_modal",
             on_click: save_stream_info,
-            post_render: () => {
+            post_render() {
                 $("#change_stream_info_modal .dialog_submit_button")
                     .addClass("save-button")
                     .attr("data-stream-id", stream_id);
@@ -646,7 +646,7 @@ export function initialize() {
             id: "copy_email_address_modal",
             html_submit_button: $t_html({defaultMessage: "Copy address"}),
             help_link: "/help/message-a-stream-by-email#configuration-options",
-            on_click: () => {},
+            on_click() {},
             close_on_submit: true,
         });
         $("#show-sender").prop("checked", true);

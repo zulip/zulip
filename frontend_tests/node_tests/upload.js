@@ -195,10 +195,10 @@ test("upload_files", ({override, override_rewire}) => {
     ];
     let uppy_add_file_called = false;
     const uppy = {
-        cancelAll: () => {
+        cancelAll() {
             uppy_cancel_all_called = true;
         },
-        addFile: (params) => {
+        addFile(params) {
             uppy_add_file_called = true;
             assert.equal(params.source, "compose-file-input");
             assert.equal(params.name, "budapest.png");
@@ -325,11 +325,11 @@ test("uppy_config", () => {
         assert.ok("exceedsSize" in config.locale.strings);
 
         return {
-            setMeta: (params) => {
+            setMeta(params) {
                 uppy_set_meta_called = true;
                 assert.equal(params.csrfmiddlewaretoken, "csrf_token");
             },
-            use: (func, params) => {
+            use(func, params) {
                 const func_name = func.name;
                 if (func_name === "XHRUpload") {
                     uppy_used_xhrupload = true;
@@ -348,7 +348,7 @@ test("uppy_config", () => {
                     assert.fail(`Missing tests for ${func_name}`);
                 }
             },
-            on: () => {},
+            on() {},
         };
     };
     upload.setup_upload({mode: "compose"});
@@ -385,7 +385,7 @@ test("file_drop", ({override_rewire}) => {
 
     let prevent_default_counter = 0;
     const drag_event = {
-        preventDefault: () => {
+        preventDefault() {
             prevent_default_counter += 1;
         },
     };
@@ -399,7 +399,7 @@ test("file_drop", ({override_rewire}) => {
 
     const files = ["file1", "file2"];
     const drop_event = {
-        preventDefault: () => {
+        preventDefault() {
             prevent_default_counter += 1;
         },
         originalEvent: {
@@ -429,7 +429,7 @@ test("copy_paste", ({override_rewire}) => {
                 items: [
                     {
                         kind: "file",
-                        getAsFile: () => {
+                        getAsFile() {
                             get_as_file_called = true;
                         },
                     },
@@ -465,16 +465,16 @@ test("uppy_events", ({override, override_rewire}) => {
 
     uppy_stub = function () {
         return {
-            setMeta: () => {},
-            use: () => {},
-            cancelAll: () => {
+            setMeta() {},
+            use() {},
+            cancelAll() {
                 uppy_cancel_all_called = true;
             },
-            on: (event_name, callback) => {
+            on(event_name, callback) {
                 callbacks[event_name] = callback;
             },
             getFiles: () => [...files],
-            removeFile: (file_id) => {
+            removeFile(file_id) {
                 files = files.filter((file) => file.id !== file_id);
             },
             getState: () => ({

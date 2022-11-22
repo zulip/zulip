@@ -25,7 +25,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
-from markupsafe import Markup as mark_safe
+from markupsafe import Markup
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -33,7 +33,7 @@ from typing_extensions import Concatenate, ParamSpec
 
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     create_confirmation_link,
     get_object_from_key,
     render_confirmation_key_error,
@@ -54,7 +54,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     PasswordAuthDisabledError,
     PasswordResetRequiredError,
-    RateLimited,
+    RateLimitedError,
     RealmDeactivatedError,
     UserDeactivatedError,
 )
@@ -200,7 +200,7 @@ def maybe_send_to_registration(
             confirmation_obj = get_object_from_key(
                 multiuse_object_key, [Confirmation.MULTIUSE_INVITE], mark_object_used=False
             )
-        except ConfirmationKeyException as exception:
+        except ConfirmationKeyError as exception:
             return render_confirmation_key_error(request, exception)
 
         assert isinstance(confirmation_obj, MultiuseInvite)
@@ -718,7 +718,7 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
         return
     try:
         validate_email(deactivated_email)
-        context["deactivated_account_error"] = mark_safe(
+        context["deactivated_account_error"] = Markup(
             DEACTIVATED_ACCOUNT_ERROR.format(username=escape(deactivated_email))
         )
     except ValidationError:
@@ -1037,7 +1037,7 @@ def password_reset(request: HttpRequest) -> HttpResponse:
             form_class=ZulipPasswordResetForm,
             success_url="/accounts/password/reset/done/",
         )(request)
-    except RateLimited as e:
+    except RateLimitedError as e:
         assert e.secs_to_freedom is not None
         return render(
             request,

@@ -43,7 +43,7 @@ from zerver.lib.exceptions import (
     InvalidAPIKeyFormatError,
     InvalidJSONError,
     JsonableError,
-    UnsupportedWebhookEventType,
+    UnsupportedWebhookEventTypeError,
 )
 from zerver.lib.initial_password import initial_password
 from zerver.lib.rate_limiter import is_local_addr
@@ -315,7 +315,7 @@ class DecoratorTestCase(ZulipTestCase):
         def my_webhook_raises_exception_unsupported_event(
             request: HttpRequest, user_profile: UserProfile
         ) -> HttpResponse:
-            raise UnsupportedWebhookEventType("test_event")
+            raise UnsupportedWebhookEventTypeError("test_event")
 
         webhook_bot_email = "webhook-bot@zulip.com"
         webhook_bot_realm = get_realm("zulip")
@@ -410,7 +410,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
         with self.assertLogs("zulip.zerver.webhooks.unsupported", level="ERROR") as log:
-            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
+            with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 request.body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
@@ -564,7 +564,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         def my_webhook_raises_exception(
             request: HttpRequest, user_profile: UserProfile
         ) -> HttpResponse:
-            raise UnsupportedWebhookEventType("test_event")
+            raise UnsupportedWebhookEventTypeError("test_event")
 
         webhook_bot_email = "webhook-bot@zulip.com"
 
@@ -582,7 +582,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             exception_msg = (
                 "The 'test_event' event isn't currently supported by the ClientName webhook"
             )
-            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
+            with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 my_webhook_raises_exception(request)
 
         mock_exception.assert_called_with(exception_msg, stack_info=True)
@@ -1089,7 +1089,7 @@ class ValidatorTestCase(ZulipTestCase):
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
             x["a"].get("a")
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
-            "a" in x["a"]
+            _ = "a" in x["a"]
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
             x["a"].keys()
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
