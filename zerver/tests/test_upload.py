@@ -949,7 +949,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
             self.assertEqual(
                 response["X-Accel-Redirect"],
-                "/internal/uploads/" + fp_path + "/" + name_str_for_test,
+                "/internal/local/uploads/" + fp_path + "/" + name_str_for_test,
             )
             if content_disposition != "":
                 self.assertIn("attachment;", response["Content-disposition"])
@@ -1882,7 +1882,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_get(url)
             self.assertEqual(result.status_code, 200)
             internal_redirect_path = urlparse(url).path.replace(
-                "/user_avatars/", "/internal/user_avatars/"
+                "/user_avatars/", "/internal/local/user_avatars/"
             )
             self.assertEqual(result["X-Accel-Redirect"], internal_redirect_path)
             self.assertEqual(b"", result.content)
@@ -2098,20 +2098,31 @@ class S3Test(ZulipTestCase):
         uri = response_dict["uri"]
         self.assertEqual(base, uri[: len(base)])
 
+        # In development, this is just a redirect
         response = self.client_get(uri)
         redirect_url = response["Location"]
         path = urllib.parse.urlparse(redirect_url).path
         assert path.startswith("/")
-        key = path[1:]
+        key = path[len("/") :]
+        self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
+
+        prefix = f"/internal/s3/{settings.S3_AUTH_UPLOADS_BUCKET}.s3.amazonaws.com/"
+        with self.settings(DEVELOPMENT=False):
+            response = self.client_get(uri)
+        redirect_url = response["X-Accel-Redirect"]
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith(prefix)
+        key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Check the download endpoint
         download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
-        response = self.client_get(download_uri)
-        redirect_url = response["Location"]
+        with self.settings(DEVELOPMENT=False):
+            response = self.client_get(download_uri)
+        redirect_url = response["X-Accel-Redirect"]
         path = urllib.parse.urlparse(redirect_url).path
-        assert path.startswith("/")
-        key = path[1:]
+        assert path.startswith(prefix)
+        key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Now try the endpoint that's supposed to return a temporary URL for access
@@ -2119,14 +2130,25 @@ class S3Test(ZulipTestCase):
         result = self.client_get("/json" + uri)
         data = self.assert_json_success(result)
         url_only_url = data["url"]
-        path = urllib.parse.urlparse(url_only_url).path
-        assert path.startswith("/")
-        key = path[1:]
+
+        self.assertNotEqual(url_only_url, uri)
+        self.assertIn("user_uploads/temporary/", url_only_url)
+        self.assertTrue(url_only_url.endswith("zulip.txt"))
+        # The generated URL has a token authorizing the requestor to access the file
+        # without being logged in.
+        self.logout()
+        with self.settings(DEVELOPMENT=False):
+            self.client_get(url_only_url)
+        redirect_url = response["X-Accel-Redirect"]
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith(prefix)
+        key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
-        # Note: Depending on whether the calls happened in the same
-        # second (resulting in the same timestamp+signature),
-        # url_only_url may or may not equal redirect_url.
+        # The original uri shouldn't work when logged out:
+        with self.settings(DEVELOPMENT=False):
+            result = self.client_get(uri)
+        self.assertEqual(result.status_code, 403)
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")

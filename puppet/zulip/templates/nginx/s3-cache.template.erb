@@ -1,0 +1,6 @@
+# This cache is only used if S3 file storage is configured.
+proxy_cache_path /srv/zulip-uploaded-files-cache
+    levels=1:2
+    keys_zone=uploads:<%= @s3_memory_cache_size %>
+    inactive=<%= @s3_cache_inactive_time %>
+    max_size=<%= @s3_disk_cache_size %>;

@@ -684,6 +684,29 @@ all at once. This decreases the number of 502's served to clients, at
 the cost of slightly increased memory usage, and the possibility that
 different requests will be served by different versions of the code.
 
+#### `s3_memory_cache_size`
+
+Used only when the [S3 storage backend][s3-backend] is in use.
+Controls the in-memory size of the cache _index_; the default is 1MB,
+which is enough to store about 8 thousand entries.
+
+#### `s3_disk_cache_size`
+
+Used only when the [S3 storage backend][s3-backend] is in use.
+Controls the on-disk size of the cache _contents_; the default is
+200MB.
+
+#### `s3_cache_inactive_time`
+
+Used only when the [S3 storage backend][s3-backend] is in use.
+Controls the longest amount of time an entry will be cached since last
+use; the default is 30 days. Since the contents of the cache are
+immutable, this serves only as a potential additional limit on the
+size of the contents on disk; `s3_disk_cache_size` is expected to be
+the primary control for cache sizing.
+
+[s3-backend]: upload-backends.md
+
 #### `uwsgi_listen_backlog_limit`
 
 Override the default uwsgi backlog of 128 connections.
