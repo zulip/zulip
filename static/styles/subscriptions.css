@@ -961,26 +961,42 @@ h4.user_group_setting_subsection_title {
     vertical-align: middle;
 }
 
+div.settings-radio-input-parent {
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    margin: 2px 0 2px 5px;
+    padding: 2px 0;
+
+    &:last-of-type {
+        border-bottom: none;
+    }
+
+    label.radio {
+        display: inline;
+        margin: 5px;
+        padding-left: 0px;
+    }
+
+    input {
+        float: left;
+        width: auto;
+        cursor: pointer;
+
+        &:focus {
+            outline: 1px dotted hsl(0, 0%, 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+}
+
 #stream_privacy_modal,
 .stream-creation-body {
     .input-group {
         margin-bottom: 10px;
-
-        .settings-radio-input-parent {
-            border-bottom: 1px solid hsl(0, 0%, 87%);
-            margin: 2px 0 2px 5px;
-            padding: 2px 0;
-
-            &:last-of-type {
-                border-bottom: none;
-            }
-
-            label.radio {
-                display: inline;
-                margin: 5px;
-                padding-left: 0;
-            }
-        }
 
         &.message-retention-setting-group {
             input {
