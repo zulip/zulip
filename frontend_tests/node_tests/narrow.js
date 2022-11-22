@@ -388,7 +388,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated HTML: You have no private messages with Example Bot yet.",
+            "translated: You have no private messages with Example Bot yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -414,7 +414,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated HTML: You have no private messages with Alice Smith yet.",
+            "translated: You have no private messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -487,7 +487,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated HTML: You have no group private messages with Alice Smith yet.",
+            "translated: You have no group private messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -497,9 +497,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated HTML: You haven't received any messages sent by Raymond yet.",
-        ),
+        empty_narrow_html("translated: You haven't received any messages sent by Raymond yet."),
     );
 
     set_filter([["sender", "sinwar@example.com"]]);
