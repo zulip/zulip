@@ -676,7 +676,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
 test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, mock_template}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
-    let mentioned = {
+    let mentioned_details = {
         email: "foo@bar.com",
     };
 
@@ -686,8 +686,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
         page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-        mentioned.is_broadcast = is_broadcast;
-        compose_validate.warn_if_mentioning_unsubscribed_user(mentioned);
+        mentioned_details.is_broadcast = is_broadcast;
+        compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
         assert.equal($("#compose_invite_users").visible(), false);
     }
 
@@ -701,7 +701,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
 
     // Test with empty stream name in compose box. It should return noop.
     assert.equal(compose_state.stream_name(), "");
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned);
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
     assert.equal($("#compose_invite_users").visible(), false);
 
     compose_state.stream_name("random");
@@ -711,7 +711,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     };
 
     // Test with invalid stream in compose box. It should return noop.
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned);
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
     assert.equal($("#compose_invite_users").visible(), false);
 
     // Test mentioning a user that should gets a warning.
@@ -756,14 +756,14 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         })(),
     ];
 
-    mentioned = {
+    mentioned_details = {
         email: "foo@bar.com",
         user_id: 34,
         full_name: "Foo Barson",
     };
 
     stream_data.add_sub(sub);
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned);
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
     assert.equal($("#compose_invite_users").visible(), true);
 
     for (const f of checks) {
@@ -795,7 +795,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
 
     // Now try to mention the same person again. The template should
     // not render.
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned);
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
     assert.equal($("#compose_invite_users").visible(), true);
     assert.ok(looked_for_existing);
 });
