@@ -633,11 +633,6 @@ input.text-error {
     font-size: 16px;
 }
 
-.table.table-striped {
-    background-color: hsl(0, 0%, 100%);
-    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
-}
-
 .team-profiles {
     /* Compensate for gutter width */
     margin: -10px;

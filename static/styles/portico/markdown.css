@@ -430,4 +430,39 @@
             display: block;
         }
     }
+
+    table {
+        width: 100%;
+        margin-bottom: 20px;
+        max-width: 100%;
+        background-color: hsl(0, 0%, 100%);
+        border-collapse: collapse;
+        border-spacing: 0;
+        box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+
+        thead th {
+            vertical-align: bottom;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            line-height: 20px;
+            text-align: left;
+            vertical-align: top;
+            border-top: 1px solid hsl(0, 0%, 87%);
+        }
+
+        th {
+            font-weight: bold;
+        }
+
+        thead:first-child tr:first-child th {
+            border-top: 0;
+        }
+
+        tbody > tr:nth-child(odd) > td {
+            background-color: hsl(0, 0%, 98%);
+        }
+    }
 }
