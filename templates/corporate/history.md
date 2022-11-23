@@ -174,6 +174,11 @@ Zulip Cloud increased an incredible 40x in the month after Slack’s
 
 ## Major server releases and product announcements
 
+- November 2022: [Zulip Server 6.0
+  released](https://blog.zulip.com/2022/11/17/zulip-6-0-released/), with over
+  3400 new commits. 118 people contributed commits to Zulip since the 5.0
+  release.
+
 - May 2022: Zulip
   [announces](https://blog.zulip.com/2022/05/05/public-access-option/) the
   general availability of a [public access option](/help/public-access-option).
