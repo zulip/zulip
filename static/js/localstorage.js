@@ -32,6 +32,11 @@ const ls = {
 
     getData(version, name) {
         const key = this.formGetter(version, name);
+
+        if (!localstorage.supported()) {
+            return undefined;
+        }
+
         let data = localStorage.getItem(key);
         data = ls.parseJSON(data);
 
