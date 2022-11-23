@@ -42,3 +42,4 @@ sent](/help/view-messages-sent-by-a-user).
 ## Related articles
 
 - [View someone's profile](/help/view-someones-profile)
+- [Message actions](/help/message-actions)
