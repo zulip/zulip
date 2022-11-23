@@ -202,7 +202,7 @@ export function warn_if_topic_resolved(topic_changed) {
         const context = {
             stream_id: sub.stream_id,
             topic_name,
-            can_move_topic: settings_data.user_can_move_messages_between_streams(),
+            can_move_topic: settings_data.user_can_edit_topic_of_any_message(),
         };
 
         const new_row = render_compose_resolved_topic(context);
