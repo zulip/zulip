@@ -1,0 +1,18 @@
+#dev-emails-container {
+    .header {
+        position: fixed;
+    }
+
+    .config-options {
+        text-align: right;
+    }
+
+    .emails {
+        padding-top: 100px;
+    }
+
+    #smtp_form_status,
+    .hide {
+        display: none;
+    }
+}

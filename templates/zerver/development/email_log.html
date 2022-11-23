@@ -6,14 +6,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div style="position: fixed">
+<div class="container" id="dev-emails-container">
+    <div class="header">
         <div class="alert">
             All the emails sent in the Zulip development environment are logged here. You can also
             manually generate most of the emails by clicking <a href="/emails/generate">here</a>.
             To clear this log click <a href="/emails/clear">here</a>
         </div>
-        <div style="text-align:right">
+        <div class="config-options">
             <label>
                 <input type="checkbox" autocomplete="off" id="toggle"/>
                 <strong>Show text only version</strong>
@@ -23,7 +23,7 @@
             </a>
         </div>
     </div>
-    <div style="padding-top:100px">
+    <div class="emails">
         {{ log |safe }}
     </div>
     <div id="forward_email_modal" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
@@ -32,7 +32,7 @@
                 <form id="smtp_form">
                     {{ csrf_input }}
                     <div class="alert alert-info"
-                      id="smtp_form_status" style="display:none;">
+                      id="smtp_form_status">
                         Updated successfully.
                     </div>
                     <label for="forward">
@@ -47,7 +47,7 @@
                     <label class="radio">
                         <input name="forward" type="radio" value="disabled" {% if not forward_address %}checked{% endif %}/>No
                     </label>
-                    <div id="forward_address_sections" {% if not forward_address %}style="display:none;"{% endif %}>
+                    <div id="forward_address_sections" {% if not forward_address %}class="hide"{% endif %} >
                         <label for="forward_address"><strong>Address to which emails should be forwarded</strong></label>
                         <input type="text" id="address" name="forward_address" placeholder="eg: your-email@example.com" value="{{forward_address}}"/>
                     </div>
