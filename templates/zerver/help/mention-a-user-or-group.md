@@ -60,8 +60,9 @@ notification. Silent mentions start with `@_` instead of `@`.
 
 ## Mention everyone on a stream
 
-You can mention everyone on a stream with the `@**all**` mention. Use
-sparingly! Used improperly, wildcard mentions can be annoying.
+You can mention everyone on a stream with the `@**all**` mention (or,
+equivalently, `@**everyone**` or `@**stream**`). Use sparingly! Used improperly,
+wildcard mentions can be annoying.
 
 Note that this will not notify anyone who has muted the stream, and
 users can disable receiving email/push notifications for these
