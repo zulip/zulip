@@ -3,7 +3,6 @@
 const {strict: assert} = require("assert");
 
 const {parseISO} = require("date-fns");
-const date_fns_tz = require("date-fns-tz");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
@@ -520,14 +519,10 @@ test_people("utcToZonedTime", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
     user_settings.twenty_four_hour_time = true;
 
-    override(date_fns_tz, "utcToZonedTime", () => new Date("2022/10/10 03:24"));
-    assert.equal(people.get_user_time(me.user_id), "3:24");
+    assert.equal(people.get_user_time(me.user_id), "0:09");
 
-    override(date_fns_tz, "utcToZonedTime", () => new Date("foo"));
-    blueslip.expect("error", "Got invalid date for timezone: America/Los_Angeles", 2);
-    people.get_user_time(me.user_id);
-
-    override(date_fns_tz, "utcToZonedTime", () => undefined);
+    override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
+    blueslip.expect("error", "Got invalid date for timezone: Eriador/Rivendell");
     people.get_user_time(me.user_id);
 });
 
