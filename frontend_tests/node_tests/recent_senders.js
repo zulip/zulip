@@ -227,7 +227,7 @@ test("process_stream_message", () => {
 
     // Test topic change
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "3");
-    assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "3,2");
 
     // message7's topic was changed by user
     message7.topic = topic3;
@@ -240,11 +240,11 @@ test("process_stream_message", () => {
         new_topic: topic3,
     });
 
-    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "3,2");
     assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "3");
 
     // Test stream change
-    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "3,2");
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
 
     message7.stream_id = stream4;
@@ -258,10 +258,10 @@ test("process_stream_message", () => {
     });
 
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "");
-    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "3,2");
 
     // Test stream & topic change
-    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "3,2");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "");
 
     message7.stream_id = stream5;
@@ -279,8 +279,8 @@ test("process_stream_message", () => {
     });
 
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
-    assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "2,3");
-    assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2,1");
+    assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "3,2");
+    assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "1,2");
 
     // delete message1 and message5 sent by sender1
     rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);
