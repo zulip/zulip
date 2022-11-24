@@ -97,7 +97,7 @@ export function get_display_text_for_realm_message_retention_setting() {
 }
 
 function change_stream_message_retention_days_block_display_property(value) {
-    if (value === "retain_for_period") {
+    if (value === "custom_period") {
         $("#stream_privacy_modal .stream-message-retention-days-input").show();
     } else {
         $("#stream_privacy_modal .stream-message-retention-days-input").hide();
@@ -105,7 +105,7 @@ function change_stream_message_retention_days_block_display_property(value) {
 }
 
 function set_stream_message_retention_setting_dropdown(stream) {
-    let value = "retain_for_period";
+    let value = "custom_period";
     if (stream.message_retention_days === null) {
         value = "realm_default";
     } else if (stream.message_retention_days === settings_config.retain_message_forever) {
@@ -434,7 +434,7 @@ function change_stream_privacy(e) {
     let message_retention_days = $(
         "#stream_privacy_modal select[name=stream_message_retention_setting]",
     ).val();
-    if (message_retention_days === "retain_for_period") {
+    if (message_retention_days === "custom_period") {
         message_retention_days = Number.parseInt(
             $("#stream_privacy_modal input[name=stream-message-retention-days]").val(),
             10,
@@ -671,16 +671,6 @@ export function initialize() {
             $(".email-address").text(address);
         });
     });
-
-    $("#manage_streams_container").on(
-        "click",
-        ".close-modal-btn, .close-change-stream-info-modal",
-        (e) => {
-            // This fixes a weird bug in which, subscription_settings hides
-            // unexpectedly by clicking the cancel button in a modal on top of it.
-            e.stopPropagation();
-        },
-    );
 
     $("#manage_streams_container").on(
         "change",

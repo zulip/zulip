@@ -287,6 +287,11 @@ export function get_user_time(user_id) {
     const user_pref = get_user_time_preferences(user_id);
     if (user_pref) {
         const current_date = utcToZonedTime(new Date(), user_pref.timezone);
+        // This could happen if the timezone is invalid.
+        if (Number.isNaN(current_date.getTime())) {
+            blueslip.error(`Got invalid date for timezone: ${user_pref.timezone}`);
+            return undefined;
+        }
         return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
     }
     return undefined;

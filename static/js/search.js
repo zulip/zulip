@@ -24,7 +24,6 @@ export function narrow_or_search_for_term(search_string) {
         // while using input tool
         return $search_query_box.val();
     }
-    ui_util.change_tab_to("#message_feed_container");
 
     let operators;
     if (page_params.search_pills_enabled) {

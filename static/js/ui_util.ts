@@ -5,10 +5,6 @@ import * as keydown_util from "./keydown_util";
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
 
-export function change_tab_to(tabname: string): void {
-    $(`#gear-menu a[href="${CSS.escape(tabname)}"]`).tab("show");
-}
-
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 export function place_caret_at_end(el: HTMLElement): void {
     el.focus();

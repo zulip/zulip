@@ -1,5 +1,5 @@
 <form class="notification-settings-form">
-    <div class="general_notifications {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header inline-block">
             <h3>{{t "Notification triggers" }}</h3>
             {{> settings_save_discard_widget section_name="general-notifiy-settings" show_only_indicator=(not for_realm_settings) }}
@@ -48,7 +48,7 @@
         </table>
     </div>
 
-    <div class="desktop_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Desktop message notifications" }}
@@ -74,7 +74,7 @@
         </label>
 
         <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
-            <select name="notification_sound" class="setting_notification_sound prop-element" data-setting-widget-type="string"
+            <select name="notification_sound" class="setting_notification_sound prop-element" id="{{prefix}}notification_sound" data-setting-widget-type="string"
               {{#unless enable_sound_select}}
               disabled
               {{/unless}}>
@@ -90,14 +90,13 @@
 
         <div class="input-group">
             <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
-            <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element"
-              data-setting-widget-type="number">
+            <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>
         </div>
     </div>
 
-    <div class="mobile_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Mobile message notifications" }}
@@ -116,7 +115,7 @@
         {{/each}}
     </div>
 
-    <div class="email_message_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="email_message_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Email message notifications" }}
@@ -130,12 +129,12 @@
             <label for="email_notifications_batching_period">
                 {{t "Delay before sending message notification emails" }}
             </label>
-            <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element" data-setting-widget-type="time-limit">
+            <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
                 {{#each email_notifications_batching_period_values}}
                     <option value="{{ this.value }}">{{ this.description }}</option>
                 {{/each}}
             </select>
-            <div class="dependent-block">
+            <div class="dependent-settings-block">
                 <label for="email_notification_batching_period_edit_minutes" class="inline-block">
                     {{t 'Delay period (minutes)' }}:
                 </label>
@@ -157,7 +156,7 @@
         {{/each}}
     </div>
 
-    <div class="other_email_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="other_email_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
             <h3>{{t "Other emails" }}</h3>

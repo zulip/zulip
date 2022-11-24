@@ -1140,91 +1140,6 @@ $option_title_width: 180px;
     overflow: hidden;
     border-radius: 4px;
 
-    .save-discard-widget-button {
-        border-radius: 5px;
-        border: 1px solid hsl(0, 0%, 80%);
-        padding: 3px 14px 4px 11px;
-        text-decoration: none;
-        color: hsl(0, 0%, 47%);
-        min-width: 80px;
-        /* Limit the height of the button */
-        line-height: 1.2;
-        vertical-align: text-bottom;
-
-        &:hover,
-        &:focus {
-            background-color: hsl(0, 0%, 100%);
-            border: 1px solid hsl(0, 0%, 61%);
-            color: hsl(0, 0%, 18%);
-
-            .save-discard-widget-button-icon {
-                color: hsl(0, 0%, 47%);
-            }
-        }
-
-        &.primary {
-            background-color: hsl(156, 30%, 50%);
-            color: hsl(0, 0%, 100%);
-            border: 1px solid hsl(155, 30%, 50%);
-
-            &:hover,
-            &:focus {
-                background-color: hsl(166, 35%, 57%);
-                border: 1px solid hsl(166, 35%, 57%);
-            }
-
-            .save-discard-widget-button-icon {
-                font-weight: lighter;
-                color: hsl(0, 0%, 100%);
-            }
-
-            &.saving {
-                background-color: hsl(156, 14%, 40%);
-                border-color: hsl(156, 14%, 40%);
-            }
-        }
-
-        .save-discard-widget-button-icon {
-            vertical-align: middle;
-            margin-right: 3px;
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .save-discard-widget-button-text {
-            vertical-align: middle;
-            line-height: 1;
-        }
-    }
-
-    .save-button-controls {
-        display: inline;
-        margin-left: 15px;
-
-        &.hide {
-            display: none;
-        }
-    }
-
-    .save-button {
-        margin-right: 5px;
-
-        .save-discard-widget-button-loading {
-            display: none;
-        }
-
-        &.saving {
-            .save-discard-widget-button-icon {
-                display: none;
-            }
-
-            .save-discard-widget-button-loading {
-                display: inline-block;
-                margin-right: 2px;
-            }
-        }
-    }
-
     .admin-realm-time-limit-input {
         width: 5ch;
         text-align: right;
@@ -1244,6 +1159,7 @@ $option_title_width: 180px;
         font-size: 1.2em;
         font-weight: normal;
         line-height: 1.2;
+        margin: 10px 0;
     }
 
     .sidebar-wrapper {
@@ -1837,11 +1753,6 @@ $option_title_width: 180px;
         text-align: center;
         margin: auto;
         float: none;
-    }
-
-    #settings_page .save-button-controls {
-        display: block;
-        margin: 10px 0 0;
     }
 }
 

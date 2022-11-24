@@ -328,7 +328,7 @@ function pick_empty_narrow_banner() {
                     };
                 }
                 return {
-                    title: $t_html(
+                    title: $t(
                         {
                             defaultMessage: "You have no private messages with {person} yet.",
                         },
@@ -366,7 +366,7 @@ function pick_empty_narrow_banner() {
             const sender = people.get_by_email(first_operand);
             if (sender) {
                 return {
-                    title: $t_html(
+                    title: $t(
                         {
                             defaultMessage:
                                 "You haven't received any messages sent by {person} yet.",
@@ -398,7 +398,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             return {
-                title: $t_html(
+                title: $t(
                     {
                         defaultMessage: "You have no group private messages with {person} yet.",
                     },

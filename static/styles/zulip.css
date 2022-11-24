@@ -546,6 +546,10 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
+
+        .column-middle-inner {
+            overflow: auto;
+        }
     }
 }
 
@@ -888,11 +892,6 @@ li.actual-dropdown-menu i {
 
 .settings-dropdown-cog {
     padding: 6px 12px;
-}
-
-#settings_content .dependent-block,
-#invite-user .dependent-block {
-    margin: 15px 0 -5px 23px;
 }
 
 .message_area_padder {
@@ -1999,8 +1998,10 @@ div.focused_table {
     }
 
     .navbar-search.expanded {
+        float: left;
         overflow: hidden;
         margin-top: 0;
+        margin-bottom: 0;
         width: calc(100% - 2px);
         position: absolute;
 

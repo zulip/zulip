@@ -1,7 +1,7 @@
 <div id="organization-settings" data-name="organization-settings" class="settings-section">
     <form class="form-horizontal admin-realm-form org-settings-form">
 
-        <div id="org-notifications" class="org-subsection-parent">
+        <div id="org-notifications" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Automated messages and emails" }}</h3>
                 {{> settings_save_discard_widget section_name="notifications" }}
@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <div id="org-message-retention" class="org-subsection-parent">
+        <div id="org-message-retention" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message retention" }}
                     {{> ../help_link_widget link="/help/message-retention-policy" }}
@@ -75,8 +75,8 @@
                       id="id_realm_message_retention_days" class="prop-element"
                       data-setting-widget-type="message-retention-setting"
                       {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
-                        <option value="retain_forever">{{t 'Retain forever' }}</option>
-                        <option value="retain_for_period">{{t 'Retain for N days after posting' }}</option>
+                        <option value="unlimited">{{t 'Retain forever' }}</option>
+                        <option value="custom_period">{{t 'Retain for N days after posting' }}</option>
                     </select>
 
                     <div class="dependent-inline-block">
@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <div id="org-other-settings" class="org-subsection-parent">
+        <div id="org-other-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other settings" }}</h3>
                 {{> settings_save_discard_widget section_name="other-settings" }}
