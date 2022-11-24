@@ -1,12 +1,9 @@
 from typing import Any, Dict
-
 from django.utils.translation import gettext as _
-
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
-from zerver.models import UserProfile
 import random
-
+from zerver.models import UserProfile
 
 def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
     def change_mode_setting(
