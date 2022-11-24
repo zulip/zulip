@@ -973,7 +973,6 @@ div.settings-radio-input-parent {
     label.radio {
         display: inline;
         margin: 5px;
-        padding-left: 0px;
     }
 
     input {
