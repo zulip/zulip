@@ -112,7 +112,7 @@ mock_esm("../../static/js/pm_list", {
     handle_narrow_deactivated: noop,
 });
 mock_esm("../../static/js/recent_senders", {
-    get_topic_recent_senders: () => [1, 2],
+    get_topic_recent_senders: () => [2, 1],
 });
 mock_esm("../../static/js/stream_data", {
     is_muted: () =>
