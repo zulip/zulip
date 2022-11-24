@@ -201,7 +201,7 @@ export function get_topic_recent_senders(stream_id, topic) {
     function by_max_message_id(item1, item2) {
         const list1 = item1[1];
         const list2 = item2[1];
-        return list1.max_id() - list2.max_id();
+        return list2.max_id() - list1.max_id();
     }
 
     const sorted_senders = Array.from(sender_dict.entries()).sort(by_max_message_id);

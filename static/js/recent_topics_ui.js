@@ -398,8 +398,12 @@ function format_conversation(conversation_data) {
             context.topic,
         );
 
-        // Display in most recent sender first order
-        all_senders = recent_senders.get_topic_recent_senders(context.stream_id, context.topic);
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        all_senders = recent_senders
+            .get_topic_recent_senders(context.stream_id, context.topic)
+            .reverse();
         senders = all_senders.slice(-MAX_AVATAR);
 
         // Collect extra sender fullname for tooltip
