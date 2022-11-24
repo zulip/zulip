@@ -30,7 +30,6 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
     if not content.startswith("/"):
         raise JsonableError(_("There should be a leading slash in the zcommand."))
     command = content[1:]
-    rollcommand = content
 
     if command == "ping":
         return {}
@@ -55,6 +54,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         # value = dv[1]
         total_count = 0
         list_val = []
+        random.seed(1)
         for x in range(6):
             y = random.randint(1,6)
             total_count += y
