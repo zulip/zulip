@@ -30,6 +30,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
     if not content.startswith("/"):
         raise JsonableError(_("There should be a leading slash in the zcommand."))
     command = content[1:]
+    rollcommand = content
 
     if command == "ping":
         return {}
@@ -54,12 +55,10 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         # value = dv[1]
         total_count = 0
         list_val = []
-        
         for x in range(6):
             y = random.randint(1,6)
             total_count += y
             list_val.append(y)
-        
         return dict(msg= "You rolled " + str(6) + " die in range 1 to " + str(6) + " and produced the sum " + str(total_count) + " from the following values " + str(list_val))
 
     elif command == "flip":
@@ -68,7 +67,6 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
             return dict(msg="Heads")
         if (coin == 2):
             return dict(msg="Tails")
-        
         return dict(msg="Tails")
 
 
