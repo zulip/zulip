@@ -80,6 +80,38 @@ export function switch_to_light_theme() {
     });
 }
 
+export function roll_dice(){
+    send({
+        command: "/roll",
+        on_success(data) {
+            feedback_widget.show({
+                populate($container) {
+                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    $container.html(rendered_msg);
+                },
+  
+                title_text: $t({defaultMessage: "You have rolled:"}),
+            });
+        },
+    });
+}
+
+export function flip_coin(){
+    send({
+        command: "/flip",
+        on_success(data) {
+            feedback_widget.show({
+                populate($container) {
+                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    $container.html(rendered_msg);
+                },
+  
+                title_text: $t({defaultMessage: "You have flipped:"}),
+            });
+        },
+    });
+}
+
 export function switch_to_dark_theme() {
     send({
         command: "/night",
@@ -184,6 +216,16 @@ export function process(message_content) {
 
     if (content === "/fixed-width") {
         enter_fixed_mode();
+        return true;
+    }
+
+    if (content === "/roll") {
+        roll_dice();
+        return true;
+    }
+
+    if (content === "/flip") {
+        flip_coin();
         return true;
     }
 
