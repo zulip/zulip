@@ -1,9 +1,12 @@
-from typing import Any, Dict
-from django.utils.translation import gettext as _
 import random
+from typing import Any, Dict
+
+from django.utils.translation import gettext as _
+
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile
+
 
 def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
     def change_mode_setting(
@@ -53,19 +56,27 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         list_val = []
         random.seed(1)
         for x in range(6):
-            y = random.randint(1,6)
+            y = random.randint(1, 6)
             total_count += y
             list_val.append(y)
-        return dict(msg= "You rolled " + str(6) + " die in range 1 to " + str(6) + " and produced the sum " + str(total_count) + " from the following values " + str(list_val))
+        return dict(
+            msg="You rolled "
+            + str(6)
+            + " die in range 1 to "
+            + str(6)
+            + " and produced the sum "
+            + str(total_count)
+            + " from the following values "
+            + str(list_val)
+        )
 
     elif command == "flip":
-        coin = random.randint(1,2)
-        if (coin == 1):
+        coin = random.randint(1, 2)
+        if coin == 1:
             return dict(msg="Heads")
-        if (coin == 2):
+        if coin == 2:
             return dict(msg="Tails")
         return dict(msg="Tails")
-
 
     elif command == "day":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:

@@ -80,7 +80,7 @@ export function switch_to_light_theme() {
     });
 }
 
-export function roll_dice(){
+export function roll_dice() {
     send({
         command: "/roll",
         on_success(data) {
@@ -89,14 +89,14 @@ export function roll_dice(){
                     const rendered_msg = markdown.parse_non_message(data.msg);
                     $container.html(rendered_msg);
                 },
-  
+
                 title_text: $t({defaultMessage: "You have rolled:"}),
             });
         },
     });
 }
 
-export function flip_coin(){
+export function flip_coin() {
     send({
         command: "/flip",
         on_success(data) {
@@ -105,7 +105,7 @@ export function flip_coin(){
                     const rendered_msg = markdown.parse_non_message(data.msg);
                     $container.html(rendered_msg);
                 },
-  
+
                 title_text: $t({defaultMessage: "You have flipped:"}),
             });
         },
