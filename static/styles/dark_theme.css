@@ -6,6 +6,8 @@
      */
     @extend %dark-theme-block;
 
+    color-scheme: dark;
+
     body {
         color: hsl(236, 33%, 90%);
     }

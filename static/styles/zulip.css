@@ -49,6 +49,10 @@ body,
     transition: background-color 200ms linear;
 }
 
+:root {
+    color-scheme: light;
+}
+
 input,
 button,
 select,
