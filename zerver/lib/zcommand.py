@@ -72,11 +72,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
 
     elif command == "flip":
         coin = random.randint(1, 2)
-        if coin == 1:
-            return dict(msg="Heads")
-        if coin == 2:
-            return dict(msg="Tails")
-        return dict(msg="Tails")
+        return dict(msg="Tails") if coin == 1 else dict(msg="Heads")
 
     elif command == "day":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
