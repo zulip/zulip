@@ -1,8 +1,8 @@
 from typing import Any, Dict
 from django.utils.translation import gettext as _
+import random
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
-import random
 from zerver.models import UserProfile
 
 def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
