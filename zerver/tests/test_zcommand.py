@@ -80,3 +80,23 @@ class ZcommandTest(ZulipTestCase):
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
         self.assert_in_response("You are still in fixed width mode", result)
+
+    def test_flip(self) -> None:
+        self.login("hamlet")
+        user = self.example_user("hamlet")
+        user.fluid_layout_width = True
+        user.save()
+
+        payload = dict(command="/flip")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+
+    def test_roll(self) -> None:
+        self.login("hamlet")
+        user = self.example_user("hamlet")
+        user.fluid_layout_width = True
+        user.save()
+
+        payload = dict(command="/roll")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
