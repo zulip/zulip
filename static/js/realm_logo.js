@@ -107,7 +107,7 @@ export function initialize() {
     // Rerender the realm-logo when the browser detects color scheme changes.
     const dark_mode_media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
     dark_mode_media_query_list.addEventListener("change", () => {
-        if ($("body").hasClass("color-scheme-automatic")) {
+        if ($(":root").hasClass("color-scheme-automatic")) {
             render();
         }
     });
