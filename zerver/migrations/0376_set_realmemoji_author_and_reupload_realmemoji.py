@@ -1,6 +1,7 @@
 from django.db import migrations
 from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.db.models import OuterRef, Subquery
 
 
 def set_emoji_author(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
@@ -13,20 +14,15 @@ def set_emoji_author(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -
     UserProfile = apps.get_model("zerver", "UserProfile")
     ROLE_REALM_OWNER = 100
 
-    realm_emoji_to_update = []
-    for realm_emoji in RealmEmoji.objects.all():
-        if realm_emoji.author_id is None:
-            user_profile = (
-                UserProfile.objects.filter(
-                    realm_id=realm_emoji.realm_id, is_active=True, role=ROLE_REALM_OWNER
-                )
-                .order_by("id")
-                .first()
+    RealmEmoji.objects.filter(author=None).update(
+        author=Subquery(
+            UserProfile.objects.filter(
+                realm=OuterRef("realm"), is_active=True, role=ROLE_REALM_OWNER
             )
-            realm_emoji.author_id = user_profile.id
-            realm_emoji_to_update.append(realm_emoji)
-
-    RealmEmoji.objects.bulk_update(realm_emoji_to_update, ["author_id"])
+            .order_by("id")[:1]
+            .values("pk")
+        )
+    )
 
     # Previously, this also pushed `reupload_realm_emoji` events onto
     # the `deferred_work` queue; however,
