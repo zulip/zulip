@@ -1,117 +1,196 @@
 # Import from Gitter (beta)
 
-Zulip supports importing data from Gitter, including users, channels,
-messages, attachments, and avatars.
+You can import your current workspace into a Zulip organization. It's a great way
+to preserve your workspace history when you migrate to Zulip, and to
+make the transition easy for the members of your organization.
 
-**Note:** You can only import a Gitter room as a new Zulip organization. In
-particular, this tool you cannot use this tool to import from Gitter into an
-existing Zulip organization.
+The import will include your organization's:
 
-## Import from Gitter
+* **Name**
+* **Message history**, including attachments and emoji reactions
+* **Users**, including names and avatars
+* **Channels**, including all user subscriptions
 
-First, export your data from Gitter.
+## Import process overview
 
-### Export your Gitter data
+To import your Gitter organization into Zulip, you will need to take the
+following steps, which are described in more detail below:
 
 {start_tabs}
 
-1. [Export your Gitter data](https://github.com/minrk/archive-gitter). You will
-   receive json files of the public rooms that you are a part of.
-   Select the `gitter_data.json` file of the room which you want to import into
-   Zulip.
+1. [Export your Gitter data.](#export-your-gitter-data)
 
-    !!! warn ""
+1. [Import your Gitter data into Zulip.](#import-your-data-into-zulip)
 
-        **Note:** You'll need a Gitter API token to export data. You can get this
-        token by following the instructions in the "**Getting Started**" section of the
-        [Gitter documentation](https://developer.gitter.im/docs/).
+1. [Get your organization started with Zulip!](#get-your-organization-started-with-zulip)
 
 {end_tabs}
 
-### Import into Zulip Cloud
+## Import your organization from Gitter into Zulip
 
-Email support@zulip.com with `gitter_data.zip` and your desired
-subdomain. Your imported organization will be hosted at
-`<subdomain>.zulipchat.com`.
+### Export your Gitter data
 
-If you've already created a test organization at
-`<subdomain>.zulipchat.com`, let us know, and we can rename the old
-organization first.
+Gitter's [data export tool](https://github.com/minrk/archive-gitter) allows you
+to export all public channel messages.
 
-### Import into a self-hosted Zulip server
+{start_tabs}
 
-First
-[install a new Zulip server](https://zulip.readthedocs.io/en/stable/production/install.html),
-skipping "Step 3: Create a Zulip organization, and log in" (you'll
-create your Zulip organization via the data import tool instead).
+1. Export your Gitter data. You will receive `.json` files of the public
+   rooms that you are a part of.
 
-Log in to a shell on your Zulip server as the `zulip` user. To import with
-the most common configuration, run the following commands:
+1. Select the `gitter_data.json` file of the room which you want to
+   import into Zulip.
 
-```
-cd /home/zulip/deployments/current
-./scripts/stop-server
-./manage.py convert_gitter_data gitter_data.json --output converted_gitter_data
-./manage.py import '' converted_gitter_data
-./scripts/start-server
-```
+!!! warn ""
 
-This could take several minutes to run, depending on how much data
-you're importing.  The server stop/restart is only necessary when
-importing on a server with minimal RAM, where an OOM kill might
-otherwise occur.
+    **Note:** You will need a Gitter API token to export data. You can get this
+    token by following the instructions in the **Getting Started** section of
+    the [Gitter documentation](https://developer.gitter.im/docs/).
 
-**Import options**
+{end_tabs}
 
-The commands above create an imported organization on the root domain
-(`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
-custom subdomain, e.g. if you already have an existing organization on the
-root domain. Replace the last line above with the following, after replacing
-`<subdomain>` with the desired subdomain.
+### Import your data into Zulip
 
-```
-./manage.py import <subdomain> converted_gitter_data
-```
+{!import-your-data-into-zulip.md!}
 
-{!import-login.md!}
+{start_tabs}
 
-## Create organization owners
+{tab|zulip-cloud}
 
-The [Gitter API][gitter-api-user-data] don't contain data on which
-users are administrators of the Gitter channel.  As a result, all
-Gitter users are imported into Zulip as normal users.  You can follow
-the Zulip documentation on
-[making a user an organization owner from the terminal][grant-admin-access]
-to mark the appropriate users as organization owners.
+{!import-into-a-zulip-cloud-organization.md!}
 
-[grant-admin-access]: https://zulip.readthedocs.io/en/latest/production/management-commands.html#grant-administrator-access)
-[gitter-api-user-data]: https://developer.gitter.im/docs/user-resource
+1. The **username** that will have the [owner role](/help/roles-and-permissions)
+   in your Zulip organization.
 
-## Caveats
+{!import-zulip-cloud-organization-warning.md!}
 
-- The [Gitter data export tool](https://github.com/minrk/archive-gitter)
-  doesn't support exporting private Gitter channels.
+{tab|self-hosting}
 
-- Gitter's export tool doesn't export email addresses; just GitHub
-  usernames.  The import tool will thus use [GitHub's generated
-  noreply email addresses][github-noreply] to compute the
-  GitHub-generated noreply email address associated with that GitHub
-  account, e.g.
-  `{github_user_id}+{github_username}@users.noreply.github.com` or
-  `{github_username}@users.noreply.github.com`.
+{!import-into-a-self-hosted-zulip-server.md!}
 
-  Since one cannot receive email at those noreply email addresses,
-  imported users will need to use GitHub authentication to log in to
-  Zulip and will be unable to receive email notifications until they
-  [change their Zulip email address](/help/change-your-email-address).
+1. To import into an organization hosted on the root domain
+   (`EXTERNAL_HOST`) of the Zulip installation, run the following
+   commands.
+
+{!import-self-hosted-server-tips.md!}
+
+    ```
+    cd /home/zulip/deployments/current
+    ./scripts/stop-server
+    ./manage.py convert_gitter_data /tmp/gitter_data.json --output /tmp/converted_gitter_data
+    ./manage.py import '' /tmp/converted_gitter_data
+    ./scripts/start-server
+    ```
+
+    Alternatively, to import into a custom subdomain, run:
+
+    ```
+    cd /home/zulip/deployments/current
+    ./scripts/stop-server
+    ./manage.py convert_gitter_data /tmp/gitter_data.json --output /tmp/converted_gitter_data
+    ./manage.py import <subdomain> /tmp/converted_gitter_data
+    ./scripts/start-server
+    ```
+
+1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
+   of the guide for [installing a new Zulip
+   server](https://zulip.readthedocs.io/en/stable/production/install.html).
+
+{end_tabs}
+
+#### Import details
+
+Whether you are using Zulip Cloud or self-hosting Zulip, here are a few notes to
+keep in mind about the import process:
+
+- [Gitter's export tool](https://github.com/minrk/archive-gitter) does not export
+  workspace settings, so you will need to [configure the settings for your Zulip
+  organization](/help/customize-organization-settings). This includes settings
+  like [email visibility](/help/restrict-visibility-of-email-addresses),
+  [message editing permissions](/help/configure-message-editing-and-deletion#configure-message-editing-and-deletion_1),
+  and [how users can join your organization](/help/restrict-account-creation).
+
+- Gitter's export tool does not export user settings, so users in your organization
+  may want to [customize their account settings](/help/getting-started-with-zulip).
+
+- The [Gitter API][gitter-api-user-data] doesn't contain data on which users are
+  administrators of a Gitter channel.  As a result, all Gitter users are imported
+  into Zulip as [members](/help/roles-and-permissions).
+
+- Gitter's export tool doesn't export email addresses, only GitHub usernames.
+  Zulip's import tool will set GitHub as the only authentication method enabled
+  by default to avoid user confusion.
 
 - You can merge multiple Gitter channels into a single Zulip
   organization using [this
   tool](https://github.com/minrk/archive-gitter/pull/5).
 
-- This tool doesn't translate Gitter's Markdown format into Zulip
-  format Markdown (there are a few corner cases where the syntax is
-  different).  Additionally, Gitter's issue mention syntax isn't translated.
+- Zulip's import tool doesn't translate Gitter's Markdown format into Zulip's
+  Markdown format (there are a few corner cases where the syntax is different).
+  Additionally, Gitter's issue mention syntax isn't translated.
 
-[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
-[github-noreply]: https://docs.github.com/en/github/setting-up-and-managing-your-github-user-account/setting-your-commit-email-address
+- Message edit history is not imported.
+
+[grant-admin-access]: https://zulip.readthedocs.io/en/latest/production/management-commands.html#grant-administrator-access)
+[gitter-api-user-data]: https://developer.gitter.im/docs/user-resource
+
+## Get your organization started with Zulip
+
+Once the import process is completed, you will need to:
+
+{start_tabs}
+
+1. [Configure the settings for your organization](/help/customize-organization-settings),
+   which are not exported. This includes settings like [email
+   visibility](/help/restrict-visibility-of-email-addresses), [message editing
+   permissions](/help/configure-message-editing-and-deletion#configure-message-editing-and-deletion_1),
+   and [how users can join your organization](/help/restrict-account-creation).
+
+1. [Configure user roles](/help/change-a-users-role). Only organization owners
+   and administrators can do this.
+    * If you [import into Zulip Cloud](#import-your-data-into-zulip), you will
+    specify the user whose account will have the owner role when you request the
+    import.
+    * If you self-host, you can follow the Zulip documentation on [making a user an
+    organization owner from the terminal][grant-admin-access] to mark the appropriate
+    users as organization owners.
+
+1. All users from your previous workspace will have accounts in your new Zulip
+   organization. However, you will need to let users know about their new
+   accounts, and [how they will log in for the first time
+   ](#how-users-will-log-in-for-the-first-time).
+
+1. Share the URL for your new Zulip organization, and (recommended) the [Getting
+   started with Zulip guide](/help/getting-started-with-zulip).
+
+1. Migrate any [integrations](/integrations).
+
+{end_tabs}
+
+## How users will log in for the first time
+
+When you create your organization, users will immediately be able to log in
+without a password using GitHub as the [authentication method
+](/help/configure-authentication-methods). Once they log
+in, users whose accounts have been imported will need to [change their Zulip
+email address](/help/change-your-email-address) in order to receive [email
+notifications](/help/email-notifications).
+
+!!! warn ""
+
+    A user's email notifications will not work until they update the email
+    associated with their Zulip account.
+
+When user accounts are imported, users initially do not have passwords
+configured. Users can [reset their own passwords](/help/change-your-password) by
+following the instructions on your Zulip organization's login page.
+
+!!! tip ""
+
+    For security reasons, passwords are never exported.
+
+## Related articles
+
+* [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
+* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Getting started with Zulip](/help/getting-started-with-zulip)
