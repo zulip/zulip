@@ -737,6 +737,7 @@ html {
 
 .confirm-email-change-page .white-box {
     max-width: 500px;
+    word-break: break-word;
 }
 
 .anonymous_access_form {
