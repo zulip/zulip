@@ -1,103 +1,146 @@
 # Import from Rocket.Chat
 
-Starting with Zulip 5.0, Zulip supports importing data from Rocket.Chat,
-including users, teams, channels, discussions, messages, and more.
+You can import your current workspace into a Zulip organization. It's a great
+way to preserve your workspace history when you migrate to Zulip, and to make
+the transition easy for the members of your organization.
 
-**Note:** You can only import a Rocket.Chat workspace as a new Zulip
-organization. In particular, you cannot use this tool to import data
-into an existing Zulip organization.
+The import will include your organization's:
 
-## Import from Rocket.Chat
+* **Name**
+* **Message history**, including attachments and emoji reactions
+* **Users**, including names, emails, roles, and teams
+* **Channels**, including discussions and all user subscriptions
+* **Custom emoji**
 
-First, you need to export your data from Rocket.Chat. Rocket.Chat does
-not provide an official data export feature, so the Zulip import tool
-works by importing data from a Rocket.Chat database dump.
+## Import process overview
+
+To import your Rocket.Chat organization into Zulip, you will need to take the
+following steps, which are described in more detail below:
+
+{start_tabs}
+
+1. [Export your Rocket.Chat data](#export-your-rocketchat-data).
+
+1. [Import your Rocket.Chat data into Zulip](#import-your-data-into-zulip).
+
+1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
+
+{end_tabs}
+
+## Import your organization from Rocket.Chat into Zulip
+
+### Export your Rocket.Chat data
+
+Rocket.Chat does not provide an official data export feature, so the Zulip
+import tool works by importing data from a Rocket.Chat database dump.
 
 If you're self-hosting your Rocket.Chat instance, you can create a
 database dump using the `mongodump` utility.
 
 If your organization is hosted on Rocket.Chat Cloud or another hosting
 provider that doesn't provide you with database access, you will need
-to request a database dump by contacting their support.
+to request a database dump by contacting their
+[support](https://docs.rocket.chat/resources/frequently-asked-questions/cloud-faqs#data-export).
 
 In either case, you should end up with a directory containing many
 `.bson` files.
 
-### Import into Zulip Cloud
+### Import your data into Zulip
 
-Email support@zulip.com with your database dump and your desired
-Zulip subdomain. Your imported organization will be hosted at
-`<subdomain>.zulipchat.com`.
+{!import-your-data-into-zulip.md!}
 
-If you've already created a test organization at
-`<subdomain>.zulipchat.com`, let us know, and we can rename the old
-organization first.
+At this point, you should go to the directory containing all the `.bson` files
+from your database dump and rename it to `rocketchat_data`. This directory will
+be your **exported data** file in the instructions below.
 
-### Import into a self-hosted Zulip server
+{start_tabs}
 
-First [install a new Zulip
-server](https://zulip.readthedocs.io/en/stable/production/install.html)
-with Zulip 5.0 or newer, skipping "Step 3: Create a Zulip
-organization, and log in" (you'll create your Zulip organization via
-the data import tool instead).
+{tab|zulip-cloud}
 
-Now, get the directory containing all the `bson` files in your database
-dump and save it inside `/home/zulip/rocketchat` on your Zulip server and rename it
-to `rocketchat` (the directory at `/home/zulip/rocketchat` should contain
-all the `bson` files).
+{!import-into-a-zulip-cloud-organization.md!}
 
-Log in to a shell on your Zulip server as the `zulip` user. To import with
-the most common configuration, run the following commands:
+{!import-zulip-cloud-organization-warning.md!}
 
-```
-cd /home/zulip/deployments/current
-./scripts/stop-server
-./manage.py convert_rocketchat_data /home/zulip/rocketchat --output /home/zulip/converted_rocketchat_data
-./manage.py import "" /home/zulip/converted_rocketchat_data
-./scripts/start-server
-```
+{tab|self-hosting}
 
-This could take a few seconds to several minutes to run, depending on how
-much data you're importing. The server stop/restart is only necessary
-when importing on a server with minimal RAM, where an OOM kill might
-otherwise occur.
+{!import-into-a-self-hosted-zulip-server.md!}
 
-**Import options**
+1. To import into an organization hosted on the root domain
+   (`EXTERNAL_HOST`) of the Zulip installation, run the following
+   commands.
 
-The commands above create an imported organization on the root domain
-(`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
-custom subdomain, e.g. if you already have an existing organization on the
-root domain. Replace the last line above with the following, after replacing
-`<subdomain>` with the desired subdomain.
+{!import-self-hosted-server-tips.md!}
 
-```
-./manage.py import <subdomain> /home/zulip/converted_rocketchat_data
-```
+    ```
+    cd /home/zulip/deployments/current
+    ./scripts/stop-server
+    ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
+    ./manage.py import '' /tmp/converted_rocketchat_data
+    ./scripts/start-server
+    ```
 
-{!import-login.md!}
+    Alternatively, to import into a custom subdomain, run:
 
-[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
+    ```
+    cd /home/zulip/deployments/current
+    ./scripts/stop-server
+    ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
+    ./manage.py import <subdomain> /tmp/converted_rocketchat_data
+    ./scripts/start-server
+    ```
 
-## Caveats
+1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
+   of the guide for [installing a new Zulip
+   server](https://zulip.readthedocs.io/en/stable/production/install.html).
 
-This import tool is currently beta has the following known limitations:
+{end_tabs}
 
--   User avatars are not imported.
--   Default channels for new users are not imported.
--   Starred messages are not imported.
--   Messages longer than Zulip's limit of 10,000 characters are not
-    imported.
--   Messages from Rocket.Chat Discussions are imported as topics
-    inside the Zulip stream corresponding to the parent channel of the
-    Rocket.Chat Discussion.
--   Messages from Rocket.Chat Discussions having direct channels
-    (i.e. private messages) as their parent are imported as normal
-    private messages in Zulip.
--   While Rocket.Chat Threads are in general imported as separate
-    topics, Rocket.Chat Threads within Rocket.Chat Discussions are
-    imported as normal messages within the topic containing that
-    Discussion, and Threads in Direct Messages are imported as normal
-    Zulip private messages.
+#### Import details
+
+Whether you are using Zulip Cloud or self-hosting Zulip, here are a few notes to
+keep in mind about the import process:
+
+- Rocket.Chat does not export workspace settings, so you will need to [configure
+  the settings for your Zulip organization](/help/customize-organization-settings).
+  This includes settings like [email
+  visibility](/help/restrict-visibility-of-email-addresses),
+  [message editing permissions](/help/configure-message-editing-and-deletion#configure-message-editing-and-deletion_1),
+  and [how users can join your organization](/help/restrict-account-creation).
+
+- Rocket.Chat does not export user settings, so users in your organization may
+  want to [customize their account settings](/help/getting-started-with-zulip).
+
+- Rocket.Chat user roles are mapped to Zulip's [user
+  roles](/help/roles-and-permissions) in the following way:
+
+| Rocket.Chat role | Zulip role |
+|------------------|------------|
+| Admin            | Owner      |
+| User             | Member     |
+| Guest            | Guest      |
+
+- User avatars are not imported.
+
+- Default channels for new users are not imported.
+
+- Starred messages are not imported.
+
+- Messages longer than Zulip's limit of 10,000 characters are not
+  imported.
+
+- Messages from Rocket.Chat Discussions are imported as topics
+  inside the Zulip stream corresponding to the parent channel of the
+  Rocket.Chat Discussion.
+
+- Messages from Rocket.Chat Discussions having direct channels
+  (i.e. private messages) as their parent are imported as normal
+  private messages in Zulip.
+
+- While Rocket.Chat Threads are in general imported as separate
+  topics, Rocket.Chat Threads within Rocket.Chat Discussions are
+  imported as normal messages within the topic containing that
+  Discussion, and Threads in Direct Messages are imported as normal
+  Zulip private messages.
 
 Additionally, because Rocket.Chat does not provide a documented or
 stable data export API, the import tool may require small changes from
@@ -105,4 +148,16 @@ time to time to account for changes in the Rocket.Chat database
 format.  Please [contact us](/help/contact-support) if you encounter
 any problems using this tool.
 
-[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository
+## Get your organization started with Zulip
+
+{!import-get-your-organization-started.md!}
+
+## Decide how users will log in
+
+{!import-how-users-will-log-in.md!}
+
+## Related articles
+
+* [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
+* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Getting started with Zulip](/help/getting-started-with-zulip)
