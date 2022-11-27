@@ -24,8 +24,6 @@ import * as settings_ui from "./settings_ui";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
-export let parse_time_limit;
-
 const meta = {
     loaded: false,
 };
@@ -789,6 +787,10 @@ function get_auth_method_list_data() {
     return new_auth_methods;
 }
 
+export function parse_time_limit($elem) {
+    return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
+}
+
 function get_time_limit_setting_value($input_elem, for_api_data = true) {
     const select_elem_val = $input_elem.val();
 
@@ -986,10 +988,6 @@ export function register_save_discard_widget_handlers(
         const $save_btn_controls = $(e.target).closest(".save-button-controls");
         change_save_button_state($save_btn_controls, "discarded");
     });
-
-    parse_time_limit = function parse_time_limit($elem) {
-        return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
-    };
 
     function get_complete_data_for_subsection(subsection) {
         let data = {};
