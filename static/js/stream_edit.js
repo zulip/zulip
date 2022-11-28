@@ -513,8 +513,6 @@ export function initialize() {
             is_business_type_org:
                 page_params.realm_org_type === settings_config.all_org_type_values.business.code,
             is_stream_edit: true,
-            max_stream_name_length: page_params.max_stream_name_length,
-            max_stream_description_length: page_params.max_stream_description_length,
         };
         const change_privacy_modal = render_stream_types(template_data);
 
@@ -554,6 +552,8 @@ export function initialize() {
         const template_data = {
             stream_name: stream.name,
             stream_description: stream.description,
+            max_stream_name_length: page_params.max_stream_name_length,
+            max_stream_description_length: page_params.max_stream_description_length,
         };
         const change_stream_info_modal = render_change_stream_info_modal(template_data);
         dialog_widget.launch({
