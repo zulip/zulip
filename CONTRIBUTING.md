@@ -340,6 +340,15 @@ labels.
   have a new feature you'd like to add, you can start a conversation [in our
   development community](https://zulip.com/development-community/#where-do-i-send-my-message)
   explaining the feature idea and the problem that you're hoping to solve.
+- **I'm waiting for the next round of review on my PR. Can I pick up another
+  issue in the meantime?** Someone's first Zulip PR often requires quite a bit
+  of iteration, so please go through at least one round of feedback before
+  picking up a second issue. After that, sure! If
+  [Zulipbot](https://github.com/zulip/zulipbot) does not allow you to claim an
+  issue, you can post a comment describing the status of your other work on the
+  issue you're interested in, and asking for the issue to be assigned to you.
+  Note that addressing feedback on in-progress PRs should always take priority
+  over starting a new PR.
 - **I think my PR is done, but it hasn't been merged yet. What's going on?**
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
