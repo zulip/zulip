@@ -887,5 +887,5 @@ The `DevAuthBackend` method is used only in development, to allow
 passwordless login as any user in a development environment. It's
 mentioned on this page only for completeness.
 
-[custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
+[custom-profile-fields]: https://zulip.com/help/custom-profile-fields
 [update-inline-comments]: upgrade-or-modify.md#updating-settingspy-inline-documentation
