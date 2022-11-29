@@ -666,7 +666,7 @@ export function build_emoji_popover($elt, id) {
     register_popover_events($popover);
 }
 
-export function toggle_emoji_popover(element, id) {
+export function toggle_emoji_popover(element, id, coming_from_actions_popover) {
     const $last_popover_elem = $current_message_emoji_popover_elem;
     popovers.hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -683,7 +683,7 @@ export function toggle_emoji_popover(element, id) {
 
     if (user_status_ui.user_status_picker_open()) {
         build_emoji_popover($elt, id, true);
-    } else if ($elt.data("popover") === undefined) {
+    } else if ($elt.data("popover") === undefined || coming_from_actions_popover) {
         // Keep the element over which the popover is based off visible.
         $elt.addClass("reaction_button_visible");
         build_emoji_popover($elt, id);
@@ -746,19 +746,6 @@ export function register_click_handlers() {
 
         const message_id = rows.get_message_id(this);
         toggle_emoji_popover(this, message_id);
-    });
-
-    $("body").on("click", ".actions_popover .reaction_button", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        e.preventDefault();
-        e.stopPropagation();
-        // HACK: Because we need the popover to be based off an
-        // element that definitely exists in the page even if the
-        // message wasn't sent by us and thus the .reaction_hover
-        // element is not present, we use the message's
-        // .fa-chevron-down element as the base for the popover.
-        const elem = $(".selected_message .actions_hover")[0];
-        toggle_emoji_popover(elem, message_id);
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {

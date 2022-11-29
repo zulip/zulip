@@ -29,6 +29,7 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -351,7 +352,7 @@ export function process_escape_key(e) {
 }
 
 function handle_popover_events(event_name) {
-    if (popovers.actions_popped()) {
+    if (popover_menus.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
     }
@@ -938,7 +939,7 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
-            return popovers.open_message_menu(msg);
+            return popover_menus.toggle_message_actions_menu(msg);
         case "star_message":
             message_flags.toggle_starred_and_update_server(msg);
             return true;
