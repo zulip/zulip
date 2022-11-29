@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
-import {insert, set, wrapSelection} from "text-field-edit";
+import {insert, replace, set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -80,17 +80,11 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
     // a string it will only replace the first instance. If `old_syntax` is
     // a RegExp with a global flag, it will replace all instances.
 
-    $textarea.val(
-        $textarea.val().replace(
-            old_syntax,
-            () =>
-                // We need this anonymous function to avoid JavaScript's
-                // replace() function treating `$`s in new_syntax as special syntax.  See
-                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
-                // for details.
-                new_syntax,
-        ),
-    );
+    // We need use anonymous function for `new_syntax` to avoid JavaScript's
+    // replace() function treating `$`s in new_syntax as special syntax.  See
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
+    // for details.
+    replace($textarea[0], old_syntax, () => new_syntax, "after-replacement");
 }
 
 export function compute_placeholder_text(opts) {
