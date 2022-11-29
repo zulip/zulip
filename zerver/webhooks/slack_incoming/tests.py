@@ -191,7 +191,9 @@ Build bla bla succeeded
 **Requested by**: Some user
 **Duration**: 00:02:03
 **Build pipeline**: ConsumerAddressModule
+**Title with null value**
 **Title without value**
+Value with null title
 Value without title
         """.strip()
 
