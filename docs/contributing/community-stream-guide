@@ -1,0 +1,126 @@
+# Contributing guide
+
+Welcome to the Zulip community!
+
+## Community
+
+The
+[Zulip community server](https://zulip.com/development-community/)
+is the primary communication forum for the Zulip community. It is a good
+place to start whether you have a question, are a new contributor, are a new
+user, or anything else. When you first join the Zulip development community it
+can be overwhelming to figure out what each stream is about. This guide will
+provide a description for each stream for your reference.
+
+### announce
+This stream is the hub for all announcements related to Zulip products, features,
+releases, and more. This stream contains the important information everyone should see.
+
+
+### api design
+This stream is home to discussions about any changes made to the Zulip REST API.
+
+
+### api documentation
+This stream contains discussion about Zulip's API documentation and any
+improvements made to it.
+
+### automated testing
+Despite the name, this stream is home to discourse on both automatic and manual test
+processes and tooling.
+
+### backend
+This stream is home to discussion about the Zulip server product backend.
+
+### chat.zulip.org
+This stream is dedicated to news about the Zulip community server.
+While the _announce_ stream covers news about the Zulip product,
+news about the chat server itself can be found here.
+
+### checkins
+This stream is where developers can provide status updates on the tasks
+and features they're working on.
+
+### code review
+This stream can be used to elicit feedback and check for accuracy on
+code prior to merging.
+
+### commits
+This is an auto-generated stream containing every commit to the Zulip server
+or webapp official branches. Commits to the mobile or desktop repositories
+will not be found here.
+
+### design
+This stream is home to discussion of all proposed design changes.
+
+### desktop
+This stream is dedicated strictly to announcements, discussion, and
+information related to the Zulip desktop application.
+
+### development help
+This stream serves as a catch-all channel to get help while developing
+Zulip. Discourse in this stream may or may not be related to discourse
+in other streams.
+
+### documentation
+This stream is dedicated to disussion about documentation for system
+administrators, developers, users, and more. Discussion on API
+documentation should take place in the _api documentation_ stream rather
+than here.
+
+### feedback
+This stream is a space to provide reactions to Zulip.
+
+### frontend
+This stream is dedicated to discussion surrounding Zulip frontend development.
+
+### general
+This stream is for general discussion of Zulip. This stream should be used as a catchall for
+anything that does not cleanly fit into one of the other streams mentioned here.
+
+### git help
+This stream is dedicated to issues, questions, and answers about git, the GitHub platform,
+and Zulip's git workflow.
+
+### integrations
+This stream can be used to discuss integrations with Zulip's API. Discussions about
+Zulip bots can also be found here.
+
+### issues
+This stream can be used to report and discuss user-facing issues in Zulip.
+
+### learning
+This stream is home to discussing idea, sharing resources and projects, and learning
+about programming.
+
+### mobile
+This stream is dedicated strictly to announcements, discussion, and
+information related to the Zulip mobile applications for iOS and Android.
+
+### new members
+This stream is a great place to introduce yourself to the community and learn more
+about current community members.
+
+### provisioning
+This stream is used for finding help with the Zulip development environment
+Vagrant and the provisioning process.
+
+### test here
+This stream can be used to alert others of testing and elicit testing feedback.
+
+### tools
+This stream covers the tools that make Zulip easier and more robust for
+development.
+
+### user community
+This stream is meant for Zulip users to discuss their experiences with Zulip
+rollouts, experiences with using Zulip, useful tips, and more.
+
+### zulip cloud
+This stream is used for simple questions regarding Zulip Cloud, as well as
+Zulip Cloud status updates.
+
+### zulip-terminal
+This stream is dedicated strictly to announcements, discussion, and
+information related to the Zulip mobile applications for terminal
+
