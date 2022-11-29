@@ -17018,7 +17018,7 @@ components:
           example:
             {
               "code": "BAD_EVENT_QUEUE_ID",
-              "msg": "Bad event queue id: fb67bf8a-c031-47cc-84cf-ed80accacda8",
+              "msg": "Bad event queue ID: fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "result": "error",
             }
