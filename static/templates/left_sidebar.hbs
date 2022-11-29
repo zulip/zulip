@@ -101,6 +101,13 @@
                 {{#unless is_guest }}
                     <div id="subscribe-to-more-streams"></div>
                 {{/unless}}
+                <div id="login-link-container" class="only-visible-for-spectators">
+                    <a class="login_button">
+                        <i class="fa fa-sign-in" aria-hidden="true"></i>
+                        {{~!-- squash whitespace --~}}
+                        {{t 'Log in to browse more streams'}}
+                    </a>
+                </div>
             </div>
         </div>
     </div>
