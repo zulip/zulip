@@ -657,39 +657,6 @@ export function toggle_actions_popover(element, id) {
     }
 }
 
-export function render_actions_remind_popover(element, id) {
-    hide_all();
-    $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
-    message_lists.current.select_id(id);
-    const $elt = $(element);
-    if ($elt.data("popover") === undefined) {
-        const message = message_lists.current.get(id);
-        const args = {
-            message,
-        };
-        const ypos = $elt.offset().top;
-        $elt.popover({
-            // Popover height with 7 items in it is ~190 px
-            placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
-            title: "",
-            content: render_remind_me_popover_content(args),
-            html: true,
-            trigger: "manual",
-        });
-        $elt.popover("show");
-        current_flatpickr_instance = $(
-            `.remind.custom[data-message-id="${CSS.escape(message.id)}"]`,
-        ).flatpickr({
-            enableTime: true,
-            clickOpens: false,
-            defaultDate: "today",
-            minDate: "today",
-            plugins: [new ConfirmDatePlugin({})],
-        });
-        $current_actions_popover_elem = $elt;
-    }
-}
-
 function get_action_menu_menu_items() {
     if (!$current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
@@ -1239,13 +1206,6 @@ export function register_click_handlers() {
         // argument).
         compose_actions.quote_and_reply({trigger: "popover respond"});
         hide_actions_popover();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".reminder_button", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        render_actions_remind_popover($(".selected_message .actions_hover")[0], message_id);
         e.stopPropagation();
         e.preventDefault();
     });
