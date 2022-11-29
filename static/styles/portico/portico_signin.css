@@ -870,6 +870,16 @@ button#register_auth_button_gitlab {
                 width: 400px;
                 font-size: 1rem;
             }
+
+            textarea {
+                color: hsl(0, 0%, 33%);
+                vertical-align: middle;
+                background-color: hsl(0, 0%, 100%);
+
+                &:focus {
+                    outline: 0;
+                }
+            }
         }
     }
 
