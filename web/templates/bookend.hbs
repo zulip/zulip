@@ -9,11 +9,20 @@
             {{#if deactivated}}
                 {{t "This stream has been deactivated" }}
             {{else if subscribed }}
-                {{t "You subscribed to stream {stream_name}" }}
+                {{#tr}}
+                    You subscribed to stream <z-stream-icon></z-stream-icon> {{stream_name}}
+                    {{#*inline "z-stream-icon"}}{{> stream_privacy }}{{/inline}}
+                {{/tr}}
             {{else if just_unsubscribed }}
-                {{t "You unsubscribed from stream {stream_name}" }}
+                {{#tr}}
+                    You unsubscribed from stream <z-stream-icon></z-stream-icon> {{stream_name}}
+                    {{#*inline "z-stream-icon"}}{{> stream_privacy }}{{/inline}}
+                {{/tr}}
             {{else}}
-                {{t "You are not subscribed to stream {stream_name}" }}
+                {{#tr}}
+                    You are not subscribed to stream <z-stream-icon></z-stream-icon> {{stream_name}}
+                    {{#*inline "z-stream-icon"}}{{> stream_privacy }}{{/inline}}
+                {{/tr}}
             {{/if}}
         </span>
     {{/if}}

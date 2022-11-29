@@ -2441,6 +2441,17 @@ select.invite-as {
 
 .sub-unsub-message .stream-status {
     opacity: 0.6;
+
+    & i {
+        font-size: 10px;
+        position: relative;
+        top: 1px;
+        margin-left: 2px;
+    }
+
+    .zulip-icon.zulip-icon-lock {
+        font-size: 12px;
+    }
 }
 
 .sub-unsub-message {

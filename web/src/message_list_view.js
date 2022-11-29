@@ -1379,6 +1379,8 @@ export class MessageListView {
         just_unsubscribed,
         can_toggle_subscription,
         is_spectator,
+        invite_only,
+        is_web_public,
     ) {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
@@ -1391,6 +1393,8 @@ export class MessageListView {
                 just_unsubscribed,
                 is_spectator,
                 is_trailing_bookend: true,
+                invite_only,
+                is_web_public,
             }),
         );
         rows.get_table(this.table_name).append($rendered_trailing_bookend);
