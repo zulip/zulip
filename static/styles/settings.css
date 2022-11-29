@@ -355,8 +355,12 @@ td .button {
     }
 }
 
-.user_name_row {
-    max-width: 120px;
+.user_id {
+    width: 15px;;
+}
+
+.email-col {
+    min-width: 50px;
 }
 
 .user_role {
