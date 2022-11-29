@@ -59,6 +59,8 @@ const default_popover_props = {
        its CSS to support Zulip's dark theme. */
     theme: "light-border",
     touch: true,
+    /* Don't use allow-HTML here since it is unsafe. Instead, use `parse_html`
+       to generate the required html */
 };
 
 export function any_active() {
