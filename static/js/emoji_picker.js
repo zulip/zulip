@@ -675,8 +675,8 @@ export function toggle_emoji_popover(element, id, coming_from_actions_popover) {
         return;
     }
 
-    $(element).closest(".message_row").toggleClass("has_popover has_emoji_popover");
     const $elt = $(element);
+    $elt.closest(".message_row").toggleClass("has_popover has_emoji_popover");
     if (id !== undefined) {
         message_lists.current.select_id(id);
     }
