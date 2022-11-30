@@ -60,6 +60,7 @@ class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = "images/integrations/logos/{name}.png"
     DEFAULT_LOGO_STATIC_PATH_SVG = "images/integrations/logos/{name}.svg"
     DEFAULT_BOT_AVATAR_PATH = "images/integrations/bot_avatars/{name}.png"
+    GENERIC_LOGO_PATH_PNG = "images/integrations/logos/generic.png"
 
     def __init__(
         self,
@@ -97,7 +98,7 @@ class Integration:
         self.categories = [CATEGORIES[c] for c in categories]
 
         self.logo_path = logo if logo is not None else self.get_logo_path()
-        # TODO: Enforce that all integrations have logo_url with an assertion.
+        assert self.logo_path is not None
         self.logo_url = self.get_logo_url()
 
         if display_name is None:
@@ -111,7 +112,7 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
-    def get_logo_path(self) -> Optional[str]:
+    def get_logo_path(self) -> str:
         logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
         logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
         if os.path.isfile(static_path(logo_file_path_svg)):
@@ -119,20 +120,14 @@ class Integration:
         elif os.path.isfile(static_path(logo_file_path_png)):
             return logo_file_path_png
 
-        return None
+        return self.GENERIC_LOGO_PATH_PNG
 
-    def get_bot_avatar_path(self) -> Optional[str]:
-        if self.logo_path is not None:
-            name = os.path.splitext(os.path.basename(self.logo_path))[0]
-            return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
+    def get_bot_avatar_path(self) -> str:
+        name = os.path.splitext(os.path.basename(self.logo_path))[0]
+        return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
 
-        return None
-
-    def get_logo_url(self) -> Optional[str]:
-        if self.logo_path is not None:
-            return staticfiles_storage.url(self.logo_path)
-
-        return None
+    def get_logo_url(self) -> str:
+        return staticfiles_storage.url(self.logo_path)
 
 
 class BotIntegration(Integration):
@@ -159,9 +154,6 @@ class BotIntegration(Integration):
 
         if logo is None:
             self.logo_url = self.get_logo_url()
-            if self.logo_url is None:
-                # TODO: Add a test for this by initializing one in a test.
-                logo = staticfiles_storage.url(self.ZULIP_LOGO_STATIC_PATH_PNG)  # nocoverage
         else:
             self.logo_url = staticfiles_storage.url(logo)
 

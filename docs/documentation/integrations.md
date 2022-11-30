@@ -40,6 +40,9 @@ Usually, this involves a few steps:
   If you cannot find an SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
 
+  If you do not provide an image, the default logo at
+  `static/images/integrations/logos/generic.png` will be used.
+
 - Finally, generate a message sent by the integration and take a screenshot of
   the message to provide an example message in the documentation.
 

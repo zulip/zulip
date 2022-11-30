@@ -62,9 +62,6 @@ def generate_integration_bots_avatars(check_missing: bool = False) -> None:
             continue
 
         bot_avatar_path = integration.get_bot_avatar_path()
-        if bot_avatar_path is None:
-            continue
-
         bot_avatar_path = os.path.join(ZULIP_PATH, "static", bot_avatar_path)
         if check_missing:
             if not os.path.isfile(bot_avatar_path):

@@ -4,6 +4,7 @@ from zerver.lib.integrations import (
     NO_SCREENSHOT_WEBHOOKS,
     WEBHOOK_INTEGRATIONS,
     BaseScreenshotConfig,
+    EmbeddedBotIntegration,
     Integration,
     ScreenshotConfig,
     WebhookIntegration,
@@ -36,7 +37,7 @@ class IntegrationsTestCase(ZulipTestCase):
         self.assertEqual(fixture_path, "zerver/integration_fixtures/nagios/service_notify.json")
         self.assertEqual(image_path, "static/images/integrations/nagios/001.png")
 
-    def test_get_bot_avatar_path(self) -> None:
+    def test_get_bot_avatar_path_generic_bot(self) -> None:
         integration = INTEGRATIONS["alertmanager"]
         self.assertEqual(
             integration.get_bot_avatar_path(), "images/integrations/bot_avatars/prometheus.png"
@@ -44,7 +45,10 @@ class IntegrationsTestCase(ZulipTestCase):
 
         # New instance with logo parameter not set
         integration = WebhookIntegration("alertmanager", ["misc"])
-        self.assertIsNone(integration.get_bot_avatar_path())
+        self.assertIsNotNone(integration.get_bot_avatar_path())
+        self.assertEqual(
+            integration.get_bot_avatar_path(), "images/integrations/bot_avatars/generic.png"
+        )
 
     def test_no_missing_doc_screenshot_config(self) -> None:
         webhook_names = {webhook.name for webhook in WEBHOOK_INTEGRATIONS}
@@ -55,3 +59,8 @@ class IntegrationsTestCase(ZulipTestCase):
             "Add them to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG"
         )
         self.assertFalse(missing_webhooks, message)
+
+    def test_get_logo_url_generic_bot(self) -> None:
+        embedded_bot = EmbeddedBotIntegration("test_bot", [])
+        default_logo_path = embedded_bot.get_logo_path()
+        self.assertEqual(default_logo_path, "images/integrations/logos/generic.png")
