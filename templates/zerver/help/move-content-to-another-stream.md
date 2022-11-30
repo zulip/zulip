@@ -22,7 +22,8 @@ destination streams.
 
 {!topic-actions.md!}
 
-1. Select **Move topic**.
+1. Select **Move topic**. If you do not see this option, you do not have permission
+   to move this topic.
 
 1. Select the destination stream for the topic from the streams dropdown list.
 
