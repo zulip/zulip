@@ -22,7 +22,7 @@ for the details on when topic editing is allowed.
 
 {!message-actions-menu.md!}
 
-1. Select **Move message**. If you do not see this option, you do not have permission
+1. Select **Move messages**. If you do not see this option, you do not have permission
    to move this message.
 
 1. Set the destination topic.
