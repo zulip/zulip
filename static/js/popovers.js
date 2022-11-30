@@ -1134,6 +1134,7 @@ export function any_active() {
 export function hide_all_except_sidebars(opts) {
     $(".has_popover").removeClass("has_popover has_actions_popover has_emoji_popover");
     if (!opts || !opts.not_hide_tippy_instances) {
+        // hideAll hides all tippy instances (tooltips and popovers).
         hideAll();
     } else if (opts.exclude_tippy_instance) {
         hideAll({exclude: opts.exclude_tippy_instance});
