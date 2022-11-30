@@ -1,5 +1,7 @@
+import os
 from mimetypes import guess_type
 from typing import Union
+from urllib.parse import quote, urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -24,6 +26,37 @@ from zerver.lib.upload.s3 import get_signed_upload_url
 from zerver.models import UserProfile, validate_attachment_request
 
 
+def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
+    """
+    This replicates django.utils.http.content_disposition_header's
+    algorithm, which is introduced in Django 4.2.
+
+    """
+    # TODO: Replace this with django.utils.http.content_disposition_header when we upgrade in Django 4.2
+    disposition = "attachment" if is_attachment else "inline"
+
+    # Trim to only the filename part of the URL
+    filename = os.path.basename(urlparse(url).path)
+
+    # Content-Disposition is defined in RFC 6266:
+    # https://datatracker.ietf.org/doc/html/rfc6266
+    #
+    # For the 'filename' attribute of it, see RFC 8187:
+    # https://datatracker.ietf.org/doc/html/rfc8187
+    try:
+        # If the filename is pure-ASCII (determined by trying to
+        # encode it as such), then we escape slashes and quotes, and
+        # provide a filename="..."
+        filename.encode("ascii")
+        file_expr = 'filename="{}"'.format(filename.replace("\\", "\\\\").replace('"', r"\""))
+    except UnicodeEncodeError:
+        # If it contains non-ASCII characters, we URI-escape it and
+        # provide a filename*=encoding'language'value
+        file_expr = "filename*=utf-8''{}".format(quote(filename))
+
+    response.headers["Content-Disposition"] = f"{disposition}; {file_expr}"
+
+
 def serve_s3(
     request: HttpRequest, url_path: str, url_only: bool, download: bool = False
 ) -> HttpResponse:
@@ -45,23 +78,6 @@ def serve_local(
         url = generate_unauthed_file_access_url(path_id)
         return json_success(request, data=dict(url=url))
 
-    # Here we determine whether a browser should treat the file like
-    # an attachment (and thus clicking a link to it should download)
-    # or like a link (and thus clicking a link to it should display it
-    # in a browser tab).  This is controlled by the
-    # Content-Disposition header; `django-sendfile2` sends the
-    # attachment-style version of that header if and only if the
-    # attachment argument is passed to it.  For attachments,
-    # django-sendfile2 sets the response['Content-disposition'] like
-    # this: `attachment; filename="zulip.txt"; filename*=UTF-8''zulip.txt`.
-    # The filename* parameter is omitted for ASCII filenames like this one.
-    #
-    # The "filename" field (used to name the file when downloaded) is
-    # unreliable because it doesn't have a well-defined encoding; the
-    # newer filename* field takes precedence, since it uses a
-    # consistent format (urlquoted).  For more details on filename*
-    # and filename, see the below docs:
-    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
     mimetype, encoding = guess_type(local_path)
     attachment = download or mimetype not in INLINE_MIME_TYPES
 
@@ -69,6 +85,10 @@ def serve_local(
         request, local_path, attachment=attachment, mimetype=mimetype, encoding=encoding
     )
     patch_cache_control(response, private=True, immutable=True)
+    # sendfile adds a content-disposition header, but it incorrectly
+    # slash-escapes Unicode filenames; Django has a correct
+    # implementation, but it is not easily callable until Django 4.2.
+    patch_disposition_header(response, local_path, attachment)
     return response
 
 
