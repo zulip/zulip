@@ -303,8 +303,6 @@ environment](#step-3-start-the-development-environment).
 
 ### Step 3: Start the development environment
 
-If you would like to see an abbreviated version of the following instructions, please see [Quick Start for Windows](#quick-start-for-windows) or [Quick Start for macOS and Linux](#quick-start-for-macos-and-linux).
-
 Change into the zulip directory and tell vagrant to start the Zulip
 development environment with `vagrant up`:
 
@@ -441,28 +439,6 @@ should see something like:
 [04/May/2016 18:21:57]"GET /login HTTP/1.0" 301 0
 2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth@zulip via ?)
 ```
-
-#### Quick Start for Windows
-```bash
-# Development Server Quick Start On Windows:
-cd zulip
-vagrant plugin install vagrant-vbguest
-vagrant up --provider=virtualbox
-vagrant ssh
-./tools/run-dev.py
-```
-Navigate to http://localhost:9991/ in the browser on your main machine.
-
-#### Quick Start for macOS and Linux
-Start Docker manually if it is not already running.
-```bash
-# Development Server Quick Start On macOS and Linux:
-cd zulip
-vagrant up --provider=docker
-vagrant ssh
-./tools/run-dev.py
-```
-Navigate to http://localhost:9991/ in the browser on your main machine.
 
 Now you're ready for [Step 4: Developing](#step-4-developing).
 
