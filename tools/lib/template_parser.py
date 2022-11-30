@@ -139,7 +139,7 @@ def tokenize(text: str) -> List[Token]:
             elif looking_at_handlebars_partial():
                 s = get_handlebars_partial(text, state.i)
                 tag = s[9:-2]
-                kind = "handlebars_singleton"
+                kind = "handlebars_partial"
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
                 if s.endswith("/>"):
@@ -299,7 +299,7 @@ def tag_flavor(token: Token) -> Optional[str]:
         "code",
         "django_comment",
         "handlebars_comment",
-        "handlebars_singleton",
+        "handlebars_partial",
         "html_comment",
         "html_doctype",
         "html_singleton",
