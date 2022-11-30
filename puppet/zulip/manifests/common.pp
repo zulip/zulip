@@ -87,10 +87,10 @@ class zulip::common {
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '9.2.4',
+      'version' => '9.3.0',
       'sha256'  => {
-        'amd64'   => '94d9cbea08120a9c51c29dfe66c8c85ef817af03b3ceb50bbb1b2bb2ee3bc07b',
-        'aarch64' => 'd7d7c5c8625c4fe92c100504d9168b68a12c87edf091da66027de9aa99571afb',
+        'amd64'   => '5468a6e2fad8937efb289b5cc79ad9ae2568a7b5c179c419325ceeb65d86c623',
+        'aarch64' => '16d7803fb08d77108b3a54dac94db43a7a5a1bd3fc8deb0c54bf4cfbfb88d619',
       },
     },
 
