@@ -407,13 +407,11 @@ export function initialize() {
                 // emoji_picker which we don't want to hide after actions popover is hidden.
                 e.stopPropagation();
                 e.preventDefault();
-                // HACK: Because we need the popover to be based off an
-                // element that definitely exists in the page even if the
-                // message wasn't sent by us and thus the .reaction_hover
-                // element is not present, we use the message's
-                // .fa-chevron-down element as the base for the popover.
-                const elem = $(".selected_message .actions_hover")[0];
-                emoji_picker.toggle_emoji_popover(elem, message_id, true);
+                emoji_picker.toggle_emoji_popover(
+                    instance.reference.parentElement,
+                    message_id,
+                    true,
+                );
                 instance.hide();
             });
 
