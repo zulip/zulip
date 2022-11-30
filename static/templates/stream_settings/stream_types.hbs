@@ -4,7 +4,7 @@
         {{> ../help_link_widget link="/help/stream-permissions" }}
     </label>
     {{#each stream_privacy_policy_values}}
-        <div class="radio-input-parent">
+        <div class="settings-radio-input-parent">
             <label class="radio">
                 <input type="radio" name="privacy" value="{{ this.code }}" {{#if (eq this.code ../stream_privacy_policy) }}checked{{/if}} />
                 <b>{{ this.name }}:</b> {{ this.description }}

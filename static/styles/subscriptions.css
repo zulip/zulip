@@ -966,7 +966,7 @@ h4.user_group_setting_subsection_title {
     .input-group {
         margin-bottom: 10px;
 
-        .radio-input-parent {
+        .settings-radio-input-parent {
             border-bottom: 1px solid hsl(0, 0%, 87%);
             margin: 2px 0 2px 5px;
             padding: 2px 0;
