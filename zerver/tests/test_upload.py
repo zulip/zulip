@@ -966,7 +966,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         check_xsend_links(
             "áéБД.txt",
             "%C3%A1%C3%A9%D0%91%D0%94.txt",
-            "filename*=UTF-8''%C3%A1%C3%A9%D0%91%D0%94.txt",
+            "filename*=utf-8''%C3%A1%C3%A9%D0%91%D0%94.txt",
         )
         check_xsend_links("zulip.html", "zulip.html", 'filename="zulip.html"')
         check_xsend_links("zulip.sh", "zulip.sh", 'filename="zulip.sh"')
