@@ -682,7 +682,7 @@ export function toggle_emoji_popover(element, id, coming_from_actions_popover) {
     }
 
     if (user_status_ui.user_status_picker_open()) {
-        build_emoji_popover($elt, id, true);
+        build_emoji_popover($elt, id);
     } else if ($elt.data("popover") === undefined || coming_from_actions_popover) {
         // Keep the element over which the popover is based off visible.
         $elt.addClass("reaction_button_visible");
