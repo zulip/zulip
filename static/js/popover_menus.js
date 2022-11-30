@@ -86,7 +86,7 @@ function on_show_prep(instance) {
         e.stopPropagation();
         instance.hide();
     });
-    popovers.hide_all_except_sidebars(instance);
+    popovers.hide_all_except_sidebars();
 }
 
 function tippy_no_propagation(target, popover_props) {
@@ -214,7 +214,7 @@ export function initialize() {
                 ),
             );
             compose_control_buttons_popover_instance = instance;
-            popovers.hide_all_except_sidebars(instance);
+            popovers.hide_all_except_sidebars();
         },
         onHidden(instance) {
             instance.destroy();

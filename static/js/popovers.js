@@ -1136,8 +1136,6 @@ export function hide_all_except_sidebars(opts) {
     if (!opts || !opts.not_hide_tippy_instances) {
         // hideAll hides all tippy instances (tooltips and popovers).
         hideAll();
-    } else if (opts.exclude_tippy_instance) {
-        hideAll({exclude: opts.exclude_tippy_instance});
     }
     emoji_picker.hide_emoji_popover();
     giphy.hide_giphy_popover();
@@ -1164,7 +1162,6 @@ export function hide_all(not_hide_tippy_instances) {
     hide_userlist_sidebar();
     stream_popover.hide_streamlist_sidebar();
     hide_all_except_sidebars({
-        exclude_tippy_instance: undefined,
         not_hide_tippy_instances,
     });
 }
