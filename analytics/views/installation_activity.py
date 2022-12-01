@@ -26,7 +26,7 @@ from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Realm, UserActivityInterval, UserProfile, get_org_type_display_name
+from zerver.models import Realm, UserActivityInterval, get_org_type_display_name
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
@@ -187,19 +187,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     rows = dictfetchall(cursor)
     cursor.close()
 
-    # Fetch all the realm administrator users
-    realm_owners: Dict[str, List[str]] = defaultdict(list)
-    for up in UserProfile.objects.select_related("realm").filter(
-        role=UserProfile.ROLE_REALM_OWNER,
-        is_active=True,
-    ):
-        realm_owners[up.realm.string_id].append(up.delivery_email)
-
     for row in rows:
         row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
-        row["realm_owner_emails"] = ", ".join(realm_owners[row["string_id"]])
 
     # get messages sent per day
     counts = get_realm_day_counts()
@@ -283,7 +274,6 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         arr=total_arr,
         stats_link="",
         date_created_day="",
-        realm_owner_emails="",
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
