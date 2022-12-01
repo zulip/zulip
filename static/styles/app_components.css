@@ -740,7 +740,14 @@ div.overlay {
     }
 }
 
-#settings_page {
+.save-button-controls {
+    display: inline;
+    margin-left: 15px;
+
+    &.hide {
+        display: none;
+    }
+
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0, 0%, 80%);
@@ -785,6 +792,25 @@ div.overlay {
             }
         }
 
+        &.save-button {
+            margin-right: 5px;
+
+            .save-discard-widget-button-loading {
+                display: none;
+            }
+
+            &.saving {
+                .save-discard-widget-button-icon {
+                    display: none;
+                }
+
+                .save-discard-widget-button-loading {
+                    display: inline-block;
+                    margin-right: 2px;
+                }
+            }
+        }
+
         .save-discard-widget-button-icon {
             vertical-align: middle;
             margin-right: 3px;
@@ -795,34 +821,6 @@ div.overlay {
         .save-discard-widget-button-text {
             vertical-align: middle;
             line-height: 1;
-        }
-    }
-
-    .save-button-controls {
-        display: inline;
-        margin-left: 15px;
-
-        &.hide {
-            display: none;
-        }
-    }
-
-    .save-button {
-        margin-right: 5px;
-
-        .save-discard-widget-button-loading {
-            display: none;
-        }
-
-        &.saving {
-            .save-discard-widget-button-icon {
-                display: none;
-            }
-
-            .save-discard-widget-button-loading {
-                display: inline-block;
-                margin-right: 2px;
-            }
         }
     }
 }
