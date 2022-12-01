@@ -1546,6 +1546,23 @@ class MarkdownTest(ZulipTestCase):
         flush()
         self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
 
+    def test_linkifier_precedence(self) -> None:
+        realm = self.example_user("hamlet").realm
+        # The insertion order should not affect the fact that the linkifiers are ordered by id.
+        # Note that we might later switch to a different field to order the linkifiers.
+        sequence = (10, 3, 11, 2, 4, 5, 6)
+        for cur_precedence in sequence:
+            linkifier = RealmFilter(
+                id=cur_precedence,
+                realm=realm,
+                pattern=f"abc{cur_precedence}",
+                url_format_string="http://foo.com",
+            )
+            linkifier.save()
+        linkifiers = linkifiers_for_realm(realm.id)
+        for index, cur_precedence in enumerate(sorted(sequence)):
+            self.assertEqual(linkifiers[index]["id"], cur_precedence)
+
     def test_realm_patterns_negative(self) -> None:
         realm = get_realm("zulip")
         RealmFilter(
