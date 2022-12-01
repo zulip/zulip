@@ -275,6 +275,9 @@ export function show_settings_for(node) {
     show_subscription_settings(sub);
 }
 
+var word;
+var oldHref;
+
 export function setup_stream_settings(node) {
     toggler = components.toggle({
         child_wants_focus: true,
@@ -291,6 +294,25 @@ export function setup_stream_settings(node) {
     });
 
     show_settings_for(node);
+
+    oldHref = window.location.href;
+    var old_sub = get_sub_for_target(node);
+    let newURl = oldHref + "/" + select_tab;
+    window.history.pushState({path: newURl}, '', newURl);
+    
+    setInterval(function () {
+        if (select_tab == word) {
+            // console.log("You're on the same");
+            return;
+        } else {
+            word = select_tab;
+            // console.log("Selected " + select_tab);
+            let newURl = oldHref + "/" + select_tab;
+            window.history.pushState({path: newURl}, '', newURl);
+    }}, 10);
+    
+    
+    
 }
 
 export function update_muting_rendering(sub) {
