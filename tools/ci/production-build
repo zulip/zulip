@@ -39,7 +39,7 @@ cp -a \
     tools/ci/production-upgrade \
     tools/ci/production-pgroonga \
     tools/ci/production-upgrade-pg \
-    tools/ci/send-failure-message \
+    tools/ci/generate-failure-message \
     package.json yarn.lock \
     /tmp/production-build
 
