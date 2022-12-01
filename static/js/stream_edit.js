@@ -489,6 +489,7 @@ export function initialize() {
         }
 
         stream_settings_ui.sub_or_unsub(sub);
+        window.location.reload();
     });
 
     $("#manage_streams_container").on("click", ".change-stream-privacy", (e) => {
