@@ -211,9 +211,6 @@
         color: inherit;
     }
 
-    .dark_background a,
-    a.dark_background:hover,
-    .dark_background,
     .message_reactions .message_reaction_count,
     .message_reactions .reaction_button i,
     .message_reactions:hover .message_reaction + .reaction_button {
@@ -237,13 +234,6 @@
         #hide_more_private_messages {
             background-color: hsla(199, 33%, 46%, 0.2);
         }
-    }
-
-    /* do not turn the .message_header .stream_label text dark on hover because they're
-       on a dark background, and don't change the dark labels dark either. */
-    .message_header:not(.dark_background)
-        a.stream_label:not(.dark_background):hover {
-        color: hsl(212, 28%, 18%);
     }
 
     /* these are converting grey things to "new grey" */
@@ -394,8 +384,7 @@
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
-    .message-header-contents,
-    .message_header_private_message .message-header-contents {
+    .message_header_stream .message-header-contents {
         background-color: hsla(0, 0%, 0%, 0.2);
         border-color: transparent;
     }
@@ -406,9 +395,6 @@
 
     /* Not that .message_row (below) needs to be more contrast on dark theme */
     #compose-content,
-    .message_list .recipient_row,
-    .message_row,
-    .draft-row .draft-info-box,
     .preview_message_area {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
@@ -771,11 +757,6 @@
     table th,
     table td {
         border-color: hsla(0, 0%, 0%, 0.2);
-    }
-
-    .draft-row .draft-info-box,
-    .message_header_private_message .message-header-contents {
-        box-shadow: none;
     }
 
     .draft-row .message_header_private_message .message_label_clickable {

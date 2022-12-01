@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as color_class from "./color_class";
 import * as stream_data from "./stream_data";
 
 function update_compose_stream_icon(stream_name) {
@@ -34,8 +33,5 @@ export function decorate(stream_name, $element, is_compose) {
     if (is_compose) {
         update_compose_stream_icon(stream_name);
     }
-    $element
-        .css("background-color", color)
-        .removeClass("dark_background")
-        .addClass(color_class.get_css_class(color));
+    $element.css("background-color", color);
 }

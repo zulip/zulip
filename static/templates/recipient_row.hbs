@@ -1,20 +1,16 @@
 {{#if is_stream}}
 <div class="message_header message_header_stream right_part">
-    <div class="message-header-wrapper">
+    <div class="message-header-wrapper" style="background: {{recipient_bar_color}};">
         <div class="message-header-contents">
             {{! stream link }}
-            <a class="message_label_clickable narrows_by_recipient stream_label {{color_class}}"
-              style="background: {{background_color}}; border-left-color: {{background_color}};"
+            <a class="message_label_clickable narrows_by_recipient stream_label"
               href="{{stream_url}}"
               title="{{#tr}}Narrow to stream &quot;{display_recipient}&quot;{{/tr}}">
-                {{~! Icons for invite-only/web-public streams ~}}
-                {{~#if invite_only ~}}
-                    <i class="fa fa-lock recipient-row-stream-icon" title="{{t 'This is a private stream' }}" aria-label="{{t 'This is a private stream' }}"></i>
-                {{/if}}
-
-                {{~#if is_web_public ~}}
-                    <i class="zulip-icon zulip-icon-globe recipient-row-stream-icon" title="{{t 'This is a web-public stream' }}" aria-label="{{t 'This is a web-public stream' }}"></i>
-                {{/if}}
+                <span id="stream_sidebar_privacy_swatch_{{stream.stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_privacy_icon_color}}">
+                    {{> stream_privacy
+                      invite_only=stream.invite_only
+                      is_web_public=stream.is_web_public }}
+                </span>
 
                 {{~! Recipient (e.g. stream/topic or topic) ~}}
                 {{~display_recipient~}}
@@ -22,6 +18,8 @@
 
             {{! hidden narrow icon for copy-pasting }}
             <span class="copy-paste-text">&gt;</span>
+
+            <span class="stream_topic_separator"><i class="zulip-icon zulip-icon-chevron-right"></i></span>
 
             {{! topic stuff }}
             <span class="stream_topic">
@@ -74,12 +72,13 @@
     </div>
 </div>
 {{else}}
-<div class="message_header message_header_private_message dark_background">
+<div class="message_header message_header_private_message">
     <div class="message-header-wrapper">
         <div class="message-header-contents">
-            <a class="message_label_clickable narrows_by_recipient stream_label"
+            <a class="message_label_clickable narrows_by_recipient"
               href="{{pm_with_url}}"
               title="{{#tr}}Narrow to your private messages with {display_reply_to}{{/tr}}">
+                <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
                 {{#tr}}You and {display_reply_to}{{/tr}}
             </a>
 
