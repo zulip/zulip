@@ -1338,7 +1338,7 @@ def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     linkifiers = []
-    for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
+    for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("id"):
         linkifiers.append(
             LinkifierDict(
                 pattern=linkifier.pattern,
