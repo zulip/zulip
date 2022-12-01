@@ -127,6 +127,15 @@
     margin-bottom: 10px;
 }
 
+.notification_stream_archive_warning {
+    margin-bottom: 0;
+    margin-top: 10px;
+}
+
+.notification_stream_archive_warning_list {
+    margin-bottom: 0;
+}
+
 #read_receipts_modal {
     .modal__container {
         width: 360px;

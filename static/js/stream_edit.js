@@ -737,8 +737,24 @@ export function initialize() {
             is_web_public: stream.is_web_public,
         });
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
+
+        const is_new_stream_notification_stream =
+            stream_id === page_params.realm_notifications_stream_id;
+        const is_signup_notification_stream =
+            stream_id === page_params.realm_signup_notifications_stream_id;
+        const is_report_notification_stream =
+            stream_id === page_params.realm_report_message_stream_id;
+        const is_notification_stream =
+            is_new_stream_notification_stream ||
+            is_signup_notification_stream ||
+            is_report_notification_stream;
+
         const html_body = render_settings_deactivation_stream_modal({
             stream_name,
+            is_new_stream_notification_stream,
+            is_signup_notification_stream,
+            is_report_notification_stream,
+            is_notification_stream,
             stream_privacy_symbol_html,
         });
 
