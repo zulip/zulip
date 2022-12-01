@@ -20,6 +20,8 @@ from analytics.views.activity_common import (
     make_table,
     realm_activity_link,
     realm_stats_link,
+    realm_support_link,
+    realm_url_link,
     remote_installation_stats_link,
 )
 from analytics.views.support import get_plan_name
@@ -246,7 +248,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     # formatting
     for row in rows:
+        row["realm_url"] = realm_url_link(row["string_id"])
         row["stats_link"] = realm_stats_link(row["string_id"])
+        row["support_link"] = realm_support_link(row["string_id"])
         row["string_id"] = realm_activity_link(row["string_id"])
 
     # Count active sites
@@ -272,7 +276,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         org_type_string="",
         effective_rate="",
         arr=total_arr,
+        realm_url="",
         stats_link="",
+        support_link="",
         date_created_day="",
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
