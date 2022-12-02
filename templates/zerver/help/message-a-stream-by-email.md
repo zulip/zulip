@@ -30,7 +30,11 @@ API](/api/send-message).
 
 {!select-stream-view-general.md!}
 
-1. Copy the stream email address under **Email address**.
+1. Click **Generate email address** under **Email address**.
+
+1. Toggle the configuration options as desired.
+
+1. Click **Copy address** to add the stream email address to your clipboard.
 
 1. Send an email to that address.
 
@@ -45,39 +49,28 @@ up in Zulip.
 ## Configuration options
 
 The options below control which parts of the email are included in the
-Zulip message.  To add a configuration option, add it right before the `@`
-in the email address.
+Zulip message.
 
-For example, if the stream email address is
-`general.abcd1234@example.zulipchat.com`, you can add the first two options
-below by sending email to
-`general.abcd1234.show-sender.include-footer@example.zulipchat.com` instead.
-
-* **.show-sender**: Adds `From: <Sender email address>` to
+* **The sender's email address**: Adds `From: <Sender email address>` to
   the top of the Zulip message.
 
-* **.include-footer**: By default, Zulip tries to automatically remove some footer
-  text (like signatures). With this option, Zulip will include all footers.
+* **Email footers**: By default, Zulip tries to automatically remove some footer
+  text (like signatures). With this option enabled, Zulip will include all footers.
 
-* **.include-quotes**: In many email clients, when you reply to a message
+* **Quoted original email**: In many email clients, when you reply to a message
   (e.g. a message notification email), a copy of the original message is
   automatically added to the bottom of your reply. By default, Zulip tries
-  to remove that copied message. With this option, Zulip will include it.
+  to remove that copied message. With this option enabled, Zulip will include it.
 
-* **.prefer-html**: The body of an email is typically encoded using
+* **Use html encoding**: The body of an email is typically encoded using
   one or both of two common formats: plain text (`text/plain`) and
   HTML (`text/html`).  Zulip supports constructing the Zulip message
   content using either (converting HTML to Markdown for the HTML
   format).  By default, Zulip will prefer using the plain text version
   of an email over the converted HTML version if both are present.
-  This option overrides that behavior to prefer the HTML version
+  Enabling this option overrides that behavior to prefer the HTML version
   instead.
-
-* **.prefer-text**: Similar to `.prefer-html`, but explicitly asks
-  Zulip to prefer the plain text version of the email if both are
-  present (the current default behavior).
 
 ## Related articles
 
 * [Using Zulip via email](/help/using-zulip-via-email)
-

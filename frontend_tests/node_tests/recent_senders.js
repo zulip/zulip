@@ -26,6 +26,9 @@ function make_stream_message({stream_id, topic, sender_id}) {
 mock_esm("../../static/js/message_store", {
     get: (message_id) => messages.get(message_id),
 });
+mock_esm("../../static/js/people", {
+    my_current_user_id: () => 1,
+});
 
 const rs = zrequire("recent_senders");
 zrequire("message_util.js");
@@ -92,11 +95,11 @@ test("update_topics_of_deleted_message_ids", () => {
     rs.update_topics_of_deleted_message_ids([message.id]);
     assert.deepEqual(rs.get_topic_recent_senders(stream_id, topic), []);
 
-    rs.process_message_for_senders(message);
+    rs.process_stream_message(message);
     assert.deepEqual(rs.get_topic_recent_senders(stream_id, topic), [sender_id]);
 });
 
-test("process_message_for_senders", () => {
+test("process_stream_message", () => {
     const stream1 = 1;
     const stream2 = 2;
     const stream3 = 3;
@@ -125,8 +128,8 @@ test("process_message_for_senders", () => {
         sender_id: sender2,
     });
 
-    rs.process_message_for_senders(message1);
-    rs.process_message_for_senders(message2);
+    rs.process_stream_message(message1);
+    rs.process_stream_message(message2);
 
     // Users have posted in only one of the streams
     assert.equal(
@@ -151,7 +154,7 @@ test("process_message_for_senders", () => {
         sender_id: sender3,
     });
 
-    rs.process_message_for_senders(message3);
+    rs.process_stream_message(message3);
     assert.equal(
         rs.compare_by_recency({user_id: sender3}, {user_id: sender2}, stream1, topic2) < 0,
         true,
@@ -164,7 +167,7 @@ test("process_message_for_senders", () => {
         sender_id: sender2,
     });
 
-    rs.process_message_for_senders(message4);
+    rs.process_stream_message(message4);
     assert.equal(
         rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) > 0,
         true,
@@ -177,7 +180,7 @@ test("process_message_for_senders", () => {
         sender_id: sender1,
     });
 
-    rs.process_message_for_senders(message5);
+    rs.process_stream_message(message5);
     assert.equal(
         rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) < 0,
         true,
@@ -200,9 +203,9 @@ test("process_message_for_senders", () => {
         sender_id: sender3,
     });
 
-    rs.process_message_for_senders(message6);
-    rs.process_message_for_senders(message7);
-    rs.process_message_for_senders(message8);
+    rs.process_stream_message(message6);
+    rs.process_stream_message(message7);
+    rs.process_stream_message(message8);
 
     // topic3 has a message in it, but sender1 nor sender2 have participated, so sort by stream
     assert.equal(
@@ -223,11 +226,11 @@ test("process_message_for_senders", () => {
         sender_id: sender3,
     });
 
-    rs.process_message_for_senders(message9);
+    rs.process_stream_message(message9);
 
     // Test topic change
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "3");
-    assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "3,2");
 
     // message7's topic was changed by user
     message7.topic = topic3;
@@ -240,11 +243,11 @@ test("process_message_for_senders", () => {
         new_topic: topic3,
     });
 
-    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "3,2");
     assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "3");
 
     // Test stream change
-    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "3,2");
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
 
     message7.stream_id = stream4;
@@ -258,10 +261,10 @@ test("process_message_for_senders", () => {
     });
 
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "");
-    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "3,2");
 
     // Test stream & topic change
-    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
+    assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "3,2");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "");
 
     message7.stream_id = stream5;
@@ -279,8 +282,8 @@ test("process_message_for_senders", () => {
     });
 
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
-    assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "2,3");
-    assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2,1");
+    assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "3,2");
+    assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "1,2");
 
     // delete message1 and message5 sent by sender1
     rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);
@@ -309,4 +312,39 @@ test("process_message_for_senders", () => {
         rs.compare_by_recency({user_id: sender2}, {user_id: sender1}, stream3, "bogus") < 0,
         true,
     );
+});
+
+test("process_pms", () => {
+    const sender1 = 1; // Current user id
+    const sender2 = 2;
+    const sender3 = 3;
+
+    const user_ids_string = "2,3,4";
+    rs.process_private_message({
+        to_user_ids: user_ids_string,
+        sender_id: sender2,
+        id: 1,
+    });
+    rs.process_private_message({
+        to_user_ids: user_ids_string,
+        sender_id: sender3,
+        id: 2,
+    });
+    rs.process_private_message({
+        to_user_ids: user_ids_string,
+        sender_id: sender1,
+        id: 3,
+    });
+
+    // Recent topics displays avatars in the opposite order to this since
+    // that was simpler to implement in HTML.
+    assert.deepEqual(rs.get_pm_recent_senders(user_ids_string), {
+        participants: [1, 3, 2],
+        non_participants: [4],
+    });
+    // PM doesn't exist.
+    assert.deepEqual(rs.get_pm_recent_senders("1000,2000"), {
+        participants: [],
+        non_participants: [],
+    });
 });

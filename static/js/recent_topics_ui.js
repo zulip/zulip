@@ -400,8 +400,12 @@ function format_conversation(conversation_data) {
             context.topic,
         );
 
-        // Display in most recent sender first order
-        all_senders = recent_senders.get_topic_recent_senders(context.stream_id, context.topic);
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        all_senders = recent_senders
+            .get_topic_recent_senders(context.stream_id, context.topic)
+            .reverse();
         senders = all_senders.slice(-MAX_AVATAR);
 
         // Collect extra sender fullname for tooltip
@@ -426,16 +430,6 @@ function format_conversation(conversation_data) {
         context.pm_url = last_msg.pm_with_url;
         context.is_group = last_msg.display_recipient.length > 2;
 
-        // Don't show participant avatars for PMs.
-        // "Participants" column on "Recent topics" does not provide accurate information for PM conversations.
-        // In particular, it duplicates the PM recipients list under "Topics"
-        // (with the addition of the current user), but does not depend on who sent messages to the thread.
-        // TODO: https://github.com/zulip/zulip/issues/23563
-        all_senders = [];
-        senders = [];
-        extra_sender_ids = [];
-        displayed_other_senders = [];
-
         if (!context.is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
             const user = people.get_by_user_id(user_id);
@@ -447,6 +441,23 @@ function format_conversation(conversation_data) {
                 context.user_circle_class = buddy_data.get_user_circle_class(user_id);
             }
         }
+
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        // To match the behavior for streams, we display the set of users who've actually
+        // participated, with the most recent participants first. It could make sense to
+        // display the other recipients on the PM conversation with different styling,
+        // but it's important to not destroy the information of "who's actually talked".
+        all_senders = recent_senders
+            .get_pm_recent_senders(context.user_ids_string)
+            .participants.reverse();
+        senders = all_senders.slice(-MAX_AVATAR);
+        // Collect extra senders fullname for tooltip.
+        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
+        displayed_other_senders = extra_sender_ids
+            .slice(-MAX_EXTRA_SENDERS)
+            .map((sender) => sender.id);
     }
 
     context.senders = people.sender_info_for_recent_topics_row(senders);

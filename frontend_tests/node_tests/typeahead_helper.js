@@ -358,19 +358,19 @@ test("sort_recipients", () => {
     pm_conversations.set_partner(7);
 
     // For splitting based on recency
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 7,
         stream_id: 1,
         topic: "Dev topic",
         id: (next_id += 1),
     });
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 5,
         stream_id: 1,
         topic: "Dev topic",
         id: (next_id += 1),
     });
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 6,
         stream_id: 1,
         topic: "Dev topic",
@@ -388,13 +388,13 @@ test("sort_recipients", () => {
         "a_bot@zulip.com",
     ]);
 
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 5,
         stream_id: 2,
         topic: "Linux topic",
         id: (next_id += 1),
     });
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 7,
         stream_id: 2,
         topic: "Linux topic",

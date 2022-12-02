@@ -170,13 +170,12 @@ def cache_with_key(
 
             val = func(*args, **kwargs)
             if isinstance(val, QuerySet):  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/issues/704
-                logging.warning(
-                    "cache_with_key attempted to store a full QuerySet object -- flattening using list()",
+                logging.error(
+                    "cache_with_key attempted to store a full QuerySet object -- declining to cache",
                     stack_info=True,
                 )
-                val = list(val)
-
-            cache_set(key, val, cache_name=cache_name, timeout=timeout)
+            else:
+                cache_set(key, val, cache_name=cache_name, timeout=timeout)
 
             return val
 
