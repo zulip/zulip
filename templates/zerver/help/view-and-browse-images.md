@@ -31,3 +31,8 @@ Exit the image viewer by clicking anywhere outside the image.
 ## Troubleshooting
 
 To open the image viewer, you must click on the image preview, not the file name.
+
+## Related articles
+
+* [Manage your uploaded files](/help/manage-your-uploaded-files)
+* [Share and upload files](/help/share-and-upload-files)
