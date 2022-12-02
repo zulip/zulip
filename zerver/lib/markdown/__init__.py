@@ -2372,13 +2372,22 @@ def percent_escape_format_string(format_string: str) -> str:
     return re.sub(r"(?<!%)(%%)*%([a-fA-F0-9][a-fA-F0-9])", r"\1%%\2", format_string)
 
 
+@dataclass
+class TopicLinkMatch:
+    url: str
+    text: str
+    index: int
+    precedence: Optional[int]
+
+
 # Security note: We don't do any HTML escaping in this
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
 def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
-    matches: List[Dict[str, Union[str, int]]] = []
+    matches: List[TopicLinkMatch] = []
     linkifiers = linkifiers_for_realm(linkifiers_key)
+    precedence = 0
 
     options = re2.Options()
     options.log_errors = False
@@ -2411,12 +2420,18 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             # Also, we include the matched text in the response, so that our clients
             # don't have to implement any logic of their own to get back the text.
             matches += [
-                dict(
+                TopicLinkMatch(
                     url=url_format_string % match_details,
                     text=match_text,
                     index=m.start(),
+                    precedence=precedence,
                 )
             ]
+        precedence += 1
+
+    # Sort the matches beforehand so we favor the match with a higher priority and tie-break with the starting index.
+    # Note that we sort it before processing the raw URLs so that linkifiers will be prioritized over them.
+    matches.sort(key=lambda k: (k.precedence, k.index))
 
     pos = 0
     # Also make raw URLs navigable.
@@ -2438,14 +2453,41 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
                 url = result._replace(scheme="https").geturl()
             else:
                 url = actual_match_url
-            matches.append(dict(url=url, text=actual_match_url, index=pos))
+            matches.append(
+                TopicLinkMatch(
+                    url=url,
+                    text=actual_match_url,
+                    index=pos,
+                    precedence=None,
+                )
+            )
         # Move pass the next split point, and start matching the URL from there
         pos = end + 1
 
-    # In order to preserve the order in which the links occur, we sort the matched text
-    # based on its starting index in the topic. We pop the index field before returning.
-    matches = sorted(matches, key=lambda k: k["index"])
-    return [{k: str(v) for k, v in match.items() if k != "index"} for match in matches]
+    def are_matches_overlapping(match_a: TopicLinkMatch, match_b: TopicLinkMatch) -> bool:
+        return (match_b.index <= match_a.index < match_b.index + len(match_b.text)) or (
+            match_a.index <= match_b.index < match_a.index + len(match_a.text)
+        )
+
+    # The following removes overlapping intervals depending on the precedence of linkifier patterns.
+    # This uses the same algorithm implemented in static/js/markdown.js.
+    # To avoid mutating matches inside the loop, the final output gets appended to another list.
+    applied_matches: List[TopicLinkMatch] = []
+    for current_match in matches:
+        # When the current match does not overlap with all existing matches,
+        # we are confident that the link should present in the final output because
+        #  1. Given that the links are sorted by precedence, the current match has the highest priority
+        #     among the matches to be checked.
+        #  2. None of the matches with higher priority overlaps with the current match.
+        # This might be optimized to search for overlapping matches in O(logn) time,
+        # but it is kept as-is since performance is not critical for this codepath and for simplicity.
+        if all(
+            not are_matches_overlapping(old_match, current_match) for old_match in applied_matches
+        ):
+            applied_matches.append(current_match)
+    # We need to sort applied_matches again because the links were previously ordered by precedence.
+    applied_matches.sort(key=lambda v: v.index)
+    return [{"url": match.url, "text": match.text} for match in applied_matches]
 
 
 def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:

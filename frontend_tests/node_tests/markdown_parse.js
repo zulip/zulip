@@ -6,6 +6,7 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const markdown = zrequire("markdown");
+const linkifiers = zrequire("linkifiers");
 
 const my_id = 101;
 
@@ -216,10 +217,17 @@ run_test("linkifiers", () => {
     );
 });
 
+function assert_topic_links(topic, expected_links) {
+    const topic_links = markdown.get_topic_links({
+        topic,
+        get_linkifier_map: linkifiers.get_linkifier_map,
+    });
+    assert.deepEqual(topic_links, expected_links);
+}
+
 run_test("topic links", () => {
-    const topic = "progress on #foo101 and #foo102";
-    const topic_links = markdown.get_topic_links({topic, get_linkifier_map});
-    assert.deepEqual(topic_links, [
+    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_format: "http://foo.com/%(id)s"}]);
+    assert_topic_links("progress on #foo101 and #foo102", [
         {
             text: "#foo101",
             url: "http://foo.com/101",
@@ -235,8 +243,8 @@ run_test("topic links repeated", () => {
     // Links generated from repeated patterns should preserve the order.
     const topic =
         "#foo101 https://google.com #foo102 #foo103 https://google.com #foo101 #foo102 #foo103";
-    const topic_links = markdown.get_topic_links({topic, get_linkifier_map});
-    assert.deepEqual(topic_links, [
+    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_format: "http://foo.com/%(id)s"}]);
+    assert_topic_links(topic, [
         {
             text: "#foo101",
             url: "http://foo.com/101",
@@ -268,6 +276,103 @@ run_test("topic links repeated", () => {
         {
             text: "#foo103",
             url: "http://foo.com/103",
+        },
+    ]);
+});
+
+run_test("topic links overlapping", () => {
+    linkifiers.initialize([
+        {pattern: "[a-z]+(?P<id>1\\d+) #[a-z]+", url_format: "http://a.com/%(id)s"},
+        {pattern: "[a-z]+(?P<id>1\\d+)", url_format: "http://b.com/%(id)s"},
+        {pattern: ".+#(?P<id>[a-z]+)", url_format: "http://wildcard.com/%(id)s"},
+        {pattern: "#(?P<id>[a-z]+)", url_format: "http://c.com/%(id)s"},
+    ]);
+    // b.com's pattern should be matched while it overlaps with c.com's.
+    assert_topic_links("#foo100", [
+        {
+            text: "foo100",
+            url: "http://b.com/100",
+        },
+    ]);
+    // a.com's pattern should be matched while it overlaps with b.com's, wildcard.com's and c.com's.
+    assert_topic_links("#asd123 #asd", [
+        {
+            text: "asd123 #asd",
+            url: "http://a.com/123",
+        },
+    ]);
+    // a.com's pattern do not match, wildcard.com's and b.com's patterns should match
+    // and the links are ordered by the matched index.
+    assert_topic_links("/#asd #foo100", [
+        {
+            text: "/#asd",
+            url: "http://wildcard.com/asd",
+        },
+        {
+            text: "foo100",
+            url: "http://b.com/100",
+        },
+    ]);
+    assert_topic_links("foo.anything/#asd", [
+        {
+            text: "foo.anything/#asd",
+            url: "http://wildcard.com/asd",
+        },
+    ]);
+
+    // While the raw URL "http://foo.com/foo100" appears before b.com's match "foo100",
+    // we prioritize the linkifier match first.
+    assert_topic_links("http://foo.com/foo100", [
+        {
+            text: "foo100",
+            url: "http://b.com/100",
+        },
+    ]);
+
+    // Here the raw URL "https://foo.com/#asd" appears after wildcard.com's match "something https://foo.com/#asd".
+    // The latter is prioritized and the raw URL does not get included.
+    assert_topic_links("something https://foo.com/#asd", [
+        {
+            text: "something https://foo.com/#asd",
+            url: "http://wildcard.com/asd",
+        },
+    ]);
+});
+
+run_test("topic links ordering by priority", () => {
+    // The same test case is also implemented in zerver/tests/test_markdown.py
+    linkifiers.initialize([
+        {pattern: "http", url_format: "http://example.com/"},
+        {pattern: "b#(?P<id>[a-z]+)", url_format: "http://example.com/b/%(id)s"},
+        {
+            pattern: "a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+)",
+            url_format: "http://example.com/a/%(aid)s/b/%(bid)",
+        },
+        {pattern: "a#(?P<id>[a-z]+)", url_format: "http://example.com/a/%(id)s"},
+    ]);
+
+    // There should be 5 link matches in the topic, if ordered from the most priortized to the least:
+    // 1. "http" (linkifier)
+    // 2. "b#bar" (linkifier)
+    // 3. "a#asd b#bar" (linkifier)
+    // 4. "a#asd" (linkifier)
+    // 5. "http://foo.com" (raw URL)
+    // When there are overlapping matches, the one that appears earlier in the list should
+    // have a topic link generated.
+    // For this test case, while "a#asd" and "a#asd b#bar" both match and they overlap,
+    // there is a match "b#bar" with a higher priority, preventing "a#asd b#bar" from being matched.
+    assert_topic_links("http://foo.com a#asd b#bar", [
+        {
+            text: "http",
+            url: "http://example.com/",
+        },
+        {
+            text: "a#asd",
+            url: "http://example.com/a/asd",
+        },
+        {
+            text: "b#bar",
+            url: "http://example.com/b/bar",
         },
     ]);
 });
