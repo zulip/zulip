@@ -12,3 +12,7 @@ messages sent while you were away.
    have sent messages to.
 
 {end_tabs}
+
+!!! tip ""
+
+    The **Participants** column shows which users recently sent a message (newest on the left).
