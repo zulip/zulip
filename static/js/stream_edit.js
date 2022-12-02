@@ -275,10 +275,8 @@ export function show_settings_for(node) {
     show_subscription_settings(sub);
 }
 
-var word;
-var oldHref;
-
 export function setup_stream_settings(node) {
+    let old_sub = get_sub_for_target(node);
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
@@ -290,22 +288,11 @@ export function setup_stream_settings(node) {
             $(".stream_section").hide();
             $("." + key).show();
             select_tab = key;
+            setup_subscriptions_stream_hash(old_sub, select_tab);
         },
     });
 
     show_settings_for(node);
-
-    var old_sub = get_sub_for_target(node);
-    
-    setInterval(function () {
-        if (select_tab != word) {
-            setup_subscriptions_stream_hash(old_sub, select_tab);
-            word = select_tab;
-        }
-    }, 10);
-    
-    
-    
 }
 
 export function update_muting_rendering(sub) {
