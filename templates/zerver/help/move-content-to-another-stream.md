@@ -51,7 +51,9 @@ destination streams.
 1. Select **Move messages**. If you do not see this option, you do not have permission
    to move this message.
 
-1. Select the destination stream for the message from the streams dropdown list.
+1. Select the destination stream from the streams dropdown list. If
+   the stream input is disabled, you do not have permission to move
+   this message to a different stream.
 
 1. _(optional)_ Change the topic name.
 
