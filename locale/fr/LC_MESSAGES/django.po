@@ -2186,7 +2186,7 @@ msgstr "Historique"
 
 #: templates/zerver/footer.html:151
 msgid "Values"
-msgstr ""
+msgstr "Valeurs"
 
 #: templates/zerver/footer.html:153
 msgid "Jobs"
@@ -4534,7 +4534,7 @@ msgstr "Aucune invitation"
 
 #: zerver/views/invite.py:152
 msgid "Invitation has already been revoked"
-msgstr ""
+msgstr "L'invitation a déjà été révoquée"
 
 #: zerver/views/invite.py:200
 msgid "Invalid stream ID {}. No invites were sent."
