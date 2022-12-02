@@ -230,3 +230,44 @@ run_test("topic links", () => {
         },
     ]);
 });
+
+run_test("topic links repeated", () => {
+    // Links generated from repeated patterns should preserve the order.
+    const topic =
+        "#foo101 https://google.com #foo102 #foo103 https://google.com #foo101 #foo102 #foo103";
+    const topic_links = markdown.get_topic_links({topic, get_linkifier_map});
+    assert.deepEqual(topic_links, [
+        {
+            text: "#foo101",
+            url: "http://foo.com/101",
+        },
+        {
+            text: "https://google.com",
+            url: "https://google.com",
+        },
+        {
+            text: "#foo102",
+            url: "http://foo.com/102",
+        },
+        {
+            text: "#foo103",
+            url: "http://foo.com/103",
+        },
+        {
+            text: "https://google.com",
+            url: "https://google.com",
+        },
+        {
+            text: "#foo101",
+            url: "http://foo.com/101",
+        },
+        {
+            text: "#foo102",
+            url: "http://foo.com/102",
+        },
+        {
+            text: "#foo103",
+            url: "http://foo.com/103",
+        },
+    ]);
+});
