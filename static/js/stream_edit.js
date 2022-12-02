@@ -18,6 +18,7 @@ import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
@@ -489,6 +490,24 @@ export function initialize() {
         }
 
         stream_settings_ui.sub_or_unsub(sub);
+        const topic = narrow_state.topic();
+        // Refresh the view only if the stream is unsubscribed before
+        // and subscribed now
+        if (!sub.subscribed) {
+            if (topic === undefined) {
+                narrow.activate([{operator: "stream", operand: sub.name}], {
+                    trigger: "subscribe button",
+                });
+            } else {
+                narrow.activate(
+                    [
+                        {operator: "stream", operand: sub.name},
+                        {operator: "topic", operand: topic},
+                    ],
+                    {trigger: "subscribe button"},
+                );
+            }
+        }
     });
 
     $("#manage_streams_container").on("click", ".change-stream-privacy", (e) => {
@@ -701,6 +720,30 @@ export function initialize() {
         }
         stream_ui_updates.update_regular_sub_settings(sub);
 
+        const topic = narrow_state.topic();
+        // Refresh the view only if the stream is unsubscribed before
+        // and subscribed now
+        if (!sub.subscribed) {
+            const opened_sub = narrow_state.stream_sub();
+            // The opened stream is not the same as the selected stream to update,
+            // then do not need to refresh the message view of the former.
+            if (opened_sub === undefined || opened_sub.stream_id !== sub.stream_id) {
+                return;
+            }
+            if (topic === undefined) {
+                narrow.activate([{operator: "stream", operand: sub.name}], {
+                    trigger: "subscribe button",
+                });
+            } else {
+                narrow.activate(
+                    [
+                        {operator: "stream", operand: sub.name},
+                        {operator: "topic", operand: topic},
+                    ],
+                    {trigger: "subscribe button"},
+                );
+            }
+        }
         e.preventDefault();
         e.stopPropagation();
     });
