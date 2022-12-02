@@ -294,7 +294,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         dict(
             rows=rows,
             num_active_sites=num_active_sites,
-            utctime=now.strftime("%Y-%m-%d %H:%MZ"),
+            utctime=now.strftime("%Y-%m-%d %H:%M %Z"),
             billing_enabled=settings.BILLING_ENABLED,
         ),
     )
