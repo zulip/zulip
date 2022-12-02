@@ -276,10 +276,23 @@ function parse_with_options({raw_content, helper_config, options}) {
     return {content, flags};
 }
 
+function is_x_between(x, start, length) {
+    return start <= x && x < start + length;
+}
+
+function is_overlapping(match_a, match_b) {
+    return (
+        is_x_between(match_a.index, match_b.index, match_b.text.length) ||
+        is_x_between(match_b.index, match_a.index, match_a.text.length)
+    );
+}
+
 export function get_topic_links({topic, get_linkifier_map}) {
     // We export this for testing purposes, and mobile may want to
     // use this as well in the future.
     const links = [];
+    // The lower the precedence is, the more prioritized the pattern is.
+    let precedence = 0;
 
     for (const [pattern, url] of get_linkifier_map().entries()) {
         let match;
@@ -296,22 +309,54 @@ export function get_topic_links({topic, get_linkifier_map}) {
             }
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
-            links.push({url: link_url, text: match[0], index: match.index});
+            links.push({url: link_url, text: match[0], index: match.index, precedence});
         }
+        precedence += 1;
     }
+
+    // Sort the matches beforehand so we favor the match with a higher priority and tie-break with the starting index.
+    // Note that we sort it before processing the raw URLs so that linkifiers will be prioritized over them.
+    links.sort((a, b) => {
+        if (a.precedence !== null && b.precedence !== null) {
+            // When both of the links have precedence set, find the one that comes first.
+            const diff = a.precedence - b.precedence;
+            if (diff !== 0) {
+                return diff;
+            }
+        }
+        // Fallback to the index when there is either a tie in precedence or at least one of the links is a raw URL.
+        return a.index - b.index;
+    });
 
     // Also make raw URLs navigable
     const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
     let match;
     while ((match = url_re.exec(topic)) !== null) {
-        links.push({url: match[0], text: match[0], index: match.index});
+        links.push({url: match[0], text: match[0], index: match.index, precedence: null});
     }
-    links.sort((a, b) => a.index - b.index);
-    for (const match of links) {
-        delete match.index;
-    }
+    // The following removes overlapping intervals depending on the precedence of linkifier patterns.
+    // This uses the same algorithm implemented in zerver/lib/markdown/__init__.py.
+    // To avoid mutating links while processing links, the final output gets pushed to another list.
+    const applied_matches = [];
 
-    return links;
+    // To avoid mutating matches inside the loop, the final output gets appended to another list.
+    for (const new_match of links) {
+        // When the current match does not overlap with all existing matches,
+        // we are confident that the link should present in the final output because
+        //  1. Given that the links are sorted by precedence, the current match has the highest priority
+        //     among the matches to be checked.
+        //  2. None of the matches with higher priority overlaps with the current match.
+        // This might be optimized to search for overlapping matches in O(logn) time,
+        // but it is kept as-is since performance is not critical for this codepath and for simplicity.
+        if (applied_matches.every((applied_match) => !is_overlapping(applied_match, new_match))) {
+            applied_matches.push(new_match);
+        }
+    }
+    // We need to sort applied_matches again because the links were previously ordered by precedence,
+    // so that the links are displayed in the order their patterns are matched.
+    return applied_matches
+        .sort((a, b) => a.index - b.index)
+        .map((match) => ({url: match.url, text: match.text}));
 }
 
 export function is_status_message(raw_content) {

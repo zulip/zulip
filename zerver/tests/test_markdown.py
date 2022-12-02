@@ -1301,16 +1301,26 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
+    def check_add_linkifiers(
+        self, linkifiers: List[RealmFilter], expected_linkifier_strs: List[str]
+    ) -> None:
+        self.assert_length(linkifiers, len(expected_linkifier_strs))
+        for linkifier, expected_linkifier_str in zip(linkifiers, expected_linkifier_strs):
+            linkifier.clean()
+            linkifier.save()
+            self.assertEqual(str(linkifier), expected_linkifier_str)
+
     def test_realm_patterns(self) -> None:
         realm = get_realm("zulip")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        linkifier = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
-        )
-        linkifier.save()
-        self.assertEqual(
-            str(linkifier),
-            "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern=r"#(?P<id>[0-9]{2,8})",
+                    url_format_string=r"https://trac.example.com/ticket/%(id)s",
+                )
+            ],
+            ["<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>"],
         )
 
         msg = Message(sender=self.example_user("othello"))
@@ -1458,29 +1468,29 @@ class MarkdownTest(ZulipTestCase):
 
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        linkifier_1 = RealmFilter(
-            realm=realm,
-            pattern=r"(?P<id>ABC\-[0-9]+)",
-            url_format_string=url_format_string,
-        )
-        linkifier_1.save()
-        self.assertEqual(
-            str(linkifier_1),
-            r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
-        )
-
-        url_format_string = r"https://other-trac.example.com/ticket/%(id)s"
-        linkifier_2 = RealmFilter(
-            realm=realm,
-            pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)",
-            url_format_string=url_format_string,
-        )
-        linkifier_2.save()
-        self.assertEqual(
-            str(linkifier_2),
-            r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)"
-            " https://other-trac.example.com/ticket/%(id)s>",
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern="(?P<id>ABC-[0-9]+)",
+                    url_format_string="https://trac.example.com/ticket/%(id)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="(?P<id>[A-Z][A-Z0-9]*-[0-9]+)",
+                    url_format_string="https://other-trac.example.com/ticket/%(id)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="(?P<id>[A-Z][A-Z0-9]+)",
+                    url_format_string="https://yet-another-trac.example.com/ticket/%(id)s",
+                ),
+            ],
+            [
+                "<RealmFilter(zulip): (?P<id>ABC-[0-9]+) https://trac.example.com/ticket/%(id)s>",
+                "<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*-[0-9]+) https://other-trac.example.com/ticket/%(id)s>",
+                "<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]+) https://yet-another-trac.example.com/ticket/%(id)s>",
+            ],
         )
 
         msg = Message(sender=self.example_user("othello"))
@@ -1500,12 +1510,136 @@ class MarkdownTest(ZulipTestCase):
             converted.rendered_content,
             '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>',
         )
-        # But both the links should be generated in topics.
+        # Only the older linkifier should be used in the topic, because the two patterns overlap.
         self.assertEqual(
             converted_topic,
             [
                 {"url": "https://trac.example.com/ticket/ABC-123", "text": "ABC-123"},
-                {"url": "https://other-trac.example.com/ticket/ABC-123", "text": "ABC-123"},
+            ],
+        )
+
+        # linkifier 3 matches ASD, ABC and QWE, but because it has lower priority
+        # than linkifier 1 and linkifier 2 because it is created last, the former
+        # two matches will not be chosen.
+        # Both linkifier 1 and linkifier 2 matches ABC-123, similarly, as linkifier 2
+        # has a lower priority, only linkifier 1's URL will be generated.
+        converted_topic = topic_links(realm.id, "ASD-123 ABC-123 QWE")
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://other-trac.example.com/ticket/ASD-123", "text": "ASD-123"},
+                {"url": "https://trac.example.com/ticket/ABC-123", "text": "ABC-123"},
+                {"url": "https://yet-another-trac.example.com/ticket/QWE", "text": "QWE"},
+            ],
+        )
+
+    def test_links_and_linkifiers_in_topic_name(self) -> None:
+        realm = get_realm("zulip")
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern="ABC-42",
+                    url_format_string="https://google.com",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern=r"com.+(?P<id>ABC\-[0-9]+)",
+                    url_format_string="https://trac.example.com/ticket/%(id)s",
+                ),
+            ],
+            [
+                "<RealmFilter(zulip): ABC-42 https://google.com>",
+                r"<RealmFilter(zulip): com.+(?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
+            ],
+        )
+
+        # This verifies that second linkifier has a lower priority than the first one.
+        # It helps us to later ensure that even with a low priority, the linkifier can take effect
+        # when it appears earlier than a raw URL.
+        converted_topic = topic_links(realm.id, "com ABC-42")
+        self.assertEqual(
+            converted_topic,
+            [{"url": "https://google.com", "text": "ABC-42"}],
+        )
+        # The linkifier matches "com/ABC-123", which is after where the raw URL starts
+        converted_topic = topic_links(realm.id, "https://foo.com/ABC-123")
+        self.assertEqual(
+            converted_topic,
+            [{"url": "https://foo.com/ABC-123", "text": "https://foo.com/ABC-123"}],
+        )
+
+        # The linkifier matches "com https://foo.com/ABC-123", which is before where the raw URL starts
+        converted_topic = topic_links(realm.id, "com https://foo.com/ABC-123")
+        self.assertEqual(
+            converted_topic,
+            [
+                {
+                    "url": "https://trac.example.com/ticket/ABC-123",
+                    "text": "com https://foo.com/ABC-123",
+                }
+            ],
+        )
+
+    def test_topic_links_ordering_by_priority(self) -> None:
+        # The same test case is also implemented in frontend_tests/node_tests/markdown_parse.js
+        realm = get_realm("zulip")
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern="http",
+                    url_format_string="http://example.com/",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="b#(?P<id>[a-z]+)",
+                    url_format_string="http://example.com/b/%(id)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+)",
+                    url_format_string="http://example.com/a/%(aid)s/b/%(bid)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="a#(?P<id>[a-z]+)",
+                    url_format_string="http://example.com/a/%(id)s",
+                ),
+            ],
+            [
+                "<RealmFilter(zulip): http http://example.com/>",
+                "<RealmFilter(zulip): b#(?P<id>[a-z]+) http://example.com/b/%(id)s>",
+                "<RealmFilter(zulip): a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+) http://example.com/a/%(aid)s/b/%(bid)s>",
+                "<RealmFilter(zulip): a#(?P<id>[a-z]+) http://example.com/a/%(id)s>",
+            ],
+        )
+        # There should be 5 link matches in the topic, if ordered from the most priortized to the least:
+        # 1. "http" (linkifier)
+        # 2. "b#bar" (linkifier)
+        # 3. "a#asd b#bar" (linkifier)
+        # 4. "a#asd" (linkifier)
+        # 5. "http://foo.com" (raw URL)
+        # When there are overlapping matches, the one that appears earlier in the list should
+        # have a topic link generated.
+        # For this test case, while "a#asd" and "a#asd b#bar" both match and they overlap,
+        # there is a match "b#bar" with a higher priority, preventing "a#asd b#bar" from being matched.
+        converted_topic = topic_links(realm.id, "http://foo.com a#asd b#bar")
+        self.assertEqual(
+            converted_topic,
+            [
+                {
+                    "text": "http",
+                    "url": "http://example.com/",
+                },
+                {
+                    "text": "a#asd",
+                    "url": "http://example.com/a/asd",
+                },
+                {
+                    "text": "b#bar",
+                    "url": "http://example.com/b/bar",
+                },
             ],
         )
 
