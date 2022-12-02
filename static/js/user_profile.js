@@ -66,7 +66,7 @@ function format_user_stream_list_item(stream, user) {
         is_web_public: stream.is_web_public,
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.stream_edit_url(stream),
+        stream_edit_url: hash_util.stream_edit_url(stream, ""),
     });
 }
 
@@ -333,7 +333,7 @@ export function register_click_handlers() {
         }
 
         if (sub.invite_only && people.is_my_user_id(target_user_id)) {
-            const new_hash = hash_util.stream_edit_url(sub);
+            const new_hash = hash_util.stream_edit_url(sub,"");
             hide_user_profile();
             browser_history.go_to_location(new_hash);
             return;

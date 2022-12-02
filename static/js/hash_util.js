@@ -148,8 +148,8 @@ export function by_conversation_and_time_url(message) {
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_url(sub) {
-    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}`;
+export function stream_edit_url(sub, select_tab) {
+    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}/${internal_url.encodeHashComponent(select_tab)}`;
     return hash;
 }
 

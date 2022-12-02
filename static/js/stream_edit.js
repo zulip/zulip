@@ -38,8 +38,8 @@ import * as util from "./util";
 export let toggler;
 export let select_tab = "personal_settings";
 
-function setup_subscriptions_stream_hash(sub) {
-    const hash = hash_util.stream_edit_url(sub);
+function setup_subscriptions_stream_hash(sub, select_tab) {
+    const hash = hash_util.stream_edit_url(sub,select_tab);
     browser_history.update(hash);
 }
 
@@ -144,7 +144,7 @@ export function open_edit_panel_for_row(stream_row) {
     $(".stream-row.active").removeClass("active");
     stream_settings_ui.show_subs_pane.settings(sub);
     $(stream_row).addClass("active");
-    setup_subscriptions_stream_hash(sub);
+    setup_subscriptions_stream_hash(sub, select_tab);
     setup_stream_settings(stream_row);
 }
 
@@ -295,21 +295,14 @@ export function setup_stream_settings(node) {
 
     show_settings_for(node);
 
-    oldHref = window.location.href;
     var old_sub = get_sub_for_target(node);
-    let newURl = oldHref + "/" + select_tab;
-    window.history.pushState({path: newURl}, '', newURl);
     
     setInterval(function () {
-        if (select_tab == word) {
-            // console.log("You're on the same");
-            return;
-        } else {
+        if (select_tab != word) {
+            setup_subscriptions_stream_hash(old_sub, select_tab);
             word = select_tab;
-            // console.log("Selected " + select_tab);
-            let newURl = oldHref + "/" + select_tab;
-            window.history.pushState({path: newURl}, '', newURl);
-    }}, 10);
+        }
+    }, 10);
     
     
     
