@@ -296,17 +296,15 @@ export function get_topic_links({topic, get_linkifier_map}) {
             }
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
-            links.push({url: link_url, text: match[0], index: topic.indexOf(match[0])});
+            links.push({url: link_url, text: match[0], index: match.index});
         }
     }
 
     // Also make raw URLs navigable
     const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
-    const matches = topic.match(url_re);
-    if (matches) {
-        for (const match of matches) {
-            links.push({url: match, text: match, index: topic.indexOf(match)});
-        }
+    let match;
+    while ((match = url_re.exec(topic)) !== null) {
+        links.push({url: match[0], text: match[0], index: match.index});
     }
     links.sort((a, b) => a.index - b.index);
     for (const match of links) {

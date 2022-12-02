@@ -1340,6 +1340,21 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
+        msg.set_topic_name("#111 https://google.com #111 #222 #111 https://google.com #222")
+        converted_topic = topic_links(realm.id, msg.topic_name())
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://trac.example.com/ticket/111", "text": "#111"},
+                {"url": "https://google.com", "text": "https://google.com"},
+                {"url": "https://trac.example.com/ticket/111", "text": "#111"},
+                {"url": "https://trac.example.com/ticket/222", "text": "#222"},
+                {"url": "https://trac.example.com/ticket/111", "text": "#111"},
+                {"url": "https://google.com", "text": "https://google.com"},
+                {"url": "https://trac.example.com/ticket/222", "text": "#222"},
+            ],
+        )
+
         msg.set_topic_name("#444 #555 #666")
         converted_topic = topic_links(realm.id, msg.topic_name())
         self.assertEqual(

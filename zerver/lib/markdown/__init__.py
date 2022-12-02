@@ -2414,13 +2414,20 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
                 dict(
                     url=url_format_string % match_details,
                     text=match_text,
-                    index=topic_name.find(match_text),
+                    index=m.start(),
                 )
             ]
 
+    pos = 0
     # Also make raw URLs navigable.
-    for sub_string in basic_link_splitter.split(topic_name):
-        link_match = re.match(get_web_link_regex(), sub_string)
+    while pos < len(topic_name):
+        # Assuming that basic_link_splitter matches 1 character,
+        # we match segments of the string for URL divided by the matched character.
+        next_split = basic_link_splitter.search(topic_name, pos)
+        end = next_split.start() if next_split is not None else len(topic_name)
+        # We have to match the substring because LINK_REGEX
+        # matches the start of the entire string with "^"
+        link_match = re.match(get_web_link_regex(), topic_name[pos:end])
         if link_match:
             actual_match_url = link_match.group("url")
             result = urlsplit(actual_match_url)
@@ -2431,9 +2438,9 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
                 url = result._replace(scheme="https").geturl()
             else:
                 url = actual_match_url
-            matches.append(
-                dict(url=url, text=actual_match_url, index=topic_name.find(actual_match_url))
-            )
+            matches.append(dict(url=url, text=actual_match_url, index=pos))
+        # Move pass the next split point, and start matching the URL from there
+        pos = end + 1
 
     # In order to preserve the order in which the links occur, we sort the matched text
     # based on its starting index in the topic. We pop the index field before returning.
