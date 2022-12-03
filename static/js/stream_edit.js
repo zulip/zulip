@@ -39,7 +39,15 @@ export let toggler;
 export let select_tab = "personal_settings";
 
 function setup_subscriptions_stream_hash(sub, select_tab) {
-    const hash = hash_util.stream_edit_url(sub,select_tab);
+    var selected_settings;
+    if (select_tab == "general_settings") {
+        selected_settings = "General";
+    } else if (select_tab == "personal_settings") {
+        selected_settings = "Personal";
+    } else {
+        selected_settings = "Subscribers";
+    }
+    const hash = hash_util.stream_edit_url(sub,selected_settings);
     browser_history.update(hash);
 }
 
@@ -276,7 +284,7 @@ export function show_settings_for(node) {
 }
 
 export function setup_stream_settings(node) {
-    let old_sub = get_sub_for_target(node);
+    const old_sub = get_sub_for_target(node);
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
@@ -284,7 +292,7 @@ export function setup_stream_settings(node) {
             {label: $t({defaultMessage: "Personal"}), key: "personal_settings"},
             {label: $t({defaultMessage: "Subscribers"}), key: "subscriber_settings"},
         ],
-        callback(name, key) {
+        callback(name, key, label) {
             $(".stream_section").hide();
             $("." + key).show();
             select_tab = key;
