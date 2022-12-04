@@ -16,7 +16,7 @@ class Command(ZulipBaseCommand):
         assert realm is not None  # Should be ensured by parser
         if not realm.deactivated:
             print("Realm", options["realm_id"], "is active. Please deactivate the Realm the first.")
-            exit(0)
+            return
         print("Scrubbing", options["realm_id"])
         do_scrub_realm(realm, acting_user=None)
         print("Done!")

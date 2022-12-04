@@ -9,8 +9,9 @@ mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
 import os
+import sys
 import time
-from typing import Dict
+from typing import Dict, NoReturn
 
 RESULTS_DIR: str = "/home/zulip/mirror_status"
 
@@ -22,9 +23,9 @@ states: Dict[str, int] = {
 }
 
 
-def report(state: str, output: str) -> None:
+def report(state: str, output: str) -> NoReturn:
     print(f"{state}\n{output}")
-    exit(states[state])
+    sys.exit(states[state])
 
 
 output = ""
