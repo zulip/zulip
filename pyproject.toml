@@ -51,7 +51,7 @@ no_implicit_reexport = false
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
-    "aioapns.*",
+    "aioapns.*", # https://github.com/Fatal1ty/aioapns/issues/33
     "bitfield.*",
     "bmemcached.*",
     "cairosvg.*",
