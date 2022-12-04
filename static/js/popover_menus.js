@@ -52,7 +52,18 @@ export function any_active() {
 }
 
 function on_show_prep(instance) {
-    $(instance.popper).one("click", instance.hide);
+    $(instance.popper).on("click", (e) => {
+        // Popover is not hidden on click inside it unless the click handler for the
+        // element explicitly hides the popover when handling the event.
+        // `stopPropagation` is required here to avoid global click handlers from
+        // being triggered.
+        e.stopPropagation();
+    });
+    $(instance.popper).one("click", ".navigate_and_close_popover", (e) => {
+        // Handler for links inside popover which don't need a special click handler.
+        e.stopPropagation();
+        instance.hide();
+    });
     popovers.hide_all_except_sidebars(instance);
 }
 
@@ -99,13 +110,18 @@ export function initialize() {
                 ),
             );
             compose_mobile_button_popover_displayed = true;
-
+        },
+        onMount(instance) {
             const $popper = $(instance.popper);
-            $popper.one("click", ".compose_mobile_stream_button", () => {
+            $popper.one("click", ".compose_mobile_stream_button", (e) => {
                 compose_actions.start("stream", {trigger: "new topic button"});
+                e.stopPropagation();
+                instance.hide();
             });
-            $popper.one("click", ".compose_mobile_private_button", () => {
+            $popper.one("click", ".compose_mobile_private_button", (e) => {
                 compose_actions.start("private");
+                e.stopPropagation();
+                instance.hide();
             });
         },
         onHidden(instance) {
@@ -174,6 +190,8 @@ export function initialize() {
                     url: "/json/settings",
                     data: {enter_sends: selected_behaviour},
                 });
+                e.stopPropagation();
+                instance.hide();
             });
         },
         onHidden(instance) {
