@@ -107,7 +107,12 @@ select = [
     "F", # flakes
     "I", # import sorting
     "N", # naming
+    "PGH", # pygrep-hooks
+    "PLC", # pylint convention
+    "PLE", # pylint error
+    "PLR", # pylint refactor
     "RUF", # Ruff
+    "T10", # debugger
     "UP", # upgrade
     "W", # style warnings
     "YTT", # sys.version
@@ -117,7 +122,7 @@ ignore = [
     "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "B007", # Loop control variable not used within the loop body
-    "B008", # Do not perform function calls in argument defaults.
+    "B008", # Do not perform function calls in argument defaults
     "B023", # Function definition does not bind loop variable
     "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
     "C408", # Unnecessary `dict` call (rewrite as a literal)
