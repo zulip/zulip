@@ -21,7 +21,7 @@ coverage<6.4.3  # undiagnosed bug
 fakeldap
 
 # For testing mock http requests
-responses<0.22.0  # https://github.com/getsentry/responses/pull/593
+https://github.com/getsentry/responses/archive/b30c13fe1c9a2e60e7e2de7a92322b4d4ad57562.zip#egg=responses==0.22.0+git  # https://github.com/getsentry/responses/pull/593
 
 # For doing highly usable Python profiling
 line-profiler
