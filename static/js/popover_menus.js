@@ -174,7 +174,7 @@ export function initialize() {
                 // press Enter to send.
                 $("#compose-textarea").trigger("focus");
 
-                return channel.patch({
+                channel.patch({
                     url: "/json/settings",
                     data: {enter_sends: selected_behaviour},
                 });
