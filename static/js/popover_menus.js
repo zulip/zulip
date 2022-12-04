@@ -116,13 +116,9 @@ export function initialize() {
         },
     });
 
-    // We need to hide instance manually for popover due to
-    // `$("body").on("click"...` method not being triggered for
-    // the elements when we do:
-    // `$(instance.popper).one("click", instance.hide); in onShow.
-    // Cannot reproduce it on codepen -
-    // https://codepen.io/amanagr/pen/jOLoKVg
-    // So, probably a bug on our side.
+    // Click event handlers for it are handled in `compose_ui` and
+    // we don't want to close this popover on click inside it but
+    // only if user clicked outside it.
     delegate("body", {
         ...default_popover_props,
         target: ".compose_control_menu_wrapper",
