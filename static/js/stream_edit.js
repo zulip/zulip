@@ -39,15 +39,7 @@ export let toggler;
 export let select_tab = "personal_settings";
 
 function setup_subscriptions_stream_hash(sub, select_tab) {
-    var selected_settings;
-    if (select_tab == "general_settings") {
-        selected_settings = "General";
-    } else if (select_tab == "personal_settings") {
-        selected_settings = "Personal";
-    } else {
-        selected_settings = "Subscribers";
-    }
-    const hash = hash_util.stream_edit_url(sub,selected_settings);
+    const hash = hash_util.stream_edit_url(sub,select_tab);
     browser_history.update(hash);
 }
 

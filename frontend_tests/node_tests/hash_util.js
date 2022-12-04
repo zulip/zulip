@@ -144,7 +144,7 @@ run_test("test_stream_edit_url_select_tab", () => {
         stream_id: 42,
     };
     const select_tab = "personal_settings";
-    assert.equal(hash_util.stream_edit_url(sub, select_tab), "#streams/42/research.20.26.20development/personal_settings");
+    assert.equal(hash_util.stream_edit_url(sub, select_tab), "#streams/42/research.20.26.20development/Personal");
 });
 
 run_test("test_by_conversation_and_time_url", () => {

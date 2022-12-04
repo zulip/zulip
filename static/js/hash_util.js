@@ -149,7 +149,15 @@ export function by_conversation_and_time_url(message) {
 }
 
 export function stream_edit_url(sub, select_tab) {
-    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}/${internal_url.encodeHashComponent(select_tab)}`;
+    var selected_settings;
+    if (select_tab == "general_settings") {
+        selected_settings = "General";
+    } else if (select_tab == "personal_settings") {
+        selected_settings = "Personal";
+    } else if (select_tab == "subscriber_settings") {
+        selected_settings = "Subscribers";
+    }
+    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}/${internal_url.encodeHashComponent(selected_settings)}`;
     return hash;
 }
 
