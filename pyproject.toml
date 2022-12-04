@@ -116,7 +116,6 @@ ignore = [
     "ANN101", # Missing type annotation for `self` in method
     "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
-    "B006", # Do not use mutable data structures for argument defaults
     "B007", # Loop control variable not used within the loop body
     "B008", # Do not perform function calls in argument defaults.
     "B023", # Function definition does not bind loop variable
