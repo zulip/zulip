@@ -6,11 +6,12 @@ from collections import defaultdict
 
 import orjson
 
-from custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
-from emoji_setup_utils import get_emoji_code
-
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 sys.path.append(ZULIP_PATH)
+
+from tools.setup.emoji.custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
+from tools.setup.emoji.emoji_setup_utils import get_emoji_code
+
 CLDR_DATA_FILE = os.path.join(
     ZULIP_PATH, "node_modules", "cldr-annotations-modern", "annotations", "en", "annotations.json"
 )
