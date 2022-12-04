@@ -10,8 +10,9 @@ run out of cron.
 See puppet/zulip_ops/files/cron.d/zephyr-mirror for the crontab details.
 """
 import os
+import sys
 import time
-from typing import Dict
+from typing import Dict, NoReturn
 
 RESULTS_FILE = "/var/lib/nagios_state/check-mirroring-results"
 
@@ -23,13 +24,13 @@ states: Dict[str, int] = {
 }
 
 
-def report(state: str, data: str, last_check: float) -> None:
+def report(state: str, data: str, last_check: float) -> NoReturn:
     print(
         "{}: Last test run completed at {}\n{}".format(
             state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)), data
         )
     )
-    exit(states[state])
+    sys.exit(states[state])
 
 
 with open(RESULTS_FILE) as f:

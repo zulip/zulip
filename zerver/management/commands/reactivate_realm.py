@@ -16,7 +16,7 @@ class Command(ZulipBaseCommand):
         assert realm is not None  # Should be ensured by parser
         if not realm.deactivated:
             print("Realm", options["realm_id"], "is already active.")
-            exit(0)
+            return
         print("Reactivating", options["realm_id"])
         do_reactivate_realm(realm)
         print("Done!")

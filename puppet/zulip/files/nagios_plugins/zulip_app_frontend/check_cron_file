@@ -54,4 +54,4 @@ if __name__ == "__main__":
     ret, result = nagios_from_file(RESULTS_FILE, **extra_args)
 
     print(result)
-    exit(ret)
+    sys.exit(ret)

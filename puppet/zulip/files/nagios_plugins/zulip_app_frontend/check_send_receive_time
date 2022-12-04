@@ -14,14 +14,13 @@ import random
 import sys
 import time
 import traceback
+from typing import Any, Dict, List, NoReturn, Optional
 
 sys.path.append(".")
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
 
 setup_path()
-
-from typing import Any, Dict, List, Optional
 
 import django
 import zulip
@@ -78,7 +77,7 @@ states = {
 }
 
 
-def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None:
+def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> NoReturn:
     now = int(time.time())
     if msg is None:
         msg = f"send time was {timestamp}"
@@ -87,7 +86,7 @@ def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None
         f.write(f"{now}|{states[state]}|{state}|{msg}\n")
     os.rename(state_file_path + ".tmp", state_file_path)
     print(f"{state}: {msg}")
-    exit(states[state])
+    sys.exit(states[state])
 
 
 def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
