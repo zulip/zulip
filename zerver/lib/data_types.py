@@ -111,7 +111,7 @@ class NumberType:
     OpenAPI, because isinstance(4, float) == False"""
 
     def check_data(self, var_name: str, val: Optional[Any]) -> None:
-        if isinstance(val, int) or isinstance(val, float):
+        if isinstance(val, (int, float)):
             return
         raise AssertionError(f"{var_name} is not a number")
 
@@ -183,7 +183,7 @@ class TupleType:
     sub_types: Sequence[Any]
 
     def check_data(self, var_name: str, val: Any) -> None:
-        if not (isinstance(val, list) or isinstance(val, tuple)):
+        if not isinstance(val, (list, tuple)):
             raise AssertionError(f"{var_name} is not a list/tuple")
 
         if len(val) != len(self.sub_types):
