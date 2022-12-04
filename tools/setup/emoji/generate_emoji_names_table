@@ -6,15 +6,18 @@
 # sources' decisions about what names to provide to each Unicode
 # codepoint.
 import os
+import sys
 from typing import Any, Dict, List
 
 import orjson
 
-from emoji_names import EMOJI_NAME_MAPS
-from emoji_setup_utils import EMOJISETS, emoji_is_universal, get_emoji_code
-
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
+sys.path.append(ZULIP_PATH)
+
+from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS
+from tools.setup.emoji.emoji_setup_utils import EMOJISETS, emoji_is_universal, get_emoji_code
+
 UNIFIED_REACTIONS_FILE = os.path.join(
     ZULIP_PATH, "zerver", "management", "data", "unified_reactions.json"
 )

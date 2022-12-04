@@ -3,7 +3,7 @@ line-length = 100
 target-version = ["py38"]
 
 [tool.isort]
-src_paths = [".", "tools", "tools/setup/emoji"]
+src_paths = [".", "tools"]
 known_third_party = "zulip"
 profile = "black"
 line_length = 100
@@ -127,7 +127,7 @@ ignore = [
     "N806", # Variable in function should be lowercase
 ]
 line-length = 100
-src = [".", "tools", "tools/setup/emoji"]
+src = [".", "tools"]
 target-version = "py38"
 
 [tool.ruff.isort]
