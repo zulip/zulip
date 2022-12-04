@@ -2,7 +2,7 @@ from typing import Iterable, List, TypedDict
 
 from django.db import transaction
 
-from zerver.lib import retention as retention
+from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import Message, Realm, UserMessage, UserProfile
