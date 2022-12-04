@@ -284,7 +284,7 @@ export function setup_stream_settings(node) {
             {label: $t({defaultMessage: "Personal"}), key: "personal_settings"},
             {label: $t({defaultMessage: "Subscribers"}), key: "subscriber_settings"},
         ],
-        callback(name, key, label) {
+        callback(name, key) {
             $(".stream_section").hide();
             $("." + key).show();
             select_tab = key;
