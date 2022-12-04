@@ -102,13 +102,13 @@ django_settings_module = "zproject.settings"
 select = [
     "ANN", # annotations
     "B", # bugbear
-    "C", # comprehensions
+    "C4", # comprehensions
     "E", # style errors
     "F", # flakes
     "I", # import sorting
-    "M", # meta
     "N", # naming
-    "U", # upgrade
+    "RUF", # Ruff
+    "UP", # upgrade
     "W", # style warnings
     "YTT", # sys.version
 ]
@@ -119,12 +119,16 @@ ignore = [
     "B006", # Do not use mutable data structures for argument defaults
     "B007", # Loop control variable not used within the loop body
     "B008", # Do not perform function calls in argument defaults.
+    "B023", # Function definition does not bind loop variable
+    "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
     "C408", # Unnecessary `dict` call (rewrite as a literal)
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
+    "RUF001", # String contains ambiguous unicode character
+    "RUF003", # Comment contains ambiguous unicode character
 ]
 line-length = 100
 src = [".", "tools"]
