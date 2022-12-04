@@ -25,7 +25,7 @@ class Command(ZulipBaseCommand):
 
         if realm.deactivated:
             print("The realm", options["realm_id"], "is already deactivated.")
-            exit(0)
+            return
 
         print("Deactivating", options["realm_id"])
         do_deactivate_realm(realm, acting_user=None)
