@@ -2166,7 +2166,7 @@ msgstr "History"
 
 #: templates/zerver/footer.html:151
 msgid "Values"
-msgstr ""
+msgstr "Values"
 
 #: templates/zerver/footer.html:153
 msgid "Jobs"
@@ -4514,7 +4514,7 @@ msgstr "No such invitation"
 
 #: zerver/views/invite.py:152
 msgid "Invitation has already been revoked"
-msgstr ""
+msgstr "Invitation has already been revoked"
 
 #: zerver/views/invite.py:200
 msgid "Invalid stream ID {}. No invites were sent."
@@ -4542,7 +4542,7 @@ msgstr "Too many messages requested (maximum {})."
 
 #: zerver/views/message_fetch.py:105 zerver/views/message_flags.py:84
 msgid "The anchor can only be excluded at an end of the range"
-msgstr ""
+msgstr "The anchor can only be excluded at an end of the range"
 
 #: zerver/views/message_flags.py:168
 msgid "No such topic '{}'"
@@ -5007,7 +5007,7 @@ msgstr "We were unable to set up mirroring for you"
 
 #: zerver/webhooks/circleci/view.py:76
 msgid "Projects using this version control system provider aren't supported"
-msgstr ""
+msgstr "Projects using this version control system provider aren't supported"
 
 #: zerver/webhooks/freshstatus/view.py:99
 #: zerver/webhooks/uptimerobot/view.py:57 zerver/webhooks/zabbix/view.py:50
@@ -5047,7 +5047,7 @@ msgstr "The newrelic webhook requires state be in [created|activated|acknowledge
 
 #: zerver/webhooks/papertrail/view.py:30
 msgid "Events key is missing from payload"
-msgstr ""
+msgstr "Events key is missing from payload"
 
 #: zerver/webhooks/pivotal/view.py:189
 msgid "Unable to handle Pivotal payload"

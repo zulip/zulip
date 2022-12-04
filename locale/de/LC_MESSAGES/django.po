@@ -428,11 +428,11 @@ msgstr "Versendete Nachrichten"
 
 #: templates/analytics/stats.html:81 templates/analytics/stats.html:103
 msgid "Daily"
-msgstr "täglich"
+msgstr "Täglich"
 
 #: templates/analytics/stats.html:82 templates/analytics/stats.html:104
 msgid "Weekly"
-msgstr "wöchentlich"
+msgstr "Wöchentlich"
 
 #: templates/analytics/stats.html:83 templates/analytics/stats.html:105
 msgid "Cumulative"
@@ -880,7 +880,7 @@ msgstr "Bestätige deine E-Mail-Adresse"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Thanks for signing up!"
-msgstr "Danke für deine Anmeldung"
+msgstr "Danke für deine Anmeldung!"
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Check your email so we can get started."
@@ -2953,7 +2953,7 @@ msgstr "Ungültige Nachrichten-Flag-Operation: '{}'"
 #: zerver/actions/message_flags.py:338 zerver/lib/message.py:750
 #: zerver/lib/message.py:756
 msgid "Invalid message(s)"
-msgstr "Ungültige Nachricht"
+msgstr "Ungültige Nachricht(en)"
 
 #: zerver/actions/message_send.py:152
 msgid "Unable to render message"
@@ -3125,7 +3125,7 @@ msgstr "Unzureichende Berechtigungen"
 
 #: zerver/decorator.py:701
 msgid "This endpoint requires HTTP basic authentication."
-msgstr "Dieser Endpunkt benötigt HTTP Basic Authentication"
+msgstr "Dieser Endpunkt benötigt HTTP Basic Authentication."
 
 #: zerver/decorator.py:708
 msgid "Invalid authorization header for basic auth"
@@ -3164,12 +3164,12 @@ msgstr "Die Subdomain darf nur Kleinbuchstaben, Zahlen und '-' enthalten."
 
 #: zerver/forms.py:89
 msgid "Subdomain unavailable. Please choose a different one."
-msgstr "DIe Subdomain ist nicht verfügbar. Bitte wähle eine andere."
+msgstr "Die Subdomain ist nicht verfügbar. Bitte wähle eine andere."
 
 #: zerver/forms.py:184
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "Die Organisation, der du mit der E-Mail {email} beitreten willst, existiert nicht."
+msgstr "Die Organisation, der du mit der E-Mail-Adresse {email} beitreten willst, existiert nicht."
 
 #: zerver/forms.py:192
 #, python-brace-format
@@ -3187,7 +3187,7 @@ msgstr "Deine E-Mail-Adresse {email} gehört zu keiner der für die Registrierun
 #: zerver/forms.py:208 zerver/forms.py:247 zerver/forms.py:250
 #: zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
-msgstr "Bitte benutze deine echte E-Mail."
+msgstr "Bitte benutze deine echte E-Mail-Adresse."
 
 #: zerver/forms.py:211
 msgid "Email addresses containing + are not allowed in this organization."
@@ -4523,7 +4523,7 @@ msgstr "Muss als ein gültiger Nutzer-Typ eingeladen werden"
 
 #: zerver/views/invite.py:70
 msgid "You must specify at least one email address."
-msgstr "Du musst mindestens eine E-Mail-Adresse angeben"
+msgstr "Du musst mindestens eine E-Mail-Adresse angeben."
 
 #: zerver/views/invite.py:72
 msgid "You must specify at least one stream for invitees to join."
@@ -4569,7 +4569,7 @@ msgstr "Zu viele Nachrichten angefordert (Maximum {})."
 
 #: zerver/views/message_fetch.py:105 zerver/views/message_flags.py:84
 msgid "The anchor can only be excluded at an end of the range"
-msgstr ""
+msgstr "Der Anker kann nur am Ende des Bereichs ausgeschlossen werden"
 
 #: zerver/views/message_flags.py:168
 msgid "No such topic '{}'"
@@ -4730,7 +4730,7 @@ msgstr "Export ist bereits gelöscht"
 
 #: zerver/views/realm_icon.py:21
 msgid "You must upload exactly one icon."
-msgstr "Du musst genau ein Icon hochladen"
+msgstr "Du musst genau ein Icon hochladen."
 
 #: zerver/views/realm_linkifiers.py:50 zerver/views/realm_linkifiers.py:73
 msgid "Linkifier not found."
@@ -4772,7 +4772,7 @@ msgstr "Der Stream hat schon diesen Namen!"
 #: zerver/views/streams.py:420 zerver/views/user_groups.py:102
 #: zerver/views/user_groups.py:210
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Es gibt nichts zu tun. Gib mindestens \"add\" oder \"delete\" an"
+msgstr "Es gibt nichts zu tun. Gib mindestens \"add\" oder \"delete\" an."
 
 #: zerver/views/streams.py:505
 #, python-brace-format
@@ -4922,7 +4922,7 @@ msgstr "Neues Passwort ist zu schwach!"
 
 #: zerver/views/user_settings.py:341
 msgid "You must upload exactly one avatar."
-msgstr "Du musst genau einen Avatar hochladen"
+msgstr "Du musst genau einen Avatar hochladen."
 
 #: zerver/views/users.py:122
 msgid "Cannot deactivate the only organization owner"

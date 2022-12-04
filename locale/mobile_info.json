@@ -1,154 +1,154 @@
 {
   "ar": {
-    "not_translated": 52,
-    "total": 365
+    "not_translated": 56,
+    "total": 370
   },
   "bg": {
-    "not_translated": 237,
-    "total": 365
+    "not_translated": 241,
+    "total": 370
   },
   "ca": {
-    "not_translated": 110,
-    "total": 365
+    "not_translated": 114,
+    "total": 370
   },
   "cs": {
-    "not_translated": 17,
-    "total": 365
+    "not_translated": 19,
+    "total": 370
   },
   "cy": {
-    "not_translated": 77,
-    "total": 365
+    "not_translated": 80,
+    "total": 370
   },
   "da": {
-    "not_translated": 269,
-    "total": 365
+    "not_translated": 274,
+    "total": 370
   },
   "de": {
-    "not_translated": 6,
-    "total": 365
+    "not_translated": 2,
+    "total": 370
   },
   "en_GB": {
-    "not_translated": 10,
-    "total": 365
+    "not_translated": 0,
+    "total": 370
   },
   "es": {
-    "not_translated": 130,
-    "total": 365
+    "not_translated": 133,
+    "total": 370
   },
   "fa": {
-    "not_translated": 186,
-    "total": 365
+    "not_translated": 190,
+    "total": 370
   },
   "fi": {
-    "not_translated": 12,
-    "total": 365
+    "not_translated": 14,
+    "total": 370
   },
   "fr": {
-    "not_translated": 9,
-    "total": 365
+    "not_translated": 8,
+    "total": 370
   },
   "gl": {
-    "not_translated": 238,
-    "total": 365
+    "not_translated": 243,
+    "total": 370
   },
   "hi": {
-    "not_translated": 206,
-    "total": 365
+    "not_translated": 211,
+    "total": 370
   },
   "hu": {
-    "not_translated": 46,
-    "total": 365
+    "not_translated": 49,
+    "total": 370
   },
   "id": {
-    "not_translated": 244,
-    "total": 365
+    "not_translated": 249,
+    "total": 370
   },
   "it": {
-    "not_translated": 11,
-    "total": 365
+    "not_translated": 0,
+    "total": 370
   },
   "ja": {
-    "not_translated": 19,
-    "total": 365
+    "not_translated": 23,
+    "total": 370
   },
   "ko": {
-    "not_translated": 129,
-    "total": 365
+    "not_translated": 132,
+    "total": 370
   },
   "lt": {
-    "not_translated": 331,
-    "total": 365
+    "not_translated": 336,
+    "total": 370
   },
   "ml": {
-    "not_translated": 329,
-    "total": 365
+    "not_translated": 334,
+    "total": 370
   },
   "mn": {
-    "not_translated": 54,
-    "total": 365
+    "not_translated": 57,
+    "total": 370
   },
   "nl": {
-    "not_translated": 138,
-    "total": 365
+    "not_translated": 142,
+    "total": 370
   },
   "pl": {
-    "not_translated": 147,
-    "total": 365
+    "not_translated": 151,
+    "total": 370
   },
   "pt": {
-    "not_translated": 145,
-    "total": 365
+    "not_translated": 149,
+    "total": 370
   },
   "pt_PT": {
-    "not_translated": 44,
-    "total": 365
+    "not_translated": 42,
+    "total": 370
   },
   "ro": {
-    "not_translated": 58,
-    "total": 365
+    "not_translated": 60,
+    "total": 370
   },
   "ru": {
-    "not_translated": 10,
-    "total": 365
+    "not_translated": 2,
+    "total": 370
   },
   "si": {
-    "not_translated": 186,
-    "total": 365
+    "not_translated": 191,
+    "total": 370
   },
   "sr": {
-    "not_translated": 30,
-    "total": 365
+    "not_translated": 33,
+    "total": 370
   },
   "sv": {
-    "not_translated": 301,
-    "total": 365
+    "not_translated": 306,
+    "total": 370
   },
   "ta": {
-    "not_translated": 297,
-    "total": 365
+    "not_translated": 302,
+    "total": 370
   },
   "tr": {
-    "not_translated": 25,
-    "total": 365
+    "not_translated": 28,
+    "total": 370
   },
   "uk": {
-    "not_translated": 135,
-    "total": 365
+    "not_translated": 138,
+    "total": 370
   },
   "vi": {
-    "not_translated": 23,
-    "total": 365
+    "not_translated": 28,
+    "total": 370
   },
   "zh_Hans": {
-    "not_translated": 41,
-    "total": 365
+    "not_translated": 43,
+    "total": 370
   },
   "zh_Hant": {
-    "not_translated": 227,
-    "total": 365
+    "not_translated": 232,
+    "total": 370
   },
   "zh_TW": {
-    "not_translated": 80,
-    "total": 365
+    "not_translated": 85,
+    "total": 370
   }
 }

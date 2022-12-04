@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-17 19:01+0000\n"
+"POT-Creation-Date: 2022-12-02 18:53+0000\n"
 "PO-Revision-Date: 2021-05-27 07:08+0000\n"
 "Last-Translator: Akash Nimare <svnitakash@gmail.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/"
@@ -4511,7 +4511,7 @@ msgstr ""
 
 #: zerver/tornado/exceptions.py:15
 #, python-brace-format
-msgid "Bad event queue id: {queue_id}"
+msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
 #: zerver/views/auth.py:484
