@@ -228,7 +228,8 @@ h3,
 
 #uploaded_files_table > tr > td:nth-of-type(1),
 .upload-file-name {
-    width: 30%;
+    /*changed the pixel with to leave more space for the file colunm, 48% instead of 50 to compromise for diff langs*/
+    width: 48%; 
     word-break: break-all;
 }
 
