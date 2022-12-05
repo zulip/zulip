@@ -13,7 +13,7 @@
                             {{page_params.delivery_email}}
                             <i class="fa fa-pencil"></i>
                         </button>
-                        <i class="tippy-zulip-tooltip fa fa-question-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-tippy-content="{{t 'Email address changes are disabled in this organization.' }}"></i>
+                        <i class="tippy-zulip-tooltip fa fa-info-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-tippy-content="{{t 'Email address changes are disabled in this organization.' }}"></i>
                     </div>
                 </form>
 
