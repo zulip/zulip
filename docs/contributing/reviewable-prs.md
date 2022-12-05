@@ -69,5 +69,5 @@ Here is some advice on how to proceed:
   Whenever possible, find chunks of complexity that you can separate from the
   rest of the project.
 
-See our [commit discipline guide](../contributing/version-control.md) for
+See our [commit discipline guide](../contributing/commit-discipline.md) for
 more details on writing reviewable commits.
