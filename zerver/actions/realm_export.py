@@ -1,4 +1,5 @@
 import orjson
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.export import get_realm_exports_serialized
@@ -10,7 +11,7 @@ from zerver.tornado.django_api import send_event
 def notify_realm_export(user_profile: UserProfile) -> None:
     # In the future, we may want to send this event to all realm admins.
     event = dict(type="realm_export", exports=get_realm_exports_serialized(user_profile))
-    send_event(user_profile.realm, event, [user_profile.id])
+    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
 
 
 def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> None:
