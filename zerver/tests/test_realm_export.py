@@ -48,7 +48,8 @@ class RealmExportTest(ZulipTestCase):
             with self.settings(LOCAL_UPLOADS_DIR=None), stdout_suppressed(), self.assertLogs(
                 level="INFO"
             ) as info_logs:
-                result = self.client_post("/json/export/realm")
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
@@ -118,7 +119,8 @@ class RealmExportTest(ZulipTestCase):
         # Test the export logic.
         with patch("zerver.lib.export.do_export_realm", return_value=tarball_path) as mock_export:
             with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
-                result = self.client_post("/json/export/realm")
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
