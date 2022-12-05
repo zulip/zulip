@@ -32,13 +32,6 @@ run_test("extract_pm_recipients", () => {
     assert.equal(util.extract_pm_recipients("bob@foo.com, ").length, 1);
 });
 
-run_test("is_pm_recipient", () => {
-    const message = {to_user_ids: "31,32,33"};
-    assert.ok(util.is_pm_recipient(31, message));
-    assert.ok(util.is_pm_recipient(32, message));
-    assert.ok(!util.is_pm_recipient(34, message));
-});
-
 run_test("lower_bound", () => {
     const arr = [{x: 10}, {x: 20}, {x: 30}, {x: 40}, {x: 50}];
 

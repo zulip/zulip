@@ -55,10 +55,6 @@ export const same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     return a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
 };
 
-export function is_pm_recipient(user_id, message) {
-    const recipients = message.to_user_ids.split(",");
-    return recipients.includes(user_id.toString());
-}
 
 export function extract_pm_recipients(recipients) {
     return recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
