@@ -493,7 +493,7 @@ input[type="checkbox"] {
 
     background-color: transparent;
     border-radius: 4px;
-    margin-top: 14px;
+    margin-top: 0px;
     margin-left: 0px;
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
