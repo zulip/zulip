@@ -15,7 +15,6 @@ from django.conf import settings
 from django.http.response import StreamingHttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from django_sendfile.utils import _get_sendfile
 from PIL import Image
 from urllib3 import encode_multipart_formdata
 
@@ -934,33 +933,29 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             content_disposition: str = "",
             download: bool = False,
         ) -> None:
-            with self.settings(SENDFILE_BACKEND="django_sendfile.backends.nginx"):
-                _get_sendfile.cache_clear()  # To clearout cached version of backend from djangosendfile
-                self.login("hamlet")
-                fp = StringIO("zulip!")
-                fp.name = name
-                result = self.client_post("/json/user_uploads", {"file": fp})
-                uri = self.assert_json_success(result)["uri"]
-                fp_path_id = re.sub("/user_uploads/", "", uri)
-                fp_path = os.path.split(fp_path_id)[0]
-                if download:
-                    uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+            self.login("hamlet")
+            fp = StringIO("zulip!")
+            fp.name = name
+            result = self.client_post("/json/user_uploads", {"file": fp})
+            uri = self.assert_json_success(result)["uri"]
+            fp_path_id = re.sub("/user_uploads/", "", uri)
+            fp_path = os.path.split(fp_path_id)[0]
+            if download:
+                uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+            with self.settings(DEVELOPMENT=False):
                 response = self.client_get(uri)
-                _get_sendfile.cache_clear()
-                assert settings.LOCAL_UPLOADS_DIR is not None
-                test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
-                self.assertEqual(
-                    response["X-Accel-Redirect"],
-                    "/serve_uploads/" + fp_path + "/" + name_str_for_test,
-                )
-                if content_disposition != "":
-                    self.assertIn("attachment;", response["Content-disposition"])
-                    self.assertIn(content_disposition, response["Content-disposition"])
-                else:
-                    self.assertIn("inline;", response["Content-disposition"])
-                self.assertEqual(
-                    set(response["Cache-Control"].split(", ")), {"private", "immutable"}
-                )
+            assert settings.LOCAL_UPLOADS_DIR is not None
+            test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
+            self.assertEqual(
+                response["X-Accel-Redirect"],
+                "/serve_uploads/" + fp_path + "/" + name_str_for_test,
+            )
+            if content_disposition != "":
+                self.assertIn("attachment;", response["Content-disposition"])
+                self.assertIn(content_disposition, response["Content-disposition"])
+            else:
+                self.assertIn("inline;", response["Content-disposition"])
+            self.assertEqual(set(response["Cache-Control"].split(", ")), {"private", "immutable"})
 
         check_xsend_links("zulip.txt", "zulip.txt", 'filename="zulip.txt"')
         check_xsend_links(
