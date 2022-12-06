@@ -150,6 +150,7 @@ jobs:
           ./tools/test-migrations
           ./tools/setup/optimize-svg --check
           ./tools/setup/generate_integration_bots_avatars.py --check-missing
+          ./tools/ci/check-executables
 
           # Ban check-database-compatibility.py from transitively
           # relying on static/generated, because it might not be
