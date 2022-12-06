@@ -47,7 +47,6 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
     await page.click(manage_streams_selector);
 
     await page.waitForSelector("#subscription_overlay", {visible: true});
-    await page.waitForSelector("#manage_streams_container", {visible: true});
 
     await page.click("#subscription_overlay .exit");
     // Wait until the overlay is completely closed.
