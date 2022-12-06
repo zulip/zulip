@@ -35,6 +35,15 @@
         "\n```python\ndef concat(*args, sep='/'):\n    return sep.join(args)\n```",
         "\n```\n(map + [1 2 3] [4 5 6])\n ;;=> (5 7 9)\n```"
       ],
+      "url-in-topics": [
+        "https://zulip.com/",
+        "https://zulip.com/development-community/",
+        "https://zulip.readthedocs.io/en/latest/index.html",
+        "https://github.com/zulip",
+        "https://github.com/zulip/zulip/issues/14991",
+        "https://github.com/zulip/zulip/pull/23772",
+        "https://twitter.com/zulip"
+      ],
 
       "quote-blocks": [
         "```quote\nBe yourself; everyone else is already taken.\n -- Oscar Wilde\n```",
