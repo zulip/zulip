@@ -266,9 +266,11 @@ export function update_placeholder_text() {
         stream: $("#stream_message_recipient_stream").val(),
         topic: $("#stream_message_recipient_topic").val(),
         private_message_recipient: compose_pm_pill.get_emails(),
+        default_no_topic: "general chat"
     };
 
     $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
+    $("#stream_message_recipient_topic").attr("placeholder", compose_ui.compute_placeholder_topic(opts));
 }
 
 export function start(msg_type, opts) {
