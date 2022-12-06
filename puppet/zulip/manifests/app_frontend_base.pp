@@ -71,7 +71,7 @@ class zulip::app_frontend_base {
 
   # Configuration for how uploaded files and profile pictures are
   # served.  The default is to serve uploads using using the `nginx`
-  # `internal` feature via django-sendfile2, which basically does an
+  # `internal` feature via X-Accel-Redirect, which basically does an
   # internal redirect and returns the file content from nginx in an
   # HttpResponse that would otherwise have been a redirect.  Profile
   # pictures are served directly off disk.

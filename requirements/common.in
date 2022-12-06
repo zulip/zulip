@@ -137,9 +137,6 @@ django-two-factor-auth[call,phonenumberslite,sms]
 # Needed for processing payments (in corporate)
 stripe
 
-# Needed for serving uploaded files from nginx but perform auth checks in django.
-django-sendfile2
-
 # For checking whether email of the user is from a disposable email provider.
 disposable-email-domains
 

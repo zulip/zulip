@@ -40,7 +40,6 @@ from .configured_settings import (
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
     IS_DEV_DROPLET,
-    LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
     RATE_LIMITING_RULES,
@@ -50,7 +49,6 @@ from .configured_settings import (
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
     ROOT_SUBDOMAIN_ALIASES,
-    SENDFILE_BACKEND,
     SENTRY_DSN,
     SOCIAL_AUTH_APPLE_APP_ID,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
@@ -439,12 +437,6 @@ ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
-
-if LOCAL_UPLOADS_DIR is not None:
-    if SENDFILE_BACKEND is None:
-        SENDFILE_BACKEND = "django_sendfile.backends.nginx"
-    SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, "files")
-    SENDFILE_URL = "/serve_uploads"
 
 # GCM tokens are IP-whitelisted; if we deploy to additional
 # servers you will need to explicitly add their IPs here:

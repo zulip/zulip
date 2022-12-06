@@ -6,11 +6,17 @@ from urllib.parse import quote, urlparse
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
+from django.http import (
+    FileResponse,
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBase,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+)
 from django.shortcuts import redirect
 from django.utils.cache import patch_cache_control
 from django.utils.translation import gettext as _
-from django_sendfile import sendfile
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
@@ -57,6 +63,26 @@ def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bo
     response.headers["Content-Disposition"] = f"{disposition}; {file_expr}"
 
 
+def internal_nginx_redirect(internal_path: str) -> HttpResponse:
+    # The following headers from this initial response are
+    # _preserved_, if present, and sent unmodified to the client;
+    # all other headers are overridden by the redirected URL:
+    #  - Content-Type
+    #  - Content-Disposition
+    #  - Accept-Ranges
+    #  - Set-Cookie
+    #  - Cache-Control
+    #  - Expires
+    # As such, we unset the Content-type header to allow nginx to set
+    # it from the static file; the caller can set Content-Disposition
+    # and Cache-Control on this response as they desire, and the
+    # client will see those values.
+    response = HttpResponse()
+    response["X-Accel-Redirect"] = internal_path
+    del response["Content-Type"]
+    return response
+
+
 def serve_s3(
     request: HttpRequest, url_path: str, url_only: bool, download: bool = False
 ) -> HttpResponse:
@@ -69,7 +95,7 @@ def serve_s3(
 
 def serve_local(
     request: HttpRequest, path_id: str, url_only: bool, download: bool = False
-) -> HttpResponse:
+) -> HttpResponseBase:
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound("<p>File not found</p>")
@@ -81,20 +107,23 @@ def serve_local(
     mimetype, encoding = guess_type(local_path)
     attachment = download or mimetype not in INLINE_MIME_TYPES
 
-    response = sendfile(
-        request, local_path, attachment=attachment, mimetype=mimetype, encoding=encoding
-    )
-    patch_cache_control(response, private=True, immutable=True)
-    # sendfile adds a content-disposition header, but it incorrectly
-    # slash-escapes Unicode filenames; Django has a correct
-    # implementation, but it is not easily callable until Django 4.2.
+    if settings.DEVELOPMENT:
+        # In development, we do not have the nginx server to offload
+        # the response to; serve it directly ourselves.
+        # FileResponse handles setting Content-Disposition, etc.
+        response: HttpResponseBase = FileResponse(open(local_path, "rb"), as_attachment=attachment)
+        patch_cache_control(response, private=True, immutable=True)
+        return response
+
+    response = internal_nginx_redirect(quote(f"/serve_uploads/{path_id}"))
     patch_disposition_header(response, local_path, attachment)
+    patch_cache_control(response, private=True, immutable=True)
     return response
 
 
 def serve_file_download_backend(
     request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
-) -> HttpResponse:
+) -> HttpResponseBase:
     return serve_file(request, user_profile, realm_id_str, filename, url_only=False, download=True)
 
 
@@ -103,13 +132,13 @@ def serve_file_backend(
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     realm_id_str: str,
     filename: str,
-) -> HttpResponse:
+) -> HttpResponseBase:
     return serve_file(request, maybe_user_profile, realm_id_str, filename, url_only=False)
 
 
 def serve_file_url_backend(
     request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
-) -> HttpResponse:
+) -> HttpResponseBase:
     """
     We should return a signed, short-lived URL
     that the client can use for native mobile download, rather than serving a redirect.
@@ -125,7 +154,7 @@ def serve_file(
     filename: str,
     url_only: bool = False,
     download: bool = False,
-) -> HttpResponse:
+) -> HttpResponseBase:
     path_id = f"{realm_id_str}/{filename}"
     realm = get_valid_realm_from_request(request)
     is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
@@ -140,7 +169,7 @@ def serve_file(
     return serve_s3(request, path_id, url_only, download=download)
 
 
-def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponse:
+def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponseBase:
     path_id = get_local_file_path_id_from_token(token)
     if path_id is None:
         raise JsonableError(_("Invalid token"))
