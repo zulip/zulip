@@ -9,8 +9,12 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence
 
 import orjson
 
-from emoji_names import EMOJI_NAME_MAPS
-from emoji_setup_utils import (
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
+sys.path.append(ZULIP_PATH)
+
+from scripts.lib.zulip_tools import generate_sha1sum_emoji, run_as_root
+from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS
+from tools.setup.emoji.emoji_setup_utils import (
     EMOTICON_CONVERSIONS,
     REMAPPED_EMOJIS,
     emoji_names_for_picker,
@@ -20,11 +24,6 @@ from emoji_setup_utils import (
     generate_name_to_codepoint_map,
     get_emoji_code,
 )
-
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
-sys.path.append(ZULIP_PATH)
-
-from scripts.lib.zulip_tools import generate_sha1sum_emoji, run_as_root
 
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
 TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "static", "generated", "emoji-styles")
