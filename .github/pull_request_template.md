@@ -9,7 +9,8 @@ Tooling tips: https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gi
 
 **Screenshots and screen captures:**
 
-**Self-review checklist**
+<details>
+<summary>Self-review checklist</summary>
 
 <!-- Prior to submitting a PR, follow our step-by-step guide to review your own code:
 https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code -->
@@ -39,3 +40,4 @@ Completed manual review and testing of the following:
 - [ ] Strings and tooltips.
 - [ ] End-to-end functionality of buttons, interactions and flows.
 - [ ] Corner cases, error conditions, and easily imagined bugs.
+</details>

@@ -4557,7 +4557,7 @@ msgstr "Затребовано слишком много сообщений (м�
 
 #: zerver/views/message_fetch.py:105 zerver/views/message_flags.py:84
 msgid "The anchor can only be excluded at an end of the range"
-msgstr ""
+msgstr "Якорь можно исключить только в конце диапазона"
 
 #: zerver/views/message_flags.py:168
 msgid "No such topic '{}'"

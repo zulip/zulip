@@ -228,13 +228,13 @@ stream](/help/create-a-stream#stream-options).
 
 For most classes, the following streams are recommended:
 
-- **\#announcements**: For general announcements about the class. When
+- **#announcements**: For general announcements about the class. When
   creating this stream, [restrict posting
   permissions](/help/stream-sending-policy) so that only course staff
   ([Administrators and moderators](/help/roles-and-permissions) are
   allowed to post.
-- **\#staff (private)**: For discussions among course staff.
-- **\#general**: For random topics, e.g. students forming study groups.
+- **#staff (private)**: For discussions among course staff.
+- **#general**: For random topics, e.g. students forming study groups.
 - A stream for each **lecture** or **unit**, e.g. “Lecture 1: Course
   intro” or “Unit 3: Sorting algorithms”.
 - A stream for each **section**/**tutorial group** (e.g. “Section 1”)
@@ -262,8 +262,8 @@ A few notes:
 !!! tip ""
 
     If using your Zulip organization for a single class, set default
-    streams for new users to include \#announcements, \#general, and
-    all lecture/unit streams.
+    streams for new users to include **#announcements**, **#general**,
+    and all lecture/unit streams.
 
 ## Invite users to join
 
@@ -330,8 +330,9 @@ If you plan to use the same Zulip organization in future terms (either
 for your own classes or for your department), you will likely want to:
 
 - Rename all streams to indicate the class and term in which they were used, e.g.:
-    - \#announcements → \#FA21 - CS101 - announcements
-    - \#CS101 > Lecture 1: Course intro → #FA21 - CS101 > Lecture 1: Course intro
+    - **#announcements** → **#FA21 - CS101 - announcements**
+    - **#CS101 > Lecture 1: Course intro** → **#FA21 - CS101 > Lecture 1: Course
+      intro**
 - If you do *not* want students from future classes to see messages
   from the prior term (e.g. because you posted homework solutions),
   [make all the streams from the class private][make-private]. You’ll

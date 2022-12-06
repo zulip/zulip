@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-17 19:01+0000\n"
+"POT-Creation-Date: 2022-12-02 18:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4440,7 +4440,7 @@ msgstr ""
 
 #: zerver/tornado/exceptions.py:15
 #, python-brace-format
-msgid "Bad event queue id: {queue_id}"
+msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
 #: zerver/views/auth.py:484

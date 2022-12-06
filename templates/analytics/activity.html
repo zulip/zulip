@@ -15,11 +15,8 @@
     <br />
     {% endif %}
 
-    <h4>{{ title }}</h4>
+    <h4>{{ title }} {% if realm_stats_link %}{{ realm_stats_link }}{% endif %}</h4>
 
-    {% if realm_link %}
-    <a href="{{ realm_link }}">Graph</a><br />
-    {% endif %}
 
     <ul class="nav nav-tabs">
         {% for name, activity in data %}

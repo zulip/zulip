@@ -22,7 +22,8 @@ destination streams.
 
 {!topic-actions.md!}
 
-1. Select **Move topic**.
+1. Select **Move topic**. If you do not see this option, you do not have permission
+   to move this topic.
 
 1. Select the destination stream for the topic from the streams dropdown list.
 
@@ -47,10 +48,12 @@ destination streams.
 
 {!message-actions-menu.md!}
 
-1. Select **Move message**. If you do not see this option, you do not have permission
+1. Select **Move messages**. If you do not see this option, you do not have permission
    to move this message.
 
-1. Select the destination stream for the message from the streams dropdown list.
+1. Select the destination stream from the streams dropdown list. If
+   the stream input is disabled, you do not have permission to move
+   this message to a different stream.
 
 1. _(optional)_ Change the topic name.
 

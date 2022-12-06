@@ -73,7 +73,7 @@ This is most often used for legal compliance.
     def handle(self, *args: Any, **options: Any) -> None:
         terms = set()
         if options["file"]:
-            with open(options["file"], "r") as f:
+            with open(options["file"]) as f:
                 terms.update(f.read().splitlines())
         terms.update(options["search_terms"])
 

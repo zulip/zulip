@@ -102,34 +102,16 @@ rules:
     languages: [python]
     pattern-either:
       - pattern: |
-          def $F(..., $A: typing.List[...] = [...], ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.List[...]] = [...], ...) -> ...:
-              ...
-      - pattern: |
           def $F(..., $A: typing.List[...] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
               ...
       - pattern: |
           def $F(..., $A: typing.Optional[typing.List[...]] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
               ...
       - pattern: |
-          def $F(..., $A: typing.Dict[...] = {}, ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.Dict[...]] = {}, ...) -> ...:
-              ...
-      - pattern: |
           def $F(..., $A: typing.Dict[...] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
               ...
       - pattern: |
           def $F(..., $A: typing.Optional[typing.Dict[...]] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Set[...] = set(), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.Set[...]] = set(), ...) -> ...:
               ...
     severity: ERROR
     message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"
@@ -142,12 +124,6 @@ rules:
       - pattern: django.utils.translation.gettext_lazy(...) % ...
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
-
-  - id: eval
-    languages: [python]
-    pattern: eval
-    severity: ERROR
-    message: "Do not use eval under any circumstances; consider json.loads instead"
 
   - id: typing-text
     languages: [python]
