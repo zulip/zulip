@@ -208,14 +208,6 @@ def init_worker(
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    # We manually update the upload directory path in the URL regex.
-    from zproject.dev_urls import avatars_url
-
-    assert settings.LOCAL_UPLOADS_DIR is not None
-    assert settings.LOCAL_AVATARS_DIR is not None
-    assert avatars_url.default_args is not None
-    avatars_url.default_args["document_root"] = settings.LOCAL_AVATARS_DIR
-
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite

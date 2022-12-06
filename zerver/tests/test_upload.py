@@ -8,6 +8,7 @@ import urllib
 from io import StringIO
 from unittest import mock
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import botocore.exceptions
 import orjson
@@ -1853,6 +1854,39 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         path_id = re.sub("/user_uploads/", "", response_dict["uri"])
         self.assertTrue(delete_message_image(path_id))
 
+    def test_avatar_url_local(self) -> None:
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post("/json/users/me/avatar", {"file": image_file})
+
+        response_dict = self.assert_json_success(result)
+        self.assertIn("avatar_url", response_dict)
+        base = "/user_avatars/"
+        url = self.assert_json_success(result)["avatar_url"]
+        self.assertEqual(base, url[: len(base)])
+
+        # That URL is accessible when logged out
+        self.logout()
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+
+        # We get a resized avatar from it
+        image_data = read_test_image_file("img.png")
+        resized_avatar = resize_avatar(image_data)
+        assert isinstance(result, StreamingHttpResponse)
+        self.assertEqual(resized_avatar, b"".join(result.streaming_content))
+
+        with self.settings(DEVELOPMENT=False):
+            # In production, this is an X-Accel-Redirect to the
+            # on-disk content, which nginx serves
+            result = self.client_get(url)
+            self.assertEqual(result.status_code, 200)
+            internal_redirect_path = urlparse(url).path.replace(
+                "/user_avatars/", "/internal/user_avatars/"
+            )
+            self.assertEqual(result["X-Accel-Redirect"], internal_redirect_path)
+            self.assertEqual(b"", result.content)
+
     def test_ensure_avatar_image_local(self) -> None:
         user_profile = self.example_user("hamlet")
         file_path = user_avatar_path(user_profile)
@@ -2098,6 +2132,25 @@ class S3Test(ZulipTestCase):
         self.subscribe(hamlet, "Denmark")
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
         self.send_stream_message(hamlet, "Denmark", body, "test")
+
+    @use_s3_backend
+    def test_user_avatars_redirect(self) -> None:
+        create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post("/json/users/me/avatar", {"file": image_file})
+
+        response_dict = self.assert_json_success(result)
+        self.assertIn("avatar_url", response_dict)
+        base = f"https://{settings.S3_AVATAR_BUCKET}.s3.amazonaws.com/"
+        url = self.assert_json_success(result)["avatar_url"]
+        self.assertEqual(base, url[: len(base)])
+
+        # Try hitting the equivalent `/user_avatars` endpoint
+        wrong_url = "/user_avatars/" + url[len(base) :]
+        result = self.client_get(wrong_url)
+        self.assertEqual(result.status_code, 301)
+        self.assertEqual(result["Location"], url)
 
     @use_s3_backend
     def test_upload_avatar_image(self) -> None:

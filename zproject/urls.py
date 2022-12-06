@@ -166,6 +166,7 @@ from zerver.views.upload import (
     serve_file_backend,
     serve_file_download_backend,
     serve_file_url_backend,
+    serve_local_avatar_unauthed,
     serve_local_file_unauthed,
     upload_file_backend,
 )
@@ -667,6 +668,11 @@ urls += [
             avatar_medium,
             {"override_api_url_scheme", "allow_anonymous_user_web"},
         ),
+    ),
+    path(
+        "user_avatars/<path:path>",
+        serve_local_avatar_unauthed,
+        name="local_avatar_unauthed",
     ),
 ]
 
