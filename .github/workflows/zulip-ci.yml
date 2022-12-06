@@ -59,6 +59,8 @@ jobs:
       # ensures it written there because we write it to ~/.pgpass.
       HOME: /home/github/
 
+      ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
+
     steps:
       - uses: actions/checkout@v3
 
@@ -239,10 +241,10 @@ jobs:
         run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
 
       - name: Report status to CZO
-        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        if: ${{ failure() && env.ZULIP_BOT_KEY != '' && github.repository == 'zulip/zulip' }}
         uses: zulip/github-actions-zulip/send-message@v1
         with:
-          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          api-key: ${{ env.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
           organization-url: "https://chat.zulip.org"
           to: "automated testing"
