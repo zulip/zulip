@@ -212,6 +212,7 @@
     .email_field_textarea {
         width: 97%;
         resize: vertical;
+        margin-bottom: 10px;
     }
 
     .border-top {
