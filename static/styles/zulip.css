@@ -1281,11 +1281,15 @@ td.pointer {
     padding-right: 4px;
 }
 
+#unread_banners {
+    display:block;
+}
+
 #mark_as_read_turned_off_banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 8px 8px 14px;
+    padding: 8px;
     column-gap: 10px;
 
     #mark_as_read_turned_off_content {
@@ -1298,6 +1302,32 @@ td.pointer {
     }
 
     #mark_as_read_close {
+        align-self: flex-start;
+        margin-top: -5px;
+        /* override bootstrap */
+        top: 0;
+        right: 0;
+        position: static;
+    }
+}
+
+#mark_as_unread_fail_banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    column-gap: 10px;
+
+    #mark_as_unread_fail_banner_content {
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    #mark_as_read_controls {
+        display: flex;
+    }
+
+    #mark_banner_close {
         align-self: flex-start;
         margin-top: -5px;
         /* override bootstrap */

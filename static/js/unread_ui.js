@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_mark_as_read_turned_off_banner from "../templates/mark_as_read_turned_off_banner.hbs";
+import render_mark_as_unread_fail_banner from "../templates/mark_as_unread_fail_banner.hbs";
 
 import * as activity from "./activity";
 import * as message_lists from "./message_lists";
@@ -110,12 +111,36 @@ export function should_display_bankruptcy_banner() {
     return false;
 }
 
+export function display_not_subscribed_banner(stream_name) {
+    hide_not_subscribed_banner(false);
+
+    document.querySelector("#mark_as_unread_fail_banner_content").innerHTML =
+    "Because you are not subscribed to #"+stream_name+
+    ", messages in this stream were not marked as unread.";
+
+    $("#mark_banner_read").on("click", () => {
+        hide_not_subscribed_banner(true);
+    });
+    $("#mark_banner_close").on("click", () => {
+        hide_not_subscribed_banner(true);
+    });
+}
+
+export function hide_not_subscribed_banner(bool) {
+    $("#mark_as_unread_fail_banner").toggleClass("invisible", bool);
+}
+
 export function initialize() {
     update_unread_counts();
 
+    $("#mark_as_unread_fail_banner").html(render_mark_as_unread_fail_banner());
+    hide_not_subscribed_banner(true);
+
     $("#mark_as_read_turned_off_banner").html(render_mark_as_read_turned_off_banner());
     hide_mark_as_read_turned_off_banner();
+
     $("#mark_view_read").on("click", () => {
+
         // Mark all messages in the current view as read.
         //
         // BUG: This logic only supports marking messages visible in

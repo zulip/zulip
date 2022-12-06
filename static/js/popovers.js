@@ -54,6 +54,7 @@ import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
 import * as unread_ops from "./unread_ops";
+import { display_not_subscribed_banner } from "./unread_ui";
 import * as user_groups from "./user_groups";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
@@ -956,6 +957,7 @@ export function hide_playground_links_popover() {
 }
 
 export function register_click_handlers() {
+
     $("#main_div").on("click", ".actions_hover", function (e) {
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
@@ -1233,11 +1235,24 @@ export function register_click_handlers() {
     $("body").on("click", ".mark_as_unread", (e) => {
         hide_actions_popover();
         const message_id = $(e.currentTarget).data("message-id");
+        const message = message_lists.current.get(message_id);
+
+        if(message.type === "stream"){
+            const subscribed_to_stream = stream_data.is_subscribed(message.stream_id);
+            const stream_name = stream_data.maybe_get_stream_name(message.stream_id);
+
+            if(subscribed_to_stream){
+                display_not_subscribed_banner(stream_name);
+            }
+        } else {
+            $("#mark_as_unread_fail_banner").toggleClass("invisible", true);
+        }
 
         unread_ops.mark_as_unread_from_here(message_id);
 
         e.stopPropagation();
         e.preventDefault();
+
     });
 
     $("body").on("click", ".respond_button", (e) => {
