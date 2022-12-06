@@ -248,7 +248,6 @@ def initialize_worker_path(worker_id: int) -> None:
             "test_uploads",
         )
     )
-    settings.SENDFILE_ROOT = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
 
 
 class Runner(DiscoverRunner):
