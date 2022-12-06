@@ -46,6 +46,7 @@ let edit_message_id = null;
 
 const EMOJI_CATEGORIES = [
     {name: "Popular", icon: "fa-star-o"},
+    {name: "Customized", icon: "fa-star-o"},
     {name: "Smileys & Emotion", icon: "fa-smile-o"},
     {name: "People & Body", icon: "fa-thumbs-o-up"},
     {name: "Animals & Nature", icon: "fa-leaf"},
@@ -152,6 +153,28 @@ export function rebuild_catalog() {
         }
     }
     catalog.set("Popular", popular);
+
+    const customized = [
+        "1f44d", // +1
+        "1f389", // tada
+        "1f642", // smile
+        "2764", // heart
+        "1f6e0", // working_on_it
+        "1f419", // frog
+    ];
+
+    const newcustoms = [];
+    // catalog.set("Customized", customized);
+    for(const codepoint of customized){
+        const name = emoji.get_emoji_name(codepoint);
+        if(name !== undefined){
+            const emoji_dict = emoji.emojis_by_name.get(name);
+            if(emoji_dict !== undefined){
+                newcustoms.push(emoji_dict);
+            }
+        }
+    }
+    catalog.set("Customized", newcustoms);
 
     const categories = EMOJI_CATEGORIES.filter((category) => catalog.has(category.name));
     complete_emoji_catalog = categories.map((category) => ({
