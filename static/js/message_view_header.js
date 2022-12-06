@@ -173,7 +173,7 @@ export function open_search_bar_and_close_narrow_description() {
 
 export function close_search_bar_and_open_narrow_description() {
     const filter = narrow_state.filter();
-    if (!(filter && !filter.is_common_narrow())) {
+    if (!filter || filter.is_common_narrow()) {
         $(".navbar-search").removeClass("expanded");
         $("#message_view_header").removeClass("hidden");
     }

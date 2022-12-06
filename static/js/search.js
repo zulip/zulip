@@ -255,44 +255,51 @@ export function initialize() {
     }
 
     $search_query_box.on("click", (e) => {
-        console.log("on click!")
         if (!search_box_opened) {
             e.preventDefault();
             e.stopPropagation();
             initiate_search();
         } else {
-            const $setter = $("#message_view_header");
-            const $typeahead = $(".search_typeahead.dropdown-menu ul");
-            $typeahead.css("width", $setter.outerWidth() + "px");
+            // This means the search query box was open but typeahead was not.
+            // Ideally we don't reach this state, since it look strange with the
+            // grey underpadding.
+            open_typeahead();
         }
     });
 
     $(".search_icon").on("click", (e) => {
         e.preventDefault();
-        if (search_box_opened) {
-            const query = $search_query_box.val();
-            // There's nothing to search, but they probably don't want to close
-            // the search bar. Move the focus back to the input field.
-            // TODO: this isn't working great. and the delay is making it harder, maybe we can fix that
-            if(!query) {
-                $("#search_query").trigger("click");
-                return;
-            }
-            narrow_or_search_for_term(query);
+        if (!search_box_opened) {
+            $search_query_box.trigger("click");
+        } else {
+            // const query = $search_query_box.val();
+            // // There's nothing to search, but they probably don't want to close
+            // // the search bar. Move the focus back to the input field and reopen
+            // // the lookahead. Wait 100ms because the typeahead will want to close
+            // // because there's nothing there.
+            // if(!query) {
+            //     setTimeout(() => {
+            //         open_typeahead();
+            //     }, 100);
+            //     return;
+            // }
+            narrow_or_search_for_term($search_query_box.val());
             $search_query_box.trigger("blur");
             update_buttons_with_focus(false);
-        } else {
-            $search_query_box.trigger("click");
         }
     });
 }
 
+function open_typeahead() {
+    const $setter = $("#message_view_header");
+    const $typeahead = $(".search_typeahead.dropdown-menu ul");
+    $typeahead.css("width", $setter.outerWidth() + "px");
+    $("#search_query").typeahead("lookup").trigger("select");
+}
+
 export function resize_search_box() {
     if (search_box_opened) {
-        const $setter = $("#message_view_header");
-        const $typeahead = $(".search_typeahead.dropdown-menu ul");
-        $typeahead.css("width", $setter.outerWidth() + "px");
-        $("#search_query").typeahead("lookup").trigger("select");
+        open_typeahead();
     }
 }
 
@@ -303,10 +310,7 @@ export function focus_search() {
 
 export function initiate_search() {
     message_view_header.open_search_bar_and_close_narrow_description();
-    const $setter = $("#message_view_header");
-    const $typeahead = $(".search_typeahead.dropdown-menu ul");
-    $typeahead.css("width", $setter.outerWidth() + "px");
-    $("#search_query").typeahead("lookup").trigger("select");
+    open_typeahead();
     if (page_params.search_pills_enabled) {
         $("#search_query").trigger("focus");
         ui_util.place_caret_at_end($("#search_query")[0]);
