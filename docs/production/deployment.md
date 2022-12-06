@@ -661,15 +661,6 @@ SSL/TLS termination.
 Set to the port number if you [prefer to listen on a port other than
 443](#using-an-alternate-port).
 
-#### `no_serve_uploads`
-
-To enable the [the S3 uploads backend][s3-uploads], one needs to both
-configure `settings.py` and set this to true to configure
-`nginx`. Remove this field to return to the local uploads backend (any
-non-empty value is currently equivalent to true).
-
-[s3-uploads]: upload-backends.md#s3-backend-configuration
-
 #### `queue_workers_multiprocess`
 
 By default, Zulip automatically detects whether the system has enough
