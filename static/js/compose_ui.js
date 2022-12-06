@@ -89,13 +89,13 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
 
 
 export function compute_placeholder_topic(opts) {
-    // Computes clear placeholder text for the compose box, depending
-    // on what heading values have already been filled out.
+    // Computes clear placeholder text for the topic box, depending
+    // on what is set for the default no topic name.
     //
-    // We return text with the stream and topic name unescaped,
+    // We return text with the default no topic name unescaped,
     // because the caller is expected to insert this into the
     // placeholder field in a way that does HTML escaping.
-    return $t({defaultMessage: 'Enter topic or send to "{default_no_topic}"'}, {default_no_topic: opts.default_no_topic});
+    return $t({defaultMessage: 'Enter topic or send to "{default_topic}"'}, {default_topic: opts.no_topic_default});
 }
 
 export function compute_placeholder_text(opts) {

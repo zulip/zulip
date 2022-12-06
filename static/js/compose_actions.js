@@ -266,7 +266,7 @@ export function update_placeholder_text() {
         stream: $("#stream_message_recipient_stream").val(),
         topic: $("#stream_message_recipient_topic").val(),
         private_message_recipient: compose_pm_pill.get_emails(),
-        default_no_topic: "general chat"
+        no_topic_default: "general chat"
     };
 
     $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
