@@ -106,11 +106,11 @@ jobs:
 
       - name: Generate failure report string
         id: failure_report_string
-        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
         run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
 
       - name: Report status to CZO
-        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
         uses: zulip/github-actions-zulip/send-message@v1
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
@@ -211,11 +211,11 @@ jobs:
 
       - name: Generate failure report string
         id: failure_report_string
-        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
         run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
 
       - name: Report status to CZO
-        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
         uses: zulip/github-actions-zulip/send-message@v1
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
@@ -296,11 +296,11 @@ jobs:
 
       - name: Generate failure report string
         id: failure_report_string
-        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
         run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
 
       - name: Report status to CZO
-        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
         uses: zulip/github-actions-zulip/send-message@v1
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
