@@ -1932,11 +1932,11 @@ div.focused_table {
             border-radius: 5px;
             color: hsl(0, 0, 0);
 
-            box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.15),
-                0 1px 5px hsla(0, 0%, 0%, 0.1);
-
+            box-shadow: none;
+            
             &:hover {
-                box-shadow: none;
+                box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.15),
+                    0 1px 5px hsla(0, 0%, 0%, 0.1);
             }
         }
 

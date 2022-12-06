@@ -188,6 +188,12 @@ export function initialize() {
 
     $search_query_box.on("focus", focus_search);
     $search_query_box.on("blur", (e) => {
+        // This can happen if multiple blur events were triggered at the same time,
+        // and the target is no longer visible at this point.
+        if (e.relatedTarget === null || e.relatedTarget === undefined) {
+            return;
+        }
+
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should
@@ -221,9 +227,10 @@ export function initialize() {
         // searchbox will close and show the narrow description. The part that
         // is annoying is that this can break the typeahead by interfering with
         // the selection via mouse click, ie selecting an item from the
-        // typeahead will be buggy. To prevent this bug, we check that the
-        // **element that received focus'** parent isn't the typeahead.
-        if (e.relatedTarget === null || e.relatedTarget === undefined || !search_box_opened) {
+        // typeahead will be buggy. This can also happen when e.g. clicking
+        // the search icon. To prevent this bug, we check that the
+        // **element that received focus'** parent isn't in the search bar.
+        if (!search_box_opened && $(e.relatedTarget).parents("#searchbox_form").length === 0) {
             const filter = narrow_state.filter();
             if (!filter || filter.is_common_narrow()) {
                 message_view_header.close_search_bar_and_open_narrow_description();
@@ -248,10 +255,11 @@ export function initialize() {
     }
 
     $search_query_box.on("click", (e) => {
+        console.log("on click!")
         if (!search_box_opened) {
-            initiate_search();
             e.preventDefault();
             e.stopPropagation();
+            initiate_search();
         } else {
             const $setter = $("#message_view_header");
             const $typeahead = $(".search_typeahead.dropdown-menu ul");
@@ -262,7 +270,15 @@ export function initialize() {
     $(".search_icon").on("click", (e) => {
         e.preventDefault();
         if (search_box_opened) {
-            narrow_or_search_for_term($search_query_box.val());
+            const query = $search_query_box.val();
+            // There's nothing to search, but they probably don't want to close
+            // the search bar. Move the focus back to the input field.
+            // TODO: this isn't working great. and the delay is making it harder, maybe we can fix that
+            if(!query) {
+                $("#search_query").trigger("click");
+                return;
+            }
+            narrow_or_search_for_term(query);
             $search_query_box.trigger("blur");
             update_buttons_with_focus(false);
         } else {
