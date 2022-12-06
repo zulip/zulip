@@ -160,6 +160,8 @@ export function stream_edit_url(sub, select_tab) {
         case "subscriber_settings":
             selected_settings = "Subscribers";
             break;
+        default:
+            selected_settings = "";
     }
     const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(
         sub.name,

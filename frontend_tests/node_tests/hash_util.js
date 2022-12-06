@@ -137,7 +137,7 @@ run_test("test_stream_edit_url_empty_select_tab", () => {
     const select_tab = "";
     assert.equal(
         hash_util.stream_edit_url(sub, select_tab),
-        "#streams/42/research.20.26.20development",
+        "#streams/42/research.20.26.20development/",
     );
 });
 
