@@ -233,6 +233,27 @@ h3,
     word-break: break-all;
 }
 
+#uploaded_files_table > tr > td:nth-of-type(1),
+.create-name {
+    /* Changed the pixel with to leave more space for the file colunm, 48% instead of 50 to compromise for diff languages. */
+    width: 28%;
+    word-break: break-all;
+}
+
+#uploaded_files_table > tr > td:nth-of-type(1),
+.create-time {
+    /* Changed the pixel with to leave more space for the file colunm, 48% instead of 50 to compromise for diff languages. */
+    width: 28%;
+    word-break: break-all;
+}
+
+#uploaded_files_table > tr > td:nth-of-type(1),
+.upload-size {
+    /* Changed the pixel with to leave more space for the file colunm, 48% instead of 50 to compromise for diff languages. */
+    width: 18%;
+    word-break: break-all;
+}
+
 #linkifier-settings {
     #linkifier_pattern,
     #linkifier_format_string {
