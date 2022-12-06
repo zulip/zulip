@@ -86,7 +86,7 @@
 * [View and browse images](/help/view-and-browse-images)
 * [View messages sent by a user](/help/view-messages-sent-by-a-user)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
-* [Advanced search](/help/search-for-messages)
+* [Searching for messages](/help/search-for-messages)
 * [View message Markdown source](/help/view-the-markdown-source-of-a-message)
 * [View when message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View a message's edit history](/help/view-a-messages-edit-history)

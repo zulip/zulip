@@ -20,13 +20,15 @@ from analytics.views.activity_common import (
     make_table,
     realm_activity_link,
     realm_stats_link,
+    realm_support_link,
+    realm_url_link,
     remote_installation_stats_link,
 )
 from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Realm, UserActivityInterval, UserProfile, get_org_type_display_name
+from zerver.models import Realm, UserActivityInterval, get_org_type_display_name
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
@@ -187,19 +189,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     rows = dictfetchall(cursor)
     cursor.close()
 
-    # Fetch all the realm administrator users
-    realm_owners: Dict[str, List[str]] = defaultdict(list)
-    for up in UserProfile.objects.select_related("realm").filter(
-        role=UserProfile.ROLE_REALM_OWNER,
-        is_active=True,
-    ):
-        realm_owners[up.realm.string_id].append(up.delivery_email)
-
     for row in rows:
         row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
-        row["realm_owner_emails"] = ", ".join(realm_owners[row["string_id"]])
 
     # get messages sent per day
     counts = get_realm_day_counts()
@@ -255,7 +248,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     # formatting
     for row in rows:
+        row["realm_url"] = realm_url_link(row["string_id"])
         row["stats_link"] = realm_stats_link(row["string_id"])
+        row["support_link"] = realm_support_link(row["string_id"])
         row["string_id"] = realm_activity_link(row["string_id"])
 
     # Count active sites
@@ -281,9 +276,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         org_type_string="",
         effective_rate="",
         arr=total_arr,
+        realm_url="",
         stats_link="",
+        support_link="",
         date_created_day="",
-        realm_owner_emails="",
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
@@ -298,7 +294,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         dict(
             rows=rows,
             num_active_sites=num_active_sites,
-            utctime=now.strftime("%Y-%m-%d %H:%MZ"),
+            utctime=now.strftime("%Y-%m-%d %H:%M %Z"),
             billing_enabled=settings.BILLING_ENABLED,
         ),
     )

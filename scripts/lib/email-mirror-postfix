@@ -48,6 +48,7 @@ import posix
 import ssl
 import sys
 from configparser import RawConfigParser
+from typing import NoReturn
 from urllib.error import HTTPError
 from urllib.parse import urlencode, urljoin, urlparse
 from urllib.request import Request, urlopen
@@ -94,15 +95,15 @@ options = parser.parse_args()
 MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
 
 
-def process_response_error(e: HTTPError) -> None:
+def process_response_error(e: HTTPError) -> NoReturn:
     if e.code == 400:
         response_content = e.read()
         response_data = json.loads(response_content)
         print(response_data["msg"])
-        exit(posix.EX_NOUSER)
+        sys.exit(posix.EX_NOUSER)
     else:
         print("4.4.2 Connection dropped: Internal server error.")
-        exit(1)
+        sys.exit(1)
 
 
 def send_email_mirror(
@@ -115,12 +116,12 @@ def send_email_mirror(
 ) -> None:
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
-        exit(posix.EX_NOUSER)
+        sys.exit(posix.EX_NOUSER)
     msg_bytes = sys.stdin.buffer.read(MAX_ALLOWED_PAYLOAD + 1)
     if len(msg_bytes) > MAX_ALLOWED_PAYLOAD:
         # We're not at EOF, reject large mail.
         print("5.3.4 Message too big for system: Max size is 25MiB")
-        exit(posix.EX_DATAERR)
+        sys.exit(posix.EX_DATAERR)
 
     secrets_file = RawConfigParser()
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
@@ -128,7 +129,7 @@ def send_email_mirror(
         shared_secret = secrets_file.get("secrets", "shared_secret")
 
     if test:
-        exit(0)
+        return
 
     if not urlparse(host).scheme:
         config_file = get_config_file()

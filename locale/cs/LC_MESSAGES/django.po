@@ -245,11 +245,11 @@ msgstr "Chyba"
 
 #: templates/404.html:17
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "Metoda není povolena (405)"
 
 #: templates/404.html:19
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Stránka nebyla nalezena (404)"
 
 #: templates/404.html:22
 #, python-format

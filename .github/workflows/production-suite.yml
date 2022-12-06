@@ -47,6 +47,7 @@ jobs:
     # the top explain how to build and upload these images.
     # Ubuntu 20.04 ships with Python 3.8.10.
     container: zulip/ci:focal
+
     steps:
       - name: Add required permissions
         run: |
@@ -103,11 +104,22 @@ jobs:
           path: /tmp/production-build
           retention-days: 14
 
-      - name: Report status
-        if: failure()
-        env:
-          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
-        run: tools/ci/send-failure-message
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}
 
   production_install:
     # This job installs the server release tarball built above on a
@@ -160,7 +172,7 @@ jobs:
           chmod +x /tmp/production-pgroonga
           chmod +x /tmp/production-install
           chmod +x /tmp/production-verify
-          chmod +x /tmp/send-failure-message
+          chmod +x /tmp/generate-failure-message
 
       - name: Create cache directories
         run: |
@@ -197,11 +209,22 @@ jobs:
         if: ${{ matrix.os == 'focal' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
-      - name: Report status
-        if: failure()
-        env:
-          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
-        run: /tmp/send-failure-message
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}
 
   production_upgrade:
     # The production upgrade job starts with a container with a
@@ -254,7 +277,7 @@ jobs:
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade
           chmod +x /tmp/production-verify
-          chmod +x /tmp/send-failure-message
+          chmod +x /tmp/generate-failure-message
 
       - name: Create cache directories
         run: |
@@ -271,8 +294,19 @@ jobs:
         # - name: Verify install
         #   run: sudo /tmp/production-verify
 
-      - name: Report status
-        if: failure()
-        env:
-          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
-        run: /tmp/send-failure-message
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}

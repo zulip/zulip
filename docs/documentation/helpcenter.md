@@ -213,7 +213,7 @@ as guidance when documenting Zulip's features.
 When you refer to the features in the Zulip UI, you should **bold** the
 feature's name followed by the feature itself (e.g. **Settings** page,
 **Change password** button, **Email** field). No quotation marks should be
-used.
+used. Use **bold** for stream names, and quotation marks for topic names.
 
 Keep in mind that the UI may change — don’t describe it in more detail than
 is needed. **Never identify or refer to a button by its color.**

@@ -18,6 +18,30 @@ Hello, world.
             expected_message,
         )
 
+    def test_message_formatting(self) -> None:
+        tests = [
+            ("some *foo* word", "some **foo** word"),
+            ("*foo*", "**foo**"),
+            ("*foo* *bar*", "**foo** **bar**"),
+            ("*foo*a*bar*", "*foo*a*bar*"),
+            ("some _foo_ word", "some *foo* word"),
+        ]
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        for input_value, output_value in tests:
+            payload = {"text": input_value}
+            msg = self.send_webhook_payload(
+                self.test_user,
+                self.url,
+                payload,
+                content_type="application/json",
+            )
+            self.assert_stream_message(
+                message=msg,
+                stream_name=self.STREAM_NAME,
+                topic_name="(no topic)",
+                content=output_value,
+            )
+
     def test_null_message(self) -> None:
         self.check_webhook(
             "null_text",
@@ -167,7 +191,9 @@ Build bla bla succeeded
 **Requested by**: Some user
 **Duration**: 00:02:03
 **Build pipeline**: ConsumerAddressModule
+**Title with null value**
 **Title without value**
+Value with null title
 Value without title
         """.strip()
 
