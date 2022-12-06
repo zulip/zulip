@@ -333,7 +333,7 @@ export function register_click_handlers() {
         }
 
         if (sub.invite_only && people.is_my_user_id(target_user_id)) {
-            const new_hash = hash_util.stream_edit_url(sub,"");
+            const new_hash = hash_util.stream_edit_url(sub, "");
             hide_user_profile();
             browser_history.go_to_location(new_hash);
             return;

@@ -150,18 +150,20 @@ export function by_conversation_and_time_url(message) {
 
 export function stream_edit_url(sub, select_tab) {
     let selected_settings;
-    switch (select_tab){
-    case "general_settings":
-        selected_settings = "General";
-        break;
-    case "personal_settings":
-        selected_settings = "Personal";
-        break;
-    case "subscriber_settings":
-        selected_settings = "Subscribers";
-        break;
+    switch (select_tab) {
+        case "general_settings":
+            selected_settings = "General";
+            break;
+        case "personal_settings":
+            selected_settings = "Personal";
+            break;
+        case "subscriber_settings":
+            selected_settings = "Subscribers";
+            break;
     }
-    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}/${internal_url.encodeHashComponent(selected_settings)}`;
+    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(
+        sub.name,
+    )}/${internal_url.encodeHashComponent(selected_settings)}`;
     return hash;
 }
 
