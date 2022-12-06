@@ -359,8 +359,14 @@ td .button {
     width: 15px;
 }
 
+@media only screen and (max-width: 900px) {
+    .last_active {
+        display: none;
+    }
+}
+
 .email-col {
-    min-width: 50px;
+    min-width: 110px;
 }
 
 .user_role {
