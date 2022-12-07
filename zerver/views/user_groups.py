@@ -5,10 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from zerver.actions.message_send import (
-    do_send_messages,
-    internal_prep_private_message
-)
+from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
@@ -122,9 +119,7 @@ def update_user_group_backend(
 
 
 def send_messages_for_new_members(
-    acting_user: UserProfile,
-    recipient_users: List[UserProfile],
-    user_group_name: str
+    acting_user: UserProfile, recipient_users: List[UserProfile], user_group_name: str
 ) -> None:
 
     bots = {user.email: user.is_bot for user in recipient_users}
@@ -164,10 +159,7 @@ def send_messages_for_new_members(
 
 
 def add_members_to_group_backend(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    user_group_id: int,
-    members: Sequence[int]
+    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
     if not members:
         return json_success(request)
@@ -190,9 +182,7 @@ def add_members_to_group_backend(
     bulk_add_members_to_user_group(user_group, user_profile_ids)
 
     send_messages_for_new_members(
-        acting_user=acting_user,
-        recipient_users=user_profiles,
-        user_group_name=user_group_name
+        acting_user=acting_user, recipient_users=user_profiles, user_group_name=user_group_name
     )
 
     return json_success(request)
