@@ -452,10 +452,8 @@ input.recipient_box {
 }
 
 #stream_message_recipient_topic.recipient_box {
-    /* This width roughly corresponds to how long of a topic can appear in
-       the left sidebar with a single digit unread count without being
-       cut off. */
-    width: 175px;
+    /* This width roughly corresponds to the maximum length (60 characters) of the topic in the input box. */
+    width: 480px;
 }
 
 #private_message_recipient.recipient_box {
