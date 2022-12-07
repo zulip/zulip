@@ -832,7 +832,11 @@ a.compose_control_button.hide {
 
     #compose-textarea,
     #preview_message_area {
+        /* Setting height to 0 is necessary to make the flex+Simplebar
+           combination work correctly, without pushing the compose
+           controls offscreen when previewing a very tall message. */
         max-height: none !important;
+        height: 0;
         flex: 1;
     }
 }
