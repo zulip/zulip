@@ -1,8 +1,14 @@
-from typing import Sequence
+from typing import List, Sequence
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
+from zerver.actions.message_send import (
+    do_send_messages,
+    internal_prep_private_message
+)
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
@@ -15,6 +21,7 @@ from zerver.actions.user_groups import (
 )
 from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mention import MentionBackend
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
@@ -29,7 +36,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.lib.validator import check_bool, check_int, check_list
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_system_bot
 from zerver.views.streams import compose_views
 
 
@@ -114,8 +121,53 @@ def update_user_group_backend(
     return json_success(request, data)
 
 
+def send_messages_for_new_members(
+    acting_user: UserProfile,
+    recipient_users: List[UserProfile],
+    user_group_name: str
+) -> None:
+
+    bots = {user.email: user.is_bot for user in recipient_users}
+
+    realm = acting_user.realm
+    mention_backend = MentionBackend(realm.id)
+
+    notifications = []
+    if recipient_users:
+        for recipient_user in recipient_users:
+            if recipient_user.email == acting_user.email:
+                # Don't send a Zulip if you invited yourself.
+                continue
+            if bots[recipient_user.email]:
+                # Don't send invitation Zulips to bots.
+                continue
+
+            sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
+
+            with override_language(recipient_user.default_language):
+                message = _("{user_full_name} subscribed you to the group @{group_name}.").format(
+                    user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
+                    group_name=f"**{user_group_name}**",
+                )
+
+            notifications.append(
+                internal_prep_private_message(
+                    sender=sender,
+                    recipient_user=recipient_user,
+                    content=message,
+                    mention_backend=mention_backend,
+                )
+            )
+
+    if len(notifications) > 0:
+        do_send_messages(notifications, mark_as_read=[acting_user.id])
+
+
 def add_members_to_group_backend(
-    request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int,
+    members: Sequence[int]
 ) -> HttpResponse:
     if not members:
         return json_success(request)
@@ -123,6 +175,8 @@ def add_members_to_group_backend(
     user_group = access_user_group_by_id(user_group_id, user_profile)
     user_profiles = user_ids_to_users(members, user_profile.realm)
     existing_member_ids = set(get_direct_memberships_of_users(user_group, user_profiles))
+    acting_user = user_profile
+    user_group_name = user_group.name
 
     for user_profile in user_profiles:
         if user_profile.id in existing_member_ids:
@@ -134,6 +188,13 @@ def add_members_to_group_backend(
 
     user_profile_ids = [user.id for user in user_profiles]
     bulk_add_members_to_user_group(user_group, user_profile_ids)
+
+    send_messages_for_new_members(
+        acting_user=acting_user,
+        recipient_users=user_profiles,
+        user_group_name=user_group_name
+    )
+
     return json_success(request)
 
 
