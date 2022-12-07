@@ -87,7 +87,8 @@ export function initialize() {
             }
             const suggestions = search_suggestion.get_suggestions(base_query, query);
             // Update our global search_map hash
-            search_map = suggestions.lookup_table;
+            if (!suggestions.strings[0].includes("@"))
+                search_map = suggestions.lookup_table;
             return suggestions.strings;
         },
         fixed: true,
