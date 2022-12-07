@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import logging
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -40,7 +41,8 @@ if is_invalid_upgrade(current_version, new_version):
     )
     shutil.rmtree(extract_path)
     sys.exit(1)
-
+logging.info("Current version: " + current_version)
+logging.info("New version: " + new_version)
 shutil.move(glob.glob(os.path.join(extract_path, "zulip-server-*"))[0], deploy_path)
 os.rmdir(extract_path)
 overwrite_symlink("/etc/zulip/settings.py", os.path.join(deploy_path, "zproject/prod_settings.py"))
