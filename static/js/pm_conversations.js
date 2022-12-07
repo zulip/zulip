@@ -31,6 +31,31 @@ class RecentPrivateMessages {
     recent_message_ids = new FoldDict(); // key is user_ids_string
     recent_private_messages = [];
 
+    // taking care of conversation before any message has been sent
+
+    // remove convo if its max_message_id is null, i.e. it is
+    // a temporary convo
+    removeEmptyConvo(){
+        let convoDict = this._items.keys();
+        for (const {key} of convoDict) {
+            if (convoDict.get(key) == null){
+                convoDict.delete(key);
+                return false; //break, as to avoid loop error
+            }
+        }
+        //this.recent_private_messages.items()
+    }
+
+    initInsert(user_ids){
+        const user_ids_string = user_ids.join(",");
+        let conversation = {
+            user_ids_string,
+            max_message_id: null,
+        };
+        //adds to top of recent private messages list
+        this.recent_private_messages.unshift(conversation)
+      }
+
     insert(user_ids, message_id) {
         if (user_ids.length === 0) {
             // The server sends [] for self-PMs.

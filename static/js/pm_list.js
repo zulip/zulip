@@ -8,6 +8,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
+import * as pm_conversations from "./pm_conversations";
 
 let prior_dom;
 
@@ -74,6 +75,10 @@ function set_dom_to(new_dom) {
 }
 
 export function update_private_messages() {
+    console.log('we are updating private messages')
+    //deletes the temporary message
+    //pm_conversations.recent.removeEmptyConvo();
+
     if (private_messages_collapsed) {
         // In the collapsed state, we will still display the current
         // conversation, to preserve the UI invariant that there's
