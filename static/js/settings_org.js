@@ -994,7 +994,7 @@ export function register_save_discard_widget_handlers(
                 data.default_code_block_language = code_block_language_value;
                 break;
             }
-            case "org_join": {
+            case "join_settings": {
                 const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
                 switch (org_join_restrictions) {
                     case "only_selected_domain":
@@ -1082,7 +1082,7 @@ export function register_save_discard_widget_handlers(
             // The organization settings system has some coupled
             // fields that must be submitted together, which is
             // managed by the get_complete_data_for_subsection function.
-            const [, subsection_id] = /^org-submit-(.*)$/.exec($save_button.attr("id"));
+            const [, subsection_id] = /^org-(.*)$/.exec($subsection_elem.attr("id"));
             const subsection = subsection_id.replace(/-/g, "_");
             extra_data = get_complete_data_for_subsection(subsection);
         }

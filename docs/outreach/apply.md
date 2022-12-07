@@ -34,7 +34,7 @@ the following:
    venture, and effective communication is key to making it successful. Learn
    how to [ask great questions](../contributing/asking-great-questions.md), and
    explain your decisions clearly [in your commit
-   messages](../contributing/version-control.md#commit-discipline) and [on your
+   messages](../contributing/commit-discipline.md#commit-messages) and [on your
    pull requests](../contributing/reviewable-prs.md).
 
 3. **Improvement in response to feedback.** Don't worry if you make
@@ -92,9 +92,9 @@ As you are getting started on your first pull request:
   [graphical Git client](../git/setup.md#get-a-graphical-client).
 
 - Construct [coherent, mergeable
-  commits](../contributing/version-control.md#commit-discipline), with clear
+  commits](../contributing/commit-discipline.md), with clear
   commit messages that follow the [Zulip commit style
-  guide](../contributing/version-control.md#commit-messages). More broadly, clear
+  guide](../contributing/commit-discipline.md). More broadly, clear
   communication on your pull request will make your work stand out.
 
 - Carefully follow our [guide to reviewing your own
