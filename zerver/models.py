@@ -109,6 +109,7 @@ from zerver.lib.validator import (
     check_short_string,
     check_url,
     validate_select_field,
+    check_phone_number,
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
@@ -4502,6 +4503,7 @@ class CustomProfileField(models.Model):
     USER = 6
     EXTERNAL_ACCOUNT = 7
     PRONOUNS = 8
+    PHONE_NUMBER = 9
 
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. SELECT require field_data, USER require
@@ -4534,6 +4536,7 @@ class CustomProfileField(models.Model):
             "EXTERNAL_ACCOUNT",
         ),
         (PRONOUNS, gettext_lazy("Pronouns"), check_short_string, str, "PRONOUNS"),
+        (PHONE_NUMBER, gettext_lazy("Phone number"), check_phone_number, str, "PHONE_NUMBER"),
     ]
 
     ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]

@@ -114,8 +114,6 @@ def check_phone_number(var_name: str, val: object) -> str:
 
 
 def check_short_string(var_name: str, val: object) -> str:
-    if (var_name.lower().strip() == 'phone number'):
-        check_phone_number(var_name, val)
     return check_capped_string(50)(var_name, val)
 
 

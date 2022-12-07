@@ -22,6 +22,8 @@
         <span class="remove_date"><i class="fa fa-close"></i></span>
         {{else if is_url_field }}
         <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
+        {{else if is_phone_number_field }}
+        <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{else if is_pronouns_field}}
         <input class="custom_user_field_value pronouns_type_field" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{else}}

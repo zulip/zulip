@@ -150,6 +150,7 @@ export function append_custom_profile_fields(element_id, user_id) {
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
         [all_field_types.URL.id, "url"],
+        [all_field_types.PHONE_NUMBER.id, "text"],
         [all_field_types.PRONOUNS.id, "text"],
     ]);
 
@@ -182,6 +183,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
             is_url_field: field.type === all_field_types.URL.id,
+            is_phone_number_field: field.type === all_field_types.PHONE_NUMBER.id,
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
             is_select_field,
             field_choices,

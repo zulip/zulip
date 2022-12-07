@@ -152,6 +152,10 @@ export function get_custom_profile_field_data(user, field, field_types, dateForm
             profile_field.subtype = profile_field.field_data.subtype;
             profile_field.link = settings_profile_fields.get_external_account_link(profile_field);
             break;
+        case field_types.PHONE_NUMBER.id:
+            profile_field.value = field_value.value;
+            profile_field.rendered_value = field_value.rendered_value;
+            break;
         default:
             profile_field.value = field_value.value;
     }
