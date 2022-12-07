@@ -134,6 +134,9 @@ lxml
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
 
+# Needed for phone number validation
+phonenumbers
+
 # Needed for processing payments (in corporate)
 stripe
 

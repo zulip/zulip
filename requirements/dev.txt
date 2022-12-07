@@ -1262,6 +1262,10 @@ pexpect==4.8.0 \
     --hash=sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937 \
     --hash=sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c
     # via ipython
+phonenumbers==8.13.1 \
+    --hash=sha256:07a95c2f178687fd1c3f722cf792b3d33e3a225ae71577e500c99b28544cd6d0 \
+    --hash=sha256:7cadfe900e833857500b7bafa3e5a7eddc3263eb66b66a767870b33e44665f92
+    # via -r requirements/common.in
 phonenumberslite==8.13.1 \
     --hash=sha256:0483678b5be31de9e99af2dadcc910d7fcf8f8f9047f595ee1ddee242d1b9c26 \
     --hash=sha256:9cab2ecf5d8d3bc457d7b569706e1d21fd3dc7d48a17d6abb1b7219f1b01ab2a
