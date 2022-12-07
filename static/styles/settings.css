@@ -436,10 +436,6 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.org-settings-form .organization-submission {
-    margin-top: 0;
-}
-
 #id_org_profile_preview {
     margin-bottom: 20px;
     display: inline-flex;
