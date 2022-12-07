@@ -83,7 +83,10 @@ docs_without_macros = [
 @items_tuple_to_dict
 @register.filter(name="render_markdown_path", is_safe=True)
 def render_markdown_path(
-    markdown_file_path: str, context: Optional[Dict[str, Any]] = None, pure_markdown: bool = False
+    markdown_file_path: str,
+    context: Optional[Dict[str, Any]] = None,
+    pure_markdown: bool = False,
+    integration_doc: bool = False,
 ) -> str:
     """Given a path to a Markdown file, return the rendered HTML.
 
@@ -127,10 +130,6 @@ def render_markdown_path(
             zerver.lib.markdown.help_relative_links.makeExtension(),
             zerver.lib.markdown.help_emoticon_translations_table.makeExtension(),
         ]
-    if md_macro_extension is None:
-        md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path="templates/zerver/help/include/"
-        )
     if "api_url" in context:
         # We need to generate the API code examples extension each
         # time so the `api_url` config parameter can be set dynamically.
@@ -146,6 +145,14 @@ def render_markdown_path(
     else:
         extensions = md_extensions
 
+    if integration_doc:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
+            base_path="templates/zerver/integrations/include/"
+        )
+    else:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
+            base_path="templates/zerver/help/include/"
+        )
     if not any(doc in markdown_file_path for doc in docs_without_macros):
         extensions = [md_macro_extension, *extensions]
 
