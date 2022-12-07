@@ -5,6 +5,7 @@ import render_message_sent_banner from "../templates/compose_banner/message_sent
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as compose_banner from "./compose_banner";
 import * as favicon from "./favicon";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -182,8 +183,7 @@ export function notify_above_composebox(
         }),
     );
     clear_compose_notifications();
-    $("#out-of-view-notification").append($notification);
-    $("#out-of-view-notification").show();
+    $("#compose_banners").append($notification);
 }
 
 if (window.electron_bridge !== undefined) {
@@ -620,7 +620,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
                 const link_text = $t({defaultMessage: "Scroll down to view your message."});
                 notify_above_composebox(
                     banner_text,
-                    "compose_notification_scroll_to_message",
+                    compose_banner.CLASSNAMES.sent_scroll_to_view,
                     // Don't display a URL on hover for the "Scroll to bottom" link.
                     null,
                     link_msg_id,
@@ -634,8 +634,6 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
             continue;
         }
 
-        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
-        const classname = "compose_notification_narrow_by_topic";
         const link_text = $t(
             {defaultMessage: "Narrow to {message_recipient}"},
             {message_recipient: get_message_header(message)},
@@ -643,8 +641,8 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         notify_above_composebox(
             banner_text,
-            classname,
-            above_composebox_narrow_url,
+            compose_banner.CLASSNAMES.narrow_to_recipient,
+            get_above_composebox_narrow_url(message),
             link_msg_id,
             link_text,
         );
@@ -678,7 +676,7 @@ export function notify_messages_outside_current_search(messages) {
         );
         notify_above_composebox(
             $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
-            "compose_notification_narrow_by_topic",
+            compose_banner.CLASSNAMES.narrow_to_recipient,
             above_composebox_narrow_url,
             message.id,
             link_text,
@@ -687,9 +685,7 @@ export function notify_messages_outside_current_search(messages) {
 }
 
 export function clear_compose_notifications() {
-    $("#out-of-view-notification").empty();
-    $("#out-of-view-notification").stop(true, true);
-    $("#out-of-view-notification").hide();
+    compose_banner.clear_message_sent_banners();
     scroll_to_message_banner_message_id = null;
 }
 
@@ -699,7 +695,7 @@ export function reify_message_id(opts) {
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
-    for (const e of $("#out-of-view-notification a")) {
+    for (const e of $("#compose_banners a")) {
         const $elem = $(e);
         const message_id = $elem.data("message-id");
 
@@ -711,25 +707,28 @@ export function reify_message_id(opts) {
 }
 
 export function register_click_handlers() {
-    $("#out-of-view-notification").on("click", ".compose_notification_narrow_by_topic", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        narrow.by_topic(message_id, {trigger: "compose_notification"});
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("#out-of-view-notification").on("click", ".compose_notification_scroll_to_message", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        message_lists.current.select_id(message_id);
-        navigate.scroll_to_selected();
-        clear_compose_notifications();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("#out-of-view-notification").on("click", ".out-of-view-notification-close", (e) => {
-        clear_compose_notifications();
-        e.stopPropagation();
-        e.preventDefault();
-    });
+    $("#compose_banners").on(
+        "click",
+        ".narrow_to_recipient .above_compose_banner_action_link",
+        (e) => {
+            const message_id = $(e.currentTarget).data("message-id");
+            narrow.by_topic(message_id, {trigger: "compose_notification"});
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
+    $("#compose_banners").on(
+        "click",
+        ".sent_scroll_to_view .above_compose_banner_action_link",
+        (e) => {
+            const message_id = $(e.currentTarget).data("message-id");
+            message_lists.current.select_id(message_id);
+            navigate.scroll_to_selected();
+            clear_compose_notifications();
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
 }
 
 export function handle_global_notification_updates(notification_name, setting) {

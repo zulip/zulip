@@ -320,6 +320,24 @@
         padding: 12px 10px;
     }
 
+    &.success {
+        background-color: hsl(147, 43%, 92%);
+        border: 1px solid hsla(147, 57%, 25%, 0.4);
+        color: hsl(147, 57%, 25%);
+
+        .compose_banner_close_button {
+            color: hsla(147, 57%, 25%, 0.5);
+
+            &:hover {
+                color: hsl(147, 57%, 25%);
+            }
+
+            &:active {
+                color: hsla(147, 57%, 25%, 0.75);
+            }
+        }
+    }
+
     &.warning {
         background-color: hsl(50, 75%, 92%);
         border-color: hsla(38, 44%, 27%, 0.4);
@@ -412,31 +430,6 @@ div[id^="message-edit-send-status"],
 .compose-send-status-close:hover {
     cursor: pointer;
     opacity: 0.4;
-}
-
-#out-of-view-notification {
-    position: relative;
-    margin-bottom: 6px;
-
-    background-color: hsla(152, 51%, 63%, 0.25);
-    border: 1px solid hsla(0, 0%, 0%, 0.1);
-    border-radius: 4px;
-
-    .close {
-        position: absolute;
-        right: 8px;
-        top: 4px;
-        font-size: 17px;
-        font-weight: bold;
-        color: hsl(0, 0%, 0%);
-        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-        opacity: 0.2;
-    }
-}
-
-.compose-notifications-content {
-    padding: 4px 22px;
-    text-align: center;
 }
 
 .composition-area {
