@@ -87,6 +87,7 @@ def render_markdown_path(
     context: Optional[Dict[str, Any]] = None,
     pure_markdown: bool = False,
     integration_doc: bool = False,
+    help_center: bool = False,
 ) -> str:
     """Given a path to a Markdown file, return the rendered HTML.
 
@@ -149,9 +150,13 @@ def render_markdown_path(
         md_macro_extension = zerver.lib.markdown.include.makeExtension(
             base_path="templates/zerver/integrations/include/"
         )
-    else:
+    elif help_center:
         md_macro_extension = zerver.lib.markdown.include.makeExtension(
             base_path="templates/zerver/help/include/"
+        )
+    else:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
+            base_path="templates/zerver/api/include/"
         )
     if not any(doc in markdown_file_path for doc in docs_without_macros):
         extensions = [md_macro_extension, *extensions]
