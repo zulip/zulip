@@ -87,8 +87,9 @@ export function initialize() {
             }
             const suggestions = search_suggestion.get_suggestions(base_query, query);
             // Only updates look up table if the string is not an email
-            if (!suggestions.strings[0].includes("@"))
+            if (!suggestions.strings[0].includes("@")) {
                 search_map = suggestions.lookup_table;
+            }
             return suggestions.strings;
         },
         fixed: true,
