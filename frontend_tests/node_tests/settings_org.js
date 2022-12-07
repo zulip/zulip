@@ -57,7 +57,7 @@ test("unloaded", () => {
 function createSaveButtons(subsection) {
     const $stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
     const $save_button_controls = $(".save-button-controls");
-    const $stub_save_button = $(`#org-submit-${CSS.escape(subsection)}`);
+    const $stub_save_button = $(".save-discard-widget-button.save-button");
     const $stub_discard_button = $(`#org-discard-${CSS.escape(subsection)}`);
     const $stub_save_button_text = $(".save-discard-widget-button-text");
     $stub_save_button_header.set_find_results(
@@ -127,10 +127,11 @@ function test_submit_settings_form(override, submit_form) {
     });
 
     let subsection = "other-permissions";
-    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
+    ev.currentTarget = ".save-discard-widget-button.save-button";
     let stubs = createSaveButtons(subsection);
     let $save_button = stubs.$save_button;
-    $save_button.attr("id", `org-submit-${subsection}`);
+    let $save_button_header = stubs.$save_button_header;
+    $save_button_header.attr("id", `org-${subsection}`);
 
     $("#id_realm_waiting_period_threshold").val(10);
 
@@ -195,10 +196,11 @@ function test_submit_settings_form(override, submit_form) {
     assert.deepEqual(data, expected_value);
 
     subsection = "user-defaults";
-    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
+    ev.currentTarget = ".save-discard-widget-button.save-button";
     stubs = createSaveButtons(subsection);
     $save_button = stubs.$save_button;
-    $save_button.attr("id", `org-submit-${subsection}`);
+    $save_button_header = stubs.$save_button_header;
+    $save_button_header.attr("id", `org-${subsection}`);
 
     const $realm_default_language_elem = $("#id_realm_default_language");
     $realm_default_language_elem.val("en");
@@ -224,9 +226,15 @@ function test_submit_settings_form(override, submit_form) {
 }
 
 function test_change_save_button_state() {
-    const {$save_button_controls, $save_button_text, $save_button, $discard_button, props} =
-        createSaveButtons("msg-editing");
-    $save_button.attr("id", "org-submit-msg-editing");
+    const {
+        $save_button_controls,
+        $save_button_text,
+        $save_button,
+        $save_button_header,
+        $discard_button,
+        props,
+    } = createSaveButtons("msg-editing");
+    $save_button_header.attr("id", "org-msg-editing");
 
     {
         settings_org.change_save_button_state($save_button_controls, "unsaved");
