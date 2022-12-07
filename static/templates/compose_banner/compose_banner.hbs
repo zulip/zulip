@@ -1,5 +1,5 @@
 <div
-  class="compose_banner {{banner_type}} {{classname}}"
+  class="compose_banner composebox_banner {{banner_type}} {{classname}}"
   {{#if user_id}}data-user-id="{{user_id}}"{{/if}}
   {{#if stream_id}}data-stream-id="{{stream_id}}"{{/if}}
   {{#if topic_name}}data-topic-name="{{topic_name}}"{{/if}}>
@@ -9,11 +9,11 @@
     <div class="banner_content">{{> @partial-block}}</div>
     {{/if}}
     {{#if button_text}}
-    <button class="compose_banner_action_button" >{{button_text}}</button>
+    <button class="composebox_banner_action_button" >{{button_text}}</button>
     {{/if}}
     {{#if hide_close_button}}
     {{!-- hide_close_button is null by default, and false if explicitly set as false. --}}
     {{else}}
-    <a role="button" class="zulip-icon zulip-icon-close compose_banner_close_button"></a>
+    <a role="button" class="zulip-icon zulip-icon-close composebox_banner_close_button"></a>
     {{/if}}
 </div>

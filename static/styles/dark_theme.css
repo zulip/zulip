@@ -171,13 +171,13 @@
         opacity: 0.4;
     }
 
-    .compose_banner {
+    .composebox_banner {
         &.warning {
             background-color: hsl(53, 100%, 11%);
             border-color: hsla(38, 44%, 60%, 0.4);
             color: hsl(50, 45%, 61%);
 
-            .compose_banner_close_button {
+            .composebox_banner_close_button {
                 color: hsl(50, 45%, 61%, 0.5);
 
                 &:hover {
@@ -189,7 +189,7 @@
                 }
             }
 
-            .compose_banner_action_button {
+            .composebox_banner_action_button {
                 background-color: hsla(50, 45%, 61%, 0.1);
                 color: inherit;
 
@@ -208,7 +208,7 @@
             border-color: hsla(3, 73%, 74%, 0.4);
             color: hsl(3, 73%, 74%);
 
-            .compose_banner_close_button {
+            .composebox_banner_close_button {
                 color: hsla(3, 73%, 74%, 0.5);
 
                 &:hover {
@@ -220,7 +220,7 @@
                 }
             }
 
-            .compose_banner_action_button {
+            .composebox_banner_action_button {
                 background-color: hsla(3, 73%, 74%, 0.1);
                 color: inherit;
 

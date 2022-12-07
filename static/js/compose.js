@@ -451,7 +451,7 @@ export function initialize() {
 
     $("#compose_banners").on(
         "click",
-        `.${compose_banner.CLASSNAMES.wildcard_warning} .compose_banner_action_button`,
+        `.${compose_banner.CLASSNAMES.wildcard_warning} .composebox_banner_action_button`,
         (event) => {
             event.preventDefault();
             compose_validate.clear_wildcard_warnings();
@@ -463,7 +463,7 @@ export function initialize() {
     const user_not_subscribed_classname = `.${compose_banner.CLASSNAMES.user_not_subscribed}`;
     $("#compose_banners").on(
         "click",
-        `${user_not_subscribed_classname} .compose_banner_action_button`,
+        `${user_not_subscribed_classname} .composebox_banner_action_button`,
         (event) => {
             event.preventDefault();
 
@@ -479,7 +479,7 @@ export function initialize() {
 
     $("#compose_banners").on(
         "click",
-        `.${compose_banner.CLASSNAMES.topic_resolved} .compose_banner_action_button`,
+        `.${compose_banner.CLASSNAMES.topic_resolved} .composebox_banner_action_button`,
         (event) => {
             event.preventDefault();
 
@@ -496,7 +496,7 @@ export function initialize() {
 
     $("#compose_banners").on(
         "click",
-        `.${compose_banner.CLASSNAMES.recipient_not_subscribed} .compose_banner_action_button`,
+        `.${compose_banner.CLASSNAMES.recipient_not_subscribed} .composebox_banner_action_button`,
         (event) => {
             event.preventDefault();
 
@@ -534,7 +534,7 @@ export function initialize() {
         const classname_selector = `.${classname}`;
         $("#compose_banners").on(
             "click",
-            `${classname_selector} .compose_banner_close_button`,
+            `${classname_selector} .composebox_banner_close_button`,
             (event) => {
                 event.preventDefault();
                 $(event.target).parents(classname_selector).remove();

@@ -277,7 +277,7 @@
     display: none;
 }
 
-.compose_banner {
+.composebox_banner {
     margin-bottom: 20px;
     border-radius: 5px;
     padding-right: 11px;
@@ -298,7 +298,7 @@
         flex-grow: 1;
     }
 
-    .compose_banner_action_button {
+    .composebox_banner_action_button {
         border: none;
         border-radius: 4px;
         padding: 5px 10px;
@@ -310,7 +310,7 @@
         white-space: nowrap;
     }
 
-    .compose_banner_close_button {
+    .composebox_banner_close_button {
         font-size: 17px;
         text-decoration: none;
         margin-left: 10px;
@@ -323,7 +323,7 @@
         border-color: hsla(38, 44%, 27%, 0.4);
         color: hsl(38, 44%, 27%);
 
-        .compose_banner_close_button {
+        .composebox_banner_close_button {
             color: hsla(38, 44%, 27%, 0.5);
 
             &:hover {
@@ -335,7 +335,7 @@
             }
         }
 
-        .compose_banner_action_button {
+        .composebox_banner_action_button {
             background-color: hsla(38, 44%, 27%, 0.1);
             color: inherit;
 
@@ -354,7 +354,7 @@
         border-color: hsla(3, 57%, 33%, 0.4);
         color: hsl(4, 58%, 33%);
 
-        .compose_banner_close_button {
+        .composebox_banner_close_button {
             color: hsla(4, 58%, 33%, 0.5);
 
             &:hover {
@@ -366,7 +366,7 @@
             }
         }
 
-        .compose_banner_action_button {
+        .composebox_banner_action_button {
             background-color: hsla(3, 57%, 33%, 0.1);
             color: inherit;
 

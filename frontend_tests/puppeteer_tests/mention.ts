@@ -30,7 +30,7 @@ async function test_mention(page: Page): Promise<void> {
     await page.click("#compose-send-button");
 
     await page.waitForSelector("#compose_banners .wildcard_warning", {visible: true});
-    await page.click("#compose_banners .wildcard_warning .compose_banner_action_button");
+    await page.click("#compose_banners .wildcard_warning .composebox_banner_action_button");
     await page.waitForSelector(".wildcard_warning", {hidden: true});
 
     await common.check_messages_sent(page, "zhome", [["Verona > Test mention all", ["@all"]]]);
