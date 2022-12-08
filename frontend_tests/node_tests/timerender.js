@@ -376,13 +376,13 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({minutes: -30}, $t({defaultMessage: "30 minutes ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "an hour ago"}));
 
     assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
     assert_same({hours: -20}, $t({defaultMessage: "20 hours ago"}));
 
-    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "yesterday"}));
 
     assert_same({hours: -48}, $t({defaultMessage: "2 days ago"}));
 
@@ -404,13 +404,13 @@ run_test("last_seen_status_from_date", () => {
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);
 
-    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "an hour ago"}));
 
     assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
     assert_same({hours: -12}, $t({defaultMessage: "12 hours ago"}));
 
-    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "yesterday"}));
 });
 
 run_test("set_full_datetime", () => {

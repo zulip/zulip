@@ -120,13 +120,13 @@ export function last_seen_status_from_date(
 
     if (hours < 24) {
         if (hours === 1) {
-            return $t({defaultMessage: "An hour ago"});
+            return $t({defaultMessage: "an hour ago"});
         }
         return $t({defaultMessage: "{hours} hours ago"}, {hours});
     }
 
     if (days_old === 1) {
-        return $t({defaultMessage: "Yesterday"});
+        return $t({defaultMessage: "yesterday"});
     }
 
     if (days_old < 90) {

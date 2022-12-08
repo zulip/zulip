@@ -321,7 +321,7 @@ test("title_data", () => {
 
     expected_data = {
         first_line: "Old User",
-        second_line: "translated: Last active: translated: More than 2 weeks ago",
+        second_line: "translated: Active translated: more than 2 weeks ago",
         third_line: "",
         show_you: false,
     };
@@ -457,12 +457,12 @@ test("user_last_seen_time_status", ({override}) => {
     page_params.realm_is_zephyr_mirror_realm = true;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Last active: translated: Unknown",
+        "translated: Active translated: Unknown",
     );
     page_params.realm_is_zephyr_mirror_realm = false;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Last active: translated: More than 2 weeks ago",
+        "translated: Active translated: more than 2 weeks ago",
     );
 
     presence.presence_info.set(old_user.user_id, {last_active: 1526137743});
@@ -474,7 +474,7 @@ test("user_last_seen_time_status", ({override}) => {
 
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Last active: May 12",
+        "translated: Active May 12",
     );
 
     set_presence(selma.user_id, "idle");

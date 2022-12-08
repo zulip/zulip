@@ -120,11 +120,11 @@ export function user_last_seen_time_status(user_id) {
         //
         // We give this vague status for such users; we will get to
         // delete this code when we finish rewriting the presence API.
-        last_seen = $t({defaultMessage: "More than 2 weeks ago"});
+        last_seen = $t({defaultMessage: "more than 2 weeks ago"});
     } else {
         last_seen = timerender.last_seen_status_from_date(last_active_date);
     }
-    return $t({defaultMessage: "Last active: {last_seen}"}, {last_seen});
+    return $t({defaultMessage: "Active {last_seen}"}, {last_seen});
 }
 
 export function info_for(user_id) {

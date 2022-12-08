@@ -125,6 +125,10 @@ IGNORED_PHRASES = [
     r"he/him",
     r"she/her",
     r"they/them",
+    # Used to show user activity status
+    r"an hour ago",
+    r"more than 2 weeks ago",
+    r"yesterday",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
