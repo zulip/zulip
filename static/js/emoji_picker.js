@@ -21,6 +21,8 @@ import * as spectators from "./spectators";
 import * as ui from "./ui";
 import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
+import * as customize from "./emoji_customize";
+import { rebuild } from "./topic_list";
 
 // Emoji picker is of fixed width and height. Update these
 // whenever these values are changed in `reactions.css`.
@@ -43,10 +45,11 @@ let search_is_active = false;
 const search_results = [];
 let section_head_offsets = [];
 let edit_message_id = null;
+let picking_custom = false;
 
 const EMOJI_CATEGORIES = [
     {name: "Popular", icon: "fa-star-o"},
-    {name: "Customized", icon: "fa-star-o"},
+    {name: "Customized", icon: "fa-thumbs-o-up"},
     {name: "Smileys & Emotion", icon: "fa-smile-o"},
     {name: "People & Body", icon: "fa-thumbs-o-up"},
     {name: "Animals & Nature", icon: "fa-leaf"},
@@ -154,14 +157,7 @@ export function rebuild_catalog() {
     }
     catalog.set("Popular", popular);
 
-    const customized = [
-        "1f44d", // +1
-        "1f389", // tada
-        "1f642", // smile
-        "2764", // heart
-        "1f6e0", // working_on_it
-        "1f419", // frog
-    ];
+    const customized = customize.customized_emoji();
 
     const newcustoms = [];
     // catalog.set("Customized", customized);
@@ -724,24 +720,54 @@ export function register_click_handlers() {
         toggle_reaction(emoji_name, e);
     });
 
+    // MARK THIS CODE
     $(document).on("click", ".emoji-popover-emoji.composition", function (e) {
         const emoji_name = $(this).attr("data-emoji-name");
         const emoji_text = ":" + emoji_name + ":";
-        // The following check will return false if emoji was not selected in
-        // message edit form.
-        if (edit_message_id !== null) {
-            const $edit_message_textarea = $(
-                `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
-            );
-            // Assign null to edit_message_id so that the selection of emoji in new
-            // message composition form works correctly.
-            edit_message_id = null;
-            compose_ui.insert_syntax_and_focus(emoji_text, $edit_message_textarea);
+        const emoji_id = $(this).attr("data-emoji-id");
+        
+        console.log("ID: " + emoji_id);
+        if(picking_custom == true){
+            console.log("picking_custom: " + picking_custom);
+            const codepoint = emoji.get_emoji_codepoint(emoji_name);
+            customize.update_customized(codepoint);
+            rebuild_catalog();
+            show_emoji_catalog();
+            picking_custom = false;
         } else {
-            compose_ui.insert_syntax_and_focus(emoji_text);
+            if(emoji_id == "emoji_picker_emoji,1,5"){
+                picking_custom = true;
+                // toggle_emoji_popover(compose_click_target);
+                // const compose_click_target = compose_ui.get_compose_click_target(e);
+                // $(this).closest(".message_row").toggleClass("has_popover has_emoji_popover");
+                // const message_id = $(e.currentTarget).data("message-id");
+                // console.log("message_id: " + message_id);
+                // // const elem = $(".selected_message .actions_hover")[0];
+                // const elem = $(this).attr("data-emoji-id");
+                // console.log("elem: " + elem);
+                // build_emoji_popover(elem, message_id);
+                // build_emoji_popover(compose_click_target);
+            }
+            // The following check will return false if emoji was not selected in
+            // message edit form.
+            else if (edit_message_id !== null) {
+                const $edit_message_textarea = $(
+                    `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+                );
+                // Assign null to edit_message_id so that the selection of emoji in new
+                // message composition form works correctly.
+                edit_message_id = null;
+                compose_ui.insert_syntax_and_focus(emoji_text, $edit_message_textarea);
+                e.stopPropagation();
+                hide_emoji_popover();
+            } else {
+                compose_ui.insert_syntax_and_focus(emoji_text);
+                e.stopPropagation();
+                hide_emoji_popover();
+            }
         }
-        e.stopPropagation();
-        hide_emoji_popover();
+        
+        
     });
 
     $("body").on("click", ".emoji_map", (e) => {
@@ -804,6 +830,7 @@ export function register_click_handlers() {
         reset_emoji_showcase();
     });
 
+    // MARK THIS CODE
     $("body").on("mouseenter", ".emoji-popover-emoji", (e) => {
         const emoji_id = $(e.currentTarget).data("emoji-id");
         const emoji_coordinates = get_emoji_coordinates(emoji_id);
