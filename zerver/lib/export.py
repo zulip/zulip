@@ -56,6 +56,7 @@ from zerver.models import (
     Recipient,
     Service,
     Stream,
+    StreamTopic,
     Subscription,
     UserActivity,
     UserActivityInterval,
@@ -154,6 +155,7 @@ ALL_ZULIP_TABLES = {
     "zerver_scheduledmessagenotificationemail",
     "zerver_service",
     "zerver_stream",
+    "zerver_streamtopic",
     "zerver_submessage",
     "zerver_subscription",
     "zerver_useractivity",
@@ -846,6 +848,13 @@ def get_realm_config() -> Config:
         exclude=["email_token"],
         normal_parent=realm_config,
         include_rows="realm_id__in",
+    )
+
+    Config(
+        table="zerver_streamtopic",
+        model=StreamTopic,
+        normal_parent=stream_config,
+        include_rows="stream_id__in",
     )
 
     stream_recipient_config = Config(
