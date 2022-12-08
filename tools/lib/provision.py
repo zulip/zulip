@@ -109,7 +109,6 @@ COMMON_DEPENDENCIES = [
     "ca-certificates",  # Explicit dependency in case e.g. curl is already installed
     "puppet",  # Used by lint (`puppet parser validate`)
     "gettext",  # Used by makemessages i18n
-    "transifex-client",  # Needed to sync translations from transifex
     "curl",  # Used for testing our API documentation
     "moreutils",  # Used for sponge command
     "unzip",  # Needed for Slack import
@@ -428,6 +427,9 @@ def main(options: argparse.Namespace) -> NoReturn:
     run_as_root(["tools/setup/install-shellcheck"])
     # Install shfmt.
     run_as_root(["tools/setup/install-shfmt"])
+
+    # Install transifex-cli.
+    run_as_root([*proxy_env, "tools/setup/install-transifex-cli"])
 
     setup_venvs.main()
 
