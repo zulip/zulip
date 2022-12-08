@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import glob
+import logging
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
-import logging
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
