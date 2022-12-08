@@ -39,10 +39,18 @@ preparing a new release.
   release, on Ubuntu 20.04 or 22.04.
 - Repeat until release is ready.
 - Send around the Paper blog post draft for review.
-- Move the blog post draft to Ghost:
-  - Use "··· > Export > Markdown" to get a pretty good markdown conversion, then insert that as a Markdown block in Ghost.
+- Move the blog post draft to Astro:
+  - Use "··· > Export > Markdown" to get a pretty good Markdown
+    conversion, and save it in `src/posts` with a filename appropriate
+    for a URL slug.
+  - Add the needed YAML frontmatter.
+  - Move any images into `public` and update their references.
   - Proofread, especially for formatting.
-  - Tag the post with "Release announcements" _first_, then any other tags (e.g. "Security").
+  - Tag the post with "Release announcements" _first_, then any other
+    tags (e.g. "Security").
+  - If the draft post should remain secret until release, avoid using
+    a guessable Git branch name for the pull request (the deployment
+    preview URL is based on the branch name).
 
 ### Executing the release
 
