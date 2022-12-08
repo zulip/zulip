@@ -1,6 +1,6 @@
 from typing import Mapping, Optional, Tuple
 
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.validator import WildValue, check_string
 
 SUPPORTED_BOARD_ACTIONS = [
@@ -43,7 +43,7 @@ def get_proper_action(payload: WildValue, action_type: Optional[str]) -> Optiona
             return None
         elif data["old"]["name"].tame(check_string):
             return CHANGE_NAME
-        raise UnsupportedWebhookEventType(action_type)
+        raise UnsupportedWebhookEventTypeError(action_type)
     return action_type
 
 

@@ -17,9 +17,9 @@ from django.test import override_settings
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
-from zerver.lib.rate_limiter import RateLimiterLockingException
+from zerver.lib.rate_limiter import RateLimiterLockingError
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
-from zerver.lib.send_email import EmailNotDeliveredException, FromAddress
+from zerver.lib.send_email import EmailNotDeliveredError, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import (
@@ -96,29 +96,6 @@ class WorkerTest(ZulipTestCase):
         )
         fake_client.enqueue("user_activity", data)
 
-        # The block below adds an event using the old format,
-        # having the client name instead of id, to test the queue
-        # worker handles it correctly. That compatibility code can
-        # be deleted in a later release, and this test should then be cleaned up.
-        data_old_format = dict(
-            user_profile_id=user.id,
-            client="ios",
-            time=time.time(),
-            query="send_message",
-        )
-        fake_client.enqueue("user_activity", data_old_format)
-
-        with simulated_queue_client(fake_client):
-            worker = queue_processors.UserActivityWorker()
-            worker.setup()
-            worker.start()
-            activity_records = UserActivity.objects.filter(
-                user_profile=user.id,
-                client=get_client("ios"),
-            )
-            self.assert_length(activity_records, 1)
-            self.assertEqual(activity_records[0].count, 2)
-
         # Now process the event a second time and confirm count goes
         # up. Ideally, we'd use an event with a slightly newer
         # time, but it's not really important.
@@ -132,7 +109,7 @@ class WorkerTest(ZulipTestCase):
                 client=get_client("ios"),
             )
             self.assert_length(activity_records, 1)
-            self.assertEqual(activity_records[0].count, 3)
+            self.assertEqual(activity_records[0].count, 2)
 
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -455,23 +432,6 @@ class WorkerTest(ZulipTestCase):
                     * 2,
                 )
 
-            # This verifies the compatibility code for the `message_id` -> `message_ids`
-            # conversion for "remove" events.
-            with patch(
-                "zerver.worker.queue_processors.handle_remove_push_notification"
-            ) as mock_handle_remove, patch(
-                "zerver.worker.queue_processors.initialize_push_notifications"
-            ):
-                event_new = dict(
-                    user_profile_id=10,
-                    message_id=33,
-                    type="remove",
-                )
-                fake_client.enqueue("missedmessage_mobile_notifications", event_new)
-                worker.start()
-                # The `message_id` field should have been converted to a list with a single element.
-                mock_handle_remove.assert_called_once_with(10, [33])
-
     @patch("zerver.worker.queue_processors.mirror_email")
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
         fake_client = FakeClient()
@@ -547,10 +507,10 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
-                # If RateLimiterLockingException is thrown, we rate-limit the new message:
+                # If RateLimiterLockingError is thrown, we rate-limit the new message:
                 with patch(
                     "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
-                    side_effect=RateLimiterLockingException,
+                    side_effect=RateLimiterLockingError,
                 ):
                     with self.assertLogs("zerver.lib.rate_limiter", "WARNING") as mock_warn:
                         fake_client.enqueue("email_mirror", data[0])
@@ -593,14 +553,14 @@ class WorkerTest(ZulipTestCase):
             worker = queue_processors.EmailSendingWorker()
             worker.setup()
             with patch(
-                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredException
+                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError
             ), mock_queue_publish(
                 "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
             ), self.assertLogs(
                 level="ERROR"
             ) as m:
                 worker.start()
-                self.assertIn("failed due to exception EmailNotDeliveredException", m.output[0])
+                self.assertIn("failed due to exception EmailNotDeliveredError", m.output[0])
 
         self.assertEqual(data["failed_tries"], 1 + MAX_REQUEST_RETRIES)
 
@@ -804,7 +764,7 @@ class WorkerTest(ZulipTestCase):
             def consume(self, data: Mapping[str, Any]) -> None:
                 pass  # nocoverage # this is intentionally not called
 
-        with self.assertRaises(queue_processors.WorkerDeclarationException):
+        with self.assertRaises(queue_processors.WorkerDeclarationError):
             TestWorker()
 
     def test_get_active_worker_queues(self) -> None:

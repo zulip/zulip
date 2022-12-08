@@ -51,7 +51,7 @@ will depend on what your mentee needs. It might be any combination of:
 - Helping your mentee figure out how to test their changes.
 
 - Helping your mentee break their PRs into [coherent
-  commits](../contributing/version-control.md#commit-discipline).
+  commits](../contributing/commit-discipline.md).
 
 - Doing [code review](../contributing/code-reviewing.md) of your
   mentee's work.

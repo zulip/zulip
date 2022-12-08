@@ -16,11 +16,11 @@ const notifications = mock_esm("../../static/js/notifications");
 let disparities = [];
 
 mock_esm("../../static/js/ui", {
-    show_failed_message_success: () => {},
+    show_failed_message_success() {},
 });
 
 mock_esm("../../static/js/sent_messages", {
-    mark_disparity: (local_id) => {
+    mark_disparity(local_id) {
         disparities.push(local_id);
     },
 });
@@ -28,9 +28,9 @@ mock_esm("../../static/js/sent_messages", {
 const message_store = mock_esm("../../static/js/message_store", {
     get: () => ({failed_request: true}),
 
-    update_booleans: () => {},
+    update_booleans() {},
 
-    set_message_booleans: () => {},
+    set_message_booleans() {},
 });
 
 const noop = () => {};

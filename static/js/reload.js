@@ -246,10 +246,12 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
         blueslip.log("Retrying on-focus page reload");
         window.location.reload(true);
     });
-    setInterval(() => {
+
+    function retry_reload() {
         blueslip.log("Retrying page reload due to 30s timer");
         window.location.reload(true);
-    }, 30000);
+    }
+    util.call_function_periodically(retry_reload, 30000);
 
     try {
         server_events.cleanup_event_queue();

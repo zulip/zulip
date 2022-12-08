@@ -21,7 +21,6 @@ mock_esm("../../static/js/search_pill_widget", {
     },
 });
 mock_esm("../../static/js/ui_util", {
-    change_tab_to: noop,
     place_caret_at_end: noop,
 });
 

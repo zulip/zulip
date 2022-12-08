@@ -17,7 +17,7 @@ from zerver.lib.cache import cache_delete
 from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedUser,
-    RateLimiterLockingException,
+    RateLimiterLockingError,
     add_ratelimit_rule,
     get_tor_ips,
     remove_ratelimit_rule,
@@ -447,7 +447,7 @@ class RateLimitTests(ZulipTestCase):
 
         with mock.patch(
             "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
-            side_effect=RateLimiterLockingException,
+            side_effect=RateLimiterLockingError,
         ):
             with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as m:
                 result = self.send_api_message(user, "some stuff")

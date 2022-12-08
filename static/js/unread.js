@@ -24,10 +24,15 @@ import * as util from "./util";
 // for more details on how this system is designed.
 
 export let messages_read_in_narrow = false;
-export let old_unreads_missing = false;
 
 export function set_messages_read_in_narrow(value) {
     messages_read_in_narrow = value;
+}
+
+export let old_unreads_missing = false;
+
+export function clear_old_unreads_missing() {
+    old_unreads_missing = false;
 }
 
 export const unread_mentions_counter = new Set();
@@ -672,6 +677,7 @@ export function mark_as_read(message_id) {
 }
 
 export function declare_bankruptcy() {
+    // Only used in tests.
     unread_pm_counter.clear();
     unread_topic_counter.clear();
     unread_mentions_counter.clear();

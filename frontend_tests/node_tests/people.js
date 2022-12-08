@@ -515,6 +515,17 @@ test_people("user_timezone", () => {
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 
+test_people("utcToZonedTime", ({override}) => {
+    MockDate.set(parseISO("20130208T080910").getTime());
+    user_settings.twenty_four_hour_time = true;
+
+    assert.equal(people.get_user_time(me.user_id), "0:09");
+
+    override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
+    blueslip.expect("error", "Got invalid date for timezone: Eriador/Rivendell");
+    people.get_user_time(me.user_id);
+});
+
 test_people("user_type", () => {
     people.init();
 

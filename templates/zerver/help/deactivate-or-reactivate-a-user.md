@@ -1,26 +1,45 @@
 # Deactivate or reactivate a user
 
+## Deactivating a user
+
 {!admin-only.md!}
 
-## Deactivate (ban) a user
+When you deactivate a user:
 
-To properly remove a user’s access to a Zulip organization, it does not
-suffice to change their password or deactivate their account in an external
-email system, since the user’s API key and bot API keys will still be
-active. Instead, you need to deactivate the user’s account using the Zulip
-administrative interface.
+* The user will be immediately logged out of all Zulip sessions, including
+  desktop, web and mobile apps.
 
-Note that organization administrators cannot deactivate organization owners.
+* The user's credentials for logging in will no longer work, including password
+  login and [any other login options](/help/configure-authentication-methods)
+  enabled in your organization.
+
+* The user's [bots](/help/bots-and-integrations) will be deactivated.
+
+* [Email invitations and invite links](/help/invite-new-users) created by the
+  user will be disabled.
+
+* Even if your organization [allows users to join without an
+  invitation](/help/restrict-account-creation#set-whether-invitations-are-required-to-join),
+  this user will not be able to rejoin with the same email account.
+
+!!! warn ""
+    You must go through the deactivation process below to fully remove a user's
+    access to your Zulip organization. Changing a user's password or removing
+    their single sign-on account will not log them out of their open Zulip
+    sessions, or disable their API keys.
+
+### Deactivate a user
 
 {start_tabs}
 
-{tab|via-user-profile}
+{tab|via-user-card}
 
-{!profile-summary-three-dot-menu.md!}
+{!manage-this-user.md!}
 
-1. Click **Manage this user**.
+1. Click **Deactivate user** at the bottom of the **Manage user** menu.
 
-1. Click the **Deactivate user** button at the bottom.
+1. *(optional)* Select **Notify this user by email?** if desired, and enter a
+   custom comment to include in the notification email.
 
 1. Approve by clicking **Deactivate**.
 
@@ -28,54 +47,36 @@ Note that organization administrators cannot deactivate organization owners.
 
 {settings_tab|user-list-admin}
 
-1. Click the **Deactivate** button to the right of the user account that you
-   want to deactivate.
+1. In the **Actions** column, click the **deactivate** (<i class="fa
+   fa-user-times"></i>) icon for the user you want to deactivate.
 
-1. Approve by clicking **Deactivate**.
+2. *(optional)* Select **Notify this user by email?** if desired, and enter a
+   custom comment to include in the notification email.
 
-{end_tabs}
-
-The user will be logged out immediately and not be able to log back in. The
-user's bots will also be deactivated. Lastly, the user will be unable to
-create a new Zulip account in your organization using their deactivated
-email address.
-
-## Notify users of their deactivation
-
-Zulip can optionally send the user an email notification that their account was deactivated.
-
-{start_tabs}
-
-{settings_tab|user-list-admin}
-
- 2. Click the **Deactivate** button to the right of the user account that you
-want to deactivate.
-
- 3. Check the checkbox labeled **"Notify this user by email?"**.
-
- 4. Optional: Enter a custom message for the user in the provided textbox.
-
- 3. Approve by clicking **Confirm**.
+3. Approve by clicking **Deactivate**.
 
 {end_tabs}
 
-Here is a sample notification email:
+!!! tip ""
+    Organization administrators cannot deactivate organization owners.
 
-<img src="/static/images/help/deactivate-user-email.png" alt="view-of-admin" width="800"/>
+## Reactivating a user
 
-## Reactivate a user
+{!admin-only.md!}
 
-Organization administrators can reactivate a deactivated user. The reactivated
-user will have the same role, stream subscriptions, user group memberships, and
-other settings and permissions as they did prior to deactivation. They will also
-have the same API key and bot API keys, but the bots will be deactivated until
-the user manually [reactivates](deactivate-or-reactivate-a-bot) them again.
+A reactivated user will have the same role, stream subscriptions, user group
+memberships, and other settings and permissions as they did prior to
+deactivation. They will also have the same API key and bot API keys, but their
+bots will be deactivated until the user manually
+[reactivates](deactivate-or-reactivate-a-bot) them again.
+
+### Reactivate a user
 
 {start_tabs}
 
 {settings_tab|deactivated-users-admin}
 
-4. Click the **Reactivate** button to the right of the user account that you
+1. Click the **Reactivate** button to the right of the user account that you
 want to reactivate.
 
 {end_tabs}
@@ -87,3 +88,6 @@ want to reactivate.
 ## Related articles
 
 * [Mute a user](/help/mute-a-user)
+* [Change a user's role](/help/change-a-users-role)
+* [Change a user's name](/help/change-a-users-name)
+* [Deactivate your account](/help/deactivate-your-account)

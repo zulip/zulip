@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from analytics.models import RealmCount
+from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, confirmation_url, create_confirmation_link
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -297,6 +298,10 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
         assert invite is not None
+
+        # This should be impossible, because revoking a multiuse invite
+        # deletes the Confirmation object, so it couldn't have been fetched above.
+        assert invite.status != confirmation_settings.STATUS_REVOKED
         invites.append(
             dict(
                 invited_by_user_id=invite.referred_by.id,
@@ -392,7 +397,8 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
         Confirmation.objects.filter(
             content_type=content_type, object_id=multiuse_invite.id
         ).delete()
-        multiuse_invite.delete()
+        multiuse_invite.status = confirmation_settings.STATUS_REVOKED
+        multiuse_invite.save(update_fields=["status"])
     notify_invites_changed(realm)
 
 

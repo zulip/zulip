@@ -49,6 +49,10 @@ body,
     transition: background-color 200ms linear;
 }
 
+:root {
+    color-scheme: light;
+}
+
 input,
 button,
 select,
@@ -216,6 +220,7 @@ p.n-margin {
     display: none;
 }
 
+.alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
     width: 24px;
@@ -545,6 +550,10 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
+
+        .column-middle-inner {
+            overflow: auto;
+        }
     }
 }
 
@@ -889,11 +898,6 @@ li.actual-dropdown-menu i {
     padding: 6px 12px;
 }
 
-#settings_content .dependent-block,
-#invite-user .dependent-block {
-    margin: 15px 0 -5px 23px;
-}
-
 .message_area_padder {
     /* The height of the header and the message_view_header plus a small gap */
     margin-top: 57px;
@@ -1061,6 +1065,15 @@ td.pointer {
 
         > i {
             vertical-align: middle;
+        }
+    }
+
+    .actions_hover {
+        line-height: 1;
+
+        .zulip-icon-ellipsis-v-solid {
+            padding: 2px 5.33px;
+            outline: none;
         }
     }
 
@@ -1401,7 +1414,7 @@ td.pointer {
     left: 2px;
     top: 0;
     opacity: 0;
-    z-index: 1;
+    z-index: 2;
     bottom: 1px;
     transition: all 0.3s ease-out;
 
@@ -1998,8 +2011,10 @@ div.focused_table {
     }
 
     .navbar-search.expanded {
+        float: left;
         overflow: hidden;
         margin-top: 0;
+        margin-bottom: 0;
         width: calc(100% - 2px);
         position: absolute;
 
@@ -2846,7 +2861,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,
     .header-main {
@@ -3218,7 +3232,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .message_row.unread {
         .date_row {
             position: relative;
-            z-index: 1;
+            z-index: 3;
             background-color: hsl(0, 0%, 100%);
         }
     }

@@ -50,6 +50,10 @@ from zerver.views.events_register import (
 
 
 class EventsEndpointTest(ZulipTestCase):
+    def test_events_register_without_user_agent(self) -> None:
+        result = self.client_post("/json/register", skip_user_agent=True)
+        self.assert_json_success(result)
+
     def test_events_register_endpoint(self) -> None:
 
         # This test is intended to get minimal coverage on the

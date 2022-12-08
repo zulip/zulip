@@ -5,6 +5,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -14,7 +15,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.decorator import require_member_or_admin, require_realm_admin
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
@@ -33,7 +34,7 @@ def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
         invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]
         and not user_profile.is_realm_owner
     ):
-        raise OrganizationOwnerRequired()
+        raise OrganizationOwnerRequiredError()
 
 
 @require_member_or_admin
@@ -146,6 +147,9 @@ def revoke_multiuse_invite(
         raise JsonableError(_("No such invitation"))
 
     check_if_owner_required(invite.invited_as, user_profile)
+
+    if invite.status == confirmation_settings.STATUS_REVOKED:
+        raise JsonableError(_("Invitation has already been revoked"))
 
     do_revoke_multi_use_invite(invite)
     return json_success(request)

@@ -30,7 +30,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         formatDate: (date) => formatISO(date),
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
-        onKeyDown: (selectedDates, dateStr, instance, event) => {
+        onKeyDown(selectedDates, dateStr, instance, event) {
             if (is_numeric_key(event.key)) {
                 // Don't attempt to get_keydown_hotkey for numeric inputs
                 // as it would return undefined.

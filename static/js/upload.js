@@ -212,6 +212,7 @@ export function setup_upload(config) {
     $("body").on("change", get_item("file_input_identifier", config), (event) => {
         const files = event.target.files;
         upload_files(uppy, config, files);
+        get_item("textarea", config).trigger("focus");
         event.target.value = "";
     });
 

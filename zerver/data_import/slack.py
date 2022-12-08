@@ -42,6 +42,7 @@ from zerver.data_import.slack_message_conversion import (
 )
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
+from zerver.lib.storage import static_path
 from zerver.lib.upload import resize_logo, sanitize_name
 from zerver.models import (
     CustomProfileField,
@@ -61,13 +62,12 @@ SlackToZulipRecipientT = Dict[str, int]
 # Generic type for SlackBotEmail class
 SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
 
-# Initialize iamcal emoji data, because Slack seems to use emoji naming from iamcal.
-# According to https://emojipedia.org/slack/, Slack's emoji shortcodes are
-# derived from https://github.com/iamcal/emoji-data.
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
-NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")
-EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, "emoji-datasource-google", "emoji.json")
-with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
+# We can look up unicode codepoints for Slack emoji using iamcal emoji
+# data. https://emojipedia.org/slack/, documents Slack's emoji names
+# are derived from https://github.com/iamcal/emoji-data; this seems
+# likely to remain true since Cal is a Slack's cofounder.
+emoji_data_file_path = static_path("generated/emoji/emoji-datasource-google-emoji.json")
+with open(emoji_data_file_path, "rb") as emoji_data_file:
     emoji_data = orjson.loads(emoji_data_file.read())
 
 
@@ -1120,14 +1120,22 @@ def build_reactions(
     for realm_emoji in zerver_realmemoji:
         realmemoji[realm_emoji["name"]] = realm_emoji["id"]
 
+    # Slack's data exports use encode skin tone variants on emoji
+    # reactions like this: `clap::skin-tone-2`. For now, we only
+    # use the name of the base emoji, since Zulip's emoji
+    # reactions system doesn't yet support skin tone modifiers.
+    # We need to merge and dedup reactions, as someone may have
+    # reacted to `clap::skin-tone-1` and `clap::skin-tone-2`, etc.
+    merged_reactions = defaultdict(set)
+    for slack_reaction in reactions:
+        emoji_name = slack_reaction["name"].split("::", maxsplit=1)[0]
+        merged_reactions[emoji_name].update(slack_reaction["users"])
+    reactions = [{"name": k, "users": v, "count": len(v)} for k, v in merged_reactions.items()]
+
     # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
-        # Slack's data exports use encode skin tone variants on emoji
-        # reactions like this: `clap::skin-tone-2`. For now, we only
-        # use the name of the base emoji, since Zulip's emoji
-        # reactions system doesn't yet support skin tone modifiers.
-        emoji_name = slack_reaction["name"].split("::", maxsplit=1)[0]
+        emoji_name = slack_reaction["name"]
         if emoji_name in slack_emoji_name_to_codepoint:
             emoji_code = slack_emoji_name_to_codepoint[emoji_name]
             try:
@@ -1146,6 +1154,10 @@ def build_reactions(
             continue
 
         for slack_user_id in slack_reaction["users"]:
+            if slack_user_id not in slack_user_id_to_zulip_user_id:
+                # Deleted users still have reaction references but no profile, so we skip
+                continue
+
             reaction_id = NEXT_ID("reaction")
             reaction = Reaction(
                 id=reaction_id,

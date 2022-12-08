@@ -142,11 +142,19 @@ export function build_stream_list(force_rerender) {
     topic_list.clear();
     $parent.empty();
 
-    const any_pinned_streams = stream_groups.pinned_streams.length > 0;
-    const any_normal_streams = stream_groups.normal_streams.length > 0;
+    const any_pinned_streams =
+        stream_groups.pinned_streams.length > 0 || stream_groups.muted_pinned_streams.length > 0;
+    const any_normal_streams =
+        stream_groups.normal_streams.length > 0 || stream_groups.muted_active_streams.length > 0;
     const any_dormant_streams = stream_groups.dormant_streams.length > 0;
 
-    if (any_pinned_streams) {
+    const need_section_subheaders =
+        (any_pinned_streams ? 1 : 0) +
+            (any_normal_streams ? 1 : 0) +
+            (any_dormant_streams ? 1 : 0) >=
+        2;
+
+    if (any_pinned_streams && need_section_subheaders) {
         elems.push(
             render_stream_subheader({
                 subheader_name: $t({
@@ -164,7 +172,7 @@ export function build_stream_list(force_rerender) {
         add_sidebar_li(stream_id);
     }
 
-    if (any_normal_streams) {
+    if (any_normal_streams && need_section_subheaders) {
         elems.push(
             render_stream_subheader({
                 subheader_name: $t({
@@ -182,7 +190,7 @@ export function build_stream_list(force_rerender) {
         add_sidebar_li(stream_id);
     }
 
-    if (any_dormant_streams) {
+    if (any_dormant_streams && need_section_subheaders) {
         elems.push(
             render_stream_subheader({
                 subheader_name: $t({

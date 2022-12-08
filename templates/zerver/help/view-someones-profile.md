@@ -42,12 +42,13 @@ Additional tabs showing:
 
 {tab|desktop-web}
 
-{!right-sidebar-view-full-profile.md!}
+{!right-sidebar-view-profile.md!}
 
 !!! Tip ""
 
     You can also click on a user's profile picture or name on a
-    message they sent, and skip to the last step.
+    message they sent to open their **user card**, and skip to
+    the last step.
 
 {tab|mobile}
 
@@ -65,3 +66,4 @@ Additional tabs showing:
 
 * [Edit your profile](/help/edit-your-profile)
 * [Custom profile fields](/help/custom-profile-fields)
+* [User cards](/help/user-cards)

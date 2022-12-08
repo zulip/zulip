@@ -44,7 +44,16 @@ def sleep_until_droplet_action_is_completed(
                 break
         if incomplete:
             time.sleep(5)
-    droplet.load()
+
+    # Sometimes the droplet does not yet have an .ip_address value
+    # (the attribute is None) after .load()ing the droplet. We cannot
+    # proceed without the IP, so we wait in a loop until the IP is
+    # returned to us.
+    while True:
+        droplet.load()
+        if droplet.ip_address:
+            break
+        time.sleep(5)
 
 
 def set_api_request_retry_limits(api_object: digitalocean.baseapi.BaseAPI) -> None:

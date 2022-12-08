@@ -4,20 +4,10 @@ import type {Page} from "puppeteer";
 
 import * as common from "../puppeteer_lib/common";
 
-async function wait_for_tab(page: Page, tab: string): Promise<void> {
-    const tab_slector = `#${CSS.escape(tab)}.tab-pane`;
-    await page.waitForSelector(tab_slector, {visible: true});
-}
-
-async function navigate_using_left_sidebar(
-    page: Page,
-    click_target: string,
-    tab: string,
-): Promise<void> {
+async function navigate_using_left_sidebar(page: Page, click_target: string): Promise<void> {
     console.log("Visiting #" + click_target);
     await page.click(`#left-sidebar a[href='#${CSS.escape(click_target)}']`);
-
-    await wait_for_tab(page, tab);
+    await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
 
 async function open_menu(page: Page): Promise<void> {
@@ -57,7 +47,6 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
     await page.click(manage_streams_selector);
 
     await page.waitForSelector("#subscription_overlay", {visible: true});
-    await page.waitForSelector("#manage_streams_container", {visible: true});
 
     await page.click("#subscription_overlay .exit");
     // Wait until the overlay is completely closed.
@@ -101,17 +90,17 @@ async function navigation_tests(page: Page): Promise<void> {
     const verona_id = await page.evaluate((): number => zulip_test.get_stream_id("Verona"));
     const verona_narrow = `narrow/stream/${verona_id}-Verona`;
 
-    await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");
+    await navigate_using_left_sidebar(page, verona_narrow);
 
     await page.click(".home-link");
-    await wait_for_tab(page, "message_feed_container");
+    await page.waitForSelector("#message_feed_container", {visible: true});
 
     await navigate_to_subscriptions(page);
-    await navigate_using_left_sidebar(page, "all_messages", "message_feed_container");
+    await navigate_using_left_sidebar(page, "all_messages");
     await navigate_to_settings(page);
     await navigate_to_private_messages(page);
     await navigate_to_subscriptions(page);
-    await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");
+    await navigate_using_left_sidebar(page, verona_narrow);
 
     await test_reload_hash(page);
 

@@ -12,7 +12,7 @@ let $window_stub;
 set_global("to_$", () => $window_stub);
 
 mock_esm("../../static/js/search", {
-    update_button_visibility: () => {},
+    update_button_visibility() {},
 });
 set_global("document", "document-stub");
 const history = set_global("history", {});
@@ -30,7 +30,7 @@ const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const ui_util = mock_esm("../../static/js/ui_util");
 const ui_report = mock_esm("../../static/js/ui_report");
 mock_esm("../../static/js/top_left_corner", {
-    handle_narrow_deactivated: () => {},
+    handle_narrow_deactivated() {},
 });
 set_global("favicon", {});
 
@@ -137,10 +137,6 @@ function test_helper({override, change_tab}) {
     stub(ui_report, "error");
 
     if (change_tab) {
-        override(ui_util, "change_tab_to", (hash) => {
-            events.push("change_tab_to " + hash);
-        });
-
         override(narrow, "activate", (terms) => {
             narrow_terms = terms;
             events.push("narrow.activate");
@@ -152,10 +148,10 @@ function test_helper({override, change_tab}) {
     }
 
     return {
-        clear_events: () => {
+        clear_events() {
             events = [];
         },
-        assert_events: (expected_events) => {
+        assert_events(expected_events) {
             assert.deepEqual(events, expected_events);
         },
         get_narrow_terms: () => narrow_terms,
@@ -190,7 +186,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         [narrow, "deactivate"],
         [floating_recipient_bar, "update"],
     ]);
@@ -200,7 +195,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         [narrow, "deactivate"],
         [floating_recipient_bar, "update"],
     ]);
@@ -225,7 +219,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         "narrow.activate",
         [floating_recipient_bar, "update"],
     ]);
@@ -239,7 +232,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         "narrow.activate",
         [floating_recipient_bar, "update"],
     ]);
@@ -254,7 +246,6 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        "change_tab_to #message_feed_container",
         [ui_report, "error"],
     ]);
 

@@ -47,7 +47,7 @@ const custom_profile_field_types = {
 
 page_params.custom_profile_field_types = custom_profile_field_types;
 
-mock_esm("sortablejs", {Sortable: {create: () => {}}});
+mock_esm("sortablejs", {Sortable: {create() {}}});
 
 const settings_profile_fields = zrequire("settings_profile_fields");
 

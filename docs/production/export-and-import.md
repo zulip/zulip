@@ -41,6 +41,9 @@ service (or back):
   tool isn't applicable, including situations where an easily
   machine-parsable export format is desired.
 
+- [Compliance exports](#compliance-exports) allow a server
+  administrator to export messages matching a search query.
+
 - Zulip also has an [HTML archive
   tool](https://github.com/zulip/zulip-archive), which is primarily
   intended for public archives, but can also be useful to
@@ -191,8 +194,6 @@ data includes:
   user-uploaded avatars will need to be re-uploaded (since avatar
   filenames are computed using a hash of `avatar_salt` and user's
   email), etc.
-
-[export-import]: export-and-import.md
 
 ### Restore from manual backups
 
@@ -446,6 +447,35 @@ rm -rf /home/zulip/uploads/*/2/
 
 Once that's done, you can simply re-run the import process.
 
+## Compliance exports
+
+In some circumstances, corporate or legal compliance may require
+performing selective data exports. This can be done with the
+`export_search` command-line tool, which lets you specify the
+following parameters when exporting messages:
+
+- Search keywords in the message text.
+- Message sender.
+- Time range for when messages were sent.
+
+For example, to search for messages containing the word "wonderland"
+between November 1st and 6th, from `alice@example.com`:
+
+```console
+$ /home/zulip/deployments/current/manage.py export_search --output compliance-export.json
+    -r zulip \
+    --after '2022-11-01 00:00:00' --before '2022-11-06 14:00:00' \
+    --sender alice@example.com \
+    wonderland
+```
+
+The results are written to a JSON file. The contents of previous
+versions of edited messages are not searched, nor are deleted
+messages.
+
+See `/home/zulip/deployments/current/manage.py export_search --help`
+for more details on supported options.
+
 ## Database-only backup tools
 
 The [Zulip-specific backup tool documented above](#backups) is perfect
@@ -478,7 +508,7 @@ Daily full-database backups will be taken at 0200 UTC, and every WAL
 archive file will be written to S3 as it is saved by PostgreSQL; these
 are written every 16KiB of the WAL. This means that if there are
 periods of slow activity, it may be minutes before the backup is saved
-into S3 -- see [`archive_timeout`][archive-timout] for how to set an
+into S3 -- see [`archive_timeout`][archive-timeout] for how to set an
 upper bound on this. On an active Zulip server, this also means the
 Zulip server will be regularly sending PutObject requests to S3,
 possibly thousands of times per day.

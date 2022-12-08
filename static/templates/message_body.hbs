@@ -2,7 +2,7 @@
     {{#unless status_message}}
     <span class="message_sender sender_info_hover no-select">
         {{#if include_sender}}
-        <span title="{{t 'View user profile' }} (u)">
+        <span title="{{t 'View user card' }} (u)">
             {{> message_avatar ~}}
             <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info}}</span>
             {{#if sender_is_bot}}

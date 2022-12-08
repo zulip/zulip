@@ -9,7 +9,7 @@
 
 {start_tabs}
 
-{!right-sidebar-view-full-profile.md!}
+{!right-sidebar-view-profile.md!}
 
 1. Select the **Streams** tab.
 
@@ -46,7 +46,7 @@ stream](/help/unsubscribe-from-a-stream).
 
 {start_tabs}
 
-{!right-sidebar-view-full-profile.md!}
+{!right-sidebar-view-profile.md!}
 
 1. Select the **Streams** tab.
 

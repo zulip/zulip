@@ -7,7 +7,7 @@ including yourself.
 
 {start_tabs}
 
-{!right-sidebar-profile-menu.md!}
+{!right-sidebar-user-card.md!}
 
 1. Select **View messages sent** to view all messages sent by this user.
 
@@ -17,7 +17,7 @@ including yourself.
 
 {start_tabs}
 
-{!self-user-actions-menu.md!}
+{!self-user-card.md!}
 
 1. Select **View messages sent** to view all the messages you've sent.
 
@@ -33,7 +33,7 @@ including yourself.
 
 {start_tabs}
 
-{!self-user-actions-menu.md!}
+{!self-user-card.md!}
 
 1. Select **View messages with yourself** to view messages you sent to
    yourself.

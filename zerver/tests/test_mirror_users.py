@@ -9,7 +9,7 @@ from zerver.lib.create_user import create_user_profile
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.models import UserProfile, get_client, get_realm, get_user
-from zerver.views.message_send import InvalidMirrorInput, create_mirrored_message_users
+from zerver.views.message_send import InvalidMirrorInputError, create_mirrored_message_users
 
 
 class MirroredMessageUsersTest(ZulipTestCase):
@@ -22,7 +22,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         message_type = "private"
         client = get_client("banned_mirror")
 
-        with self.assertRaises(InvalidMirrorInput):
+        with self.assertRaises(InvalidMirrorInputError):
             create_mirrored_message_users(client, user, recipients, sender.email, message_type)
 
     def test_invalid_email(self) -> None:
@@ -38,7 +38,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         for client_name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]:
             client = get_client(client_name)
 
-            with self.assertRaises(InvalidMirrorInput):
+            with self.assertRaises(InvalidMirrorInputError):
                 create_mirrored_message_users(client, user, recipients, sender.email, message_type)
 
     @mock.patch(

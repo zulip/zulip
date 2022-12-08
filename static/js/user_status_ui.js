@@ -40,7 +40,7 @@ export function open_user_status_modal() {
         id: "set_user_status_modal",
         on_click: submit_new_status,
         post_render: user_status_post_render,
-        on_shown: () => {
+        on_shown() {
             input_field().trigger("focus");
         },
     });

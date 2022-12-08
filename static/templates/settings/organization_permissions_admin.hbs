@@ -1,11 +1,11 @@
 <div id="organization-permissions" data-name="organization-permissions" class="settings-section">
     <form class="form-horizontal admin-realm-form org-permissions-form">
 
-        <div id="org-join" class="org-subsection-parent">
+        <div id="org-join-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Joining the organization" }}</h3>
                 <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
-                {{> settings_save_discard_widget section_name="org-join" }}
+                {{> settings_save_discard_widget section_name="join-settings" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
@@ -28,7 +28,7 @@
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
                         <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
                     </select>
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <p id="allowed_domains_label" class="inline-block"></p>
                         {{#if is_owner }}
                         <a id="show_realm_domains_modal" role="button">{{t "[Configure]" }}</a>
@@ -46,7 +46,7 @@
                         <option value="custom_days">{{t "Custom" }}</option>
                     </select>
                     {{!-- This setting is hidden unless `custom_days` --}}
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <label for="id_realm_waiting_period_threshold" class="inline-block">{{t "Waiting period (days)" }}:</label>
                         <input type="text" id="id_realm_waiting_period_threshold"
                           name="realm_waiting_period_threshold"
@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <div id="org-user-identity" class="org-subsection-parent">
+        <div id="org-user-identity" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "User identity" }}</h3>
                 {{> settings_save_discard_widget section_name="user-identity" }}
@@ -91,7 +91,7 @@
             </div>
         </div>
 
-        <div id="org-stream-permissions" class="org-subsection-parent">
+        <div id="org-stream-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Stream permissions" }}</h3>
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
@@ -140,7 +140,7 @@
             </div>
         </div>
 
-        <div id="org-msg-editing" class="org-subsection-parent">
+        <div id="org-msg-editing" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message and topic editing" }}
                     {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
@@ -161,7 +161,7 @@
                             <option value="{{value}}">{{text}}</option>
                         {{/each}}
                     </select>
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
                             {{t 'Duration editing is allowed after posting (minutes)'}}:&nbsp;
                         </label>
@@ -197,7 +197,7 @@
             </div>
         </div>
 
-        <div id="org-msg-deletion" class="org-subsection-parent">
+        <div id="org-msg-deletion" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message deletion" }}
                     {{> ../help_link_widget link="/help/edit-or-delete-a-message#delete-a-message" }}
@@ -226,7 +226,7 @@
                             <option value="{{value}}">{{text}}</option>
                         {{/each}}
                     </select>
-                    <div class="dependent-block">
+                    <div class="dependent-settings-block">
                         <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
                             {{t "Duration deletion is allowed after posting (minutes)" }}:
                         </label>
@@ -240,7 +240,7 @@
             </div>
         </div>
 
-        <div id="org-other-permissions" class="org-subsection-parent">
+        <div id="org-other-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other permissions" }}</h3>
                 {{> settings_save_discard_widget section_name="other-permissions" }}

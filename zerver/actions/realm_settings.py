@@ -1,3 +1,4 @@
+import logging
 from email.headerregistry import Address
 from typing import Any, Dict, Literal, Optional
 
@@ -297,6 +298,10 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
 
 
 def do_reactivate_realm(realm: Realm) -> None:
+    if not realm.deactivated:
+        logging.warning("Realm %s cannot be reactivated because it is already active.", realm.id)
+        return
+
     realm.deactivated = False
     with transaction.atomic():
         realm.save(update_fields=["deactivated"])

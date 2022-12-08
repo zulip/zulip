@@ -1678,6 +1678,7 @@ nav {
     color: hsl(0, 0%, 100%);
     opacity: 0.7;
     font-weight: 400;
+    font-style: normal;
 }
 
 .portico-landing .testimonials blockquote {
@@ -3941,6 +3942,10 @@ nav {
     blockquote::before {
         font-size: 20px;
         font-weight: 800;
+    }
+
+    cite {
+        font-style: normal;
     }
 }
 

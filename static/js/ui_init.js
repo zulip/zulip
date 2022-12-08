@@ -300,10 +300,6 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("spectator-view");
     }
 
-    if (!user_settings.left_side_userlist) {
-        $("#navbar-buttons").addClass("right-userlist");
-    }
-
     if (user_settings.high_contrast_mode) {
         $("body").addClass("high-contrast");
     }
@@ -613,8 +609,8 @@ export function initialize_everything() {
     settings.initialize();
     initialize_navbar();
     initialize_message_feed_errors();
-    realm_logo.render();
 
+    realm_logo.initialize();
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
@@ -675,7 +671,6 @@ export function initialize_everything() {
 
     // All overlays must be initialized before hashchange.js
     hashchange.initialize();
-    resize.initialize();
 
     unread_ui.initialize();
     activity.initialize();

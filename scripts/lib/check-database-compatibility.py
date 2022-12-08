@@ -7,7 +7,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 sys.path.insert(0, ZULIP_PATH)
 from scripts.lib.setup_path import setup_path
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, assert_not_running_as_root, parse_version_from
-from version import ZULIP_VERSION as new_version
+from version import ZULIP_VERSION as NEW_VERSION
 
 assert_not_running_as_root()
 setup_path()
@@ -84,6 +84,6 @@ logging.error(
     current_version,
     len(missing),
     ZULIP_PATH,
-    new_version,
+    NEW_VERSION,
 )
 sys.exit(1)

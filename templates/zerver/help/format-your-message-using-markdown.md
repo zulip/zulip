@@ -3,9 +3,10 @@
 [//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
 [//]: # (Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.)
 
-Zulip uses a variant of
-[GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
-to allow you to easily format your messages.
+Zulip uses a variant of Markdown to allow you to easily format your
+messages. There is a convenient [**message formatting
+reference**](#message-formatting-reference) in the Zulip app that you
+can use whenever you need a reminder of the formatting syntax below.
 
 * [Emphasis](#emphasis)
 * [Lists](#lists)
@@ -279,15 +280,16 @@ Under the line
 
 ![Markdown paragraph](/static/images/help/markdown-paragraph.png)
 
-## In-app help
+## Message formatting reference
 
-A summary of the formatting syntax is available in-app.
+A summary of the formatting syntax above is available in the Zulip app.
 
 {start_tabs}
 
 {!start-composing.md!}
 
-1. Click <i class="fa fa-question"></i> at the bottom of the compose box.
+1. Click the **question mark** (<i class="fa fa-question"></i>) icon at the
+   bottom of the compose box.
 
 {end_tabs}
 

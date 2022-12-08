@@ -199,7 +199,7 @@ test("get_active_user_ids_string", () => {
 
     function set_filter_result(emails) {
         const active_filter = {
-            operands: (operand) => {
+            operands(operand) {
                 assert.equal(operand, "pm-with");
                 return emails;
             },
@@ -216,7 +216,7 @@ test("get_active_user_ids_string", () => {
 
 function private_filter() {
     return {
-        operands: (operand) => {
+        operands(operand) {
             assert.equal(operand, "is");
             return ["private", "starred"];
         },
@@ -247,7 +247,7 @@ test("get_list_info", ({override}) => {
     // Filter` rather than creating a mock.
     function set_filter_result(emails) {
         const active_filter = {
-            operands: (operand) => {
+            operands(operand) {
                 assert.equal(operand, "pm-with");
                 return emails;
             },

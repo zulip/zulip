@@ -531,7 +531,7 @@ export function send_test_notification(content) {
 // Handlebars templates that will do further escaping.
 function get_message_header(message) {
     if (message.type === "stream") {
-        return message.stream + " > " + message.topic;
+        return `#${message.stream} > ${message.topic}`;
     }
     if (message.display_recipient.length > 2) {
         return $t(

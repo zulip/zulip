@@ -110,10 +110,10 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.source.html"
 
-        from zerver.lib.send_email import NoEmailArgumentException
+        from zerver.lib.send_email import NoEmailArgumentError
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -124,7 +124,7 @@ class TestCustomEmails(ZulipTestCase):
         )
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -142,10 +142,10 @@ class TestCustomEmails(ZulipTestCase):
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
         )
 
-        from zerver.lib.send_email import DoubledEmailArgumentException
+        from zerver.lib.send_email import DoubledEmailArgumentError
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -156,7 +156,7 @@ class TestCustomEmails(ZulipTestCase):
         )
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={

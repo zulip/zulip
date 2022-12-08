@@ -42,7 +42,7 @@ else:  # nocoverage
     import zoneinfo
 
 
-class InvalidMirrorInput(Exception):
+class InvalidMirrorInputError(Exception):
     pass
 
 
@@ -70,12 +70,12 @@ def create_mirrored_message_users(
         user_check = same_realm_jabber_user
         fullname_function = compute_jabber_user_fullname
     else:
-        raise InvalidMirrorInput("Unrecognized mirroring client")
+        raise InvalidMirrorInputError("Unrecognized mirroring client")
 
     for email in referenced_users:
         # Check that all referenced users are in our realm:
         if not user_check(user_profile, email):
-            raise InvalidMirrorInput("At least one user cannot be mirrored")
+            raise InvalidMirrorInputError("At least one user cannot be mirrored")
 
     # Create users for the referenced users, if needed.
     for email in referenced_users:
@@ -278,7 +278,7 @@ def send_message_backend(
             mirror_sender = create_mirrored_message_users(
                 client, user_profile, message_to, req_sender, message_type_name
             )
-        except InvalidMirrorInput:
+        except InvalidMirrorInputError:
             raise JsonableError(_("Invalid mirrored message"))
 
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:

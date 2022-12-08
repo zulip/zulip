@@ -49,7 +49,7 @@ from zerver.lib.push_notifications import (
     send_notifications_to_bouncer,
 )
 from zerver.lib.remote_server import (
-    PushNotificationBouncerException,
+    PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     build_analytics_data,
     send_analytics_to_remote_server,
@@ -2220,7 +2220,7 @@ class TestSendToPushBouncer(ZulipTestCase):
         # This is the exception our decorator uses for an invalid Zulip server
         error_response = json_response_from_error(InvalidZulipServerError("testRole"))
         self.add_mock_response(body=error_response.content, status=error_response.status_code)
-        with self.assertRaises(PushNotificationBouncerException) as exc:
+        with self.assertRaises(PushNotificationBouncerError) as exc:
             send_to_push_bouncer("POST", "register", {"msg": "true"})
         self.assertEqual(
             str(exc.exception),
@@ -2237,7 +2237,7 @@ class TestSendToPushBouncer(ZulipTestCase):
     @responses.activate
     def test_300_error(self) -> None:
         self.add_mock_response(body=b"/", status=300)
-        with self.assertRaises(PushNotificationBouncerException) as exc:
+        with self.assertRaises(PushNotificationBouncerError) as exc:
             send_to_push_bouncer("POST", "register", {"msg": "true"})
         self.assertEqual(
             str(exc.exception), "Push notification bouncer returned unexpected status code 300"

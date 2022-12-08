@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 from urllib.parse import urlparse
@@ -11,7 +12,13 @@ from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
-from zerver.tornado.sharding import get_tornado_port, get_tornado_uri, notify_tornado_queue_name
+from zerver.tornado.sharding import (
+    get_realm_tornado_ports,
+    get_tornado_uri,
+    get_user_id_tornado_port,
+    get_user_tornado_port,
+    notify_tornado_queue_name,
+)
 
 
 class TornadoAdapter(HTTPAdapter):
@@ -81,7 +88,7 @@ def request_event_queue(
     if not settings.USING_TORNADO:
         return None
 
-    tornado_uri = get_tornado_uri(user_profile.realm)
+    tornado_uri = get_tornado_uri(get_user_tornado_port(user_profile))
     req = {
         "dont_block": "true",
         "apply_markdown": orjson.dumps(apply_markdown),
@@ -113,7 +120,7 @@ def get_user_events(
     if not settings.USING_TORNADO:
         return []
 
-    tornado_uri = get_tornado_uri(user_profile.realm)
+    tornado_uri = get_tornado_uri(get_user_tornado_port(user_profile))
     post_data: Dict[str, Any] = {
         "queue_id": queue_id,
         "last_event_id": last_event_id,
@@ -126,7 +133,7 @@ def get_user_events(
     return resp.json()["events"]
 
 
-def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
+def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
     if not settings.USING_TORNADO or settings.RUNNING_INSIDE_TORNADO:
         # To allow the backend test suite to not require a separate
         # Tornado process, we simply call the process_notification
@@ -141,7 +148,7 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
 
         process_notification(data)
     else:
-        tornado_uri = get_tornado_uri(realm)
+        tornado_uri = get_tornado_uri(port)
         requests_client().post(
             tornado_uri + "/notify_tornado",
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
@@ -163,9 +170,18 @@ def send_event(
 ) -> None:
     """`users` is a list of user IDs, or in some special cases like message
     send/update or embeds, dictionaries containing extra data."""
-    port = get_tornado_port(realm)
-    queue_json_publish(
-        notify_tornado_queue_name(port),
-        dict(event=event, users=list(users)),
-        lambda *args, **kwargs: send_notification_http(realm, *args, **kwargs),
-    )
+    realm_ports = get_realm_tornado_ports(realm)
+    if len(realm_ports) == 1:
+        port_user_map = {realm_ports[0]: list(users)}
+    else:
+        port_user_map = defaultdict(list)
+        for user in users:
+            user_id = user if isinstance(user, int) else user["id"]
+            port_user_map[get_user_id_tornado_port(realm_ports, user_id)].append(user)
+
+    for port, port_users in port_user_map.items():
+        queue_json_publish(
+            notify_tornado_queue_name(port),
+            dict(event=event, users=port_users),
+            lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
+        )

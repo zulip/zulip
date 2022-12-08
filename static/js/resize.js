@@ -9,41 +9,7 @@ import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as popovers from "./popovers";
-import * as recent_topics_util from "./recent_topics_util";
-import * as ui from "./ui";
-import {user_settings} from "./user_settings";
 import * as util from "./util";
-
-let narrow_window = false;
-
-function confine_to_range(lo, val, hi) {
-    if (val < lo) {
-        return lo;
-    }
-    if (val > hi) {
-        return hi;
-    }
-    return val;
-}
-
-function size_blocks(blocks, usable_height) {
-    let sum_height = 0;
-
-    for (const block of blocks) {
-        sum_height += block.real_height;
-    }
-
-    for (const block of blocks) {
-        let ratio = block.real_height / sum_height;
-        ratio = confine_to_range(0.05, ratio, 0.85);
-        const min_block_height = Math.min(250, usable_height / blocks.length, block.real_height);
-        block.max_height = confine_to_range(
-            min_block_height,
-            usable_height * ratio,
-            1.2 * block.real_height,
-        );
-    }
-}
 
 function get_new_heights() {
     const res = {};
@@ -76,52 +42,6 @@ function get_new_heights() {
         right_sidebar_shorcuts_height;
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
-
-    return res;
-}
-
-function left_userlist_get_new_heights() {
-    const res = {};
-    const viewport_height = message_viewport.height();
-    const viewport_width = message_viewport.width();
-    res.viewport_height = viewport_height;
-    res.viewport_width = viewport_width;
-
-    // main div
-    const top_navbar_height = $(".header").safeOuterHeight(true);
-    res.bottom_whitespace_height = viewport_height * 0.4;
-    res.main_div_min_height = viewport_height - top_navbar_height;
-
-    // left sidebar
-    const $stream_filters = $("#left_sidebar_scroll_container").expectOne();
-    const $buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
-
-    const stream_filters_real_height = ui.get_scroll_element($stream_filters).prop("scrollHeight");
-    const user_list_real_height = ui.get_scroll_element($buddy_list_wrapper).prop("scrollHeight");
-
-    res.total_leftlist_height =
-        viewport_height -
-        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true) -
-        $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true) -
-        $("#private_messages_sticky_header").safeOuterHeight(true);
-
-    const blocks = [
-        {
-            real_height: stream_filters_real_height,
-        },
-        {
-            real_height: user_list_real_height,
-        },
-    ];
-
-    size_blocks(blocks, res.total_leftlist_height);
-
-    res.stream_filters_max_height = blocks[0].max_height;
-    res.buddy_list_wrapper_max_height = blocks[1].max_height;
 
     return res;
 }
@@ -172,7 +92,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
 
     // Compute bottom_whitespace_height if not provided by caller.
     if (bottom_whitespace_height === undefined) {
-        const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+        const h = get_new_heights();
         bottom_whitespace_height = h.bottom_whitespace_height;
     }
 
@@ -212,51 +132,16 @@ export function resize_bottom_whitespace(h) {
     }
 }
 
-export function resize_stream_filters_container(h) {
-    h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+export function resize_stream_filters_container() {
+    const h = get_new_heights();
     resize_bottom_whitespace(h);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
-    if (user_settings.left_side_userlist) {
-        $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
-    }
 }
 
 export function resize_sidebars() {
-    let $sidebar;
-
-    if (user_settings.left_side_userlist) {
-        const css_narrow_mode = message_viewport.is_narrow();
-
-        $("#top_navbar").removeClass("rightside-userlist");
-
-        const $right_items = $(".right-sidebar-items").expectOne();
-
-        if (css_narrow_mode && !narrow_window) {
-            // move stuff to the left sidebar (skinny mode)
-            narrow_window = true;
-            popovers.set_userlist_placement("left");
-            $sidebar = $("#left-sidebar").expectOne();
-            $sidebar.append($right_items);
-            $("#buddy_list_wrapper").css("margin", "0px");
-            $("#userlist-toggle").css("display", "none");
-            $("#invite-user-link").hide();
-        } else if (!css_narrow_mode && narrow_window) {
-            // move stuff to the right sidebar (wide mode)
-            narrow_window = false;
-            popovers.set_userlist_placement("right");
-            $sidebar = $("#right-sidebar").expectOne();
-            $sidebar.append($right_items);
-            $("#buddy_list_wrapper").css("margin", "");
-            $("#userlist-toggle").css("display", "");
-            $("#invite-user-link").show();
-        }
-    }
-
-    const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
-
+    const h = get_new_heights();
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
-
     return h;
 }
 
@@ -297,30 +182,5 @@ export function handler() {
         }
 
         navigate.scroll_to_selected();
-    }
-}
-
-export function initialize() {
-    // Hack: If the app is loaded directly to recent topics, then we
-    // need to arrange to call navbar_alerts.resize_app when we first
-    // visit a message list. This is a workaround for bugs where the
-    // floating recipient bar will be invisible (as well as other
-    // alignment issues) when they are initially rendered in the
-    // background because recent topics is displayed.
-
-    if (recent_topics_util.is_visible()) {
-        // We bind the handler for the message_feed_container shown event, such
-        // that it will only get executed once.
-        //
-        // The selector here is based on #gear-menu, to take advantage
-        // of the Bootstrap the 'show' event handler on that legacy
-        // data-toggle element.
-        $('#gear-menu a[data-toggle="tab"][href="#message_feed_container"]').one("show", () => {
-            // We use a requestAnimationFrame here to prevent this call from
-            // causing a forced reflow.
-            window.requestAnimationFrame(() => {
-                navbar_alerts.resize_app();
-            });
-        });
     }
 }

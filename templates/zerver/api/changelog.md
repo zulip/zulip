@@ -18,7 +18,29 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 7.0
+
+Feature levels 157-158 are reserved for future use in 6.x maintenance
+releases.
+
 ## Changes in Zulip 6.0
+
+**Feature level 156**
+
+No changes; feature level used for Zulip 6.0 release.
+
+**Feature level 155**
+
+* [`GET /messages`](/api/get-messages): The new `include_anchor`
+  parameter controls whether a message with ID matching the specified
+  `anchor` should be included.
+* The `update_message_flags` event sent by [`POST
+  /messages/flags`](/api/update-message-flags) no longer redundantly
+  lists messages where the flag was set to the same state it was
+  already in.
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow):
+  This new endpoint allows updating message flags on a range of
+  messages within a narrow.
 
 **Feature level 154**
 

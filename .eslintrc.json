@@ -101,7 +101,7 @@
         "no-useless-concat": "error",
         "no-useless-constructor": "error",
         "no-var": "error",
-        "object-shorthand": "error",
+        "object-shorthand": ["error", "always", {"avoidExplicitReturnArrows": true}],
         "one-var": ["error", "never"],
         "prefer-arrow-callback": "error",
         "prefer-const": [
@@ -118,6 +118,7 @@
         "unicorn/explicit-length-check": "off",
         "unicorn/filename-case": "off",
         "unicorn/no-await-expression-member": "off",
+        "unicorn/no-negated-condition": "off",
         "unicorn/no-nested-ternary": "off",
         "unicorn/no-null": "off",
         "unicorn/no-process-exit": "off",

@@ -465,7 +465,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                     {defaultMessage: "Deactivate {name}?"},
                     {name: user.full_name},
                 ),
-                help_link: "/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user",
+                help_link: "/help/deactivate-or-reactivate-a-user#deactivating-a-user",
                 html_body,
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
@@ -536,7 +536,7 @@ export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
-        help_link: "/help/deactivate-or-reactivate-a-user#reactivate-a-user",
+        help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
         html_body,
         on_click: handle_confirm,
         loading_spinner,

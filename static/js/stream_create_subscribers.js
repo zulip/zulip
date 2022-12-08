@@ -105,7 +105,7 @@ export function build_widgets() {
             },
         },
         $simplebar_container,
-        html_selector: (user_id) => {
+        html_selector(user_id) {
             const user = people.get_by_user_id(user_id);
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
         },

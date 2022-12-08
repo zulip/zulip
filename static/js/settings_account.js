@@ -438,7 +438,7 @@ export function set_up() {
         $("#api_key_status").hide();
         overlays.open_modal("api_key_modal", {
             autoremove: true,
-            on_show: () => {
+            on_show() {
                 $("#get_api_key_password").trigger("focus");
             },
         });
@@ -658,7 +658,7 @@ export function set_up() {
                 form_id: "change_email_container",
                 on_click: do_change_email,
                 post_render: change_email_post_render,
-                on_shown: () => {
+                on_shown() {
                     $("#change_email_container input").trigger("focus");
                 },
             });

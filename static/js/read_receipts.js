@@ -17,7 +17,7 @@ export function show_user_list(message_id) {
     $("body").append(render_read_receipts_modal());
     overlays.open_modal("read_receipts_modal", {
         autoremove: true,
-        on_show: () => {
+        on_show() {
             const message = message_store.get(message_id);
             if (message.sender_email === "notification-bot@zulip.com") {
                 $("#read_receipts_modal .read_receipts_info").text(
@@ -79,7 +79,7 @@ export function show_user_list(message_id) {
                 });
             }
         },
-        on_hide: () => {
+        on_hide() {
             // Ensure any user info popovers are closed
             popovers.hide_all();
         },

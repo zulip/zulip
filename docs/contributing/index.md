@@ -9,7 +9,7 @@ contributing
 ../code-of-conduct
 asking-great-questions
 design-discussions
-version-control
+commit-discipline
 code-style
 reviewable-prs
 code-reviewing

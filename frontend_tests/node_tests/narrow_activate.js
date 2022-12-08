@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_esm("../../static/js/resize", {
-    resize_stream_filters_container: () => {},
+    resize_stream_filters_container() {},
 });
 
 const all_messages_data = mock_esm("../../static/js/all_messages_data");
@@ -35,10 +35,9 @@ const search = mock_esm("../../static/js/search");
 const stream_list = mock_esm("../../static/js/stream_list");
 const top_left_corner = mock_esm("../../static/js/top_left_corner");
 const typing_events = mock_esm("../../static/js/typing_events");
-const ui_util = mock_esm("../../static/js/ui_util");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 mock_esm("../../static/js/recent_topics_util", {
-    is_visible: () => {},
+    is_visible() {},
 });
 
 //
@@ -90,7 +89,6 @@ function test_helper() {
     stub(top_left_corner, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_actions, "update_narrow_to_recipient_visibility");
-    stub(ui_util, "change_tab_to");
     stub(unread_ops, "process_visible");
     stub(compose_closed_ui, "update_buttons_for_stream");
     stub(compose_closed_ui, "update_buttons_for_private");
@@ -98,13 +96,13 @@ function test_helper() {
     $("#mark_as_read_turned_off_banner").toggleClass = () => {};
 
     return {
-        clear: () => {
+        clear() {
             events = [];
         },
-        push_event: (event) => {
+        push_event(event) {
             events.push(event);
         },
-        assert_events: (expected_events) => {
+        assert_events(expected_events) {
             assert.deepEqual(events, expected_events);
         },
     };
@@ -192,7 +190,6 @@ run_test("basics", () => {
         [message_scroll, "hide_indicators"],
         [notifications, "clear_compose_notifications"],
         [notifications, "redraw_title"],
-        [ui_util, "change_tab_to"],
         [unread_ops, "process_visible"],
         [hashchange, "save_narrow"],
         [compose_closed_ui, "update_buttons_for_stream"],

@@ -5,7 +5,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import Dict
+from typing import Dict, List, Tuple, Union
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -47,29 +47,31 @@ def write_updated_configs() -> None:
 
         nginx_sharding_conf_f.write("map $http_host $tornado_server {\n")
         nginx_sharding_conf_f.write("    default http://tornado9800;\n")
-        shard_map: Dict[str, int] = {}
-        shard_regexes = []
+        shard_map: Dict[str, Union[int, List[int]]] = {}
+        shard_regexes: List[Tuple[str, Union[int, List[int]]]] = []
         external_host = subprocess.check_output(
             [os.path.join(BASE_DIR, "scripts/get-django-setting"), "EXTERNAL_HOST"],
             text=True,
         ).strip()
         for key, shards in config_file["tornado_sharding"].items():
             if key.endswith("_regex"):
-                port = int(key[: -len("_regex")])
-                shard_regexes.append((shards, port))
+                ports = [int(port) for port in key[: -len("_regex")].split("_")]
+                shard_regexes.append((shards, ports[0] if len(ports) == 1 else ports))
                 nginx_sharding_conf_f.write(
-                    f"    {nginx_quote('~*' + shards)} http://tornado{port};\n"
+                    f"    {nginx_quote('~*' + shards)} http://tornado{'_'.join(map(str, ports))};\n"
                 )
             else:
-                port = int(key)
+                ports = [int(port) for port in key.split("_")]
                 for shard in shards.split():
                     if "." in shard:
                         host = shard
                     else:
                         host = f"{shard}.{external_host}"
                     assert host not in shard_map, f"host {host} duplicated"
-                    shard_map[host] = port
-                    nginx_sharding_conf_f.write(f"    {nginx_quote(host)} http://tornado{port};\n")
+                    shard_map[host] = ports[0] if len(ports) == 1 else ports
+                    nginx_sharding_conf_f.write(
+                        f"    {nginx_quote(host)} http://tornado{'_'.join(map(str, ports))};\n"
+                    )
             nginx_sharding_conf_f.write("\n")
         nginx_sharding_conf_f.write("}\n")
 

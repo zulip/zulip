@@ -1,13 +1,14 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 
@@ -37,10 +38,10 @@ def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional
 
 
 def handle_push_image_event(
-    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+    payload: WildValue, user_profile: UserProfile, operator_username: str
 ) -> str:
-    image_name = payload["event_data"]["repository"]["repo_full_name"]
-    image_tag = payload["event_data"]["resources"][0]["tag"]
+    image_name = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)
+    image_tag = payload["event_data"]["resources"][0]["tag"].tame(check_string)
 
     return f"{operator_username} pushed image `{image_name}:{image_tag}`"
 
@@ -53,24 +54,24 @@ Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity
 
 
 def handle_scanning_completed_event(
-    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+    payload: WildValue, user_profile: UserProfile, operator_username: str
 ) -> str:
     scan_results = ""
     scan_overview = payload["event_data"]["resources"][0]["scan_overview"]
     if "application/vnd.security.vulnerability.report; version=1.1" not in scan_overview:
-        raise UnsupportedWebhookEventType("Unsupported harbor scanning webhook payload")
+        raise UnsupportedWebhookEventTypeError("Unsupported harbor scanning webhook payload")
     scan_summaries = scan_overview["application/vnd.security.vulnerability.report; version=1.1"][
         "summary"
     ]["summary"]
     if len(scan_summaries) > 0:
         for severity, count in scan_summaries.items():
-            scan_results += "* {}: **{}**\n".format(severity, count)
+            scan_results += "* {}: **{}**\n".format(severity, count.tame(check_int))
     else:
         scan_results += "None\n"
 
     return SCANNING_COMPLETED_TEMPLATE.format(
-        image_name=payload["event_data"]["repository"]["repo_full_name"],
-        image_tag=payload["event_data"]["resources"][0]["tag"],
+        image_name=payload["event_data"]["repository"]["repo_full_name"].tame(check_string),
+        image_tag=payload["event_data"]["resources"][0]["tag"].tame(check_string),
         scan_results=scan_results,
     )
 
@@ -88,10 +89,10 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 def api_harbor_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
 
-    operator_username = "**{}**".format(payload["operator"])
+    operator_username = "**{}**".format(payload["operator"].tame(check_string))
 
     if operator_username != "auto":
         operator_profile = guess_zulip_user_from_harbor(operator_username, user_profile.realm)
@@ -99,8 +100,8 @@ def api_harbor_webhook(
     if operator_profile:
         operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
 
-    event = payload["type"]
-    topic = payload["event_data"]["repository"]["repo_full_name"]
+    event = payload["type"].tame(check_string)
+    topic = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)
 
     if event in IGNORED_EVENTS:
         return json_success(request)
@@ -108,7 +109,7 @@ def api_harbor_webhook(
     content_func = EVENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     content: str = content_func(payload, user_profile, operator_username)
 

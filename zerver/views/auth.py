@@ -25,7 +25,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
-from markupsafe import Markup as mark_safe
+from markupsafe import Markup
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -33,7 +33,7 @@ from typing_extensions import Concatenate, ParamSpec
 
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     create_confirmation_link,
     get_object_from_key,
     render_confirmation_key_error,
@@ -54,7 +54,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     PasswordAuthDisabledError,
     PasswordResetRequiredError,
-    RateLimited,
+    RateLimitedError,
     RealmDeactivatedError,
     UserDeactivatedError,
 )
@@ -200,7 +200,7 @@ def maybe_send_to_registration(
             confirmation_obj = get_object_from_key(
                 multiuse_object_key, [Confirmation.MULTIUSE_INVITE], mark_object_used=False
             )
-        except ConfirmationKeyException as exception:
+        except ConfirmationKeyError as exception:
             return render_confirmation_key_error(request, exception)
 
         assert isinstance(confirmation_obj, MultiuseInvite)
@@ -225,37 +225,44 @@ def maybe_send_to_registration(
         # creation or confirm-continue-registration depending on
         # is_signup.
         try:
-            prereg_user = filter_to_valid_prereg_users(
+            # If there's an existing, valid PreregistrationUser for this
+            # user, we want to fetch it since some values from it will be used
+            # as defaults for creating the signed up user.
+            existing_prereg_user = filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(email__iexact=email, realm=realm)
             ).latest("invited_at")
-
-            # password_required and full_name data passed here as argument should take precedence
-            # over the defaults with which the existing PreregistrationUser that we've just fetched
-            # was created.
-            prereg_user.password_required = password_required
-            update_fields = ["password_required"]
-            if full_name:
-                prereg_user.full_name = full_name
-                prereg_user.full_name_validated = full_name_validated
-                update_fields.extend(["full_name", "full_name_validated"])
-            prereg_user.save(update_fields=update_fields)
         except PreregistrationUser.DoesNotExist:
-            prereg_user = create_preregistration_user(
-                email,
-                realm,
-                password_required=password_required,
-                full_name=full_name,
-                full_name_validated=full_name_validated,
-                multiuse_invite=multiuse_obj,
-            )
+            existing_prereg_user = None
 
+        # password_required and full_name data passed here as argument should take precedence
+        # over the defaults with which the existing PreregistrationUser that we've just fetched
+        # was created.
+        prereg_user = create_preregistration_user(
+            email,
+            realm,
+            password_required=password_required,
+            full_name=full_name,
+            full_name_validated=full_name_validated,
+            multiuse_invite=multiuse_obj,
+        )
+
+        streams_to_subscribe = None
         if multiuse_obj is not None:
-            request.session.modified = True
+            # If the user came here explicitly via a multiuse invite link, then
+            # we use the defaults implied by the invite.
             streams_to_subscribe = list(multiuse_obj.streams.all())
+        elif existing_prereg_user:
+            # Otherwise, the user is doing this signup not via any invite link,
+            # but we can use the pre-existing PreregistrationUser for these values
+            # since it tells how they were intended to be, when the user was invited.
+            streams_to_subscribe = list(existing_prereg_user.streams.all())
+            invited_as = existing_prereg_user.invited_as
+
+        if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)
-            prereg_user.invited_as = invited_as
-            prereg_user.multiuse_invite = multiuse_obj
-            prereg_user.save()
+        prereg_user.invited_as = invited_as
+        prereg_user.multiuse_invite = multiuse_obj
+        prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
         if is_signup:
@@ -711,7 +718,7 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
         return
     try:
         validate_email(deactivated_email)
-        context["deactivated_account_error"] = mark_safe(
+        context["deactivated_account_error"] = Markup(
             DEACTIVATED_ACCOUNT_ERROR.format(username=escape(deactivated_email))
         )
     except ValidationError:
@@ -1030,7 +1037,7 @@ def password_reset(request: HttpRequest) -> HttpResponse:
             form_class=ZulipPasswordResetForm,
             success_url="/accounts/password/reset/done/",
         )(request)
-    except RateLimited as e:
+    except RateLimitedError as e:
         assert e.secs_to_freedom is not None
         return render(
             request,

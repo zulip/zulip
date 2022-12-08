@@ -379,7 +379,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     mock_template("filter_topics", false, () => "filter-topics-stub");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({
-        append: (html) => {
+        append(html) {
             assert.equal(html, "filter-topics-stub");
             filter_topics_appended = true;
         },
@@ -606,12 +606,8 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire, mock_template})
     assert.ok(inactive_subheader_flag);
 });
 
-test_ui("separators_only_pinned", ({mock_template}) => {
+test_ui("separators_only_pinned", () => {
     // Test only pinned streams
-
-    create_stream_subheader({mock_template});
-    pinned_subheader_flag = false;
-
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
@@ -640,16 +636,14 @@ test_ui("separators_only_pinned", ({mock_template}) => {
     };
 
     stream_list.build_stream_list();
-    const $pinned_subheader = $("<pinned-subheader-stub>");
     const expected_elems = [
-        $pinned_subheader.html(), // pinned
+        // no section sub-header since there is only one section
         $("<devel-sidebar-row-stub>"),
         $("<Rome-sidebar-row-stub>"),
         // no separator at the end as no stream follows
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
-    assert.ok(pinned_subheader_flag);
 });
 
 test_ui("rename_stream", ({mock_template}) => {

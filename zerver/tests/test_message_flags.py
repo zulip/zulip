@@ -22,7 +22,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
-from zerver.lib.timeout import TimeoutExpired
+from zerver.lib.timeout import TimeoutExpiredError
 from zerver.lib.user_topics import add_topic_mute
 from zerver.models import (
     Message,
@@ -136,7 +136,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.assertEqual(messages_response["anchor"], new_message_id)
 
         with mock.patch(
-            "zerver.views.message_fetch.get_first_visible_message_id", return_value=new_message_id
+            "zerver.lib.narrow.get_first_visible_message_id", return_value=new_message_id
         ):
             messages_response = self.get_messages_response(
                 anchor="first_unread", num_before=0, num_after=1
@@ -145,7 +145,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.assertEqual(messages_response["anchor"], new_message_id)
 
         with mock.patch(
-            "zerver.views.message_fetch.get_first_visible_message_id",
+            "zerver.lib.narrow.get_first_visible_message_id",
             return_value=new_message_id + 1,
         ):
             messages_reponse = self.get_messages_response(
@@ -155,7 +155,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.assertIn("anchor", messages_reponse)
 
         with mock.patch(
-            "zerver.views.message_fetch.get_first_visible_message_id",
+            "zerver.lib.narrow.get_first_visible_message_id",
             return_value=new_message_id - 1,
         ):
             messages = self.get_messages(anchor="first_unread", num_before=0, num_after=1)
@@ -223,6 +223,92 @@ class UnreadCountTests(ZulipTestCase):
                 check_flags(msg["flags"], {"read"})
             elif msg["id"] == self.unread_msg_ids[1]:
                 check_flags(msg["flags"], set())
+
+    def test_update_flags_for_narrow(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        message_ids = [
+            self.send_stream_message(
+                self.example_user("cordelia"), "Verona", topic_name=f"topic {i % 2}"
+            )
+            for i in range(10)
+        ]
+
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[5],
+                    "num_before": 2,
+                    "num_after": 2,
+                    "narrow": "[]",
+                    "op": "add",
+                    "flag": "read",
+                },
+            )
+        )
+        self.assertEqual(response["processed_count"], 5)
+        self.assertEqual(response["updated_count"], 5)
+        self.assertEqual(response["first_processed_id"], message_ids[3])
+        self.assertEqual(response["last_processed_id"], message_ids[7])
+        self.assertEqual(response["found_oldest"], False)
+        self.assertEqual(response["found_newest"], False)
+        self.assertCountEqual(
+            UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
+            .extra(where=[UserMessage.where_read()])
+            .values_list("message_id", flat=True),
+            message_ids[3:8],
+        )
+
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[3],
+                    "include_anchor": "false",
+                    "num_before": 0,
+                    "num_after": 5,
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": "stream", "operand": "Verona"},
+                            {"operator": "topic", "operand": "topic 1"},
+                        ]
+                    ).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+        )
+        # In this topic (1, 3, 5, 7, 9), processes everything after 3.
+        self.assertEqual(response["processed_count"], 3)
+        self.assertEqual(response["updated_count"], 3)
+        self.assertEqual(response["first_processed_id"], message_ids[5])
+        self.assertEqual(response["last_processed_id"], message_ids[9])
+        self.assertEqual(response["found_oldest"], False)
+        self.assertEqual(response["found_newest"], True)
+        self.assertCountEqual(
+            UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
+            .extra(where=[UserMessage.where_starred()])
+            .values_list("message_id", flat=True),
+            message_ids[5::2],
+        )
+
+    def test_update_flags_for_narrow_misuse(self) -> None:
+        self.login("hamlet")
+
+        response = self.client_post(
+            "/json/messages/flags/narrow",
+            {
+                "anchor": "0",
+                "include_anchor": "false",
+                "num_before": "1",
+                "num_after": "1",
+                "narrow": "[]",
+                "op": "add",
+                "flag": "read",
+            },
+        )
+        self.assert_json_error(response, "The anchor can only be excluded at an end of the range")
 
     def test_mark_all_in_stream_read(self) -> None:
         self.login("hamlet")
@@ -602,7 +688,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
 
     def test_mark_all_as_read_timeout_response(self) -> None:
         self.login("hamlet")
-        with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpired):
+        with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpiredError):
             result = self.client_post("/json/mark_all_as_read", {})
             self.assertEqual(result.status_code, 200)
 
@@ -1908,9 +1994,7 @@ class MarkUnreadTest(ZulipTestCase):
             )
         self.assert_json_success(result)
         event = events[0]["event"]
-        self.assertEqual(
-            event["messages"], subscribed_stream_message_ids + unsubscribed_stream_message_ids
-        )
+        self.assertEqual(event["messages"], subscribed_stream_message_ids)
 
         for message_id in subscribed_stream_message_ids + unsubscribed_stream_message_ids:
             um = UserMessage.objects.get(

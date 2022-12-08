@@ -81,7 +81,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -792,11 +792,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(realm) -> Dict[str, EmojiInfo]:
+    def get_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
         return get_realm_emoji_uncached(realm)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:
+    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
         return get_active_realm_emoji_uncached(realm)
 
     def get_admin_users_and_bots(
@@ -897,7 +897,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
     @cache_with_key(get_realm_used_upload_space_cache_key, timeout=3600 * 24 * 7)
-    def currently_used_upload_space_bytes(realm) -> int:
+    def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
         used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
         if used_space is None:
             return 0
@@ -1485,10 +1485,13 @@ class UserBaseSettings(models.Model):
     created after the change.
     """
 
-    # UI settings
+    ### Generic UI settings
     enter_sends = models.BooleanField(default=False)
 
-    # display settings
+    ### Display settings. ###
+    # left_side_userlist was removed from the UI in Zulip 6.0; the
+    # database model is being temporarily preserved in case we want to
+    # restore a version of the setting, preserving who had it enabled.
     left_side_userlist = models.BooleanField(default=False)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     # This setting controls which view is rendered first when Zulip loads.
@@ -2329,6 +2332,12 @@ class MultiuseInvite(models.Model):
     streams = models.ManyToManyField("Stream")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
+
+    # status for tracking whether the invite has been revoked.
+    # If revoked, set to confirmation.settings.STATUS_REVOKED.
+    # STATUS_USED is not supported, because these objects are supposed
+    # to be usable multiple times.
+    status = models.IntegerField(default=0)
 
 
 class EmailChangeStatus(models.Model):
@@ -3497,7 +3506,7 @@ def validate_attachment_request_for_spectator_access(
             from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 
             rate_limit_spectator_attachment_access_by_file(attachment.path_id)
-        except RateLimited:
+        except RateLimitedError:
             return False
 
     return True
@@ -4663,7 +4672,7 @@ class BotConfigData(models.Model):
         unique_together = ("bot_profile", "key")
 
 
-class InvalidFakeEmailDomain(Exception):
+class InvalidFakeEmailDomainError(Exception):
     pass
 
 
@@ -4679,7 +4688,7 @@ def get_fake_email_domain(realm: Realm) -> str:
         # Check that the fake email domain can be used to form valid email addresses.
         validate_email(Address(username="bot", domain=settings.FAKE_EMAIL_DOMAIN).addr_spec)
     except ValidationError:
-        raise InvalidFakeEmailDomain(
+        raise InvalidFakeEmailDomainError(
             settings.FAKE_EMAIL_DOMAIN + " is not a valid domain. "
             "Consider setting the FAKE_EMAIL_DOMAIN setting."
         )

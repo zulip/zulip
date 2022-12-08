@@ -97,7 +97,7 @@ export function get_display_text_for_realm_message_retention_setting() {
 }
 
 function change_stream_message_retention_days_block_display_property(value) {
-    if (value === "retain_for_period") {
+    if (value === "custom_period") {
         $("#stream_privacy_modal .stream-message-retention-days-input").show();
     } else {
         $("#stream_privacy_modal .stream-message-retention-days-input").hide();
@@ -105,7 +105,7 @@ function change_stream_message_retention_days_block_display_property(value) {
 }
 
 function set_stream_message_retention_setting_dropdown(stream) {
-    let value = "retain_for_period";
+    let value = "custom_period";
     if (stream.message_retention_days === null) {
         value = "realm_default";
     } else if (stream.message_retention_days === settings_config.retain_message_forever) {
@@ -434,7 +434,7 @@ function change_stream_privacy(e) {
     let message_retention_days = $(
         "#stream_privacy_modal select[name=stream_message_retention_setting]",
     ).val();
-    if (message_retention_days === "retain_for_period") {
+    if (message_retention_days === "custom_period") {
         message_retention_days = Number.parseInt(
             $("#stream_privacy_modal input[name=stream-message-retention-days]").val(),
             10,
@@ -513,8 +513,6 @@ export function initialize() {
             is_business_type_org:
                 page_params.realm_org_type === settings_config.all_org_type_values.business.code,
             is_stream_edit: true,
-            max_stream_name_length: page_params.max_stream_name_length,
-            max_stream_description_length: page_params.max_stream_description_length,
         };
         const change_privacy_modal = render_stream_types(template_data);
 
@@ -527,7 +525,7 @@ export function initialize() {
             close_on_submit: true,
             id: "stream_privacy_modal",
             on_click: change_stream_privacy,
-            post_render: () => {
+            post_render() {
                 $("#stream_privacy_modal .dialog_submit_button").attr("data-stream-id", stream_id);
                 set_stream_message_retention_setting_dropdown(stream);
 
@@ -536,7 +534,7 @@ export function initialize() {
                     change_stream_message_retention_days_block_display_property(dropdown_value);
                 });
             },
-            on_show: () => {
+            on_show() {
                 stream_settings_ui.hide_or_disable_stream_privacy_options_if_required(
                     $("#stream_privacy_modal"),
                 );
@@ -554,6 +552,8 @@ export function initialize() {
         const template_data = {
             stream_name: stream.name,
             stream_description: stream.description,
+            max_stream_name_length: page_params.max_stream_name_length,
+            max_stream_description_length: page_params.max_stream_description_length,
         };
         const change_stream_info_modal = render_change_stream_info_modal(template_data);
         dialog_widget.launch({
@@ -564,7 +564,7 @@ export function initialize() {
             html_body: change_stream_info_modal,
             id: "change_stream_info_modal",
             on_click: save_stream_info,
-            post_render: () => {
+            post_render() {
                 $("#change_stream_info_modal .dialog_submit_button")
                     .addClass("save-button")
                     .attr("data-stream-id", stream_id);
@@ -646,7 +646,7 @@ export function initialize() {
             id: "copy_email_address_modal",
             html_submit_button: $t_html({defaultMessage: "Copy address"}),
             help_link: "/help/message-a-stream-by-email#configuration-options",
-            on_click: () => {},
+            on_click() {},
             close_on_submit: true,
         });
         $("#show-sender").prop("checked", true);
@@ -671,16 +671,6 @@ export function initialize() {
             $(".email-address").text(address);
         });
     });
-
-    $("#manage_streams_container").on(
-        "click",
-        ".close-modal-btn, .close-change-stream-info-modal",
-        (e) => {
-            // This fixes a weird bug in which, subscription_settings hides
-            // unexpectedly by clicking the cancel button in a modal on top of it.
-            e.stopPropagation();
-        },
-    );
 
     $("#manage_streams_container").on(
         "change",

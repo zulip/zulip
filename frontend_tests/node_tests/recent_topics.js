@@ -42,7 +42,7 @@ let expected_data_to_replace_in_list_widget;
 const ListWidget = mock_esm("../../static/js/list_widget", {
     modifier: noop,
 
-    create: (container, mapped_topic_values, opts) => {
+    create(container, mapped_topic_values, opts) {
         const formatted_topics = [];
         ListWidget.modifier = opts.modifier;
         for (const item of mapped_topic_values) {
@@ -64,7 +64,7 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
 
     hard_redraw: noop,
     filter_and_sort: noop,
-    replace_list_data: (data) => {
+    replace_list_data(data) {
         assert.notEqual(
             expected_data_to_replace_in_list_widget,
             undefined,
@@ -94,7 +94,7 @@ mock_esm("../../static/js/message_view_header", {
     render_title_area: noop,
 });
 mock_esm("../../static/js/user_topics", {
-    is_topic_muted: (stream_id, topic) => {
+    is_topic_muted(stream_id, topic) {
         if (stream_id === stream1 && topic === topic7) {
             return true;
         }
@@ -112,7 +112,7 @@ mock_esm("../../static/js/pm_list", {
     handle_narrow_deactivated: noop,
 });
 mock_esm("../../static/js/recent_senders", {
-    get_topic_recent_senders: () => [1, 2],
+    get_topic_recent_senders: () => [2, 1],
 });
 mock_esm("../../static/js/stream_data", {
     is_muted: () =>
@@ -128,7 +128,7 @@ mock_esm("../../static/js/timerender", {
     get_full_datetime: () => "date at time",
 });
 mock_esm("../../static/js/sub_store", {
-    get: (stream) => {
+    get(stream) {
         if (stream === stream5) {
             // No data is available for deactivated streams
             return undefined;
@@ -146,7 +146,7 @@ mock_esm("../../static/js/top_left_corner", {
     narrow_to_recent_topics: noop,
 });
 mock_esm("../../static/js/unread", {
-    num_unread_for_topic: (stream_id, topic) => {
+    num_unread_for_topic(stream_id, topic) {
         if (stream_id === 1 && topic === "topic-1") {
             return 0;
         }

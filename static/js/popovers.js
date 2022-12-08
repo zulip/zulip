@@ -1,14 +1,10 @@
 import ClipboardJS from "clipboard";
 import {add, formatISO, parseISO, set} from "date-fns";
-import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
 
-import render_actions_popover_content from "../templates/actions_popover_content.hbs";
-import render_actions_popover_template from "../templates/actions_popover_template.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
-import render_remind_me_popover_content from "../templates/remind_me_popover_content.hbs";
 import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
 import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
 import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
@@ -21,27 +17,20 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import * as condense from "./condense";
-import {media_breakpoints_num} from "./css_variables";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
-import * as feature_flags from "./feature_flags";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
-import * as message_edit from "./message_edit";
-import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow from "./narrow";
-import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as read_receipts from "./read_receipts";
 import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
@@ -50,10 +39,8 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
-import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
-import * as unread_ops from "./unread_ops";
 import * as user_groups from "./user_groups";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
@@ -61,8 +48,6 @@ import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
 
-let $current_actions_popover_elem;
-let current_flatpickr_instance;
 let $current_message_info_popover_elem;
 let $current_user_info_popover_elem;
 let $current_user_info_popover_manage_menu;
@@ -72,8 +57,6 @@ let userlist_placement = "right";
 let list_of_popovers = [];
 
 export function clear_for_testing() {
-    $current_actions_popover_elem = undefined;
-    current_flatpickr_instance = undefined;
     $current_message_info_popover_elem = undefined;
     $current_user_info_popover_elem = undefined;
     $current_user_info_popover_manage_menu = undefined;
@@ -521,191 +504,14 @@ function show_user_group_info_popover(element, group, message) {
     }
 }
 
-export function toggle_actions_popover(element, id) {
-    const $last_popover_elem = $current_actions_popover_elem;
-    hide_all();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
-    }
-
-    $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
-    message_lists.current.select_id(id);
-    const not_spectator = !page_params.is_spectator;
-    const $elt = $(element);
-    if ($elt.data("popover") === undefined) {
-        const message = message_lists.current.get(id);
-        const message_container = message_lists.current.view.message_containers.get(message.id);
-        const should_display_hide_option =
-            muted_users.is_user_muted(message.sender_id) &&
-            !message_container.is_hidden &&
-            not_spectator;
-        const editability = message_edit.get_editability(message);
-        const can_move_message = message_edit.can_move_message(message);
-
-        let editability_menu_item;
-        let move_message_menu_item;
-        let view_source_menu_item;
-
-        if (editability === message_edit.editability_types.FULL) {
-            editability_menu_item = $t({defaultMessage: "Edit message"});
-            if (message.is_stream) {
-                move_message_menu_item = $t({defaultMessage: "Move messages"});
-            }
-        } else if (can_move_message) {
-            move_message_menu_item = $t({defaultMessage: "Move messages"});
-            view_source_menu_item = $t({defaultMessage: "View message source"});
-        } else {
-            view_source_menu_item = $t({defaultMessage: "View message source"});
-        }
-
-        // We do not offer "Mark as unread" on messages in streams
-        // that the user is not currently subscribed to. Zulip has an
-        // invariant that all unread messages must be in streams the
-        // user is subscribed to, and so the server will ignore any
-        // messages in such streams; it's better to hint this is not
-        // useful by not offering the option.
-        //
-        // We also require that the message is currently marked as
-        // read. Theoretically, it could be useful to offer this even
-        // for a message that is already unread, so you can mark those
-        // below it as unread; but that's an unlikely situation, and
-        // showing it can be a confusing source of clutter. We may
-        // want to revise this algorithm specifically in the context
-        // of interleaved views.
-        //
-        // To work around #22893, we also only offer the option if the
-        // fetch_status data structure means we'll be able to mark
-        // everything below the current message as read correctly.
-        const not_stream_message = message.type !== "stream";
-        const subscribed_to_stream =
-            message.type === "stream" && stream_data.is_subscribed(message.stream_id);
-        const should_display_mark_as_unread =
-            message_lists.current.data.fetch_status.has_found_newest() &&
-            !message.unread &&
-            not_spectator &&
-            (not_stream_message || subscribed_to_stream);
-
-        const should_display_edit_history_option =
-            message.edit_history &&
-            message.edit_history.some(
-                (entry) =>
-                    entry.prev_content !== undefined ||
-                    entry.prev_stream !== undefined ||
-                    entry.prev_topic !== undefined,
-            ) &&
-            page_params.realm_allow_edit_history &&
-            not_spectator;
-
-        // Disabling this for /me messages is a temporary workaround
-        // for the fact that we don't have a styling for how that
-        // should look.  See also condense.js.
-        const should_display_collapse =
-            !message.locally_echoed &&
-            !message.is_me_message &&
-            !message.collapsed &&
-            not_spectator;
-        const should_display_uncollapse =
-            !message.locally_echoed && !message.is_me_message && message.collapsed;
-
-        const should_display_quote_and_reply =
-            message.content !== "<p>(deleted)</p>" && not_spectator;
-
-        const conversation_time_uri = hash_util.by_conversation_and_time_url(message);
-
-        const should_display_delete_option =
-            message_edit.get_deletability(message) && not_spectator;
-        const should_display_read_receipts_option =
-            page_params.realm_enable_read_receipts && not_spectator;
-
-        const args = {
-            message_id: message.id,
-            stream_id: message.stream_id,
-            editability_menu_item,
-            move_message_menu_item,
-            should_display_mark_as_unread,
-            view_source_menu_item,
-            should_display_collapse,
-            should_display_uncollapse,
-            should_display_add_reaction_option: message.sent_by_me,
-            should_display_edit_history_option,
-            should_display_hide_option,
-            conversation_time_uri,
-            narrowed: narrow_state.active(),
-            should_display_delete_option,
-            should_display_read_receipts_option,
-            should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
-            should_display_quote_and_reply,
-        };
-
-        const ypos = $elt.offset().top;
-        $elt.popover({
-            // Popover height with 7 items in it is ~190 px
-            placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
-            title: "",
-            content: render_actions_popover_content(args),
-            template: render_actions_popover_template(),
-            html: true,
-            trigger: "manual",
-        });
-        $elt.popover("show");
-        $current_actions_popover_elem = $elt;
-    }
-
-    if (window.innerWidth < media_breakpoints_num.xl) {
-        // This ensures that the popover doesn't overflow to the right of the window.
-        const actions_popover_left = window.innerWidth - $(".actions_popover_wrapper").outerWidth();
-        $(".actions_popover_wrapper").css("left", actions_popover_left);
-    }
-}
-
-export function render_actions_remind_popover(element, id) {
-    hide_all();
-    $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
-    message_lists.current.select_id(id);
-    const $elt = $(element);
-    if ($elt.data("popover") === undefined) {
-        const message = message_lists.current.get(id);
-        const args = {
-            message,
-        };
-        const ypos = $elt.offset().top;
-        $elt.popover({
-            // Popover height with 7 items in it is ~190 px
-            placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
-            title: "",
-            content: render_remind_me_popover_content(args),
-            html: true,
-            trigger: "manual",
-        });
-        $elt.popover("show");
-        current_flatpickr_instance = $(
-            `.remind.custom[data-message-id="${CSS.escape(message.id)}"]`,
-        ).flatpickr({
-            enableTime: true,
-            clickOpens: false,
-            defaultDate: "today",
-            minDate: "today",
-            plugins: [new ConfirmDatePlugin({})],
-        });
-        $current_actions_popover_elem = $elt;
-    }
-}
-
 function get_action_menu_menu_items() {
+    const $current_actions_popover_elem = $("[data-tippy-root] .actions_popover");
     if (!$current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
 
-    const popover_data = $current_actions_popover_elem.data("popover");
-    if (!popover_data) {
-        blueslip.error("Cannot find popover data for actions menu.");
-        return undefined;
-    }
-
-    return $("li:not(.divider):visible a", popover_data.$tip);
+    return $current_actions_popover_elem.find("li:not(.divider):visible a");
 }
 
 export function focus_first_popover_item($items, index = 0) {
@@ -745,48 +551,16 @@ export function popover_items_handle_keyboard(key, $items) {
     $items.eq(index).trigger("focus");
 }
 
-function focus_first_action_popover_item() {
+export function focus_first_action_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_action_menu_menu_items();
     focus_first_popover_item($items);
 }
 
-export function open_message_menu(message) {
-    if (message.locally_echoed) {
-        // Don't open the popup for locally echoed messages for now.
-        // It creates bugs with things like keyboard handlers when
-        // we get the server response.
-        return true;
-    }
-
-    const message_id = message.id;
-    toggle_actions_popover($(".selected_message .actions_hover")[0], message_id);
-    if ($current_actions_popover_elem) {
-        focus_first_action_popover_item();
-    }
-    return true;
-}
-
 export function actions_menu_handle_keyboard(key) {
     const $items = get_action_menu_menu_items();
     popover_items_handle_keyboard(key, $items);
-}
-
-export function actions_popped() {
-    return $current_actions_popover_elem !== undefined;
-}
-
-export function hide_actions_popover() {
-    if (actions_popped()) {
-        $(".has_popover").removeClass("has_popover has_actions_popover");
-        $current_actions_popover_elem.popover("destroy");
-        $current_actions_popover_elem = undefined;
-    }
-    if (current_flatpickr_instance !== undefined) {
-        current_flatpickr_instance.destroy();
-        current_flatpickr_instance = undefined;
-    }
 }
 
 export function message_info_popped() {
@@ -956,12 +730,6 @@ export function hide_playground_links_popover() {
 }
 
 export function register_click_handlers() {
-    $("#main_div").on("click", ".actions_hover", function (e) {
-        const $row = $(this).closest(".message_row");
-        e.stopPropagation();
-        toggle_actions_popover(this, rows.id($row));
-    });
-
     $("#main_div").on(
         "click",
         ".sender_name, .sender_name-in-status, .inline_profile_picture",
@@ -1193,24 +961,18 @@ export function register_click_handlers() {
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
         e.stopPropagation();
 
-        // use email of currently selected user, rather than some elem comparison,
-        // as the presence list may be redrawn with new elements.
         const $target = $(this).closest("li");
         const user_id = elem_to_user_id($target.find("a"));
+        // Hiding popovers may mutate current_user_sidebar_user_id.
+        const previous_user_sidebar_id = current_user_sidebar_user_id;
 
-        if (current_user_sidebar_user_id === user_id) {
+        // Hide popovers, but we don't want to hide the sidebars on
+        // smaller browser windows.
+        hide_all_except_sidebars();
+
+        if (previous_user_sidebar_id === user_id) {
             // If the popover is already shown, clicking again should toggle it.
-            // We don't want to hide the sidebars on smaller browser windows.
-            hide_all_except_sidebars();
             return;
-        }
-        hide_all();
-
-        if (userlist_placement === "right") {
-            show_userlist_sidebar();
-        } else {
-            // Maintain the same behavior when displaying with the streamlist.
-            stream_popover.show_streamlist_sidebar();
         }
 
         const user = people.get_by_user_id(user_id);
@@ -1228,35 +990,6 @@ export function register_click_handlers() {
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = $target.data("popover");
-    });
-
-    $("body").on("click", ".mark_as_unread", (e) => {
-        hide_actions_popover();
-        const message_id = $(e.currentTarget).data("message-id");
-
-        unread_ops.mark_as_unread_from_here(message_id);
-
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".respond_button", (e) => {
-        // Arguably, we should fetch the message ID to respond to from
-        // e.target, but that should always be the current selected
-        // message in the current message list (and
-        // compose_actions.respond_to_message doesn't take a message
-        // argument).
-        compose_actions.quote_and_reply({trigger: "popover respond"});
-        hide_actions_popover();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".reminder_button", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        render_actions_remind_popover($(".selected_message .actions_hover")[0], message_id);
-        e.stopPropagation();
-        e.preventDefault();
     });
 
     $("body").on("click", ".remind.custom", (e) => {
@@ -1328,104 +1061,6 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
-    $("body").on("click", ".popover_toggle_collapse", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        const $row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id($row));
-
-        hide_actions_popover();
-
-        if ($row) {
-            if (message.collapsed) {
-                condense.uncollapse($row);
-            } else {
-                condense.collapse($row);
-            }
-        }
-
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("body").on("click", ".popover_edit_message, .popover_view_source", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        const $row = message_lists.current.get_row(message_id);
-        hide_actions_popover();
-        message_edit.start($row);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("body").on("click", ".popover_move_message", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        const message = message_lists.current.get(message_id);
-        hide_actions_popover();
-        stream_popover.build_move_topic_to_stream_popover(
-            message.stream_id,
-            message.topic,
-            message,
-        );
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("body").on("click", ".rehide_muted_user_message", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        const $row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id($row));
-        const message_container = message_lists.current.view.message_containers.get(message.id);
-
-        hide_actions_popover();
-
-        if ($row && !message_container.is_hidden) {
-            message_lists.current.view.hide_revealed_message(message_id);
-        }
-
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("body").on("click", ".view_edit_history", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        const $row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id($row));
-
-        hide_actions_popover();
-        message_edit_history.show_history(message);
-        $("#message-history-cancel").trigger("focus");
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".view_read_receipts", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        hide_actions_popover();
-        read_receipts.show_user_list(message_id);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".delete_message", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        hide_actions_popover();
-        message_edit.delete_message(message_id);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    clipboard_enable(".copy_link").on("success", (e) => {
-        hide_actions_popover();
-        // e.trigger returns the DOM element triggering the copy action
-        const message_id = e.trigger.dataset.messageId;
-        const $row = $(`[zid='${CSS.escape(message_id)}']`);
-        $row.find(".alert-msg")
-            .text($t({defaultMessage: "Copied!"}))
-            .css("display", "block")
-            .delay(1000)
-            .fadeOut(300);
-
-        setTimeout(() => {
-            // The Clipboard library works by focusing to a hidden textarea.
-            // We unfocus this so keyboard shortcuts, etc., will work again.
-            $(":focus").trigger("blur");
-        }, 0);
-    });
 
     clipboard_enable(".copy_mention_syntax");
 
@@ -1483,7 +1118,6 @@ export function any_active() {
     // Expanded sidebars on mobile view count as popovers as well.
     return (
         popover_menus.any_active() ||
-        actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
         stream_popover.topic_popped() ||
@@ -1500,11 +1134,9 @@ export function any_active() {
 export function hide_all_except_sidebars(opts) {
     $(".has_popover").removeClass("has_popover has_actions_popover has_emoji_popover");
     if (!opts || !opts.not_hide_tippy_instances) {
+        // hideAll hides all tippy instances (tooltips and popovers).
         hideAll();
-    } else if (opts.exclude_tippy_instance) {
-        hideAll({exclude: opts.exclude_tippy_instance});
     }
-    hide_actions_popover();
     emoji_picker.hide_emoji_popover();
     giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
@@ -1530,7 +1162,6 @@ export function hide_all(not_hide_tippy_instances) {
     hide_userlist_sidebar();
     stream_popover.hide_streamlist_sidebar();
     hide_all_except_sidebars({
-        exclude_tippy_instance: undefined,
         not_hide_tippy_instances,
     });
 }

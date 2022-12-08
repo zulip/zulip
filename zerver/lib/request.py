@@ -27,7 +27,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from typing_extensions import Concatenate, ParamSpec
 
-import zerver.lib.rate_limiter as rate_limiter
+from zerver.lib import rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.notes import BaseNotes
 from zerver.lib.types import Validator

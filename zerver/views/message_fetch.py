@@ -1,23 +1,10 @@
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
-from sqlalchemy.engine import Connection, Row
-from sqlalchemy.sql import (
-    ColumnElement,
-    Select,
-    and_,
-    column,
-    join,
-    literal,
-    literal_column,
-    select,
-    table,
-    union_all,
-)
-from sqlalchemy.sql.selectable import SelectBase
+from sqlalchemy.sql import and_, column, join, literal, literal_column, select, table
 from sqlalchemy.types import Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -26,23 +13,20 @@ from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
     NarrowBuilder,
     OptionalNarrowListT,
-    add_narrow_conditions,
-    exclude_muting_conditions,
-    get_base_query_for_search,
+    fetch_messages,
     is_spectator_compatible,
     is_web_public_narrow,
     narrow_parameter,
+    parse_anchor_value,
 )
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import can_access_stream_history_by_id, can_access_stream_history_by_name
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa
 from zerver.lib.utils import statsd
 from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
 from zerver.models import Realm, UserMessage, UserProfile
 
-LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 MAX_MESSAGES_PER_FETCH = 5000
 
 
@@ -95,152 +79,12 @@ def get_search_fields(
     }
 
 
-def ok_to_include_history(
-    narrow: OptionalNarrowListT, user_profile: Optional[UserProfile], is_web_public_query: bool
-) -> bool:
-    # There are occasions where we need to find Message rows that
-    # have no corresponding UserMessage row, because the user is
-    # reading a public stream that might include messages that
-    # were sent while the user was not subscribed, but which they are
-    # allowed to see.  We have to be very careful about constructing
-    # queries in those situations, so this function should return True
-    # only if we are 100% sure that we're gonna add a clause to the
-    # query that narrows to a particular public stream on the user's realm.
-    # If we screw this up, then we can get into a nasty situation of
-    # polluting our narrow results with messages from other realms.
-
-    # For web-public queries, we are always returning history.  The
-    # analogues of the below stream access checks for whether streams
-    # have is_web_public set and banning is operators in this code
-    # path are done directly in NarrowBuilder.
-    if is_web_public_query:
-        assert user_profile is None
-        return True
-
-    assert user_profile is not None
-
-    include_history = False
-    if narrow is not None:
-        for term in narrow:
-            if term["operator"] == "stream" and not term.get("negated", False):
-                operand: Union[str, int] = term["operand"]
-                if isinstance(operand, str):
-                    include_history = can_access_stream_history_by_name(user_profile, operand)
-                else:
-                    include_history = can_access_stream_history_by_id(user_profile, operand)
-            elif (
-                term["operator"] == "streams"
-                and term["operand"] == "public"
-                and not term.get("negated", False)
-                and user_profile.can_access_public_streams()
-            ):
-                include_history = True
-        # Disable historical messages if the user is narrowing on anything
-        # that's a property on the UserMessage table.  There cannot be
-        # historical messages in these cases anyway.
-        for term in narrow:
-            if term["operator"] == "is":
-                include_history = False
-
-    return include_history
-
-
-def find_first_unread_anchor(
-    sa_conn: Connection, user_profile: Optional[UserProfile], narrow: OptionalNarrowListT
-) -> int:
-    # For anonymous web users, all messages are treated as read, and so
-    # always return LARGER_THAN_MAX_MESSAGE_ID.
-    if user_profile is None:
-        return LARGER_THAN_MAX_MESSAGE_ID
-
-    # We always need UserMessage in our query, because it has the unread
-    # flag for the user.
-    need_user_message = True
-
-    # Because we will need to call exclude_muting_conditions, unless
-    # the user hasn't muted anything, we will need to include Message
-    # in our query.  It may be worth eventually adding an optimization
-    # for the case of a user who hasn't muted anything to avoid the
-    # join in that case, but it's low priority.
-    need_message = True
-
-    query, inner_msg_id_col = get_base_query_for_search(
-        user_profile=user_profile,
-        need_message=need_message,
-        need_user_message=need_user_message,
-    )
-
-    query, is_search = add_narrow_conditions(
-        user_profile=user_profile,
-        inner_msg_id_col=inner_msg_id_col,
-        query=query,
-        narrow=narrow,
-        is_web_public_query=False,
-        realm=user_profile.realm,
-    )
-
-    condition = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
-
-    # We exclude messages on muted topics when finding the first unread
-    # message in this narrow
-    muting_conditions = exclude_muting_conditions(user_profile, narrow)
-    if muting_conditions:
-        condition = and_(condition, *muting_conditions)
-
-    first_unread_query = query.where(condition)
-    first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
-    first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
-    if len(first_unread_result) > 0:
-        anchor = first_unread_result[0][0]
-    else:
-        anchor = LARGER_THAN_MAX_MESSAGE_ID
-
-    return anchor
-
-
-def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool) -> Optional[int]:
-    """Given the anchor and use_first_unread_anchor parameters passed by
-    the client, computes what anchor value the client requested,
-    handling backwards-compatibility and the various string-valued
-    fields.  We encode use_first_unread_anchor as anchor=None.
-    """
-    if use_first_unread_anchor:
-        # Backwards-compatibility: Before we added support for the
-        # special string-typed anchor values, clients would pass
-        # anchor=None and use_first_unread_anchor=True to indicate
-        # what is now expressed as anchor="first_unread".
-        return None
-    if anchor_val is None:
-        # Throw an exception if neither an anchor argument not
-        # use_first_unread_anchor was specified.
-        raise JsonableError(_("Missing 'anchor' argument."))
-    if anchor_val == "oldest":
-        return 0
-    if anchor_val == "newest":
-        return LARGER_THAN_MAX_MESSAGE_ID
-    if anchor_val == "first_unread":
-        return None
-    try:
-        # We don't use `.isnumeric()` to support negative numbers for
-        # anchor.  We don't recommend it in the API (if you want the
-        # very first message, use 0 or 1), but it used to be supported
-        # and was used by the web app, so we need to continue
-        # supporting it for backwards-compatibility
-        anchor = int(anchor_val)
-        if anchor < 0:
-            return 0
-        elif anchor > LARGER_THAN_MAX_MESSAGE_ID:
-            return LARGER_THAN_MAX_MESSAGE_ID
-        return anchor
-    except ValueError:
-        raise JsonableError(_("Invalid anchor"))
-
-
 @has_request_variables
 def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     anchor_val: Optional[str] = REQ("anchor", default=None),
+    include_anchor: bool = REQ(json_validator=check_bool, default=True),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
     narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
@@ -257,6 +101,8 @@ def get_messages_backend(
                 MAX_MESSAGES_PER_FETCH,
             )
         )
+    if num_before > 0 and num_after > 0 and not include_anchor:
+        raise JsonableError(_("The anchor can only be excluded at an end of the range"))
 
     realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
@@ -299,44 +145,6 @@ def get_messages_backend(
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
 
-    include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
-    if include_history:
-        # The initial query in this case doesn't use `zerver_usermessage`,
-        # and isn't yet limited to messages the user is entitled to see!
-        #
-        # This is OK only because we've made sure this is a narrow that
-        # will cause us to limit the query appropriately elsewhere.
-        # See `ok_to_include_history` for details.
-        #
-        # Note that is_web_public_query=True goes here, since
-        # include_history is semantically correct for is_web_public_query.
-        need_message = True
-        need_user_message = False
-    elif narrow is None:
-        # We need to limit to messages the user has received, but we don't actually
-        # need any fields from Message
-        need_message = False
-        need_user_message = True
-    else:
-        need_message = True
-        need_user_message = True
-
-    query: SelectBase
-    query, inner_msg_id_col = get_base_query_for_search(
-        user_profile=user_profile,
-        need_message=need_message,
-        need_user_message=need_user_message,
-    )
-
-    query, is_search = add_narrow_conditions(
-        user_profile=user_profile,
-        inner_msg_id_col=inner_msg_id_col,
-        query=query,
-        narrow=narrow,
-        realm=realm,
-        is_web_public_query=is_web_public_query,
-    )
-
     if narrow is not None:
         # Add some metadata to our logging data for narrows
         verbose_operators = []
@@ -349,57 +157,21 @@ def get_messages_backend(
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
-    with get_sqlalchemy_connection() as sa_conn:
-        if anchor is None:
-            # `anchor=None` corresponds to the anchor="first_unread" parameter.
-            anchor = find_first_unread_anchor(
-                sa_conn,
-                user_profile,
-                narrow,
-            )
-
-        anchored_to_left = anchor == 0
-
-        # Set value that will be used to short circuit the after_query
-        # altogether and avoid needless conditions in the before_query.
-        anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
-        if anchored_to_right:
-            num_after = 0
-
-        first_visible_message_id = get_first_visible_message_id(realm)
-
-        query = limit_query_to_range(
-            query=query,
-            num_before=num_before,
-            num_after=num_after,
-            anchor=anchor,
-            anchored_to_left=anchored_to_left,
-            anchored_to_right=anchored_to_right,
-            id_col=inner_msg_id_col,
-            first_visible_message_id=first_visible_message_id,
-        )
-
-        main_query = query.subquery()
-        query = (
-            select(*main_query.c)
-            .select_from(main_query)
-            .order_by(column("message_id", Integer).asc())
-        )
-        # This is a hack to tag the query we use for testing
-        query = query.prefix_with("/* get_messages */")
-        rows = list(sa_conn.execute(query).fetchall())
-
-    query_info = post_process_limited_query(
-        rows=rows,
+    query_info = fetch_messages(
+        narrow=narrow,
+        user_profile=user_profile,
+        realm=realm,
+        is_web_public_query=is_web_public_query,
+        anchor=anchor,
+        include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,
-        anchor=anchor,
-        anchored_to_left=anchored_to_left,
-        anchored_to_right=anchored_to_right,
-        first_visible_message_id=first_visible_message_id,
     )
 
-    rows = query_info["rows"]
+    anchor = query_info.anchor
+    include_history = query_info.include_history
+    is_search = query_info.is_search
+    rows = query_info.rows
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
@@ -458,163 +230,13 @@ def get_messages_backend(
         messages=message_list,
         result="success",
         msg="",
-        found_anchor=query_info["found_anchor"],
-        found_oldest=query_info["found_oldest"],
-        found_newest=query_info["found_newest"],
-        history_limited=query_info["history_limited"],
+        found_anchor=query_info.found_anchor,
+        found_oldest=query_info.found_oldest,
+        found_newest=query_info.found_newest,
+        history_limited=query_info.history_limited,
         anchor=anchor,
     )
     return json_success(request, data=ret)
-
-
-def limit_query_to_range(
-    query: Select,
-    num_before: int,
-    num_after: int,
-    anchor: int,
-    anchored_to_left: bool,
-    anchored_to_right: bool,
-    id_col: ColumnElement[Integer],
-    first_visible_message_id: int,
-) -> SelectBase:
-    """
-    This code is actually generic enough that we could move it to a
-    library, but our only caller for now is message search.
-    """
-    need_before_query = (not anchored_to_left) and (num_before > 0)
-    need_after_query = (not anchored_to_right) and (num_after > 0)
-
-    need_both_sides = need_before_query and need_after_query
-
-    # The semantics of our flags are as follows:
-    #
-    # num_after = number of rows < anchor
-    # num_after = number of rows > anchor
-    #
-    # But we also want the row where id == anchor (if it exists),
-    # and we don't want to union up to 3 queries.  So in some cases
-    # we do things like `after_limit = num_after + 1` to grab the
-    # anchor row in the "after" query.
-    #
-    # Note that in some cases, if the anchor row isn't found, we
-    # actually may fetch an extra row at one of the extremes.
-    if need_both_sides:
-        before_anchor = anchor - 1
-        after_anchor = max(anchor, first_visible_message_id)
-        before_limit = num_before
-        after_limit = num_after + 1
-    elif need_before_query:
-        before_anchor = anchor
-        before_limit = num_before
-        if not anchored_to_right:
-            before_limit += 1
-    elif need_after_query:
-        after_anchor = max(anchor, first_visible_message_id)
-        after_limit = num_after + 1
-
-    if need_before_query:
-        before_query = query
-
-        if not anchored_to_right:
-            before_query = before_query.where(id_col <= before_anchor)
-
-        before_query = before_query.order_by(id_col.desc())
-        before_query = before_query.limit(before_limit)
-
-    if need_after_query:
-        after_query = query
-
-        if not anchored_to_left:
-            after_query = after_query.where(id_col >= after_anchor)
-
-        after_query = after_query.order_by(id_col.asc())
-        after_query = after_query.limit(after_limit)
-
-    if need_both_sides:
-        return union_all(before_query.self_group(), after_query.self_group())
-    elif need_before_query:
-        return before_query
-    elif need_after_query:
-        return after_query
-    else:
-        # If we don't have either a before_query or after_query, it's because
-        # some combination of num_before/num_after/anchor are zero or
-        # use_first_unread_anchor logic found no unread messages.
-        #
-        # The most likely reason is somebody is doing an id search, so searching
-        # for something like `message_id = 42` is exactly what we want.  In other
-        # cases, which could possibly be buggy API clients, at least we will
-        # return at most one row here.
-        return query.where(id_col == anchor)
-
-
-def post_process_limited_query(
-    rows: Sequence[Union[Row, Sequence[Any]]],
-    num_before: int,
-    num_after: int,
-    anchor: int,
-    anchored_to_left: bool,
-    anchored_to_right: bool,
-    first_visible_message_id: int,
-) -> Dict[str, Any]:
-    # Our queries may have fetched extra rows if they added
-    # "headroom" to the limits, but we want to truncate those
-    # rows.
-    #
-    # Also, in cases where we had non-zero values of num_before or
-    # num_after, we want to know found_oldest and found_newest, so
-    # that the clients will know that they got complete results.
-
-    if first_visible_message_id > 0:
-        visible_rows: Sequence[Union[Row, Sequence[Any]]] = [
-            r for r in rows if r[0] >= first_visible_message_id
-        ]
-    else:
-        visible_rows = rows
-
-    rows_limited = len(visible_rows) != len(rows)
-
-    if anchored_to_right:
-        num_after = 0
-        before_rows = visible_rows[:]
-        anchor_rows = []
-        after_rows = []
-    else:
-        before_rows = [r for r in visible_rows if r[0] < anchor]
-        anchor_rows = [r for r in visible_rows if r[0] == anchor]
-        after_rows = [r for r in visible_rows if r[0] > anchor]
-
-    if num_before:
-        before_rows = before_rows[-1 * num_before :]
-
-    if num_after:
-        after_rows = after_rows[:num_after]
-
-    visible_rows = [*before_rows, *anchor_rows, *after_rows]
-
-    found_anchor = len(anchor_rows) == 1
-    found_oldest = anchored_to_left or (len(before_rows) < num_before)
-    found_newest = anchored_to_right or (len(after_rows) < num_after)
-    # BUG: history_limited is incorrect False in the event that we had
-    # to bump `anchor` up due to first_visible_message_id, and there
-    # were actually older messages.  This may be a rare event in the
-    # context where history_limited is relevant, because it can only
-    # happen in one-sided queries with no num_before (see tests tagged
-    # BUG in PostProcessTest for examples), and we don't generally do
-    # those from the UI, so this might be OK for now.
-    #
-    # The correct fix for this probably involves e.g. making a
-    # `before_query` when we increase `anchor` just to confirm whether
-    # messages were hidden.
-    history_limited = rows_limited and found_oldest
-
-    return dict(
-        rows=visible_rows,
-        found_anchor=found_anchor,
-        found_newest=found_newest,
-        found_oldest=found_oldest,
-        history_limited=history_limited,
-    )
 
 
 @has_request_variables

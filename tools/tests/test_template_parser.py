@@ -4,7 +4,7 @@ from typing import Optional
 
 try:
     from tools.lib.template_parser import (
-        TemplateParserException,
+        TemplateParserError,
         is_django_block_tag,
         tokenize,
         validate,
@@ -21,7 +21,7 @@ class ParserTest(unittest.TestCase):
         fn: Optional[str] = None,
         text: Optional[str] = None,
     ) -> None:
-        with self.assertRaisesRegex(TemplateParserException, error):
+        with self.assertRaisesRegex(TemplateParserError, error):
             validate(fn=fn, text=text)
 
     def test_is_django_block_tag(self) -> None:
@@ -48,6 +48,22 @@ class ParserTest(unittest.TestCase):
             {{/with}}
             """
         validate(text=my_html)
+
+    def test_validate_handlebars_partial_block(self) -> None:
+        my_html = """
+            {{#> generic_thing }}
+                <p>hello!</p>
+            {{/generic_thing}}
+            """
+        validate(text=my_html)
+
+    def test_validate_bad_handlebars_partial_block(self) -> None:
+        my_html = """
+            {{#> generic_thing }}
+                <p>hello!</p>
+            {{# generic_thing}}
+            """
+        self._assert_validate_error("Missing end tag for the token at row 4 13!", text=my_html)
 
     def test_validate_comment(self) -> None:
         my_html = """
@@ -297,6 +313,11 @@ class ParserTest(unittest.TestCase):
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, "handlebars_end")
         self.assertEqual(token.tag, "with")
+
+        tag = "{{#> compose_banner }}bla"
+        token = tokenize(tag)[0]
+        self.assertEqual(token.kind, "handlebars_partial_block")
+        self.assertEqual(token.tag, "compose_banner")
 
         tag = "{% if foo %}bla"
         token = tokenize(tag)[0]

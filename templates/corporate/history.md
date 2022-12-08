@@ -46,15 +46,13 @@ was maintained by the project's founder and leader [Tim
 Abbott](/team/#the-core-team) on nights and weekends. In the months following
 the open-source release, the project quickly gained contributors and users.
 
-It soon became clear that guiding the contributor community in
-developing a world-class team chat product would require leadership
-from a dedicated team. Thus, in April 2016, Tim Abbott founded a
-[mission-driven](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)
-company, Kandra Labs, to steward and financially sustain Zulip’s
-development. Incorporating as a business has helped Zulip attract top
-talent, and has made Zulip eligible for [large innovation
-grants](https://seedfund.nsf.gov/) from the US National Science
-Foundation, which Kandra Labs was awarded in 2017 and 2018.
+It soon became clear that guiding the contributor community in developing a
+world-class team chat product would require leadership from a dedicated team.
+Thus, in April 2016, Tim Abbott founded a [mission-driven](/values/) company,
+Kandra Labs, to steward and financially sustain Zulip’s development.
+Incorporating as a business has helped Zulip attract top talent, and has made
+Zulip eligible for [large innovation grants](https://seedfund.nsf.gov/) from the
+US National Science Foundation, which Kandra Labs was awarded in 2017 and 2018.
 
 ## Early days as an open-source company
 
@@ -79,7 +77,7 @@ In its early days, the Zulip community was focused on three main goals:
 - **Building a vibrant community around the project**, with effort and
   care dedicated to making it [easy to get
   started](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
-  contributing to Zulip. They Zulip development community gathered at
+  contributing to Zulip. The Zulip development community gathered at
   PyCon sprints [in
   2016](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
   and led the largest PyCon sprint ever [in
@@ -175,6 +173,11 @@ Zulip Cloud increased an incredible 40x in the month after Slack’s
   [Podcast.__init__](https://www.pythonpodcast.com/about/).
 
 ## Major server releases and product announcements
+
+- November 2022: [Zulip Server 6.0
+  released](https://blog.zulip.com/2022/11/17/zulip-6-0-released/), with over
+  3400 new commits. 118 people contributed commits to Zulip since the 5.0
+  release.
 
 - May 2022: Zulip
   [announces](https://blog.zulip.com/2022/05/05/public-access-option/) the

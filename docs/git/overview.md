@@ -63,8 +63,8 @@ Git workflow, or if you'd like a Git refresher.
 [continuous-integration]: ../testing/continuous-integration.md
 [zulip-git-guide-fork-ci]: cloning.md#step-3-configure-continuous-integration-for-your-fork
 [zulip-rtd-code-style]: ../contributing/code-style.md
-[zulip-rtd-commit-discipline]: ../contributing/version-control.md#commit-discipline
-[zulip-rtd-commit-messages]: ../contributing/version-control.md#commit-messages
+[zulip-rtd-commit-discipline]: ../contributing/commit-discipline.md
+[zulip-rtd-commit-messages]: ../contributing/commit-discipline.md
 [zulip-rtd-dev-overview]: ../development/overview.md
 [zulip-rtd-lint-tools]: ../contributing/code-style.md#lint-tools
 [zulip-rtd-mypy]: ../testing/mypy.md
