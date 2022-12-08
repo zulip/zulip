@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, 
 from urllib.parse import urlencode
 
 import jwt
+import orjson
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -159,6 +160,7 @@ def maybe_send_to_registration(
     is_signup: bool = False,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
+    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -199,6 +201,13 @@ def maybe_send_to_registration(
             desktop_flow_otp,
             expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
+        if params_to_store_in_authenticated_session:
+            set_expirable_session_var(
+                request.session,
+                "registration_desktop_flow_params_to_store_in_authenticated_session",
+                orjson.dumps(params_to_store_in_authenticated_session).decode(),
+                expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+            )
 
     try:
         # TODO: This should use get_realm_from_request, but a bunch of tests
@@ -319,6 +328,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         "is_signup",
         "multiuse_object_key",
         "full_name_validated",
+        "params_to_store_in_authenticated_session",
     ]
     for key in dict(kwargs):
         if key not in kwargs_to_pass:
