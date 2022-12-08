@@ -314,18 +314,17 @@ located at `.tx/config`.
 ## Transifex CLI setup
 
 In order to be able to run `tx pull` (and `tx push` as well, if you're a
-maintainer), you have to specify your Transifex credentials in a config
-file, located at `~/.transifexrc`.
+maintainer), you have to specify your Transifex API Token, [generated in
+Transifex's web interface][transifex-api-token], in a config file located at
+`~/.transifexrc`.
 
 You can find details on how to set it up [here][transifexrc], but it should
 look similar to this (with your credentials):
 
 ```ini
 [https://www.transifex.com]
-username = user
-token =
-password = p@ssw0rd
-hostname = https://www.transifex.com
+rest_hostname = https://rest.api.transifex.com
+token = 1/abcdefg...
 ```
 
 This basically identifies you as a Transifex user, so you can access your
@@ -338,5 +337,6 @@ organizations from the command line.
 [icu messageformat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
 [transifex]: https://transifex.com
+[transifex-api-token]: https://www.transifex.com/user/settings/api/
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
 [html-templates]: ../subsystems/html-css.md#html-templates
