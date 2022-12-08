@@ -66,7 +66,7 @@ function retrieve_search_query_data() {
 
 function pick_empty_narrow_banner() {
     const default_banner = {
-        title: $t({defaultMessage: "Nothing's been sent here yet!"}),
+        title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
         html: page_params.is_spectator
             ? ""
