@@ -424,9 +424,9 @@ def main(options: argparse.Namespace) -> NoReturn:
             sys.exit(1)
 
     # Install shellcheck.
-    run_as_root(["tools/setup/install-shellcheck"])
+    run_as_root([*proxy_env, "tools/setup/install-shellcheck"])
     # Install shfmt.
-    run_as_root(["tools/setup/install-shfmt"])
+    run_as_root([*proxy_env, "tools/setup/install-shfmt"])
 
     # Install transifex-cli.
     run_as_root([*proxy_env, "tools/setup/install-transifex-cli"])
