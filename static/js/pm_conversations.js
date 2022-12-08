@@ -36,14 +36,15 @@ class RecentPrivateMessages {
     // remove convo if its max_message_id is null, i.e. it is
     // a temporary convo
     removeEmptyConvo(){
-        let convoDict = this._items.keys();
-        for (const {key} of convoDict) {
-            if (convoDict.get(key) == null){
-                convoDict.delete(key);
-                return false; //break, as to avoid loop error
+        let convoList = this.recent_private_messages;
+        for (let i = 0; i < convoList.length; i++) {
+            if(!convoList[i]['max_message_id']){
+                console.log('REMOVING: ', convoList[i])
+                convoList.splice(i, i+1);
+                break;
             }
         }
-        //this.recent_private_messages.items()
+        console.log(convoList)
     }
 
     initInsert(user_ids){
@@ -53,7 +54,7 @@ class RecentPrivateMessages {
             max_message_id: null,
         };
         //adds to top of recent private messages list
-        this.recent_private_messages.unshift(conversation)
+        this.recent_private_messages.unshift(conversation);
       }
 
     insert(user_ids, message_id) {

@@ -1051,7 +1051,7 @@ export function deactivate(coming_from_recent_topics = false) {
     narrow_state.reset_current_filter();
     has_shown_message_list_view = true;
 
-    $("body").removeClass("narrowed_view");
+    $("body").Class("narrowed_view");
     $("#zfilt").removeClass("focused_table");
     $("#zhome").addClass("focused_table");
     message_lists.set_current(message_lists.home);

@@ -31,7 +31,8 @@ import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
 import * as util from "./util";
-// import * as pm_conversations from "./pm_conversations";
+import * as pm_conversations from "./pm_conversations";
+import * as pm_list from "./pm_list";
 
 export function blur_compose_inputs() {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
@@ -361,7 +362,8 @@ export function start(msg_type, opts) {
 
 export function cancel() {
     console.log('WE ARE CANCELING')
-    // pm_conversations.recent.
+    pm_conversations.recent.removeEmptyConvo();
+    // compose_fade.do_update_all();
 
     // As user closes the compose box, restore the compose box max height
     if (compose_ui.is_full_size()) {
