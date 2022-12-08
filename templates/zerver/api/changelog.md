@@ -1,4 +1,4 @@
-# API changelog
+  # API changelog
 
 This page documents changes to the Zulip Server API over time. See
 also the [Zulip release lifecycle][release-lifecycle] for background
@@ -37,6 +37,12 @@ Feature levels 157-158 are reserved for future use in 6.x maintenance
 releases.
 
 ## Changes in Zulip 6.0
+
+**Feature level 157**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+   [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+   [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Validating phone number input, creating new phone number type for custom user profile field.
 
 **Feature level 156**
 

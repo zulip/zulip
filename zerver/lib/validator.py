@@ -29,7 +29,6 @@ for any particular type of object.
 """
 import re
 import sys
-import phonenumbers
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -51,6 +50,7 @@ from typing import (
 )
 
 import orjson
+import phonenumbers
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -73,16 +73,14 @@ def check_anything(var_name: str, val: object) -> object:
 
 def check_string(var_name: str, val: object) -> str:
     if not isinstance(val, str):
-        raise ValidationError(
-            _("{var_name} is not a string").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
     return val
 
 
 def check_required_string(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
     if not s.strip():
-        raise ValidationError(
-            _("{item} cannot be blank.").format(item=var_name))
+        raise ValidationError(_("{item} cannot be blank.").format(item=var_name))
     return s
 
 
@@ -90,8 +88,7 @@ def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator[st
     def validator(var_name: str, val: object) -> str:
         s = check_string(var_name, val)
         if s not in possible_values:
-            raise ValidationError(
-                _("Invalid {var_name}").format(var_name=var_name))
+            raise ValidationError(_("Invalid {var_name}").format(var_name=var_name))
         return s
 
     return validator
@@ -99,18 +96,18 @@ def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator[st
 
 def check_phone_number(var_name: str, val: object) -> str:
     if not isinstance(val, str):
-        raise ValidationError(
-            _("Invalid {var_name}").format(var_name=var_name))
-    if val[0] != '+':
-        val = '+' + val
-    phone_number = ''
+        raise ValidationError(_("Invalid {var_name}").format(var_name=var_name))
     try:
         phone_number = phonenumbers.parse(val)
+        if not phonenumbers.is_valid_number(phone_number):
+            raise ValidationError(
+                _("{var_name} is not a valid phone number").format(var_name=var_name)
+            )
+        return check_capped_string(50)(var_name, val)
     except phonenumbers.NumberParseException:
-        raise ValidationError("Invalid phone number")
-    if not phonenumbers.is_valid_number(phone_number):
-        raise ValidationError("Invalid phone number")
-    return check_capped_string(50)(var_name, val)
+        raise ValidationError(
+            _("{var_name} is not a valid number format").format(var_name=var_name)
+        )
 
 
 def check_short_string(var_name: str, val: object) -> str:
@@ -158,30 +155,25 @@ def check_timezone(var_name: str, val: object) -> str:
         zoneinfo.ZoneInfo(s)
     except (ValueError, zoneinfo.ZoneInfoNotFoundError):
         raise ValidationError(
-            _("{var_name} is not a recognized time zone").format(
-                var_name=var_name)
+            _("{var_name} is not a recognized time zone").format(var_name=var_name)
         )
     return s
 
 
 def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
-        raise ValidationError(
-            _("{var_name} is not a string").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
     try:
         if datetime.strptime(val, "%Y-%m-%d").strftime("%Y-%m-%d") != val:
-            raise ValidationError(
-                _("{var_name} is not a date").format(var_name=var_name))
+            raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
     except ValueError:
-        raise ValidationError(
-            _("{var_name} is not a date").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
     return val
 
 
 def check_int(var_name: str, val: object) -> int:
     if not isinstance(val, int):
-        raise ValidationError(
-            _("{var_name} is not an integer").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not an integer").format(var_name=var_name))
     return val
 
 
@@ -189,8 +181,7 @@ def check_int_in(possible_values: List[int]) -> Validator[int]:
     def validator(var_name: str, val: object) -> int:
         n = check_int(var_name, val)
         if n not in possible_values:
-            raise ValidationError(
-                _("Invalid {var_name}").format(var_name=var_name))
+            raise ValidationError(_("Invalid {var_name}").format(var_name=var_name))
         return n
 
     return validator
@@ -201,11 +192,9 @@ def check_int_range(low: int, high: int) -> Validator[int]:
     def validator(var_name: str, val: object) -> int:
         n = check_int(var_name, val)
         if n < low:
-            raise ValidationError(
-                _("{var_name} is too small").format(var_name=var_name))
+            raise ValidationError(_("{var_name} is too small").format(var_name=var_name))
         if n > high:
-            raise ValidationError(
-                _("{var_name} is too large").format(var_name=var_name))
+            raise ValidationError(_("{var_name} is too large").format(var_name=var_name))
         return n
 
     return validator
@@ -213,15 +202,13 @@ def check_int_range(low: int, high: int) -> Validator[int]:
 
 def check_float(var_name: str, val: object) -> float:
     if not isinstance(val, float):
-        raise ValidationError(
-            _("{var_name} is not a float").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not a float").format(var_name=var_name))
     return val
 
 
 def check_bool(var_name: str, val: object) -> bool:
     if not isinstance(val, bool):
-        raise ValidationError(
-            _("{var_name} is not a boolean").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not a boolean").format(var_name=var_name))
     return val
 
 
@@ -231,8 +218,7 @@ def check_color(var_name: str, val: object) -> str:
     matched_results = valid_color_pattern.match(s)
     if not matched_results:
         raise ValidationError(
-            _("{var_name} is not a valid hex color code").format(
-                var_name=var_name)
+            _("{var_name} is not a valid hex color code").format(var_name=var_name)
         )
     return s
 
@@ -252,8 +238,7 @@ def check_list(
 ) -> Validator[List[ResultT]]:
     def f(var_name: str, val: object) -> List[ResultT]:
         if not isinstance(val, list):
-            raise ValidationError(
-                _("{var_name} is not a list").format(var_name=var_name))
+            raise ValidationError(_("{var_name} is not a list").format(var_name=var_name))
 
         if length is not None and length != len(val):
             raise ValidationError(
@@ -304,8 +289,7 @@ def check_dict(
 ) -> Validator[Dict[str, ResultT]]:
     def f(var_name: str, val: object) -> Dict[str, ResultT]:
         if not isinstance(val, dict):
-            raise ValidationError(
-                _("{var_name} is not a dict").format(var_name=var_name))
+            raise ValidationError(_("{var_name} is not a dict").format(var_name=var_name))
 
         for k in val:
             check_string(f"{var_name} key", k)
@@ -336,12 +320,10 @@ def check_dict(
         if _allow_only_listed_keys:
             required_keys_set = {x[0] for x in required_keys}
             optional_keys_set = {x[0] for x in optional_keys}
-            delta_keys = set(val.keys()) - \
-                required_keys_set - optional_keys_set
+            delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
                 raise ValidationError(
-                    _("Unexpected arguments: {}").format(
-                        ", ".join(list(delta_keys)))
+                    _("Unexpected arguments: {}").format(", ".join(list(delta_keys)))
                 )
 
         return cast(Dict[str, ResultT], val)
@@ -374,8 +356,7 @@ def check_union(allowed_type_funcs: Collection[Validator[ResultT]]) -> Validator
                 return func(var_name, val)
             except ValidationError:
                 pass
-        raise ValidationError(
-            _("{var_name} is not an allowed_type").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not an allowed_type").format(var_name=var_name))
 
     return enumerated_type_check
 
@@ -411,8 +392,7 @@ def check_url(var_name: str, val: object) -> str:
         validate(s)
         return s
     except ValidationError:
-        raise ValidationError(
-            _("{var_name} is not a URL").format(var_name=var_name))
+        raise ValidationError(_("{var_name} is not a URL").format(var_name=var_name))
 
 
 def check_external_account_url_pattern(var_name: str, val: object) -> str:
@@ -443,8 +423,7 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
 
     for key, value in field_data.items():
         if not key.strip():
-            raise ValidationError(
-                _("'{item}' cannot be blank.").format(item="value"))
+            raise ValidationError(_("'{item}' cannot be blank.").format(item="value"))
 
         valid_value = validator("field_data", value)
         assert value is valid_value  # To justify the unchecked cast below
@@ -544,8 +523,7 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
 
     if poll_data["type"] == "question":
         if not is_widget_author:
-            raise ValidationError(
-                "You can't edit a question unless you are the author.")
+            raise ValidationError("You can't edit a question unless you are the author.")
 
         checker = check_dict_only(
             [
@@ -646,8 +624,7 @@ def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]
 
     if not isinstance(val, list):
         raise ValidationError(
-            _("{var_name} is not a string or an integer list").format(
-                var_name=var_name)
+            _("{var_name} is not a string or an integer list").format(var_name=var_name)
         )
 
     return check_list(check_int)(var_name, val)
@@ -657,8 +634,7 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
     if isinstance(val, (str, int)):
         return val
 
-    raise ValidationError(
-        _("{var_name} is not a string or integer").format(var_name=var_name))
+    raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
 
 
 @dataclass
@@ -675,22 +651,18 @@ class WildValue:
     def __len__(self) -> int:
         if not isinstance(self.value, (dict, list, str)):
             raise ValidationError(
-                _("{var_name} does not have a length").format(
-                    var_name=self.var_name)
+                _("{var_name} does not have a length").format(var_name=self.var_name)
             )
         return len(self.value)
 
     def __str__(self) -> NoReturn:
-        raise TypeError(
-            "cannot convert WildValue to string; try .tame(check_string)")
+        raise TypeError("cannot convert WildValue to string; try .tame(check_string)")
 
     def _need_list(self) -> NoReturn:
-        raise ValidationError(
-            _("{var_name} is not a list").format(var_name=self.var_name))
+        raise ValidationError(_("{var_name} is not a list").format(var_name=self.var_name))
 
     def _need_dict(self) -> NoReturn:
-        raise ValidationError(
-            _("{var_name} is not a dict").format(var_name=self.var_name))
+        raise ValidationError(_("{var_name} is not a dict").format(var_name=self.var_name))
 
     def __iter__(self) -> Iterator["WildValue"]:
         self._need_list()
@@ -736,8 +708,7 @@ class WildValueList(WildValue):
         try:
             item = self.value[key]
         except IndexError:
-            raise ValidationError(_("{var_name} is missing").format(
-                var_name=var_name)) from None
+            raise ValidationError(_("{var_name} is missing").format(var_name=var_name)) from None
 
         return wrap_wild_value(var_name, item)
 
@@ -757,8 +728,7 @@ class WildValueDict(WildValue):
         try:
             item = self.value[key]
         except KeyError:
-            raise ValidationError(_("{var_name} is missing").format(
-                var_name=var_name)) from None
+            raise ValidationError(_("{var_name} is missing").format(var_name=var_name)) from None
 
         return wrap_wild_value(var_name, item)
 

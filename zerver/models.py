@@ -106,10 +106,10 @@ from zerver.lib.validator import (
     check_int,
     check_list,
     check_long_string,
+    check_phone_number,
     check_short_string,
     check_url,
     validate_select_field,
-    check_phone_number,
 )
 
 MAX_TOPIC_NAME_LENGTH = 60

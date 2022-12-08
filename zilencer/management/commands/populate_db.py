@@ -691,7 +691,7 @@ class Command(BaseCommand):
 
             # Create custom profile field data
             phone_number = try_add_realm_custom_profile_field(
-                zulip_realm, "Phone number", CustomProfileField.SHORT_TEXT, hint=""
+                zulip_realm, "Phone number", CustomProfileField.PHONE_NUMBER, hint=""
             )
             biography = try_add_realm_custom_profile_field(
                 zulip_realm,

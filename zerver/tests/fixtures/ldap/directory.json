@@ -11,7 +11,7 @@
         "mail": ["hamlet@zulip.com"],
         "userAccountControl": ["512"],
         "sn": ["Hamlet"],
-        "homePhone": ["123456789"],
+        "homePhone": ["+14129339036"],
         "birthDate": ["1900-09-08"],
         "jpegPhoto": "file:static/images/test-images/avatars/example_profile_picture.png"
     },
@@ -37,7 +37,7 @@
         "cn": ["New LDAP fullname"],
         "uid": ["newuser"],
         "sn": ["shortname"],
-        "homePhone": ["a-new-number"],
+        "homePhone": ["+14129339036"],
         "jpegPhoto": "file:static/images/test-images/avatars/example_profile_picture.png"
     },
 

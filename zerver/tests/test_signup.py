@@ -5105,7 +5105,7 @@ class UserSignUpTest(InviteUserBase):
             phone_number_field_value = CustomProfileFieldValue.objects.get(
                 user_profile=user_profile, field=phone_number_field
             )
-            self.assertEqual(phone_number_field_value.value, "a-new-number")
+            self.assertEqual(phone_number_field_value.value, "+14129339036")
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_auto_registration_on_login_invalid_email_in_directory(self) -> None:

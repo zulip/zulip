@@ -605,7 +605,7 @@ class PermissionTest(ZulipTestCase):
 
         # Test for all type of data
         fields = {
-            "Phone number": "short text data",
+            "Phone number": "+14129339037",
             "Biography": "long text data",
             "Favorite food": "short text data",
             "Favorite editor": "0",

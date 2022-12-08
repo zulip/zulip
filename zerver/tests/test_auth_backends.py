@@ -2873,7 +2873,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.social_auth_test(
                 account_data_dict,
                 subdomain="zulip",
-                extra_attributes=dict(mobilePhone=["123412341234"], birthday=["2021-01-01"]),
+                extra_attributes=dict(mobilePhone=["+14129339036"], birthday=["2021-01-01"]),
             )
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.email)
@@ -2887,7 +2887,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         phone_field_value = CustomProfileFieldValue.objects.get(
             user_profile=self.user_profile, field=phone_field
         ).value
-        self.assertEqual(phone_field_value, "123412341234")
+        self.assertEqual(phone_field_value, "+14129339036")
 
         # Verify the Birthday field doesn't get synced - because it isn't configured for syncing.
         new_birthday_field_value = CustomProfileFieldValue.objects.get(
@@ -2922,7 +2922,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result = self.social_auth_test(
                     account_data_dict,
                     subdomain="zulip",
-                    extra_attributes=dict(mobilePhone=["123412341234"], birthday=["2021-01-01"]),
+                    extra_attributes=dict(mobilePhone=["+14129339036"], birthday=["2021-01-01"]),
                 )
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.email)
@@ -6395,7 +6395,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         test_data = [
             {
                 "field_name": "Phone number",
-                "expected_value": "123456789",
+                "expected_value": "+14129339036",
             },
             {
                 "field_name": "Birthday",
@@ -6474,7 +6474,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         phone_number_field_value = CustomProfileFieldValue.objects.get(
             user_profile=hamlet, field=phone_number_field
         )
-        phone_number_field_value.value = "123456789"
+        phone_number_field_value.value = "+14129339036"
         phone_number_field_value.save(update_fields=["value"])
         expected_call_args = [
             hamlet,
