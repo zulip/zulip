@@ -2358,6 +2358,22 @@ class SAMLResponse(SAMLDocument):
             self.logger.error("Error parsing SAMLResponse: %s", str(e))
             return []
 
+    def get_session_index(self) -> Optional[str]:
+        """
+        Returns the SessionIndex from the SAMLResponse.
+        """
+        config = self.backend.generate_saml_config()
+        saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
+
+        try:
+            resp = OneLogin_Saml2_Response(
+                settings=saml_settings, response=self.encoded_saml_message
+            )
+            return resp.get_session_index()
+        except self.SAML_PARSING_EXCEPTIONS as e:
+            self.logger.error("Error parsing SAMLResponse: %s", str(e))
+            return None
+
     def is_logout_response(self) -> bool:
         """
         Checks whether the SAMLResponse is a LogoutResponse based on some
@@ -2676,6 +2692,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # or an authentication response.
             return SAMLSPInitiatedLogout.process_logout_response(saml_document, idp_name)
 
+        assert isinstance(saml_document, SAMLResponse)
+
         result = None
         try:
             params = relayed_params.copy()
@@ -2686,6 +2704,14 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
             # We want the IdP name to be accessible from the social pipeline.
             self.strategy.session_set("saml_idp_name", idp_name)
+            session_index = saml_document.get_session_index()
+            if session_index is None:
+                # In general IdPs will always provide a SessionIndex, but we can't know
+                # if some providers might not send it, so we allow it but log the event.
+                self.logger.info(
+                    "/complete/saml/: IdP did not provide SessionIndex in the SAMLResponse."
+                )
+            self.strategy.session_set("saml_session_index", session_index)
 
             # super().auth_complete expects to have RelayState set to the idp_name,
             # so we need to replace this param.
@@ -2769,8 +2795,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
     def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
         idp_name = self.strategy.session_get("saml_idp_name")
+        saml_session_index = self.strategy.session_get("saml_session_index")
 
-        return {"social_auth_backend": f"saml:{idp_name}"}
+        return {
+            "social_auth_backend": f"saml:{idp_name}",
+            "saml_session_index": saml_session_index,
+        }
 
 
 def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
@@ -2878,6 +2908,20 @@ class SAMLSPInitiatedLogout:
         return authentication_method.split("saml:")[1]
 
     @classmethod
+    def get_logged_in_user_session_index(cls, request: HttpRequest) -> Optional[str]:
+        """
+        During SAML authentication, we obtain the SessionIndex value provided
+        by the IdP and save it in the session. This function can be used
+        to retrieve it.
+        """
+        # Some asserts to ensure this doesn't get called incorrectly:
+        assert hasattr(request, "user")
+        assert isinstance(request.user, UserProfile)
+
+        session_index = request.session.get("saml_session_index")
+        return session_index
+
+    @classmethod
     def slo_request_to_idp(
         cls, request: HttpRequest, return_to: Optional[str] = None
     ) -> HttpResponse:
@@ -2899,10 +2943,13 @@ class SAMLSPInitiatedLogout:
         idp_name = cls.get_logged_in_user_idp(request)
         if idp_name is None:
             raise AssertionError("User not logged in via SAML")
+        session_index = cls.get_logged_in_user_session_index(request)
 
         idp = saml_backend.get_idp(idp_name)
         auth = saml_backend._create_saml_auth(idp)
-        slo_url = auth.logout(name_id=user_profile.delivery_email, return_to=return_to)
+        slo_url = auth.logout(
+            name_id=user_profile.delivery_email, return_to=return_to, session_index=session_index
+        )
 
         return HttpResponseRedirect(slo_url)
 

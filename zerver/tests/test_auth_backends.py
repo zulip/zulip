@@ -1990,7 +1990,11 @@ class SAMLAuthBackendTest(SocialAuthBase):
         return result
 
     def generate_saml_response(
-        self, email: str, name: str, extra_attributes: Mapping[str, List[str]] = {}
+        self,
+        email: str,
+        name: str,
+        extra_attributes: Mapping[str, List[str]] = {},
+        include_session_index: bool = True,
     ) -> str:
         """
         The samlresponse.txt fixture has a pre-generated SAMLResponse,
@@ -2025,6 +2029,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
             last_name=last_name,
             extra_attrs=extra_attrs,
         )
+
+        if not include_session_index:
+            # The SessionIndex value is hard-coded in the fixture, so we can remove it
+            # in a very hacky, but easy way, without needing to write regexes or parsing XML.
+            unencoded_saml_response = unencoded_saml_response.replace(
+                ' SessionIndex="ONELOGIN_a5fde8b09598814d7af2537f865d31c2f7aea831"', ""
+            )
+
         # SAMLResponse needs to be base64-encoded.
         saml_response: str = base64.b64encode(unencoded_saml_response.encode()).decode()
 
@@ -2084,6 +2096,11 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         self.assert_logged_in_user_id(hamlet.id)
 
+        # Obtain the SessionIndex value saved in the session, for ensuring it's sent in
+        # the LogoutRequest later.
+        session_index = self.client.session["saml_session_index"]
+        self.assertNotEqual(session_index, None)
+
         result = self.client_post("/accounts/logout/")
         # A redirect to the IdP is returned.
         self.assertEqual(result.status_code, 302)
@@ -2100,6 +2117,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         saml_request = OneLogin_Saml2_Utils.decode_base64_and_inflate(saml_request_encoded).decode()
         self.assertIn("<samlp:LogoutRequest", saml_request)
         self.assertIn(f"saml:NameID>{hamlet.delivery_email}</saml:NameID>", saml_request)
+        self.assertIn(f"<samlp:SessionIndex>{session_index}</samlp:SessionIndex>", saml_request)
 
         unencoded_logout_response = self.fixture_data("logoutresponse.txt", type="saml")
         logout_response: str = base64.b64encode(unencoded_logout_response.encode()).decode()
@@ -2141,6 +2159,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
             # in the desktop application - thus with a separate session.
             self.client.session.flush()
             self.verify_desktop_flow_end_page(result, self.email, desktop_flow_otp)
+
+        # Ensure the SessionIndex gets plumbed through to the final session in the app.
+        session_index = self.client.session["saml_session_index"]
+        self.assertNotEqual(session_index, None)
 
         # Now we have a desktop app logged in session. Verify that the logout
         # request will trigger the SAML SLO flow - it should if we correctly
@@ -2584,6 +2606,39 @@ class SAMLAuthBackendTest(SocialAuthBase):
             ],
         )
 
+    def test_social_auth_complete_samlresponse_without_session_index_logging(self) -> None:
+        """
+        Tests submitting a valid SAMLResponse to /complete/saml/ without the SessionIndex attribute,
+        which is optional - to verify we log that unusual situation appropriately.
+        """
+
+        # We don't need to test full flow, so just generate the data to POST to /complete/saml/
+        # as the last step of the SAML flow.
+        relay_state = orjson.dumps(
+            dict(
+                state_token=SAMLAuthBackend.put_data_in_redis({"subdomain": "zulip"}),
+            )
+        ).decode()
+        saml_response = self.generate_saml_response(
+            email=self.example_email("hamlet"), name="King Hamlet", include_session_index=False
+        )
+
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            post_params = {"RelayState": relay_state, "SAMLResponse": saml_response}
+            with mock.patch.object(OneLogin_Saml2_Response, "is_valid", return_value=True):
+                result = self.client_post("/complete/saml/", post_params)
+            # Redirect to /accounts/login/subdomain/ indicating auth success.
+            self.assertEqual(result.status_code, 302)
+            self.assertIn("/accounts/login/subdomain/", result["Location"])
+
+        # Verify the expected logline exists.
+        self.assertIn(
+            self.logger_output(
+                "/complete/saml/: IdP did not provide SessionIndex in the SAMLResponse.", "info"
+            ),
+            m.output,
+        )
+
     def test_social_auth_complete_wrong_issuing_idp(self) -> None:
         relay_state = orjson.dumps(
             dict(
@@ -2636,7 +2691,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result["Location"])
 
-        self.assert_length(m.output, 1)
+        self.assert_length(m.output, 3)
 
     def test_social_auth_saml_bad_idp_param_on_login_page(self) -> None:
         with self.assertLogs(self.logger_string, level="INFO") as m:

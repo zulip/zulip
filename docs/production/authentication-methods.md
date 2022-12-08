@@ -721,9 +721,6 @@ API key.
 - This implementation doesn't support using `SessionIndex` to limit which
   sessions are affected; in IdP-initiated Logout it always terminates
   all logged-in sessions for the user identified in the `NameID`.
-  In SP-initiated Logout this simply means that Zulip does not include
-  `SessionIndex` in the `LogoutRequest` to the IdP - however, that doesn't
-  seem to cause any undesired behavior with Keycloak.
 - SAML Logout in a configuration where your IdP handles authentication
   for multiple organizations is not yet supported.
 
