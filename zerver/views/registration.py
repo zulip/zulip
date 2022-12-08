@@ -4,6 +4,7 @@ from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import urlencode, urljoin
 
+import orjson
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
 from django.contrib.sessions.backends.base import SessionBase
@@ -647,7 +648,17 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
-        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+        params_to_store_in_authenticated_session = orjson.loads(
+            get_expirable_session_var(
+                request.session,
+                "registration_desktop_flow_params_to_store_in_authenticated_session",
+                default_value="{}",
+                delete=True,
+            )
+        )
+        return finish_desktop_flow(
+            request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
+        )
 
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks

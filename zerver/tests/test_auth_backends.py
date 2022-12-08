@@ -2176,6 +2176,55 @@ class SAMLAuthBackendTest(SocialAuthBase):
             settings.SOCIAL_AUTH_SAML_ENABLED_IDPS["test_idp"]["slo_url"], result["Location"]
         )
 
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_social_auth_sp_initiated_logout_after_desktop_registration(self) -> None:
+        """
+        SAML SP-initiated logout relies on certain necessary information being saved
+        in the authenticated session that was established during SAML authentication.
+        The mechanism of plumbing the information to the final session through the signup process
+        is a bit different than the one for the simpler case of direct login to an already existing
+        account - thus a separate test is needed for the registration codepath.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        desktop_flow_otp = "1234abcd" * 8
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain="zulip",
+            expect_choose_email_screen=True,
+            is_signup=True,
+            desktop_flow_otp=desktop_flow_otp,
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            desktop_flow_otp=desktop_flow_otp,
+        )
+
+        # Check that the SessionIndex got plumbed through to the final session
+        # acquired in the desktop application after signup.
+        session_index = self.client.session["saml_session_index"]
+        self.assertNotEqual(session_index, None)
+
+        # Verify that the logout request will trigger the SAML SLO flow,
+        # just like in the regular case where the user simply logged in
+        # without needing to go through signup.
+        result = self.client_post("/accounts/logout/")
+        # A redirect to the IdP is returned.
+        self.assertEqual(result.status_code, 302)
+        self.assertIn(
+            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS["test_idp"]["slo_url"], result["Location"]
+        )
+
     def test_saml_sp_initiated_logout_invalid_logoutresponse(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
