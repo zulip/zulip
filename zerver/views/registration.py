@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -33,7 +34,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
 )
 from zerver.context_processors import get_realm_from_request, login_context
-from zerver.decorator import do_login, require_post
+from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
     FindMyTeamForm,
     HomepageForm,
@@ -604,17 +605,18 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 
+@add_google_analytics
 def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> HttpResponse:
     try:
         key_record = validate_key(creation_key)
     except RealmCreationKey.InvalidError:
-        return render(
+        return TemplateResponse(
             request,
             "zerver/realm_creation_link_invalid.html",
         )
     if not settings.OPEN_REALM_CREATION:
         if key_record is None:
-            return render(
+            return TemplateResponse(
                 request,
                 "zerver/realm_creation_disabled.html",
             )
@@ -628,7 +630,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
-                return render(
+                return TemplateResponse(
                     request,
                     "zerver/rate_limit_exceeded.html",
                     context={"retry_after": int(e.secs_to_freedom)},
@@ -658,10 +660,19 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             return HttpResponseRedirect(reverse("new_realm_send_confirm", kwargs={"email": email}))
     else:
         form = RealmCreationForm()
-    return render(
+    return TemplateResponse(
         request,
         "zerver/create_realm.html",
         context={"form": form, "current_url": request.get_full_path},
+    )
+
+
+@add_google_analytics
+def new_realm_send_confirm(request: HttpRequest, email: str) -> HttpResponse:
+    return TemplateResponse(
+        request,
+        "zerver/accounts_send_confirm.html",
+        context={"email": email, "realm_creation": True},
     )
 
 
