@@ -4723,11 +4723,11 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
 
+
 class StreamTopic(models.Model):
-    id: int = models.AutoField(auto_created=True, primary_key=True)
-    stream: Stream = models.ForeignKey(Stream, on_delete=CASCADE)
-    topic_name: str = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
-    is_pinned: bool = models.BooleanField(default=False)
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    is_pinned = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("stream", "topic_name")
