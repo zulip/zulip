@@ -15,5 +15,5 @@ formatted, or to copy the Markdown source for a reply.
 
 ## Related articles
 
-* [Format messages using Markdown](/help/format-your-message-using-markdown)
+* [Message formatting](/help/format-your-message-using-markdown)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
