@@ -764,6 +764,8 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
         request, multiuse_object_key=confirmation_key, multiuse_object=multiuse_object
     )
 
+    
+
 
 @has_request_variables
 def find_account(
@@ -827,20 +829,8 @@ def find_account(
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
-            data = urllib.parse.urlencode({"emails": ",".join(emails)})
-            return redirect(append_url_query_string(url, data))
     else:
         form = FindMyTeamForm()
-        # The below validation is perhaps unnecessary, in that we
-        # shouldn't get able to get here with an invalid email unless
-        # the user hand-edits the URLs.
-        if raw_emails:
-            for email in raw_emails.split(","):
-                try:
-                    validators.validate_email(email)
-                    emails.append(email)
-                except ValidationError:
-                    pass
 
     return render(
         request,
