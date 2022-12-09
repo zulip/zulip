@@ -71,6 +71,6 @@ Zulip so that the <kbd>Enter</kbd> key sends your message.
 ## Related articles
 
 * [Resize the compose box](/help/resize-the-compose-box)
-* [Format messages using Markdown](/help/format-your-message-using-markdown)
+* [Message formatting](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Messaging tips and tricks](/help/messaging-tips)
