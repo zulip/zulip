@@ -1,5 +1,4 @@
 import logging
-import urllib
 from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import urlencode
 
@@ -835,23 +834,8 @@ def find_account(
                     request=request,
                 )
 
-            # Note: Show all the emails in the result otherwise this
-            # feature can be used to ascertain which email addresses
-            # are associated with Zulip.
-            data = urllib.parse.urlencode({"emails": ",".join(emails)})
-            return redirect(append_url_query_string(url, data))
     else:
         form = FindMyTeamForm()
-        # The below validation is perhaps unnecessary, in that we
-        # shouldn't get able to get here with an invalid email unless
-        # the user hand-edits the URLs.
-        if raw_emails:
-            for email in raw_emails.split(","):
-                try:
-                    validators.validate_email(email)
-                    emails.append(email)
-                except ValidationError:
-                    pass
 
     return render(
         request,

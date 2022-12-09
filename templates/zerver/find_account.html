@@ -41,13 +41,48 @@
                     {{ csrf_input }}
                     <div class="input-box moving-label horizontal">
                         <div class="inline-block relative">
-                            <input type="text" autofocus id="emails" name="emails" required />
+                            <input type="text" autofocus id="emails" name="emails" required onKeyUp="checkInput()"/>
                             <label for="emails">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit">{{ _('Find accounts') }}</button>
+                        <button type="submit" id="submit_button">{{ _('Find accounts') }}</button>
+                        
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>
+                <div id="errors_realtime", name="errors_realtime"></div>
+                <script>
+                    var inputEmails = document.getElementById('emails');
+                    var findAccountButton = document.getElementById('submit_button');
+                    var warningMessage = document.getElementById('errors_realtime');
+                    var originalBackgroundColor = findAccountButton.style.backgroundColor;
+                    function validEmails(val) {
+                        var emails = val.replace(/\s/g,'').split(",");
+                        var valid = true;
+                        var regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                        for (var i = 0; i < emails.length; i++) {
+                            if( emails[i] == "" || ! regex.test(emails[i])){
+                                valid = false;
+                            }
+                        }
+                        return valid
+                    }
+                    function checkInput() {
+                        var emailList = inputEmails.value;
+                        if (validEmails(emailList)){
+                            findAccountButton.disabled = false;
+                            findAccountButton.style.backgroundColor = originalBackgroundColor;
+                            findAccountButton.style.cursor = "pointer";
+                            findAccountButton.style["pointer-events"] = "auto";
+                            warningMessage.innerHTML = ""
+                        } else {
+                            findAccountButton.disabled = true;
+                            findAccountButton.style.backgroundColor = 'grey';
+                            findAccountButton.style.cursor = "not-allowed";
+                            findAccountButton.style["pointer-events"] = "none";
+                            warningMessage.innerHTML = "<div class='alert alert-error'>Enter a valid email address</div>"
+                        }
+                    }
+                </script>
                 <div id="errors"></div>
                 {% if form.emails.errors %}
                     {% for error in form.emails.errors %}
