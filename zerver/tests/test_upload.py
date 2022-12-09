@@ -948,7 +948,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
             self.assertEqual(
                 response["X-Accel-Redirect"],
-                "/serve_uploads/" + fp_path + "/" + name_str_for_test,
+                "/internal/uploads/" + fp_path + "/" + name_str_for_test,
             )
             if content_disposition != "":
                 self.assertIn("attachment;", response["Content-disposition"])
