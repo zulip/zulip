@@ -7,6 +7,7 @@ maxdepth: 3
 
 contributing
 ../code-of-conduct
+how-we-communicate
 asking-great-questions
 design-discussions
 commit-discipline
