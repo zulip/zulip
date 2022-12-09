@@ -175,7 +175,7 @@ function get_property_value(property_name, for_realm_default_settings, sub) {
         if (page_params.realm_waiting_period_threshold === 3) {
             return "three_days";
         }
-        return "custom_days";
+        return "custom_period";
     }
 
     if (property_name === "realm_org_join_restrictions") {
@@ -250,7 +250,7 @@ function set_realm_waiting_period_dropdown() {
     $("#id_realm_waiting_period_setting").val(value);
     change_element_block_display_property(
         "id_realm_waiting_period_threshold",
-        value === "custom_days",
+        value === "custom_period",
     );
 }
 
@@ -1092,7 +1092,7 @@ export function register_save_discard_widget_handlers(
                     case "three_days":
                         data.waiting_period_threshold = 3;
                         break;
-                    case "custom_days":
+                    case "custom_period":
                         data.waiting_period_threshold = $(
                             "#id_realm_waiting_period_threshold",
                         ).val();
@@ -1194,7 +1194,7 @@ export function build_page() {
         const waiting_period_threshold = this.value;
         change_element_block_display_property(
             "id_realm_waiting_period_threshold",
-            waiting_period_threshold === "custom_days",
+            waiting_period_threshold === "custom_period",
         );
     });
 

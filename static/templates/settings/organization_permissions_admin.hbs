@@ -43,9 +43,9 @@
                     <select name="realm_waiting_period_setting" id="id_realm_waiting_period_setting" class="prop-element">
                         <option value="none">{{t "None" }}</option>
                         <option value="three_days">{{t "3 days" }}</option>
-                        <option value="custom_days">{{t "Custom" }}</option>
+                        <option value="custom_period">{{t "Custom" }}</option>
                     </select>
-                    {{!-- This setting is hidden unless `custom_days` --}}
+                    {{!-- This setting is hidden unless `custom_period` --}}
                     <div class="dependent-settings-block">
                         <label for="id_realm_waiting_period_threshold" class="inline-block">{{t "Waiting period (days)" }}:</label>
                         <input type="text" id="id_realm_waiting_period_threshold"
