@@ -167,6 +167,10 @@ function composing_to_current_private_message_narrow() {
 }
 
 export function update_narrow_to_recipient_visibility() {
+    // Simon's fix
+    console.log("Updating narrow to recipient visibility");
+    pm_conversations.recent.removeEmptyConvo();
+
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_name = compose_state.stream_name();
@@ -363,7 +367,7 @@ export function start(msg_type, opts) {
 export function cancel() {
     console.log('WE ARE CANCELING')
     pm_conversations.recent.removeEmptyConvo();
-    // compose_fade.do_update_all();
+    pm_list.update_private_messages();
 
     // As user closes the compose box, restore the compose box max height
     if (compose_ui.is_full_size()) {
