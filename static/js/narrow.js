@@ -534,6 +534,7 @@ export function activate(raw_operators, opts) {
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
             },
+            msg_list,
         });
     }
 

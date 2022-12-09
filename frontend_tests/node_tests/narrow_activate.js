@@ -169,10 +169,12 @@ run_test("basics", () => {
     let cont;
 
     message_fetch.load_messages_for_narrow = (opts) => {
+        // Only validates the anchor and set of fields
         cont = opts.cont;
 
         assert.deepEqual(opts, {
             cont: opts.cont,
+            msg_list: opts.msg_list,
             anchor: 1000,
         });
     };

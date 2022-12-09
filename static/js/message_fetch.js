@@ -292,13 +292,11 @@ export function load_messages(opts, attempt = 1) {
 }
 
 export function load_messages_for_narrow(opts) {
-    const msg_list = message_list.narrowed;
-
     load_messages({
         anchor: opts.anchor,
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
-        msg_list,
+        msg_list: opts.msg_list,
         cont: opts.cont,
     });
 }
