@@ -349,6 +349,21 @@ export const time_limit_dropdown_values = [
 export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
+export const waiting_period_threshold_dropdown_values = [
+    {
+        description: $t({defaultMessage: "None"}),
+        code: 0,
+    },
+    {
+        description: $t({defaultMessage: "3 days"}),
+        code: 3,
+    },
+    {
+        description: $t({defaultMessage: "Custom"}),
+        code: "custom_period",
+    },
+];
+
 export const retain_message_forever = -1;
 
 export const user_role_values = {
