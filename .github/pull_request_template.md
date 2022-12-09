@@ -28,7 +28,7 @@ Communicate decisions, questions, and potential concerns.
 - [ ] Calls out remaining decisions and concerns.
 - [ ] Automated tests verify logic where appropriate.
 
-Individual commits are ready for review (see [commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html)).
+Individual commits are ready for review (see [commit discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html)).
 
 - [ ] Each commit is a coherent idea.
 - [ ] Commit message(s) explain reasoning and motivation for changes.
