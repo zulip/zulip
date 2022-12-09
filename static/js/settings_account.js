@@ -62,10 +62,10 @@ export function update_name_change_display() {
 export function update_email_change_display() {
     if (!settings_data.user_can_change_email()) {
         $("#change_email_button").prop("disabled", true);
-        $(".change_email_tooltip").show();
+        $("#change_email_button_container").addClass("email_changes_disabled_tooltip");
     } else {
         $("#change_email_button").prop("disabled", false);
-        $(".change_email_tooltip").hide();
+        $("#change_email_button_container").removeClass("email_changes_disabled_tooltip");
     }
 }
 

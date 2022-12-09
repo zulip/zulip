@@ -50,7 +50,6 @@ h3,
     }
 }
 
-.email-change-form,
 .user-name-section {
     .settings-info-icon {
         position: relative;
@@ -158,6 +157,18 @@ h3,
 .user-avatar-section {
     .inline-block {
         box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    }
+}
+
+#change_email_button_container {
+    &.email_changes_disabled_tooltip {
+        cursor: not-allowed;
+    }
+}
+
+#change_email_button {
+    &:disabled {
+        pointer-events: none;
     }
 }
 
