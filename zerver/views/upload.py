@@ -115,7 +115,7 @@ def serve_local(
         patch_cache_control(response, private=True, immutable=True)
         return response
 
-    response = internal_nginx_redirect(quote(f"/serve_uploads/{path_id}"))
+    response = internal_nginx_redirect(quote(f"/internal/uploads/{path_id}"))
     patch_disposition_header(response, local_path, attachment)
     patch_cache_control(response, private=True, immutable=True)
     return response
