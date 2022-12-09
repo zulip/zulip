@@ -56,6 +56,20 @@ run_test("email_for_user_settings", () => {
     assert.equal(email(isaac), isaac.delivery_email);
 });
 
+run_test("user_can_change_email", () => {
+    const can_change_email = settings_data.user_can_change_email;
+
+    page_params.is_admin = true;
+    assert.equal(can_change_email(), true);
+
+    page_params.is_admin = false;
+    page_params.realm_email_changes_disabled = true;
+    assert.equal(can_change_email(), false);
+
+    page_params.realm_email_changes_disabled = false;
+    assert.equal(can_change_email(), true);
+});
+
 run_test("user_can_change_name", () => {
     const can_change_name = settings_data.user_can_change_name;
 

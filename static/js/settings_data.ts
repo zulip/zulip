@@ -108,6 +108,16 @@ export function user_can_change_avatar(): boolean {
     return true;
 }
 
+export function user_can_change_email(): boolean {
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (page_params.realm_email_changes_disabled) {
+        return false;
+    }
+    return true;
+}
+
 export function user_can_change_logo(): boolean {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
 }

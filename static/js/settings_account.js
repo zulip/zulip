@@ -60,7 +60,7 @@ export function update_name_change_display() {
 }
 
 export function update_email_change_display() {
-    if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
+    if (!settings_data.user_can_change_email()) {
         $("#change_email_button").prop("disabled", true);
         $(".change_email_tooltip").show();
     } else {
@@ -648,7 +648,7 @@ export function set_up() {
     $("#change_email_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
+        if (settings_data.user_can_change_email()) {
             dialog_widget.launch({
                 html_heading: $t_html({defaultMessage: "Change email"}),
                 html_body: render_change_email_modal(),
