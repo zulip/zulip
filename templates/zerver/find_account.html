@@ -44,7 +44,7 @@
                             <input type="text" autofocus id="emails" name="emails" required onKeyUp="checkInput()"/>
                             <label for="emails">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit" id="submit">{{ _('Find accounts') }}</button>
+                        <button type="submit" id="submit_button">{{ _('Find accounts') }}</button>
                         
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
@@ -52,7 +52,7 @@
                 <div id="errors_realtime", name="errors_realtime"></div>
                 <script>
                     var inputEmails = document.getElementById('emails');
-                    var findAccountButton = document.getElementById('submit');
+                    var findAccountButton = document.getElementById('submit_button');
                     var warningMessage = document.getElementById('errors_realtime');
                     var originalBackgroundColor = findAccountButton.style.backgroundColor;
                     function validEmails(val) {
