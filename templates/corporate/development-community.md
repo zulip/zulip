@@ -219,7 +219,7 @@ you.
 ## Searching for past conversations
 
 To look for previous threads about something, we recommend using the
-following [search operators](/help/search-for-messages):
+following [search filters](/help/search-for-messages#search-filters):
 `streams:public <your keyword(s)>`.
 
 This will search the full history of all public streams for `<your
