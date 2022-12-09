@@ -162,7 +162,7 @@ async function test_set_new_user_threshold_to_three_days(page: Page): Promise<vo
 async function test_set_new_user_threshold_to_N_days(page: Page): Promise<void> {
     console.log("Test setting new user threshold to three days.");
     await page.waitForSelector("#id_realm_waiting_period_setting", {visible: true});
-    await page.select("#id_realm_waiting_period_setting", "custom_days");
+    await page.select("#id_realm_waiting_period_setting", "custom_period");
 
     const N = "10";
     await common.clear_and_type(page, "#id_realm_waiting_period_threshold", N);
