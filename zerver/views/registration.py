@@ -826,9 +826,6 @@ def find_account(
                     request=request,
                 )
 
-            # Note: Show all the emails in the result otherwise this
-            # feature can be used to ascertain which email addresses
-            # are associated with Zulip.
     else:
         form = FindMyTeamForm()
 
