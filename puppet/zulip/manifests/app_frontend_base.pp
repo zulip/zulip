@@ -77,7 +77,7 @@ class zulip::app_frontend_base {
   # pictures are served directly off disk.
   #
   # For installations using S3 to serve uploaded files, we want Django
-  # to handle the /serve_uploads and /user_avatars routes, so that it
+  # to handle the /internal/uploads and /user_avatars routes, so that it
   # can serve a redirect (after doing authentication, for uploads).
   $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', false)
   if $no_serve_uploads {
