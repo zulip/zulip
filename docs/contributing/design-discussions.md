@@ -23,24 +23,9 @@ on supporting the productivity of the design team. The more we are able to
 incorporate a variety of ideas, experiences, and perspectives into the
 discussion, the better decisions we'll be able to make.
 
-The following guidelines should put you on the right track:
-
-- Always treat other participants in the discussion with respect, regardless of
-  whether you agree with their ideas. Ad hominem attacks are never appropriate.
-
-- Aim to present your feedback precisely, with reasoning, and in as objective a
-  fashion as you can manage. E.g., “This button really jumps out at me in a way
-  that’s distracting; maybe it’s because of the color has a higher contrast than
-  the surrounding components?” is better than, “Can we make that color less
-  dark?”.
-
-- Clarify your feedback if there are follow-up questions or points of confusion.
-  However, avoid simply repeating the same points, as it does not move us closer
-  to making the best decisions we can.
-
-- When relevant, highlight information you have beyond your personal opinion.
-  E.g., “I moderate a community, and often have to answer questions about how
-  this works,” is more helpful than, “This is confusing.”
+Please start be reviewing the guide to [how we
+communicate](how-we-communicate.md) in the Zulip community. Also, when sharing
+your ideas:
 
 - Think about corner cases and interactions with existing features that the
   design will need to handle, and bring up problems with them, especially if they
@@ -53,17 +38,6 @@ The following guidelines should put you on the right track:
   experience. “Adding X might require removing feature Y,” or “X is
   incompatible with Zulip's security model,” is important to present
   early.
-
-- If you disagree with someone on the design team, the best way to make progress
-  is usually to state your opinions and reasoning clearly and respectfully, and
-  then let the other design team members catch up on the conversation. Other
-  project members may find your argument persuasive, and may have ideas that
-  address your concerns.
-
-Finally, don’t forget to express support and appreciation for ideas and work
-that you like, whether in messages or emoji reactions! It helps motivate folks
-working on Zulip’s design, builds consensus towards decisions, and creates a more
-positive atmosphere in the community.
 
 Note that [#design][design stream] is a high-traffic stream, and thoughtful
 participation takes time. Don’t let it prevent you from doing your own work. It
