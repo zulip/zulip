@@ -1,5 +1,4 @@
 import logging
-import urllib
 from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import urlencode
 
@@ -764,8 +763,6 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
         request, multiuse_object_key=confirmation_key, multiuse_object=multiuse_object
     )
 
-    
-
 
 @has_request_variables
 def find_account(
@@ -826,9 +823,6 @@ def find_account(
                     request=request,
                 )
 
-            # Note: Show all the emails in the result otherwise this
-            # feature can be used to ascertain which email addresses
-            # are associated with Zulip.
     else:
         form = FindMyTeamForm()
 
