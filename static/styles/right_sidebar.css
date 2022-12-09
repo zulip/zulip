@@ -77,7 +77,7 @@ $user_status_emoji_width: 24px;
     }
 
     .user_circle {
-        width: 8px;
+        min-width: 8px;
         height: 8px;
         margin: 0 5px;
         display: block;

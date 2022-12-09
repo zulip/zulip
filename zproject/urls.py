@@ -124,6 +124,7 @@ from zerver.views.registration import (
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
+    new_realm_send_confirm,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -569,8 +570,7 @@ i18n_urls = [
     ),
     path(
         "accounts/new/send_confirm/<email>",
-        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
-        {"realm_creation": True},
+        new_realm_send_confirm,
         name="new_realm_send_confirm",
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),

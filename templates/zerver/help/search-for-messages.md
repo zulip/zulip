@@ -1,7 +1,10 @@
 # Searching for messages
 
-Zulip has a powerful search engine under its hood. You can search for messages using
-keywords and filters via the search bar at the top of the app.
+It's easy to find the right conversation with Zulip's powerful full-text search.
+You can search for messages using keywords and filters via the search bar at the
+top of the app. There is a convenient [**search filters reference**](#search-filters-reference)
+in the Zulip app that you can use whenever you need a reminder of the search
+filters below.
 
 ## Keyword search
 
@@ -142,6 +145,19 @@ access to in the selected stream(s).  For example:
 When you search Zulip, the URL shown in the address bar of the Zulip web app is a
 permanent link to your search. You can share this link with others, and they
 will see *their own* search results for your query.
+
+## Search filters reference
+
+A summary of the search filters above is available in the Zulip app.
+
+{start_tabs}
+
+1. Click the **keyboard** (<i class="fa fa-keyboard-o"></i>) icon at the bottom
+   of the app, just below the right sidebar.
+
+1. Switch to the **Search filters** tab.
+
+{end_tabs}
 
 ## Related articles
 

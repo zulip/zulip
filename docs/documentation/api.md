@@ -57,7 +57,7 @@ Our API documentation is defined by a few sets of files:
 - The cURL examples are generated and tested using
   `zerver/openapi/curl_param_value_generators.py`.
 - The REST API index
-  (`templates/zerver/help/include/rest-endpoints.md`) in the broader
+  (`templates/zerver/api/include/rest-endpoints.md`) in the broader
   /api left sidebar (`templates/zerver/api/sidebar_index.md`).
 
 This first section is focused on explaining how the API documentation
@@ -296,7 +296,7 @@ above.
    template, so only do this if there's a good reason.
 
 1. Add the endpoint to the index in
-   `templates/zerver/help/include/rest-endpoints.md`. The URL should
+   `templates/zerver/api/include/rest-endpoints.md`. The URL should
    match the `operationId` for the endpoint, and the link text should
    match the title of the endpoint from the OpenAPI `summary` field.
 
