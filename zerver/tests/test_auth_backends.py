@@ -845,6 +845,12 @@ class DesktopFlowTestingLib(ZulipTestCase):
         self.assertEqual(browser_url, "/login/")
         decrypted_key = self.verify_desktop_data_and_return_key(desktop_data, desktop_flow_otp)
 
+        # Flush the session to have a clean slate - since up till now
+        # we were simulating the part of the flow that happens in the browser.
+        # Now we will simulating the last part of the flow, which gets executed
+        # in the desktop application - thus with a separate session.
+        self.client.session.flush()
+
         result = self.client_get(
             f"http://zulip.testserver/accounts/login/subdomain/{decrypted_key}"
         )
@@ -2153,11 +2159,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 expect_choose_email_screen=False,
                 desktop_flow_otp=desktop_flow_otp,
             )
-            # Flush the session to have a clean slate - since up till now
-            # we were simulating the part of the flow that happens in the browser.
-            # Now we will simulating the last part of the flow, which gets executed
-            # in the desktop application - thus with a separate session.
-            self.client.session.flush()
             self.verify_desktop_flow_end_page(result, self.email, desktop_flow_otp)
 
         # Ensure the SessionIndex gets plumbed through to the final session in the app.
