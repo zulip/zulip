@@ -933,30 +933,6 @@ td.pointer {
         padding: 0;
         width: auto;
     }
-
-    .message_time {
-        top: -4px;
-    }
-
-    .alert-msg {
-        top: -3px;
-    }
-
-    .message_controls {
-        top: -5px;
-    }
-
-    .message_top_line {
-        margin-top: 6px;
-    }
-
-    .message_content:not(:empty) {
-        margin-top: -18px;
-    }
-
-    .message_edit {
-        margin-top: -14px;
-    }
 }
 
 .sender-status {
@@ -989,13 +965,6 @@ td.pointer {
 .message_edit_notice {
     font-size: 10px;
     opacity: 0.5;
-    line-height: 0px;
-    text-align: right;
-    padding-left: 5px;
-    width: 40px;
-    position: absolute;
-    left: 0;
-    top: 16px;
     user-select: none;
     white-space: nowrap;
     overflow-x: hidden;
@@ -1006,12 +975,7 @@ td.pointer {
     display: block;
     font-size: 12px;
     opacity: 0.4;
-    padding: 1px;
     font-weight: 400;
-    position: absolute;
-    right: -105px;
-    line-height: 20px;
-    text-align: right;
     /* Disable blue link styling for the message timestamp link. */
     color: hsl(0, 0%, 20%);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
@@ -1025,13 +989,9 @@ td.pointer {
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
 .alert-msg {
-    position: absolute;
-    right: -110px;
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
-    padding-left: 20px;
-    padding-right: 40px;
     font-weight: 400;
     display: none;
 }
@@ -1042,11 +1002,6 @@ td.pointer {
 
 .message_controls {
     display: inline-block;
-    position: absolute;
-    top: -1px;
-    right: -56px;
-    width: 54px;
-    height: 22px;
     z-index: 1;
 
     /* This is a bit tricky; we need to reserve space for the message
@@ -1116,11 +1071,10 @@ td.pointer {
         opacity: 1 !important;
         display: inline-flex;
         justify-content: space-between;
-        /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
-        width: 30px;
         cursor: pointer;
         position: relative;
         vertical-align: middle;
+        padding-left: 2px;
 
         .rotating {
             display: inline-block;
@@ -1132,6 +1086,7 @@ td.pointer {
             opacity: 1 !important;
             color: hsl(0, 100%, 50%);
             font-weight: bold;
+            padding: 1px;
         }
 
         .message_control_button {
@@ -1176,10 +1131,6 @@ td.pointer {
             opacity: 1;
             visibility: visible;
         }
-    }
-
-    .message_top_line {
-        position: relative;
     }
 }
 
@@ -1448,16 +1399,6 @@ td.pointer {
     height: 100%;
 }
 
-.last_message {
-    .unread_marker {
-        bottom: 0;
-    }
-
-    .messagebox-content {
-        padding-bottom: 1px;
-    }
-}
-
 .unread .unread_marker {
     transition: all 0.3s ease-out;
     opacity: 1;
@@ -1476,10 +1417,6 @@ td.pointer {
 }
 
 .message_sender {
-    height: 0;
-    vertical-align: top;
-    position: relative;
-
     i.zulip-icon.zulip-icon-bot {
         font-size: 12px;
     }
@@ -1488,8 +1425,6 @@ td.pointer {
 .sender_name {
     display: inline-block;
     font-weight: 700;
-    vertical-align: top;
-    line-height: 12px;
 }
 
 .sender_name-in-status {
@@ -1562,10 +1497,6 @@ a.dark_background:hover,
     color: hsl(200, 99%, 60%);
 }
 
-.message_top_line {
-    position: relative;
-}
-
 .small {
     font-size: 80%;
 }
@@ -1610,7 +1541,6 @@ div.focused_table {
 .message_content {
     line-height: 1.214;
     min-height: 17px;
-    margin-left: 46px;
     display: block;
     position: relative;
     overflow: hidden;
@@ -1768,19 +1698,12 @@ div.focused_table {
     text-align: center;
     color: hsl(200, 100%, 40%);
 
-    /* to match .message_content */
-    margin-left: 5px;
-    margin-right: 35px;
     /* to make message-uncollapse easier */
     margin-top: 10px;
 
     &:hover {
         text-decoration: underline;
     }
-}
-
-.messagebox-content {
-    padding: 4px 115px 1px 10px;
 }
 
 .bookend {
@@ -2737,9 +2660,6 @@ textarea.invitee_emails {
 
 .message_edit {
     display: none;
-    margin-top: 5px;
-    margin-left: 47px;
-    position: relative;
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
@@ -3170,28 +3090,10 @@ textarea.invitee_emails {
         padding-right: 15px;
     }
 
-    /* In mobile views we place it just to the right of the time element */
-    .message_controls {
-        right: 40px;
-    }
-
     .include-sender .message_controls {
         background: none !important;
         padding: 0 !important;
         border: none !important;
-    }
-
-    .message_time {
-        left: auto;
-        right: -5px;
-    }
-
-    .sender_name {
-        max-width: 250px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        line-height: 15px;
     }
 
     #floating_recipient_bar {

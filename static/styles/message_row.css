@@ -1,0 +1,240 @@
+$avatar_column_width: 46px;
+$distance_of_text_elements_from_message_box_top: 10px;
+$distance_of_non_text_elements_from_message_box_top: 6px;
+$sender_name_distance_below_flex_center: 3px;
+
+.message_row {
+    .messagebox .messagebox-content {
+        /* Total 868px
+        1    56px   2                                        697px                                                      3     55px     4     60px    5
+      1 |‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾|
+        |           :   TEXT                                                                                             :   +  ⋮  ☆    :  10:00 AM  |
+        |           :   TEXT                                                                                             :              :            |
+        |   EDITED  :   TEXT                                                                                             :              :            |
+        |           :   TEXT                                                                                             :              :            |
+        |           :   TEXT                                                                                             :              :            |
+    2,3 |_ _ _ _ _ _:_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ : _ _ _ _ _ _ _:_ _ _ _ _ _ |
+        |           :                                                                                                    :              :            |
+        |           :                                          [EXPAND / COLLAPSE]                                       :              :            |
+      4 |_ _ _ _ _ _:_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ : _ _ _ _ _ _ _:_ _ _ _ _ _ |
+        |           :                                                                                                    :              :            |
+        |           :                                          [Message Reactions]                                       :              :            |
+      5 |___________:____________________________________________________________________________________________________:______________:____________|
+        */
+        display: grid;
+        align-items: start;
+        padding-left: 10px;
+        grid-template-rows: repeat(4, auto);
+
+        grid-template-columns: $avatar_column_width auto 55px 60px;
+
+        @media (width < $sm_min) {
+            grid-template-columns: $avatar_column_width auto max-content 60px;
+        }
+
+        .message_controls {
+            grid-row-start: 1;
+            grid-column-start: 3;
+            line-height: 1;
+            justify-self: end;
+            /* We need to position it from top and not vertically centered since we want it
+               to have the same position from top when user is editing the message. */
+            position: relative;
+            top: $distance_of_non_text_elements_from_message_box_top;
+            padding: 0;
+
+            @media (width < $sm_min) {
+                padding: 0 4px;
+
+                /* This is intended to target the first message_controls child
+                   when there are 3 displayed. 4 = 3 + hidden message_failed element. */
+                .message_control_button:nth-last-child(4) {
+                    display: none;
+                }
+            }
+        }
+
+        .message_edit_notice {
+            grid-row-start: 1;
+            position: relative;
+            top: $distance_of_text_elements_from_message_box_top;
+        }
+
+        .message_time {
+            line-height: 1;
+            justify-self: end;
+            padding-right: 10px;
+            grid-row-start: 1;
+            grid-column-start: 4;
+            position: relative;
+            top: $distance_of_text_elements_from_message_box_top;
+
+            &.notvisible {
+                /* This happens when message failed to send. We don't want to
+                   display time but still want it to occupy space. */
+                width: 45px !important;
+                position: unset !important;
+            }
+        }
+
+        .message_content {
+            grid-row-start: 1;
+            grid-column-start: 2;
+            padding: 4px 0 1px;
+        }
+
+        .message_reactions {
+            grid-row-start: 4;
+            grid-column-start: 2;
+        }
+
+        .message_edit {
+            grid-row-start: 2;
+            grid-column-start: 2;
+        }
+
+        .alert-msg {
+            grid-row-start: 1;
+            grid-column: 3 / 5;
+            margin-top: 4px;
+        }
+
+        .message_length_controller {
+            grid-row-start: 3;
+            grid-column-start: 2;
+        }
+    }
+
+    &.include-sender {
+        /*
+        1           2                                                                                                    3              4            5
+      1 |‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾|
+        |  ((((\\\  : Sender Name  EDITED                                                                                :   +  ⋮  ☆    :  10:00 AM  |
+      2 |   9_9 3)) :_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ : _ _ _ _ _ _ _:_ _ _ _ _ _ |
+        |   \=  ((  :   TEXT                                                                                             :              :            |
+        |           :   TEXT                                                                                             :              :            |
+        |           :   TEXT                                                                                             :              :            |
+        |           :   TEXT                                                                                             :              :            |
+        |           :   TEXT                                                                                             :              :            |
+      3 |_ _ _ _ _ _:_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ : _ _ _ _ _ _ _:_ _ _ _ _ _ |
+        |           :                                                                                                    :              :            |
+        |           :                                          [EXPAND / COLLAPSE]                                       :              :            |
+      4 |_ _ _ _ _ _:_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ : _ _ _ _ _ _ _:_ _ _ _ _ _ |
+        |           :                                                                                                    :              :            |
+        |           :                                          [Message Reactions]                                       :              :            |
+      5 |___________:____________________________________________________________________________________________________:______________:____________|
+        */
+        .messagebox .messagebox-content {
+            grid-template-rows: 25px repeat(3, auto);
+            padding-top: 2px;
+
+            .message_content {
+                padding-top: 0;
+                grid-row-start: 2;
+            }
+
+            .message_time {
+                align-self: center;
+                position: unset;
+                margin-top: 1px;
+            }
+
+            .message_edit_notice {
+                align-self: center;
+                top: 2px;
+            }
+
+            .message_controls {
+                align-self: center;
+                position: unset;
+            }
+
+            .message_sender {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                grid-column: 1 / 3;
+                grid-row: 1 / 2;
+
+                .zulip-icon.zulip-icon-bot {
+                    align-self: center;
+                    padding: $sender_name_distance_below_flex_center 0 0 5px;
+                }
+
+                &.is_me_message {
+                    /*
+                1           2                                                                                                    3              4            5
+            1,2 |‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾|
+                |  ((((\\\  :                                                                                                    :              :            |
+                |   9_9 3)) : Sender Name is excited to write this multiline message that goes to the next line and takes the    :   +  ⋮  ☆    :  10:00 AM  |
+                |   \=  ((  : edit status with it to the next line. EDITED                                                       :              :            |
+              3 |_ _ _ _ _ _:_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ : _ _ _ _ _ _ _:_ _ _ _ _ _ |
+                |           :                                                                                                    :              :            |
+                |           :                                          [EXPAND / COLLAPSE]                                       :              :            |
+              4 |_ _ _ _ _ _:_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ : _ _ _ _ _ _ _:_ _ _ _ _ _ |
+                |           :                                                                                                    :              :            |
+                |           :                                          [Message Reactions]                                       :              :            |
+              5 |___________:____________________________________________________________________________________________________:______________:____________|
+                */
+                    min-height: $avatar_column_width;
+                    grid-row: 1 / 3;
+                    display: grid;
+                    grid-template-columns: $avatar_column_width auto;
+                    grid-template-rows: auto;
+
+                    & ~ .alert-msg,
+                    & ~ .message_time,
+                    & ~ .message_controls {
+                        grid-row: 1 / 3;
+                    }
+
+                    .sender-status {
+                        display: inline;
+                        margin: 0;
+                        margin-top: 13px;
+
+                        .message_edit_notice {
+                            position: relative;
+                            top: -1px;
+                        }
+                    }
+                }
+
+                > span {
+                    display: flex;
+                }
+
+                .inline_profile_picture {
+                    flex-shrink: 0;
+                    /* Let user profile picture take extra height without
+                       having any affect on height of the container. */
+                    position: absolute;
+                    margin-top: $distance_of_non_text_elements_from_message_box_top;
+                }
+
+                .sender_name {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    /* It is important to use line-height `normal` here since user's name can
+                       be in any language and `line-height: 1` doesn't work to accommodate text
+                       from start and end vertically in all languages. */
+                    line-height: normal;
+                    /* Add padding to align user name with the content */
+                    padding-left: $avatar_column_width;
+                    outline: none;
+                    margin-top: $sender_name_distance_below_flex_center;
+                }
+            }
+
+            &.content_edit_mode {
+                .is_me_message {
+                    & ~ .alert-msg,
+                    & ~ .message_time,
+                    & ~ .message_controls {
+                        grid-row: 1 / 2;
+                    }
+                }
+            }
+        }
+    }
+}
