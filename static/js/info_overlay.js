@@ -214,7 +214,7 @@ export function set_up_toggler() {
         values: [
             {label: $t({defaultMessage: "Keyboard shortcuts"}), key: "keyboard-shortcuts"},
             {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
-            {label: $t({defaultMessage: "Search operators"}), key: "search-operators"},
+            {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
         callback(name, key) {
             $(".overlay-modal").hide();
