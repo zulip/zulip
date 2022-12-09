@@ -443,6 +443,11 @@ export function create($container, list, opts) {
         widget.set_sorting_function(...opts.init_sort);
     }
 
+    if (opts.initially_descending_sort) {
+        widget.set_reverse_mode(true);
+        opts.$simplebar_container.find(".active").addClass("descend");
+    }
+
     widget.clean_redraw();
 
     // Save the instance for potential future retrieval if a name is provided.
