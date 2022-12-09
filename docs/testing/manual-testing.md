@@ -531,7 +531,7 @@ Make sure that these options launch appropriate help screens:
 
 - Proofread and try a couple random options:
   - Message formatting
-  - Search operators
+  - Search filters
 - Make sure help launches in a separate browser tab:
   - Desktop and mobile apps
   - Integrations

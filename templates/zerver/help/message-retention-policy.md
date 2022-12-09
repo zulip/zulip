@@ -46,10 +46,7 @@ Standard hosting.
 
 {!select-stream-view-general.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>)
-   to the right of **Stream permissions**.
-
-1. Under **Message retention for stream**, configure
+1. Under **Stream permissions**, configure the
    **Message retention period**.
 
 {!save-changes.md!}

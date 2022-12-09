@@ -17,6 +17,8 @@
 
             {% if page_is_policy_center %}
             {{ render_markdown_path(sidebar_index, pure_markdown=True) }}
+            {% elif page_is_help_center %}
+            {{ render_markdown_path(sidebar_index, context=api_uri_context, help_center=True) }}
             {% else %}
             {{ render_markdown_path(sidebar_index, api_uri_context) }}
             {% endif %}
@@ -35,6 +37,8 @@
         <div class="content">
             {% if page_is_policy_center %}
             {{ render_markdown_path(article, pure_markdown=True) }}
+            {% elif page_is_help_center %}
+            {{ render_markdown_path(article, context=api_uri_context, help_center=True) }}
             {% else %}
             {{ render_markdown_path(article, api_uri_context) }}
             {% endif %}
