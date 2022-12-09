@@ -763,8 +763,6 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
         request, multiuse_object_key=confirmation_key, multiuse_object=multiuse_object
     )
 
-    
-
 
 @has_request_variables
 def find_account(
