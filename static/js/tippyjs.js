@@ -399,6 +399,15 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ["#change_email_button_container.email_changes_disabled_tooltip"],
+        content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: "#pm_tooltip_container",
         onShow(instance) {
             if ($(".private_messages_container").hasClass("zoom-in")) {
