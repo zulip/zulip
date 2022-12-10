@@ -127,6 +127,37 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["short_name"], "snape")
         self.assertEqual(user["timezone"], "UTC")
 
+    def test_process_guest_user(self) -> None:
+        user_id_mapper = IdMapper()
+        fixture_file_name = self.fixture_file_name("guestExport.json", "mattermost_fixtures")
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
+
+        sirius_dict = username_to_user["sirius"]
+        sirius_dict["is_mirror_dummy"] = False
+
+        realm_id = 3
+
+        team_name = "slytherin"
+        user = process_user(sirius_dict, realm_id, team_name, user_id_mapper)
+        self.assertEqual(user["avatar_source"], "G")
+        self.assertEqual(user["delivery_email"], "sirius@zulip.com")
+        self.assertEqual(user["email"], "sirius@zulip.com")
+        self.assertEqual(user["full_name"], "Sirius Black")
+        self.assertEqual(user["role"], UserProfile.ROLE_GUEST)
+        self.assertEqual(user["is_mirror_dummy"], False)
+        self.assertEqual(user["realm"], 3)
+        self.assertEqual(user["short_name"], "sirius")
+        self.assertEqual(user["timezone"], "UTC")
+
+        # A guest user with a `null` team value should be a regular
+        # user. (It's a bit of a mystery why the Mattermost export
+        # tool generates such `teams` lists).
+        sirius_dict["teams"] = None
+        user = process_user(sirius_dict, realm_id, team_name, user_id_mapper)
+        self.assertEqual(user["role"], UserProfile.ROLE_MEMBER)
+
     def test_convert_user_data(self) -> None:
         user_id_mapper = IdMapper()
         realm_id = 3
