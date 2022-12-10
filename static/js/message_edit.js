@@ -413,7 +413,7 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
     return stream_data
         .subscribed_subs()
         .filter((stream) => {
-            if (stream.id === current_stream_id) {
+            if (stream.stream_id === current_stream_id) {
                 return true;
             }
             return stream_data.can_post_messages_in_stream(stream);
