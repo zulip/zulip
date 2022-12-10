@@ -720,7 +720,6 @@ export function register_click_handlers() {
         toggle_reaction(emoji_name, e);
     });
 
-    // MARK THIS CODE
     $(document).on("click", ".emoji-popover-emoji.composition", function (e) {
         const emoji_name = $(this).attr("data-emoji-name");
         const emoji_text = ":" + emoji_name + ":";
@@ -732,21 +731,12 @@ export function register_click_handlers() {
             const codepoint = emoji.get_emoji_codepoint(emoji_name);
             customize.update_customized(codepoint);
             rebuild_catalog();
-            show_emoji_catalog();
+            hide_emoji_popover();
+            $(".emoji_map").trigger("click");
             picking_custom = false;
         } else {
             if(emoji_id == "emoji_picker_emoji,1,5"){
                 picking_custom = true;
-                // toggle_emoji_popover(compose_click_target);
-                // const compose_click_target = compose_ui.get_compose_click_target(e);
-                // $(this).closest(".message_row").toggleClass("has_popover has_emoji_popover");
-                // const message_id = $(e.currentTarget).data("message-id");
-                // console.log("message_id: " + message_id);
-                // // const elem = $(".selected_message .actions_hover")[0];
-                // const elem = $(this).attr("data-emoji-id");
-                // console.log("elem: " + elem);
-                // build_emoji_popover(elem, message_id);
-                // build_emoji_popover(compose_click_target);
             }
             // The following check will return false if emoji was not selected in
             // message edit form.
@@ -830,7 +820,6 @@ export function register_click_handlers() {
         reset_emoji_showcase();
     });
 
-    // MARK THIS CODE
     $("body").on("mouseenter", ".emoji-popover-emoji", (e) => {
         const emoji_id = $(e.currentTarget).data("emoji-id");
         const emoji_coordinates = get_emoji_coordinates(emoji_id);

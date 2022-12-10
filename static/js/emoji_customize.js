@@ -31,7 +31,7 @@ var customizedemoji = [
   "1f642", // smile
   "2764", // heart
   "1f6e0", // working_on_it
-  "2795", // frog
+  "2795", // plus sign
 ]
 
 export function customized_emoji() {
