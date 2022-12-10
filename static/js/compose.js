@@ -196,7 +196,8 @@ export function clear_compose_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
-    $("#compose_banners").empty();
+    compose_banner.clear_errors();
+    compose_banner.clear_warnings();
     compose_ui.hide_compose_spinner();
 }
 

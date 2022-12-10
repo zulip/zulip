@@ -7,6 +7,7 @@ import * as fenced_code from "../shared/js/fenced_code";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
+import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -92,7 +93,8 @@ function show_compose_box(msg_type, opts) {
         $("#private_message_toggle").addClass("active");
     }
     $("#compose-send-status").removeClass(common.status_classes).hide();
-    $("#compose_banners").empty();
+    compose_banner.clear_errors();
+    compose_banner.clear_warnings();
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
@@ -119,7 +121,8 @@ function clear_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
-    $("#compose_banners").empty();
+    compose_banner.clear_errors();
+    compose_banner.clear_warnings();
 }
 
 export function autosize_message_content() {
