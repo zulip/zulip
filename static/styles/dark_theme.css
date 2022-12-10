@@ -861,14 +861,32 @@
     }
 
     .rendered_markdown {
-        .user-mention,
-        .user-group-mention {
-            background: linear-gradient(
-                to bottom,
-                hsla(0, 0%, 0%, 0.2) 0%,
-                hsla(0, 0%, 0%, 0.1) 100%
-            );
+        .user-group-mention, .user-mention {
             box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
+        }
+
+        .user-mention {
+            background: hsla(240, 52%, 70%, 0.3);
+        }
+
+        .user-group-mention {
+            background: hsla(183, 52%, 40%, 0.3);
+        }
+
+        .user-group-mention:hover {
+            background: hsla(183, 52%, 40%, 0.4)
+        }
+
+        .user-mention:hover {
+            background: hsla(240, 52%, 70%, 0.4);
+        }
+
+        .user-mention-me {
+            color: rgba(194, 194, 255, 1);
+        }
+
+        .user-group-mention.user-mention-me {
+            color: hsla(183, 52%, 63%, 1);
         }
 
         .user-mention-me :not(.silent) {
