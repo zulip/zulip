@@ -5,6 +5,7 @@ import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -311,7 +312,8 @@ export function process_escape_key(e) {
 
             // Clear open compose banners, if present.
             if ($(".compose_banner").length) {
-                $("#compose_banners").empty();
+                compose_banner.clear_errors();
+                compose_banner.clear_warnings();
                 return true;
             }
 
