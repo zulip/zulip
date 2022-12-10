@@ -1255,10 +1255,15 @@
     }
 
     #feedback_container,
-    code,
     .typeahead.dropdown-menu {
         background-color: hsl(212, 25%, 15%);
         border-color: hsla(0, 0%, 0%, 0.5);
+        color: inherit;
+    }
+
+    code {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
         color: inherit;
     }
 
