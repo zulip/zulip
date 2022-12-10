@@ -70,6 +70,14 @@ def process_user(
             for team in user_dict["teams"]
         )
 
+    def is_team_guest(user_dict: Dict[str, Any]) -> bool:
+        if user_dict["teams"] is None:
+            return False
+        for team in user_dict["teams"]:
+            if team["name"] == team_name and "team_guest" in team["roles"]:
+                return True
+        return False
+
     def get_full_name(user_dict: Dict[str, Any]) -> str:
         full_name = "{} {}".format(user_dict["first_name"], user_dict["last_name"])
         if full_name.strip():
@@ -85,9 +93,12 @@ def process_user(
     date_joined = int(timezone_now().timestamp())
     timezone = "UTC"
 
-    role = UserProfile.ROLE_MEMBER
     if is_team_admin(user_dict):
         role = UserProfile.ROLE_REALM_OWNER
+    elif is_team_guest(user_dict):
+        role = UserProfile.ROLE_GUEST
+    else:
+        role = UserProfile.ROLE_MEMBER
 
     if user_dict["is_mirror_dummy"]:
         is_active = False
