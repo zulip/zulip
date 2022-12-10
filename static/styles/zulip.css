@@ -77,6 +77,17 @@ a {
     }
 }
 
+a {
+    color: hsl(200, 90%, 40%);
+    text-decoration: none;
+}
+
+a:hover,
+a:focus {
+    color: hsl(200, 100%, 47%);
+    text-decoration: underline;
+}
+
 code,
 pre {
     font-family: "Source Code Pro", monospace;
