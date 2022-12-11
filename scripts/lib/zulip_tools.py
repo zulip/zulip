@@ -455,8 +455,7 @@ def get_tzdata_zi() -> IO[str]:
         filename = os.path.join(path, "tzdata.zi")
         if os.path.exists(filename):
             return open(filename)
-    else:
-        raise RuntimeError("Missing time zone data (tzdata.zi)")
+    raise RuntimeError("Missing time zone data (tzdata.zi)")
 
 
 def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[str]) -> str:

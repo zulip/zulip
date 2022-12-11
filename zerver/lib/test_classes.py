@@ -823,8 +823,7 @@ Output:
 
                 [confirmation_url] = match.groups()
                 return confirmation_url
-        else:
-            raise AssertionError("Couldn't find a confirmation email.")
+        raise AssertionError("Couldn't find a confirmation email.")
 
     def encode_uuid(self, uuid: str) -> str:
         """
