@@ -861,7 +861,8 @@
     }
 
     .rendered_markdown {
-        .user-group-mention, .user-mention {
+        .user-group-mention,
+        .user-mention {
             box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
         }
 
@@ -874,7 +875,7 @@
         }
 
         .user-group-mention:hover {
-            background: hsla(183, 52%, 40%, 0.4)
+            background: hsla(183, 52%, 40%, 0.4);
         }
 
         .user-mention:hover {
