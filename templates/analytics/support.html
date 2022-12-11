@@ -41,11 +41,11 @@
             <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
             <b>Is active</b>: {{ user.is_active }}<br />
             <b>Role</b>: {{ user.get_role_name() }}<br />
-            <hr />
+            <hr class="separator" />
             <div>
                 {% include "analytics/realm_details.html" %}
             </div>
-            <hr />
+            <hr class="separator" />
         </div>
         {% endfor %}
 
@@ -98,7 +98,7 @@
             {% endif %}
             <br />
             {% if show_realm_details %}
-            <hr />
+            <hr class="separator" />
             <div>
                 {% include "analytics/realm_details.html" %}
             </div>

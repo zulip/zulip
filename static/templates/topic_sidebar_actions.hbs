@@ -6,7 +6,7 @@
         </p>
     </li>
 
-    <hr />
+    <hr class="separator" />
 
     {{#unless topic_muted}}
     <li class="hidden-for-spectators">
@@ -48,7 +48,7 @@
     </li>
 
     {{#if can_move_topic}}
-    <hr />
+    <hr class="separator" />
 
     <li>
         <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
