@@ -44,6 +44,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 import * as widgetize from "./widgetize";
+import * as pm_conversations from "./pm_conversations";
 
 let unnarrow_times;
 
@@ -937,6 +938,20 @@ export function by_recipient(target_id, opts) {
 
 // Called by the narrow_to_compose_target hotkey.
 export function to_compose_target() {
+    // If the target has not been in a convo before, then add temp convo marker
+    // to the top
+    const recipient_string = compose_state.private_message_recipient();
+
+    let user_ids = [];
+    recipient_string.split(",").forEach(function (user_email) {
+        user_ids.unshift(people.get_user_id(user_email))
+    });
+
+    // if unique combination of users, then add to list
+    if(!pm_conversations.recent.recent_message_ids.has(user_ids)){
+      pm_conversations.recent.initInsert(user_ids);
+    }
+
     if (!compose_state.composing()) {
         return;
     }

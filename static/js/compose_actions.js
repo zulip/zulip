@@ -31,6 +31,8 @@ import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
 import * as util from "./util";
+import * as pm_conversations from "./pm_conversations";
+import * as pm_list from "./pm_list";
 
 export function blur_compose_inputs() {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
@@ -165,6 +167,10 @@ function composing_to_current_private_message_narrow() {
 }
 
 export function update_narrow_to_recipient_visibility() {
+    // Remove any conversations with no messages from PMs when the
+    // narrow view is changed
+    pm_conversations.recent.removeEmptyConvo();
+
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_name = compose_state.stream_name();
@@ -359,6 +365,11 @@ export function start(msg_type, opts) {
 }
 
 export function cancel() {
+    // Remove any empty conversations from PMs when the compose-box
+    // is closed
+    pm_conversations.recent.removeEmptyConvo();
+    pm_list.update_private_messages();
+
     // As user closes the compose box, restore the compose box max height
     if (compose_ui.is_full_size()) {
         compose_ui.make_compose_box_original_size();

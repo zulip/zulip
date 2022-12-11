@@ -8,6 +8,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
+import * as pm_conversations from "./pm_conversations";
 
 let prior_dom;
 
