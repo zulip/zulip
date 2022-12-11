@@ -93,6 +93,11 @@
  *   only this diff, and not the entire text, is highlighted when undoing,
  *   as would be ideal.
  *
+ * 9. Re-render on window resize:
+ *
+ *   We add a new event handler, resizeHandler, for window.on('resize', ...)
+ *   that calls this.show to re-render the typeahead in the correct position.
+ *
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -367,6 +372,8 @@ import {get_string_diff} from "../../js/util";
         .on('click', 'li', this.click.bind(this))
         .on('mouseenter', 'li', this.mouseenter.bind(this))
         .on('mousemove', 'li', this.mousemove.bind(this))
+
+      $(window).on('resize', this.resizeHandler.bind(this));
     }
 
   , unlisten: function () {
@@ -386,6 +393,12 @@ import {get_string_diff} from "../../js/util";
       }
       return isSupported
     }
+
+  , resizeHandler: function() {
+      if(this.shown) {
+        this.show();
+      }
+  }
 
   , move: function (e) {
       if (!this.shown) return
