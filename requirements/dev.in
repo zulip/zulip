@@ -72,6 +72,3 @@ natsort
 
 # For spell check linter
 codespell
-
-# Finds appropriate directories for data, config, cache, etc.
-platformdirs

@@ -5,9 +5,11 @@ import type {ElementHandle, Page} from "puppeteer";
 import * as common from "../puppeteer_lib/common";
 
 async function submit_notifications_stream_settings(page: Page): Promise<void> {
-    await page.waitForSelector('#org-submit-notifications[data-status="unsaved"]', {visible: true});
+    await page.waitForSelector('#org-notifications .save-button[data-status="unsaved"]', {
+        visible: true,
+    });
 
-    const save_button = "#org-submit-notifications";
+    const save_button = "#org-notifications .save-button";
     assert.strictEqual(
         await common.get_text_from_selector(page, save_button),
         "Save changes",
@@ -15,14 +17,16 @@ async function submit_notifications_stream_settings(page: Page): Promise<void> {
     );
     await page.click(save_button);
 
-    await page.waitForSelector('#org-submit-notifications[data-status="saved"]', {visible: true});
+    await page.waitForSelector('#org-notifications .save-button[data-status="saved"]', {
+        visible: true,
+    });
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#org-submit-notifications"),
+        await common.get_text_from_selector(page, "#org-notifications .save-button"),
         "Saved",
         "Saved text didn't appear after saving new stream notifications setting",
     );
 
-    await page.waitForSelector("#org-submit-notifications", {hidden: true});
+    await page.waitForSelector("#org-notifications .save-button", {hidden: true});
 }
 
 async function test_change_new_stream_notifications_setting(page: Page): Promise<void> {
@@ -82,7 +86,7 @@ async function test_change_signup_notifications_stream(page: Page): Promise<void
 }
 
 async function test_permissions_change_save_worked(page: Page): Promise<void> {
-    const saved_status = '#org-submit-stream-permissions[data-status="saved"]';
+    const saved_status = '#org-stream-permissions .save-button[data-status="saved"]';
     await page.waitForSelector(saved_status, {
         visible: true,
     });
@@ -90,7 +94,7 @@ async function test_permissions_change_save_worked(page: Page): Promise<void> {
 }
 
 async function submit_stream_permissions_change(page: Page): Promise<void> {
-    const save_button = "#org-submit-stream-permissions";
+    const save_button = "#org-stream-permissions .save-button";
     await page.waitForSelector(save_button, {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, save_button),
@@ -127,7 +131,7 @@ async function test_changing_create_streams_and_invite_to_stream_policies(
 }
 
 async function test_save_joining_organization_change_worked(page: Page): Promise<void> {
-    const saved_status = '#org-submit-org-join[data-status="saved"]';
+    const saved_status = '#org-join-settings .save-button[data-status="saved"]';
     await page.waitForSelector(saved_status, {
         visible: true,
     });
@@ -135,7 +139,7 @@ async function test_save_joining_organization_change_worked(page: Page): Promise
 }
 
 async function submit_joining_organization_change(page: Page): Promise<void> {
-    const save_button = "#org-submit-org-join";
+    const save_button = "#org-join-settings .save-button";
     await page.waitForSelector(save_button, {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, save_button),
@@ -301,7 +305,7 @@ async function test_authentication_methods(page: Page): Promise<void> {
     });
 
     await page.click(".method_row[data-method='Google'] input[type='checkbox'] + span");
-    const save_button = "#org-submit-auth_settings";
+    const save_button = "#org-auth_settings .save-button";
     assert.strictEqual(await common.get_text_from_selector(page, save_button), "Save changes");
     await page.click(save_button);
 

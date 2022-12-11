@@ -139,6 +139,9 @@ def main() -> None:
             emoji = "".join(
                 chr(int(h, 16))
                 for h in (emoji_dict["non_qualified"] or emoji_dict["unified"]).split("-")
+                # We have to do this check because of this upstream bug:
+                # https://github.com/iamcal/emoji-data/pull/217
+                if h != "FE0F"
             )
             if emoji not in CLDR_DATA:
                 print(

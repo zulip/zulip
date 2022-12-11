@@ -29,14 +29,9 @@ async function test_mention(page: Page): Promise<void> {
     assert.ok(stream_size > threshold);
     await page.click("#compose-send-button");
 
-    await page.waitForSelector(
-        `xpath///*[${common.has_class_x(
-            "compose-all-everyone-msg",
-        )} and contains(text(), "Are you sure you want to mention all")]`,
-    );
-    await page.click(".compose-all-everyone-confirm");
-    await page.waitForSelector(".compose-all-everyone-msg", {hidden: true});
-    await page.waitForSelector("#compose-send-status", {hidden: true});
+    await page.waitForSelector("#compose_banners .wildcard_warning", {visible: true});
+    await page.click("#compose_banners .wildcard_warning .compose_banner_action_button");
+    await page.waitForSelector(".wildcard_warning", {hidden: true});
 
     await common.check_messages_sent(page, "zhome", [["Verona > Test mention all", ["@all"]]]);
 }

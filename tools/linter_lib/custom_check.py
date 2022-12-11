@@ -153,11 +153,6 @@ js_rules = RuleList(
             "exclude": {"frontend_tests/node_tests/"},
         },
         {
-            "pattern": r"""compose_error\(["']""",
-            "description": "Argument to compose_error should be a literal string translated "
-            "by $t_html()",
-        },
-        {
             "pattern": r"ui.report_success\(",
             "description": "Deprecated function, use ui_report.success.",
         },
