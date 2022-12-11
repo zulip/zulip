@@ -882,7 +882,7 @@
         }
 
         .user-mention-me {
-            color: rgba(194, 194, 255, 1);
+            color: hsla(240, 100%, 88%, 1);
         }
 
         .user-group-mention.user-mention-me {
