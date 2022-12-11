@@ -4725,9 +4725,11 @@ post_delete.connect(flush_alert_word, sender=AlertWord)
 
 
 class StreamTopic(models.Model):
+    # This table is for tracking what topics are pinned. When a user pins a topic, a new row is added if it has never been pinned before. If it has been pinned before, that specific topic is already in the table and is_pinned would be updated.
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
     topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
-    is_pinned = models.BooleanField(default=False)
+    # is_pinned is to track whether the topic is pinned or not. It is set default to true because a topic is added to the table once it is pinned.
+    is_pinned = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("stream", "topic_name")
