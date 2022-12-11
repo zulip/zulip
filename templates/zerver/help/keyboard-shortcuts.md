@@ -1,8 +1,9 @@
 # Keyboard shortcuts
 
 Everything in Zulip can be done with the mouse, but mastering a few keyboard
-shortcuts will change your experience of the app. Start with the basics
-below, and add more to your repertoire as needed.
+shortcuts will change your experience of the app. Start with the basics below,
+and use the convenient [**keyboard shortcuts reference**](#keyboard-shortcuts-reference)
+in the Zulip app to add more to your repertoire as needed.
 
 * [The basics](#the-basics)
 * [Navigation](#navigation)
@@ -219,3 +220,19 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 * **View stream messages**: <kbd>Shift</kbd> + <kbd>V</kbd>
 
 * **Toggle subscription**: <kbd>Shift</kbd> + <kbd>S</kbd>
+
+
+## Keyboard shortcuts reference
+
+A summary of the keyboard shortcuts above is available in the Zulip app.
+
+{start_tabs}
+
+1. Click the **keyboard** (<i class="fa fa-keyboard-o"></i>) icon at the bottom
+   of the app, just below the right sidebar.
+
+{end_tabs}
+
+## Related articles
+
+* [Reading strategies](/help/reading-strategies)

@@ -193,14 +193,14 @@ def render_attachment(attachment: WildValue) -> str:
     if "fields" in attachment:
         fields = []
         for field in attachment["fields"]:
-            if field["title"] and field["value"]:
+            if "title" in field and "value" in field and field["title"] and field["value"]:
                 title = field["title"].tame(check_string)
                 value = field["value"].tame(check_string)
                 fields.append(f"*{title}*: {value}")
-            elif field["title"]:
+            elif "title" in field and field["title"]:
                 title = field["title"].tame(check_string)
                 fields.append(f"*{title}*")
-            elif field["value"]:
+            elif "value" in field and field["value"]:
                 value = field["value"].tame(check_string)
                 fields.append(f"{value}")
         pieces.append("\n".join(fields))
@@ -224,8 +224,8 @@ def replace_links(text: str) -> str:
 
 def replace_formatting(text: str) -> str:
     # Slack uses *text* for bold, whereas Zulip interprets that as italics
-    text = re.sub(r"([^\w])\*(?!\s+)([^\*^\n]+)(?<!\s)\*([^\w])", r"\1**\2**\3", text)
+    text = re.sub(r"([^\w]|^)\*(?!\s+)([^\*\n]+)(?<!\s)\*((?=[^\w])|$)", r"\1**\2**\3", text)
 
     # Slack uses _text_ for emphasis, whereas Zulip interprets that as nothing
-    text = re.sub(r"([^\w])[_](?!\s+)([^\_\^\n]+)(?<!\s)[_]([^\w])", r"\1*\2*\3", text)
+    text = re.sub(r"([^\w]|^)[_](?!\s+)([^\_\n]+)(?<!\s)[_]((?=[^\w])|$)", r"\1*\2*\3", text)
     return text

@@ -205,21 +205,20 @@ ul {
     }
 }
 
-.actions_popover_wrapper {
-    .arrow {
-        position: absolute;
-    }
-
-    @media (width < $xl_min) {
-        width: max-content;
-    }
-
-    @media (width <= $mm_min) {
-        width: auto;
-    }
-}
-
 .actions_popover {
+    /* Override default padding of tippyjs */
+    margin: 0 -9px;
+
+    /* Override bootstrap defaults */
+    .nav-list > li > a {
+        padding: 3px 15px;
+    }
+
+    /* Override bootstrap defaults */
+    hr {
+        margin: 5px 0;
+    }
+
     .mark_as_unread {
         .unread_count {
             /* The icon for this menu item is in the form of an unread count from

@@ -593,7 +593,7 @@ msgstr ""
 #: templates/corporate/for/research.html:39
 #: templates/corporate/for/research.html:405
 msgid "Request sponsorship"
-msgstr ""
+msgstr "Requerer patrocínio"
 
 #: templates/corporate/for/education.html:35
 msgid "Education pricing"
@@ -1201,7 +1201,7 @@ msgstr ""
 #: templates/zerver/emails/deactivate.source.html:15
 #: templates/zerver/emails/deactivate.txt:6
 msgid "The administrators provided the following comment:"
-msgstr ""
+msgstr "Os administradores deixaram o comentário seguinte:"
 
 #: templates/zerver/emails/deactivate.subject.txt:1
 #, python-format
@@ -3915,7 +3915,7 @@ msgstr ""
 #: zerver/lib/streams.py:311 zerver/lib/streams.py:330
 #: zerver/lib/streams.py:413 zerver/lib/streams.py:479
 msgid "Invalid stream ID"
-msgstr ""
+msgstr "ID de canal inválido"
 
 #: zerver/lib/streams.py:455
 msgid "Stream name '{}' is already taken."
@@ -4370,7 +4370,7 @@ msgstr "Conta externa"
 
 #: zerver/models.py:4525
 msgid "Pronouns"
-msgstr ""
+msgstr "Pronomes"
 
 #: zerver/signals.py:95
 msgid "Unknown IP address"
@@ -5062,7 +5062,7 @@ msgstr "Mensagem do Slack"
 
 #: zerver/webhooks/wordpress/view.py:56
 msgid "Unknown WordPress webhook action: {}"
-msgstr "Ação de webhook Wordpress desconhecida: {}"
+msgstr "Acção de webhook Wordpress desconhecida: {}"
 
 #: zerver/worker/queue_processors.py:1049
 #, python-brace-format

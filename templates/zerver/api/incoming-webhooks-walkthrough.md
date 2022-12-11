@@ -476,8 +476,8 @@ request:
    https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
    through your code to double-check that you've followed Zulip's guidelines.
 3. Take a look at your Git history to ensure your commits have been clear and
-   logical (see [Version control](
-   https://zulip.readthedocs.io/en/latest/contributing/version-control.html) for tips). If not,
+   logical (see [Commit discipline](
+   https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html) for tips). If not,
    consider revising them with `git rebase --interactive`. For most incoming webhooks,
    you'll want to squash your changes into a single commit and include a good,
    clear commit message.

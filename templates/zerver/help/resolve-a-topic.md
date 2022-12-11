@@ -15,7 +15,7 @@ Marking a topic as resolved:
   you resolved the topic. This message will be marked as unread
   only for users who had participated in the topic.
 * Changes whether the topic appears when using the `is:resolved` and
-  `-is:resolved` [search operators](/help/search-for-messages).
+  `-is:resolved` [search filters](/help/search-for-messages#search-filters).
 
 Marking a topic as unresolved removes the ✔ and also triggers an
 automated notice from the notification bot.

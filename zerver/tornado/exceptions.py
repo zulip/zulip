@@ -12,4 +12,4 @@ class BadEventQueueIdError(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("Bad event queue id: {queue_id}")
+        return _("Bad event queue ID: {queue_id}")

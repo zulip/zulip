@@ -10,6 +10,7 @@
     "dev-email-log": [
         "./static/js/bundles/common",
         "./static/js/portico/email_log",
+        "./static/styles/portico/email_log.css",
         "./static/js/reload_state",
         "./static/js/channel"
     ]

@@ -9,6 +9,7 @@ Django ORM.
 import datetime
 import os
 import sys
+from typing import NoReturn
 
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
@@ -39,7 +40,7 @@ state_file_path = "/var/lib/nagios_state/check_user_zephyr_mirror_liveness"
 now = timezone_now()
 
 
-def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> None:
+def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> NoReturn:
     too_old_data = ""
     if too_old:
         too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(
@@ -54,7 +55,7 @@ def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> Non
         f.write(f"{int(now.timestamp())}|{states[state]}|{state}|{short_msg}{too_old_data}")
     os.rename(state_file_path + ".tmp", state_file_path)
     print(f"{state}: {short_msg}{too_old_data}")
-    exit(states[state])
+    sys.exit(states[state])
 
 
 all_users = UserActivity.objects.filter(

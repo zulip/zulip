@@ -453,5 +453,5 @@ complicated rebase.
 [how-git-is-different]: the-git-difference.md
 [self-multiple-computers]: troubleshooting.md#working-from-multiple-computers
 [zulip-git-guide-up-to-date]: #keep-your-fork-up-to-date
-[zulip-rtd-commit-discipline]: ../contributing/version-control.md#commit-discipline
-[zulip-rtd-commit-messages]: ../contributing/version-control.md#commit-messages
+[zulip-rtd-commit-discipline]: ../contributing/commit-discipline.md
+[zulip-rtd-commit-messages]: ../contributing/commit-discipline.md

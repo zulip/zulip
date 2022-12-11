@@ -436,10 +436,6 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.org-settings-form .organization-submission {
-    margin-top: 0;
-}
-
 #id_org_profile_preview {
     margin-bottom: 20px;
     display: inline-flex;
@@ -939,28 +935,40 @@ input[type="checkbox"] {
 .emojiset_choices,
 .user_list_style_values {
     padding: 0 10px;
+}
 
-    label {
-        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-        padding: 8px 0 10px;
+label.display-settings-radio-choice-label {
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+    padding: 8px 0 10px;
 
-        &:last-of-type {
-            border-bottom: none;
+    &:last-of-type {
+        border-bottom: none;
+    }
+
+    input[type="radio"] {
+        position: relative;
+        top: -2px;
+        margin: 0 5px 0 0;
+        width: auto;
+        cursor: pointer;
+
+        &:focus {
+            outline: 1px dotted hsl(0, 0%, 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
         }
 
-        input[type="radio"] {
-            position: relative;
-            top: -2px;
-            margin: 0 5px 0 0;
-
-            &:checked + span {
-                font-weight: 600;
-            }
+        &:disabled {
+            cursor: not-allowed;
         }
 
-        .right {
-            float: right;
+        &:checked + span {
+            font-weight: 600;
         }
+    }
+
+    .right {
+        float: right;
     }
 }
 
@@ -1390,8 +1398,9 @@ $option_title_width: 180px;
     }
 
     #show_my_user_profile_modal {
-        width: 150px;
-        margin-top: 20px;
+        width: 100%;
+        top: 20px;
+        position: sticky;
     }
 
     #show_my_user_profile_modal i {

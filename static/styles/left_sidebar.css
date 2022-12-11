@@ -316,6 +316,7 @@ li.show-more-topics {
     }
 }
 
+#login-link-container,
 #subscribe-to-more-streams {
     text-decoration: none;
     margin: 5px auto 5.5px 10px;
@@ -375,6 +376,7 @@ li.active-sub-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
         background-color: hsl(202, 56%, 91%);
+        border-radius: 4px;
     }
 }
 

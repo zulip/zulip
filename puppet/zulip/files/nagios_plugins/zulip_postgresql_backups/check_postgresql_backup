@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
@@ -15,7 +16,7 @@ states = {
 
 def report(state: str, msg: str) -> None:
     print(f"{state}: {msg}")
-    exit(states[state])
+    sys.exit(states[state])
 
 
 if (

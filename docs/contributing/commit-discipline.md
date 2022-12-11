@@ -1,6 +1,4 @@
-# Version control
-
-## Commit discipline
+# Commit discipline
 
 We follow the Git project's own commit discipline practice of "Each
 commit is a minimal coherent idea". This discipline takes a bit of work,
