@@ -291,6 +291,7 @@ function open_custom_profile_field_form_modal() {
             hint: $("#profile_field_hint").val(),
             field_type,
             field_data: JSON.stringify(field_data),
+            editable_by_user: $("#profile_field_editable_by_user").is(":checked"),
             display_in_profile_summary: $("#profile_field_display_in_profile_summary").is(
                 ":checked",
             ),
@@ -457,6 +458,7 @@ function open_edit_form_modal(e) {
             name: field.name,
             hint: field.hint,
             choices,
+            editable_by_user: field.editable_by_user === true,
             display_in_profile_summary: field.display_in_profile_summary === true,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
@@ -511,6 +513,9 @@ function open_edit_form_modal(e) {
 
         data.name = $profile_field_form.find("input[name=name]").val();
         data.hint = $profile_field_form.find("input[name=hint]").val();
+        data.editable_by_user = $profile_field_form
+            .find("input[name=editable_by_user]")
+            .is(":checked");
         data.display_in_profile_summary = $profile_field_form
             .find("input[name=display_in_profile_summary]")
             .is(":checked");

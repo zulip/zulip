@@ -36,6 +36,12 @@
             <label for="custom_field_url_pattern" >{{t "URL pattern" }}</label>
             <input type="url" id="custom_field_url_pattern" name="url_pattern" autocomplete="off" maxlength="1024" placeholder="https://example.com/path/%(username)s"/>
         </div>
+        {{> settings_checkbox
+          prefix="profile_field_"
+          setting_name="editable_by_user"
+          is_checked=true
+          label=(t "Users can edit this field")
+          }}
         <div class="input-group">
             <label class="checkbox profile_field_display_label" for="profile_field_display_in_profile_summary">
                 <input type="checkbox" id="profile_field_display_in_profile_summary" name="display_in_profile_summary"/>

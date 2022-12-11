@@ -8,6 +8,7 @@ from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
+    try_update_realm_custom_profile_field,
 )
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
@@ -75,6 +76,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(result, "Field type not supported for display in profile summary.")
 
         data["field_type"] = CustomProfileField.SHORT_TEXT
+        data["editable_by_user"] = "false"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
@@ -398,9 +400,49 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
 
     def test_delete_field_value(self) -> None:
-        iago = self.example_user("iago")
-        self.login_user(iago)
         realm = get_realm("zulip")
+
+        aaron = self.example_user("aaron")
+        iago = self.example_user("iago")
+
+        self.login_user(aaron)
+
+        field = CustomProfileField.objects.get(name="Biography", realm=realm)
+
+        try_update_realm_custom_profile_field(realm, field, "Biography", editable_by_user=False)
+        self.assertEqual(field.editable_by_user, False)
+        result = self.client_delete(
+            "/json/users/me/profile_data",
+            {
+                "data": orjson.dumps([field.id]).decode(),
+            },
+        )
+        self.assert_json_error(result, "User does not have permission to update the field")
+
+        self.login_user(iago)
+
+        result = self.client_delete(
+            "/json/users/me/profile_data",
+            {
+                "data": orjson.dumps([field.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        self.login_user(aaron)
+
+        try_update_realm_custom_profile_field(realm, field, "Biography", editable_by_user=True)
+        self.assertEqual(field.editable_by_user, True)
+
+        result = self.client_delete(
+            "/json/users/me/profile_data",
+            {
+                "data": orjson.dumps([field.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        self.login_user(iago)
 
         invalid_field_id = 1234
         result = self.client_delete(
@@ -519,6 +561,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
                 "name": "New phone number",
                 "hint": "New contact number",
                 "display_in_profile_summary": "true",
+                "editable_by_user": "false",
             },
         )
         self.assert_json_success(result)
@@ -529,7 +572,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.hint, "New contact number")
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
         self.assertEqual(field.display_in_profile_summary, True)
-
+        self.assertEqual(field.editable_by_user, False)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={"name": "Name ", "display_in_profile_summary": "true"},
@@ -656,8 +699,36 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
 
     def test_update_profile_data_successfully(self) -> None:
-        self.login("iago")
         realm = get_realm("zulip")
+
+        self.login("aaron")
+        aaron = self.example_user("aaron")
+
+        field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+
+        field_data = [
+            {
+                "id": field.id,
+                "value": "test",
+            }
+        ]
+        result = self.client_patch(
+            "/json/users/me/profile_data", {"data": orjson.dumps(field_data).decode()}
+        )
+        self.assert_json_success(result)
+        for field_dict in aaron.profile_data():
+            if field_dict["id"] == field.id:
+                self.assertEqual(field_dict["value"], "test")
+
+        try_update_realm_custom_profile_field(realm, field, "Phone number", editable_by_user=False)
+        self.assertEqual(field.editable_by_user, False)
+        result = self.client_patch(
+            "/json/users/me/profile_data", {"data": orjson.dumps(field_data).decode()}
+        )
+        self.assert_json_error(result, "User does not have permission to update the field")
+
+        self.login("iago")
+
         fields: List[Tuple[str, Union[str, List[int]]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),

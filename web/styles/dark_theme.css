@@ -488,6 +488,16 @@
         color: hsl(236deg 33% 90%);
     }
 
+    #profile-settings,
+    #edit-user-form {
+        & select {
+            &.disabled {
+                opacity: 0.5;
+                background-color: hsl(0deg 0% 0% / 20%);
+            }
+        }
+    }
+
     .unread_count,
     /* The actions_popover unread_count object has its own variable CSS,
        and thus needs to be repeated here with all three classes for precedence) */
@@ -498,6 +508,10 @@
     .pill-container {
         border-style: solid;
         border-width: 1px;
+
+        &.disabled {
+            opacity: 0.5;
+        }
     }
 
     .deactivated-pill {

@@ -36,6 +36,12 @@
         <input type="url" name="url_pattern" autocomplete="off" maxlength="80" />
     </div>
     {{/if}}
+    {{> settings_checkbox
+      prefix="edit_"
+      setting_name="editable_by_user"
+      is_checked=editable_by_user
+      label=(t "Users can edit this field")
+      }}
     {{#if valid_to_display_in_summary}}
         <div class="input-group">
             <label class="checkbox edit_profile_field_display_label" for="edit_display_in_profile_summary_{{id}}">

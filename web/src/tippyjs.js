@@ -684,3 +684,14 @@ export function show_copied_confirmation($copy_button) {
     }
     setTimeout(remove_instance, 1000);
 }
+delegate("body", {
+    target: [".field.custom_profile_field_changes_disabled_tooltip"],
+    content: $t({
+        defaultMessage:
+            "Changing this field is disabled in this organization. Contact an administrator to update this field.",
+    }),
+    appendTo: () => document.body,
+    onHidden(instance) {
+        instance.destroy();
+    },
+});

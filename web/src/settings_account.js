@@ -232,6 +232,7 @@ export function append_custom_profile_fields(element_id, user_id) {
 
     for (const field of all_custom_fields) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
+        const editable_by_user = page_params.is_admin || field.editable_by_user;
         const is_select_field = field.type === all_field_types.SELECT.id;
         const field_choices = [];
 
@@ -255,6 +256,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             field,
             field_type: all_field_template_types.get(field.type),
             field_value,
+            editable_by_user,
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,

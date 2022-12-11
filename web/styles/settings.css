@@ -1431,6 +1431,10 @@ $option_title_width: 180px;
     .custom_user_field {
         padding-bottom: 20px;
 
+        .field {
+            width: fit-content;
+        }
+
         .field_hint {
             color: hsl(0deg 0% 67%);
         }
@@ -1458,6 +1462,21 @@ $option_title_width: 180px;
 
         .datepicker {
             cursor: default;
+        }
+
+        & input[disabled].datepicker {
+            cursor: not-allowed;
+        }
+    }
+
+    .select-field-wrapper {
+        cursor: not-allowed;
+
+        & select {
+            &.disabled {
+                pointer-events: none;
+                background-color: hsl(0deg 0% 93%);
+            }
         }
     }
 
@@ -1943,5 +1962,9 @@ $option_title_width: 180px;
     .disabled_label {
         cursor: default;
         opacity: 0.7;
+    }
+
+    .inline {
+        display: inline;
     }
 }
