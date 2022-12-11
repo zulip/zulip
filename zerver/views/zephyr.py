@@ -32,7 +32,6 @@ kerberos_alter_egos = {
 def webathena_kerberos_login(
     request: HttpRequest, user_profile: UserProfile, cred: Optional[str] = REQ(default=None)
 ) -> HttpResponse:
-    global kerberos_alter_egos
     if cred is None:
         raise JsonableError(_("Could not find Kerberos credential"))
     if not user_profile.realm.webathena_enabled:
