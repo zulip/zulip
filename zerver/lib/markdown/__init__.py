@@ -2491,8 +2491,6 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
 
 
 def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:
-    global linkifier_data
-
     linkifiers = linkifiers_for_realm(linkifiers_key)
     if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
         # Linkifier data has changed, update `linkifier_data` and any
@@ -2676,7 +2674,6 @@ def markdown_stats_start() -> None:
 def markdown_stats_finish() -> None:
     global markdown_total_time
     global markdown_total_requests
-    global markdown_time_start
     markdown_total_requests += 1
     markdown_total_time += time.time() - markdown_time_start
 

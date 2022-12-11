@@ -96,7 +96,7 @@ def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
 
 
 def get_zulips() -> List[Dict[str, Any]]:
-    global queue_id, last_event_id
+    global last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if "error" in res.get("result", {}):
         report("CRITICAL", msg="Error receiving Zulips, error was: {}".format(res["msg"]))
