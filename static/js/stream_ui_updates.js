@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_stream_privacy from "../templates/stream_privacy.hbs";
+import render_announce_stream from "../templates/stream_settings/announce_stream.hbs";
 import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
@@ -169,24 +170,25 @@ export function update_notifications_stream_in_settings() {
         return;
     }
 
-    const notifications_stream = stream_data.get_notifications_stream();
-    const stream_privacy_symbol_html = render_stream_privacy({
-        invite_only: notifications_stream.invite_only,
-        is_web_public: notifications_stream.is_web_public,
-    });
-    const $replacement_html = $(
-        "<strong> " + stream_privacy_symbol_html + notifications_stream + "</strong>",
-    );
-
-    // replace old announcement stream with new announcement stream
-    $("#announce-new-stream .checkbox strong").replaceWith($replacement_html);
-
     // if announcement is turned off, hide the checkbox
     if (!stream_data.realm_has_notifications_stream()) {
         $("#announce-new-stream .checkbox").hide();
-    } else {
+        return;
+    }
+
+    if (stream_data.realm_has_notifications_stream()) {
         $("#announce-new-stream .checkbox").show();
     }
+
+    const notifications_stream = stream_data.get_notifications_stream();
+    const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+    const stream_privacy_symbol_html = render_stream_privacy({
+        invite_only: notifications_stream_sub.invite_only,
+        is_web_public: notifications_stream_sub.is_web_public,
+    });
+
+    const rendered = render_announce_stream({notifications_stream, stream_privacy_symbol_html});
+    $("#announce-new-stream").expectOne().html(rendered);
 }
 
 export function update_notification_setting_checkbox(notification_name) {

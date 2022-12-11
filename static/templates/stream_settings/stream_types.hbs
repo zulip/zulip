@@ -1,13 +1,6 @@
 {{#if ask_to_announce_stream}}
     <div id="announce-new-stream">
-        <label class="checkbox">
-            <input type="checkbox" name="announce" value="announce" checked />
-            <span></span>
-            {{> announce_stream
-              stream_privacy_symbol_html=stream_privacy_symbol_html
-              notifications_stream=notifications_stream }}
-            {{> ../help_link_widget link="/help/configure-notification-bot#new-stream-announcements" }}
-        </label>
+        {{>announce_stream }}
     </div>
 {{/if}}
 

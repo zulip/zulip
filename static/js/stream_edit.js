@@ -479,15 +479,8 @@ export function initialize() {
     $("#manage_streams_container").on("click", ".change-stream-privacy", (e) => {
         const stream_id = get_stream_id(e.target);
         const stream = sub_store.get(stream_id);
-        const notifications_stream = stream_data.get_notifications_stream();
-        const stream_privacy_symbol_html = render_stream_privacy({
-            invite_only: notifications_stream.invite_only,
-            is_web_public: notifications_stream.is_web_public,
-        });
 
         const template_data = {
-            notifications_stream,
-            stream_privacy_symbol_html,
             ask_to_announce_stream: false,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),

@@ -621,9 +621,10 @@ export function setup_page(callback) {
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
         const notifications_stream = stream_data.get_notifications_stream();
+        const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
         const stream_privacy_symbol_html = render_stream_privacy({
-            invite_only: notifications_stream.invite_only,
-            is_web_public: notifications_stream.is_web_public,
+            invite_only: notifications_stream_sub.invite_only,
+            is_web_public: notifications_stream_sub.is_web_public,
         });
 
         const template_data = {
