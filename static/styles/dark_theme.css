@@ -877,7 +877,7 @@
         }
 
         .codehilite code {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: hsla(0, 0%, 100%, 0.05);
         }
 
         .codehilite pre {
@@ -1265,8 +1265,8 @@
     }
 
     code {
-        background-color: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
+        background-color: hsla(0, 0%, 100%, 0.05);
+        border-color: hsla(0, 0%, 100%, 0.1);
         color: inherit;
     }
 

@@ -618,8 +618,8 @@ code {
 .rendered_markdown code {
     white-space: pre-wrap;
     padding: 0 4px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(0, 0, 45, 0.15);
+    background-color: hsla(0, 0%, 100%, 0.05);
+    border: 1px solid hsla(240, 100%, 9%, 0.15);
 }
 
 .codehilite {
