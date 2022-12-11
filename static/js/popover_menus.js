@@ -22,6 +22,7 @@ import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
+import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
@@ -126,6 +127,12 @@ export function toggle_message_actions_menu(message) {
         // It creates bugs with things like keyboard handlers when
         // we get the server response.
         return true;
+    }
+
+    const $selected_row = message_lists.current.selected_row();
+    // If we don't scroll then we should not suppress the scroll hide.
+    if (message_viewport.view_message_top($selected_row)) {
+        popovers.set_suppress_scroll_hide();
     }
 
     const $popover_reference = $(".selected_message .actions_hover .zulip-icon-ellipsis-v-solid");

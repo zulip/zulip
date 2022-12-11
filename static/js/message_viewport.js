@@ -373,6 +373,19 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
     }
 }
 
+export function view_message_top($message) {
+    // Sets the top of the viewport to the top of the message.
+    // Only applies if the top of the message is out of view above the visible area.
+    const viewport_info = message_viewport_info();
+    const message_top = $message.offset().top;
+    const message_height = $message.safeOuterHeight(true);
+    if (message_top < viewport_info.visible_top) {
+        set_message_position(message_top, message_height, viewport_info, 0);
+        return true;
+    }
+    return false;
+}
+
 export function keep_pointer_in_view() {
     // See message_viewport.recenter_view() for related logic to keep the pointer onscreen.
     // This function mostly comes into place for mouse scrollers, and it
