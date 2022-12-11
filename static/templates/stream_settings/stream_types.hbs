@@ -1,3 +1,10 @@
+{{#if ask_to_announce_stream}}
+    <div id="announce-new-stream">
+        {{>announce_stream }}
+    </div>
+{{/if}}
+
+<h4 class="stream_setting_subsection_title">{{t "Stream permissions" }}</h4>
 <div class="input-group stream-privacy-values">
     <div class="alert stream-privacy-status"></div>
     <label>{{t 'Who can access the stream?'}}
@@ -15,17 +22,6 @@
         {{/each}}
     </div>
 </div>
-
-{{#if ask_to_announce_stream}}
-    <div id="announce-new-stream">
-        <label class="checkbox">
-            <input type="checkbox" name="announce" value="announce" checked />
-            <span></span>
-            {{t "Announce stream" }}
-        </label>
-        <span class="fa fa-info-circle settings-info-icon" aria-hidden="true" id="announce-stream-docs"></span>
-    </div>
-{{/if}}
 
 <div class="input-group">
     <label class="dropdown-title">{{t 'Who can post to the stream?'}}

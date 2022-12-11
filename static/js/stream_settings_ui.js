@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
+import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
@@ -620,7 +621,16 @@ export function setup_page(callback) {
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
+        const notifications_stream = stream_data.get_notifications_stream();
+        const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+        const stream_privacy_symbol_html = render_stream_privacy({
+            invite_only: notifications_stream_sub.invite_only,
+            is_web_public: notifications_stream_sub.is_web_public,
+        });
+
         const template_data = {
+            notifications_stream,
+            stream_privacy_symbol_html,
             ask_to_announce_stream: true,
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||

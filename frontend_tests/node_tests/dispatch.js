@@ -69,6 +69,7 @@ const stream_data = mock_esm("../../static/js/stream_data");
 const stream_events = mock_esm("../../static/js/stream_events");
 const stream_list = mock_esm("../../static/js/stream_list");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
+const stream_ui_updates = mock_esm("../../static/js/stream_ui_updates");
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 const submessage = mock_esm("../../static/js/submessage");
 mock_esm("../../static/js/top_left_corner", {
@@ -337,6 +338,7 @@ run_test("realm settings", ({override}) => {
     page_params.is_admin = true;
 
     override(settings_org, "sync_realm_settings", noop);
+    override(stream_ui_updates, "update_notifications_stream_in_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);
 
