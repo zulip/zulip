@@ -75,9 +75,6 @@ function set_dom_to(new_dom) {
 }
 
 export function update_private_messages() {
-    console.log('UPDATING private messages')
-    console.log(pm_conversations.recent.recent_private_messages)
-
     if (private_messages_collapsed) {
         // In the collapsed state, we will still display the current
         // conversation, to preserve the UI invariant that there's

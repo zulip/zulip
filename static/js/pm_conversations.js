@@ -39,12 +39,10 @@ class RecentPrivateMessages {
         let convoList = this.recent_private_messages;
         for (let i = 0; i < convoList.length; i++) {
             if(!convoList[i]['max_message_id']){
-                console.log('REMOVING: ', convoList[i])
                 convoList.splice(i, i+1);
                 break;
             }
         }
-        console.log(convoList)
     }
 
     initInsert(user_ids){

@@ -167,8 +167,8 @@ function composing_to_current_private_message_narrow() {
 }
 
 export function update_narrow_to_recipient_visibility() {
-    // Simon's fix
-    console.log("Updating narrow to recipient visibility");
+    // Remove any conversations with no messages from PMs when the
+    // narrow view is changed
     pm_conversations.recent.removeEmptyConvo();
 
     const message_type = compose_state.get_message_type();
@@ -365,7 +365,8 @@ export function start(msg_type, opts) {
 }
 
 export function cancel() {
-    console.log('WE ARE CANCELING')
+    // Remove any empty conversations from PMs when the compose-box
+    // is closed
     pm_conversations.recent.removeEmptyConvo();
     pm_list.update_private_messages();
 

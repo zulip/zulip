@@ -938,7 +938,8 @@ export function by_recipient(target_id, opts) {
 
 // Called by the narrow_to_compose_target hotkey.
 export function to_compose_target() {
-    //if the target has not been in a convo before, then add temp convo marker to the top
+    // If the target has not been in a convo before, then add temp convo marker
+    // to the top
     const recipient_string = compose_state.private_message_recipient();
 
     let user_ids = [];
