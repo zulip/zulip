@@ -18,7 +18,7 @@ go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
-/* These need to agree with scroll_bar.js */
+$left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
 $right_sidebar_width: 250px;
 
@@ -47,6 +47,10 @@ body,
 #message_view_header_underpadding {
     background-color: hsl(0, 0%, 100%);
     transition: background-color 200ms linear;
+}
+
+:root {
+    color-scheme: light;
 }
 
 input,
@@ -194,10 +198,13 @@ p.n-margin {
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
-    height: 28px;
     font-size: 16px;
     margin: 0 auto 12px;
     padding: 5px;
+    /* Difference should be 16px to accommodate the icon. */
+    /* This emulates hanging indent. */
+    padding-left: 26px;
+    text-indent: -10px;
 
     i {
         margin: 0 3px 0 1px;
@@ -213,6 +220,7 @@ p.n-margin {
     display: none;
 }
 
+.alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
     width: 24px;
@@ -532,7 +540,7 @@ p.n-margin {
 
     .column-left .left-sidebar {
         width: $left_sidebar_width;
-        padding-left: 0;
+        padding-left: $left_sidebar_collapse_widget_gutter;
     }
 
     .column-right .right-sidebar {
@@ -542,13 +550,19 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
+
+        .column-middle-inner {
+            overflow: auto;
+        }
     }
 }
 
 .column-middle,
 #compose-content {
     margin-right: $right_sidebar_width;
-    margin-left: $left_sidebar_width;
+    margin-left: calc(
+        $left_sidebar_width + $left_sidebar_collapse_widget_gutter
+    );
     position: relative;
 }
 
@@ -884,11 +898,6 @@ li.actual-dropdown-menu i {
     padding: 6px 12px;
 }
 
-#settings_content .dependent-block,
-#invite-user .dependent-block {
-    margin: 15px 0 -5px 23px;
-}
-
 .message_area_padder {
     /* The height of the header and the message_view_header plus a small gap */
     margin-top: 57px;
@@ -1056,6 +1065,15 @@ td.pointer {
 
         > i {
             vertical-align: middle;
+        }
+    }
+
+    .actions_hover {
+        line-height: 1;
+
+        .zulip-icon-ellipsis-v-solid {
+            padding: 2px 5.33px;
+            outline: none;
         }
     }
 
@@ -1396,7 +1414,7 @@ td.pointer {
     left: 2px;
     top: 0;
     opacity: 0;
-    z-index: 1;
+    z-index: 2;
     bottom: 1px;
     transition: all 0.3s ease-out;
 
@@ -1993,8 +2011,10 @@ div.focused_table {
     }
 
     .navbar-search.expanded {
+        float: left;
         overflow: hidden;
         margin-top: 0;
+        margin-bottom: 0;
         width: calc(100% - 2px);
         position: absolute;
 
@@ -2841,7 +2861,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,
     .header-main {
@@ -3213,7 +3232,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .message_row.unread {
         .date_row {
             position: relative;
-            z-index: 1;
+            z-index: 3;
             background-color: hsl(0, 0%, 100%);
         }
     }

@@ -52,6 +52,7 @@ IGNORED_PHRASES = [
     # BeautifulSoup will remove <z-user> which is horribly confusing,
     # so we need more of the sentence.
     r"<z-user></z-user> will have the same role",
+    r"<z-user></z-user> will have the same properties",
     # Things using "I"
     r"I understand",
     r"I'm",
@@ -78,6 +79,9 @@ IGNORED_PHRASES = [
     r"more topics",
     # Used alone in a parenthetical where capitalized looks worse.
     r"^deprecated$",
+    # We want the similar text in the Private Messages section to have the same capitalization.
+    r"more conversations",
+    r"back to streams",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",

@@ -39,7 +39,6 @@ import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
-import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -157,19 +156,6 @@ function update_narrow_title(filter) {
             }
         } else {
             set_narrow_title(filter_title);
-        }
-    } else if (filter.has_operator("group-pm-with")) {
-        const emails = filter.operands("group-pm-with")[0];
-        const user_ids = people.emails_strings_to_user_ids_string(emails);
-        if (user_ids !== undefined) {
-            const names = people.get_recipients(user_ids);
-            set_narrow_title(names + " and others");
-        } else {
-            if (emails.includes(",")) {
-                set_narrow_title("Invalid users");
-            } else {
-                set_narrow_title("Invalid user");
-            }
         }
     } else {
         set_narrow_title(search_default);
@@ -502,7 +488,6 @@ export function activate(raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
-    ui_util.change_tab_to("#message_feed_container");
     message_list.set_narrowed(msg_list);
     message_lists.set_current(message_list.narrowed);
 

@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 
-from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
+from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
@@ -20,7 +20,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.message import parse_message_content_edit_or_delete_limit
 from zerver.lib.request import REQ, has_request_variables
@@ -155,7 +155,7 @@ def update_realm(
         raise JsonableError(_("Invalid language '{}'").format(default_language))
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError()
         if True not in list(authentication_methods.values()):
             raise JsonableError(_("At least one authentication method must be enabled."))
     if video_chat_provider is not None and video_chat_provider not in {
@@ -170,24 +170,25 @@ def update_realm(
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError()
         realm.ensure_not_on_limited_plan()
         message_retention_days = parse_message_retention_days(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+    message_retention_days  # used by locals() below
 
     if (
         invite_to_realm_policy is not None or invite_required is not None
     ) and not user_profile.is_realm_owner:
-        raise OrganizationOwnerRequired()
+        raise OrganizationOwnerRequiredError()
 
     if (
         emails_restricted_to_domains is not None or disallow_disposable_email_addresses is not None
     ) and not user_profile.is_realm_owner:
-        raise OrganizationOwnerRequired()
+        raise OrganizationOwnerRequiredError()
 
     if waiting_period_threshold is not None and not user_profile.is_realm_owner:
-        raise OrganizationOwnerRequired()
+        raise OrganizationOwnerRequiredError()
 
     if enable_spectator_access:
         realm.ensure_not_on_limited_plan()
@@ -306,7 +307,7 @@ def update_realm(
 
     if string_id is not None:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError()
 
         if realm.demo_organization_scheduled_deletion_date is None:
             raise JsonableError(_("Must be a demo organization."))
@@ -348,7 +349,7 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
         obj = get_object_from_key(
             confirmation_key, [Confirmation.REALM_REACTIVATION], mark_object_used=True
         )
-    except ConfirmationKeyException:
+    except ConfirmationKeyError:
         return render(request, "zerver/realm_reactivation_link_error.html", status=404)
 
     assert isinstance(obj, RealmReactivationStatus)

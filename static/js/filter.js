@@ -662,12 +662,33 @@ export class Filter {
     get_title() {
         // Nice explanatory titles for common views.
         const term_types = this.sorted_term_types();
-        if (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"])) {
+        if (
+            (term_types.length === 3 && _.isEqual(term_types, ["stream", "topic", "near"])) ||
+            (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"])) ||
+            (term_types.length === 1 && _.isEqual(term_types, ["stream"]))
+        ) {
             if (!this._sub) {
                 const search_text = this.operands("stream")[0];
                 return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
             }
             return this._sub.name;
+        }
+        if (
+            (term_types.length === 2 && _.isEqual(term_types, ["pm-with", "near"])) ||
+            (term_types.length === 1 && _.isEqual(term_types, ["pm-with"]))
+        ) {
+            const emails = this.operands("pm-with")[0].split(",");
+            const names = emails.map((email) => {
+                if (!people.get_by_email(email)) {
+                    return email;
+                }
+                return people.get_by_email(email).full_name;
+            });
+
+            // We use join to handle the addition of a comma and space after every name
+            // and also to ensure that we return a string and not an array so that we
+            // can have the same return type as other cases.
+            return names.join(", ");
         }
         if (term_types.length === 1) {
             switch (term_types[0]) {
@@ -677,32 +698,12 @@ export class Filter {
                     return $t({defaultMessage: "All messages including muted streams"});
                 case "streams-public":
                     return $t({defaultMessage: "Messages in all public streams"});
-                case "stream":
-                    if (!this._sub) {
-                        const search_text = this.operands("stream")[0];
-                        return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
-                    }
-                    return this._sub.name;
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
                     return $t({defaultMessage: "Mentions"});
                 case "is-private":
                     return $t({defaultMessage: "Private messages"});
-                case "pm-with": {
-                    const emails = this.operands("pm-with")[0].split(",");
-                    const names = emails.map((email) => {
-                        if (!people.get_by_email(email)) {
-                            return email;
-                        }
-                        return people.get_by_email(email).full_name;
-                    });
-
-                    // We use join to handle the addition of a comma and space after every name
-                    // and also to ensure that we return a string and not an array so that we
-                    // can have the same return type as other cases.
-                    return names.join(", ");
-                }
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
                 // These cases return false for is_common_narrow, and therefore are not

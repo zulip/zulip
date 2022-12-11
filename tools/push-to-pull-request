@@ -91,7 +91,7 @@ fi
 # seems to require authentication even for simple lookups of public data,
 # and that'd be a pain for a simple script like this.
 pr_url=https://api.github.com/repos/"${repo_fq}"/pulls/"${pr_id}"
-pr_details="$(curl -fLsS "$pr_url")"
+pr_details="$(curl -fLsS --retry 3 "$pr_url")"
 
 pr_jq() {
     echo "$pr_details" | jq "$@"

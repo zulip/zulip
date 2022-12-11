@@ -8,13 +8,18 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
-from zerver.actions.create_user import create_historical_user_messages
+from zerver.actions.create_user import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import access_message, format_unread_message_details, get_raw_unread_data
+from zerver.lib.message import (
+    bulk_access_messages,
+    format_unread_message_details,
+    get_raw_unread_data,
+)
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.utils import log_statsd_event
-from zerver.models import Message, UserMessage, UserProfile
+from zerver.models import Message, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event
 
 
@@ -44,15 +49,43 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
     )
     do_clear_mobile_push_notifications_for_ids([user_profile.id], all_push_message_ids)
 
-    with transaction.atomic(savepoint=False):
-        query = (
-            UserMessage.select_for_update_query()
-            .filter(user_profile=user_profile)
-            .extra(where=[UserMessage.where_unread()])
-        )
-        count = query.update(
-            flags=F("flags").bitor(UserMessage.flags.read),
-        )
+    batch_size = 2000
+    count = 0
+    while True:
+        with transaction.atomic(savepoint=False):
+            query = (
+                UserMessage.select_for_update_query()
+                .filter(user_profile=user_profile)
+                .extra(where=[UserMessage.where_unread()])[:batch_size]
+            )
+            # This updated_count is the same as the number of UserMessage
+            # rows selected, because due to the FOR UPDATE lock, we're guaranteed
+            # that all the selected rows will indeed be updated.
+            # UPDATE queries don't support LIMIT, so we have to use a subquery
+            # to do batching.
+            updated_count = UserMessage.objects.filter(id__in=query).update(
+                flags=F("flags").bitor(UserMessage.flags.read),
+            )
+
+            event_time = timezone_now()
+            do_increment_logging_stat(
+                user_profile,
+                COUNT_STATS["messages_read::hour"],
+                None,
+                event_time,
+                increment=updated_count,
+            )
+            do_increment_logging_stat(
+                user_profile,
+                COUNT_STATS["messages_read_interactions::hour"],
+                None,
+                event_time,
+                increment=min(1, updated_count),
+            )
+
+            count += updated_count
+            if updated_count < batch_size:
+                break
 
     event = asdict(
         ReadMessagesEvent(
@@ -60,20 +93,7 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
             all=True,
         )
     )
-    event_time = timezone_now()
-
     send_event(user_profile.realm, event, [user_profile.id])
-
-    do_increment_logging_stat(
-        user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
-    )
-    do_increment_logging_stat(
-        user_profile,
-        COUNT_STATS["messages_read_interactions::hour"],
-        None,
-        event_time,
-        increment=min(1, count),
-    )
 
     return count
 
@@ -244,27 +264,92 @@ def do_update_message_flags(
         raise JsonableError(_("Flag not editable: '{}'").format(flag))
     if operation not in ("add", "remove"):
         raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
+    is_adding = operation == "add"
     flagattr = getattr(UserMessage.flags, flag)
+    flag_target = flagattr if is_adding else 0
 
     with transaction.atomic(savepoint=False):
-        query = UserMessage.select_for_update_query().filter(
-            user_profile=user_profile, message_id__in=messages
+        if flag == "read" and not is_adding:
+            # We have an invariant that all stream messages marked as
+            # unread must be in streams the user is subscribed to.
+            #
+            # When marking as unread, we enforce this invariant by
+            # ignoring any messages in streams the user is not
+            # currently subscribed to.
+            subscribed_recipient_ids = get_subscribed_stream_recipient_ids_for_user(user_profile)
+
+            message_ids_in_unsubscribed_streams = set(
+                Message.objects.select_related("recipient")
+                .filter(id__in=messages, recipient__type=Recipient.STREAM)
+                .exclude(recipient_id__in=subscribed_recipient_ids)
+                .values_list("id", flat=True)
+            )
+
+            messages = [
+                message_id
+                for message_id in messages
+                if message_id not in message_ids_in_unsubscribed_streams
+            ]
+
+        ums = {
+            um.message_id: um
+            for um in UserMessage.select_for_update_query().filter(
+                user_profile=user_profile, message_id__in=messages
+            )
+        }
+
+        # Filter out rows that already have the desired flag.  We do
+        # this here, rather than in the original database query,
+        # because not all flags have database indexes and we want to
+        # bound the cost of this operation.
+        messages = [
+            message_id
+            for message_id in messages
+            if (int(ums[message_id].flags) if message_id in ums else DEFAULT_HISTORICAL_FLAGS)
+            & flagattr
+            != flag_target
+        ]
+        count = len(messages)
+
+        if DEFAULT_HISTORICAL_FLAGS & flagattr != flag_target:
+            # When marking messages as read, creating "historical"
+            # UserMessage rows would be a waste of storage, because
+            # `flags.read | flags.historical` is exactly the flags we
+            # simulate when processing a message for which a user has
+            # access but no UserMessage row.
+            #
+            # Users can mutate flags for messages that don't have a
+            # UserMessage yet.  Validate that the user is even allowed
+            # to access these message_ids; if so, we will create
+            # "historical" UserMessage rows for the messages in question.
+            #
+            # See create_historical_user_messages for a more detailed
+            # explanation.
+            historical_message_ids = set(messages) - set(ums.keys())
+            historical_messages = bulk_access_messages(
+                user_profile,
+                list(
+                    Message.objects.filter(id__in=historical_message_ids).prefetch_related(
+                        "recipient"
+                    )
+                ),
+            )
+            if len(historical_messages) != len(historical_message_ids):
+                raise JsonableError(_("Invalid message(s)"))
+
+            create_historical_user_messages(
+                user_id=user_profile.id,
+                message_ids=historical_message_ids,
+                flags=(DEFAULT_HISTORICAL_FLAGS & ~flagattr) | flag_target,
+            )
+
+        to_update = UserMessage.objects.filter(
+            user_profile=user_profile, message_id__in=set(messages) & set(ums.keys())
         )
-        um_message_ids = {um.message_id for um in query}
-        historical_message_ids = list(set(messages) - um_message_ids)
-
-        # Users can mutate flags for messages that don't have a UserMessage yet.
-        # First, validate that the user is even allowed to access these message_ids.
-        for message_id in historical_message_ids:
-            access_message(user_profile, message_id)
-
-        # And then create historical UserMessage records.  See the called function for more context.
-        create_historical_user_messages(user_id=user_profile.id, message_ids=historical_message_ids)
-
-        if operation == "add":
-            count = query.update(flags=F("flags").bitor(flagattr))
-        elif operation == "remove":
-            count = query.update(flags=F("flags").bitand(~flagattr))
+        if is_adding:
+            to_update.update(flags=F("flags").bitor(flagattr))
+        else:
+            to_update.update(flags=F("flags").bitand(~flagattr))
 
     event = {
         "type": "update_message_flags",
@@ -275,7 +360,7 @@ def do_update_message_flags(
         "all": False,
     }
 
-    if flag == "read" and operation == "remove":
+    if flag == "read" and not is_adding:
         # When removing the read flag (i.e. marking messages as
         # unread), extend the event with an additional object with
         # details on the messages required to update the client's
@@ -285,7 +370,7 @@ def do_update_message_flags(
 
     send_event(user_profile.realm, event, [user_profile.id])
 
-    if flag == "read" and operation == "add":
+    if flag == "read" and is_adding:
         event_time = timezone_now()
         do_clear_mobile_push_notifications_for_ids([user_profile.id], messages)
 

@@ -229,7 +229,6 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={
                 "name": field.name,
                 "hint": field.hint,
-                "field_type": field_type,
                 "field_data": field_data,
                 "display_in_profile_summary": "true",
             },

@@ -11,11 +11,6 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-set_global("document", {
-    execCommand() {
-        return false;
-    },
-});
 set_global("navigator", {});
 
 mock_esm("../../static/js/message_lists", {
@@ -29,6 +24,7 @@ const hash_util = mock_esm("../../static/js/hash_util");
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
+const text_field_edit = mock_esm("text-field-edit");
 
 const alice = {
     email: "alice@zulip.com",
@@ -49,6 +45,7 @@ function make_textbox(s) {
     const $widget = {};
 
     $widget.s = s;
+    $widget[0] = "textarea";
     $widget.focused = false;
 
     $widget.caret = function (arg) {
@@ -57,15 +54,16 @@ function make_textbox(s) {
             return this;
         }
 
-        if (arg) {
-            $widget.insert_pos = $widget.pos;
-            $widget.insert_text = arg;
-            const before = $widget.s.slice(0, $widget.pos);
-            const after = $widget.s.slice($widget.pos);
-            $widget.s = before + arg + after;
-            $widget.pos += arg.length;
-            return this;
-        }
+        // Not used right now, but could be in future.
+        // if (arg) {
+        //     $widget.insert_pos = $widget.pos;
+        //     $widget.insert_text = arg;
+        //     const before = $widget.s.slice(0, $widget.pos);
+        //     const after = $widget.s.slice($widget.pos);
+        //     $widget.s = before + arg + after;
+        //     $widget.pos += arg.length;
+        //     return this;
+        // }
 
         return $widget.pos;
     };
@@ -77,15 +75,6 @@ function make_textbox(s) {
             return this;
         }
         return $widget.s;
-    };
-
-    $widget.trigger = function (type) {
-        if (type === "focus") {
-            $widget.focused = true;
-        } else if (type === "blur") {
-            $widget.focused = false;
-        }
-        return this;
     };
 
     return $widget;
@@ -106,93 +95,80 @@ run_test("autosize_textarea", ({override}) => {
     assert.ok(textarea_autosized.autosized);
 });
 
-run_test("insert_syntax_and_focus", () => {
+run_test("insert_syntax_and_focus", ({override}) => {
     $("#compose-textarea").val("xyz ");
-    $("#compose-textarea").caret = function (syntax) {
-        if (syntax !== undefined) {
-            $("#compose-textarea").val($("#compose-textarea").val() + syntax);
-            return this;
-        }
-        return 4;
-    };
+    $("#compose-textarea").caret = () => 4;
+    $("#compose-textarea")[0] = "compose-textarea";
+    // Since we are using a third party library, we just
+    // need to ensure it is being called with the right params.
+    override(text_field_edit, "insert", (elt, syntax) => {
+        assert.equal(elt, "compose-textarea");
+        assert.equal(syntax, ":octopus: ");
+    });
     compose_ui.insert_syntax_and_focus(":octopus:");
-    assert.equal($("#compose-textarea").caret(), 4);
-    assert.equal($("#compose-textarea").val(), "xyz :octopus: ");
-    assert.ok($("#compose-textarea").is_focused());
 });
 
-run_test("smart_insert", () => {
+run_test("smart_insert", ({override}) => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
-
+    function override_with_expected_syntax(expected_syntax) {
+        override(text_field_edit, "insert", (elt, syntax) => {
+            assert.equal(elt, "textarea");
+            assert.equal(syntax, expected_syntax);
+        });
+    }
+    override_with_expected_syntax(" :smile: ");
     compose_ui.smart_insert($textbox, ":smile:");
-    assert.equal($textbox.insert_pos, 4);
-    assert.equal($textbox.insert_text, " :smile: ");
-    assert.equal($textbox.val(), "abc :smile: ");
-    assert.ok($textbox.focused);
 
-    $textbox.trigger("blur");
+    override_with_expected_syntax(" :airplane: ");
     compose_ui.smart_insert($textbox, ":airplane:");
-    assert.equal($textbox.insert_text, ":airplane: ");
-    assert.equal($textbox.val(), "abc :smile: :airplane: ");
-    assert.ok($textbox.focused);
 
     $textbox.caret(0);
-    $textbox.trigger("blur");
+    override_with_expected_syntax(":octopus: ");
     compose_ui.smart_insert($textbox, ":octopus:");
-    assert.equal($textbox.insert_text, ":octopus: ");
-    assert.equal($textbox.val(), ":octopus: abc :smile: :airplane: ");
-    assert.ok($textbox.focused);
 
     $textbox.caret($textbox.val().length);
-    $textbox.trigger("blur");
+    override_with_expected_syntax(" :heart: ");
     compose_ui.smart_insert($textbox, ":heart:");
-    assert.equal($textbox.insert_text, ":heart: ");
-    assert.equal($textbox.val(), ":octopus: abc :smile: :airplane: :heart: ");
-    assert.ok($textbox.focused);
 
     // Test handling of spaces for ```quote
     $textbox = make_textbox("");
     $textbox.caret(0);
-    $textbox.trigger("blur");
+    override_with_expected_syntax("```quote\nquoted message\n```\n");
     compose_ui.smart_insert($textbox, "```quote\nquoted message\n```\n");
-    assert.equal($textbox.insert_text, "```quote\nquoted message\n```\n");
-    assert.equal($textbox.val(), "```quote\nquoted message\n```\n");
-    assert.ok($textbox.focused);
 
     $textbox = make_textbox("");
     $textbox.caret(0);
-    $textbox.trigger("blur");
+    override_with_expected_syntax("translated: [Quoting…]\n");
     compose_ui.smart_insert($textbox, "translated: [Quoting…]\n");
-    assert.equal($textbox.insert_text, "translated: [Quoting…]\n");
-    assert.equal($textbox.val(), "translated: [Quoting…]\n");
-    assert.ok($textbox.focused);
 
     $textbox = make_textbox("abc");
     $textbox.caret(3);
-    $textbox.trigger("blur");
+    override_with_expected_syntax(" test with space ");
     compose_ui.smart_insert($textbox, " test with space");
-    assert.equal($textbox.insert_text, " test with space ");
-    assert.equal($textbox.val(), "abc test with space ");
-    assert.ok($textbox.focused);
 
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
     // like emojis and file links.
 });
 
-run_test("replace_syntax", () => {
+run_test("replace_syntax", ({override}) => {
     $("#compose-textarea").val("abcabc");
-
+    $("#compose-textarea")[0] = "compose-textarea";
+    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+        assert.equal(elt, "compose-textarea");
+        assert.equal(old_syntax, "a");
+        assert.equal(new_syntax(), "A");
+    });
     compose_ui.replace_syntax("a", "A");
-    assert.equal($("#compose-textarea").val(), "Abcabc");
 
-    compose_ui.replace_syntax(/b/g, "B");
-    assert.equal($("#compose-textarea").val(), "ABcaBc");
-
+    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+        assert.equal(elt, "compose-textarea");
+        assert.equal(old_syntax, "Bca");
+        assert.equal(new_syntax(), "$$\\pi$$");
+    });
     // Verify we correctly handle `$`s in the replacement syntax
     compose_ui.replace_syntax("Bca", "$$\\pi$$");
-    assert.equal($("#compose-textarea").val(), "A$$\\pi$$Bc");
 });
 
 run_test("compute_placeholder_text", () => {
@@ -283,15 +259,8 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     let textarea_val = "";
     let textarea_caret_pos;
 
-    $("#compose-textarea").val = function (...args) {
-        if (args.length === 0) {
-            return textarea_val;
-        }
-
-        textarea_val = args[0];
-        textarea_caret_pos = textarea_val.length;
-
-        return this;
+    $("#compose-textarea").val = function () {
+        return textarea_val;
     };
 
     $("#compose-textarea").caret = function (arg) {
@@ -315,6 +284,11 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         textarea_caret_pos += arg.length;
         return this;
     };
+    $("#compose-textarea")[0] = "compose-textarea";
+    override(text_field_edit, "insert", (elt, syntax) => {
+        assert.equal(elt, "compose-textarea");
+        assert.equal(syntax, "translated: [Quoting…]\n");
+    });
 
     function set_compose_content_with_caret(content) {
         const caret_position = content.indexOf("%");
@@ -322,14 +296,6 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         textarea_val = content;
         textarea_caret_pos = caret_position;
         $("#compose-textarea").trigger("focus");
-    }
-
-    function get_compose_content_with_caret() {
-        const content =
-            textarea_val.slice(0, textarea_caret_pos) +
-            "%" +
-            textarea_val.slice(textarea_caret_pos); // insert the "%"
-        return content;
     }
 
     function reset_test_state() {
@@ -342,17 +308,27 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         $("#compose-textarea").trigger("blur");
     }
 
+    function override_with_quote_text(quote_text) {
+        override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+            assert.equal(elt, "compose-textarea");
+            assert.equal(old_syntax, "translated: [Quoting…]");
+            assert.equal(
+                new_syntax(),
+                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n" +
+                    "```quote\n" +
+                    `${quote_text}\n` +
+                    "```",
+            );
+        });
+    }
+    let quote_text = "Testing caret position";
+    override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
     compose_actions.quote_and_reply();
-    assert.equal(get_compose_content_with_caret(), "hello \ntranslated: [Quoting…]\n%there");
 
     success_function({
-        raw_content: "Testing caret position",
+        raw_content: quote_text,
     });
-    assert.equal(
-        get_compose_content_with_caret(),
-        "hello \ntranslated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting caret position\n```\n%there",
-    );
 
     reset_test_state();
 
@@ -360,15 +336,12 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // add a newline before the quoted message.
     set_compose_content_with_caret("%hello there");
     compose_actions.quote_and_reply();
-    assert.equal(get_compose_content_with_caret(), "translated: [Quoting…]\n%hello there");
 
+    quote_text = "Testing with caret initially positioned at 0.";
+    override_with_quote_text(quote_text);
     success_function({
-        raw_content: "Testing with caret initially positioned at 0.",
+        raw_content: quote_text,
     });
-    assert.equal(
-        get_compose_content_with_caret(),
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with caret initially positioned at 0.\n```\n%hello there",
-    );
 
     override_rewire(compose_actions, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
@@ -383,15 +356,12 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // quoting a message, the quoted message should be placed
     // at the beginning of compose-box.
     compose_actions.quote_and_reply();
-    assert.equal(get_compose_content_with_caret(), "translated: [Quoting…]\n%");
 
+    quote_text = "Testing with compose-box closed initially.";
+    override_with_quote_text(quote_text);
     success_function({
-        raw_content: "Testing with compose-box closed initially.",
+        raw_content: quote_text,
     });
-    assert.equal(
-        get_compose_content_with_caret(),
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box closed initially.\n```\n%",
-    );
 
     reset_test_state();
 
@@ -401,15 +371,12 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // message should start from the beginning of compose-box.
     set_compose_content_with_caret("  \n\n \n %");
     compose_actions.quote_and_reply();
-    assert.equal(get_compose_content_with_caret(), "translated: [Quoting…]\n%");
 
+    quote_text = "Testing with compose-box containing whitespaces and newlines only.";
+    override_with_quote_text(quote_text);
     success_function({
-        raw_content: "Testing with compose-box containing whitespaces and newlines only.",
+        raw_content: quote_text,
     });
-    assert.equal(
-        get_compose_content_with_caret(),
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box containing whitespaces and newlines only.\n```\n%",
-    );
 });
 
 run_test("set_compose_box_top", () => {
@@ -462,19 +429,17 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     assert.ok(!compose_box_top_set);
 });
 
-run_test("format_text", () => {
+run_test("format_text", ({override}) => {
     let set_text = "";
     let wrap_selection_called = false;
     let wrap_syntax = "";
 
-    mock_esm("text-field-edit", {
-        set: (field, text) => {
-            set_text = text;
-        },
-        wrapSelection: (field, syntax) => {
-            wrap_selection_called = true;
-            wrap_syntax = syntax;
-        },
+    override(text_field_edit, "set", (field, text) => {
+        set_text = text;
+    });
+    override(text_field_edit, "wrapSelection", (field, syntax) => {
+        wrap_selection_called = true;
+        wrap_syntax = syntax;
     });
 
     function reset_state() {
@@ -485,7 +450,7 @@ run_test("format_text", () => {
 
     const $textarea = $("#compose-textarea");
     $textarea.get = () => ({
-        setSelectionRange: () => {},
+        setSelectionRange() {},
     });
 
     function init_textarea(val, range) {

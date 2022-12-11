@@ -60,10 +60,10 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.19.2',
-      'sha256' => {
-        'amd64'   => '5e8c5a74fe6470dd7e055a461acda8bb4050ead8c2df70f227e3ff7d8eb7eeb6',
-        'aarch64' => 'b62a8d9654436c67c14a0c91e931d50440541f09eb991a987536cb982903126d',
+      'version' => '1.19.3',
+      'sha256'  => {
+        'amd64'   => '74b9640724fd4e6bb0ed2a1bc44ae813a03f1e72a4c76253e2d5c015494430ba',
+        'aarch64' => '99de2fe112a52ab748fb175edea64b313a0c8d51d6157dba683a6be163fd5eab',
       },
     },
 
@@ -71,35 +71,33 @@ class zulip::common {
     'smokescreen-src' => {
       'version' => '5b7c3b74c3243e167cb650a91406c11e80532319',
       # Source code, so arch-invariant sha256
-      'sha256' => 'e93d19b28fca0757ead502976a6ea71406b8b2a6fce536386c861fd97e257297',
+      'sha256'  => 'e93d19b28fca0757ead502976a6ea71406b8b2a6fce536386c861fd97e257297',
     },
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version'       => '2.0.1',
-      'sha256'        => {
-        'amd64' => '2640cb9110e802bf971efdc9b7a35515af7757e06693bf5c81bd4915d8d42b9c',
-        # aarch64 builds from source, below
+      'version' => '2.0.1',
+      'sha256'  => {
+        'amd64'   => '2640cb9110e802bf971efdc9b7a35515af7757e06693bf5c81bd4915d8d42b9c',
+        'aarch64' => '9782bd6f4f08ec26d0f2f5f8fd8f9531e4fe39f14ef5f764cbec08e93da2bbcc',
       },
-      # This is a Git commit hash, not a sha256sum, for when building from source.
-      'git_commit_id' => 'b7d53dd74d92dd92dce224190361ad0607d680e2',
     },
 
     ### zulip_ops packages
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '9.2.0',
-      'sha256' => {
-        'amd64'   => 'a899ea2288390d05c8f0c019b5bd944a46f953063b734e670c1b7699fd77049f',
-        'aarch64' => '4d7dad0607141f07e00e743d53c232eeae2bbee962ab0859a9a2719b5902d3d2',
+      'version' => '9.3.0',
+      'sha256'  => {
+        'amd64'   => '5468a6e2fad8937efb289b5cc79ad9ae2568a7b5c179c419325ceeb65d86c623',
+        'aarch64' => '16d7803fb08d77108b3a54dac94db43a7a5a1bd3fc8deb0c54bf4cfbfb88d619',
       },
     },
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
       'version' => '1.4.0',
-      'sha256' => {
+      'sha256'  => {
         'amd64'   => 'e77ff1b0a824a4e13f82a35d98595fe526849c09e3480d0789a56b72242d2abc',
         'aarch64' => '0b20aa75385a42857a67ee5f6c7f67b229039a22a49c5c61c33f071356415b59',
       },
@@ -108,7 +106,7 @@ class zulip::common {
     # https://github.com/ncabatoff/process-exporter/releases
     'process_exporter' => {
       'version' => '0.7.10',
-      'sha256' => {
+      'sha256'  => {
         'amd64'   => '52503649649c0be00e74e8347c504574582b95ad428ff13172d658e82b3da1b5',
         'aarch64' => 'b377e673558bd0d51f5f771c2b3b3be44b60fcac0689709f47d8c7ca8136f6f5',
       }
@@ -116,26 +114,26 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.39.0',
-      'sha256' => {
-        'amd64'   => '4a5fb68e2f44f5e2fdef698bbe4ac8564b02789873aa57a36c72e590977734fe',
-        'aarch64' => '46e353fbc276d1462b1cc8c9a1f5a2e4c49770b8ad459f5711c592e48b176dc6',
+      'version' => '2.40.0',
+      'sha256'  => {
+        'amd64'   => '005d3337420e4390ca80bb97960cd9ac31f38ae6065cb1e8f8298c35d1b257aa',
+        'aarch64' => 'c38d374624d329b64bb94bf9b25d7720d928a3117e4758546865d93059f14e53',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.44.0',
-      'sha256' => {
-        'amd64'   => 'ce532668418b7c7a9da2c70504185e50da0decbb8a34c162f762fef5c9b48373',
-        'aarch64' => 'd1a211dd5f132f0e3653bca8871dbd276563ba46b7b17824e008198ca4278d7b',
+      'version' => '1.45.0',
+      'sha256'  => {
+        'amd64'   => '0890f4a75c41a953b608a3c025ef735296a473e0119ed31864c8510efe7a8393',
+        'aarch64' => 'f18144cdd7876979c7278507ccb68b87801b0df977825d76f0293173653d3dd7',
       },
     },
 
     # https://github.com/timonwong/uwsgi_exporter/releases
     'uwsgi_exporter' => {
       'version' => '1.1.0',
-      'sha256' => {
+      'sha256'  => {
         'amd64'   => '28c7eb81515a08246824019fc42aa16c9bb3effafbcc150ab083e29295ba1fe3',
         'aarch64' => 'c8143ebd56f5d0e9eb84e3d091613cc656ea96bd176e7ff9ace9cd58e8358dc3',
       },

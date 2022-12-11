@@ -6,10 +6,11 @@ import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.actions.streams import do_change_subscription_property
+from zerver.actions.user_groups import remove_members_from_user_group
 from zerver.actions.user_topics import do_mute_topic
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
-from zerver.lib.user_groups import create_user_group, remove_user_from_user_group
+from zerver.lib.user_groups import create_user_group
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
@@ -451,8 +452,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(user_profile, client_descriptor.event_queue.id)
-        remove_user_from_user_group(user_profile, hamlet_and_cordelia)
-        remove_user_from_user_group(cordelia, hamlet_and_cordelia)
+        remove_members_from_user_group(hamlet_and_cordelia, [user_profile.id, cordelia.id])
 
         # Test the hook with a stream message with stream_push_notify
         change_subscription_properties(user_profile, stream, sub, {"push_notifications": True})

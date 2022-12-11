@@ -15,6 +15,7 @@ from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
+from django.utils.crypto import constant_time_compare
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.log import log_response
 from django.utils.translation import gettext as _
@@ -550,7 +551,16 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
         # and saved in the set_language flag so that it can be used here.
         set_language = RequestNotes.get_notes(request).set_language
         if set_language is not None:
-            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, set_language)
+            response.set_cookie(
+                settings.LANGUAGE_COOKIE_NAME,
+                set_language,
+                max_age=settings.LANGUAGE_COOKIE_AGE,
+                path=settings.LANGUAGE_COOKIE_PATH,
+                domain=settings.LANGUAGE_COOKIE_DOMAIN,
+                secure=settings.LANGUAGE_COOKIE_SECURE,
+                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/pull/1228
+                samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+            )
 
         return response
 
@@ -696,29 +706,18 @@ class ZulipCommonMiddleware(CommonMiddleware):
         return super().should_redirect_with_slash(request)
 
 
-class SCIMClient:
-    @property
-    def is_authenticated(self) -> bool:
-        """
-        The purpose of this is to make SCIMClient behave like a UserProfile
-        when an instance is assigned to request.user - we need it to pass
-        request.user.is_authenticated verifications.
-        """
-        return True
-
-
-def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
+def validate_scim_bearer_token(request: HttpRequest) -> bool:
     """
     This function verifies the request is allowed to make SCIM requests on this subdomain,
     by checking the provided bearer token and ensuring it matches a scim client configured
     for this subdomain in settings.SCIM_CONFIG.
-    If successful, returns the corresponding SCIMClient object. Returns None otherwise.
+    Returns True if successful.
     """
 
     subdomain = get_subdomain(request)
     scim_config_dict = settings.SCIM_CONFIG.get(subdomain)
     if not scim_config_dict:
-        return None
+        return False
 
     valid_bearer_token = scim_config_dict.get("bearer_token")
     scim_client_name = scim_config_dict.get("scim_client_name")
@@ -727,8 +726,11 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
     assert valid_bearer_token
     assert scim_client_name
 
-    if request.headers.get("Authorization") != f"Bearer {valid_bearer_token}":
-        return None
+    authorization = request.headers.get("Authorization")
+    if authorization is None or not constant_time_compare(
+        authorization, f"Bearer {valid_bearer_token}"
+    ):
+        return False
 
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.realm is not None
@@ -736,10 +738,7 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
         f"scim-client:{scim_client_name}:realm:{request_notes.realm.id}"
     )
 
-    # While API authentication code paths are sufficiently high
-    # traffic that we prefer to use a cache, SCIM is much lower
-    # traffic, and doing a database query is plenty fast.
-    return SCIMClient()
+    return True
 
 
 class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
@@ -747,9 +746,17 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
     Overridden version of middleware implemented in django-scim2
     (https://github.com/15five/django-scim2/blob/master/src/django_scim/middleware.py)
     to also handle authenticating the client.
+
+    This doesn't actually function as a regular middleware class that's registered in
+    settings.MIDDLEWARE, but rather is called inside django-scim2 logic to authenticate
+    the request when accessing SCIM endpoints.
     """
 
     def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+        # Defensive assertion to ensure this can't accidentally get called on a request
+        # to a non-SCIM endpoint.
+        assert request.path.startswith(self.reverse_url)
+
         # This determines whether this is a SCIM request based on the request's path
         # and if it is, logs request information, including the body, as well as the response
         # for debugging purposes to the `django_scim.middleware` logger, at DEBUG level.
@@ -757,24 +764,12 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
         if self.should_log_request(request):
             self.log_request(request)
 
-        # Here we verify the request is indeed to a SCIM endpoint. That's ensured
-        # by comparing the path with self.reverse_url, which is the root SCIM path /scim/b2/.
-        # Of course we don't want to proceed with authenticating the request for SCIM
-        # if a non-SCIM endpoint is being queried.
-        if not request.path.startswith(self.reverse_url):
-            return None
-
-        scim_client = validate_scim_bearer_token(request)
-        if not scim_client:
+        if not validate_scim_bearer_token(request):
+            # In case of failed authentication, a response should be returned to
+            # prevent going further down the codepath (to the SCIM endpoint), since
+            # this aspect works like regular middleware.
             response = HttpResponse(status=401)
             response["WWW-Authenticate"] = scim_settings.WWW_AUTHENTICATE_HEADER
             return response
 
-        # The client has been successfully authenticated for SCIM on this subdomain,
-        # so we can assign the corresponding SCIMClient object to request.user - which
-        # will allow this request to pass request.user.is_authenticated checks from now on,
-        # to be served by the relevant views implemented in django-scim2.
-        # Since request.user must be a UserProfile or AnonymousUser, this is a type-unsafe
-        # workaround to make this monkey-patching work.
-        request.user = scim_client  # type: ignore[assignment] # wrong type
         return None

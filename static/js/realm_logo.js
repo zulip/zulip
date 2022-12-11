@@ -99,3 +99,16 @@ export function render() {
         $night_file_input,
     );
 }
+
+export function initialize() {
+    // render once
+    render();
+
+    // Rerender the realm-logo when the browser detects color scheme changes.
+    const dark_mode_media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
+    dark_mode_media_query_list.addEventListener("change", () => {
+        if ($(":root").hasClass("color-scheme-automatic")) {
+            render();
+        }
+    });
+}

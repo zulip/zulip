@@ -6,6 +6,7 @@ import render_status_emoji_selector from "../templates/status_emoji_selector.hbs
 import * as dialog_widget from "./dialog_widget";
 import * as emoji from "./emoji";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as people from "./people";
 import * as user_status from "./user_status";
 
@@ -39,7 +40,7 @@ export function open_user_status_modal() {
         id: "set_user_status_modal",
         on_click: submit_new_status,
         post_render: user_status_post_render,
-        on_shown: () => {
+        on_shown() {
             input_field().trigger("focus");
         },
     });
@@ -146,7 +147,7 @@ function user_status_post_render() {
     });
 
     input_field().on("keypress", (event) => {
-        if (event.key === "Enter") {
+        if (keydown_util.is_enter_event(event)) {
             event.preventDefault();
 
             submit_new_status();

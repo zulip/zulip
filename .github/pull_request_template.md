@@ -9,7 +9,8 @@ Tooling tips: https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gi
 
 **Screenshots and screen captures:**
 
-**Self-review checklist**
+<details>
+<summary>Self-review checklist</summary>
 
 <!-- Prior to submitting a PR, follow our step-by-step guide to review your own code:
 https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code -->
@@ -27,7 +28,7 @@ Communicate decisions, questions, and potential concerns.
 - [ ] Calls out remaining decisions and concerns.
 - [ ] Automated tests verify logic where appropriate.
 
-Individual commits are ready for review (see [commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html)).
+Individual commits are ready for review (see [commit discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html)).
 
 - [ ] Each commit is a coherent idea.
 - [ ] Commit message(s) explain reasoning and motivation for changes.
@@ -39,3 +40,4 @@ Completed manual review and testing of the following:
 - [ ] Strings and tooltips.
 - [ ] End-to-end functionality of buttons, interactions and flows.
 - [ ] Corner cases, error conditions, and easily imagined bugs.
+</details>

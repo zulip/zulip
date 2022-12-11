@@ -6,11 +6,11 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 mock_esm("../../static/js/message_scroll", {
-    hide_loading_older: () => {},
+    hide_loading_older() {},
 
-    show_loading_older: () => {},
-    hide_loading_newer: () => {},
-    show_loading_newer: () => {},
+    show_loading_older() {},
+    hide_loading_newer() {},
+    show_loading_newer() {},
 });
 
 const {FetchStatus} = zrequire("fetch_status");

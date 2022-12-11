@@ -1330,7 +1330,7 @@ def export_partial_message_files(
 
         all_message_ids |= message_ids
 
-    message_id_chunks = chunkify(sorted(list(all_message_ids)), chunk_size=MESSAGE_BATCH_CHUNK_SIZE)
+    message_id_chunks = chunkify(sorted(all_message_ids), chunk_size=MESSAGE_BATCH_CHUNK_SIZE)
 
     write_message_partials(
         realm=realm,
@@ -2177,7 +2177,7 @@ def export_messages_single_user(
     all_message_ids |= reaction_message_ids
 
     dump_file_id = 1
-    for message_id_chunk in chunkify(sorted(list(all_message_ids)), MESSAGE_BATCH_CHUNK_SIZE):
+    for message_id_chunk in chunkify(sorted(all_message_ids), MESSAGE_BATCH_CHUNK_SIZE):
         fat_query = (
             UserMessage.objects.select_related("message", "message__sending_client")
             .filter(user_profile=user_profile, message_id__in=message_id_chunk)

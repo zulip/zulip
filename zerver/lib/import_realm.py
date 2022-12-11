@@ -993,7 +993,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
     # Handle rendering of stream descriptions for import from non-Zulip
     for stream in data["zerver_stream"]:
-        stream["rendered_description"] = render_stream_description(stream["description"])
+        stream["rendered_description"] = render_stream_description(stream["description"], realm)
     bulk_import_model(data, Stream)
 
     realm.notifications_stream_id = notifications_stream_id
@@ -1328,7 +1328,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     bulk_import_model(data, Reaction)
 
     # Similarly, we need to recalculate the first_message_id for stream objects.
-    update_first_message_id_query = """
+    update_first_message_id_query = SQL(
+        """
     UPDATE zerver_stream
     SET first_message_id = subquery.first_message_id
     FROM (
@@ -1336,13 +1337,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         FROM zerver_message m
         JOIN zerver_recipient r ON
         r.id = m.recipient_id
-        WHERE r.type = 2
+        WHERE r.type = 2 AND m.realm_id = %(realm_id)s
         GROUP BY r.type_id
         ) AS subquery
     WHERE zerver_stream.id = subquery.id
     """
+    )
+
     with connection.cursor() as cursor:
-        cursor.execute(update_first_message_id_query)
+        cursor.execute(update_first_message_id_query, {"realm_id": realm.id})
 
     if "zerver_userstatus" in data:
         fix_datetime_fields(data, "zerver_userstatus")

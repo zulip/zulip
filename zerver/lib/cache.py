@@ -44,11 +44,6 @@ ReturnT = TypeVar("ReturnT")
 
 logger = logging.getLogger()
 
-
-class NotFoundInCache(Exception):
-    pass
-
-
 remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
 remote_cache_total_requests = 0
@@ -151,7 +146,7 @@ def cache_with_key(
 
             try:
                 val = cache_get(key, cache_name=cache_name)
-            except InvalidCacheKeyException:
+            except InvalidCacheKeyError:
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
                 return func(*args, **kwargs)
@@ -175,13 +170,12 @@ def cache_with_key(
 
             val = func(*args, **kwargs)
             if isinstance(val, QuerySet):  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/issues/704
-                logging.warning(
-                    "cache_with_key attempted to store a full QuerySet object -- flattening using list()",
+                logging.error(
+                    "cache_with_key attempted to store a full QuerySet object -- declining to cache",
                     stack_info=True,
                 )
-                val = list(val)
-
-            cache_set(key, val, cache_name=cache_name, timeout=timeout)
+            else:
+                cache_set(key, val, cache_name=cache_name, timeout=timeout)
 
             return val
 
@@ -190,7 +184,7 @@ def cache_with_key(
     return decorator
 
 
-class InvalidCacheKeyException(Exception):
+class InvalidCacheKeyError(Exception):
     pass
 
 
@@ -215,9 +209,9 @@ def validate_cache_key(key: str) -> None:
     # The regex checks "all characters between ! and ~ in the ascii table",
     # which happens to be the set of all "nice" ascii characters.
     if not bool(re.fullmatch(r"([!-~])+", key)):
-        raise InvalidCacheKeyException("Invalid characters in the cache key: " + key)
+        raise InvalidCacheKeyError("Invalid characters in the cache key: " + key)
     if len(key) > MEMCACHED_MAX_KEY_LENGTH:
-        raise InvalidCacheKeyException(f"Cache key too long: {key} Length: {len(key)}")
+        raise InvalidCacheKeyError(f"Cache key too long: {key} Length: {len(key)}")
 
 
 def cache_set(
@@ -262,7 +256,7 @@ def safe_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Di
         # to do normal cache_get_many to avoid the overhead of
         # validating all the keys here.
         return cache_get_many(keys, cache_name)
-    except InvalidCacheKeyException:
+    except InvalidCacheKeyError:
         stack_trace = traceback.format_exc()
         good_keys, bad_keys = filter_good_and_bad_keys(keys)
 
@@ -295,7 +289,7 @@ def safe_cache_set_many(
         # to do normal cache_set_many to avoid the overhead of
         # validating all the keys here.
         return cache_set_many(items, cache_name, timeout)
-    except InvalidCacheKeyException:
+    except InvalidCacheKeyError:
         stack_trace = traceback.format_exc()
 
         good_keys, bad_keys = filter_good_and_bad_keys(list(items.keys()))
@@ -330,7 +324,7 @@ def filter_good_and_bad_keys(keys: List[str]) -> Tuple[List[str], List[str]]:
         try:
             validate_cache_key(key)
             good_keys.append(key)
-        except InvalidCacheKeyException:
+        except InvalidCacheKeyError:
             bad_keys.append(key)
 
     return good_keys, bad_keys
@@ -748,7 +742,7 @@ def flush_submessage(*, instance: "SubMessage", **kwargs: object) -> None:
 class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
     def __init__(
         self, function: Callable[ParamT, ReturnT], cached_function: "_lru_cache_wrapper[ReturnT]"
-    ):
+    ) -> None:
         self.key_prefix = KEY_PREFIX
         self.function = function
         self.cached_function = cached_function
@@ -756,6 +750,11 @@ class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
         self.cache_clear = cached_function.cache_clear
 
     def __call__(self, *args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+            # In the development environment, we want every file
+            # change to refresh the source files from disk.
+            return self.function(*args, **kwargs)
+
         if self.key_prefix != KEY_PREFIX:
             # Clear cache when cache.KEY_PREFIX changes. This is used in
             # tests.

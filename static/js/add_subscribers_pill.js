@@ -1,4 +1,5 @@
 import * as input_pill from "./input_pill";
+import * as keydown_util from "./keydown_util";
 import * as pill_typeahead from "./pill_typeahead";
 import * as stream_pill from "./stream_pill";
 import * as user_group_pill from "./user_group_pill";
@@ -109,7 +110,7 @@ export function set_up_handlers({
     }
 
     $parent_container.on("keyup", pill_selector, (e) => {
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             callback();
         }

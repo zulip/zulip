@@ -26,7 +26,6 @@ from typing import (
     Union,
 )
 from urllib.parse import urlencode, urljoin, urlsplit
-from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -47,11 +46,11 @@ from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from soupsieve import escape as css_escape
 from tlds import tld_set
 
-from zerver.lib import mention as mention
+from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
-from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
@@ -64,7 +63,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
-from zerver.lib.timeout import TimeoutExpired, timeout
+from zerver.lib.timeout import TimeoutExpiredError, timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
@@ -386,7 +385,7 @@ class ResultWithFamily(Generic[T]):
     family: ElementFamily
     result: T
 
-    def __init__(self, family: ElementFamily, result: T):
+    def __init__(self, family: ElementFamily, result: T) -> None:
         self.family = family
         self.result = result
 
@@ -395,7 +394,7 @@ class ElementPair:
     parent: Optional["ElementPair"]
     value: Element
 
-    def __init__(self, parent: Optional["ElementPair"], value: Element):
+    def __init__(self, parent: Optional["ElementPair"], value: Element) -> None:
         self.parent = parent
         self.value = value
 
@@ -475,7 +474,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             # formatting timeout.
             tweet = timeout(3, lambda: api.GetStatus(tweet_id))
             res = tweet.AsDict()
-        except TimeoutExpired:
+        except TimeoutExpiredError:
             # We'd like to try again later and not cache the bad result,
             # so we need to re-raise the exception (just as though
             # we were being rate-limited)
@@ -1713,7 +1712,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # a blank line intentionally.
         #
         # This is a new blockquote. Create a new parent element.
-        quote = etree.SubElement(parent, "blockquote")
+        quote = SubElement(parent, "blockquote")
 
         # Recursively parse block with blockquote as parent.
         # change parser state so blockquotes embedded in lists use p tags
@@ -2282,15 +2281,15 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
         return reg
 
-    def register_linkifiers(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
+    def register_linkifiers(self, registry: markdown.util.Registry) -> markdown.util.Registry:
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
-            inlinePatterns.register(
+            registry.register(
                 LinkifierPattern(pattern, linkifier["url_format"], self),
                 f"linkifiers/{pattern}",
                 45,
             )
-        return inlinePatterns
+        return registry
 
     def build_treeprocessors(self) -> markdown.util.Registry:
         # Here we build all the processors from upstream, plus a few of our own.
@@ -2582,7 +2581,7 @@ def do_convert(
         # something huge.
         MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
         if len(rendering_result.rendered_content) > MAX_MESSAGE_LENGTH * 100:
-            raise MarkdownRenderingException(
+            raise MarkdownRenderingError(
                 f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 100} characters (message {logging_message_id})"
             )
         return rendering_result
@@ -2597,7 +2596,7 @@ def do_convert(
             logging_message_id,
         )
 
-        raise MarkdownRenderingException()
+        raise MarkdownRenderingError()
     finally:
         # These next three lines are slightly paranoid, since
         # we always set these right before actually using the

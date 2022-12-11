@@ -56,14 +56,6 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context["zulip_url"] = zulip_url
 
     context["html_settings_links"] = html_settings_links
-    if html_settings_links:
-        settings_html = '<a href="/#settings">Zulip settings page</a>'
-        subscriptions_html = '<a target="_blank" href="/#streams">streams page</a>'
-    else:
-        settings_html = "Zulip settings page"
-        subscriptions_html = "streams page"
-    context["settings_html"] = settings_html
-    context["subscriptions_html"] = subscriptions_html
 
 
 class ApiURLView(TemplateView):
@@ -106,6 +98,15 @@ class MarkdownDirectoryView(ApiURLView):
             return DocumentationArticle(
                 article_path=path,
                 article_http_status=http_status,
+                endpoint_path=None,
+                endpoint_method=None,
+            )
+
+        if path == "/zerver/api/api-doc-template.md":
+            # This template shouldn't be accessed directly.
+            return DocumentationArticle(
+                article_path=self.path_template % ("missing",),
+                article_http_status=404,
                 endpoint_path=None,
                 endpoint_method=None,
             )
@@ -324,6 +325,6 @@ def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> Http
     if isinstance(integration, HubotIntegration):
         context["hubot_docs_url"] = integration.hubot_docs_url
 
-    doc_html_str = render_markdown_path(integration.doc, context)
+    doc_html_str = render_markdown_path(integration.doc, context, integration_doc=True)
 
     return HttpResponse(doc_html_str)

@@ -110,10 +110,10 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.source.html"
 
-        from zerver.lib.send_email import NoEmailArgumentException
+        from zerver.lib.send_email import NoEmailArgumentError
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -124,7 +124,7 @@ class TestCustomEmails(ZulipTestCase):
         )
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -142,10 +142,10 @@ class TestCustomEmails(ZulipTestCase):
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
         )
 
-        from zerver.lib.send_email import DoubledEmailArgumentException
+        from zerver.lib.send_email import DoubledEmailArgumentError
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -156,7 +156,7 @@ class TestCustomEmails(ZulipTestCase):
         )
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -1182,6 +1182,21 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(
             msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
         )
+
+    def test_pm_link_in_missed_message_header(self) -> None:
+        cordelia = self.example_user("cordelia")
+        msg_id = self.send_personal_message(
+            cordelia,
+            self.example_user("hamlet"),
+            "Let's test PM link in email notifications",
+        )
+
+        encoded_name = "Cordelia,-Lear's-daughter"
+        verify_body_include = [
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/pm-with/{cordelia.id}-{encoded_name}"
+        ]
+        email_subject = "PMs with Cordelia, Lear's daughter"
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False)
 
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")

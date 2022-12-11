@@ -18,7 +18,44 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 7.0
+
+Feature levels 157-158 are reserved for future use in 6.x maintenance
+releases.
+
 ## Changes in Zulip 6.0
+
+**Feature level 156**
+
+No changes; feature level used for Zulip 6.0 release.
+
+**Feature level 155**
+
+* [`GET /messages`](/api/get-messages): The new `include_anchor`
+  parameter controls whether a message with ID matching the specified
+  `anchor` should be included.
+* The `update_message_flags` event sent by [`POST
+  /messages/flags`](/api/update-message-flags) no longer redundantly
+  lists messages where the flag was set to the same state it was
+  already in.
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow):
+  This new endpoint allows updating message flags on a range of
+  messages within a narrow.
+
+**Feature level 154**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
+  When the process of deleting messages times out, a success response
+  with "partially_completed" result will now be returned by the server,
+  analogically to the `/mark_all_as_read` endpoint.
+
+**Feature level 153**
+
+* [`POST /mark_all_as_read`](/api/mark-all-as-read): Messages are now
+  marked as read in batches, so that progress will be made even if the
+  request times out because of an extremely large number of unread
+  messages to process. Upon timeout, a success response with a
+  "partially_completed" result will be returned by the server.
 
 **Feature level 152**
 

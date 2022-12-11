@@ -819,6 +819,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode anchor=43 \\",
+            "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
@@ -893,6 +894,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode anchor=43 \\",
+            "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
@@ -934,13 +936,13 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 for status_code, response in operation["responses"].items():
                     schema = response["content"]["application/json"]["schema"]
                     if "oneOf" in schema:
-                        for subschema_index, subschema in enumerate(schema["oneOf"]):
+                        for _, subschema in enumerate(schema["oneOf"]):
                             validate_schema(subschema)
                             assert validate_against_openapi_schema(
                                 subschema["example"],
                                 path,
                                 method,
-                                status_code + "_" + str(subschema_index),
+                                status_code,
                             )
                         continue
                     validate_schema(schema)

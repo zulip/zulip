@@ -35,10 +35,10 @@ from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_k
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
     JsonableError,
-    MarkdownRenderingException,
+    MarkdownRenderingError,
     StreamDoesNotExistError,
     StreamWithIDDoesNotExistError,
-    ZephyrMessageAlreadySentException,
+    ZephyrMessageAlreadySentError,
 )
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.markdown import version as markdown_version
@@ -85,6 +85,7 @@ from zerver.models import (
     get_stream_by_id_in_realm,
     get_system_bot,
     get_user_by_delivery_email,
+    is_cross_realm_bot_email,
     query_for_ids,
 )
 from zerver.tornado.django_api import send_event
@@ -147,7 +148,7 @@ def render_incoming_message(
             url_embed_data=url_embed_data,
             email_gateway=email_gateway,
         )
-    except MarkdownRenderingException:
+    except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
     return rendering_result
 
@@ -1172,7 +1173,7 @@ def check_send_message(
             widget_content,
             skip_stream_access_check=skip_stream_access_check,
         )
-    except ZephyrMessageAlreadySentException as e:
+    except ZephyrMessageAlreadySentError as e:
         return e.message_id
     return do_send_messages([message])[0]
 
@@ -1459,7 +1460,7 @@ def check_message(
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
         if id is not None:
-            raise ZephyrMessageAlreadySentException(id)
+            raise ZephyrMessageAlreadySentError(id)
 
     widget_content_dict = None
     if widget_content is not None:
@@ -1602,7 +1603,10 @@ def internal_prep_private_message(
     See _internal_prep_message for details of how this works.
     """
     addressee = Addressee.for_user_profile(recipient_user)
-    realm = recipient_user.realm
+    if not is_cross_realm_bot_email(recipient_user.delivery_email):
+        realm = recipient_user.realm
+    else:
+        realm = sender.realm
 
     return _internal_prep_message(
         realm=realm,

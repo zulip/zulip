@@ -486,7 +486,6 @@ Do these tasks as Cordelia.
 - Display settings
   - Right now, these unfortunately require reloads to take effect.
   - Default language (change to Spanish)
-  - Show user list on left sidebar in narrow windows (verify by making window thinner)
   - 24-hour time (and then test going back to AM/PM)
 - Notifications
   - Stream message
@@ -532,7 +531,7 @@ Make sure that these options launch appropriate help screens:
 
 - Proofread and try a couple random options:
   - Message formatting
-  - Search operators
+  - Search filters
 - Make sure help launches in a separate browser tab:
   - Desktop and mobile apps
   - Integrations

@@ -84,7 +84,6 @@
     border-radius: 0.25rem;
     border-width: 0;
     cursor: pointer;
-    appearance: button;
     text-transform: none;
     overflow: visible;
     line-height: 1.15;
@@ -94,8 +93,11 @@
     transform: translateZ(0);
     transition: transform 0.25s ease-out;
 
+    &:hover {
+        text-decoration: none;
+    }
+
     &:disabled {
-        background-color: hsl(0, 0%, 83%);
         cursor: not-allowed;
     }
 }
@@ -284,5 +286,26 @@
 
     path {
         fill: hsl(0, 0%, 100%);
+    }
+}
+
+.modal__spinner {
+    display: flex;
+    justify-content: center;
+}
+
+#copy_email_address_modal {
+    width: 800px;
+
+    .inline {
+        display: inline;
+    }
+
+    .question-which-parts {
+        padding-bottom: 10px;
+    }
+
+    .stream-email-header {
+        font-size: 18px;
     }
 }

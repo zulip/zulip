@@ -617,7 +617,6 @@ export function dispatch_normal_event(event) {
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
-                "left_side_userlist",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -685,10 +684,6 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();
-            }
-            if (event.property === "left_side_userlist") {
-                // TODO: Make this change the view immediately rather
-                // than requiring a reload or page resize.
             }
             if (event.property === "default_language") {
                 // TODO: Make this change the view immediately rather than

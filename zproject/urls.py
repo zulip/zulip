@@ -75,6 +75,7 @@ from zerver.views.message_flags import (
     mark_stream_as_read,
     mark_topic_as_read,
     update_message_flags,
+    update_message_flags_for_narrow,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muting import mute_user, unmute_user, update_muted_topic
@@ -123,6 +124,7 @@ from zerver.views.registration import (
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
+    new_realm_send_confirm,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -329,6 +331,7 @@ v1_api_and_json_patterns = [
     ),
     rest_path("messages/render", POST=render_message_backend),
     rest_path("messages/flags", POST=update_message_flags),
+    rest_path("messages/flags/narrow", POST=update_message_flags_for_narrow),
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
@@ -567,8 +570,7 @@ i18n_urls = [
     ),
     path(
         "accounts/new/send_confirm/<email>",
-        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
-        {"realm_creation": True},
+        new_realm_send_confirm,
         name="new_realm_send_confirm",
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),

@@ -73,13 +73,13 @@ class MockLDAP(fakeldap.MockLDAP):
     class LDAPError(ldap.LDAPError):
         pass
 
-    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):
+    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):  # noqa: N801
         pass
 
-    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):
+    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):  # noqa: N801
         pass
 
-    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):
+    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):  # noqa: N801
         pass
 
 
@@ -717,3 +717,15 @@ def mock_queue_publish(
 
     with mock.patch(method_to_patch, side_effect=verify_serialize):
         yield inner
+
+
+@contextmanager
+def timeout_mock(mock_path: str) -> Iterator[None]:
+    # timeout() doesn't work in test environment with database operations
+    # and they don't get committed - so we need to replace it with a mock
+    # that just calls the function.
+    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
+        return func()
+
+    with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
+        yield

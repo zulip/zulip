@@ -3,7 +3,7 @@ import os
 import sys
 import time
 from copy import deepcopy
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, Final, List, Tuple, Union
 from urllib.parse import urljoin
 
 from scripts.lib.zulip_tools import get_tornado_ports
@@ -30,6 +30,7 @@ from .configured_settings import (
     CUSTOM_HOME_NOT_LOGGED_IN,
     DEBUG,
     DEBUG_ERROR_REPORTING,
+    DEFAULT_RATE_LIMITING_RULES,
     EMAIL_BACKEND,
     EMAIL_HOST,
     ERROR_REPORTING,
@@ -42,6 +43,7 @@ from .configured_settings import (
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
+    RATE_LIMITING_RULES,
     REALM_HOSTS,
     REGISTER_LINK_DISABLED,
     REMOTE_POSTGRES_HOST,
@@ -176,7 +178,6 @@ MIDDLEWARE = (
     "zerver.middleware.LocaleMiddleware",
     "zerver.middleware.HostDomainMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "zerver.middleware.ZulipSCIMAuthCheckMiddleware",
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
@@ -359,34 +360,8 @@ CACHES: Dict[str, Dict[str, object]] = {
 # REDIS-BASED RATE LIMITING CONFIGURATION
 ########################################################################
 
-RATE_LIMITING_RULES = {
-    "api_by_user": [
-        (60, 200),  # 200 requests max every minute
-    ],
-    "api_by_ip": [
-        (60, 100),
-    ],
-    "api_by_remote_server": [
-        (60, 1000),
-    ],
-    "authenticate_by_username": [
-        (1800, 5),  # 5 failed login attempts within 30 minutes
-    ],
-    "email_change_by_user": [
-        (3600, 2),  # 2 per hour
-        (86400, 5),  # 5 per day
-    ],
-    "password_reset_form_by_email": [
-        (3600, 2),  # 2 reset emails per hour
-        (86400, 5),  # 5 per day
-    ],
-    "sends_email_by_ip": [
-        (86400, 5),
-    ],
-    "spectator_attachment_access_by_file": [
-        (86400, 1000),  # 1000 per day per file
-    ],
-}
+# Merge any local overrides with the default rules.
+RATE_LIMITING_RULES = {**DEFAULT_RATE_LIMITING_RULES, **RATE_LIMITING_RULES}
 
 # List of domains that, when applied to a request in a Tornado process,
 # will be handled with the separate in-memory rate limiting backend for Tornado,
@@ -423,6 +398,7 @@ else:
 if PRODUCTION:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    LANGUAGE_COOKIE_SECURE = True
 
     # https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-4.1.3.2
     SESSION_COOKIE_NAME = "__Host-sessionid"
@@ -433,6 +409,9 @@ if PRODUCTION:
 # cookie will slow down some attackers.
 CSRF_COOKIE_HTTPONLY = True
 CSRF_FAILURE_VIEW = "zerver.middleware.csrf_failure"
+
+# Avoid a deprecation message in the Firefox console
+LANGUAGE_COOKIE_SAMESITE: Final = "Lax"
 
 if DEVELOPMENT:
     # Use fast password hashing for creating testing users when not
@@ -1235,6 +1214,7 @@ SCIM_SERVICE_PROVIDER = {
     "SCHEME": EXTERNAL_URI_SCHEME,
     "GET_EXTRA_MODEL_FILTER_KWARGS_GETTER": "zerver.lib.scim.get_extra_model_filter_kwargs_getter",
     "BASE_LOCATION_GETTER": "zerver.lib.scim.base_scim_location_getter",
+    "AUTH_CHECK_MIDDLEWARE": "zerver.middleware.ZulipSCIMAuthCheckMiddleware",
     "AUTHENTICATION_SCHEMES": [
         {
             "type": "bearer",

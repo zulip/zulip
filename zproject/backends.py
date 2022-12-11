@@ -48,6 +48,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -298,7 +299,7 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
             pass
         else:
             # Apply rate limiting. If this request is above the limit,
-            # RateLimited will be raised, interrupting the authentication process.
+            # RateLimitedError will be raised, interrupting the authentication process.
             # From there, the code calling authenticate() can either catch the exception
             # and handle it on its own, or it will be processed by RateLimitMiddleware.
             rate_limit_authentication_by_username(request, username)
@@ -586,16 +587,16 @@ class LDAPReverseEmailSearch(_LDAPUser):
         return ldap_users
 
 
-class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
+class ZulipLDAPError(_LDAPUser.AuthenticationFailed):
     """Since this inherits from _LDAPUser.AuthenticationFailed, these will
     be caught and logged at debug level inside django-auth-ldap's authenticate()"""
 
 
-class ZulipLDAPExceptionNoMatchingLDAPUser(ZulipLDAPException):
+class NoMatchingLDAPUserError(ZulipLDAPError):
     pass
 
 
-class ZulipLDAPExceptionOutsideDomain(ZulipLDAPExceptionNoMatchingLDAPUser):
+class OutsideLDAPDomainError(NoMatchingLDAPUserError):
     pass
 
 
@@ -647,14 +648,14 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         Translates django username (user_profile.delivery_email or whatever the user typed in the login
         field when authenticating via the LDAP backend) into LDAP username.
         Guarantees that the username it returns actually has an entry in the LDAP directory.
-        Raises ZulipLDAPExceptionNoMatchingLDAPUser if that's not possible.
+        Raises NoMatchingLDAPUserError if that's not possible.
         """
         result = username
         if settings.LDAP_APPEND_DOMAIN:
             if is_valid_email(username):
                 address = Address(addr_spec=username)
                 if address.domain != settings.LDAP_APPEND_DOMAIN:
-                    raise ZulipLDAPExceptionOutsideDomain(
+                    raise OutsideLDAPDomainError(
                         f"Email {username} does not match LDAP domain {settings.LDAP_APPEND_DOMAIN}."
                     )
                 result = address.username
@@ -679,7 +680,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             error_message = (
                 "No LDAP user matching django_to_ldap_username result: {}. Input username: {}"
             )
-            raise ZulipLDAPExceptionNoMatchingLDAPUser(
+            raise NoMatchingLDAPUserError(
                 error_message.format(result, username),
             )
 
@@ -697,7 +698,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from LDAP attributes.
             if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                raise ZulipLDAPException(
+                raise ZulipLDAPError(
                     f"LDAP user doesn't have the needed {settings.LDAP_EMAIL_ATTR} attribute"
                 )
             else:
@@ -830,7 +831,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             last_name = ldap_user.attrs[last_name_attr][0]
             full_name = f"{first_name} {last_name}"
         else:
-            raise ZulipLDAPException("Missing required mapping for user's full name")
+            raise ZulipLDAPError("Missing required mapping for user's full name")
 
         return full_name
 
@@ -842,7 +843,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             try:
                 full_name = check_full_name(full_name)
             except JsonableError as e:
-                raise ZulipLDAPException(e.msg)
+                raise ZulipLDAPError(e.msg)
             do_change_full_name(user_profile, full_name, None)
 
     def sync_custom_profile_fields_from_ldap(
@@ -864,8 +865,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
         try:
             sync_user_profile_custom_fields(user_profile, values_by_var_name)
-        except SyncUserException as e:
-            raise ZulipLDAPException(str(e)) from e
+        except SyncUserError as e:
+            raise ZulipLDAPError(str(e)) from e
 
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
@@ -896,7 +897,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # to the user's LDAP username before calling the
             # django-auth-ldap authenticate().
             username = self.django_to_ldap_username(username)
-        except ZulipLDAPExceptionNoMatchingLDAPUser as e:
+        except NoMatchingLDAPUserError as e:
             ldap_logger.debug("%s: %s", type(self).__name__, e)
             if return_data is not None:
                 return_data["no_matching_ldap_user"] = True
@@ -929,14 +930,14 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         username = self.user_email_from_ldapuser(username, ldap_user)
 
         if self.is_account_realm_access_forbidden(ldap_user, self._realm):
-            raise ZulipLDAPException("User not allowed to access realm")
+            raise ZulipLDAPError("User not allowed to access realm")
 
         if ldap_should_sync_active_status():  # nocoverage
             ldap_disabled = self.is_user_disabled_in_ldap(ldap_user)
             if ldap_disabled:
                 # Treat disabled users as deactivated in Zulip.
                 return_data["inactive_user"] = True
-                raise ZulipLDAPException("User has been deactivated")
+                raise ZulipLDAPError("User has been deactivated")
 
         user_profile = common_get_active_user(username, self._realm, return_data)
         if user_profile is not None:
@@ -945,9 +946,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         if return_data.get("inactive_realm"):
             # This happens if there is a user account in a deactivated realm
-            raise ZulipLDAPException("Realm has been deactivated")
+            raise ZulipLDAPError("Realm has been deactivated")
         if return_data.get("inactive_user"):
-            raise ZulipLDAPException("User has been deactivated")
+            raise ZulipLDAPError("User has been deactivated")
         # An invalid_subdomain `return_data` value here is ignored,
         # since that just means we're trying to create an account in a
         # second realm on the server (`ldap_auth_enabled(realm)` would
@@ -956,7 +957,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if self._realm.deactivated:
             # This happens if no account exists, but the realm is
             # deactivated, so we shouldn't create a new user account
-            raise ZulipLDAPException("Realm has been deactivated")
+            raise ZulipLDAPError("Realm has been deactivated")
 
         try:
             validate_email(username)
@@ -966,7 +967,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # or a malformed email value in the ldap directory,
             # so we should log a warning about this before failing.
             self.logger.warning(error_message)
-            raise ZulipLDAPException(error_message)
+            raise ZulipLDAPError(error_message)
 
         # Makes sure that email domain hasn't be restricted for this
         # realm.  The main thing here is email_allowed_for_realm; but
@@ -976,16 +977,16 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             email_allowed_for_realm(username, self._realm)
             validate_email_not_already_in_realm(self._realm, username)
         except DomainNotAllowedForRealmError:
-            raise ZulipLDAPException("This email domain isn't allowed in this organization.")
+            raise ZulipLDAPError("This email domain isn't allowed in this organization.")
         except (DisposableEmailError, EmailContainsPlusError):
-            raise ZulipLDAPException("Email validation failed.")
+            raise ZulipLDAPError("Email validation failed.")
 
         # We have valid LDAP credentials; time to create an account.
         full_name = self.get_mapped_name(ldap_user)
         try:
             full_name = check_full_name(full_name)
         except JsonableError as e:
-            raise ZulipLDAPException(e.msg)
+            raise ZulipLDAPError(e.msg)
 
         opts: Dict[str, Any] = {}
         if self._prereg_user:
@@ -1086,7 +1087,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         return (user, built)
 
 
-class PopulateUserLDAPError(ZulipLDAPException):
+class PopulateUserLDAPError(ZulipLDAPError):
     pass
 
 
@@ -1110,7 +1111,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     backend = ZulipLDAPUserPopulator()
     try:
         ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
-    except ZulipLDAPExceptionNoMatchingLDAPUser:
+    except NoMatchingLDAPUserError:
         if (
             settings.ONLY_LDAP
             if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
@@ -1155,7 +1156,7 @@ def query_ldap(email: str) -> List[str]:
     if backend is not None:
         try:
             ldap_username = backend.django_to_ldap_username(email)
-        except ZulipLDAPExceptionNoMatchingLDAPUser as e:
+        except NoMatchingLDAPUserError as e:
             values.append(f"No such user found: {e}")
             return values
 
@@ -1344,7 +1345,7 @@ class ExternalAuthResult:
         pass
 
 
-class SyncUserException(Exception):
+class SyncUserError(Exception):
     pass
 
 
@@ -1367,13 +1368,13 @@ def sync_user_profile_custom_fields(
         try:
             field = fields_by_var_name[var_name]
         except KeyError:
-            raise SyncUserException(f"Custom profile field with name {var_name} not found.")
+            raise SyncUserError(f"Custom profile field with name {var_name} not found.")
         if existing_values.get(var_name) == value:
             continue
         try:
             validate_user_custom_profile_field(user_profile.realm.id, field, value)
         except ValidationError as error:
-            raise SyncUserException(f"Invalid data for {var_name} field: {error.message}")
+            raise SyncUserError(f"Invalid data for {var_name} field: {error.message}")
         profile_data.append(
             {
                 "id": field.id,
@@ -1722,7 +1723,7 @@ def social_auth_finish(
             custom_profile_field_name_to_value[field_name] = extra_attrs.get(attr_name)
         try:
             sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
-        except SyncUserException as e:
+        except SyncUserError as e:
             backend.logger.warning(
                 "Exception while syncing custom profile fields for user %s: %s",
                 user_profile.id,
@@ -1851,7 +1852,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     name = "github"
     auth_backend_name = "GitHub"
     sort_order = 100
-    display_icon = "/static/images/landing-page/logos/github-icon.png"
+    display_icon = "/static/images/authentication_backends/github-icon.png"
 
     def get_all_associated_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
         access_token = kwargs["response"]["access_token"]
@@ -1946,7 +1947,7 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
-    display_icon = "/static/images/landing-page/logos/azuread-icon.png"
+    display_icon = "/static/images/authentication_backends/azuread-icon.png"
 
 
 @external_auth_method
@@ -1954,7 +1955,7 @@ class GitLabAuthBackend(SocialAuthMixin, GitLabOAuth2):
     sort_order = 75
     name = "gitlab"
     auth_backend_name = "GitLab"
-    display_icon = "/static/images/landing-page/logos/gitlab-icon.png"
+    display_icon = "/static/images/authentication_backends/gitlab-icon.png"
 
     # Note: GitLab as of early 2020 supports having multiple email
     # addresses connected with a GitLab account, and we could access
@@ -1970,7 +1971,7 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     sort_order = 150
     auth_backend_name = "Google"
     name = "google"
-    display_icon = "/static/images/landing-page/logos/googl_e-icon.png"
+    display_icon = "/static/images/authentication_backends/googl_e-icon.png"
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         verified_emails: List[str] = []
@@ -2001,7 +2002,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     sort_order = 10
     name = "apple"
     auth_backend_name = "Apple"
-    display_icon = "/static/images/landing-page/logos/apple-icon.png"
+    display_icon = "/static/images/authentication_backends/apple-icon.png"
 
     # Apple only sends `name` in its response the first time a user
     # tries to sign up, so we won't have it in consecutive attempts.
@@ -2466,16 +2467,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         """
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
-        # This setting controls whether LogoutRequests delivered to us
-        # need to be signed. The default of False is not acceptable,
-        # because we don't want anyone to be able to submit a request
-        # to get other users logged out.
-        auth.get_settings().get_security_data()["wantMessagesSigned"] = True
-        # Defensive code to confirm the setting change above is successful,
-        # to catch API changes in python3-saml that would make the change not
-        # be applied to the actual settings of `auth` - e.g. due to us only
-        # receiving a copy of the dict.
-        assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
+
+        # We only want to accept signed LogoutResponses - or potentially anyone
+        # would be able to create a LogoutResponse to get an arbitrary user logged out.
+        patch_saml_auth_require_messages_signed(auth)
 
         # This validates the LogoutRequest and prepares the response
         # (the URL to which to redirect the client to convey the response to the IdP)
@@ -2665,6 +2660,22 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         auto_signup = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get("auto_signup", False)
         assert isinstance(auto_signup, bool)
         return auto_signup
+
+
+def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
+    """
+    wantMessagesSigned controls whether requests processed by this saml auth
+    object need to be signed. The default of False is often not acceptable,
+    because we don't want anyone to be able to submit such a request.
+    Callers should use this to enforce the requirement of signatures.
+    """
+
+    auth.get_settings().get_security_data()["wantMessagesSigned"] = True
+    # Defensive code to confirm the setting change above is successful,
+    # to catch API changes in python3-saml that would make the change not
+    # be applied to the actual settings of `auth` - e.g. due to us only
+    # receiving a copy of the dict.
+    assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
 
 
 @external_auth_method

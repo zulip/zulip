@@ -41,8 +41,8 @@ from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
     JsonableError,
     MissingAuthenticationError,
-    OrganizationAdministratorRequired,
-    OrganizationOwnerRequired,
+    OrganizationAdministratorRequiredError,
+    OrganizationOwnerRequiredError,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
@@ -87,7 +87,7 @@ from zerver.models import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    InvalidFakeEmailDomain,
+    InvalidFakeEmailDomainError,
     Message,
     Realm,
     Service,
@@ -117,7 +117,7 @@ def deactivate_user_backend(
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
-        raise OrganizationOwnerRequired()
+        raise OrganizationOwnerRequiredError()
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
@@ -231,9 +231,9 @@ def update_user_backend(
         #
         # Logic replicated in patch_bot_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError()
         elif not user_profile.is_realm_admin:
-            raise OrganizationAdministratorRequired()
+            raise OrganizationAdministratorRequiredError()
 
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(target):
             raise JsonableError(
@@ -367,9 +367,9 @@ def patch_bot_backend(
     if role is not None and bot.role != role:
         # Logic duplicated from update_user_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, bot.role] and not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError()
         elif not user_profile.is_realm_admin:
-            raise OrganizationAdministratorRequired()
+            raise OrganizationAdministratorRequiredError()
 
         do_change_user_role(bot, role, acting_user=user_profile)
 
@@ -484,7 +484,7 @@ def add_bot_backend(
     full_name = check_full_name(full_name_raw)
     try:
         email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
-    except InvalidFakeEmailDomain:
+    except InvalidFakeEmailDomainError:
         raise JsonableError(
             _(
                 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"

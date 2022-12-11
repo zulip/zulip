@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
+from zerver.lib.compatibility import is_pronouns_field_type_supported
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -123,6 +124,9 @@ def events_register_backend(
     client = RequestNotes.get_notes(request).client
     assert client is not None
 
+    pronouns_field_type_supported = is_pronouns_field_type_supported(
+        request.headers.get("User-Agent")
+    )
     ret = do_events_register(
         user_profile,
         realm,
@@ -139,5 +143,6 @@ def events_register_backend(
         client_capabilities=client_capabilities,
         fetch_event_types=fetch_event_types,
         spectator_requested_language=spectator_requested_language,
+        pronouns_field_type_supported=pronouns_field_type_supported,
     )
     return json_success(request, data=ret)

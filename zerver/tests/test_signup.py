@@ -23,7 +23,7 @@ from django.utils.translation import gettext as _
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     create_confirmation_link,
     get_object_from_key,
     one_click_unsubscribe_link,
@@ -40,6 +40,7 @@ from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
+    do_revoke_multi_use_invite,
 )
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -66,7 +67,7 @@ from zerver.lib.mobile_auth_otp import (
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.send_email import (
-    EmailNotDeliveredException,
+    EmailNotDeliveredError,
     FromAddress,
     deliver_scheduled_emails,
     send_future_email,
@@ -2159,9 +2160,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         registration_key = url.split("/")[-1]
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
-        with self.assertRaises(ConfirmationKeyException) as cm:
+        with self.assertRaises(ConfirmationKeyError) as cm:
             get_object_from_key(registration_key, [Confirmation.INVITATION], mark_object_used=True)
-        self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
+        self.assertEqual(cm.exception.error_type, ConfirmationKeyError.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path
         email_change_url = create_confirmation_link(prereg_user, Confirmation.EMAIL_CHANGE)
@@ -2710,10 +2711,13 @@ class InvitationsTestCase(InviteUserBase):
         )
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assertEqual(result.status_code, 200)
-        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
+        self.assertEqual(
+            MultiuseInvite.objects.get(id=multiuse_invite.id).status,
+            confirmation_settings.STATUS_REVOKED,
+        )
         # Test that trying to double-delete fails
         error_result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
-        self.assert_json_error(error_result, "No such invitation")
+        self.assert_json_error(error_result, "Invitation has already been revoked")
 
         # Test deleting owner mutiuse_invite.
         multiuse_invite = MultiuseInvite.objects.create(
@@ -2731,7 +2735,10 @@ class InvitationsTestCase(InviteUserBase):
         self.login("desdemona")
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assert_json_success(result)
-        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
+        self.assertEqual(
+            MultiuseInvite.objects.get(id=multiuse_invite.id).status,
+            confirmation_settings.STATUS_REVOKED,
+        )
 
         # Test deleting multiuse invite from another realm
         mit_realm = get_realm("zephyr")
@@ -2747,6 +2754,10 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_delete(
             "/json/invites/multiuse/" + str(multiuse_invite_in_mit.id)
         )
+        self.assert_json_error(error_result, "No such invitation")
+
+        non_existent_id = MultiuseInvite.objects.count() + 9999
+        error_result = self.client_delete(f"/json/invites/multiuse/{non_existent_id}")
         self.assert_json_error(error_result, "No such invitation")
 
     def test_successful_resend_invitation(self) -> None:
@@ -3055,6 +3066,18 @@ class MultiuseInviteTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("The confirmation link has expired or been deactivated.", result)
+
+    def test_revoked_multiuse_link(self) -> None:
+        email = self.nonreg_email("newuser")
+        invite_link = self.generate_multiuse_invite_link()
+        multiuse_invite = MultiuseInvite.objects.last()
+        assert multiuse_invite is not None
+        do_revoke_multi_use_invite(multiuse_invite)
+
+        result = self.client_post(invite_link, {"email": email})
+
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("We couldn't find your confirmation link in the system.", result)
 
     def test_invalid_multiuse_link(self) -> None:
         email = self.nonreg_email("newuser")
@@ -3456,7 +3479,7 @@ class RealmCreationTest(ZulipTestCase):
             # Create new realm with the email, but no creation key.
             result = self.client_post("/new/", {"email": email})
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response("New organization creation disabled", result)
+            self.assert_in_response("Organization creation link required", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_subdomain(self) -> None:
@@ -4070,13 +4093,13 @@ class UserSignUpTest(InviteUserBase):
 
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredException.
+        Make sure we redirect for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=EmailNotDeliveredException,
+            side_effect=EmailNotDeliveredError,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
@@ -4087,13 +4110,13 @@ class UserSignUpTest(InviteUserBase):
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredException.
+        Make sure we redirect for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=EmailNotDeliveredException,
+            side_effect=EmailNotDeliveredError,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:

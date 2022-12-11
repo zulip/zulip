@@ -190,7 +190,7 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
                     realm=realm,
                     name=name,
                     description=options["description"],
-                    rendered_description=render_stream_description(options["description"]),
+                    rendered_description=render_stream_description(options["description"], realm),
                     invite_only=options.get("invite_only", False),
                     stream_post_policy=options.get(
                         "stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE

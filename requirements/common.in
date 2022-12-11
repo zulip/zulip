@@ -161,7 +161,7 @@ requests[security]
 requests-oauthlib
 
 # For OpenAPI schema validation.
-https://github.com/p1c2u/openapi-core/archive/ac64879418096c437ad5de9bf7a8c7498959ab87.zip#egg=openapi-core==0.16.0+git  # https://github.com/p1c2u/openapi-core/pull/429
+openapi-core<0.16.2  # https://github.com/p1c2u/openapi-core/issues/442
 openapi-schema-validator
 
 # For reporting errors to sentry.io
@@ -195,4 +195,4 @@ soupsieve
 circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
-https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs-ext==0.5.0+git&subdirectory=django_stubs_ext
+django-stubs-ext

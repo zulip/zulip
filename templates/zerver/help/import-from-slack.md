@@ -1,16 +1,6 @@
 # Import from Slack
 
-You can import your Slack organization into Zulip. It's a great way to preserve
-your organization's history when you migrate from Slack to Zulip, and to make
-the transition easy for the members of your organization.
-
-The import will include your organization's:
-
-* **Name** and **Logo**
-* **Message history**, including attachments and emoji reactions
-* **Users**, including names, emails, roles, avatars, time zones, and custom profile fields
-* **Channels**, including all user subscriptions
-* **Custom emoji**
+{!import-workspace-to-zulip.md!}
 
 ## Import process overview
 
@@ -19,14 +9,13 @@ following steps, which are described in more detail below:
 
 {start_tabs}
 
-1. [Export your Slack data](/help/import-from-slack#export-your-slack-data).
+1. [Export your Slack data](#export-your-slack-data).
 
-2. [Import you Slack data into
-   Zulip](/help/import-from-slack#import-your-data-into-zulip).
+2. [Import your Slack data into Zulip](#import-your-data-into-zulip).
 
-3. [Clean up](/help/import-from-slack#clean-up-after-the-slack-export) after the Slack export.
+3. [Clean up](#clean-up-after-the-slack-export) after the Slack export.
 
-4. [Get your organization started with Zulip](/help/import-from-slack#get-your-organization-started-with-zulip)!
+4. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
 
 {end_tabs}
 
@@ -82,6 +71,7 @@ in order to export private message data.
    will use it to download user and emoji data from your Slack workspace.
 
 !!! warn ""
+
     You may also come across a token starting with `xoxe-`. This token cannot
     be used for the Slack export process.
 
@@ -89,66 +79,28 @@ in order to export private message data.
 
 ### Import your data into Zulip
 
-To start using Zulip, you will need to choose between Zulip Cloud and
-self-hosting Zulip. For a simple managed solution, with no setup or maintenance
-overhead, you can [sign up](/new/) for Zulip Cloud with just a few clicks.
-Alternatively, you can [self-host](/self-hosting/) your Zulip organization. See
-[here](/help/zulip-cloud-or-self-hosting) to learn more.
-
-!!! warn ""
-
-    **You can only import a Slack workspace as a new Zulip organization.** Slack
-    workspace history cannot be added into an existing Zulip organization.
+{!import-your-data-into-zulip.md!}
 
 {start_tabs}
 
 {tab|zulip-cloud}
 
-#### Import into a Zulip Cloud organization
+{!import-into-a-zulip-cloud-organization.md!}
 
-{!send-us-info.md!}
+1. Your Slack **Bot User OAuth Token**, which will be a long
+   string of numbers and characters starting with `xoxb-`.
 
-1. The subdomain you would like to use for your organization. Your Zulip chat will
-   be hosted at `<subdomain>.zulipchat.com`.
-
-2. The `zip` file containing your Slack message history export.
-
-3. Your Slack **Bot User OAuth Token**, which will be a long
-   string of numbers and characters starting with `xoxb-`
-
-!!! warn ""
-
-    If the organization already exists, the import process will overwrite all data
-    that's already there. If needed, we're happy to preserve your data by moving an
-    organization you've already created to a new subdomain prior to running the import process.
+{!import-zulip-cloud-organization-warning.md!}
 
 {tab|self-hosting}
 
-#### Import into a self-hosted Zulip server
-
-Zulip's Slack import tool is robust, and has been used to import Slack
-workspaces with 10,000 members and millions of messages. If you're planning on
-doing an import much larger than that, or run into performance issues when
-importing, [contact us](/help/contact-support) for help.
-
-1. Follow steps
-   [1](https://zulip.readthedocs.io/en/stable/production/install.html#step-1-download-the-latest-release)
-   and
-   [2](https://zulip.readthedocs.io/en/stable/production/install.html#step-2-install-zulip)
-   of the guide for [installing a new Zulip
-   server](https://zulip.readthedocs.io/en/stable/production/install.html).
-
-1. Copy the `zip` file containing your Slack message history export onto your Zulip
-server, and put it in `/tmp/`.
-
-1. Log in to a shell on your Zulip server as the `zulip` user.
+{!import-into-a-self-hosted-zulip-server.md!}
 
 1. To import into an organization hosted on the root domain
-(`EXTERNAL_HOST`) of the Zulip installation, run the following commands, replacing
-`<token>` with your Slack **Bot User OAuth Token**.
+   (`EXTERNAL_HOST`) of the Zulip installation, run the following
+   commands, replacing `<token>` with your Slack **Bot User OAuth Token**.
 
-    !!! tip ""
-        The import could take several minutes to run, depending on how much data you're importing.
+{!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current
@@ -167,11 +119,6 @@ server, and put it in `/tmp/`.
     ./manage.py import <subdomain> /tmp/converted_slack_data
     ./scripts/start-server
     ```
-
-    !!! tip ""
-        The server stop/restart commands are only necessary when
-        importing on a server with minimal RAM, where an OOM kill might
-        otherwise occur.
 
 1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
    of the guide for [installing a new Zulip
@@ -221,100 +168,16 @@ token from being used to access your Slack workspace in the future.
 
 ## Get your organization started with Zulip
 
-Once the import process is completed, you will need to:
-
-{start_tabs}
-
-1. [Configure the settings for your organization](/help/customize-organization-settings),
-   which are not exported from Slack. This includes settings like [email
-   visibility](/help/restrict-visibility-of-email-addresses), [message editing
-   permissions](/help/configure-message-editing-and-deletion#configure-message-editing-and-deletion_1),
-   and [how users can join your organization](/help/restrict-account-creation).
-
-2. All users from your Slack workspace will have accounts in your new Zulip
-   organization. However, you will need to let users know about their new
-   accounts, and [decide how they will log
-   in](/help/import-from-slack#decide-how-users-will-log-in) for the first time.
-
-3. Share the URL for your new Zulip organization, and (recommended) the [Getting
-   started with Zulip guide](/help/getting-started-with-zulip).
-
-4. Migrate any [integrations](/integrations), which is easy to do with Zulip's
-   [Slack-compatible incoming webhook](/integrations/doc/slack_incoming).
-
-{end_tabs}
-
-
-### Decide how users will log in
-
-When user accounts are imported from Slack, users initially do not have passwords
-configured. There are a few options for how users can log in for the first time.
+{!import-get-your-organization-started.md!}
 
 !!! tip ""
-    For security reasons, Slack passwords are never exported.
 
-### Allow users to log in with non-password authentication
+    Zulip's [Slack-compatible incoming webhook](/integrations/doc/slack_incoming)
+    makes it easy to migrate integrations.
 
-When you create your organization, users will immediately be able to log in with
-[authentication methods](/help/configure-authentication-methods) that do not
-require a password. Zulip offers a variety of authentication methods, including
-Google, GitHub, GitLab, Apple, LDAP and [SAML](/help/saml-authentication).
+## Decide how users will log in
 
-### Send password reset emails to all users
-
-You can send password reset emails to all users in your organization, which
-will allow them to set an initial password.
-
-If you imported your organization into Zulip Cloud, simply e-mail
-[support@zulip.com](mailto:support@zulip.com) to request this.
-
-!!! warn ""
-    To avoid confusion, first make sure that
-    the users in your organization are aware that their Slack account has been
-    moved to Zulip, and are expecting to receive a password reset email.
-
-#### Send password reset emails (self-hosted organization)
-
-{start_tabs}
-
-{tab|default-subdomain}
-
-1. To test the process, start by sending yourself a password reset email by
-   using the following command:
-
-     ```
-     ./manage.py send_password_reset_email -u username@example.com
-     ```
-
-1. When ready, send password reset emails to all users by
-   using the following command:
-
-     ```
-     ./manage.py send_password_reset_email -r '' --all-users
-     ```
-
-{tab|custom-subdomain}
-
-1. To test the process, start by sending yourself a password reset email by
-   using the following command:
-
-     ```
-     ./manage.py send_password_reset_email -u username@example.com
-     ```
-
-1. When ready, send password reset emails to all users by
-   using the following command:
-
-     ```
-     ./manage.py send_password_reset_email -r <subdomain> --all-users
-     ```
-
-{end_tabs}
-
-### Manual password resets
-
-Alternatively, users can reset their own passwords by following the instructions
-on your organization's login page.
+{!import-how-users-will-log-in.md!}
 
 ## Related articles
 

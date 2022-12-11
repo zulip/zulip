@@ -10,16 +10,16 @@ declare -A sha256=(
 )
 
 check_version() {
-    out="$(shellcheck --version 2>/dev/null)" && [[ "$out" = *"
+    out="$(shellcheck --version)" && [[ "$out" = *"
 version: $version
 "* ]]
 }
 
-if ! check_version; then
+if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
-    curl -fLO "https://github.com/koalaman/shellcheck/releases/download/v$version/$tarball"
+    curl -fLO --retry 3 "https://github.com/koalaman/shellcheck/releases/download/v$version/$tarball"
     sha256sum -c <<<"${sha256[$arch]} $tarball"
     tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /usr/local/bin "shellcheck-v$version/shellcheck"
     check_version

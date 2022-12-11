@@ -215,9 +215,6 @@ function FakeElement(selector, opts) {
             shown = true;
             return $self;
         },
-        stop() {
-            return $self;
-        },
         text(...args) {
             if (args.length !== 0) {
                 if (args[0] !== undefined) {

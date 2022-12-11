@@ -397,7 +397,7 @@ def send_peer_subscriber_events(
                 type="subscription",
                 op=op,
                 stream_ids=[stream_id],
-                user_ids=sorted(list(altered_user_ids)),
+                user_ids=sorted(altered_user_ids),
             )
             send_event(realm, event, peer_user_ids)
 
@@ -435,7 +435,7 @@ def send_peer_subscriber_events(
                         type="subscription",
                         op=op,
                         stream_ids=[stream_id],
-                        user_ids=sorted(list(altered_user_ids)),
+                        user_ids=sorted(altered_user_ids),
                     )
                     send_event(realm, event, peer_user_ids)
 
@@ -444,7 +444,7 @@ def send_peer_subscriber_events(
             event = dict(
                 type="subscription",
                 op=op,
-                stream_ids=sorted(list(stream_ids)),
+                stream_ids=sorted(stream_ids),
                 user_ids=[user_id],
             )
             send_event(realm, event, peer_user_ids)
@@ -1190,7 +1190,7 @@ def do_change_stream_description(
 
     with transaction.atomic():
         stream.description = new_description
-        stream.rendered_description = render_stream_description(new_description)
+        stream.rendered_description = render_stream_description(new_description, stream.realm)
         stream.save(update_fields=["description", "rendered_description"])
         RealmAuditLog.objects.create(
             realm=stream.realm,

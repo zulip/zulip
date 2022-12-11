@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
+import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
@@ -464,7 +465,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                     {defaultMessage: "Deactivate {name}?"},
                     {name: user.full_name},
                 ),
-                help_link: "/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user",
+                help_link: "/help/deactivate-or-reactivate-a-user#deactivating-a-user",
                 html_body,
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
@@ -524,11 +525,18 @@ export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
     const opts = {
         username: user.full_name,
     };
-    const html_body = render_settings_reactivation_user_modal(opts);
+
+    let html_body;
+    // check if bot or human
+    if (user.is_bot) {
+        html_body = render_settings_reactivation_bot_modal(opts);
+    } else {
+        html_body = render_settings_reactivation_user_modal(opts);
+    }
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
-        help_link: "/help/deactivate-or-reactivate-a-user#reactivate-a-user",
+        help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
         html_body,
         on_click: handle_confirm,
         loading_spinner,

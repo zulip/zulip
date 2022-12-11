@@ -6,60 +6,74 @@ class CircleCiHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/circleci?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "circleci"
 
-    def test_private_repo_with_pull_request_off_bitbucket(self) -> None:
-        expected_topic = "circleci-test"
+    def test_bitbucket_job_completed(self) -> None:
+        expected_topic = "circleci-webhook-testing"
         expected_message = """
-Build [#5](https://circleci.com/bb/Hypro999/circleci-test/5) of `build`/`workflow` on branch `unstable` has failed.
-- **Commits (3):** [6b5361c166](https://bitbucket.org/Hypro999/circleci-test/commits/6b5361c1661581d975e84b68904ae9bfba75d5e5) ... [eaa88f9eac](https://bitbucket.org/Hypro999/circleci-test/commits/eaa88f9eac0fad86c46a8fe35462fe2c904d84b1)
-- **Pull request:** https://bitbucket.org/Hypro999/circleci-test/pull-requests/1
-- **Author:** Hemanth V. Alluri
-""".strip()
-        self.check_webhook(
-            "bitbucket_private_repo_pull_request_failure", expected_topic, expected_message
-        )
+Job `build-and-test` within Pipeline #4 has succeeded.
 
-    def test_for_failed_build_off_github(self) -> None:
-        expected_topic = "zulip"
+Triggered on [`8ab595d2de9: app.py edited online with Bitbucket`](https://bitbucket.org/hariprashant1/circleci-webhook-testing/commits/8ab595d2de95767993472837df2cb7884519a92b) on branch `master` by Hari Prashant Bhimaraju.
+""".strip()
+        self.check_webhook("bitbucket_job_completed", expected_topic, expected_message)
+
+    def test_bitbucket_manual_workflow_completed(self) -> None:
+        expected_topic = "circleci-webhook-testing"
         expected_message = """
-Build [#1429](https://circleci.com/gh/Hypro999/zulip/1429) of `bionic-backend-frontend`/`Ubuntu 18.04 Bionic (Python 3.6, backend+frontend)` on branch `circleci` has failed.
-- **Commits (2):** [73900eeb69 ... 5326f9ea40](https://github.com/Hypro999/zulip/compare/73900eeb69adbf0b83dc487e8eda90661b524eff...5326f9ea4084a01cc2bf1a461b9ad819b4ffdd14)
+Workflow [`sample`](https://app.circleci.com/pipelines/bitbucket/hariprashant1/circleci-webhook-testing/2/workflows/baa45986-84db-47a0-bc6c-89e9fe751bc9) within Pipeline #2 has succeeded.
 
-- **Author:** Hemanth V. Alluri (Hypro999)
-- **Committer:** Hemanth V. Alluri (Hypro999)
+Triggered on `master`'s HEAD on [cab5eacb4cc](https://bitbucket.org/hariprashant1/circleci-webhook-testing/commits/cab5eacb4ccee2710529894425341fa20a48fe6a).
 """.strip()
-        self.check_webhook(
-            "github_bionic_backend_frontend_failure", expected_topic, expected_message
-        )
+        self.check_webhook("bitbucket_manual_workflow_completed", expected_topic, expected_message)
 
-    def test_for_success_build_off_github_with_multiple_parties(self) -> None:
-        expected_topic = "zulip"
+    def test_bitbucket_workflow_completed(self) -> None:
+        expected_topic = "circleci-webhook-testing"
         expected_message = """
-Build [#1431](https://circleci.com/gh/Hypro999/zulip/1431) of `bionic-production-build`/`Production` on branch `circleci` has succeeded.
-- **Commits (2):** [73900eeb69 ... 5326f9ea40](https://github.com/Hypro999/zulip/compare/73900eeb69adbf0b83dc487e8eda90661b524eff...5326f9ea4084a01cc2bf1a461b9ad819b4ffdd14)
+Workflow [`sample`](https://app.circleci.com/pipelines/bitbucket/hariprashant1/circleci-webhook-testing/4/workflows/fd29ef0c-3e39-4c8f-b1d5-d8be1bab8165) within Pipeline #4 has succeeded.
 
-- **Authors:** Gintoki Sakata (ShiroYasha999), Hemanth V. Alluri (Hypro999)
-- **Committers:** Hemanth V. Alluri (Hypro999), Sadaharu
+Triggered on [`8ab595d2de9: app.py edited online with Bitbucket`](https://bitbucket.org/hariprashant1/circleci-webhook-testing/commits/8ab595d2de95767993472837df2cb7884519a92b) on branch `master` by Hari Prashant Bhimaraju.
 """.strip()
-        self.check_webhook(
-            "github_bionic_production_build_success_multiple_parties",
-            expected_topic,
-            expected_message,
-        )
+        self.check_webhook("bitbucket_workflow_completed", expected_topic, expected_message)
 
-    def test_for_cancelled_build_off_github(self) -> None:
-        expected_topic = "zulip"
+    def test_github_job_completed(self) -> None:
+        expected_topic = "circleci-webhook-test"
         expected_message = """
-Build [#1420](https://circleci.com/gh/Hypro999/zulip/1420) of `bionic-production-install`/`Production` on branch `circleci` was canceled.
-- **Commit:** [b0d6197fb4](https://github.com/Hypro999/zulip/commit/b0d6197fb4cacaf917adca77f77354882ee80621)
+Job `build-and-test` within Pipeline #4 has succeeded.
 
-- **Author:** Hemanth V. Alluri (Hypro999)
-- **Committer:** Hemanth V. Alluri (Hypro999)
+Triggered on [`a5e30a90822: .circleci: Update Webhook URL.`](https://github.com/zulip-testing/circleci-webhook-test/commit/a5e30a908224e46626a796d058289475f6d387b5) on branch `main` by Hari Prashant Bhimaraju.
 """.strip()
-        self.check_webhook(
-            "github_bionic_production_install_cancelled", expected_topic, expected_message
-        )
+        self.check_webhook("github_job_completed", expected_topic, expected_message)
 
-    def test_super_minimal_payload(self) -> None:
-        expected_topic = "zulip"
-        expected_message = "[Build](https://circleci.com/gh/zulip/zulip/48056) triggered by timabbott on branch `master` has failed."
-        self.check_webhook("super_minimal_payload", expected_topic, expected_message)
+    def test_github_tag_workflow_completed(self) -> None:
+        expected_topic = "circleci-webhook-test"
+        expected_message = """
+Workflow [`sample`](https://app.circleci.com/pipelines/github/prah23/circleci-webhook-test/20/workflows/045c6271-78e2-4802-8a62-f4fa6d25d0c9) within Pipeline #20 has succeeded.
+
+Triggered on the latest tag on [0e6e66c14e6](https://github.com/prah23/circleci-webhook-test/commit/0e6e66c14e61fbcd95db716b0f30d67dbcce7814).
+""".strip()
+        self.check_webhook("github_tag_workflow_completed", expected_topic, expected_message)
+
+    def test_github_workflow_completed(self) -> None:
+        expected_topic = "circleci-webhook-test"
+        expected_message = """
+Workflow [`sample`](https://app.circleci.com/pipelines/github/zulip-testing/circleci-webhook-test/4/workflows/7381218b-d04c-4aa3-b8b8-8c00a9319d1f) within Pipeline #4 has succeeded.
+
+Triggered on [`a5e30a90822: .circleci: Update Webhook URL.`](https://github.com/zulip-testing/circleci-webhook-test/commit/a5e30a908224e46626a796d058289475f6d387b5) on branch `main` by Hari Prashant Bhimaraju.
+""".strip()
+        self.check_webhook("github_workflow_completed", expected_topic, expected_message)
+
+    def test_gitlab_job_completed(self) -> None:
+        expected_topic = "circleci-webhook-test"
+        expected_message = """
+Job `build-and-test` within Pipeline #3 has succeeded.
+
+Triggered on [`c31f86994c5: app: Enhance message within hello().`](https://gitlab.com/zulip-testing/circleci-webhook-test/-/commit/c31f86994c54672f97b5bd5e544315b7bd40e4c1) on branch `main` by Hari Prashant Bhimaraju.
+""".strip()
+        self.check_webhook("gitlab_job_completed", expected_topic, expected_message)
+
+    def test_gitlab_workflow_completed(self) -> None:
+        expected_topic = "circleci-webhook-test"
+        expected_message = """
+Workflow [`sample`](https://app.circleci.com/pipelines/circleci/89xcrx7UvWQfzcUPAEmu5Q/63AY3yf3XeUQojmQcGZTtB/3/workflows/b23ceb64-127a-4075-a27c-d204a7a0a3b3) within Pipeline #3 has succeeded.
+
+Triggered on [`c31f86994c5: app: Enhance message within hello().`](https://gitlab.com/zulip-testing/circleci-webhook-test/-/commit/c31f86994c54672f97b5bd5e544315b7bd40e4c1) on branch `main` by Hari Prashant Bhimaraju.
+""".strip()
+        self.check_webhook("gitlab_workflow_completed", expected_topic, expected_message)

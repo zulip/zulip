@@ -3,7 +3,7 @@ from typing import Callable, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
@@ -148,7 +148,7 @@ def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]
             return None
     if event_name in EVENT_FUNCTION_MAPPER:
         return event_name
-    raise UnsupportedWebhookEventType(event_name)
+    raise UnsupportedWebhookEventTypeError(event_name)
 
 
 EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], str]] = {

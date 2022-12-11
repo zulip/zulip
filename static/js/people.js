@@ -1,6 +1,5 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
-import {parseOneAddress} from "email-addresses";
 
 import * as typeahead from "../shared/js/typeahead";
 
@@ -288,6 +287,11 @@ export function get_user_time(user_id) {
     const user_pref = get_user_time_preferences(user_id);
     if (user_pref) {
         const current_date = utcToZonedTime(new Date(), user_pref.timezone);
+        // This could happen if the timezone is invalid.
+        if (Number.isNaN(current_date.getTime())) {
+            blueslip.error(`Got invalid date for timezone: ${user_pref.timezone}`);
+            return undefined;
+        }
         return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
     }
     return undefined;
@@ -528,8 +532,8 @@ export function pm_with_url(message) {
         suffix = "group";
     } else {
         const person = get_by_user_id(user_ids[0]);
-        if (person && person.email) {
-            suffix = parseOneAddress(person.email).local.toLowerCase();
+        if (person && person.full_name) {
+            suffix = person.full_name.replace(/[ "%/<>`\p{C}]+/gu, "-");
         } else {
             blueslip.error("Unknown people in message");
             suffix = "unk";
@@ -603,7 +607,8 @@ export function emails_to_slug(emails_string) {
     const emails = emails_string.split(",");
 
     if (emails.length === 1) {
-        slug += parseOneAddress(emails[0]).local.toLowerCase();
+        const name = get_by_email(emails[0]).full_name;
+        slug += name.replace(/[ "%/<>`\p{C}]+/gu, "-");
     } else {
         slug += "group";
     }

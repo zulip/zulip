@@ -5,7 +5,7 @@ from typing import Callable, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
@@ -32,6 +32,7 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_release_event_message,
+    get_short_sha,
 )
 from zerver.models import UserProfile
 
@@ -358,7 +359,7 @@ def get_team_body(helper: Helper) -> str:
         new_visibility = payload["team"]["privacy"].tame(check_string)
         return f"Team visibility changed to `{new_visibility}`"
 
-    missing_keys = "/".join(sorted(list(changes.keys())))
+    missing_keys = "/".join(sorted(changes.keys()))
     helper.log_unsupported(f"team/edited (changes: {missing_keys})")
 
     # Do our best to give useful info to the customer--at least
@@ -419,7 +420,7 @@ def get_status_body(helper: Helper) -> str:
     else:
         status = payload["state"].tame(check_string)
     return "[{}]({}) changed its status to {}.".format(
-        payload["sha"].tame(check_string)[:7],  # TODO
+        get_short_sha(payload["sha"].tame(check_string)),
         payload["commit"]["html_url"].tame(check_string),
         status,
     )
@@ -566,7 +567,7 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
         "name": payload["check_run"]["name"].tame(check_string),
         "html_url": payload["check_run"]["html_url"].tame(check_string),
         "status": payload["check_run"]["status"].tame(check_string),
-        "short_hash": payload["check_run"]["head_sha"].tame(check_string)[:7],
+        "short_hash": get_short_sha(payload["check_run"]["head_sha"].tame(check_string)),
         "commit_url": "{}/commit/{}".format(
             payload["repository"]["html_url"].tame(check_string),
             payload["check_run"]["head_sha"].tame(check_string),
@@ -758,7 +759,7 @@ def api_github_webhook(
     """
     header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
     if header_event is None:
-        raise UnsupportedWebhookEventType("no header provided")
+        raise UnsupportedWebhookEventTypeError("no header provided")
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
@@ -831,7 +832,7 @@ def get_zulip_event_name(
         else:
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
-            raise UnsupportedWebhookEventType(f"unsupported team action {action}")
+            raise UnsupportedWebhookEventTypeError(f"unsupported team action {action}")
     elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
         return header_event
     elif header_event in IGNORED_EVENTS:
@@ -840,4 +841,4 @@ def get_zulip_event_name(
     complete_event = "{}:{}".format(
         header_event, payload.get("action", "???").tame(check_string)
     )  # nocoverage
-    raise UnsupportedWebhookEventType(complete_event)
+    raise UnsupportedWebhookEventTypeError(complete_event)

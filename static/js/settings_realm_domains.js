@@ -142,11 +142,11 @@ export function show_realm_domains_modal() {
         html_body: realm_domains_table_body,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         id: "realm_domains_modal",
-        on_click: () => {},
+        on_click() {},
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,
-        post_render: () => {
+        post_render() {
             setup_realm_domains_modal_handlers();
             populate_realm_domains_table(page_params.realm_domains);
         },

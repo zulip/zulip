@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -39,6 +40,10 @@ export function lower_bound(array, value, less) {
 }
 
 export const lower_same = function lower_same(a, b) {
+    if (a === undefined || b === undefined) {
+        blueslip.error(`Cannot compare strings; at least one value is undefined: ${a}, ${b}`);
+        return false;
+    }
     return a.toLowerCase() === b.toLowerCase();
 };
 
@@ -354,4 +359,25 @@ export function get_time_from_date_muted(date_muted) {
         return Date.now();
     }
     return date_muted * 1000;
+}
+
+export function call_function_periodically(callback, delay) {
+    // We previously used setInterval for this purpose, but
+    // empirically observed that after unsuspend, Chrome can end
+    // up trying to "catch up" by doing dozens of these requests
+    // at once, wasting resources as well as hitting rate limits
+    // on the server. We have not been able to reproduce this
+    // reliably enough to be certain whether the setInterval
+    // requests are those that would have happened while the
+    // laptop was suspended or during a window after unsuspend
+    // before the user focuses the browser tab.
+
+    // But using setTimeout this instead ensures that we're only
+    // scheduling a next call if the browser will actually be
+    // calling "callback".
+    setTimeout(() => {
+        call_function_periodically(callback, delay);
+    }, delay);
+
+    callback();
 }

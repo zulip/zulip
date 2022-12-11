@@ -898,13 +898,6 @@ exports.fixtures = {
         value: true,
     },
 
-    user_settings__left_side_userlist: {
-        type: "user_settings",
-        op: "update",
-        property: "left_side_userlist",
-        value: true,
-    },
-
     user_settings__presence_disabled: {
         type: "user_settings",
         op: "update",

@@ -423,7 +423,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             content=content_with_group_mention,
         )
 
-        result = self.api_post(sender, "/json/messages", payload)
+        result = self.api_post(sender, "/api/v1/messages", payload)
 
         self.assert_json_success(result)
 

@@ -5,12 +5,16 @@
 import os
 import shutil
 import sys
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Sequence
 
 import orjson
 
-from emoji_names import EMOJI_NAME_MAPS
-from emoji_setup_utils import (
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
+sys.path.append(ZULIP_PATH)
+
+from scripts.lib.zulip_tools import generate_sha1sum_emoji, run_as_root
+from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS
+from tools.setup.emoji.emoji_setup_utils import (
     EMOTICON_CONVERSIONS,
     REMAPPED_EMOJIS,
     emoji_names_for_picker,
@@ -20,11 +24,6 @@ from emoji_setup_utils import (
     generate_name_to_codepoint_map,
     get_emoji_code,
 )
-
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
-sys.path.append(ZULIP_PATH)
-
-from scripts.lib.zulip_tools import generate_sha1sum_emoji, run_as_root
 
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
 TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "static", "generated", "emoji-styles")
@@ -127,13 +126,13 @@ def percent(f: float) -> str:
     return f"{f * 100:0.3f}%"
 
 
-def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
+def get_square_size(emoji_data: Sequence[Dict[str, Any]]) -> int:
     """
     Spritesheets are usually NxN squares, and we have to
     infer N from the sheet_x/sheet_y values of emojis.
     """
 
-    def get_offsets(emoji_data: List[Dict[str, Any]]) -> Iterator[int]:
+    def get_offsets(emoji_data: Sequence[Dict[str, Any]]) -> Iterator[int]:
         for emoji_dict in emoji_data:
             yield emoji_dict["sheet_x"]
             yield emoji_dict["sheet_y"]
@@ -151,7 +150,7 @@ def generate_sprite_css_files(
     emoji_data: List[Dict[str, Any]],
     emojiset: str,
     alt_name: str,
-    fallback_emoji_data: List[Dict[str, Any]],
+    fallback_emoji_data: Sequence[Dict[str, Any]],
 ) -> None:
     """
     Spritesheets are usually NxN squares.
@@ -281,7 +280,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         emojiset: str,
         emoji_data: List[Dict[str, Any]],
         alt_name: Optional[str] = None,
-        fallback_emoji_data: List[Dict[str, Any]] = list(),
+        fallback_emoji_data: Sequence[Dict[str, Any]] = [],
     ) -> None:
         # `alt_name` is an optional parameter that we use to avoid duplicating below
         # code. It is only used while setting up google-blob emoji set as it is just
@@ -420,6 +419,11 @@ def dump_emojis(cache_path: str) -> None:
         shutil.rmtree(cache_path)
     setup_emoji_farms(cache_path, emoji_data)
     setup_old_emoji_farm(cache_path, emoji_map, emoji_data)
+
+    # This file is needed to translate emoji when importing data from Slack.
+    shutil.copyfile(
+        EMOJI_DATA_FILE_PATH, os.path.join(cache_path, "emoji-datasource-google-emoji.json")
+    )
 
     # Generate various map files.
     generate_map_files(cache_path, emoji_catalog)

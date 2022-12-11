@@ -19,11 +19,9 @@ organization](/help/deactivate-your-organization) instead).
 
 {start_tabs}
 
-{tab|via-user-profile}
+{tab|via-user-card}
 
-{!profile-summary-three-dot-menu.md!}
-
-1. Click **Manage this user**.
+{!manage-this-user.md!}
 
 1. Under **User role**, select a [role](/help/roles-and-permissions).
 
@@ -41,3 +39,8 @@ organization](/help/deactivate-your-organization) instead).
 1. Click **Save changes**. The new permissions will take effect immediately.
 
 {end_tabs}
+
+## Related articles
+
+* [Change a user's name](/help/change-a-users-name)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)

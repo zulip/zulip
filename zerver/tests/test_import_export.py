@@ -678,13 +678,13 @@ class RealmImportExportTest(ExportFile):
             .values_list("id", flat=True)
         )
 
-        exported_msg_ids = (
-            set(public_stream_message_ids)
-            | set(private_stream_message_ids)
-            | set([stream_b_second_message_id])
-            | set(exported_pm_ids)
-            | set(exported_huddle_ids)
-        )
+        exported_msg_ids = {
+            *public_stream_message_ids,
+            *private_stream_message_ids,
+            stream_b_second_message_id,
+            *exported_pm_ids,
+            *exported_huddle_ids,
+        }
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
 
         self.assertNotIn(stream_b_first_message_id, exported_msg_ids)

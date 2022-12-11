@@ -11,9 +11,11 @@ import render_profile_incomplete_alert_content from "../templates/navbar_alerts/
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
 import * as compose_ui from "./compose_ui";
+import * as keydown_util from "./keydown_util";
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
+import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
@@ -172,7 +174,7 @@ export function initialize() {
             rendered_alert_content_html: render_desktop_notifications_alert_content(),
         });
     } else if (unread_ui.should_display_bankruptcy_banner()) {
-        const unread_msgs_count = page_params.unread_msgs.count;
+        const unread_msgs_count = unread.get_unread_message_count();
         open({
             data_process: "bankruptcy",
             custom_class: "bankruptcy",
@@ -232,7 +234,7 @@ export function initialize() {
     // Treat Enter with links in the navbar alerts UI focused like a click.,
     $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {
         e.stopPropagation();
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             $(this).trigger("click");
         }
     });

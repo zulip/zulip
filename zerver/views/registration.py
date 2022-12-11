@@ -11,14 +11,14 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import get_language
-from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     RealmCreationKey,
     create_confirmation_link,
     get_object_from_key,
@@ -34,7 +34,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
 )
 from zerver.context_processors import get_realm_from_request, login_context
-from zerver.decorator import do_login, require_post
+from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
     FindMyTeamForm,
     HomepageForm,
@@ -43,12 +43,12 @@ from zerver.forms import (
     RegistrationForm,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
+from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.url_encoding import append_url_query_string
@@ -80,8 +80,8 @@ from zerver.views.auth import (
 )
 from zproject.backends import (
     ExternalAuthResult,
+    NoMatchingLDAPUserError,
     ZulipLDAPAuthBackend,
-    ZulipLDAPExceptionNoMatchingLDAPUser,
     email_auth_enabled,
     email_belongs_to_ldap,
     get_external_method_dicts,
@@ -115,7 +115,7 @@ def get_prereg_key_and_redirect(
     """
     try:
         check_prereg_key(request, confirmation_key)
-    except ConfirmationKeyException as e:
+    except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
     return render(
@@ -128,7 +128,7 @@ def get_prereg_key_and_redirect(
 def check_prereg_key(request: HttpRequest, confirmation_key: str) -> PreregistrationUser:
     """
     Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
-    and raising an appropriate ConfirmationKeyException otherwise.
+    and raising an appropriate ConfirmationKeyError otherwise.
     """
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
@@ -160,7 +160,7 @@ def accounts_register(
 ) -> HttpResponse:
     try:
         prereg_user = check_prereg_key(request, key)
-    except ConfirmationKeyException as e:
+    except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
     email = prereg_user.email
@@ -183,7 +183,7 @@ def accounts_register(
         assert prereg_user.realm is not None
         if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
-                request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
+                request, ConfirmationKeyError(ConfirmationKeyError.DOES_NOT_EXIST)
             )
         realm = prereg_user.realm
         try:
@@ -240,7 +240,7 @@ def accounts_register(
                 if isinstance(backend, LDAPBackend):
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
-                    except ZulipLDAPExceptionNoMatchingLDAPUser:
+                    except NoMatchingLDAPUserError:
                         logging.warning("New account email %s could not be found in LDAP", email)
                         break
 
@@ -605,23 +605,20 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 
+@add_google_analytics
 def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> HttpResponse:
     try:
         key_record = validate_key(creation_key)
-    except RealmCreationKey.Invalid:
-        return render(
+    except RealmCreationKey.InvalidError:
+        return TemplateResponse(
             request,
-            "zerver/realm_creation_failed.html",
-            context={
-                "message": _("The organization creation link has expired" " or is not valid.")
-            },
+            "zerver/realm_creation_link_invalid.html",
         )
     if not settings.OPEN_REALM_CREATION:
         if key_record is None:
-            return render(
+            return TemplateResponse(
                 request,
-                "zerver/realm_creation_failed.html",
-                context={"message": _("New organization creation disabled")},
+                "zerver/realm_creation_disabled.html",
             )
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
@@ -631,9 +628,9 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-            except RateLimited as e:
+            except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
-                return render(
+                return TemplateResponse(
                     request,
                     "zerver/rate_limit_exceeded.html",
                     context={"retry_after": int(e.secs_to_freedom)},
@@ -654,7 +651,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
 
             try:
                 send_confirm_registration_email(email, activation_url, request=request)
-            except EmailNotDeliveredException:
+            except EmailNotDeliveredError:
                 logging.error("Error in create_realm")
                 return HttpResponseRedirect("/config-error/smtp")
 
@@ -663,10 +660,19 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             return HttpResponseRedirect(reverse("new_realm_send_confirm", kwargs={"email": email}))
     else:
         form = RealmCreationForm()
-    return render(
+    return TemplateResponse(
         request,
         "zerver/create_realm.html",
         context={"form": form, "current_url": request.get_full_path},
+    )
+
+
+@add_google_analytics
+def new_realm_send_confirm(request: HttpRequest, email: str) -> HttpResponse:
+    return TemplateResponse(
+        request,
+        "zerver/accounts_send_confirm.html",
+        context={"email": email, "realm_creation": True},
     )
 
 
@@ -706,7 +712,7 @@ def accounts_home(
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-            except RateLimited as e:
+            except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
                 return render(
                     request,
@@ -732,7 +738,7 @@ def accounts_home(
             )
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
-            except EmailNotDeliveredException:
+            except EmailNotDeliveredError:
                 logging.error("Error in accounts_home")
                 return HttpResponseRedirect("/config-error/smtp")
 
@@ -762,7 +768,7 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
         if realm != multiuse_object.realm:
             return render(request, "confirmation/link_does_not_exist.html", status=404)
         # Required for OAuth 2
-    except ConfirmationKeyException as exception:
+    except ConfirmationKeyError as exception:
         if realm is None or realm.invite_required:
             return render_confirmation_key_error(request, exception)
     return accounts_home(
@@ -784,7 +790,7 @@ def find_account(
             for i in range(len(emails)):
                 try:
                     rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-                except RateLimited as e:
+                except RateLimitedError as e:
                     assert e.secs_to_freedom is not None
                     return render(
                         request,

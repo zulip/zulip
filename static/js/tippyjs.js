@@ -222,7 +222,8 @@ export function initialize() {
     delegate("body", {
         target: [
             ".recipient_bar_icon",
-            ".sidebar-title",
+            "#streams_header .sidebar-title",
+            "#userlist-title",
             "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
             ".code_external_link",
@@ -385,7 +386,7 @@ export function initialize() {
             "#add-new-custom-profile-field-form .display_in_profile_summary_tooltip",
         ],
         content: $t({
-            defaultMessage: "Only 2 custom profile fields can be displayed in the profile summary.",
+            defaultMessage: "Only 2 custom profile fields can be displayed on the user card.",
         }),
         appendTo: () => document.body,
         onTrigger(instance) {
@@ -395,5 +396,40 @@ export function initialize() {
                 instance.destroy();
             }
         },
+    });
+
+    delegate("body", {
+        target: "#pm_tooltip_container",
+        onShow(instance) {
+            if ($(".private_messages_container").hasClass("zoom-in")) {
+                return false;
+            }
+
+            if ($("#toggle_private_messages_section_icon").hasClass("fa-caret-down")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Collapse private messages",
+                    }),
+                );
+            } else {
+                instance.setContent($t({defaultMessage: "Expand private messages"}));
+            }
+            return true;
+        },
+        delay: [500, 20],
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#show_all_private_messages",
+        placement: "bottom",
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage: "All private messages (P)",
+                }),
+            );
+        },
+        appendTo: () => document.body,
     });
 }

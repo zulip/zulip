@@ -6,6 +6,7 @@ import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
+import * as keydown_util from "./keydown_util";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -243,7 +244,7 @@ export function create(opts) {
 
     {
         store.$parent.on("keydown", ".input", (e) => {
-            if (e.key === "Enter") {
+            if (keydown_util.is_enter_event(e)) {
                 // regardless of the value of the input, the ENTER keyword
                 // should be ignored in favor of keeping content to one line
                 // always.

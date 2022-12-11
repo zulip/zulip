@@ -42,7 +42,7 @@ let expected_data_to_replace_in_list_widget;
 const ListWidget = mock_esm("../../static/js/list_widget", {
     modifier: noop,
 
-    create: (container, mapped_topic_values, opts) => {
+    create(container, mapped_topic_values, opts) {
         const formatted_topics = [];
         ListWidget.modifier = opts.modifier;
         for (const item of mapped_topic_values) {
@@ -63,8 +63,8 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
     },
 
     hard_redraw: noop,
-    render_item: (item) => ListWidget.modifier(item),
-    replace_list_data: (data) => {
+    filter_and_sort: noop,
+    replace_list_data(data) {
         assert.notEqual(
             expected_data_to_replace_in_list_widget,
             undefined,
@@ -94,7 +94,7 @@ mock_esm("../../static/js/message_view_header", {
     render_title_area: noop,
 });
 mock_esm("../../static/js/user_topics", {
-    is_topic_muted: (stream_id, topic) => {
+    is_topic_muted(stream_id, topic) {
         if (stream_id === stream1 && topic === topic7) {
             return true;
         }
@@ -107,11 +107,12 @@ const narrow = mock_esm("../../static/js/narrow", {
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
 });
-mock_esm("../../static/js/popovers", {
-    any_active: () => false,
+mock_esm("../../static/js/pm_list", {
+    update_private_messages: noop,
+    handle_narrow_deactivated: noop,
 });
 mock_esm("../../static/js/recent_senders", {
-    get_topic_recent_senders: () => [1, 2],
+    get_topic_recent_senders: () => [2, 1],
 });
 mock_esm("../../static/js/stream_data", {
     is_muted: () =>
@@ -127,7 +128,7 @@ mock_esm("../../static/js/timerender", {
     get_full_datetime: () => "date at time",
 });
 mock_esm("../../static/js/sub_store", {
-    get: (stream) => {
+    get(stream) {
         if (stream === stream5) {
             // No data is available for deactivated streams
             return undefined;
@@ -137,6 +138,7 @@ mock_esm("../../static/js/sub_store", {
             color: "",
             invite_only: false,
             is_web_public: true,
+            subscribed: true,
         };
     },
 });
@@ -144,7 +146,7 @@ mock_esm("../../static/js/top_left_corner", {
     narrow_to_recent_topics: noop,
 });
 mock_esm("../../static/js/unread", {
-    num_unread_for_topic: (stream_id, topic) => {
+    num_unread_for_topic(stream_id, topic) {
         if (stream_id === 1 && topic === "topic-1") {
             return 0;
         }
@@ -421,7 +423,10 @@ test("test_filter_all", ({mock_template}) => {
     i = row_data.length;
     rt.set_default_focus();
     $(".home-page-input").trigger("focus");
-    assert.equal(rt.inplace_rerender("1:topic-1"), true);
+    assert.equal(
+        rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
+        false,
+    );
 });
 
 test("test_filter_unread", ({mock_template}) => {
@@ -475,7 +480,10 @@ test("test_filter_unread", ({mock_template}) => {
     stub_out_filter_buttons();
     rt.process_messages(messages);
     $(".home-page-input").trigger("focus");
-    assert.equal(rt.inplace_rerender("1:topic-1"), true);
+    assert.equal(
+        rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
+        false,
+    );
 
     $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
 
@@ -594,11 +602,17 @@ test("test_filter_participated", ({mock_template}) => {
     rt.process_messages(messages);
 
     $(".home-page-input").trigger("focus");
-    assert.equal(rt.inplace_rerender("1:topic-4"), true);
+    assert.equal(
+        rt.filters_should_hide_topic({last_msg_id: 4, participated: true, type: "stream"}),
+        false,
+    );
 
     // Set muted filter
     rt.set_filter("muted");
-    assert.equal(rt.inplace_rerender("1:topic-7"), true);
+    assert.equal(
+        rt.filters_should_hide_topic({last_msg_id: 7, participated: true, type: "stream"}),
+        false,
+    );
 
     // remove muted filter
     rt.set_filter("muted");
@@ -673,7 +687,8 @@ test("test_update_unread_count", () => {
     rt.update_topic_unread_count(messages[9]);
 });
 
-test("basic assertions", ({mock_template}) => {
+test("basic assertions", ({mock_template, override_rewire}) => {
+    override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();
 
     mock_template("recent_topics_table.hbs", false, () => {});

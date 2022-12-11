@@ -60,7 +60,7 @@ run_test("$tr", () => {
             },
             {
                 stream_name: "l'abonnement",
-                "z-link": (content_html) => `<a href='#streams/all'>${content_html}</a>`,
+                "z-link": (content_html) => `<a href='#streams/all'>${content_html.join("")}</a>`,
             },
         ),
         "<p>Le canal <b>l&#39;abonnement</b> n'existe pas.</p><p>Gérez vos abonnements <a href='#streams/all'>sur votre page canaux</a>.</p>",
@@ -100,7 +100,6 @@ run_test("tr_tag", ({mock_template}) => {
             avatar_url: "http://example.com",
         },
         user_settings: {
-            left_side_userlist: false,
             twenty_four_hour_time: false,
             enable_stream_desktop_notifications: false,
             enable_stream_push_notifications: false,

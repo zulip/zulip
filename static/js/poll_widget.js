@@ -6,6 +6,7 @@ import render_widgets_poll_widget_results from "../templates/widgets/poll_widget
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as people from "./people";
 
 export function activate({
@@ -127,7 +128,7 @@ export function activate({
         $elem.find("input.poll-question").on("keydown", (e) => {
             e.stopPropagation();
 
-            if (e.key === "Enter") {
+            if (keydown_util.is_enter_event(e)) {
                 submit_question();
                 return;
             }
@@ -163,7 +164,7 @@ export function activate({
             e.stopPropagation();
             check_option_button();
 
-            if (e.key === "Enter") {
+            if (keydown_util.is_enter_event(e)) {
                 submit_option();
                 return;
             }

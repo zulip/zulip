@@ -23,7 +23,7 @@ messages and alert words.
 
 {start_tabs}
 
-{!right-sidebar-profile-menu.md!}
+{!right-sidebar-user-card.md!}
 
 1. Select **Copy mention syntax** to add it to your clipboard.
 
@@ -35,7 +35,8 @@ messages and alert words.
 
 {start_tabs}
 
-1. Click on a user's profile picture or name on a message they sent.
+1. Click on a user's profile picture or name on a message they sent
+   to open their **user card**.
 
 1. Select **Reply mentioning user** to start a reply to the conversation
    with a mention inserted into the compose box.
@@ -59,8 +60,9 @@ notification. Silent mentions start with `@_` instead of `@`.
 
 ## Mention everyone on a stream
 
-You can mention everyone on a stream with the `@**all**` mention. Use
-sparingly! Used improperly, wildcard mentions can be annoying.
+You can mention everyone on a stream with the `@**all**` mention (or,
+equivalently, `@**everyone**` or `@**stream**`). Use sparingly! Used improperly,
+wildcard mentions can be annoying.
 
 Note that this will not notify anyone who has muted the stream, and
 users can disable receiving email/push notifications for these
@@ -72,3 +74,4 @@ streams](/help/stream-notifications).
 
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Quote and reply](/help/quote-and-reply)
+* [View your mentions](/help/view-your-mentions)

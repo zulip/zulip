@@ -14,7 +14,8 @@ export const intl = createIntl(
         locale: page_params.request_language,
         defaultLocale: "en",
         messages: page_params.translation_data,
-        onError: /* istanbul ignore next */ (error) => {
+        /* istanbul ignore next */
+        onError(error) {
             // Ignore complaints about untranslated strings that were
             // added since the last sync-translations run.
             if (error.code !== IntlErrorCode.MISSING_TRANSLATION) {
@@ -30,7 +31,7 @@ export const $t = intl.formatMessage.bind(intl);
 export const default_html_elements = Object.fromEntries(
     ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
         tag,
-        (content_html: string) => `<${tag}>${content_html}</${tag}>`,
+        (content_html: string[]) => `<${tag}>${content_html.join("")}</${tag}>`,
     ]),
 );
 

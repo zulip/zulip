@@ -63,7 +63,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.message_send import InvalidMirrorInput
+from zerver.views.message_send import InvalidMirrorInputError
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo
@@ -80,7 +80,7 @@ class MessagePOSTTest(ZulipTestCase):
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(user, stream_name)
-            result = self.api_get(user, "/json/messages/" + str(msg_id))
+            result = self.api_get(user, "/api/v1/messages/" + str(msg_id))
             self.assert_json_success(result)
         else:
             with self.assertRaisesRegex(JsonableError, error_msg):
@@ -787,7 +787,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         result = self.api_post(
             self.mit_user("starnine"),
-            "/json/messages",
+            "/api/v1/messages",
             {
                 "type": "private",
                 "sender": self.mit_email("sipbtest"),
@@ -807,7 +807,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         result = self.api_post(
             self.mit_user("starnine"),
-            "/json/messages",
+            "/api/v1/messages",
             {
                 "type": "private",
                 "sender": self.mit_email("sipbtest"),
@@ -1098,7 +1098,7 @@ class MessagePOSTTest(ZulipTestCase):
     def test_send_message_create_mirrored_message_user_returns_invalid_input(
         self, create_mirrored_message_users_mock: Any
     ) -> None:
-        create_mirrored_message_users_mock.side_effect = InvalidMirrorInput()
+        create_mirrored_message_users_mock.side_effect = InvalidMirrorInputError()
         result = self.api_post(
             self.mit_user("starnine"),
             "/api/v1/messages",
@@ -1779,7 +1779,7 @@ class StreamMessagesTest(ZulipTestCase):
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=sub_count):
             if not test_fails:
                 msg_id = self.send_stream_message(sender, "test_stream", content)
-                result = self.api_get(sender, "/json/messages/" + str(msg_id))
+                result = self.api_get(sender, "/api/v1/messages/" + str(msg_id))
                 self.assert_json_success(result)
 
             else:

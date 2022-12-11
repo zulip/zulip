@@ -68,7 +68,7 @@ def migration_paths() -> List[str]:
 
 
 class Database:
-    def __init__(self, platform: str, database_name: str, settings: str):
+    def __init__(self, platform: str, database_name: str, settings: str) -> None:
         self.database_name = database_name
         self.settings = settings
         self.digest_name = "db_files_hash_for_" + platform

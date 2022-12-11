@@ -8,13 +8,13 @@ const $ = require("../zjsunit/zjquery");
 
 set_global("Image", class Image {});
 mock_esm("../../static/js/overlays", {
-    close_overlay: () => {},
+    close_overlay() {},
 
-    close_active: () => {},
-    open_overlay: () => {},
+    close_active() {},
+    open_overlay() {},
 });
 mock_esm("../../static/js/popovers", {
-    hide_all: () => {},
+    hide_all() {},
 });
 const rows = mock_esm("../../static/js/rows");
 

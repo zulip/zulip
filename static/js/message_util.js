@@ -3,14 +3,17 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as loading from "./loading";
 import * as message_store from "./message_store";
-import * as resize from "./resize";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
-export function do_unread_count_updates(messages) {
-    unread.process_loaded_messages(messages);
-    unread_ui.update_unread_counts();
-    resize.resize_page_components();
+export function do_unread_count_updates(messages, expect_no_new_unreads = false) {
+    const any_new_unreads = unread.process_loaded_messages(messages, expect_no_new_unreads);
+
+    if (any_new_unreads) {
+        // The following operations are expensive, and thus should
+        // only happen if we found any unread messages justifying it.
+        unread_ui.update_unread_counts();
+    }
 }
 
 export function add_messages(messages, msg_list, opts) {

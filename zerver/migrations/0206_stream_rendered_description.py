@@ -12,7 +12,7 @@ def render_all_stream_descriptions(
     Stream = apps.get_model("zerver", "Stream")
     all_streams = Stream.objects.exclude(description="")
     for stream in all_streams:
-        stream.rendered_description = render_stream_description(stream.description)
+        stream.rendered_description = render_stream_description(stream.description, stream.realm)
         stream.save(update_fields=["rendered_description"])
 
 

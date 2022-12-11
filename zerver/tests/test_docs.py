@@ -137,6 +137,14 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
+        result = self.client_get(
+            # This template shouldn't be accessed directly.
+            "/api/api-doc-template",
+            follow=True,
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(result.status_code, 404)
+
         # Test some API doc endpoints for specific content and metadata.
         self._test("/api/", "The Zulip API")
         self._test("/api/api-keys", "be careful with it")
@@ -172,10 +180,10 @@ class DocPageTest(ZulipTestCase):
             self._test("/team/", "industry veterans")
             self._test("/apps/", "Apps for every platform.")
 
-        self._test("/history/", "Cambridge, Massachusetts")
+        self._test("/history/", "Zulip released as open source!")
         # Test the i18n version of one of these pages.
-        self._test("/en/history/", "Cambridge, Massachusetts")
-
+        self._test("/en/history/", "Zulip released as open source!")
+        self._test("/values/", "designed our company")
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
         self._test("/attribution/", "Website attributions")
         self._test("/communities/", "Open communities directory")
@@ -360,28 +368,6 @@ class IntegrationTest(ZulipTestCase):
         self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")
         self.assertEqual(context["api_url"], "http://mysubdomain.testserver/api")
         self.assertTrue(context["html_settings_links"])
-
-    def test_html_settings_links(self) -> None:
-        context: Dict[str, Any] = {}
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["settings_html"], "Zulip settings page")
-        self.assertEqual(context["subscriptions_html"], "streams page")
-
-        context = {}
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            add_api_uri_context(context, HostRequestMock(host="mysubdomain.testserver"))
-        self.assertEqual(context["settings_html"], '<a href="/#settings">Zulip settings page</a>')
-        self.assertEqual(
-            context["subscriptions_html"], '<a target="_blank" href="/#streams">streams page</a>'
-        )
-
-        context = {}
-        add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["settings_html"], '<a href="/#settings">Zulip settings page</a>')
-        self.assertEqual(
-            context["subscriptions_html"], '<a target="_blank" href="/#streams">streams page</a>'
-        )
 
 
 class AboutPageTest(ZulipTestCase):

@@ -104,7 +104,10 @@ function user_default_language_modal_post_render() {
                         defaultMessage:
                             "Saved. Please <z-link>reload</z-link> for the change to take effect.",
                     },
-                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                    {
+                        "z-link": (content_html) =>
+                            `<a class='reload_link'>${content_html.join("")}</a>`,
+                    },
                 ),
                 true,
             );
@@ -141,7 +144,7 @@ export function launch_default_language_setting_modal() {
         focus_submit_on_open: true,
         single_footer_button: true,
         post_render: default_language_modal_post_render,
-        on_click: () => {},
+        on_click() {},
     });
 }
 
@@ -186,23 +189,7 @@ export function set_up(settings_panel) {
         const $status_element = $input_elem
             .closest(".subsection-parent")
             .find(".alert-notification");
-
-        if (["left_side_userlist"].includes(setting)) {
-            change_display_setting(
-                data,
-                $status_element,
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                ),
-                true,
-            );
-        } else {
-            change_display_setting(data, $status_element);
-        }
+        change_display_setting(data, $status_element);
     });
 
     $container.find(".setting_emojiset_choice").on("click", function () {

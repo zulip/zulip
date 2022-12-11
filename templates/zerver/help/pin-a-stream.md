@@ -1,8 +1,8 @@
 # Pin a stream
 
-Pinning a stream moves it to the top of the left sidebar. We recommend
-pinning important streams if you have more streams than fit in the left
-sidebar.
+Pinning a stream moves it to the **Pinned** section at the top of your streams
+list in the left sidebar. You can pin the streams you pay close attention to,
+which is especially handy if you are subscribed to a large number of streams.
 
 ## Pin a stream
 

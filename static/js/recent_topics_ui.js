@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
+import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
@@ -17,9 +18,11 @@ import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
 import {
@@ -37,9 +40,11 @@ import * as top_left_corner from "./top_left_corner";
 import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let topics_widget;
+let message_list_displayed_before;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -163,6 +168,17 @@ function set_table_focus(row, col, using_keyboard) {
         return true;
     }
 
+    const unread = has_unread(row);
+    if (col === 2 && !unread) {
+        col = 1;
+        col_focus = 1;
+    }
+    const type = get_row_type(row);
+    if (col === 3 && type === "private") {
+        col = unread ? 2 : 1;
+        col_focus = col;
+    }
+
     const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
@@ -188,7 +204,6 @@ function set_table_focus(row, col, using_keyboard) {
     // TODO: This fake "message" object is designed to allow using the
     // get_recipient_label helper inside compose_closed_ui. Surely
     // there's a more readable way to write this code.
-    const type = get_row_type(row);
     let message;
     if (type === "private") {
         message = {
@@ -285,17 +300,17 @@ export function process_messages(messages) {
     // the UX can be bad if user wants to scroll down the list as
     // the UI will be returned to the beginning of the list on every
     // update.
-    //
-    // Only rerender if topic_data actually
-    // changed.
-    let topic_data_changed = false;
-    for (const msg of messages) {
-        if (process_message(msg)) {
-            topic_data_changed = true;
+    let conversation_data_updated = false;
+    if (messages.length > 0) {
+        for (const msg of messages) {
+            if (process_message(msg)) {
+                conversation_data_updated = true;
+            }
         }
     }
 
-    if (topic_data_changed) {
+    // Only rerender if conversation data actually changed.
+    if (conversation_data_updated) {
         complete_rerender();
     }
 }
@@ -305,6 +320,43 @@ function message_to_conversation_unread_count(msg) {
         return unread.num_unread_for_user_ids_string(msg.to_user_ids);
     }
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
+}
+
+export function get_pm_tooltip_data(user_ids_string) {
+    const user_id = Number.parseInt(user_ids_string, 10);
+    const person = people.get_by_user_id(user_id);
+
+    if (person.is_bot) {
+        const bot_owner = people.get_bot_owner_user(person);
+
+        if (bot_owner) {
+            const bot_owner_name = $t(
+                {defaultMessage: "Owner: {name}"},
+                {name: bot_owner.full_name},
+            );
+
+            return {
+                first_line: person.full_name,
+                second_line: bot_owner_name,
+            };
+        }
+
+        // Bot does not have an owner.
+        return {
+            first_line: person.full_name,
+            second_line: "",
+            third_line: "",
+        };
+    }
+
+    const last_seen = buddy_data.user_last_seen_time_status(user_id);
+
+    // Users does not have a status.
+    return {
+        first_line: last_seen,
+        second_line: "",
+        third_line: "",
+    };
 }
 
 function format_conversation(conversation_data) {
@@ -348,8 +400,12 @@ function format_conversation(conversation_data) {
             context.topic,
         );
 
-        // Display in most recent sender first order
-        all_senders = recent_senders.get_topic_recent_senders(context.stream_id, context.topic);
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        all_senders = recent_senders
+            .get_topic_recent_senders(context.stream_id, context.topic)
+            .reverse();
         senders = all_senders.slice(-MAX_AVATAR);
 
         // Collect extra sender fullname for tooltip
@@ -358,21 +414,45 @@ function format_conversation(conversation_data) {
     } else if (type === "private") {
         // Private message info
         context.user_ids_string = last_msg.to_user_ids;
-        context.pm_with = last_msg.display_reply_to;
+        context.rendered_pm_with = last_msg.display_recipient
+            .filter(
+                (recipient) =>
+                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
+            )
+            .map((user) =>
+                render_user_with_status_icon({
+                    name: user.full_name,
+                    status_emoji_info: user_status.get_status_emoji(user.id),
+                }),
+            )
+            .join(", ");
         context.recipient_id = last_msg.recipient_id;
         context.pm_url = last_msg.pm_with_url;
         context.is_group = last_msg.display_recipient.length > 2;
 
-        // Display in most recent sender first order
-        all_senders = last_msg.display_recipient;
-        senders = all_senders.slice(-MAX_AVATAR).map((sender) => sender.id);
-
         if (!context.is_group) {
-            context.user_circle_class = buddy_data.get_user_circle_class(
-                Number.parseInt(last_msg.to_user_ids, 10),
-            );
+            const user_id = Number.parseInt(last_msg.to_user_ids, 10);
+            const user = people.get_by_user_id(user_id);
+            if (user.is_bot) {
+                // Bots do not have status emoji, and are modeled as
+                // always present.
+                context.user_circle_class = "user_circle_green";
+            } else {
+                context.user_circle_class = buddy_data.get_user_circle_class(user_id);
+            }
         }
 
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        // To match the behavior for streams, we display the set of users who've actually
+        // participated, with the most recent participants first. It could make sense to
+        // display the other recipients on the PM conversation with different styling,
+        // but it's important to not destroy the information of "who's actually talked".
+        all_senders = recent_senders
+            .get_pm_recent_senders(context.user_ids_string)
+            .participants.reverse();
+        senders = all_senders.slice(-MAX_AVATAR);
         // Collect extra senders fullname for tooltip.
         extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
         displayed_other_senders = extra_sender_ids
@@ -497,15 +577,42 @@ export function inplace_rerender(topic_key) {
     }
 
     const topic_data = topics.get(topic_key);
-    topics_widget.render_item(topic_data);
     const topic_row = get_topic_row(topic_data);
-
-    if (filters_should_hide_topic(topic_data)) {
-        topic_row.hide();
+    // We cannot rely on `topic_widget.meta.filtered_list` to know
+    // if a topic is rendered since the `filtered_list` might have
+    // already been updated via other calls.
+    const is_topic_rendered = topic_row.length;
+    // Resorting the topics_widget is important for the case where we
+    // are rerendering because of message editing or new messages
+    // arriving, since those operations often change the sort key.
+    topics_widget.filter_and_sort();
+    const current_topics_list = topics_widget.get_current_list();
+    if (is_topic_rendered && filters_should_hide_topic(topic_data)) {
+        // Since the row needs to be removed from DOM, we need to adjust `row_focus`
+        // if the row being removed is focused and is the last row in the list.
+        // This prevents the row_focus either being reset to the first row or
+        // middle of the visible table rows.
+        // We need to get the current focused row details from DOM since we cannot
+        // rely on `current_topics_list` since it has already been updated and row
+        // doesn't exist inside it.
+        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
+        if (row_is_focused && row_focus >= current_topics_list.length) {
+            row_focus = current_topics_list.length - 1;
+        }
+        topics_widget.remove_rendered_row(topic_row);
+    } else if (!is_topic_rendered && filters_should_hide_topic(topic_data)) {
+        // In case `topic_row` is not present, our job is already done here
+        // since it has not been rendered yet and we already removed it from
+        // the filtered list in `topic_widget`. So, it won't be displayed in
+        // the future too.
+    } else if (is_topic_rendered && !filters_should_hide_topic(topic_data)) {
+        // Only a re-render is required in this case.
+        topics_widget.render_item(topic_data);
     } else {
-        topic_row.show();
+        // Final case: !is_topic_rendered && !filters_should_hide_topic(topic_data).
+        topics_widget.insert_rendered_row(topic_data);
     }
-    revive_current_focus();
+    setTimeout(revive_current_focus, 0);
     return true;
 }
 
@@ -726,7 +833,7 @@ export function complete_rerender() {
         },
         html_selector: get_topic_row,
         $simplebar_container: $("#recent_topics_table .table_fix_head"),
-        callback_after_render: revive_current_focus,
+        callback_after_render: () => setTimeout(revive_current_focus, 0),
         is_scroll_position_for_render,
         post_scroll__pre_render_callback: set_focus_to_element_in_center,
         get_min_load_count,
@@ -767,6 +874,7 @@ export function show() {
     narrow.set_narrow_title(recent_topics_title);
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
+    pm_list.handle_narrow_deactivated();
 
     complete_rerender();
 }
@@ -798,8 +906,16 @@ export function hide() {
     // before it completely re-rerenders.
     message_view_header.render_title_area();
 
-    // Fire our custom event
-    $("#message_feed_container").trigger("message_feed_shown");
+    if (!message_list_displayed_before) {
+        // Hack: If the app is loaded directly to recent topics, then we
+        // need to arrange to call navbar_alerts.resize_app when we first
+        // visit a message list. This is a workaround for bugs where the
+        // floating recipient bar will be invisible (as well as other
+        // alignment issues) when they are initially rendered in the
+        // background because recent topics is displayed.
+        message_list_displayed_before = true;
+        navbar_alerts.resize_app();
+    }
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
@@ -870,13 +986,7 @@ function up_arrow_navigation(row, col) {
     }
 }
 
-function down_arrow_navigation(row, col) {
-    if (is_focus_at_last_table_row()) {
-        return;
-    }
-    if (col === 2 && !has_unread(row + 1)) {
-        col_focus = 1;
-    }
+function down_arrow_navigation() {
     row_focus += 1;
 }
 
@@ -1038,6 +1148,11 @@ export function change_focused_element($elt, input_key) {
                 return true;
         }
     } else if (is_table_focused()) {
+        // Don't process hotkeys in table if there are no rows.
+        if (!topics_widget || topics_widget.get_current_list().length === 0) {
+            return true;
+        }
+
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
@@ -1057,6 +1172,7 @@ export function change_focused_element($elt, input_key) {
             case "right_arrow":
                 right_arrow_navigation(row_focus, col_focus);
                 break;
+            case "down_arrow":
             case "vim_down":
                 // We stop user at last table row
                 // so that user doesn't end up in
@@ -1068,10 +1184,7 @@ export function change_focused_element($elt, input_key) {
                 if (is_focus_at_last_table_row()) {
                     return true;
                 }
-                down_arrow_navigation(row_focus, col_focus);
-                break;
-            case "down_arrow":
-                down_arrow_navigation(row_focus, col_focus);
+                down_arrow_navigation();
                 break;
             case "vim_up":
                 // See comment on vim_down.

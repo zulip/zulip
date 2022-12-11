@@ -134,14 +134,10 @@ def maybe_send_resolve_topic_notifications(
     changed_messages: List[Message],
 ) -> bool:
     """Returns True if resolve topic notifications were in fact sent."""
-
     # Note that topics will have already been stripped in check_update_message.
     #
     # This logic is designed to treat removing a weird "✔ ✔✔ "
     # prefix as unresolving the topic.
-    if old_topic.lstrip(RESOLVED_TOPIC_PREFIX) != new_topic.lstrip(RESOLVED_TOPIC_PREFIX):
-        return False
-
     topic_resolved: bool = new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
         RESOLVED_TOPIC_PREFIX
     )
@@ -260,7 +256,7 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
-    return {user_profile_id for user_profile_id in mentioned_user_ids}
+    return set(mentioned_user_ids)
 
 
 def update_user_message_flags(
@@ -542,6 +538,10 @@ def do_update_message(
                 user_id for user_id in new_stream_sub_ids if user_id not in old_stream_sub_ids
             ]
 
+    # We save the full topic name so that checks that require comparison
+    # between the original topic and the topic name passed into this function
+    # will not be affected by the potential truncation of topic_name below.
+    pre_truncation_topic_name = topic_name
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
         target_message.set_topic_name(topic_name)
@@ -721,7 +721,7 @@ def do_update_message(
                 )
                 subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
-            users_to_be_notified += list(map(subscriber_info, sorted(list(subscriber_ids))))
+            users_to_be_notified += list(map(subscriber_info, sorted(subscriber_ids)))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -869,9 +869,9 @@ def do_update_message(
             new_stream is not None
             or not sent_resolve_topic_notification
             or (
-                topic_name is not None
+                pre_truncation_topic_name is not None
                 and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
-                != topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+                != pre_truncation_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
             )
         ):
             if moved_all_visible_messages:

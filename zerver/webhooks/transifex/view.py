@@ -4,7 +4,7 @@ from typing import Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_int
@@ -33,6 +33,6 @@ def api_transifex_webhook(
         event = "review"
         body = f"Resource {resource} fully reviewed."
     else:
-        raise UnsupportedWebhookEventType("Unknown Event Type")
+        raise UnsupportedWebhookEventTypeError("Unknown Event Type")
     check_send_webhook_message(request, user_profile, subject, body, event)
     return json_success(request)

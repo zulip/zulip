@@ -515,6 +515,17 @@ test_people("user_timezone", () => {
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 
+test_people("utcToZonedTime", ({override}) => {
+    MockDate.set(parseISO("20130208T080910").getTime());
+    user_settings.twenty_four_hour_time = true;
+
+    assert.equal(people.get_user_time(me.user_id), "0:09");
+
+    override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
+    blueslip.expect("error", "Got invalid date for timezone: Eriador/Rivendell");
+    people.get_user_time(me.user_id);
+});
+
 test_people("user_type", () => {
     people.init();
 
@@ -756,7 +767,7 @@ test_people("message_methods", () => {
         display_recipient: [{id: maria.user_id}, {id: me.user_id}],
         avatar_url: "legacy.png",
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/302-athens");
+    assert.equal(people.pm_with_url(message), "#narrow/pm-with/302-Maria-Athens");
     assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,302-pm");
     assert.equal(people.pm_reply_to(message), "Athens@example.com");
     assert.equal(people.small_avatar_url(message), "http://zulip.zulipdev.com/legacy.png?s=50");
@@ -793,7 +804,7 @@ test_people("message_methods", () => {
         type: "private",
         display_recipient: [{id: me.user_id}],
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/30-me");
+    assert.equal(people.pm_with_url(message), "#narrow/pm-with/30-Me-Myself");
     assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30-pm");
 
     message = {type: "stream"};
@@ -906,7 +917,7 @@ test_people("slugs", () => {
     people.add_active_user(debbie);
 
     const slug = people.emails_to_slug(debbie.email);
-    assert.equal(slug, "501-debbie71");
+    assert.equal(slug, "501-Debra-Henton");
 
     const email = people.slug_to_emails(slug);
     assert.equal(email, "debbie71@example.com");

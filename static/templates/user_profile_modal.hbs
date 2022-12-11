@@ -1,7 +1,10 @@
 <div class="micromodal" id="user-profile-modal" data-user-id="{{user_id}}" aria-hidden="true">
-    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+    <div class="modal__overlay" tabindex="-1">
         <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <div class="modal__header">
+                <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
+                    <span class="{{user_circle_class}} user_circle user_profile_presence"></span>
+                </div>
                 <h1 class="modal__title" id="name">
                     {{full_name}}
                     {{#if is_bot}}
@@ -59,10 +62,6 @@
                             <div class="col-wrap col-right">
                                 <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
                                   style="background-image: url('{{user_avatar}}');">
-                                </div>
-                                <div id="user-status" class="default-field">
-                                    <span class="value">{{last_seen}}</span>
-                                    <span class="{{user_circle_class}} user_circle popover_user_presence"></span>
                                 </div>
                             </div>
                         </div>

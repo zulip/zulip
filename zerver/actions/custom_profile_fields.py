@@ -172,7 +172,7 @@ def do_update_user_custom_profile_data_if_changed(
             field_value.value = custom_profile_field_value_string
             if field_value.field.is_renderable():
                 field_value.rendered_value = render_stream_description(
-                    custom_profile_field_value_string
+                    custom_profile_field_value_string, user_profile.realm
                 )
                 field_value.save(update_fields=["value", "rendered_value"])
             else:

@@ -28,9 +28,9 @@ you will need to sign up for an annual plan.
 
 ### What is the difference between automatic and manual billing?
 
-With automatic billing, you automatically purchase a Zulip license
-for each user in your organization at the start of each billing period
-(month or year). Deactivating a user frees up their license for reuse.
+With automatic billing, you automatically purchase a Zulip license for each user
+in your organization at the start of each billing period (month or year).
+[Deactivating a user][deactivate-user] frees up their license for reuse.
 Additional licenses are purchased automatically as needed.
 
 With manual billing, you choose and pay for a preset user limit. If
@@ -44,9 +44,8 @@ have a specific reason to do otherwise.
 
 ### How will I be charged for temporary users (e.g. limited-time clients)?
 
-Users [can be
-deactivated](/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user) any
-time. Deactivating a user frees up their license for reuse.
+Users [can be deactivated][deactivate-user] any time. Deactivating a user frees
+up their license for reuse.
 
 ### How are guest accounts billed? Is there special pricing?
 
@@ -61,3 +60,5 @@ guest.
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Contact support](/help/contact-support)
+
+[deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user

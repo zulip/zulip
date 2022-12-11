@@ -40,4 +40,5 @@
 * [Logging in](logging-in)
 * [Logging out](logging-out)
 * [Switching between organizations](switching-between-organizations)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate your organization](/help/deactivate-your-organization)

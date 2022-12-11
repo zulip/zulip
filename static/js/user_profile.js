@@ -36,7 +36,7 @@ function initialize_bot_owner(element_id, bot_id) {
     const user_pills = new Map();
     const bot = people.get_by_user_id(bot_id);
     const bot_owner = people.get_bot_owner_user(bot);
-    // Bot owner's pill displaying on bots full profile modal.
+    // Bot owner's pill displaying on bot's profile modal.
     if (bot_owner) {
         const $pill_container = $(element_id)
             .find(

@@ -152,7 +152,7 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
     await page.waitForSelector("#search_query", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await page.waitForSelector(".empty_feed_notice", {visible: true});
-    const expect_message = "You haven't received any messages sent by this user yet!";
+    const expect_message = "You haven't received any messages sent by Email Gateway yet.";
     assert.strictEqual(
         await common.get_text_from_selector(page, ".empty_feed_notice"),
         expect_message,
@@ -280,7 +280,9 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click(".top_left_all_messages a");
     await expect_home(page);
 
-    await page.click(".top_left_private_messages a");
+    const all_private_messages_icon = "#show_all_private_messages";
+    await page.waitForSelector(all_private_messages_icon, {visible: true});
+    await page.click(all_private_messages_icon);
     await expect_all_pm(page);
 
     await un_narrow(page);

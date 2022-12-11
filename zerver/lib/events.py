@@ -76,7 +76,7 @@ from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
-class RestartEventException(Exception):
+class RestartEventError(Exception):
     """
     Special error for handling restart events in apply_events.
     """
@@ -114,6 +114,7 @@ def fetch_initial_state_data(
     include_subscribers: bool = True,
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
+    pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -158,6 +159,13 @@ def fetch_initial_state_data(
             item[4]: {"id": item[0], "name": str(item[1])}
             for item in CustomProfileField.ALL_FIELD_TYPES
         }
+
+        if not pronouns_field_type_supported:
+            for field in state["custom_profile_fields"]:
+                if field["type"] == CustomProfileField.PRONOUNS:
+                    field["type"] = CustomProfileField.SHORT_TEXT
+
+            del state["custom_profile_field_types"]["PRONOUNS"]
 
     if want("hotspots"):
         # Even if we offered special hotspots for guests without an
@@ -638,7 +646,7 @@ def apply_events(
 ) -> None:
     for event in events:
         if event["type"] == "restart":
-            raise RestartEventException()
+            raise RestartEventError()
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -1095,7 +1103,7 @@ def apply_event(
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) | user_ids
-                            sub["subscribers"] = sorted(list(subscribers))
+                            sub["subscribers"] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
@@ -1109,7 +1117,7 @@ def apply_event(
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) - user_ids
-                            sub["subscribers"] = sorted(list(subscribers))
+                            sub["subscribers"] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
@@ -1372,6 +1380,7 @@ def do_events_register(
     narrow: Collection[Sequence[str]] = [],
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
+    pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
@@ -1443,6 +1452,7 @@ def do_events_register(
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
 
         if queue_id is None:
@@ -1458,6 +1468,7 @@ def do_events_register(
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,
+            pronouns_field_type_supported=pronouns_field_type_supported,
         )
 
         # Apply events that came in while we were fetching initial data
@@ -1472,7 +1483,7 @@ def do_events_register(
                 slim_presence=slim_presence,
                 include_subscribers=include_subscribers,
             )
-        except RestartEventException:
+        except RestartEventError:
             # This represents a rare race condition, where Tornado
             # restarted (and sent `restart` events) while we were waiting
             # for fetch_initial_state_data to return. To avoid the client

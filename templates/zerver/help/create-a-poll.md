@@ -27,4 +27,4 @@ send a message that both has a poll and has any other content.
 
 ## Related articles
 
-* [Format messages using Markdown](/help/format-your-message-using-markdown)
+* [Message formatting](/help/format-your-message-using-markdown)

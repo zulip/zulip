@@ -23,8 +23,16 @@ previews are disabled.
 
 {!save-changes.md!}
 
+!!! tip ""
+    Use [Markdown formatting][markdown-formatting] to include a link to a
+    website, Zulip [message][message-link], or [topic][topic-link] in the
+    stream description: `[link text](URL)`.
+
 {end_tabs}
 
 {!automated-notice-stream-event.md!}
 
 [markdown-formatting]: /help/format-your-message-using-markdown
+[message-link]: /help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
+[topic-link]:
+    /help/link-to-a-message-or-conversation#get-a-link-to-a-specific-topic

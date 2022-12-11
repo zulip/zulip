@@ -75,23 +75,22 @@ uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
 
-[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
-
 ## S3 bucket policy
 
-The best way to do the S3 integration with Amazon is to create a new
-IAM user just for your Zulip server with limited permissions. For
-each of the two buckets, you'll want to
-[add an S3 bucket policy](https://awspolicygen.s3.amazonaws.com/policygen.html)
-entry that looks something like this:
+The best way to do the S3 integration with Amazon is to create a new IAM user
+just for your Zulip server with limited permissions. For both the user uploads
+bucket and the user avatars bucket, you'll need to adjust the [S3 bucket
+policy](https://awspolicygen.s3.amazonaws.com/policygen.html).
+
+The file uploads bucket should have a policy of:
 
 ```json
 {
     "Version": "2012-10-17",
-    "Id": "Policy1468991802321",
+    "Id": "Policy1468991802320",
     "Statement": [
         {
-            "Sid": "",
+            "Sid": "Stmt1468991795370",
             "Effect": "Allow",
             "Principal": {
                 "AWS": "ARN_PRINCIPAL_HERE"
@@ -104,7 +103,7 @@ entry that looks something like this:
             "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
         },
         {
-            "Sid": "Stmt1468991795389",
+            "Sid": "Stmt1468991795371",
             "Effect": "Allow",
             "Principal": {
                 "AWS": "ARN_PRINCIPAL_HERE"
@@ -116,24 +115,52 @@ entry that looks something like this:
 }
 ```
 
-The avatars bucket is intended to be world-readable, so you'll also
-need a block like this:
-
-```json
-{
-    "Sid": "Stmt1468991795389",
-    "Effect": "Allow",
-    "Principal": {
-        "AWS": "*"
-    },
-    "Action": "s3:GetObject",
-    "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
-}
-```
-
 The file-uploads bucket should not be world-readable. See the
 [documentation on the Zulip security model](security-model.md) for
 details on the security model for uploaded files.
+
+However, the avatars bucket is intended to be world-readable, so its
+policy should be:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1468991802321",
+    "Statement": [
+        {
+            "Sid": "Stmt1468991795380",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:PutObject"
+            ],
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
+        },
+        {
+            "Sid": "Stmt1468991795381",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE"
+        },
+        {
+            "Sid": "Stmt1468991795382",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
+        }
+    ]
+}
+```
 
 ## Migrating from local uploads to Amazon S3 backend
 

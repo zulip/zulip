@@ -45,13 +45,13 @@ have the following effects:
     Muting someone does not affect their Zulip experience in any way.
 
 
-[view-emoji-reactions]: /help/emoji-reactions#see-who-reacted-to-a-message
+[view-emoji-reactions]: /help/emoji-reactions#view-who-reacted-to-a-message
 
 ## Mute a user
 
 {start_tabs}
 
-{!profile-summary-three-dot-menu.md!}
+{!user-card-three-dot-menu.md!}
 
 1. Click **Mute this user**.
 
@@ -60,7 +60,8 @@ have the following effects:
 !!! Tip ""
 
     You can also click on a user's profile picture or name on a
-    message they sent, and skip to step 3.
+    message they sent to open their **user card**, and skip to
+    step 3.
 
 {end_tabs}
 

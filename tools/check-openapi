@@ -40,6 +40,7 @@ async function checkFile(file) {
 
     let ok = true;
     const reformats = new Map();
+    const promises = [];
 
     visit(doc, {
         Map(key, node) {
@@ -70,43 +71,54 @@ async function checkFile(file) {
                 node.value instanceof Scalar &&
                 typeof node.value.value === "string"
             ) {
-                let formatted = Prettier.format(node.value.value, {parser: "markdown"});
-                if (![Scalar.BLOCK_FOLDED, Scalar.BLOCK_LITERAL].includes(node.value.type)) {
-                    formatted = formatted.replace(/\n$/, "");
-                }
-                if (formatted !== node.value.value) {
-                    if (argv.fix) {
-                        reformats.set(node.value.range[0], {
-                            value: formatted,
-                            context: {afterKey: true},
+                promises.push(
+                    (async () => {
+                        let formatted = await Prettier.format(node.value.value, {
+                            parser: "markdown",
                         });
-                    } else {
-                        ok = false;
-                        const {line, col} = lineCounter.linePos(node.value.range[0]);
-                        console.error(
-                            "%s:%d:%d: Format description with Prettier:",
-                            file,
-                            line,
-                            col,
-                        );
-                        let diff = "";
-                        for (const part of Diff.diffLines(node.value.value, formatted)) {
-                            const prefix = part.added
-                                ? "\u001B[32m+"
-                                : part.removed
-                                ? "\u001B[31m-"
-                                : "\u001B[34m ";
-                            diff += prefix;
-                            diff += part.value.replace(/\n$/, "").replace(/\n/g, "\n" + prefix);
-                            diff += "\n";
+                        if (
+                            ![Scalar.BLOCK_FOLDED, Scalar.BLOCK_LITERAL].includes(node.value.type)
+                        ) {
+                            formatted = formatted.replace(/\n$/, "");
                         }
-                        diff += "\u001B[0m";
-                        console.error(diff);
-                    }
-                }
+                        if (formatted !== node.value.value) {
+                            if (argv.fix) {
+                                reformats.set(node.value.range[0], {
+                                    value: formatted,
+                                    context: {afterKey: true},
+                                });
+                            } else {
+                                ok = false;
+                                const {line, col} = lineCounter.linePos(node.value.range[0]);
+                                console.error(
+                                    "%s:%d:%d: Format description with Prettier:",
+                                    file,
+                                    line,
+                                    col,
+                                );
+                                let diff = "";
+                                for (const part of Diff.diffLines(node.value.value, formatted)) {
+                                    const prefix = part.added
+                                        ? "\u001B[32m+"
+                                        : part.removed
+                                        ? "\u001B[31m-"
+                                        : "\u001B[34m ";
+                                    diff += prefix;
+                                    diff += part.value
+                                        .replace(/\n$/, "")
+                                        .replace(/\n/g, "\n" + prefix);
+                                    diff += "\n";
+                                }
+                                diff += "\u001B[0m";
+                                console.error(diff);
+                            }
+                        }
+                    })(),
+                );
             }
         },
     });
+    await Promise.all(promises);
 
     if (!ok) {
         process.exitCode = 1;

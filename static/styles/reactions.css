@@ -5,14 +5,15 @@
     user-select: none;
 
     .message_reaction {
+        display: flex;
         float: left;
         margin: 0.15em;
         padding: 0 2px 0 0;
-        height: 19px;
         cursor: pointer;
         background-color: hsl(0, 0%, 100%);
         border: 1px solid hsl(194, 37%, 84%);
         border-radius: 4px;
+        align-items: center;
 
         &.reacted {
             background-color: hsl(195, 50%, 95%);
@@ -27,7 +28,7 @@
             pointer-events: none;
             margin: 2px 0.1em 3px;
             padding: 3px;
-            height: 14px;
+            height: 13px;
             border-radius: 4px;
             padding-left: 0.3em;
             border: 1px solid hsl(0, 0%, 73%);
@@ -37,10 +38,10 @@
 
         .emoji {
             display: inline-block;
+            flex-shrink: 0;
             vertical-align: top;
             top: 0;
             margin: 1px 3px;
-
             height: 17px;
             width: 17px;
             position: relative;
@@ -49,13 +50,16 @@
 
     .message_reaction_count {
         position: relative;
-        top: 4px;
+        top: 1px;
         font-size: 90%;
-        display: inline-block;
-        vertical-align: top;
-        color: hsl(200, 100%, 40%);
-        margin: 0 1px 0 0;
+        display: flex;
+        margin: 0 3px;
+        padding: 2px 0;
         line-height: 1em;
+    }
+
+    .message_reaction:hover .message_reaction_count {
+        color: hsl(200, 100%, 40%);
     }
 
     i {
@@ -71,9 +75,11 @@
     }
 
     .reaction_button {
+        display: flex;
+        align-items: center;
+
         i {
             font-size: 1em;
-            margin-right: 3px;
         }
 
         &:hover i {
@@ -100,8 +106,7 @@
         .message_reaction_count {
             font-size: 1.1em;
             color: hsl(0, 0%, 33%);
-            margin-left: 3px;
-            top: 0.5px;
+            margin-right: 0;
         }
 
         &:hover .message_reaction_count {

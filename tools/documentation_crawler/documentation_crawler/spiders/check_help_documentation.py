@@ -33,11 +33,10 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
             exception_message = (
                 "The following images are not used in documentation and can be removed: {}"
             )
-            self._set_error_state()
             unused_images_relatedpath = [
                 os.path.join(self.images_path, img) for img in unused_images
             ]
-            raise Exception(exception_message.format(", ".join(unused_images_relatedpath)))
+            self.logger.error(exception_message.format(", ".join(unused_images_relatedpath)))
 
 
 class HelpDocumentationSpider(UnusedImagesLinterSpider):

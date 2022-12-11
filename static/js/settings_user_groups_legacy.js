@@ -9,6 +9,7 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
@@ -406,7 +407,7 @@ export function set_up() {
     });
 
     $("#user-groups").on("keypress", ".user-group h4 > span", (e) => {
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
         }
     });

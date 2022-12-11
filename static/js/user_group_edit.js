@@ -150,7 +150,7 @@ export function initialize() {
             html_body: change_user_group_info_modal,
             id: "change_group_info_modal",
             on_click: save_group_info,
-            post_render: () => {
+            post_render() {
                 $("#change_group_info_modal .dialog_submit_button")
                     .addClass("save-button")
                     .attr("data-group-id", user_group_id);

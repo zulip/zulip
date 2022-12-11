@@ -322,7 +322,7 @@ test("handlers", ({override, mock_template}) => {
     (function test_click_filter() {
         init();
         const e = {
-            stopPropagation: () => {},
+            stopPropagation() {},
         };
 
         const handler = $(".user-list-filter").get_on_handler("focus");
@@ -383,7 +383,7 @@ test("first/prev/next", ({override, mock_template}) => {
                 rendered_alice = true;
                 assert.deepEqual(data, {
                     faded: true,
-                    href: "#narrow/pm-with/1-alice",
+                    href: "#narrow/pm-with/1-Alice-Smith",
                     is_current_user: false,
                     name: "Alice Smith",
                     num_unread: 0,
@@ -401,7 +401,7 @@ test("first/prev/next", ({override, mock_template}) => {
             case fred.user_id:
                 rendered_fred = true;
                 assert.deepEqual(data, {
-                    href: "#narrow/pm-with/2-fred",
+                    href: "#narrow/pm-with/2-Fred-Flintstone",
                     name: "Fred Flintstone",
                     user_id: fred.user_id,
                     is_current_user: false,
@@ -449,7 +449,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     user_settings.user_list_style = 2;
     mock_template("presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
-            href: "#narrow/pm-with/1-alice",
+            href: "#narrow/pm-with/1-Alice-Smith",
             name: "Alice Smith",
             user_id: 1,
             is_current_user: false,
@@ -615,7 +615,11 @@ test("initialize", ({override, mock_template}) => {
 
     let payload;
     override(channel, "post", (arg) => {
-        payload = arg;
+        if (payload === undefined) {
+            // This "if" block is added such that we can execute "success"
+            // function when want_redraw is true.
+            payload = arg;
+        }
     });
 
     function clear() {
@@ -636,6 +640,17 @@ test("initialize", ({override, mock_template}) => {
     activity.mark_client_idle();
 
     $(window).off("focus");
+
+    let set_timeout_function_called = false;
+    set_global("setTimeout", (func) => {
+        if (set_timeout_function_called) {
+            // This conditional is needed to avoid indefinite calls.
+            return;
+        }
+        set_timeout_function_called = true;
+        func();
+    });
+
     activity.initialize();
     payload.success({
         zephyr_mirror_active: true,
@@ -652,8 +667,8 @@ test("initialize", ({override, mock_template}) => {
     $(window).idle = (params) => {
         params.onIdle();
     };
-
-    set_global("setInterval", (func) => func());
+    payload = undefined;
+    set_timeout_function_called = false;
 
     $(window).off("focus");
     activity.initialize();

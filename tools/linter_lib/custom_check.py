@@ -153,11 +153,6 @@ js_rules = RuleList(
             "exclude": {"frontend_tests/node_tests/"},
         },
         {
-            "pattern": r"""compose_error\(["']""",
-            "description": "Argument to compose_error should be a literal string translated "
-            "by $t_html()",
-        },
-        {
             "pattern": r"ui.report_success\(",
             "description": "Deprecated function, use ui_report.success.",
         },
@@ -275,12 +270,6 @@ python_rules = RuleList(
             "description": "you can omit Any annotation for self",
             "good_lines": ["def foo (self):"],
             "bad_lines": ["def foo(self: Any):"],
-        },
-        {
-            "pattern": "assertEquals[(]",
-            "description": "Use assertEqual, not assertEquals (which is deprecated).",
-            "good_lines": ["assertEqual(1, 2)"],
-            "bad_lines": ["assertEquals(1, 2)"],
         },
         {
             "pattern": r"assertEqual[(]len[(][^\n ]*[)],",
@@ -420,12 +409,6 @@ python_rules = RuleList(
         },
         {
             "pattern": r"\S[\t ]*#[\t ]*type:(?![\t ]*ignore)",
-            "exclude": {
-                "scripts/lib/hash_reqs.py",
-                "scripts/lib/setup_venv.py",
-                "scripts/lib/zulip_tools.py",
-                "tools/lib/provision.py",
-            },
             "description": "Comment-style variable type annotation. Use Python 3.6 style annotations instead.",
             "good_lines": ["a: List[int] = []"],
             "bad_lines": ["a = []  # type: List[int]"],

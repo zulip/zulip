@@ -7,6 +7,7 @@ const _ = require("lodash");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
@@ -37,14 +38,14 @@ const message_helper = mock_esm("../../static/js/message_helper");
 const message_lists = mock_esm("../../static/js/message_lists");
 const message_util = mock_esm("../../static/js/message_util");
 const stream_list = mock_esm("../../static/js/stream_list", {
-    maybe_scroll_narrow_into_view: () => {},
+    maybe_scroll_narrow_into_view() {},
 });
 mock_esm("../../static/js/message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
-    update_top_of_narrow_notices: () => {},
+    update_top_of_narrow_notices() {},
 });
 set_global("document", "document-stub");
 
@@ -267,6 +268,9 @@ run_test("initialize", () => {
     reset_lists();
 
     let home_loaded = false;
+    page_params.unread_msgs = {
+        old_unreads_missing: false,
+    };
 
     function home_view_loaded() {
         home_loaded = true;
@@ -351,6 +355,9 @@ run_test("loading_newer", () => {
 
     (function test_narrow() {
         const msg_list = simulate_narrow();
+        page_params.unread_msgs = {
+            old_unreads_missing: true,
+        };
 
         const data = {
             req: {

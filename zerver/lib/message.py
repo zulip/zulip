@@ -867,8 +867,17 @@ def bulk_access_messages(
         )
     )
 
-    # TODO: Ideally, we'd do a similar bulk-stream-fetch if stream is
-    # None, so that this function is fast with
+    if stream is None:
+        streams = {
+            stream.recipient_id: stream
+            for stream in Stream.objects.filter(
+                id__in={
+                    message.recipient.type_id
+                    for message in messages
+                    if message.recipient.type == Recipient.STREAM
+                }
+            )
+        }
 
     subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
 
@@ -879,7 +888,7 @@ def bulk_access_messages(
             user_profile,
             message,
             has_user_message=has_user_message,
-            stream=stream,
+            stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
         ):
             filtered_messages.append(message)
@@ -1437,7 +1446,7 @@ def update_first_visible_message_id(realm: Realm) -> None:
     else:
         try:
             first_visible_message_id = (
-                Message.objects.filter(sender__realm=realm)
+                Message.objects.filter(realm=realm)
                 .values("id")
                 .order_by("-id")[realm.message_visibility_limit - 1]["id"]
             )

@@ -466,7 +466,7 @@ paths:
                                         bot_owner_id:
                                           type: integer
                                           description: |
-                                            The user id of the new bot owner.
+                                            The user ID of the new bot owner.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -1047,7 +1047,6 @@ paths:
                                     presence as a UNIX timestamp.
                                 presence:
                                   type: object
-                                  x-model: dict
                                   description: |
                                     Object containing the details of the user's most recent presence.
                                   additionalProperties:
@@ -1168,7 +1167,7 @@ paths:
                                 streams:
                                   type: array
                                   description: |
-                                    Array of stream objects, each contatining
+                                    Array of stream objects, each containing
                                     details about a stream that was deleted.
                                   items:
                                     $ref: "#/components/schemas/BasicStream"
@@ -1476,7 +1475,7 @@ paths:
                                 attachment:
                                   type: object
                                   description: |
-                                    Dictionary containing the id of the deleted attachment.
+                                    Dictionary containing the ID of the deleted attachment.
                                   additionalProperties: false
                                   properties:
                                     id:
@@ -2015,7 +2014,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user id and timestamp of a muted user.
+                                      Object containing the user ID and timestamp of a muted user.
                                     properties:
                                       id:
                                         type: integer
@@ -2440,7 +2439,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user id and email of a recipient.
+                                      Object containing the user ID and email of a recipient.
                                     properties:
                                       user_id:
                                         type: integer
@@ -2556,7 +2555,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user id and email of a recipient.
+                                      Object containing the user ID and email of a recipient.
                                     properties:
                                       user_id:
                                         type: integer
@@ -2642,7 +2641,7 @@ paths:
                                 messages:
                                   type: array
                                   description: |
-                                    Array containing the ids of all messages to which
+                                    Array containing the IDs of all messages to which
                                     the flag was added.
                                   items:
                                     type: integer
@@ -2735,7 +2734,6 @@ paths:
                                     marking already read messages as unread was not
                                     supported by the Zulip API.
                                   type: object
-                                  x-model: dict
                                   additionalProperties:
                                     type: object
                                     description: |
@@ -3235,7 +3233,6 @@ paths:
                                     - update
                                 realm_emoji:
                                   type: object
-                                  x-model: dict
                                   description: |
                                     An object in which each key describes a realm emoji.
                                   additionalProperties:
@@ -3482,7 +3479,7 @@ paths:
                                   allOf:
                                     - description: |
                                         Object containing details about the changed bot.
-                                        It contains two properties: the user id of the bot and
+                                        It contains two properties: the user ID of the bot and
                                         the property to be changed. The changed property is one
                                         of the remaining properties listed below.
                                     - $ref: "#/components/schemas/BasicBot"
@@ -3809,7 +3806,6 @@ paths:
                                         allows editing the content of messages.
                                     authentication_methods:
                                       type: object
-                                      x-model: dict
                                       additionalProperties:
                                         description: |
                                           Boolean describing whether the authentication method (i.e its key)
@@ -4352,7 +4348,7 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event containing the id of a deleted draft.
+                                Event containing the ID of a deleted draft.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4533,9 +4529,41 @@ paths:
       tags: ["messages"]
       description: |
         Marks all of the current user's unread messages as read.
+
+        **Changes**: Before Zulip 6.0 (feature level 153), this
+        request did a single atomic operation, which could time out
+        with 10,000s of unread messages to mark as read.
+
+        It now marks messages as read in batches, starting with the
+        newest messages, so that progress will be made even if the
+        request times out.
+
+        If the server's processing is interrupted by a timeout, it
+        will return an HTTP 200 success response with result
+        "partially_completed". A correct client should repeat the
+        request when handling such a response.
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success or partial success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonSuccess"
+                      - $ref: "#/components/schemas/SuccessDescription"
+                  - allOf:
+                      - $ref: "#/components/schemas/PartiallyCompleted"
+                      - example:
+                          {
+                            "code": "REQUEST_TIMEOUT",
+                            "msg": "",
+                            "result": "partially_completed",
+                          }
+                        description: |
+                          If the request exceeds its processing time limit after having
+                          successfully marked some messages as read, response code 200
+                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
   /mark_stream_as_read:
     post:
       operationId: mark-stream-as-read
@@ -4796,13 +4824,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: |
-                      When all of the drafts in the request are valid, this endpoint will return
-                      an array of the IDs for the drafts that were just created in the same
-                      order as they were requested. If any of the drafts failed the validation
-                      step, then none of the drafts will be created and we would not get this
-                      status code. The typical JSON response in such a case is:
                     properties:
                       result: {}
                       msg: {}
@@ -4999,19 +5022,20 @@ paths:
       summary: Get messages
       tags: ["messages"]
       description: |
-        Fetch message history from a Zulip server.
+        Fetch user's message history from a Zulip server.
 
-        This `GET /api/v1/messages` endpoint is the primary way to fetch
-        message history from a Zulip server. It is useful both for Zulip
-        clients (e.g. the web, desktop, mobile, and terminal clients) as well
-        as bots, API clients, backup scripts, etc.
+        This endpoint is the primary way to fetch a user's message history
+        from a Zulip server. It is useful both for Zulip clients (e.g. the
+        web, desktop, mobile, and terminal clients) as well as bots, API
+        clients, backup scripts, etc.
 
-        By specifying a [narrow filter](/api/construct-narrow), you can use
-        this endpoint to fetch the messages matching any search query that is
-        supported by Zulip's powerful full-text search backend.
+        Note that a user's message history does not contain messages sent to
+        streams before they [subscribe](/api/subscribe), and newly created
+        bot users are not usually subscribed to any streams.
 
-        When a narrow is not specified, it can be used to fetch a user's
-        message history. (We recommend paginating to 1000 messages at a time.)
+        By specifying a [narrow filter](/api/get-messages#parameter-narrow),
+        you can use this endpoint to fetch the messages matching any search
+        query that is supported by Zulip's powerful full-text search backend.
 
         In either case, you specify an `anchor` message (or ask the server to
         calculate the first unread message for you and use that as the
@@ -5033,6 +5057,7 @@ paths:
                 - client_gravatar
                 - apply_markdown
                 - use_first_unread_anchor
+                - include_anchor
       parameters:
         - name: anchor
           in: query
@@ -5045,9 +5070,6 @@ paths:
             - `oldest`: The oldest message.
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
-
-            The special values of `'newest'` and `'oldest'` are also supported
-            for anchoring the query at the most recent or oldest messages.
 
             **Changes**: String values are new in Zulip 3.0 (feature level 1). The
             `first_unread` functionality was supported in Zulip 2.1.x
@@ -5062,6 +5084,17 @@ paths:
               - type: string
               - type: integer
           example: 43
+        - name: include_anchor
+          in: query
+          description: |
+            Whether a message with the specified ID matching the narrow
+            should be included.
+
+            **Changes**: New in Zulip 6.0 (feature level 155).
+          schema:
+            type: boolean
+            default: true
+          example: false
         - name: num_before
           in: query
           description: |
@@ -5085,6 +5118,22 @@ paths:
           description: |
             The narrow where you want to fetch the messages from. See how to
             [construct a narrow](/api/construct-narrow).
+
+            Note that many narrows, including all that lack a `stream`
+            or `streams` operator, search the user's personal message
+            history. See [searching shared
+            history](/help/search-for-messages#searching-shared-history)
+            for details.
+
+            For example, if you would like to fetch messages from all public streams instead
+            of only the user's message history, then a specific narrow for
+            messages sent to all public streams can be used:
+            `{"operator": "streams", "operand": "public"}`.
+
+            Newly created bot users are not usually subscribed to any
+            streams, so bots using this API should either be
+            subscribed to appropriate streams or use a shared history
+            search narrow with this endpoint.
 
             **Changes**: In Zulip 2.1.0, added support for using user/stream IDs
             when constructing narrows for a message's sender, its stream and/or
@@ -5153,12 +5202,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: |
-                      When a request is successful, this endpoint returns a dictionary
-                      containing the following (in addition to the `msg` and `result` keys
-                      present in all Zulip API responses).
-                      A typical successful JSON response may look like:
                     properties:
                       result: {}
                       msg: {}
@@ -5184,8 +5229,9 @@ paths:
                         description: |
                           Whether the anchor message is included in the
                           response. If the message with the ID specified
-                          in the request does not exist or did not match
-                          the narrow, this will be false.
+                          in the request does not exist, did not match
+                          the narrow, or was excluded via
+                          `include_anchor=false`, this will be false.
                       history_limited:
                         type: boolean
                         description: |
@@ -5614,6 +5660,8 @@ paths:
         Add or remove personal message flags like `read` and `starred`
         on a collection of message IDs.
 
+        See also the endpoint for [updating flags on a range of
+        messages within a narrow](/api/update-message-flags-for-narrow).
         For updating the `read` flag on common collections of messages, see also
         the
         [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
@@ -5743,6 +5791,205 @@ paths:
                           An array with the IDs of the modified messages.
                     example:
                       {"msg": "", "messages": [4, 18, 15], "result": "success"}
+  /messages/flags/narrow:
+    post:
+      operationId: update-message-flags-for-narrow
+      summary: Update personal message flags for narrow
+      tags: ["messages"]
+      description: |
+        Add or remove personal message flags like `read` and `starred`
+        on a range of messages within a narrow.
+
+        See also [the endpoint for updating flags on specific message
+        IDs](/api/update-message-flags).
+
+        **Changes**: New in Zulip 6.0 (feature level 155).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - include_anchor
+      parameters:
+        - name: anchor
+          in: query
+          description: |
+            Integer message ID to anchor updating of flags. Supports special
+            string values for when the client wants the server to compute the anchor
+            to use:
+
+            - `newest`: The most recent message.
+            - `oldest`: The oldest message.
+            - `first_unread`: The oldest unread message matching the
+              query, if any; otherwise, the most recent message.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+          example: 43
+          required: true
+        - name: include_anchor
+          in: query
+          description: |
+            Whether a message with the specified ID matching the narrow
+            should be included in the update range.
+          schema:
+            type: boolean
+            default: true
+          example: false
+        - name: num_before
+          in: query
+          description: |
+            Limit the number of messages preceding the anchor in the
+            update range. The server may decrease this to bound
+            transaction sizes.
+          schema:
+            type: integer
+            minimum: 0
+          example: 4
+          required: true
+        - name: num_after
+          in: query
+          description: |
+            Limit the number of messages following the anchor in the
+            update range. The server may decrease this to bound
+            transaction sizes.
+          schema:
+            type: integer
+            minimum: 0
+          example: 8
+          required: true
+        - name: narrow
+          in: query
+          description: |
+            The narrow you want update flags within. See how to
+            [construct a narrow](/api/construct-narrow).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - type: object
+                      required:
+                        - operator
+                        - operand
+                      additionalProperties: false
+                      properties:
+                        operator:
+                          type: string
+                        operand:
+                          oneOf:
+                            - type: string
+                            - type: integer
+                            - type: array
+                              items:
+                                type: integer
+                        negated:
+                          type: boolean
+                    - type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
+                default: []
+              example: [{"operand": "Denmark", "operator": "stream"}]
+          required: true
+        - name: op
+          in: query
+          description: |
+            Whether to `add` the flag or `remove` it.
+          schema:
+            type: string
+            enum:
+              - add
+              - remove
+          example: add
+          required: true
+        - name: flag
+          in: query
+          description: |
+            The flag that should be added/removed. See [available
+            flags](/api/update-message-flags#available-flags).
+          schema:
+            type: string
+          example: read
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    required:
+                      - processed_count
+                      - updated_count
+                      - first_processed_id
+                      - last_processed_id
+                      - found_oldest
+                      - found_newest
+                    properties:
+                      result: {}
+                      msg: {}
+                      processed_count:
+                        type: integer
+                        description: |
+                          The number of messages that were within the
+                          update range (at most `num_before + 1 +
+                          num_after`).
+                      updated_count:
+                        type: integer
+                        description: |
+                          The number of messages where the flag's
+                          value was changed (at most
+                          `processed_count`).
+                      first_processed_id:
+                        type: integer
+                        nullable: true
+                        description: |
+                          The ID of the oldest message within the
+                          update range, or `null` if the range was
+                          empty.
+                      last_processed_id:
+                        type: integer
+                        nullable: true
+                        description: |
+                          The ID of the newest message within the
+                          update range, or `null` if the range was
+                          empty.
+                      found_oldest:
+                        type: boolean
+                        description: |
+                          Whether the update range reached backward
+                          far enough to include very oldest message
+                          matching the narrow (used by clients doing a
+                          bulk update to decide whether to issue
+                          another request anchored at
+                          `first_processed_id`).
+                      found_newest:
+                        type: boolean
+                        description: |
+                          Whether the update range reached forward far
+                          enough to include very oldest message
+                          matching the narrow (used by clients doing a
+                          bulk update to decide whether to issue
+                          another request anchored at
+                          `last_processed_id`).
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "processed_count": 11,
+                        "updated_count": 8,
+                        "first_processed_id": 35,
+                        "last_processed_id": 55,
+                        "found_oldest": false,
+                        "found_newest": true,
+                      }
   /messages/render:
     post:
       operationId: render-message
@@ -5953,19 +6200,20 @@ paths:
       description: |
         Check whether a set of messages match a [narrow](/api/construct-narrow).
 
-        For many common narrows (E.g. a topic), clients can write an
-        efficient client-side check to determine whether a
-        newly arrived message belongs in the view.
+        For many common narrows (e.g. a topic), clients can write an efficient
+        client-side check to determine whether a newly arrived message belongs
+        in the view.
 
         This endpoint is designed to allow clients to handle more complex narrows
-        for which the client does not (or in the case of full-text search,
-        cannot) implement this check.
+        for which the client does not (or in the case of full-text search, cannot)
+        implement this check.
 
-        The format of the `match_subject` and `match_content` objects is designed to match
-        those of `GET /messages`, so that a client can splice these fields into a
-        `message` object received from `GET /events` and end up with an extended message
-        object identical to how a `GET /messages` for the current narrow would have
-        returned the message.
+        The format of the `match_subject` and `match_content` objects is designed
+        to match those returned by the [`GET /messages`](/api/get-messages#response)
+        endpoint, so that a client can splice these fields into a `message` object
+        received from [`GET /events`](/api/get-events#message) and end up with an
+        extended message object identical to how a [`GET /messages`](/api/get-messages)
+        request for the current narrow would have returned the message.
       parameters:
         - name: msg_ids
           in: query
@@ -6006,7 +6254,6 @@ paths:
                       msg: {}
                       messages:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary with a key for each queried message that matches the narrow,
                           with message IDs as keys and search rendering data as values.
@@ -6443,7 +6690,7 @@ paths:
         - name: realm_id_str
           in: path
           description: |
-            The realm id.
+            The realm ID.
           schema:
             type: integer
           example: 1
@@ -6750,7 +6997,6 @@ paths:
                       msg: {}
                       presence:
                         type: object
-                        x-model: dict
                         description: |
                           An object containing the presence details for every client the user has
                           logged into.
@@ -7711,7 +7957,6 @@ paths:
                       msg: {}
                       subscribed:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary where the key is the email
                           address of the user/bot and the value is a
@@ -7726,7 +7971,6 @@ paths:
                             type: string
                       already_subscribed:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary where the key is the email
                           address of the user/bot and the value is a
@@ -8049,7 +8293,6 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: MANUALLY
                     properties:
                       result: {}
                       msg: {}
@@ -8129,7 +8372,6 @@ paths:
                       msg: {}
                       emoji:
                         type: object
-                        x-model: dict
                         description: |
                           An object that contains `emoji` objects, each identified with their
                           emoji ID as the key.
@@ -8183,13 +8425,11 @@ paths:
                           in the response.
                       presences:
                         type: object
-                        x-model: dict
                         description: |
                           A dictionary where each entry describes the presence details
                           of a user in the Zulip organization.
                         additionalProperties:
                           type: object
-                          x-model: dict
                           description: |
                             `{user_email}`: Object containing the details of a user's presence
                             on every client the user is logged into. The object's key is the
@@ -8421,7 +8661,6 @@ paths:
             application/json:
               schema:
                 type: object
-                x-model: dict
               example:
                 {
                   "python": {"text": "Python", "order": "1"},
@@ -9789,19 +10028,18 @@ paths:
                           An array of dictionaries where each dictionary contains the
                           details of a single custom profile field that is available to users
                           in this Zulip organization. This must be combined with the custom profile
-                          field values on individual user objects to display users' full profiles.
+                          field values on individual user objects to display users' profiles.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
                       custom_profile_field_types:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `custom_profile_fields` is present in `fetch_event_types`.
 
                           An array of objects; each object describes a type of custom profile field
                           that could be configured on this Zulip server. Each custom profile type
-                          has a id and the `type` property of a custom profile field is equal
-                          to one of these ids.
+                          has an ID and the `type` property of a custom profile field is equal
+                          to one of these IDs.
 
                           This attribute is only useful for clients containing UI for changing
                           the set of configured custom profile fields in a Zulip organization.
@@ -9827,7 +10065,7 @@ paths:
                             id:
                               type: integer
                               description: |
-                                The id of the custom profile field type.
+                                The ID of the custom profile field type.
                             name:
                               type: string
                               description: |
@@ -9959,7 +10197,7 @@ paths:
                           type: object
                           additionalProperties: false
                           description: |
-                            Object containing the user id and timestamp of a muted user.
+                            Object containing the user ID and timestamp of a muted user.
                           properties:
                             id:
                               type: integer
@@ -9971,7 +10209,6 @@ paths:
                                 An integer UNIX timestamp representing when the user was muted.
                       presences:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `presence` is present in `fetch_event_types`.
 
@@ -9981,7 +10218,6 @@ paths:
                           Users who have been offline for multiple weeks may not appear in this object.
                         additionalProperties:
                           type: object
-                          x-model: dict
                           description: |
                             `{user_id}` or `{user_email}`: Object containing the details of a user's
                             presence on every client the user is logged into. Depending on the value
@@ -10016,7 +10252,6 @@ paths:
                           emoji that has been uploaded in this Zulip organization.
                         oneOf:
                           - type: object
-                            x-model: dict
                             additionalProperties:
                               $ref: "#/components/schemas/RealmEmoji"
                           - type: array
@@ -10070,7 +10305,7 @@ paths:
 
                           The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
-                          is the id of the realm filter.
+                          is the ID of the realm filter.
 
                           **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
                           the `realm_linkifiers` key instead.
@@ -10171,7 +10406,7 @@ paths:
                             max_message_id:
                               type: integer
                               description: |
-                                The highest message id of the conversation, intended to support sorting
+                                The highest message ID of the conversation, intended to support sorting
                                 the conversations by recency.
                             user_ids:
                               type: array
@@ -10298,7 +10533,7 @@ paths:
                                 other_user_id:
                                   type: integer
                                   description: |
-                                    The user id of the other participant in this non-group private
+                                    The user ID of the other participant in this non-group private
                                     message conversation. Will be your own user ID for messages
                                     that you sent to only yourself.
                                 sender_id:
@@ -10315,7 +10550,7 @@ paths:
                                 message_ids:
                                   type: array
                                   description: |
-                                    The message ids of the recent unread PM messages sent by the other user.
+                                    The message IDs of the recent unread PM messages sent by the other user.
                                   items:
                                     type: integer
                           streams:
@@ -10342,11 +10577,11 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The id of the stream to which the message was sent.
+                                    The ID of the stream to which the message was sent.
                                 unread_message_ids:
                                   type: array
                                   description: |
-                                    The message ids of the recent unread messages sent in this stream.
+                                    The message IDs of the recent unread messages sent in this stream.
                                   items:
                                     type: integer
                           huddles:
@@ -10371,14 +10606,14 @@ paths:
                                 message_ids:
                                   type: array
                                   description: |
-                                    The message ids of the recent unread messages which have been sent in
+                                    The message IDs of the recent unread messages which have been sent in
                                     this group.
                                   items:
                                     type: integer
                           mentions:
                             type: array
                             description: |
-                              Array containing the ids of all messages in which the user has been mentioned.
+                              Array containing the IDs of all messages in which the user has been mentioned.
                               For muted streams, wildcard mentions will not be considered for this array.
                             items:
                               type: integer
@@ -10401,7 +10636,7 @@ paths:
                         description: |
                           Present if `starred_messages` is present in `fetch_event_types`.
 
-                          Array containing the ids of all messages which have been
+                          Array containing the IDs of all messages which have been
                           [starred](/help/star-a-message) by the user.
                       streams:
                         type: array
@@ -10450,7 +10685,6 @@ paths:
                           a stop word in the query was ignored.
                       user_status:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
@@ -10462,7 +10696,7 @@ paths:
                         additionalProperties:
                           description: |
                             `{user_id}`: Object containing the status details of a user
-                            with the key of the object being the id of the user.
+                            with the key of the object being the ID of the user.
                           type: object
                           additionalProperties: false
                           properties:
@@ -11891,7 +12125,6 @@ paths:
                           special value `0` before Zulip 5.0 (feature level 100).
                       realm_authentication_methods:
                         type: object
-                        x-model: dict
                         additionalProperties:
                           description: |
                             Boolean describing whether the authentication method (i.e its key)
@@ -12055,7 +12288,6 @@ paths:
                           The URL for the organization.
                       realm_available_video_chat_providers:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
@@ -12202,7 +12434,6 @@ paths:
                           a new wide organization logo to brand the organization.
                       realm_default_external_accounts:
                         type: object
-                        x-model: dict
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
@@ -12278,7 +12509,6 @@ paths:
                           will be accepted.
                       giphy_rating_options:
                         type: object
-                        x-model: dict
                         description: |
                           Dictionary where each entry describes a valid rating
                           that is configured on this server and could be selected by an
@@ -13039,7 +13269,6 @@ paths:
                       msg: {}
                       authentication_methods:
                         type: object
-                        x-model: dict
                         additionalProperties: false
                         deprecated: true
                         description: |
@@ -13271,14 +13500,14 @@ paths:
                             {
                               "name": "google",
                               "display_name": "Google",
-                              "display_icon": "/static/images/landing-page/logos/googl_e-icon.png",
+                              "display_icon": "/static/images/authentication_backends/googl_e-icon.png",
                               "login_url": "/accounts/login/social/google",
                               "signup_url": "/accounts/register/social/google",
                             },
                             {
                               "name": "github",
                               "display_name": "GitHub",
-                              "display_icon": "/static/images/landing-page/logos/github-icon.png",
+                              "display_icon": "/static/images/authentication_backends/github-icon.png",
                               "login_url": "/accounts/login/social/github",
                               "signup_url": "/accounts/register/social/github",
                             },
@@ -14338,6 +14567,9 @@ paths:
         for very large topics. It now deletes messages in batches,
         starting with the newest messages, so that progress will be
         made even if the request times out.
+
+        As of feature level 154, in case of timeout, a success response
+        with "partially_completed" result will now be returned.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: topic_name
@@ -14350,7 +14582,26 @@ paths:
           required: true
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success or partial success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonSuccess"
+                      - $ref: "#/components/schemas/SuccessDescription"
+                  - allOf:
+                      - $ref: "#/components/schemas/PartiallyCompleted"
+                      - example:
+                          {
+                            "code": "REQUEST_TIMEOUT",
+                            "msg": "",
+                            "result": "partially_completed",
+                          }
+                        description: |
+                          If the request exceeds its processing time limit after having
+                          successfully marked some messages as read, response code 200
+                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
         "400":
           description: Bad request.
           content:
@@ -14565,7 +14816,7 @@ paths:
         - name: delete
           in: query
           description: |
-            The list of user ids to be removed from the user group.
+            The list of user IDs to be removed from the user group.
           content:
             application/json:
               schema:
@@ -14577,7 +14828,7 @@ paths:
         - name: add
           in: query
           description: |
-            The list of user ids to be added to the user group.
+            The list of user IDs to be added to the user group.
           content:
             application/json:
               schema:
@@ -14691,7 +14942,7 @@ paths:
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response for an invalid user group id:
+                      An example JSON error response for an invalid user group ID:
 
   /user_groups:
     get:
@@ -14732,7 +14983,7 @@ paths:
                             id:
                               type: integer
                               description: |
-                                The user group's integer id.
+                                The user group's integer ID.
                             members:
                               type: array
                               description: |
@@ -14762,8 +15013,7 @@ paths:
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
                         description: |
-                          A list of `user_group` objects, which contain a `description`, a `name`,
-                          their `id` and the list of members of the user group.
+                          A list of `user_group` objects.
                     example:
                       {
                         "msg": "",
@@ -14808,7 +15058,7 @@ paths:
         - name: delete
           in: query
           description: |
-            The list of user group ids to be removed from the user group.
+            The list of user group IDs to be removed from the user group.
           content:
             application/json:
               schema:
@@ -14820,7 +15070,7 @@ paths:
         - name: add
           in: query
           description: |
-            The list of user group ids to be added to the user group.
+            The list of user group IDs to be added to the user group.
           content:
             application/json:
               schema:
@@ -15319,7 +15569,7 @@ components:
           type: integer
           nullable: true
           description: |
-            The id of the first message in the stream.
+            The ID of the first message in the stream.
 
             Intended to help clients determine whether they need to display
             UI like the "more topics" widget that would suggest the stream
@@ -15365,7 +15615,7 @@ components:
         user_id:
           type: integer
           description: |
-            The user id of the bot.
+            The user ID of the bot.
         full_name:
           type: string
           description: |
@@ -15398,7 +15648,7 @@ components:
           type: integer
           nullable: true
           description: |
-            The user id of the bot's owner.
+            The user ID of the bot's owner.
 
             Null if the bot has no owner.
         services:
@@ -15487,7 +15737,6 @@ components:
                 A boolean describing whether the user account has been deactivated.
     Config:
       type: object
-      x-model: dict
       description: |
         A "string: string" dictionary which describes the configuration
         for the embedded bot (usually details like API keys).
@@ -15554,7 +15803,7 @@ components:
         display_in_profile_summary:
           type: boolean
           description: |
-            Whether the custom profile field, display or not in the user profile summary.
+            Whether the custom profile field, display or not on the user card.
 
             Currently it's value not allowed to be `true` of `Long text` and `Person picker`
             [profile field types](/help/custom-profile-fields#profile-field-types).
@@ -15686,11 +15935,11 @@ components:
         id:
           type: integer
           description: |
-            The id of the export.
+            The ID of the export.
         acting_user_id:
           type: integer
           description: |
-            The id of the user who did the export.
+            The ID of the user who did the export.
         export_time:
           type: number
           description: |
@@ -15735,14 +15984,14 @@ components:
           items:
             type: integer
           description: |
-            Array containing the id of the users who are
+            Array containing the ID of the users who are
             members of this user group.
         direct_subgroup_ids:
           type: array
           items:
             type: integer
           description: |
-            Array containing the id of the direct_subgroups of
+            Array containing the ID of the direct_subgroups of
             this user group.
 
             **Changes**: New in Zulip 6.0 (feature level 131).
@@ -15954,7 +16203,7 @@ components:
           type: integer
           nullable: true
           description: |
-            The id of the first message in the stream.
+            The ID of the first message in the stream.
 
             Intended to help clients determine whether they need to display
             UI like the "more topics" widget that would suggest the stream
@@ -15995,7 +16244,7 @@ components:
         id:
           type: integer
           description: |
-            id of the default stream group.
+            The ID of the default stream group.
         streams:
           type: array
           description: |
@@ -16619,7 +16868,6 @@ components:
           $ref: "#/components/schemas/profile_data"
     profile_data:
       type: object
-      x-model: dict
       description: |
         Only present if `is_bot` is false; bots can't have custom profile fields.
 
@@ -16632,8 +16880,8 @@ components:
         type: object
         additionalProperties: false
         description: |
-          `{id}`: Object with data about what value user filled in the custom
-          profile field with id `id`.
+          `{id}`: Object with data about what value the user filled in the custom
+          profile field with that ID.
         properties:
           value:
             type: string
@@ -16695,6 +16943,23 @@ components:
                 - error
             msg:
               type: string
+    PartiallyCompleted:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
+        - required:
+            - result
+            - code
+          additionalProperties: false
+          properties:
+            result:
+              enum:
+                - partially_completed
+            code:
+              type: string
+              description: |
+                A string that identifies the cause of the partial completion of the request.
+            msg:
+              type: string
     ApiKeyResponse:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -16753,7 +17018,7 @@ components:
           example:
             {
               "code": "BAD_EVENT_QUEUE_ID",
-              "msg": "Bad event queue id: fb67bf8a-c031-47cc-84cf-ed80accacda8",
+              "msg": "Bad event queue ID: fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "result": "error",
             }
@@ -16798,7 +17063,6 @@ components:
             msg: {}
             subscribed:
               type: object
-              x-model: dict
               description: |
                 A dictionary where the key is the email address of the user/bot and the
                 value is a list of the names of the streams that were subscribed to as a
@@ -16812,7 +17076,6 @@ components:
                   type: string
             already_subscribed:
               type: object
-              x-model: dict
               description: |
                 A dictionary where the key is the email address of the user/bot and the
                 value is a list of the names of the streams that the user/bot is already
@@ -16980,11 +17243,33 @@ components:
       in: query
       description: |
         A JSON-encoded array of arrays of length 2 indicating the
-        narrow for which you'd like to receive events for. For
-        instance, to receive events for the stream `Denmark`, you
-        would specify `narrow=[['stream', 'Denmark']]`. Another
-        example is `narrow=[['is', 'private']]` for private messages.
-        Default is `[]`.
+        [narrow filter(s)](/api/construct-narrow) for which you'd
+        like to receive events for.
+
+        For example, to receive events for private messages (including
+        group private messages) received by the user, one can use
+        `narrow=[["is", "private"]]`.
+
+        Unlike the API for [fetching messages](/api/get-messages),
+        this narrow parameter is simply a filter on messages that the
+        user receives through their stream subscriptions (or because
+        they are a recipient of a private message).
+
+        This means that a client that requests a `narrow` filter of
+        `[["stream", "Denmark"]]` will receive events for new messages
+        sent to that stream while the user is subscribed to that
+        stream. The client will not receive any message events at all
+        if the user is not subscribed to `"Denmark"`.
+
+        Newly created bot users are not usually subscribed to any
+        streams, so bots using this API need to be
+        [subscribed](/api/subscribe) to any streams whose messages
+        you'd like them to process using this endpoint.
+
+        See the `all_public_streams` parameter for how to process all
+        public stream messages in an organization.
+
+        Defaults to `[]`.
       content:
         application/json:
           schema:
@@ -17171,7 +17456,7 @@ components:
       name: principals
       in: query
       description: |
-        A list of user ids (preferred) or Zulip display email
+        A list of user IDs (preferred) or Zulip display email
         addresses of the users to be subscribed to or unsubscribed
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.

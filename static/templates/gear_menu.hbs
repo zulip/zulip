@@ -4,10 +4,6 @@
             <i class="fa fa-cog settings-dropdown-cog" aria-hidden="true"></i>
         </a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
-            {{!-- It is quite ingrained in our frontend code that your Home
-            view is a Bootstrap nav tab, even though we don't show the tab
-            anymore --}}
-            <li class="invisible" style="display:none;" role="presentation"><a href="#message_feed_container" data-toggle="tab"></a></li>
             <li class="org-info org-name">{{realm_name}}</li>
             <li class="org-info org-url">{{realm_uri}}</li>
             {{#if is_self_hosted }}
@@ -26,7 +22,7 @@
                     {{else if is_plan_standard}}
                         <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
                     {{else if is_plan_standard_sponsored_for_free}}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard, sponsored for free</a>
+                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
                     {{/if}}
                 </li>
             {{/if}}
@@ -104,7 +100,7 @@
             </li>
             <li role="presentation">
                 <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
-                    <i class="fa fa-search" aria-hidden="true"></i> {{t 'Search operators' }}
+                    <i class="fa fa-search" aria-hidden="true"></i> {{t 'Search filters' }}
                 </a>
             </li>
             <li class="divider only-visible-for-spectators" role="presentation"></li>

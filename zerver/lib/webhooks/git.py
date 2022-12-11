@@ -327,7 +327,7 @@ def get_release_event_message(
 
 
 def get_short_sha(sha: str) -> str:
-    return sha[:7]
+    return sha[:11]
 
 
 def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:

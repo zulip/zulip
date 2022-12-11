@@ -5,8 +5,8 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import {get_recipient_label} from "./compose_closed_ui";
-import * as compose_error from "./compose_error";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -74,13 +74,11 @@ export function update_video_chat_button_display() {
 }
 
 export function clear_invites() {
-    $("#compose_invite_users").hide();
-    $("#compose_invite_users").empty();
+    $(`#compose_banners .${compose_banner.CLASSNAMES.recipient_not_subscribed}`).remove();
 }
 
 export function clear_private_stream_alert() {
-    $("#compose_private_stream_alert").hide();
-    $("#compose_private_stream_alert").empty();
+    $(`#compose_banners .${compose_banner.CLASSNAMES.private_stream_warning}`).remove();
 }
 
 export function clear_preview_area() {
@@ -198,6 +196,7 @@ export function clear_compose_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
+    $("#compose_banners").empty();
     compose_ui.hide_compose_spinner();
 }
 
@@ -252,7 +251,11 @@ export function send_message(request = create_message_object()) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
         if (!locally_echoed) {
-            compose_error.show(_.escape(response), $("#compose-textarea"));
+            compose_banner.show_error_message(
+                response,
+                compose_banner.CLASSNAMES.generic_compose_error,
+                $("#compose-textarea"),
+            );
             return;
         }
 
@@ -446,110 +449,98 @@ export function initialize() {
 
     upload.feature_check($("#compose .compose_upload_file"));
 
-    $("#compose-all-everyone").on("click", ".compose-all-everyone-confirm", (event) => {
-        event.preventDefault();
-
-        $(event.target).parents(".compose-all-everyone").remove();
-        compose_validate.set_user_acknowledged_all_everyone_flag(true);
-        compose_validate.clear_all_everyone_warnings();
-        finish();
-    });
-
-    $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {
-        event.preventDefault();
-
-        const stream_name = $("#stream_message_recipient_stream").val();
-        if (stream_name === undefined) {
-            return;
-        }
-        const sub = stream_data.get_sub(stream_name);
-        stream_settings_ui.sub_or_unsub(sub);
-        $("#compose-send-status").hide();
-    });
-
-    $("#compose-send-status").on("click", "#compose_not_subscribed_close", (event) => {
-        event.preventDefault();
-
-        $("#compose-send-status").hide();
-    });
-
-    $("#compose_resolved_topic").on("click", ".compose_unresolve_topic", (event) => {
-        event.preventDefault();
-
-        const $target = $(event.target).parents(".compose_resolved_topic");
-        const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
-        const topic_name = $target.attr("data-topic-name");
-
-        message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-            message_edit.toggle_resolve_topic(message_id, topic_name);
-            compose_validate.clear_topic_resolved_warning(true);
-        });
-    });
-
-    $("#compose_resolved_topic").on("click", ".compose_resolved_topic_close", (event) => {
-        event.preventDefault();
-
-        compose_validate.clear_topic_resolved_warning(true);
-    });
-
-    $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
-        event.preventDefault();
-
-        const $invite_row = $(event.target).parents(".compose_invite_user");
-
-        const user_id = Number.parseInt($invite_row.data("user-id"), 10);
-        const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
-
-        function success() {
-            const $all_invites = $("#compose_invite_users");
-            $invite_row.remove();
-
-            if ($all_invites.children().length === 0) {
-                $all_invites.hide();
-            }
-        }
-
-        function failure(error_msg) {
-            clear_invites();
-            compose_error.show(_.escape(error_msg), $("#compose-textarea"));
-            $(event.target).prop("disabled", true);
-        }
-
-        function xhr_failure(xhr) {
-            const error = JSON.parse(xhr.responseText);
-            failure(error.msg);
-        }
-
-        const sub = sub_store.get(stream_id);
-
-        subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
-    });
-
-    $("#compose_invite_users").on("click", ".compose_invite_close", (event) => {
-        const $invite_row = $(event.target).parents(".compose_invite_user");
-        const $all_invites = $("#compose_invite_users");
-
-        $invite_row.remove();
-
-        if ($all_invites.children().length === 0) {
-            $all_invites.hide();
-        }
-    });
-
-    $("#compose_private_stream_alert").on(
+    $("#compose_banners").on(
         "click",
-        ".compose_private_stream_alert_close",
+        `.${compose_banner.CLASSNAMES.wildcard_warning} .compose_banner_action_button`,
         (event) => {
-            const $stream_alert_row = $(event.target).parents(".compose_private_stream_alert");
-            const $stream_alert = $("#compose_private_stream_alert");
-
-            $stream_alert_row.remove();
-
-            if ($stream_alert.children().length === 0) {
-                $stream_alert.hide();
-            }
+            event.preventDefault();
+            compose_validate.clear_wildcard_warnings();
+            compose_validate.set_user_acknowledged_wildcard_flag(true);
+            finish();
         },
     );
+
+    const user_not_subscribed_classname = `.${compose_banner.CLASSNAMES.user_not_subscribed}`;
+    $("#compose_banners").on(
+        "click",
+        `${user_not_subscribed_classname} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
+
+            const stream_name = $("#stream_message_recipient_stream").val();
+            if (stream_name === undefined) {
+                return;
+            }
+            const sub = stream_data.get_sub(stream_name);
+            stream_settings_ui.sub_or_unsub(sub);
+            $(user_not_subscribed_classname).remove();
+        },
+    );
+
+    $("#compose_banners").on(
+        "click",
+        `.${compose_banner.CLASSNAMES.topic_resolved} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
+
+            const $target = $(event.target).parents(".compose_banner");
+            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
+            const topic_name = $target.attr("data-topic-name");
+
+            message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+                message_edit.toggle_resolve_topic(message_id, topic_name);
+                compose_validate.clear_topic_resolved_warning(true);
+            });
+        },
+    );
+
+    $("#compose_banners").on(
+        "click",
+        `.${compose_banner.CLASSNAMES.recipient_not_subscribed} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
+
+            const $invite_row = $(event.target).parents(".compose_banner");
+
+            const user_id = Number.parseInt($invite_row.data("user-id"), 10);
+            const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
+
+            function success() {
+                $invite_row.remove();
+            }
+
+            function failure(error_msg) {
+                clear_invites();
+                compose_banner.show_error_message(
+                    error_msg,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $("#compose-textarea"),
+                );
+                $(event.target).prop("disabled", true);
+            }
+
+            function xhr_failure(xhr) {
+                const error = JSON.parse(xhr.responseText);
+                failure(error.msg);
+            }
+
+            const sub = sub_store.get(stream_id);
+
+            subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
+        },
+    );
+
+    for (const classname of Object.values(compose_banner.CLASSNAMES)) {
+        const classname_selector = `.${classname}`;
+        $("#compose_banners").on(
+            "click",
+            `${classname_selector} .compose_banner_close_button`,
+            (event) => {
+                event.preventDefault();
+                $(event.target).parents(classname_selector).remove();
+            },
+        );
+    }
 
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
@@ -696,7 +687,6 @@ export function initialize() {
             $("#compose .preview_content"),
             content,
         );
-        resize.reset_compose_message_max_height();
     });
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {

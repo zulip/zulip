@@ -10,6 +10,7 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as emoji from "./emoji";
+import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -306,7 +307,7 @@ function is_status_emoji(emoji) {
 }
 
 function process_enter_while_filtering(e) {
-    if (e.key === "Enter") {
+    if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
         const $first_emoji = get_rendered_emoji(0, 0);
         if ($first_emoji) {
@@ -665,7 +666,7 @@ export function build_emoji_popover($elt, id) {
     register_popover_events($popover);
 }
 
-export function toggle_emoji_popover(element, id) {
+export function toggle_emoji_popover(element, id, coming_from_actions_popover) {
     const $last_popover_elem = $current_message_emoji_popover_elem;
     popovers.hide_all();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -674,15 +675,15 @@ export function toggle_emoji_popover(element, id) {
         return;
     }
 
-    $(element).closest(".message_row").toggleClass("has_popover has_emoji_popover");
     const $elt = $(element);
+    $elt.closest(".message_row").toggleClass("has_popover has_emoji_popover");
     if (id !== undefined) {
         message_lists.current.select_id(id);
     }
 
     if (user_status_ui.user_status_picker_open()) {
-        build_emoji_popover($elt, id, true);
-    } else if ($elt.data("popover") === undefined) {
+        build_emoji_popover($elt, id);
+    } else if ($elt.data("popover") === undefined || coming_from_actions_popover) {
         // Keep the element over which the popover is based off visible.
         $elt.addClass("reaction_button_visible");
         build_emoji_popover($elt, id);
@@ -745,19 +746,6 @@ export function register_click_handlers() {
 
         const message_id = rows.get_message_id(this);
         toggle_emoji_popover(this, message_id);
-    });
-
-    $("body").on("click", ".actions_popover .reaction_button", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        e.preventDefault();
-        e.stopPropagation();
-        // HACK: Because we need the popover to be based off an
-        // element that definitely exists in the page even if the
-        // message wasn't sent by us and thus the .reaction_hover
-        // element is not present, we use the message's
-        // .fa-chevron-down element as the base for the popover.
-        const elem = $(".selected_message .actions_hover")[0];
-        toggle_emoji_popover(elem, message_id);
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {

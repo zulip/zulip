@@ -1,11 +1,11 @@
 from typing import Callable, List, Optional
 
 
-class FormattedException(Exception):
+class FormattedError(Exception):
     pass
 
 
-class TemplateParserException(Exception):
+class TemplateParserError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
 
@@ -13,7 +13,7 @@ class TemplateParserException(Exception):
         return self.message
 
 
-class TokenizationException(Exception):
+class TokenizationError(Exception):
     def __init__(self, message: str, line_content: Optional[str] = None) -> None:
         self.message = message
         self.line_content = line_content
@@ -74,6 +74,9 @@ def tokenize(text: str) -> List[Token]:
 
     def looking_at_handlebars_partial() -> bool:
         return looking_at("{{>")
+
+    def looking_at_handlebars_partial_block() -> bool:
+        return looking_at("{{#>")
 
     def looking_at_html_start() -> bool:
         return looking_at("<") and not looking_at("</")
@@ -139,7 +142,11 @@ def tokenize(text: str) -> List[Token]:
             elif looking_at_handlebars_partial():
                 s = get_handlebars_partial(text, state.i)
                 tag = s[9:-2]
-                kind = "handlebars_singleton"
+                kind = "handlebars_partial"
+            elif looking_at_handlebars_partial_block():
+                s = get_handlebars_partial(text, state.i)
+                tag = s[5:-2]
+                kind = "handlebars_partial_block"
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
                 if s.endswith("/>"):
@@ -149,7 +156,7 @@ def tokenize(text: str) -> List[Token]:
                 tag_parts = s[1:end_offset].split()
 
                 if not tag_parts:
-                    raise TemplateParserException("Tag name missing")
+                    raise TemplateParserError("Tag name missing")
 
                 tag = tag_parts[0]
 
@@ -228,8 +235,8 @@ def tokenize(text: str) -> List[Token]:
                     continue
                 tag = ""
                 kind = "text"
-        except TokenizationException as e:
-            raise FormattedException(
+        except TokenizationError as e:
+            raise FormattedError(
                 f'''{e.message} at line {state.line} col {state.col}:"{e.line_content}"''',
             )
 
@@ -299,7 +306,7 @@ def tag_flavor(token: Token) -> Optional[str]:
         "code",
         "django_comment",
         "handlebars_comment",
-        "handlebars_singleton",
+        "handlebars_partial",
         "html_comment",
         "html_doctype",
         "html_singleton",
@@ -311,7 +318,7 @@ def tag_flavor(token: Token) -> Optional[str]:
     ):
         return None
 
-    if kind in ("handlebars_start", "html_start"):
+    if kind in ("handlebars_start", "handlebars_partial_block", "html_start"):
         return "start"
     elif kind in (
         "django_else",
@@ -350,8 +357,8 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
 
     try:
         tokens = tokenize(text)
-    except FormattedException as e:
-        raise TemplateParserException(
+    except FormattedError as e:
+        raise TemplateParserError(
             f"""
             fn: {fn}
             {e}"""
@@ -367,7 +374,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
 
     def no_start_tag(token: Optional[Token]) -> None:
         assert token
-        raise TemplateParserException(
+        raise TemplateParserError(
             f"""
             No start tag
             fn: {fn}
@@ -393,7 +400,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
 
         def f(end_token: Optional[Token]) -> None:
             if end_token is None:
-                raise TemplateParserException(
+                raise TemplateParserError(
                     f"""
 
     Problem with {fn}
@@ -429,7 +436,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
 
             problem = report_problem()
             if problem:
-                raise TemplateParserException(
+                raise TemplateParserError(
                     f"""
                     fn: {fn}
                    {problem}
@@ -460,12 +467,12 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
         if not state.foreign:
             if kind == "html_start":
                 if tag in HTML_VOID_TAGS:
-                    raise TemplateParserException(
+                    raise TemplateParserError(
                         f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
                     )
             elif kind == "html_singleton":
                 if tag not in HTML_VOID_TAGS:
-                    raise TemplateParserException(
+                    raise TemplateParserError(
                         f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
                     )
 
@@ -514,7 +521,7 @@ def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) 
             return False
 
         if has_bad_indentation():
-            raise TemplateParserException(
+            raise TemplateParserError(
                 f"""
                 fn: {fn}
                 Indentation for start/end tags does not match.
@@ -539,14 +546,14 @@ def prevent_extra_newlines(fn: str, tokens: List[Token]) -> None:
 
         count += 1
         if count >= 4:
-            raise TemplateParserException(
+            raise TemplateParserError(
                 f"""Please avoid so many blank lines near row {token.line} in {fn}."""
             )
 
 
 def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
     if tokens[0].kind in ("indent", "whitespace"):
-        raise TemplateParserException(f" Please remove the whitespace at the beginning of {fn}.")
+        raise TemplateParserError(f" Please remove the whitespace at the beginning of {fn}.")
 
     prevent_extra_newlines(fn, tokens)
 
@@ -559,12 +566,12 @@ def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
                 raise AssertionError("programming error parsing indents")
 
             if next_token.kind == "newline":
-                raise TemplateParserException(
+                raise TemplateParserError(
                     f"""Please just make row {token.line} in {fn} a truly blank line (no spaces)."""
                 )
 
             if len(token.s) % 4 != 0:
-                raise TemplateParserException(
+                raise TemplateParserError(
                     f"""
                         Please use 4-space indents for template files. Most of our
                         codebase (including Python and JavaScript) uses 4-space indents,
@@ -578,13 +585,13 @@ def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
 
         if token.kind == "whitespace":
             if len(token.s) > 1:
-                raise TemplateParserException(
+                raise TemplateParserError(
                     f"""
                         We did not expect this much whitespace at row {token.line} column {token.col} in {fn}.
                     """
                 )
             if next_token.kind == "newline":
-                raise TemplateParserException(
+                raise TemplateParserError(
                     f"""
                         Unexpected trailing whitespace at row {token.line} column {token.col} in {fn}.
                     """
@@ -613,7 +620,7 @@ def get_handlebars_tag(text: str, i: int) -> str:
     while end < len(text) - 1 and text[end] != "}":
         end += 1
     if text[end] != "}" or text[end + 1] != "}":
-        raise TokenizationException('Tag missing "}}"', text[i : end + 2])
+        raise TokenizationError('Tag missing "}}"', text[i : end + 2])
     s = text[i : end + 2]
     return s
 
@@ -649,7 +656,7 @@ def get_django_tag(text: str, i: int, stripped: bool = False) -> str:
     while end < len(text) - 1 and text[end] != "%":
         end += 1
     if text[end] != "%" or text[end + 1] != "}":
-        raise TokenizationException('Tag missing "%}"', text[i : end + 2])
+        raise TokenizationError('Tag missing "%}"', text[i : end + 2])
     s = text[i : end + 2]
     return s
 
@@ -666,11 +673,11 @@ def get_html_tag(text: str, i: int) -> str:
         end += 1
     if quote_count % 2 != 0:
         if unclosed_end:
-            raise TokenizationException("Unbalanced quotes", text[i:unclosed_end])
+            raise TokenizationError("Unbalanced quotes", text[i:unclosed_end])
         else:
-            raise TokenizationException("Unbalanced quotes", text[i : end + 1])
+            raise TokenizationError("Unbalanced quotes", text[i : end + 1])
     if end == len(text) or text[end] != ">":
-        raise TokenizationException('Tag missing ">"', text[i : end + 1])
+        raise TokenizationError('Tag missing ">"', text[i : end + 1])
     s = text[i : end + 1]
     return s
 
@@ -684,7 +691,7 @@ def get_html_comment(text: str, i: int) -> str:
         if not unclosed_end and text[end] == "<":
             unclosed_end = end
         end += 1
-    raise TokenizationException("Unclosed comment", text[i:unclosed_end])
+    raise TokenizationError("Unclosed comment", text[i:unclosed_end])
 
 
 def get_handlebars_comment(text: str, i: int) -> str:
@@ -696,7 +703,7 @@ def get_handlebars_comment(text: str, i: int) -> str:
         if not unclosed_end and text[end] == "<":
             unclosed_end = end
         end += 1
-    raise TokenizationException("Unclosed comment", text[i:unclosed_end])
+    raise TokenizationError("Unclosed comment", text[i:unclosed_end])
 
 
 def get_template_var(text: str, i: int) -> str:
@@ -710,7 +717,7 @@ def get_template_var(text: str, i: int) -> str:
         if not unclosed_end and text[end] == "<":
             unclosed_end = end
         end += 1
-    raise TokenizationException("Unclosed var", text[i:unclosed_end])
+    raise TokenizationError("Unclosed var", text[i:unclosed_end])
 
 
 def get_django_comment(text: str, i: int) -> str:
@@ -722,10 +729,11 @@ def get_django_comment(text: str, i: int) -> str:
         if not unclosed_end and text[end] == "<":
             unclosed_end = end
         end += 1
-    raise TokenizationException("Unclosed comment", text[i:unclosed_end])
+    raise TokenizationError("Unclosed comment", text[i:unclosed_end])
 
 
 def get_handlebars_partial(text: str, i: int) -> str:
+    """Works for both partials and partial blocks."""
     end = i + 10
     unclosed_end = 0
     while end <= len(text):
@@ -734,4 +742,4 @@ def get_handlebars_partial(text: str, i: int) -> str:
         if not unclosed_end and text[end] == "<":
             unclosed_end = end
         end += 1
-    raise TokenizationException("Unclosed partial", text[i:unclosed_end])
+    raise TokenizationError("Unclosed partial", text[i:unclosed_end])

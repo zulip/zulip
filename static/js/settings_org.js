@@ -10,8 +10,8 @@ import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
@@ -21,10 +21,10 @@ import * as settings_notifications from "./settings_notifications";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
+import * as stream_data from "./stream_data";
+import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
-
-export let parse_time_limit;
 
 const meta = {
     loaded: false,
@@ -46,7 +46,7 @@ export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         $("#deactivate_realm_button").prop("disabled", true);
         $("#org-message-retention").find("input, select").prop("disabled", true);
-        $("#org-join").find("input, select").prop("disabled", true);
+        $("#org-join-settings").find("input, select").prop("disabled", true);
         $("#id_realm_invite_required_label").parent().addClass("control-label-disabled");
         return;
     }
@@ -137,7 +137,7 @@ export function get_realm_time_limits_in_minutes(property) {
     return val.toString();
 }
 
-function get_property_value(property_name, for_realm_default_settings) {
+function get_property_value(property_name, for_realm_default_settings, sub) {
     if (for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
         if (property_name === "twenty_four_hour_time") {
@@ -152,6 +152,14 @@ function get_property_value(property_name, for_realm_default_settings) {
         return realm_user_settings_defaults[property_name];
     }
 
+    if (sub) {
+        if (property_name === "stream_privacy") {
+            return stream_data.get_stream_privacy_policy(sub.stream_id);
+        }
+
+        return sub[property_name];
+    }
+
     if (property_name === "realm_waiting_period_setting") {
         if (page_params.realm_waiting_period_threshold === 0) {
             return "none";
@@ -160,13 +168,6 @@ function get_property_value(property_name, for_realm_default_settings) {
             return "three_days";
         }
         return "custom_days";
-    }
-
-    if (property_name === "realm_message_retention_setting") {
-        if (page_params.realm_message_retention_days === settings_config.retain_message_forever) {
-            return "retain_forever";
-        }
-        return "retain_for_period";
     }
 
     if (property_name === "realm_org_join_restrictions") {
@@ -184,12 +185,11 @@ function get_property_value(property_name, for_realm_default_settings) {
 
 export function extract_property_name($elem, for_realm_default_settings) {
     if (for_realm_default_settings) {
-        // We use the name attribute, rather than the ID attribute,
-        // for realm_user_default_settings. This is because the
-        // display/notification settings elements do not always have
-        // IDs, and also the emojiset input is not compatible with the
-        // ID approach.
-        return $elem.attr("name");
+        // ID for realm_user_default_settings elements are of the form
+        // "realm_{settings_name}}" because both user and realm default
+        // settings use the same template and each element should have
+        // unique id.
+        return /^realm_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
     }
 
     if ($elem.attr("id").startsWith("id_authmethod")) {
@@ -205,23 +205,8 @@ export function extract_property_name($elem, for_realm_default_settings) {
     return /^id_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
 }
 
-function get_subsection_property_elements(element) {
-    const $subsection = $(element).closest(".org-subsection-parent");
-    if ($subsection.hasClass("theme-settings")) {
-        // Because the emojiset widget has a unique radio button
-        // structure, it needs custom code.
-        const $color_scheme_elem = $subsection.find(".setting_color_scheme");
-        const $emojiset_elem = $subsection.find("input[name='emojiset']:checked");
-        const $user_list_style_elem = $subsection.find("input[name='user_list_style']:checked");
-        const $translate_emoticons_elem = $subsection.find(".translate_emoticons");
-        return [
-            $color_scheme_elem,
-            $emojiset_elem,
-            $user_list_style_elem,
-            $translate_emoticons_elem,
-        ];
-    }
-    return Array.from($subsection.find(".prop-element"));
+export function get_subsection_property_elements(subsection) {
+    return Array.from($(subsection).find(".prop-element"));
 }
 
 const simple_dropdown_properties = [
@@ -367,19 +352,64 @@ function set_msg_delete_limit_dropdown() {
     set_time_limit_setting("realm_message_content_delete_limit_seconds");
 }
 
-function set_message_retention_setting_dropdown() {
-    const value = get_property_value("realm_message_retention_setting");
-    $("#id_realm_message_retention_setting").val(value);
-    change_element_block_display_property(
-        "id_realm_message_retention_days",
-        value === "retain_for_period",
-    );
-    if (
-        get_property_value("realm_message_retention_days") ===
-        settings_config.retain_message_forever
-    ) {
-        $("#id_realm_message_retention_days").val("");
+function get_message_retention_setting_value($input_elem, for_api_data = true) {
+    const select_elem_val = $input_elem.val();
+    if (select_elem_val === "unlimited") {
+        if (!for_api_data) {
+            return settings_config.retain_message_forever;
+        }
+        return JSON.stringify("unlimited");
     }
+
+    if (select_elem_val === "realm_default") {
+        if (!for_api_data) {
+            return null;
+        }
+        return JSON.stringify("realm_default");
+    }
+
+    const $custom_input = $input_elem.parent().find(".message-retention-setting-custom-input");
+    if ($custom_input.val().length === 0) {
+        return settings_config.retain_message_forever;
+    }
+    return Number.parseInt($custom_input.val(), 10);
+}
+
+function get_dropdown_value_for_message_retention_setting(setting_value) {
+    if (setting_value === settings_config.retain_message_forever) {
+        return "unlimited";
+    }
+
+    if (setting_value === null) {
+        return "realm_default";
+    }
+
+    return "custom_period";
+}
+
+export function set_message_retention_setting_dropdown(sub) {
+    let property_name = "realm_message_retention_days";
+    if (sub !== undefined) {
+        property_name = "message_retention_days";
+    }
+    const setting_value = get_property_value(property_name, false, sub);
+    const dropdown_val = get_dropdown_value_for_message_retention_setting(setting_value);
+
+    const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
+    $dropdown_elem.val(dropdown_val);
+
+    const $custom_input_elem = $dropdown_elem
+        .parent()
+        .find(".message-retention-setting-custom-input")
+        .val("");
+    if (dropdown_val === "custom_period") {
+        $custom_input_elem.val(setting_value);
+    }
+
+    change_element_block_display_property(
+        $custom_input_elem.attr("id"),
+        dropdown_val === "custom_period",
+    );
 }
 
 function set_org_join_restrictions_dropdown() {
@@ -480,9 +510,6 @@ function update_dependent_subsettings(property_name) {
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(page_params.realm_allow_message_editing);
             break;
-        case "realm_message_retention_days":
-            set_message_retention_setting_dropdown();
-            break;
         case "realm_delete_own_message_policy":
             set_delete_own_message_policy_dropdown(page_params.realm_delete_own_message_policy);
             break;
@@ -511,10 +538,10 @@ export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 
-function discard_property_element_changes(elem, for_realm_default_settings) {
+export function discard_property_element_changes(elem, for_realm_default_settings, sub) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
-    const property_value = get_property_value(property_name, for_realm_default_settings);
+    const property_value = get_property_value(property_name, for_realm_default_settings, sub);
 
     switch (property_name) {
         case "realm_authentication_methods":
@@ -539,20 +566,11 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             );
             break;
         case "emojiset":
-            // Because this widget has a radio button structure, it
-            // needs custom reset code.
-            $elem
-                .closest(".org-subsection-parent")
-                .find(`.setting_emojiset_choice[value='${CSS.escape(property_value)}'`)
-                .prop("checked", true);
-            break;
         case "user_list_style":
+        case "stream_privacy":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
-            $elem
-                .closest(".org-subsection-parent")
-                .find(`.setting_user_list_style_choice[value='${CSS.escape(property_value)}']`)
-                .prop("checked", true);
+            $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
             break;
         case "email_notifications_batching_period_seconds":
         case "email_notification_batching_period_edit_minutes":
@@ -574,6 +592,10 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
         case "realm_message_content_delete_limit_seconds":
             set_time_limit_setting(property_name);
             break;
+        case "realm_message_retention_days":
+        case "message_retention_days":
+            set_message_retention_setting_dropdown(sub);
+            break;
         default:
             if (property_value !== undefined) {
                 set_input_element_value($elem, property_value);
@@ -586,7 +608,7 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
 }
 
 export function sync_realm_settings(property) {
-    if (!overlays.settings_open()) {
+    if (!meta.loaded) {
         return;
     }
 
@@ -635,7 +657,7 @@ export function change_save_button_state($element, state) {
 
     if (state === "discarded") {
         show_hide_element($element, false, 0, () =>
-            enable_or_disable_save_button($element.closest(".org-subsection-parent")),
+            enable_or_disable_save_button($element.closest(".settings-subsection-parent")),
         );
         return;
     }
@@ -679,13 +701,13 @@ export function change_save_button_state($element, state) {
     $textEl.text(button_text);
     $saveBtn.attr("data-status", data_status);
     if (state === "unsaved") {
-        enable_or_disable_save_button($element.closest(".org-subsection-parent"));
+        enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
     }
     show_hide_element($element, is_show, 800);
 }
 
 export function save_organization_settings(data, $save_button, patch_url) {
-    const $subsection_parent = $save_button.closest(".org-subsection-parent");
+    const $subsection_parent = $save_button.closest(".settings-subsection-parent");
     const $save_btn_container = $subsection_parent.find(".save-button-controls");
     const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
     change_save_button_state($save_btn_container, "saving");
@@ -721,13 +743,17 @@ export function get_input_element_value(input_elem, input_type) {
             return $input_elem.val().trim();
         case "number":
             return Number.parseInt($input_elem.val().trim(), 10);
-        case "radio-group":
-            if ($input_elem.prop("checked")) {
-                return $input_elem.val().trim();
+        case "radio-group": {
+            const selected_val = $input_elem.find("input:checked").val();
+            if ($input_elem.data("setting-choice-type") === "number") {
+                return Number.parseInt(selected_val, 10);
             }
-            return undefined;
+            return selected_val.trim();
+        }
         case "time-limit":
             return get_time_limit_setting_value($input_elem);
+        case "message-retention-setting":
+            return get_message_retention_setting_value($input_elem);
         default:
             return undefined;
     }
@@ -764,6 +790,10 @@ function get_auth_method_list_data() {
     return new_auth_methods;
 }
 
+export function parse_time_limit($elem) {
+    return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
+}
+
 function get_time_limit_setting_value($input_elem, for_api_data = true) {
     const select_elem_val = $input_elem.val();
 
@@ -792,10 +822,10 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     return parse_time_limit($custom_input_elem);
 }
 
-function check_property_changed(elem, for_realm_default_settings) {
+export function check_property_changed(elem, for_realm_default_settings, sub) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
-    let current_val = get_property_value(property_name, for_realm_default_settings);
+    let current_val = get_property_value(property_name, for_realm_default_settings, sub);
     let proposed_val;
 
     switch (property_name) {
@@ -813,6 +843,9 @@ function check_property_changed(elem, for_realm_default_settings) {
             break;
         case "realm_default_code_block_language":
             proposed_val = default_code_language_widget.value();
+            if (proposed_val.length === 0) {
+                proposed_val = null;
+            }
             break;
         case "email_notifications_batching_period_seconds":
             proposed_val = get_time_limit_setting_value($elem, false);
@@ -821,10 +854,19 @@ function check_property_changed(elem, for_realm_default_settings) {
         case "realm_message_content_delete_limit_seconds":
             proposed_val = get_time_limit_setting_value($elem, false);
             break;
+        case "realm_message_retention_days":
+        case "message_retention_days":
+            proposed_val = get_message_retention_setting_value($elem, false);
+            break;
         case "realm_default_language":
             proposed_val = $(
                 "#org-notifications .language_selection_widget .language_selection_button span",
             ).attr("data-language-code");
+            break;
+        case "emojiset":
+        case "user_list_style":
+        case "stream_privacy":
+            proposed_val = get_input_element_value($elem, "radio-group");
             break;
         default:
             if (current_val !== undefined) {
@@ -836,12 +878,12 @@ function check_property_changed(elem, for_realm_default_settings) {
     return current_val !== proposed_val;
 }
 
-export function save_discard_widget_status_handler($subsection, for_realm_default_settings) {
+export function save_discard_widget_status_handler($subsection, for_realm_default_settings, sub) {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem, for_realm_default_settings),
+        check_property_changed(elem, for_realm_default_settings, sub),
     );
 
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
@@ -856,7 +898,7 @@ export function init_dropdown_widgets() {
             name: x.name,
             value: x.stream_id.toString(),
         })),
-        on_update: () => {
+        on_update() {
             save_discard_widget_status_handler($("#org-notifications"));
         },
         default_text: $t({defaultMessage: "Disabled"}),
@@ -882,7 +924,7 @@ export function init_dropdown_widgets() {
             value: x,
         })),
         value: page_params.realm_default_code_block_language,
-        on_update: () => {
+        on_update() {
             save_discard_widget_status_handler($("#org-other-settings"));
         },
         default_text: $t({defaultMessage: "No language set"}),
@@ -908,6 +950,45 @@ function enable_or_disable_save_button($subsection_elem) {
         }
     }
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
+export function populate_data_for_request(subsection, for_realm_default_settings, sub) {
+    let data = {};
+    const properties_elements = get_subsection_property_elements(subsection);
+
+    for (const input_elem of properties_elements) {
+        const $input_elem = $(input_elem);
+        if (check_property_changed($input_elem, for_realm_default_settings, sub)) {
+            const input_value = get_input_element_value($input_elem);
+            if (input_value !== undefined) {
+                let property_name;
+                if (for_realm_default_settings || sub) {
+                    property_name = extract_property_name($input_elem, for_realm_default_settings);
+                } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
+                    // Authentication Method component IDs include authentication method name
+                    // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
+                    // We need to strip that whole construct down to extract the actual property name.
+                    // The [\da-z]+ part of the regexp covers the auth method name itself.
+                    // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
+                    // this is ensured by a respective allowlist-based filter in populate_auth_methods().
+                    [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec($input_elem.attr("id"));
+                } else {
+                    [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
+                }
+
+                if (property_name === "stream_privacy") {
+                    data = {
+                        ...data,
+                        ...stream_edit.get_request_data_for_stream_privacy(input_value),
+                    };
+                    continue;
+                }
+                data[property_name] = input_value;
+            }
+        }
+    }
+
+    return data;
 }
 
 export function register_save_discard_widget_handlers(
@@ -941,7 +1022,7 @@ export function register_save_discard_widget_handlers(
             );
         }
 
-        const $subsection = $(e.target).closest(".org-subsection-parent");
+        const $subsection = $(e.target).closest(".settings-subsection-parent");
         save_discard_widget_status_handler($subsection, for_realm_default_settings);
         return undefined;
     });
@@ -949,16 +1030,13 @@ export function register_save_discard_widget_handlers(
     $container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        for (const elem of get_subsection_property_elements(e.target)) {
+        const $subsection = $(e.target).closest(".settings-subsection-parent");
+        for (const elem of get_subsection_property_elements($subsection)) {
             discard_property_element_changes(elem, for_realm_default_settings);
         }
         const $save_btn_controls = $(e.target).closest(".save-button-controls");
         change_save_button_state($save_btn_controls, "discarded");
     });
-
-    parse_time_limit = function parse_time_limit($elem) {
-        return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
-    };
 
     function get_complete_data_for_subsection(subsection) {
         let data = {};
@@ -977,26 +1055,13 @@ export function register_save_discard_widget_handlers(
                     "#org-notifications .language_selection_widget .language_selection_button span",
                 ).attr("data-language-code");
                 break;
-            case "message_retention": {
-                const message_retention_setting_value = $(
-                    "#id_realm_message_retention_setting",
-                ).val();
-                if (message_retention_setting_value === "retain_forever") {
-                    data.message_retention_days = JSON.stringify("unlimited");
-                } else {
-                    data.message_retention_days = JSON.stringify(
-                        get_input_element_value($("#id_realm_message_retention_days")),
-                    );
-                }
-                break;
-            }
             case "other_settings": {
                 const code_block_language_value = default_code_language_widget.value();
                 // No need to JSON-encode, since this value is already a string.
                 data.default_code_block_language = code_block_language_value;
                 break;
             }
-            case "org_join": {
+            case "join_settings": {
                 const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
                 switch (org_join_restrictions) {
                     case "only_selected_domain":
@@ -1037,62 +1102,24 @@ export function register_save_discard_widget_handlers(
         return data;
     }
 
-    function populate_data_for_request(subsection) {
-        const data = {};
-        const properties_elements = get_subsection_property_elements(subsection);
-
-        for (const input_elem of properties_elements) {
-            const $input_elem = $(input_elem);
-            if (check_property_changed($input_elem, for_realm_default_settings)) {
-                const input_value = get_input_element_value($input_elem);
-                if (input_value !== undefined) {
-                    let property_name;
-                    if (for_realm_default_settings) {
-                        // We use the name attribute, rather than the ID attribute,
-                        // for realm_user_default_settings. This is because the
-                        // display/notification settings elements do not always have
-                        // IDs, and also the emojiset input is not compatible with the
-                        // ID approach.
-                        property_name = $input_elem.attr("name");
-                    } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
-                        // Authentication Method component IDs include authentication method name
-                        // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
-                        // We need to strip that whole construct down to extract the actual property name.
-                        // The [\da-z]+ part of the regexp covers the auth method name itself.
-                        // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
-                        // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-                        [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec(
-                            $input_elem.attr("id"),
-                        );
-                    } else {
-                        [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
-                    }
-                    data[property_name] = input_value;
-                }
-            }
-        }
-
-        return data;
-    }
-
     $container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const $save_button = $(e.currentTarget);
-        const $subsection_elem = $save_button.closest(".org-subsection-parent");
+        const $subsection_elem = $save_button.closest(".settings-subsection-parent");
         let extra_data = {};
 
         if (!for_realm_default_settings) {
             // The organization settings system has some coupled
             // fields that must be submitted together, which is
             // managed by the get_complete_data_for_subsection function.
-            const [, subsection_id] = /^org-submit-(.*)$/.exec($save_button.attr("id"));
+            const [, subsection_id] = /^org-(.*)$/.exec($subsection_elem.attr("id"));
             const subsection = subsection_id.replace(/-/g, "_");
             extra_data = get_complete_data_for_subsection(subsection);
         }
 
         const data = {
-            ...populate_data_for_request($subsection_elem),
+            ...populate_data_for_request($subsection_elem, for_realm_default_settings),
             ...extra_data,
         };
         save_organization_settings(data, $save_button, patch_url);
@@ -1130,12 +1157,12 @@ export function build_page() {
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
-    $(".org-subsection-parent").on("keydown", "input", (e) => {
+    $(".settings-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             $(e.target)
-                .closest(".org-subsection-parent")
+                .closest(".settings-subsection-parent")
                 .find(".subsection-changes-save button")
                 .trigger("click");
         }
@@ -1149,11 +1176,11 @@ export function build_page() {
         update_custom_value_input("realm_message_content_delete_limit_seconds");
     });
 
-    $("#id_realm_message_retention_setting").on("change", (e) => {
+    $("#id_realm_message_retention_days").on("change", (e) => {
         const message_retention_setting_dropdown_value = e.target.value;
         change_element_block_display_property(
-            "id_realm_message_retention_days",
-            message_retention_setting_dropdown_value === "retain_for_period",
+            "id_realm_message_retention_custom_input",
+            message_retention_setting_dropdown_value === "custom_period",
         );
     });
 

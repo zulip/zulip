@@ -118,7 +118,7 @@ export class TaskData {
         },
 
         strike: {
-            outbound: (key) => {
+            outbound(key) {
                 const event = {
                     type: "strike",
                     key,

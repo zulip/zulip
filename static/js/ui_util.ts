@@ -1,11 +1,9 @@
 import $ from "jquery";
 
+import * as keydown_util from "./keydown_util";
+
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
-
-export function change_tab_to(tabname: string): void {
-    $(`#gear-menu a[href="${CSS.escape(tabname)}"]`).tab("show");
-}
 
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 export function place_caret_at_end(el: HTMLElement): void {
@@ -27,7 +25,7 @@ export function blur_active_element(): void {
 }
 
 export function convert_enter_to_click(e: JQuery.KeyDownEvent): void {
-    if (e.key === "Enter") {
+    if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
         e.stopPropagation();
         $(e.currentTarget).trigger("click");

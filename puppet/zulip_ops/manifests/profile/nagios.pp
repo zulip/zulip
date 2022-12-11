@@ -140,6 +140,14 @@ class zulip_ops::profile::nagios {
     require => File['/var/lib/nagios'],
   }
 
+  file { '/var/lib/nagios/.ssh/config':
+    ensure => file,
+    mode   => '0644',
+    owner  => 'nagios',
+    group  => 'nagios',
+    source => 'puppet:///modules/zulip_ops/nagios_ssh_config',
+  }
+
   # Disable apparmor for msmtp so it can read the above config file
   file { '/etc/apparmor.d/disable/usr.bin.msmtp':
     ensure => link,

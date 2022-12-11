@@ -14,7 +14,6 @@ const noop = () => {};
 const realm_icon = mock_esm("../../static/js/realm_icon");
 
 const channel = mock_esm("../../static/js/channel");
-const overlays = mock_esm("../../static/js/overlays");
 
 mock_esm("../../static/js/csrf", {csrf_token: "token-stub"});
 mock_esm("../../static/js/list_widget", {
@@ -58,8 +57,8 @@ test("unloaded", () => {
 function createSaveButtons(subsection) {
     const $stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
     const $save_button_controls = $(".save-button-controls");
-    const $stub_save_button = $(`#org-submit-${CSS.escape(subsection)}`);
-    const $stub_discard_button = $(`#org-discard-${CSS.escape(subsection)}`);
+    const $stub_save_button = $(".save-discard-widget-button.save-button");
+    const $stub_discard_button = $(".save-discard-widget-button.discard-button");
     const $stub_save_button_text = $(".save-discard-widget-button-text");
     $stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
@@ -71,7 +70,7 @@ function createSaveButtons(subsection) {
     $stub_save_button_header.set_find_results(".save-button-controls", $save_button_controls);
     $stub_save_button_header.set_find_results(
         ".subsection-changes-discard button",
-        $(`#org-discard-${CSS.escape(subsection)}`),
+        $stub_discard_button,
     );
     $save_button_controls.set_find_results(".discard-button", $stub_discard_button);
     const props = {};
@@ -128,10 +127,11 @@ function test_submit_settings_form(override, submit_form) {
     });
 
     let subsection = "other-permissions";
-    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
+    ev.currentTarget = ".save-discard-widget-button.save-button";
     let stubs = createSaveButtons(subsection);
     let $save_button = stubs.$save_button;
-    $save_button.attr("id", `org-submit-${subsection}`);
+    let $save_button_header = stubs.$save_button_header;
+    $save_button_header.attr("id", `org-${subsection}`);
 
     $("#id_realm_waiting_period_threshold").val(10);
 
@@ -170,7 +170,6 @@ function test_submit_settings_form(override, submit_form) {
     $invite_to_realm_policy_elem.data = () => "number";
 
     let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.closest = () => $subsection_elem;
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
         $email_address_visibility_elem,
@@ -197,10 +196,11 @@ function test_submit_settings_form(override, submit_form) {
     assert.deepEqual(data, expected_value);
 
     subsection = "user-defaults";
-    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
+    ev.currentTarget = ".save-discard-widget-button.save-button";
     stubs = createSaveButtons(subsection);
     $save_button = stubs.$save_button;
-    $save_button.attr("id", `org-submit-${subsection}`);
+    $save_button_header = stubs.$save_button_header;
+    $save_button_header.attr("id", `org-${subsection}`);
 
     const $realm_default_language_elem = $("#id_realm_default_language");
     $realm_default_language_elem.val("en");
@@ -208,7 +208,6 @@ function test_submit_settings_form(override, submit_form) {
     $realm_default_language_elem.data = () => "string";
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.closest = () => $subsection_elem;
     $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
 
     submit_form(ev);
@@ -227,9 +226,15 @@ function test_submit_settings_form(override, submit_form) {
 }
 
 function test_change_save_button_state() {
-    const {$save_button_controls, $save_button_text, $save_button, $discard_button, props} =
-        createSaveButtons("msg-editing");
-    $save_button.attr("id", "org-submit-msg-editing");
+    const {
+        $save_button_controls,
+        $save_button_text,
+        $save_button,
+        $save_button_header,
+        $discard_button,
+        props,
+    } = createSaveButtons("msg-editing");
+    $save_button_header.attr("id", "org-msg-editing");
 
     {
         settings_org.change_save_button_state($save_button_controls, "unsaved");
@@ -309,8 +314,6 @@ function test_extract_property_name() {
 }
 
 function test_sync_realm_settings() {
-    overlays.settings_open = () => true;
-
     {
         /* Test invalid settings property sync */
         const $property_elem = $("#id_realm_invalid_settings_property");
@@ -436,7 +439,7 @@ function test_discard_changes_button(discard_changes) {
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
-        target: "#org-discard-msg-editing",
+        target: ".save-discard-widget-button.discard-button",
     };
 
     page_params.realm_allow_edit_history = true;
@@ -475,7 +478,7 @@ function test_discard_changes_button(discard_changes) {
         "id_realm_message_content_delete_limit_minutes",
     );
 
-    const $discard_button_parent = $(".org-subsection-parent");
+    const $discard_button_parent = $(".settings-subsection-parent");
     $discard_button_parent.find = () => [
         $allow_edit_history,
         $msg_edit_limit_setting,
@@ -560,7 +563,18 @@ test("set_up", ({override, override_rewire}) => {
     );
     $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
 
-    $("#id_realm_message_retention_days").set_parent($.create("<stub retention period parent>"));
+    const $stub_realm_message_retention_parent = $.create(
+        "<stub message retention setting parent>",
+    );
+    const $realm_message_retention_custom_input = $("#id_realm_message_retention_custom_input");
+    $("#id_realm_message_retention_days").set_parent($stub_realm_message_retention_parent);
+    $realm_message_retention_custom_input.set_parent($stub_realm_message_retention_parent);
+    $stub_realm_message_retention_parent.set_find_results(
+        ".message-retention-setting-custom-input",
+        $realm_message_retention_custom_input,
+    );
+    $realm_message_retention_custom_input.attr("id", "id_realm_message_retention_custom_input");
+
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
     );

@@ -4,7 +4,7 @@ from dateutil import parser
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import (
-    TimeZoneNotUTCException,
+    TimeZoneNotUTCError,
     ceiling_to_hour,
     convert_to_UTC,
     datetime_to_timestamp,
@@ -28,7 +28,7 @@ class TestTimestamp(ZulipTestCase):
             parser.parse("2017-01-01 00:00:00.123+01:00"),
             parser.parse("2017-01-01 00:00:00.123"),
         ]:
-            with self.assertRaises(TimeZoneNotUTCException):
+            with self.assertRaises(TimeZoneNotUTCError):
                 datetime_to_timestamp(dt)
 
     def test_convert_to_UTC(self) -> None:
@@ -43,5 +43,5 @@ class TestTimestamp(ZulipTestCase):
     def test_enforce_UTC(self) -> None:
         non_utc_datetime = parser.parse("2017-01-01 00:00:00.123")
         for function in [floor_to_hour, floor_to_day, ceiling_to_hour, ceiling_to_hour]:
-            with self.assertRaises(TimeZoneNotUTCException):
+            with self.assertRaises(TimeZoneNotUTCError):
                 function(non_utc_datetime)

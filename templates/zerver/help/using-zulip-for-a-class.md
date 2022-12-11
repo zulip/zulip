@@ -93,5 +93,4 @@ for each question, it's easy to have several discussions at once.
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
-* [Format messages using Markdown](/help/format-your-message-using-markdown)
-
+* [Message formatting](/help/format-your-message-using-markdown)

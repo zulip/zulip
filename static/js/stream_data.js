@@ -530,6 +530,13 @@ export function can_toggle_subscription(sub) {
     );
 }
 
+export function can_access_topic_history(sub) {
+    // Anyone can access topic history for web-public streams and
+    // subscriptions; additionally, members can access history for
+    // public streams.
+    return sub.is_web_public || can_toggle_subscription(sub);
+}
+
 export function can_preview(sub) {
     return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
 }

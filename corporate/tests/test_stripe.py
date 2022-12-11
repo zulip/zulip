@@ -40,8 +40,8 @@ from corporate.lib.stripe import (
     MIN_INVOICED_LICENSES,
     STRIPE_API_VERSION,
     BillingError,
-    InvalidBillingSchedule,
-    InvalidTier,
+    InvalidBillingScheduleError,
+    InvalidTierError,
     StripeCardError,
     add_months,
     approve_sponsorship,
@@ -622,7 +622,7 @@ class StripeTestCase(ZulipTestCase):
         free_trial: bool,
     ) -> None:
         class StripeMock(Mock):
-            def __init__(self, depth: int = 1):
+            def __init__(self, depth: int = 1) -> None:
                 super().__init__(spec=stripe.Card)
                 self.id = "id"
                 self.created = "1000"
@@ -4302,10 +4302,10 @@ class BillingHelpersTest(ZulipTestCase):
             800,
         )
 
-        with self.assertRaisesRegex(InvalidBillingSchedule, "Unknown billing_schedule: 1000"):
+        with self.assertRaisesRegex(InvalidBillingScheduleError, "Unknown billing_schedule: 1000"):
             get_price_per_license(CustomerPlan.STANDARD, 1000)
 
-        with self.assertRaisesRegex(InvalidTier, "Unknown tier: 10"):
+        with self.assertRaisesRegex(InvalidTierError, "Unknown tier: 10"):
             get_price_per_license(CustomerPlan.ENTERPRISE, CustomerPlan.ANNUAL)
 
     def test_get_plan_renewal_or_end_date(self) -> None:

@@ -44,6 +44,7 @@ from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
+from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import (
@@ -94,6 +95,7 @@ class ClientDescriptor:
         bulk_message_deletion: bool = False,
         stream_typing_notifications: bool = False,
         user_settings_object: bool = False,
+        pronouns_field_type_supported: bool = True,
     ) -> None:
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
@@ -117,6 +119,7 @@ class ClientDescriptor:
         self.bulk_message_deletion = bulk_message_deletion
         self.stream_typing_notifications = stream_typing_notifications
         self.user_settings_object = user_settings_object
+        self.pronouns_field_type_supported = pronouns_field_type_supported
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -144,6 +147,7 @@ class ClientDescriptor:
             bulk_message_deletion=self.bulk_message_deletion,
             stream_typing_notifications=self.stream_typing_notifications,
             user_settings_object=self.user_settings_object,
+            pronouns_field_type_supported=self.pronouns_field_type_supported,
         )
 
     def __repr__(self) -> str:
@@ -176,6 +180,7 @@ class ClientDescriptor:
             d.get("bulk_message_deletion", False),
             d.get("stream_typing_notifications", False),
             d.get("user_settings_object", False),
+            d.get("pronouns_field_type_supported", True),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -203,7 +208,7 @@ class ClientDescriptor:
                 )
             finally:
                 self.disconnect_handler()
-                return True
+            return True
         return False
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
@@ -345,10 +350,28 @@ class EventQueue:
         event["id"] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
-        if full_event_type == "restart" or full_event_type.startswith("flags/"):
+        if full_event_type == "restart" or (
+            full_event_type.startswith("flags/")
+            and not full_event_type.startswith("flags/remove/read")
+        ):
+            # virtual_events are an optimization that allows certain
+            # simple events, such as update_message_flags events that
+            # simply contain a list of message IDs to operate on, to
+            # be compressed together. This is primarily useful for
+            # flags/add/read, where normal Zulip usage will result in
+            # many small flags/add/read events as users scroll.
+            #
+            # We need to exclude flags/remove/read, because it has an
+            # extra message_details field that cannot be compressed.
+            #
+            # BUG: This compression algorithm is incorrect in the
+            # presence of mark-as-unread, since it does not respect
+            # the ordering of "mark as read" and "mark as unread"
+            # updates for a given message.
             if full_event_type not in self.virtual_events:
                 self.virtual_events[full_event_type] = copy.deepcopy(event)
                 return
+
             # Update the virtual event with the values from the event
             virtual_event = self.virtual_events[full_event_type]
             virtual_event["id"] = event["id"]
@@ -1182,6 +1205,25 @@ def process_message_update_event(
                 client.add_event(user_event)
 
 
+def process_custom_profile_fields_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    pronouns_type_unsupported_fields = copy.deepcopy(event["fields"])
+    for field in pronouns_type_unsupported_fields:
+        if field["type"] == CustomProfileField.PRONOUNS:
+            field["type"] = CustomProfileField.SHORT_TEXT
+
+    pronouns_type_unsupported_event = dict(
+        type="custom_profile_fields", fields=pronouns_type_unsupported_fields
+    )
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(event):
+                if not client.pronouns_field_type_supported:
+                    client.add_event(pronouns_type_unsupported_event)
+                    continue
+                client.add_event(event)
+
+
 def maybe_enqueue_notifications_for_message_update(
     user_notifications_data: UserMessageNotificationsData,
     message_id: int,
@@ -1314,6 +1356,20 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_deletion_event(event, user_ids)
     elif event["type"] == "presence":
         process_presence_event(event, cast(List[int], users))
+    elif event["type"] == "custom_profile_fields":
+        process_custom_profile_fields_event(event, cast(List[int], users))
+    elif event["type"] == "cleanup_queue":
+        # cleanup_event_queue may generate this event to forward cleanup
+        # requests to the right shard.
+        assert isinstance(users[0], int)
+        try:
+            client = access_client_descriptor(users[0], event["queue_id"])
+        except BadEventQueueIdError:
+            logging.info(
+                "Ignoring cleanup request for bad queue id %s (%d)", event["queue_id"], users[0]
+            )
+        else:
+            client.cleanup()
     else:
         process_event(event, cast(List[int], users))
     logging.debug(

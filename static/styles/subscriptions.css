@@ -22,11 +22,8 @@
 
 .stream-email {
     font-family: "Source Code Pro", monospace;
-    padding: 5px;
-    /* We need a smaller font because this is fixed-width and we really
-       want it to fit without line-wrapping. 82.5% copies our code block
-       font size. */
-    font-size: 82.5%;
+    padding: 10px;
+    font-size: 0.85rem;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
@@ -260,11 +257,6 @@ h4.user_group_setting_subsection_title {
     font-size: 25px;
     font-weight: 300;
     padding-top: 40px;
-}
-
-.change-stream-privacy {
-    width: 100%;
-    text-align: center;
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
@@ -678,30 +670,20 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
-    #user-group-creation {
-        max-height: calc(100% - 102px);
-
-        .user-group-creation-body {
-            padding: 15px;
-        }
-    }
-
-    #stream-creation {
-        .stream-creation-body {
-            height: calc(95vh - 155px);
-            padding: 15px;
-
-            @media (width < $md_min) {
-                height: calc(95vh - 115px);
-            }
-        }
-    }
-
     #user-group-creation,
     #stream-creation {
         overflow: auto;
         outline: none;
         -webkit-overflow-scrolling: touch;
+
+        .user-group-creation-body,
+        .stream-creation-body {
+            /*
+                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer) + 15px (padding for .simplebar-content)
+            */
+            height: calc(95vh - 164px);
+            padding: 15px 15px 0;
+        }
 
         .modal-footer {
             position: absolute;
@@ -864,21 +846,6 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream_setting_subsection_header {
-        display: flex;
-
-        .stream_permission_change_info {
-            /* TODO: Deduplicate with .save-discard-widget-button. */
-            margin: 12px auto 12px 3px;
-        }
-
-        .button-group {
-            display: inline;
-            margin-left: auto;
-            align-self: center;
-        }
-    }
-
     .checkmark {
         display: none;
         margin-left: 5px;
@@ -888,18 +855,6 @@ h4.user_group_setting_subsection_title {
 
         &.show {
             display: block;
-        }
-    }
-
-    .subscription-type {
-        margin-bottom: 10px;
-
-        .subscription-type-text {
-            display: inline;
-        }
-
-        b {
-            font-weight: 600;
         }
     }
 
@@ -938,6 +893,10 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .copy_email_button {
+        padding: 10px 15px;
+    }
+
     .loading_indicator_text {
         font-weight: 400;
         line-height: 20px;
@@ -970,26 +929,42 @@ h4.user_group_setting_subsection_title {
     vertical-align: middle;
 }
 
-#stream_privacy_modal,
+div.settings-radio-input-parent {
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    margin: 2px 0 2px 5px;
+    padding: 2px 0;
+
+    &:last-of-type {
+        border-bottom: none;
+    }
+
+    label.radio {
+        display: inline;
+        margin: 5px;
+    }
+
+    input {
+        float: left;
+        width: auto;
+        cursor: pointer;
+        margin: 3.5px 0 1px;
+
+        &:focus {
+            outline: 1px dotted hsl(0, 0%, 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+}
+
+.stream-permissions,
 .stream-creation-body {
     .input-group {
         margin-bottom: 10px;
-
-        .radio-input-parent {
-            border-bottom: 1px solid hsl(0, 0%, 87%);
-            margin: 2px 0 2px 5px;
-            padding: 2px 0;
-
-            &:last-of-type {
-                border-bottom: none;
-            }
-
-            label.radio {
-                display: inline;
-                margin: 5px;
-                padding-left: 0;
-            }
-        }
 
         &.message-retention-setting-group {
             input {
@@ -1010,15 +985,6 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.stream-creation-body input[type="radio"] {
-    margin: 3.5px 0 1px;
-}
-
-/* we have this 2px difference due to the font size being larger in the modal */
-#stream_privacy_modal input[type="radio"] {
-    margin: 5.5px 0 1px;
-}
-
 #change_user_group_description,
 #change_stream_description {
     width: 100%;
@@ -1027,7 +993,7 @@ h4.user_group_setting_subsection_title {
     box-sizing: border-box;
 }
 
-#stream_privacy_modal .stream-message-retention-days-input input[type="text"] {
+.stream-permissions .stream-message-retention-days-input input[type="text"] {
     border-radius: 5px;
     box-shadow: none;
     margin: 0;
@@ -1172,6 +1138,11 @@ h4.user_group_setting_subsection_title {
             max-width: max-content;
             white-space: nowrap;
         }
+
+        .save-button-controls {
+            display: block;
+            margin: 0 0 10px;
+        }
     }
 }
 
@@ -1188,14 +1159,6 @@ h4.user_group_setting_subsection_title {
                 .ind-tab {
                     width: 85px;
                 }
-            }
-        }
-
-        .stream_setting_subsection_header {
-            display: block;
-
-            .stream_permission_change_info {
-                margin: 12px auto 0 3px;
             }
         }
     }

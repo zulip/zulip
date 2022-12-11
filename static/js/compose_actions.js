@@ -25,6 +25,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
@@ -91,6 +92,7 @@ function show_compose_box(msg_type, opts) {
         $("#private_message_toggle").addClass("active");
     }
     $("#compose-send-status").removeClass(common.status_classes).hide();
+    $("#compose_banners").empty();
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
@@ -107,9 +109,9 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
-    compose_validate.clear_all_everyone_warnings();
+    compose_validate.clear_wildcard_warnings();
     compose.clear_private_stream_alert();
-    compose_validate.set_user_acknowledged_all_everyone_flag(undefined);
+    compose_validate.set_user_acknowledged_wildcard_flag(undefined);
 
     compose.clear_preview_area();
     clear_textarea();
@@ -117,6 +119,7 @@ function clear_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
+    $("#compose_banners").empty();
 }
 
 export function autosize_message_content() {
@@ -631,10 +634,29 @@ export function on_narrow(opts) {
 
     if (narrow_state.narrowed_by_pm_reply()) {
         opts = fill_in_opts_from_current_narrowed_view("private", opts);
-        // Do not open compose box if triggered by search and invalid recipient
-        // is present.
-        if (opts.trigger === "search" && !opts.private_message_recipient) {
+        // Do not open compose box if an invalid recipient is present.
+        if (!opts.private_message_recipient) {
+            if (compose_state.composing()) {
+                cancel();
+            }
             return;
+        }
+        // Do not open compose box if organization has disabled sending
+        // private messages and recipient is not a bot.
+        if (
+            page_params.realm_private_message_policy ===
+                settings_config.private_message_policy_values.disabled.code &&
+            opts.private_message_recipient
+        ) {
+            const emails = opts.private_message_recipient.split(",");
+            if (emails.length !== 1 || !people.get_by_email(emails[0]).is_bot) {
+                // If we are navigating between private message conversations,
+                // we want the compose box to close for non-bot users.
+                if (compose_state.composing()) {
+                    cancel();
+                }
+                return;
+            }
         }
         start("private");
         return;

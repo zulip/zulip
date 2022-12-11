@@ -1,4 +1,4 @@
-<tr id="recent_conversation:{{conversation_key}}" {{#if unread_count}}class="unread_topic"{{/if}} data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}" data-private="{{is_private}}">
+<tr id="recent_conversation:{{conversation_key}}" class="{{#if unread_count}}unread_topic{{/if}} {{#if is_private}}private_conversation_row{{/if}}" data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}" data-private="{{is_private}}">
     <td class="recent_topic_stream">
         <div class="flex_container flex_container_pm">
             <div class="left_part recent_topics_focusable">
@@ -15,7 +15,7 @@
             {{!-- For presence/group indicator --}}
             {{#if is_private}}
             <div class="right_part">
-                <span class="stream-privacy filter-icon">
+                <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
                     {{#if is_group}}
                     <span class="fa fa-group"></span>
                     {{else}}
@@ -30,7 +30,7 @@
         <div class="flex_container">
             <div class="left_part recent_topics_focusable line_clamp">
                 {{#if is_private}}
-                <a href="{{pm_url}}">{{pm_with}}</a>
+                <a href="{{pm_url}}">{{{rendered_pm_with}}}</a>
                 {{else}}
                 <a href="{{topic_url}}">{{topic}}</a>
                 {{/if}}
@@ -38,8 +38,14 @@
             <div class="right_part">
                 {{#if is_private}}
                 <div class="recent_topic_actions">
-                    <div class="recent_topics_focusable single_action_button">
+                    <div class="recent_topics_focusable">
                         <span class="unread_count unread_count_pm {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+                    </div>
+                </div>
+                <div class="recent_topic_actions dummy_action_button">
+                    <div class="recent_topics_focusable">
+                        {{!-- Invisible icon, used only for alignment of unread count. --}}
+                        <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon"></i>
                     </div>
                 </div>
                 {{else}}

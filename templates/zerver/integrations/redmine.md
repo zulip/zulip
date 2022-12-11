@@ -24,7 +24,7 @@ The Zulip plugin is now registered with Redmine!
 
 ### Global settings
 
-1. On your {{ settings_html|safe }}, create a new Redmine bot.
+1. {!create-an-incoming-webhook.md!}
 
 2. Log in to your Redmine instance, click on **Administration** in the top-left
 corner, then click on **Plugins**.

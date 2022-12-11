@@ -1,6 +1,6 @@
+import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
@@ -29,6 +29,12 @@ export function set_messages_read_in_narrow(value) {
     messages_read_in_narrow = value;
 }
 
+export let old_unreads_missing = false;
+
+export function clear_old_unreads_missing() {
+    old_unreads_missing = false;
+}
+
 export const unread_mentions_counter = new Set();
 const unread_messages = new Set();
 
@@ -40,29 +46,6 @@ const unread_messages = new Set();
 // Functionally a cache; see clear_and_populate_unread_mention_topics
 // for how we can refresh it efficiently.
 export const unread_mention_topics = new Map();
-
-function add_message_to_unread_mention_topics(message_id) {
-    const message = message_store.get(message_id);
-    if (message.type !== "stream") {
-        return;
-    }
-    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
-    if (unread_mention_topics.has(topic_key)) {
-        unread_mention_topics.get(topic_key).add(message_id);
-    }
-    unread_mention_topics.set(topic_key, new Set([message_id]));
-}
-
-function remove_message_from_unread_mention_topics(message_id) {
-    const message = message_store.get(message_id);
-    if (message.type !== "stream") {
-        return;
-    }
-    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
-    if (unread_mention_topics.has(topic_key)) {
-        unread_mention_topics.get(topic_key).delete(message_id);
-    }
-}
 
 class Bucketer {
     // Maps item_id => bucket_key for items present in a bucket.
@@ -467,6 +450,39 @@ class UnreadTopicCounter {
 }
 const unread_topic_counter = new UnreadTopicCounter();
 
+function add_message_to_unread_mention_topics(message_id) {
+    const message = message_store.get(message_id);
+    if (message.type !== "stream") {
+        return;
+    }
+    const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
+    if (unread_mention_topics.has(topic_key)) {
+        unread_mention_topics.get(topic_key).add(message_id);
+    }
+    unread_mention_topics.set(topic_key, new Set([message_id]));
+}
+
+function remove_message_from_unread_mention_topics(message_id) {
+    const stream_id = unread_topic_counter.bucketer.reverse_lookup.get(message_id);
+    if (!stream_id) {
+        // Private messages and messages that were already not unread
+        // exit here.
+        return;
+    }
+
+    const per_stream_bucketer = unread_topic_counter.bucketer.get_bucket(stream_id);
+    if (!per_stream_bucketer) {
+        blueslip.error(`Could not find per_stream_bucketer for ${message_id}.`);
+        return;
+    }
+
+    const topic = per_stream_bucketer.reverse_lookup.get(message_id);
+    const topic_key = recent_topics_util.get_topic_key(stream_id, topic);
+    if (unread_mention_topics.has(topic_key)) {
+        unread_mention_topics.get(topic_key).delete(message_id);
+    }
+}
+
 export function clear_and_populate_unread_mention_topics() {
     // The unread_mention_topics is an important data structure for
     // efficiently querying whether a given stream/topic pair contains
@@ -516,6 +532,10 @@ export function get_unread_messages(messages) {
     return messages.filter((message) => unread_messages.has(message.id));
 }
 
+export function get_unread_message_count() {
+    return unread_messages.size;
+}
+
 export function update_unread_topics(msg, event) {
     const new_topic = util.get_edit_event_topic(event);
     const {new_stream_id} = event;
@@ -537,9 +557,32 @@ export function update_unread_topics(msg, event) {
     });
 }
 
-export function process_loaded_messages(messages) {
+export function process_loaded_messages(messages, expect_no_new_unreads = false) {
+    // Process a set of messages that we have full copies of from the
+    // server for whether any are unread but not tracked as such by
+    // our data structures. This can occur due to old_unreads_missing,
+    // changes in muting configuration, innocent races, or potentially bugs.
+    //
+    // Returns whether there were any new unread messages; in that
+    // case, the caller will need to trigger a rerender of UI
+    // displaying unread counts.
+
+    let any_untracked_unread_messages = false;
     for (const message of messages) {
         if (message.unread) {
+            if (unread_messages.has(message.id)) {
+                // If we're already tracking this message as unread, there's nothing to do.
+                continue;
+            }
+
+            if (expect_no_new_unreads && !old_unreads_missing) {
+                // This may happen due to races, where someone narrows
+                // to a view and the message_fetch request returns
+                // before server_events system delivers the message to
+                // the client.
+                blueslip.log(`New unread ${message.id} discovered in process_loaded_messages.`);
+            }
+
             const user_ids_string =
                 message.type === "private" ? people.pm_reply_user_string(message) : undefined;
 
@@ -553,8 +596,11 @@ export function process_loaded_messages(messages) {
                 unread: true,
                 user_ids_string,
             });
+            any_untracked_unread_messages = true;
         }
     }
+
+    return any_untracked_unread_messages;
 }
 
 export function process_unread_message(message) {
@@ -615,10 +661,14 @@ export function mark_as_read(message_id) {
     // the following methods are cheap and work fine even if message_id
     // was never set to unread.
     unread_pm_counter.delete(message_id);
+
+    // Important: This function uses `unread_topic_counter` to look up
+    // the stream/topic for this previously unread message, so much
+    // happen before the message is removed from that data structure.
+    remove_message_from_unread_mention_topics(message_id);
     unread_topic_counter.delete(message_id);
     unread_mentions_counter.delete(message_id);
     unread_messages.delete(message_id);
-    remove_message_from_unread_mention_topics(message_id);
 
     const message = message_store.get(message_id);
     if (message) {
@@ -627,6 +677,7 @@ export function mark_as_read(message_id) {
 }
 
 export function declare_bankruptcy() {
+    // Only used in tests.
     unread_pm_counter.clear();
     unread_topic_counter.clear();
     unread_mentions_counter.clear();
@@ -760,9 +811,10 @@ export function get_msg_ids_for_starred() {
     return [];
 }
 
-export function initialize() {
-    const unread_msgs = page_params.unread_msgs;
+export function initialize(params) {
+    const unread_msgs = params.unread_msgs;
 
+    old_unreads_missing = unread_msgs.old_unreads_missing;
     unread_pm_counter.set_huddles(unread_msgs.huddles);
     unread_pm_counter.set_pms(unread_msgs.pms);
     unread_topic_counter.set_streams(unread_msgs.streams);
