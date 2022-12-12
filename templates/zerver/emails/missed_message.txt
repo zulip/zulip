@@ -50,10 +50,6 @@ See {{ alert_notif_url }} for more details.
 {% trans %}Do not reply. You are receiving this message from noreply-{{realm_name}}@zulip.com{% endtrans %}
 {% endif %}
 
-{% if _reply_warning_in_missed_personal_messages %}
-{% trans %}Do not reply. You are receiving this message from noreply-{{realm_name}}@zulip.com{% endtrans %}
-{% endif %}
-
 {% endif %}
 
 {% trans %}Manage email preferences: {% endtrans %}
