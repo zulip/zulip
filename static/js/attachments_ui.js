@@ -107,7 +107,7 @@ function render_attachments_ui() {
             },
         },
         $parent_container: $("#attachments-settings").expectOne(),
-        init_sort: ["numeric", "create_time"],
+        init_sort: ["numeric", "create_time", true],
         sort_fields: {
             mentioned_in: sort_mentioned_in,
         },
