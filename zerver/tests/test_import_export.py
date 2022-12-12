@@ -1351,7 +1351,7 @@ class RealmImportExportTest(ExportFile):
 
         # Test realm icon and logo
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
-        full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, upload_path)
+        full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", upload_path)
 
         test_image_data = read_test_image_file("img.png")
         self.assertIsNotNone(test_image_data)
