@@ -1100,9 +1100,18 @@ class TestRealmAuditLog(ZulipTestCase):
                 acting_user=None,
             ).values_list("modified_user_group_id", "extra_data")
         )
+        logged_supergroup_entries = sorted(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+                acting_user=None,
+            ).values_list("modified_user_group_id", "extra_data")
+        )
         # Excluding nobody_system_group, the rest of the user groups should have
         # a chain of subgroup memberships in between.
         self.assert_length(logged_subgroup_entries, expected_system_user_group_count - 2)
+        self.assert_length(logged_supergroup_entries, expected_system_user_group_count - 2)
         for i in range(len(logged_subgroup_entries)):
             # The offset of 1 is due to nobody_system_group being skipped as
             # the first user group in the list.
@@ -1112,11 +1121,17 @@ class TestRealmAuditLog(ZulipTestCase):
             expected_supergroup_id = system_user_group_ids[i + 2]
 
             supergroup_id, subgroup_extra_data = logged_subgroup_entries[i]
+            subgroup_id, supergroup_extra_data = logged_supergroup_entries[i]
             assert subgroup_extra_data is not None
+            assert supergroup_extra_data is not None
             self.assertEqual(
                 orjson.loads(subgroup_extra_data)["subgroup_ids"][0], expected_subgroup_id
             )
+            self.assertEqual(
+                orjson.loads(supergroup_extra_data)["supergroup_ids"][0], expected_supergroup_id
+            )
             self.assertEqual(supergroup_id, expected_supergroup_id)
+            self.assertEqual(subgroup_id, expected_subgroup_id)
 
     def test_user_group_creation(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1197,6 +1212,19 @@ class TestRealmAuditLog(ZulipTestCase):
             orjson.loads(assert_is_not_none(audit_log_entry.extra_data)),
             {"subgroup_ids": [subgroup.id for subgroup in subgroups]},
         )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+        ).order_by("id")
+        self.assert_length(audit_log_entries, 3)
+        for i in range(3):
+            self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i])
+            self.assertEqual(audit_log_entries[i].acting_user, hamlet)
+            self.assertDictEqual(
+                orjson.loads(assert_is_not_none(audit_log_entries[i].extra_data)),
+                {"supergroup_ids": [user_group.id]},
+            )
 
         remove_subgroups_from_user_group(user_group, subgroups[:2], acting_user=hamlet)
         audit_log_entry = RealmAuditLog.objects.get(
@@ -1210,3 +1238,16 @@ class TestRealmAuditLog(ZulipTestCase):
             orjson.loads(assert_is_not_none(audit_log_entry.extra_data)),
             {"subgroup_ids": [subgroup.id for subgroup in subgroups[:2]]},
         )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED,
+        ).order_by("id")
+        self.assert_length(audit_log_entries, 2)
+        for i in range(2):
+            self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i])
+            self.assertEqual(audit_log_entries[i].acting_user, hamlet)
+            self.assertDictEqual(
+                orjson.loads(assert_is_not_none(audit_log_entries[i].extra_data)),
+                {"supergroup_ids": [user_group.id]},
+            )

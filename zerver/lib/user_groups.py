@@ -352,15 +352,26 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     subgroup, remaining_groups = system_user_groups_list[1], system_user_groups_list[2:]
     for supergroup in remaining_groups:
         subgroup_objects.append(GroupGroupMembership(subgroup=subgroup, supergroup=supergroup))
-        realmauditlog_objects.append(
-            RealmAuditLog(
-                realm=realm,
-                modified_user_group=supergroup,
-                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
-                event_time=timezone_now(),
-                acting_user=None,
-                extra_data=orjson.dumps({"subgroup_ids": [subgroup.id]}).decode(),
-            )
+        now = timezone_now()
+        realmauditlog_objects.extend(
+            [
+                RealmAuditLog(
+                    realm=realm,
+                    modified_user_group=supergroup,
+                    event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                    event_time=now,
+                    acting_user=None,
+                    extra_data=orjson.dumps({"subgroup_ids": [subgroup.id]}).decode(),
+                ),
+                RealmAuditLog(
+                    realm=realm,
+                    modified_user_group=subgroup,
+                    event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                    event_time=now,
+                    acting_user=None,
+                    extra_data=orjson.dumps({"supergroup_ids": [supergroup.id]}).decode(),
+                ),
+            ]
         )
         subgroup = supergroup
 
