@@ -752,23 +752,30 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
+        const initial_recipient_data = {
+            message_type: compose_state.get_message_type(),
+            topic_name: compose_state.topic(),
+            stream_id: stream_data.get_stream_id(compose_state.stream_name()),
+            private_message_recipient: compose_state.private_message_recipient(),
+        };
+
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Send a poll"}),
-            html_body: render_add_poll_modal(),
+            html_body: render_add_poll_modal(initial_recipient_data),
             html_submit_button: $t_html({defaultMessage: "Send poll"}),
             loading_spinner: true,
             on_click(e) {
                 // create a message using data input in modal, then send that directly
                 e.preventDefault();
                 e.stopPropagation();
-                const poll_message_content = poll_modal.frame_poll_message_content();
-                const poll_message_object = create_message_object(poll_message_content);
+                const poll_message_data = poll_modal.get_poll_message_data();
+                const poll_message_object = create_message_object(poll_message_data);
                 const from_modal = true;
                 send_message(poll_message_object, from_modal);
             },
             form_id: "add-poll-form",
             id: "add-poll-modal",
-            post_render: poll_modal.poll_options_setup,
+            post_render: poll_modal.setup,
             help_link: "https://zulip.com/help/create-a-poll",
         });
     });

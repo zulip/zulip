@@ -1,4 +1,26 @@
 <form id="add-poll-form" class="new-style">
+    <label>{{t "Send poll to:"}}</label>
+    <input class="message_type" type="hidden" value="{{message_type}}" />
+    {{#if (eq message_type "stream")}}
+        <div class="topic_stream_edit_header">
+            <div class="stream_header_colorblock"></div>
+            <div class="stream-dropdown">
+                {{> settings/dropdown_list_widget
+                  widget_name="select_stream"
+                  list_placeholder=(t 'Filter streams')}}
+            </div>
+            <i class="fa fa-angle-right" aria-hidden="true"></i>
+            <input name="topic_name" type="text" class="inline_topic_edit" autocomplete="off" value="{{topic_name}}" placeholder="{{t 'Topic'}}"/>
+            <input class="stream_id" type="hidden" value="{{stream_id}}" />
+        </div>
+    {{else}}
+        <div class="pm_recipient">
+            <div class="pill-container">
+                <div class="input" contenteditable="true" id="private_message_recipient_poll" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
+            </div>
+        </div>
+        <input class="initial_pm_recipient" type="hidden" value="{{private_message_recipient}}" />
+    {{/if}}
     <label>{{t "Question"}}</label>
     <textarea id="poll-question-textarea" placeholder="{{t 'Your question'}}"></textarea>
     <label>{{t "Options"}}</label>

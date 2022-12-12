@@ -44,6 +44,7 @@ import {user_settings} from "./user_settings";
 export const max_num_items = 8;
 
 export let emoji_collection = [];
+let poll_pm_pill;
 
 export function update_emoji_data() {
     emoji_collection = [];
@@ -452,6 +453,15 @@ export function get_pm_people(query) {
     return get_person_suggestions(query, opts);
 }
 
+export function get_poll_pm_people(query) {
+    const opts = {
+        want_broadcast: false,
+        filter_pills: true,
+        poll: true,
+    };
+    return get_person_suggestions(query, opts);
+}
+
 export function get_person_suggestions(query, opts) {
     query = typeahead.clean_query_lowercase(query);
 
@@ -459,7 +469,11 @@ export function get_person_suggestions(query, opts) {
         let persons;
 
         if (opts.filter_pills) {
-            persons = compose_pm_pill.filter_taken_users(all_persons);
+            if (opts.poll) {
+                persons = poll_pm_pill.filter_taken_users(all_persons);
+            } else {
+                persons = compose_pm_pill.filter_taken_users(all_persons);
+            }
         } else {
             persons = all_persons;
         }
@@ -1177,5 +1191,45 @@ export function initialize() {
         const val = $(this).val();
         const recipients = typeahead_helper.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));
+    });
+}
+
+export function initialize_poll_private_recipient_typeahead(pill) {
+    poll_pm_pill = pill;
+    $("#private_message_recipient_poll").typeahead({
+        source: get_poll_pm_people,
+        items: max_num_items,
+        dropup: true,
+        fixed: true,
+        highlighter(item) {
+            return typeahead_helper.render_person_or_user_group(item);
+        },
+        matcher() {
+            return true;
+        },
+        sorter(items) {
+            return items;
+        },
+        updater(item) {
+            if (user_groups.is_user_group(item)) {
+                for (const user_id of item.members) {
+                    const user = people.get_by_user_id(user_id);
+                    // filter out inserted users and current user from pill insertion
+                    const inserted_users = user_pill.get_user_ids(poll_pm_pill.widget);
+                    const current_user = people.is_current_user(user.email);
+                    if (!inserted_users.includes(user.user_id) && !current_user) {
+                        poll_pm_pill.set_from_typeahead(user);
+                    }
+                }
+                // clear input pill in the event no pills were added
+                const pill_widget = poll_pm_pill.widget;
+                if (pill_widget.clear_text !== undefined) {
+                    pill_widget.clear_text();
+                }
+            } else {
+                poll_pm_pill.set_from_typeahead(item);
+            }
+        },
+        stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 }

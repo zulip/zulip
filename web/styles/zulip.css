@@ -3001,8 +3001,14 @@ select.invite-as {
 }
 
 #add-poll-modal {
-    height: 60vh;
+    /* on wide screens, this height allows roughly 3 option
+    rows to fit in without need for scrolling */
+    height: 500px;
     overflow: hidden;
+
+    @media (width < $sm_min) {
+        height: 90vh;
+    }
 
     .modal__content {
         flex-grow: 1;
@@ -3037,6 +3043,29 @@ select.invite-as {
         .stream_header_colorblock,
         .inline_topic_edit {
             margin-bottom: 10px;
+        }
+
+        .topic_stream_edit_header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+
+            .dropdown-menu {
+                position: fixed;
+                top: 125px;
+                left: 30px;
+            }
+        }
+
+        .pm_recipient {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+
+            .input {
+                height: auto;
+            }
         }
 
         #poll-question-textarea {
