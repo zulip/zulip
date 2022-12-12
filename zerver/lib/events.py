@@ -48,7 +48,6 @@ from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_pu
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME, get_stream_topics_for_realm
-# from zerver.lib.stream_topic import get_stream_topics_for_realm
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_status_dict
@@ -582,7 +581,7 @@ def fetch_initial_state_data(
         # only topics that have been pinned or are currently pinned
         stream_topics_by_stream_id = defaultdict(list)
         for stream_topic in get_stream_topics_for_realm(realm):
-            stream_topics_by_stream_id[stream_topic.recipient.id].append(
+            stream_topics_by_stream_id[stream_topic.id].append(
                 {
                     "name": stream_topic.name,
                     "is_pinned": stream_topic.is_pinned,

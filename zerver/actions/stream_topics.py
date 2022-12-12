@@ -18,7 +18,6 @@ from zerver.models import (
     Recipient,
     Stream,
     StreamTopic,
-    StreamTopicDict,
     UserProfile,
     get_stream_topics
 )
@@ -27,13 +26,13 @@ from zerver.tornado.django_api import send_event
 
 def do_add_pinned_topic_to_stream_topic(
     realm: Realm,
-    stream_id: int,
+    stream: Stream,
     name: str,
     is_pinned: bool,
     acting_user: Optional[UserProfile] # Currently this feature is not user specific
 ) -> None:  
     stream_topic = StreamTopic(
-        stream_id=stream_id,
+        stream_id=stream.id,
         name=name,
         is_pinned=is_pinned,
     )
@@ -41,19 +40,18 @@ def do_add_pinned_topic_to_stream_topic(
 
     event = dict(
         type="stream_topic",
-        stream_id=stream_id,
+        stream_id=stream.id,
         name=name,
         is_pinned=is_pinned,
     )
-    transaction.on_commit(lambda: send_event(realm, event))
+    transaction.on_commit(lambda: send_event(realm, event, [acting_user]))
 
 
 def do_change_stream_topic_property(
     realm: Realm,
-    stream_id: int, 
+    stream: Stream, 
     stream_topic: StreamTopic, 
-    new_is_pinned: bool, 
-    *, 
+    new_is_pinned: bool,
     acting_user: Optional[UserProfile]
 ) -> None:
     if stream_topic.is_pinned == new_is_pinned:
@@ -63,15 +61,15 @@ def do_change_stream_topic_property(
         stream_topic.save(update_fields=["is_pinned"])
         RealmAuditLog.objects.create(
             realm=realm,
-            stream_id=stream_id,
+            modified_stream=stream,
             modified_stream_topic=stream_topic,
             event_type=RealmAuditLog.STREAMTOPIC_PROPERTY_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
             extra_data=orjson.dumps(
                 {
-                    RealmAuditLog.OLD_VALUE: not new_is_pinned,
-                    RealmAuditLog.NEW_VALUE: new_is_pinned,
+                    RealmAuditLog.OLD_VALUE: str(not new_is_pinned),
+                    RealmAuditLog.NEW_VALUE: str(new_is_pinned),
                     "property": "is_pinned",
                 }
             ).decode(),
@@ -81,9 +79,9 @@ def do_change_stream_topic_property(
         op="update",
         property="is_pinned",
         name=stream_topic.name,
-        stream_id=stream_id,
+        stream_id=stream.id,
         value=new_is_pinned,
     )
     transaction.on_commit(
-        lambda: send_event(realm, event)
+        lambda: send_event(realm, event, [acting_user])
     )

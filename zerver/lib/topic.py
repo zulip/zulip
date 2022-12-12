@@ -272,4 +272,8 @@ def get_topic_history_for_stream(
 
 
 def get_stream_topics_for_realm(realm: Realm) -> Sequence[StreamTopic]:
-    return StreamTopic.objects.filter(realm=realm)
+    streams = Stream.objects.filter(realm=realm)
+    stream_topics = []
+    for stream in streams:
+        stream_topics.extend(StreamTopic.objects.filter(stream=stream))
+    return stream_topics
