@@ -175,9 +175,6 @@ class LocalUploadBackend(ZulipUploadBackend):
         image_data = read_local_file("avatars", source_file_path + ".original")
         self.write_avatar_images(target_file_path, image_data)
 
-    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
-        return os.path.join(str(realm.id), "realm")
-
     def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         image_data = icon_file.read()
