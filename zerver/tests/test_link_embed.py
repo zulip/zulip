@@ -722,8 +722,14 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed"><div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a>'
+            f'</div><div class="message_embed_description">Description text</div></div></div>'
+        )
         self.assertEqual(
-            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
+            preview_url,
             msg.rendered_content,
         )
 
@@ -761,8 +767,14 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed"><div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a>'
+            f'</div><div class="message_embed_description">Description text</div></div></div>'
+        )
         self.assertEqual(
-            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
+            preview_url,
             msg.rendered_content,
         )
 
@@ -798,8 +810,14 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed"><div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a>'
+            f'</div><div class="message_embed_description">Description text</div></div></div>'
+        )
         self.assertEqual(
-            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
+            preview_url,
             msg.rendered_content,
         )
 

@@ -719,18 +719,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             self.add_oembed_data(root, link, extracted_data)
             return
 
-        if extracted_data.image is None:
-            # Don't add an embed if an image is not found
-            return
-
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
-        img_link = get_camo_url(extracted_data.image)
-        img = SubElement(container, "a")
-        img.set("style", "background-image: url(" + css_escape(img_link) + ")")
-        img.set("href", link)
-        img.set("class", "message_embed_image")
+        if extracted_data.image:
+            img_link = get_camo_url(extracted_data.image)
+            img = SubElement(container, "a")
+            img.set("style", "background-image: url(" + css_escape(img_link) + ")")
+            img.set("href", link)
+            img.set("class", "message_embed_image")
 
         data_container = SubElement(container, "div")
         data_container.set("class", "data-container")
