@@ -1026,12 +1026,12 @@ export function deactivate(coming_from_recent_topics = false) {
      */
     search.clear_search_form();
     //Display "empty" banner, only check messages after giving some time for messages to load in
-    setTimeout( () => {
-        blueslip.debug(`message_lists.current.empty(): ${JSON.stringify(message_lists.current.empty())}`)
-        if (message_lists.current.empty()) {
-            narrow_banner.show_empty_narrow_message()
-        }
-    }, 500)
+    // setTimeout( () => {
+    //     blueslip.debug(`message_lists.current.empty(): ${JSON.stringify(message_lists.current.empty())}`)
+    //     if (message_lists.current.empty()) {
+    //         narrow_banner.show_empty_narrow_message()
+    //     }
+    // }, 500)
     // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {

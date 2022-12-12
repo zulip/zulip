@@ -349,12 +349,6 @@ export class MessageList {
 
     rerender_view() {
         this.reselect_selected_id();
-        console.log("rerender_view")
-        if (this.empty()) {
-            narrow_banner.show_empty_narrow_message();
-        } else {
-            narrow_banner.hide_empty_narrow_message();
-        }
         this.view.rerender_preserving_scrolltop();
     }
 
