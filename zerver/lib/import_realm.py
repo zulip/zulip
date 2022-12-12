@@ -725,11 +725,9 @@ def process_avatars(record: Dict[str, Any]) -> None:
 
     if record["s3_path"].endswith(".original"):
         user_profile = get_user_profile_by_id(record["user_profile_id"])
-        if settings.LOCAL_UPLOADS_DIR is not None:
+        if settings.LOCAL_AVATARS_DIR is not None:
             avatar_path = user_avatar_path_from_ids(user_profile.id, record["realm_id"])
-            medium_file_path = (
-                os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path) + "-medium.png"
-            )
+            medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
             if os.path.exists(medium_file_path):
                 # We remove the image here primarily to deal with
                 # issues when running the import script multiple
@@ -875,10 +873,12 @@ def import_uploads(
             )
         else:
             assert settings.LOCAL_UPLOADS_DIR is not None
+            assert settings.LOCAL_AVATARS_DIR is not None
+            assert settings.LOCAL_FILES_DIR is not None
             if processing_avatars or processing_emojis or processing_realm_icons:
-                file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
+                file_path = os.path.join(settings.LOCAL_AVATARS_DIR, relative_path)
             else:
-                file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", relative_path)
+                file_path = os.path.join(settings.LOCAL_FILES_DIR, relative_path)
             orig_file_path = os.path.join(import_dir, record["path"])
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             shutil.copy(orig_file_path, file_path)

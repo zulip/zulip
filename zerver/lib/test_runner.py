@@ -212,9 +212,9 @@ def init_worker(
     from zproject.dev_urls import avatars_url
 
     assert settings.LOCAL_UPLOADS_DIR is not None
+    assert settings.LOCAL_AVATARS_DIR is not None
     assert avatars_url.default_args is not None
-    new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
-    avatars_url.default_args["document_root"] = new_root
+    avatars_url.default_args["document_root"] = settings.LOCAL_AVATARS_DIR
 
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
@@ -248,6 +248,8 @@ def initialize_worker_path(worker_id: int) -> None:
             "test_uploads",
         )
     )
+    settings.LOCAL_AVATARS_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
+    settings.LOCAL_FILES_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
 
 
 class Runner(DiscoverRunner):

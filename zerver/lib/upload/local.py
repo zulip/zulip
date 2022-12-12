@@ -69,7 +69,7 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
 
 
 def get_local_file_path(path_id: str) -> Optional[str]:
-    local_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "files", path_id)
+    local_path = os.path.join(assert_is_not_none(settings.LOCAL_FILES_DIR), path_id)
     assert_is_local_storage_path("files", local_path)
 
     if os.path.isfile(local_path):
@@ -214,15 +214,15 @@ class LocalUploadBackend(ZulipUploadBackend):
         file_path = user_avatar_path(user_profile)
 
         output_path = os.path.join(
-            assert_is_not_none(settings.LOCAL_UPLOADS_DIR),
-            "avatars",
+            assert_is_not_none(settings.LOCAL_AVATARS_DIR),
             file_path + file_extension,
         )
         if os.path.isfile(output_path):
             return
 
         image_path = os.path.join(
-            assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "avatars", file_path + ".original"
+            assert_is_not_none(settings.LOCAL_AVATARS_DIR),
+            file_path + ".original",
         )
         with open(image_path, "rb") as f:
             image_data = f.read()
@@ -282,7 +282,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             secrets.token_urlsafe(18),
             os.path.basename(tarball_path),
         )
-        abs_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "avatars", path)
+        abs_path = os.path.join(assert_is_not_none(settings.LOCAL_AVATARS_DIR), path)
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
         shutil.copy(tarball_path, abs_path)
         public_url = realm.uri + "/user_avatars/" + path
