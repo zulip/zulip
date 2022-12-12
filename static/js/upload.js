@@ -95,7 +95,7 @@ export function hide_upload_status(config) {
 
 export function show_error_message(
     config,
-    message = $t({defaultMessage: "An unknown error occurred."}),
+    message = $t({defaultMessage: "Error: Invalid file type upload not allowed."}),
 ) {
     get_item("send_button", config).prop("disabled", false);
     get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
