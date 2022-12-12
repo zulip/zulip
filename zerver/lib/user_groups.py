@@ -1,5 +1,6 @@
 from typing import Dict, Iterable, List, Mapping, Sequence, TypedDict
 
+import orjson
 from django.db import transaction
 from django.db.models import F, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -328,7 +329,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
 
     creation_time = timezone_now()
     UserGroup.objects.bulk_create(system_user_groups_list)
-    RealmAuditLog.objects.bulk_create(
+    realmauditlog_objects = [
         RealmAuditLog(
             realm=realm,
             acting_user=None,
@@ -337,7 +338,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
             modified_user_group=user_group,
         )
         for user_group in system_user_groups_list
-    )
+    ]
 
     groups_with_updated_settings = []
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
@@ -346,14 +347,25 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         groups_with_updated_settings.append(group)
     UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 
-    subgroup_objects = []
+    subgroup_objects: List[GroupGroupMembership] = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.
     subgroup, remaining_groups = system_user_groups_list[1], system_user_groups_list[2:]
     for supergroup in remaining_groups:
         subgroup_objects.append(GroupGroupMembership(subgroup=subgroup, supergroup=supergroup))
+        realmauditlog_objects.append(
+            RealmAuditLog(
+                realm=realm,
+                modified_user_group=supergroup,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                event_time=timezone_now(),
+                acting_user=None,
+                extra_data=orjson.dumps({"subgroup_ids": [subgroup.id]}).decode(),
+            )
+        )
         subgroup = supergroup
 
     GroupGroupMembership.objects.bulk_create(subgroup_objects)
+    RealmAuditLog.objects.bulk_create(realmauditlog_objects)
 
     return role_system_groups_dict
 

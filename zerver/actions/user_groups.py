@@ -2,6 +2,7 @@ import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
 import django.db.utils
+import orjson
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -298,6 +299,16 @@ def add_subgroups_to_user_group(
     GroupGroupMembership.objects.bulk_create(group_memberships)
 
     subgroup_ids = [subgroup.id for subgroup in subgroups]
+    now = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group=user_group,
+        event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+        event_time=now,
+        acting_user=acting_user,
+        extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
+    )
+
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
 
 
@@ -308,6 +319,16 @@ def remove_subgroups_from_user_group(
     GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
 
     subgroup_ids = [subgroup.id for subgroup in subgroups]
+    now = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group=user_group,
+        event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
+        event_time=now,
+        acting_user=acting_user,
+        extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
+    )
+
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 
 
