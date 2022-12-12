@@ -15,6 +15,11 @@ import * as util from "./util";
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
 
+Handlebars.registerHelper('splitString', function(given_string) {
+    const arr = given_string.split("-");
+    return arr[0];
+});
+
 Handlebars.registerHelper({
     eq(a, b) {
         return a === b;
