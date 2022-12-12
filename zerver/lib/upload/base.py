@@ -1,4 +1,5 @@
 import io
+import os
 import re
 import unicodedata
 from typing import IO, Any, Callable, Optional, Tuple
@@ -257,7 +258,7 @@ class ZulipUploadBackend:
         raise NotImplementedError()
 
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
-        raise NotImplementedError()
+        return os.path.join(str(realm.id), "realm")
 
 
 def create_attachment(
