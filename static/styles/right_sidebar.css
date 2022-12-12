@@ -319,3 +319,15 @@ $user_status_emoji_width: 24px;
         width: 90%;
     }
 }
+
+@media print {
+    #userlist-toggle {
+        display: none;
+        position: absolute;
+        top: 0;
+        right: 0;
+        text-align: center;
+        vertical-align: middle;
+        border-left: 1px solid white;
+    }
+}

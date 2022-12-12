@@ -1806,8 +1806,8 @@ div.focused_table {
 }
 
 .top-navbar-border {
-    border-right: 1px solid hsl(0, 0%, 88%);
     border-left: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0, 0%, 88%);
 }
 
 .search_icon {
@@ -3257,5 +3257,29 @@ div.topic_edit_spinner .loading_indicator_spinner {
         .date_row {
             background-color: hsl(192, 20%, 95%);
         }
+    }
+}
+
+@media print
+{    
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+
+    .top-navbar-border, .top-navbar-border * {
+        border-left: 1px WHITE;
+        border-right: 1px WHITE;
+    }
+
+    .spectator_narrow_login_button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        /* Height of navbar in tablet sizes */
+        height: 40px;
+        /* Width of userlist-toggle button. */
+        width: 45px;
+        border-left: 1px solid white;
     }
 }
