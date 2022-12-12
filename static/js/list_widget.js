@@ -292,8 +292,13 @@ export function create($container, list, opts) {
 
     // the sorting function is either the function or string that calls the
     // function to sort the list by. The prop is used for generic functions
-    // that can be called to sort with a particular prop.
-    widget.set_sorting_function = function (sorting_function, prop) {
+    // that can be called to sort with a particular prop. In addition,
+    // this function has a reverse parameter which, if set to true,
+    // will use set_reverse_mode() to sort in reverse order.
+    widget.set_sorting_function = function (sorting_function, prop, reverse) {
+        if (reverse) {
+            widget.set_reverse_mode(reverse);   
+        }
         if (typeof sorting_function === "function") {
             meta.sorting_function = sorting_function;
         } else if (typeof sorting_function === "string") {
