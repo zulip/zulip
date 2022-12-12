@@ -117,7 +117,7 @@ def api_sonarqube_webhook(
 ) -> HttpResponse:
     project = payload["project"]["name"].tame(check_string)
     branch = None
-    if "branch" in payload.keys():
+    if "branch" in payload:
         branch = payload["branch"].get("name").tame(check_none_or(check_string))
     if branch:
         topic = TOPIC_WITH_BRANCH.format(project, branch)

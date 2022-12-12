@@ -1627,7 +1627,7 @@ def parse_message_content_edit_or_delete_limit(
     *,
     setting_name: str,
 ) -> Optional[int]:
-    if isinstance(value, str) and value in special_values_map.keys():
+    if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
         raise RequestVariableConversionError(setting_name, value)

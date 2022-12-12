@@ -356,7 +356,7 @@ def get_service_dicts_for_bots(
                 for service in services
             ]
         elif bot_type == UserProfile.EMBEDDED_BOT:
-            if bot_profile_id in embedded_bot_configs.keys():
+            if bot_profile_id in embedded_bot_configs:
                 bot_config = embedded_bot_configs[bot_profile_id]
                 service_dicts = [
                     {

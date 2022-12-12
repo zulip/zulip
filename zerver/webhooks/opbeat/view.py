@@ -50,7 +50,7 @@ subject_types: Dict[str, List[List[str]]] = {
 
 def get_value(_obj: WildValue, key: str) -> str:
     for _key in key.lstrip("!").split("/"):
-        if _key in _obj.keys():
+        if _key in _obj:
             _obj = _obj[_key]
         else:
             return ""

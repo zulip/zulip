@@ -668,7 +668,7 @@ def parse_message_retention_days(
     value: Union[int, str],
     special_values_map: Mapping[str, Optional[int]],
 ) -> Optional[int]:
-    if isinstance(value, str) and value in special_values_map.keys():
+    if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
         raise RequestVariableConversionError("message_retention_days", value)

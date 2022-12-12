@@ -910,7 +910,7 @@ def channel_message_to_zerver_message(
 
         message_id = NEXT_ID("message")
 
-        if "reactions" in message.keys():
+        if "reactions" in message:
             build_reactions(
                 reaction_list,
                 message["reactions"],

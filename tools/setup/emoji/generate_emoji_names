@@ -179,7 +179,7 @@ def main() -> None:
     # If the alias was specifically specified in custom_emoji_names, then we can keep just
     # that one, but otherwise there's no particular emoji that is an obvious candidate
     # for the alias so just remove the alias for all relevant emoji.
-    for alias in alias_to_emoji_code.keys():
+    for alias in alias_to_emoji_code:
         if len(alias_to_emoji_code[alias]) > 1:
             for emoji_code in alias_to_emoji_code[alias]:
                 if emoji_code not in CUSTOM_EMOJI_NAME_MAPS:

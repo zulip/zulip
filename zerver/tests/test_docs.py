@@ -231,7 +231,7 @@ class DocPageTest(ZulipTestCase):
             ],
         )
 
-        for integration in INTEGRATIONS.keys():
+        for integration in INTEGRATIONS:
             url = f"/integrations/doc-html/{integration}"
             self._test(url, "", doc_html_str=True)
 
@@ -253,9 +253,9 @@ class DocPageTest(ZulipTestCase):
         self._test(url, description, doc_html_str=True)
 
         # Test category pages
-        for category in CATEGORIES.keys():
+        for category in CATEGORIES:
             url = f"/integrations/{category}"
-            if category in META_CATEGORY.keys():
+            if category in META_CATEGORY:
                 title = f"<title>{CATEGORIES[category]} | Zulip integrations</title>"
                 og_title = f'<meta property="og:title" content="{CATEGORIES[category]} | Zulip integrations" />'
             else:

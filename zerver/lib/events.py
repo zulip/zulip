@@ -1011,7 +1011,7 @@ def apply_event(
                     if permission in state:
                         state[permission] = user_profile.has_permission(policy)
 
-            if event["property"] in policy_permission_dict.keys():
+            if event["property"] in policy_permission_dict:
                 if policy_permission_dict[event["property"]] in state:
                     state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
                         event["property"]

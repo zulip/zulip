@@ -1158,7 +1158,7 @@ def process_message_update_event(
         user_profile_id = user_data["id"]
 
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
-        for key in user_data.keys():
+        for key in user_data:
             if key != "id":
                 user_event[key] = user_data[key]
 
