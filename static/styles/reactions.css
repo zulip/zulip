@@ -58,6 +58,16 @@
         line-height: 1em;
     }
 
+    .message_reaction_emoji {
+        position: relative;
+        top: 1px;
+        font-size: 90%;
+        display: flex;
+        margin: 0 3px;
+        padding: 2px 0;
+        line-height: 1em;
+    }
+
     .message_reaction:hover .message_reaction_count {
         color: hsl(200, 100%, 40%);
     }
