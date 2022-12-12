@@ -297,7 +297,7 @@ export function create($container, list, opts) {
     // will use set_reverse_mode() to sort in reverse order.
     widget.set_sorting_function = function (sorting_function, prop, reverse) {
         if (reverse) {
-            widget.set_reverse_mode(reverse);   
+            widget.set_reverse_mode(reverse);
         }
         if (typeof sorting_function === "function") {
             meta.sorting_function = sorting_function;
