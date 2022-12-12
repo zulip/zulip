@@ -312,9 +312,6 @@ class S3UploadBackend(ZulipUploadBackend):
         # export_path has a leading /
         return self.get_public_upload_url(export_path[1:])
 
-    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
-        return os.path.join(str(realm.id), "realm")
-
     def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
