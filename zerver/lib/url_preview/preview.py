@@ -12,7 +12,7 @@ from zerver.lib.cache import cache_with_key, preview_url_cache_key
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
-from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
+from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser, TwitterCardParser
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
 # Based on django.core.validators.URLValidator, with ftp support removed.
@@ -106,7 +106,7 @@ def get_link_embed_data(
     if data is None:
         data = UrlEmbedData()
 
-    for parser_class in (OpenGraphParser, GenericParser):
+    for parser_class in (OpenGraphParser, TwitterCardParser, GenericParser):
         parser = parser_class(response.content, response.headers.get("Content-Type"))
         data.merge(parser.extract_data())
 
