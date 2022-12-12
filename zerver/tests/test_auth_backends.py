@@ -243,7 +243,7 @@ class AuthBackendTest(ZulipTestCase):
         clear_supported_auth_backends_cache()
 
         # Verify auth fails if the auth backend is disabled for the realm
-        for backend_name in AUTH_BACKEND_NAME_MAP.keys():
+        for backend_name in AUTH_BACKEND_NAME_MAP:
             if isinstance(backend, AUTH_BACKEND_NAME_MAP[backend_name]):
                 break
 

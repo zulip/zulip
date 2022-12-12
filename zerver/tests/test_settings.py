@@ -403,7 +403,7 @@ class ChangeSettingsTest(ZulipTestCase):
         )
 
         self.login("hamlet")
-        for setting_name in invalid_values_dict.keys():
+        for setting_name in invalid_values_dict:
             invalid_value = invalid_values_dict.get(setting_name)
             if isinstance(invalid_value, str):
                 invalid_value = orjson.dumps(invalid_value).decode()

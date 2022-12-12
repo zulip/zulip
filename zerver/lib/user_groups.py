@@ -208,7 +208,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     which is a copy of this function from when we introduced system groups.
     """
     role_system_groups_dict: Dict[int, UserGroup] = {}
-    for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP.keys():
+    for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
         user_group_params = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]
         user_group = UserGroup(
             name=user_group_params["name"],

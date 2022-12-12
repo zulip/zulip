@@ -65,7 +65,7 @@ def create_role_based_system_groups_for_internal_realms(
             return
 
         role_system_groups_dict = {}
-        for role in SYSTEM_USER_GROUP_ROLE_MAP.keys():
+        for role in SYSTEM_USER_GROUP_ROLE_MAP:
             user_group_params = SYSTEM_USER_GROUP_ROLE_MAP[role]
             user_group = UserGroup(
                 name=user_group_params["name"],

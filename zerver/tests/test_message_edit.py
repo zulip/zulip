@@ -1683,11 +1683,11 @@ class EditMessageTest(EditMessageTestCase):
         msg3 = Message.objects.get(id=id3)
 
         msg1_edit_history = orjson.loads(assert_is_not_none(msg1.edit_history))
-        self.assertTrue("prev_content" in msg1_edit_history[0].keys())
+        self.assertTrue("prev_content" in msg1_edit_history[0])
 
         for msg in [msg2, msg3]:
             self.assertFalse(
-                "prev_content" in orjson.loads(assert_is_not_none(msg.edit_history))[0].keys()
+                "prev_content" in orjson.loads(assert_is_not_none(msg.edit_history))[0]
             )
 
         for msg in [msg1, msg2, msg3]:
