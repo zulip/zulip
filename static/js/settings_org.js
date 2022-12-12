@@ -168,16 +168,6 @@ function get_property_value(property_name, for_realm_default_settings, sub) {
         return sub[property_name];
     }
 
-    if (property_name === "realm_waiting_period_threshold") {
-        if (page_params.realm_waiting_period_threshold === 0) {
-            return "none";
-        }
-        if (page_params.realm_waiting_period_threshold === 3) {
-            return "three_days";
-        }
-        return "custom_period";
-    }
-
     if (property_name === "realm_org_join_restrictions") {
         if (page_params.realm_emails_restricted_to_domains) {
             return "only_selected_domain";
@@ -245,12 +235,22 @@ export function change_element_block_display_property(elem_id, show_element) {
     }
 }
 
-function set_realm_waiting_period_dropdown() {
-    const value = get_property_value("realm_waiting_period_threshold");
-    $("#id_realm_waiting_period_threshold").val(value);
+function set_realm_waiting_period_setting() {
+    const setting_value = page_params.realm_waiting_period_threshold;
+    const valid_limit_values = settings_config.waiting_period_threshold_dropdown_values.map(
+        (x) => x.code,
+    );
+
+    if (valid_limit_values.includes(setting_value)) {
+        $("#id_realm_waiting_period_threshold").val(setting_value);
+    } else {
+        $("#id_realm_waiting_period_threshold").val("custom_period");
+    }
+
+    $("#id_realm_waiting_period_threshold_custom_input").val(setting_value);
     change_element_block_display_property(
         "id_realm_waiting_period_threshold_custom_input",
-        value === "custom_period",
+        $("#id_realm_waiting_period_threshold").val() === "custom_period",
     );
 }
 
@@ -508,9 +508,6 @@ function update_dependent_subsettings(property_name) {
     }
 
     switch (property_name) {
-        case "realm_waiting_period_threshold":
-            set_realm_waiting_period_dropdown();
-            break;
         case "realm_video_chat_provider":
             set_video_chat_provider_dropdown();
             break;
@@ -633,6 +630,9 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_message_retention_days":
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
+            break;
+        case "realm_waiting_period_threshold":
+            set_realm_waiting_period_setting();
             break;
         default:
             if (property_value !== undefined) {
@@ -846,6 +846,13 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
         // input box.
         return null;
     }
+
+    if ($input_elem.attr("id") === "id_realm_waiting_period_threshold") {
+        // For realm waiting period threshold setting, the custom input element contains
+        // number of days.
+        return Number.parseInt(Number($custom_input_elem.val()), 10);
+    }
+
     return parse_time_limit($custom_input_elem);
 }
 
@@ -872,6 +879,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
             break;
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
+        case "realm_waiting_period_threshold":
             proposed_val = get_time_limit_setting_value($elem, false);
             break;
         case "realm_message_retention_days":
@@ -957,14 +965,24 @@ function enable_or_disable_save_button($subsection_elem) {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
         const dropdown_elem_val = $(setting_elem).find("select").val();
-        const custom_input_elem_val = Number.parseInt(
-            Number($(setting_elem).find(".admin-realm-time-limit-input").val()),
-            10,
-        );
+        const $custom_input_elem = $(setting_elem).find(".admin-realm-time-limit-input");
+        const custom_input_elem_val = Number.parseInt(Number($custom_input_elem.val()), 10);
 
         disable_save_btn =
             dropdown_elem_val === "custom_period" &&
             (custom_input_elem_val <= 0 || Number.isNaN(custom_input_elem_val));
+
+        if (
+            $custom_input_elem.val() === "0" &&
+            extract_property_name($(setting_elem).find("select")) ===
+                "realm_waiting_period_threshold"
+        ) {
+            // 0 is a valid value for realm_waiting_period_threshold setting. We specifically
+            // check for $custom_input_elem.val() to be "0" and not custom_input_elem_val
+            // because it is 0 even when custom input box is empty.
+            disable_save_btn = false;
+        }
+
         if (disable_save_btn) {
             break;
         }
@@ -1083,21 +1101,6 @@ export function register_save_discard_widget_handlers(
                         data.emails_restricted_to_domains = false;
                         break;
                 }
-
-                const waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
-                switch (waiting_period_threshold) {
-                    case "none":
-                        data.waiting_period_threshold = 0;
-                        break;
-                    case "three_days":
-                        data.waiting_period_threshold = 3;
-                        break;
-                    case "custom_period":
-                        data.waiting_period_threshold = $(
-                            "#id_realm_waiting_period_threshold_custom_input",
-                        ).val();
-                        break;
-                }
                 break;
             }
             case "auth_settings":
@@ -1149,7 +1152,7 @@ export function build_page() {
         set_property_dropdown_value(property_name);
     }
 
-    set_realm_waiting_period_dropdown();
+    set_realm_waiting_period_setting();
     set_video_chat_provider_dropdown();
     set_giphy_rating_dropdown();
     set_msg_edit_limit_dropdown();
@@ -1193,7 +1196,7 @@ export function build_page() {
     $("#id_realm_waiting_period_threshold").on("change", function () {
         const waiting_period_threshold = this.value;
         change_element_block_display_property(
-            "id_realm_waiting_period_threshold",
+            "id_realm_waiting_period_threshold_custom_input",
             waiting_period_threshold === "custom_period",
         );
     });

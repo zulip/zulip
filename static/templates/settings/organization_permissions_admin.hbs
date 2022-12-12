@@ -35,22 +35,20 @@
                         {{/if}}
                     </div>
                 </div>
-                <div class="input-group">
+                <div class="input-group time-limit-setting">
                     <label for="realm_waiting_period_threshold" class="dropdown-title">
                         {{t "Waiting period before new members turn into full members" }}
                         {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
                     </label>
-                    <select name="realm_waiting_period_threshold" id="id_realm_waiting_period_threshold" class="prop-element">
-                        <option value="none">{{t "None" }}</option>
-                        <option value="three_days">{{t "3 days" }}</option>
-                        <option value="custom_period">{{t "Custom" }}</option>
+                    <select name="realm_waiting_period_threshold" id="id_realm_waiting_period_threshold" class="prop-element" data-setting-widget-type="time-limit">
+                        {{> dropdown_options_widget option_values=waiting_period_threshold_dropdown_values}}
                     </select>
                     {{!-- This setting is hidden unless `custom_period` --}}
                     <div class="dependent-settings-block">
                         <label for="id_realm_waiting_period_threshold_custom_input" class="inline-block">{{t "Waiting period (days)" }}:</label>
                         <input type="text" id="id_realm_waiting_period_threshold_custom_input"
                           name="realm_waiting_period_threshold_custom_input"
-                          class="admin-realm-time-limit-input prop-element"
+                          class="admin-realm-time-limit-input"
                           value="{{ realm_waiting_period_threshold }}"/>
                     </div>
                 </div>
