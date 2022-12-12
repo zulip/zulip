@@ -9,7 +9,6 @@ const {user_settings} = require("./lib/zpage_params");
 
 const blueslip = zrequire("blueslip");
 const compose_pm_pill = zrequire("compose_pm_pill");
-const user_pill = zrequire("user_pill");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const sub_store = zrequire("sub_store");
@@ -149,14 +148,16 @@ test("draft_model delete", ({override}) => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", ({override_rewire}) => {
+test("snapshot_message", () => {
     stream_data.get_sub = (stream_name) => {
         assert.equal(stream_name, "stream");
         return {stream_id: 30};
     };
 
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
-    override_rewire(compose_pm_pill, "set_from_emails", noop);
+    compose_pm_pill.compose_pm_pill = {
+        set_from_emails: noop,
+        get_emails: () => aaron.email,
+    };
 
     let curr_draft;
 
@@ -230,13 +231,15 @@ test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-test("update_draft", ({override, override_rewire}) => {
+test("update_draft", ({override}) => {
     compose_state.set_message_type(null);
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
 
-    override_rewire(compose_pm_pill, "set_from_emails", noop);
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    compose_pm_pill.compose_pm_pill = {
+        set_from_emails: noop,
+        get_emails: () => aaron.email,
+    };
     compose_state.set_message_type("private");
     compose_state.message_content("dummy content");
     compose_state.private_message_recipient(aaron.email);
@@ -579,7 +582,9 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return {name: "stream"};
     };
 
-    override_rewire(user_pill, "get_user_ids", () => []);
+    compose_pm_pill.compose_pm_pill = {
+        get_emails: () => "",
+    };
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(null);
 
@@ -744,8 +749,10 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
 
     override_rewire(drafts, "set_initial_element", noop);
 
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
-    override_rewire(compose_pm_pill, "set_from_emails", noop);
+    compose_pm_pill.compose_pm_pill = {
+        set_from_emails: noop,
+        get_emails: () => aaron.email,
+    };
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(aaron.email);
 

@@ -10,7 +10,7 @@ const compose_actions = mock_esm("../src/compose_actions");
 const input_pill = mock_esm("../src/input_pill");
 const people = zrequire("people");
 
-const compose_pm_pill = zrequire("compose_pm_pill");
+let compose_pm_pill = zrequire("compose_pm_pill");
 
 let pills = {
     pill: {},
@@ -154,6 +154,7 @@ run_test("pills", ({override}) => {
     };
 
     compose_pm_pill.initialize();
+    compose_pm_pill = compose_pm_pill.compose_pm_pill;
     assert.ok(compose_pm_pill.widget);
 
     compose_pm_pill.set_from_typeahead(othello);

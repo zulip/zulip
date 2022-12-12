@@ -8,7 +8,7 @@ import render_wildcard_warning from "../templates/compose_banner/wildcard_warnin
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
-import * as compose_pm_pill from "./compose_pm_pill";
+import {compose_pm_pill} from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";

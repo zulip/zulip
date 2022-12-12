@@ -9,25 +9,27 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
 
-run_test("private_message_recipient", ({override}) => {
+run_test("private_message_recipient", () => {
     let emails;
-    override(compose_pm_pill, "set_from_emails", (value) => {
-        emails = value;
-    });
-
-    override(compose_pm_pill, "get_emails", () => emails);
+    compose_pm_pill.compose_pm_pill = {
+        get_emails: () => emails,
+        set_from_emails(value) {
+            emails = value;
+        },
+    };
 
     compose_state.private_message_recipient("fred@fred.org");
     assert.equal(compose_state.private_message_recipient(), "fred@fred.org");
 });
 
-run_test("has_full_recipient", ({override}) => {
+run_test("has_full_recipient", () => {
     let emails;
-    override(compose_pm_pill, "set_from_emails", (value) => {
-        emails = value;
-    });
-
-    override(compose_pm_pill, "get_emails", () => emails);
+    compose_pm_pill.compose_pm_pill = {
+        get_emails: () => emails,
+        set_from_emails(value) {
+            emails = value;
+        },
+    };
 
     compose_state.set_message_type("stream");
     compose_state.set_stream_name("");

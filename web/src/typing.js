@@ -4,7 +4,7 @@ import * as typing_status from "../shared/src/typing_status";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as compose_pm_pill from "./compose_pm_pill";
+import {compose_pm_pill} from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as people from "./people";
 import {user_settings} from "./user_settings";

@@ -21,7 +21,7 @@ function returns_time(secs) {
     };
 }
 
-run_test("basics", ({override, override_rewire}) => {
+run_test("basics", ({override_rewire}) => {
     typing_status.initialize_state();
 
     // invalid conversation basically does nothing
@@ -264,7 +264,9 @@ run_test("basics", ({override, override_rewire}) => {
     // test that we correctly detect if worker.get_recipient
     // and typing_status.state.current_recipient are the same
 
-    override(compose_pm_pill, "get_user_ids_string", () => "1,2,3");
+    compose_pm_pill.compose_pm_pill = {
+        get_user_ids_string: () => "1,2,3",
+    };
     typing_status.state.current_recipient = typing.get_recipient();
 
     const call_count = {
@@ -295,14 +297,18 @@ run_test("basics", ({override, override_rewire}) => {
 
     // change in recipient and new_recipient should make us
     // call typing_status.stop_last_notification
-    override(compose_pm_pill, "get_user_ids_string", () => "2,3,4");
+    compose_pm_pill.compose_pm_pill = {
+        get_user_ids_string: () => "2,3,4",
+    };
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 1);
 
     // Stream messages are represented as get_user_ids_string being empty
-    override(compose_pm_pill, "get_user_ids_string", () => "");
+    compose_pm_pill.compose_pm_pill = {
+        get_user_ids_string: () => "",
+    };
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);

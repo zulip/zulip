@@ -10,7 +10,7 @@ import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
-import * as compose_pm_pill from "./compose_pm_pill";
+import {compose_pm_pill} from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";

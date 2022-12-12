@@ -177,7 +177,9 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         compose_state.topic("");
         compose_state.set_message_type("private");
         page_params.user_id = new_user.user_id;
-        override(compose_pm_pill, "get_emails", () => "alice@example.com");
+        compose_pm_pill.compose_pm_pill = {
+            get_emails: () => "alice@example.com",
+        };
 
         const server_message_id = 127;
         override_rewire(echo, "insert_message", (message) => {
@@ -387,8 +389,10 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose-textarea").val("foobarfoobar");
         compose_ui.compose_spinner_visible = false;
         compose_state.set_message_type("private");
-        override(compose_pm_pill, "get_emails", () => "bob@example.com");
-        override(compose_pm_pill, "get_user_ids", () => []);
+        compose_pm_pill.compose_pm_pill = {
+            get_emails: () => "bob@example.com",
+            get_user_ids: () => [],
+        };
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {
@@ -744,7 +748,7 @@ test_ui("on_events", ({override}) => {
     })();
 });
 
-test_ui("create_message_object", ({override, override_rewire}) => {
+test_ui("create_message_object", ({override_rewire}) => {
     compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
@@ -765,7 +769,9 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     assert.equal(message.content, "burrito");
 
     compose_state.set_message_type("private");
-    override(compose_pm_pill, "get_emails", () => "alice@example.com,bob@example.com");
+    compose_pm_pill.compose_pm_pill = {
+        get_emails: () => "alice@example.com,bob@example.com",
+    };
 
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.user_id, bob.user_id]);

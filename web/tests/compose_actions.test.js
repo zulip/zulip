@@ -78,12 +78,14 @@ function assert_hidden(sel) {
     assert.ok(!$(sel).visible());
 }
 
-function override_private_message_recipient({override}) {
+function override_private_message_recipient() {
     let recipient;
-    override(compose_pm_pill, "set_from_emails", (value) => {
-        recipient = value;
-    });
-    override(compose_pm_pill, "get_emails", () => recipient, {unused: false});
+    compose_pm_pill.compose_pm_pill = {
+        get_emails: () => recipient,
+        set_from_emails(value) {
+            recipient = value;
+        },
+    };
 }
 
 function test(label, f) {
@@ -208,7 +210,7 @@ test("start", ({override, override_rewire}) => {
 
     // Cancel compose.
     let pill_cleared;
-    compose_pm_pill.clear = () => {
+    compose_pm_pill.compose_pm_pill.clear = () => {
         pill_cleared = true;
     };
 
