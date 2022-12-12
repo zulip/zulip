@@ -529,6 +529,7 @@ export function activate(raw_operators, opts) {
                     update_selection({
                         id_info,
                         select_offset: then_select_offset,
+                        msg_list: message_lists.current,
                     });
                 }
                 msg_list.network_time = new Date();
@@ -542,6 +543,7 @@ export function activate(raw_operators, opts) {
         update_selection({
             id_info,
             select_offset: then_select_offset,
+            msg_list: message_lists.current,
         });
     }
 
@@ -772,7 +774,15 @@ export function maybe_add_local_messages(opts) {
 }
 
 export function update_selection(opts) {
-    if (message_list.narrowed.empty()) {
+    if (message_lists.current !== opts.msg_list) {
+        // If we navigated away from a view while we were fetching
+        // messages for it, don't attempt to move the currently
+        // selected message.
+        return;
+    }
+
+    if (message_lists.current.empty()) {
+        // There's nothing to select if there are no messages.
         return;
     }
 
@@ -781,15 +791,15 @@ export function update_selection(opts) {
 
     let msg_id = id_info.final_select_id;
     if (msg_id === undefined) {
-        msg_id = message_list.narrowed.first_unread_message_id();
+        msg_id = message_lists.current.first_unread_message_id();
     }
 
     const preserve_pre_narrowing_screen_position =
-        message_list.narrowed.get(msg_id) !== undefined && select_offset !== undefined;
+        message_lists.current.get(msg_id) !== undefined && select_offset !== undefined;
 
     const then_scroll = !preserve_pre_narrowing_screen_position;
 
-    message_list.narrowed.select_id(msg_id, {
+    message_lists.current.select_id(msg_id, {
         then_scroll,
         use_closest: true,
         force_rerender: true,
@@ -799,7 +809,7 @@ export function update_selection(opts) {
         // Scroll so that the selected message is in the same
         // position in the viewport as it was prior to
         // narrowing
-        message_list.narrowed.view.set_message_offset(select_offset);
+        message_lists.current.view.set_message_offset(select_offset);
     }
     unread_ops.process_visible();
 }
