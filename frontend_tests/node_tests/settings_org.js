@@ -575,6 +575,25 @@ test("set_up", ({override, override_rewire}) => {
     );
     $realm_message_retention_custom_input.attr("id", "id_realm_message_retention_custom_input");
 
+    const $stub_realm_waiting_period_threshold_parent = $.create(
+        "<stub waiting period threshold setting parent>",
+    );
+    const $realm_waiting_period_threshold_custom_input = $(
+        "#id_realm_waiting_period_threshold_custom_input",
+    );
+    $("#id_realm_waiting_period_threshold").set_parent($stub_realm_waiting_period_threshold_parent);
+    $realm_waiting_period_threshold_custom_input.set_parent(
+        $stub_realm_waiting_period_threshold_parent,
+    );
+    $stub_realm_waiting_period_threshold_parent.set_find_results(
+        ".admin-realm-time-limit-input",
+        $realm_waiting_period_threshold_custom_input,
+    );
+    $realm_waiting_period_threshold_custom_input.attr(
+        "id",
+        "id_realm_waiting_period_threshold_custom_input",
+    );
+
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
     );
