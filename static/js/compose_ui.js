@@ -67,11 +67,36 @@ export function smart_insert($textarea, syntax) {
     autosize_textarea($textarea);
 }
 
-export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea")) {
+export function smart_insert_block($textarea, syntax) {
+    function is_newline(c) {
+        return c === "\n" || c === "\r";
+    }
+
+    const pos = $textarea.caret();
+    const before_str = $textarea.val().slice(0, pos);
+
+    if (pos > 0 && is_newline(before_str.slice(-1))) {
+        $textarea.val(before_str.trimEnd() + "\n\n");
+    }
+
+    // text-field-edit ensures `$textarea` is focused before inserting
+    // the new syntax.
+    insert($textarea[0], syntax);
+
+    autosize_textarea($textarea);
+}
+
+export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea"), inline = true) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
-    // wrapper around smart_insert.
-    smart_insert($textarea, syntax);
+    if (inline == false)
+    {
+        smart_insert_block($textarea, syntax);
+    }
+    else {
+        smart_insert($textarea, syntax);
+    }
+    
 }
 
 export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {

@@ -317,7 +317,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
                 "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n" +
                     "```quote\n" +
                     `${quote_text}\n` +
-                    "```",
+                    "```\n",
             );
         });
     }
