@@ -18,6 +18,7 @@ from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.actions.create_user import do_create_user
+from zerver.actions.user_groups import create_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.email_notifications import (
@@ -31,7 +32,6 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_groups import create_user_group
 from zerver.models import ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
 
 

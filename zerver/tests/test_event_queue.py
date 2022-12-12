@@ -8,12 +8,12 @@ from django.http import HttpRequest, HttpResponse
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.streams import do_change_subscription_property
+from zerver.actions.user_groups import create_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.cache import cache_delete, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
-from zerver.lib.user_groups import create_user_group
 from zerver.models import Recipient, Subscription, UserProfile, UserTopic, get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,

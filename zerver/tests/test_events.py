@@ -94,6 +94,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
+    create_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
@@ -200,7 +201,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     CustomProfileField,

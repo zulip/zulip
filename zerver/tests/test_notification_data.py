@@ -1,7 +1,7 @@
+from zerver.actions.user_groups import create_user_group
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_groups import create_user_group
 
 
 class TestNotificationData(ZulipTestCase):

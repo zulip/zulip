@@ -6,12 +6,11 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_groups import promote_new_full_members
+from zerver.actions.user_groups import create_user_group, promote_new_full_members
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
-    create_user_group,
     get_direct_memberships_of_users,
     get_direct_user_groups,
     get_recursive_group_members,

@@ -16,6 +16,7 @@ from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_emoji import do_remove_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_groups import create_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
@@ -52,7 +53,6 @@ from zerver.lib.mention import (
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Message,
     RealmEmoji,
