@@ -225,9 +225,9 @@ def avatar_disk_path(
     avatar_url_path = avatar_url(user_profile, medium)
     assert avatar_url_path is not None
     assert settings.LOCAL_UPLOADS_DIR is not None
+    assert settings.LOCAL_AVATARS_DIR is not None
     avatar_disk_path = os.path.join(
-        settings.LOCAL_UPLOADS_DIR,
-        "avatars",
+        settings.LOCAL_AVATARS_DIR,
         avatar_url_path.split("/")[-2],
         avatar_url_path.split("/")[-1].split("?")[0],
     )
@@ -549,6 +549,8 @@ FuncT = TypeVar("FuncT", bound=Callable[..., None])
 def use_s3_backend(method: FuncT) -> FuncT:
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
+    @override_settings(LOCAL_AVATARS_DIR=None)
+    @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
         zerver.lib.upload.upload_backend = S3UploadBackend()
         try:
