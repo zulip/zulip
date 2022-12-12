@@ -24,6 +24,7 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as message_edit from "./message_edit";
 import * as muted_topics_ui from "./muted_topics_ui";
+import * as pinned_topics_ui from "./pinned_topics_ui";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -778,6 +779,31 @@ export function register_stream_handlers() {
 }
 
 export function register_topic_handlers() {
+    // pin the topic
+    $("body").on("click", ".sidebar-popover-pin-topic", (e) => {
+        const stream_id = topic_popover_stream_id(e);
+        if (!stream_id) {
+            return;
+        }
+        const topic = $(e.currentTarget).attr("data-topic-name");
+        pinned_topics_ui.pin_topic(stream_id, topic);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    // Unpin the topic
+    $("body").on("click", ".sidebar-popover-unpin-topic", (e) => {
+        const stream_id = topic_popover_stream_id(e);
+        if (!stream_id) {
+            return;
+        }
+
+        const topic = $(e.currentTarget).attr("data-topic-name");
+        pinned_topics_ui.pin_topic(stream_id, topic);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     // Mute the topic
     $("body").on("click", ".sidebar-popover-mute-topic", (e) => {
         const stream_id = topic_popover_stream_id(e);

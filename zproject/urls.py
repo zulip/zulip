@@ -155,6 +155,7 @@ from zerver.views.streams import (
     update_subscription_properties_backend,
     update_subscriptions_backend,
     update_subscriptions_property,
+    update_stream_topics_properties_backend,
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
@@ -333,7 +334,12 @@ v1_api_and_json_patterns = [
     rest_path("messages/flags/narrow", POST=update_message_flags_for_narrow),
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
+    # helper: pinning streams happens here
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
+
+    # pinning topics
+    rest_path("users/me/subscriptions/pinned_topics", PATCH=update_stream_topics_properties_backend),
+
     rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
     rest_path("submessage", POST=process_submessage),
     # New endpoint for handling reactions.
