@@ -1,12 +1,14 @@
 import $ from "jquery";
 
+import render_stream_privacy from "../templates/stream_privacy.hbs";
+import render_announce_stream from "../templates/stream_settings/announce_stream.hbs";
+import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
-import * as settings_org from "./settings_org";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_containers from "./stream_settings_containers";
@@ -117,42 +119,26 @@ export function update_regular_sub_settings(sub) {
     }
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
     if (sub.subscribed) {
+        if ($settings.find(".email-address").val().length === 0) {
+            // Rerender stream email address, if not.
+            $settings.find(".email-address").text(sub.email_address);
+            $settings.find(".stream-email-box").show();
+        }
         $settings.find(".personal_settings").addClass("in");
-        $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".personal_settings").removeClass("in");
-        $settings.find(".stream-email-box").hide();
     }
 }
 
-export function enable_or_disable_permission_settings_in_edit_panel(sub) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
-        return;
+export function update_change_stream_privacy_settings(sub) {
+    // This is in the right panel.
+    const $stream_privacy_btn = $(".change-stream-privacy");
+
+    if (sub.can_change_stream_permissions) {
+        $stream_privacy_btn.show();
+    } else {
+        $stream_privacy_btn.hide();
     }
-
-    const $stream_settings = stream_settings_containers.get_edit_container(sub);
-
-    const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
-    $general_settings_container
-        .find("input, select")
-        .prop("disabled", !sub.can_change_stream_permissions);
-
-    if (!sub.can_change_stream_permissions) {
-        return;
-    }
-
-    const disable_message_retention_setting =
-        !page_params.zulip_plan_is_not_limited || !page_params.is_owner;
-    $stream_settings
-        .find(".stream_message_retention_setting")
-        .prop("disabled", disable_message_retention_setting);
-    $stream_settings
-        .find(".message-retention-setting-custom-input")
-        .prop("disabled", disable_message_retention_setting);
-
-    stream_settings_ui.update_web_public_stream_privacy_option_state(
-        $("#stream_permission_settings"),
-    );
 }
 
 export function update_stream_privacy_icon_in_settings(sub) {
@@ -176,6 +162,33 @@ export function update_permissions_banner(sub) {
 
     const rendered_tip = render_stream_settings_tip(sub);
     $settings.find(".stream-settings-tip-container").html(rendered_tip);
+}
+
+export function update_notifications_stream_in_settings() {
+    // if stream creation form is not open, return
+    if (!hash_util.is_create_new_stream_narrow()) {
+        return;
+    }
+
+    // if announcement is turned off, hide the checkbox
+    if (!stream_data.realm_has_notifications_stream()) {
+        $("#announce-new-stream .checkbox").hide();
+        return;
+    }
+
+    if (stream_data.realm_has_notifications_stream()) {
+        $("#announce-new-stream .checkbox").show();
+    }
+
+    const notifications_stream = stream_data.get_notifications_stream();
+    const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+    const stream_privacy_symbol_html = render_stream_privacy({
+        invite_only: notifications_stream_sub.invite_only,
+        is_web_public: notifications_stream_sub.is_web_public,
+    });
+
+    const rendered = render_announce_stream({notifications_stream, stream_privacy_symbol_html});
+    $("#announce-new-stream").expectOne().html(rendered);
 }
 
 export function update_notification_setting_checkbox(notification_name) {
@@ -205,6 +218,20 @@ export function update_stream_row_in_settings_tab(sub) {
         } else if (sub.invite_only || page_params.is_guest) {
             $sub_row.addClass("notdisplayed");
         }
+    }
+}
+
+export function update_stream_subscription_type_text(sub) {
+    // This is in the right panel.
+    const $stream_settings = stream_settings_containers.get_edit_container(sub);
+    const template_data = {
+        ...sub,
+        stream_post_policy_values: stream_data.stream_post_policy_values,
+        message_retention_text: stream_edit.get_retention_policy_text_for_subscription_type(sub),
+    };
+    const html = render_stream_permission_description(template_data);
+    if (hash_util.is_editing_stream(sub.stream_id)) {
+        $stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
 }
 
@@ -246,13 +273,4 @@ export function update_add_subscriptions_elements(sub) {
             $t({defaultMessage: "Only stream members can add users to a private stream"}),
         );
     }
-}
-
-export function update_setting_element(sub, setting_name) {
-    if (!hash_util.is_editing_stream(sub.stream_id)) {
-        return;
-    }
-
-    const $elem = $(`#id_${CSS.escape(setting_name)}`);
-    settings_org.discard_property_element_changes($elem, false, sub);
 }
