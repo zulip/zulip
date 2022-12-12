@@ -53,14 +53,6 @@ body,
     color-scheme: light;
 }
 
-@media print
-{    
-    .no-print, .no-print *
-    {
-        display: none !important;
-    }
-}
-
 input,
 button,
 select,

@@ -827,11 +827,3 @@ a.compose_control_button.hide {
         flex: 1;
     }
 }
-
-@media print
-{    
-    .no-print, .no-print *
-    {
-        display: none !important;
-    }
-}
