@@ -72,6 +72,7 @@ export class MessageList {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
+            blueslip.debug("hiding empty narrow message from add_messages in message_list.js")
             narrow_banner.hide_empty_narrow_message();
         }
 
@@ -362,7 +363,9 @@ export class MessageList {
         if (this.narrowed) {
             if (this.empty()) {
                 narrow_banner.show_empty_narrow_message();
+                blueslip.debug("showing empty narrow message from rerender in message_list.js")
             } else {
+                blueslip.debug("hiding empty narrow message from rerender in message_list.js")
                 narrow_banner.hide_empty_narrow_message();
             }
         }

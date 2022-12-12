@@ -16,7 +16,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
-
+import * as blueslip from "./blueslip";
 const consts = {
     backfill_idle_time: 10 * 1000,
     backfill_batch_size: 1000,
@@ -61,6 +61,7 @@ function process_result(data, opts) {
     ) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
+        blueslip.debug("showing empty narrow message from process_result in message_fetch.js")
         narrow_banner.show_empty_narrow_message();
     }
 

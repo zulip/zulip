@@ -8,7 +8,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
-
+import * as blueslip from "./blueslip";
 const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",
     html: $t_html(
@@ -420,11 +420,13 @@ function pick_empty_narrow_banner() {
 }
 
 export function show_empty_narrow_message() {
+    blueslip.debug("called show_empty_narrow_message")
     $(".empty_feed_notice_main").empty();
     const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner());
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
 }
 
 export function hide_empty_narrow_message() {
+    blueslip.debug("called hide_empty_narrow_message")
     $(".empty_feed_notice_main").empty();
 }
