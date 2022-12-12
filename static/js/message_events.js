@@ -166,6 +166,8 @@ export function insert_new_messages(messages, sent_by_this_client) {
 export function update_messages(events) {
     const msgs_to_rerender = [];
     let any_topic_edited = false;
+    let topic_edit_affects_narrow = false;
+    const moved_messages_ids = [];
     let changed_narrow = false;
     let changed_compose = false;
     let any_message_content_edited = false;
@@ -271,6 +273,11 @@ export function update_messages(events) {
                 if (message !== undefined) {
                     event_messages.push(message);
                 }
+
+                if (message_list.narrowed.all_messages().includes(message_id)) {
+                    topic_edit_affects_narrow = true;
+                }
+                moved_messages_ids.push(message_id);
             }
             // The event.message_ids received from the server are not in sorted order.
             event_messages.sort((a, b) => a.id - b.id);
@@ -512,13 +519,18 @@ export function update_messages(events) {
         // However, we don't need to rerender message_list.narrowed if
         // we just changed the narrow earlier in this function.
         //
-        // TODO: We can potentially optimize this logic to avoid
-        // calling `update_muting_and_rerender` if the muted
-        // messages would not match the view before or after this
-        // edit.  Doing so could save significant work, since most
-        // topic edits will not match the current topic narrow in
-        // large organizations.
-        if (!changed_narrow && message_lists.current === message_list.narrowed) {
+        // We need to check again if any moved message affects the narrow
+        // to account for messages that just got in the narrow after the history
+        // edit we did early.
+
+        topic_edit_affects_narrow ||= message_list.narrowed
+            .all_messages()
+            .some((msg) => moved_messages_ids.includes(msg.id));
+        if (
+            !changed_narrow &&
+            message_lists.current === message_list.narrowed &&
+            topic_edit_affects_narrow
+        ) {
             message_list.narrowed.update_muting_and_rerender();
         }
     } else {
