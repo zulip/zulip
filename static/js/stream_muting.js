@@ -1,4 +1,5 @@
 import {all_messages_data} from "./all_messages_data";
+import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_util from "./message_util";
@@ -23,7 +24,12 @@ export function update_is_muted(sub, value) {
             message_lists.home === message_lists.current &&
             message_lists.current.selected_row().offset() !== null
         ) {
-            msg_offset = message_lists.current.selected_row().offset().top;
+            blueslip.debug(`message_lists.current.selected_row(): ${JSON.stringify(message_lists.current.selected_row())}`)
+            blueslip.debug(`message_lists.current.selected_row().offset: ${message_lists.current.selected_row().offset()}`)
+            if (message_lists.current.selected_row().offset()) {
+                msg_offset = message_lists.current.selected_row().offset().top;
+            }
+
         }
 
         message_lists.home.clear({clear_selected_id: false});

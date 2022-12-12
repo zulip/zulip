@@ -348,8 +348,14 @@ export class MessageList {
     }
 
     rerender_view() {
-        this.view.rerender_preserving_scrolltop();
         this.reselect_selected_id();
+        console.log("rerender_view")
+        if (this.empty()) {
+            narrow_banner.show_empty_narrow_message();
+        } else {
+            narrow_banner.hide_empty_narrow_message();
+        }
+        this.view.rerender_preserving_scrolltop();
     }
 
     rerender() {
@@ -369,6 +375,7 @@ export class MessageList {
                 narrow_banner.hide_empty_narrow_message();
             }
         }
+    
         this.rerender_view();
     }
 
