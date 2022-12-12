@@ -51,9 +51,11 @@ class LocalUploader(Uploader):
 
     def copy_files(self, src_path: str, dst_path: str) -> None:
         assert settings.LOCAL_UPLOADS_DIR is not None
-        src_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", src_path)
+        assert settings.LOCAL_AVATARS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+        src_path = os.path.join(settings.LOCAL_AVATARS_DIR, src_path)
         self.mkdirs(src_path)
-        dst_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", dst_path)
+        dst_path = os.path.join(settings.LOCAL_AVATARS_DIR, dst_path)
         self.mkdirs(dst_path)
         shutil.copyfile(src_path, dst_path)
 

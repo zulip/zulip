@@ -40,6 +40,7 @@ from .configured_settings import (
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
     IS_DEV_DROPLET,
+    LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
     RATE_LIMITING_RULES,
@@ -538,6 +539,9 @@ if PRODUCTION or IS_DEV_DROPLET or os.getenv("EXTERNAL_HOST") is not None:
     STATIC_URL = urljoin(ROOT_DOMAIN_URI, "/static/")
 else:
     STATIC_URL = "http://localhost:9991/static/"
+
+LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars") if LOCAL_UPLOADS_DIR else None
+LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR else None
 
 # ZulipStorage is a modified version of ManifestStaticFilesStorage,
 # and, like that class, it inserts a file hash into filenames

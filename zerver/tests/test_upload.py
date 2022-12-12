@@ -1819,7 +1819,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(base, uri[: len(base)])
         path_id = re.sub("/user_uploads/", "", uri)
         assert settings.LOCAL_UPLOADS_DIR is not None
-        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", path_id)
+        assert settings.LOCAL_FILES_DIR is not None
+        file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
         self.assertTrue(os.path.isfile(file_path))
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
@@ -1859,19 +1860,20 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         write_local_file("avatars", file_path + ".original", read_test_image_file("img.png"))
 
         assert settings.LOCAL_UPLOADS_DIR is not None
-        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
+        assert settings.LOCAL_AVATARS_DIR is not None
+        image_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + ".original")
         with open(image_path, "rb") as f:
             image_data = f.read()
 
         resized_avatar = resize_avatar(image_data)
         zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
-        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".png")
+        output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + ".png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
 
         resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
-        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + "-medium.png")
+        output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + "-medium.png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
 
@@ -1887,8 +1889,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             emoji_file_name=file_name,
         )
 
-        assert settings.LOCAL_UPLOADS_DIR is not None
-        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        assert settings.LOCAL_AVATARS_DIR is not None
+        file_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path)
         with open(file_path + ".original", "rb") as original_file:
             self.assertEqual(read_test_image_file("img.png"), original_file.read())
 
@@ -1942,11 +1944,9 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         with open(tarball_path, "w") as f:
             f.write("dummy")
 
-        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_AVATARS_DIR is not None
         uri = upload_export_tarball(user_profile.realm, tarball_path)
-        self.assertTrue(
-            os.path.isfile(os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", tarball_path))
-        )
+        self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_AVATARS_DIR, tarball_path)))
 
         result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), uri)
         if result is not None:
