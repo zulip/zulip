@@ -244,7 +244,7 @@ async function test_delete_draft_on_sending(page: Page): Promise<void> {
     console.log("Sending draft.");
     await page.waitForSelector("#compose-send-button", {visible: true});
     await page.click("#compose-send-button");
-    await common.assert_compose_box_content(page, "");
+    await page.waitForSelector('xpath///*[@id="compose-textarea" and normalize-space()=""]');
     await page.waitForSelector(
         `xpath///*[${common.has_class_x("top_left_drafts")}]//*[${common.has_class_x(
             "unread_count",
