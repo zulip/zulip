@@ -6,7 +6,7 @@ import random
 import secrets
 import shutil
 from datetime import timedelta
-from typing import IO, Any, Callable, Optional
+from typing import IO, Any, Callable, Literal, Optional
 
 from django.conf import settings
 from django.core.signing import BadSignature, TimestampSigner
@@ -26,22 +26,39 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmEmoji, UserProfile
 
 
-def write_local_file(type: str, path: str, file_data: bytes) -> None:
+def assert_is_local_storage_path(type: Literal["avatars", "files"], full_path: str) -> None:
+    """
+    Verify that we are only reading and writing files under the
+    expected paths.  This is expected to be already enforced at other
+    layers, via cleaning of user input, but we assert it here for
+    defense in depth.
+    """
+    assert settings.LOCAL_UPLOADS_DIR is not None
+    type_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type)
+    assert os.path.commonpath([type_path, full_path]) == type_path
+
+
+def write_local_file(type: Literal["avatars", "files"], path: str, file_data: bytes) -> None:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
+    assert_is_local_storage_path(type, file_path)
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "wb") as f:
         f.write(file_data)
 
 
-def read_local_file(type: str, path: str) -> bytes:
+def read_local_file(type: Literal["avatars", "files"], path: str) -> bytes:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
+    assert_is_local_storage_path(type, file_path)
+
     with open(file_path, "rb") as f:
         return f.read()
 
 
-def delete_local_file(type: str, path: str) -> bool:
+def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
+    assert_is_local_storage_path(type, file_path)
+
     if os.path.isfile(file_path):
         # This removes the file but the empty folders still remain.
         os.remove(file_path)
@@ -53,6 +70,8 @@ def delete_local_file(type: str, path: str) -> bool:
 
 def get_local_file_path(path_id: str) -> Optional[str]:
     local_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "files", path_id)
+    assert_is_local_storage_path("files", local_path)
+
     if os.path.isfile(local_path):
         return local_path
     else:
@@ -157,15 +176,15 @@ class LocalUploadBackend(ZulipUploadBackend):
         self.write_avatar_images(target_file_path, image_data)
 
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
-        return os.path.join("avatars", str(realm.id), "realm")
+        return os.path.join(str(realm.id), "realm")
 
     def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         image_data = icon_file.read()
-        write_local_file(upload_path, "icon.original", image_data)
+        write_local_file("avatars", os.path.join(upload_path, "icon.original"), image_data)
 
         resized_data = resize_avatar(image_data)
-        write_local_file(upload_path, "icon.png", resized_data)
+        write_local_file("avatars", os.path.join(upload_path, "icon.png"), resized_data)
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
@@ -181,10 +200,10 @@ class LocalUploadBackend(ZulipUploadBackend):
             original_file = "logo.original"
             resized_file = "logo.png"
         image_data = logo_file.read()
-        write_local_file(upload_path, original_file, image_data)
+        write_local_file("avatars", os.path.join(upload_path, original_file), image_data)
 
         resized_data = resize_logo(image_data)
-        write_local_file(upload_path, resized_file, resized_data)
+        write_local_file("avatars", os.path.join(upload_path, resized_file), resized_data)
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         if night:

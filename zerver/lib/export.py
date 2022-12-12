@@ -1433,7 +1433,7 @@ def export_uploads_and_avatars(
         if user is None:
             export_realm_icons(
                 realm,
-                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
+                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
                 output_dir=realm_icons_output_dir,
             )
     else:
