@@ -1,9 +1,9 @@
-<div data-step="1">
+<div data-step="1" class="no-print">
     {{#tr}}Zulip needs your permission to <z-link>enable desktop notifications.</z-link>
         {{#*inline "z-link"}}<a class="request-desktop-notifications alert-link" role="button" tabindex=0>{{> @partial-block}}</a>{{/inline}}
     {{/tr}}
 </div>
-<div data-step="2" style="display: none">
+<div data-step="2" style="display: none" class="no-print">
     {{t "We strongly recommend enabling desktop notifications. They help Zulip keep your team connected." }}
     <span class="buttons">
         <a class="alert-link request-desktop-notifications" role="button" tabindex=0>{{t "Enable notifications" }}</a>
