@@ -40,7 +40,6 @@ const message_lists = mock_esm("../../static/js/message_lists");
 const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 const notifications = mock_esm("../../static/js/notifications");
-const pm_list = mock_esm("../../static/js/pm_list");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
 const realm_logo = mock_esm("../../static/js/realm_logo");
@@ -69,6 +68,7 @@ const stream_data = mock_esm("../../static/js/stream_data");
 const stream_events = mock_esm("../../static/js/stream_events");
 const stream_list = mock_esm("../../static/js/stream_list");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
+const stream_ui_updates = mock_esm("../../static/js/stream_ui_updates");
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 const submessage = mock_esm("../../static/js/submessage");
 mock_esm("../../static/js/top_left_corner", {
@@ -337,6 +337,7 @@ run_test("realm settings", ({override}) => {
     page_params.is_admin = true;
 
     override(settings_org, "sync_realm_settings", noop);
+    override(stream_ui_updates, "update_notifications_stream_in_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);
 
@@ -743,6 +744,11 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
 
+    event = event_fixtures.user_settings__left_side_userlist;
+    user_settings.left_side_userlist = false;
+    dispatch(event);
+    assert_same(user_settings.left_side_userlist, true);
+
     event = event_fixtures.user_settings__escape_navigates_to_default_view;
     user_settings.escape_navigates_to_default_view = false;
     let toggled = [];
@@ -1016,7 +1022,6 @@ run_test("user_status", ({override}) => {
     {
         const stub = make_stub();
         override(activity, "redraw_user", stub.f);
-        override(pm_list, "update_private_messages", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");

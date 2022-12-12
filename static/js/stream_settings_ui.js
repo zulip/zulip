@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
+import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
@@ -16,7 +17,6 @@ import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
@@ -213,9 +213,9 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update UI elements
     update_left_panel_row(sub);
-    stream_ui_updates.update_setting_element(sub, "stream_privacy");
-    stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
+    stream_ui_updates.update_stream_subscription_type_text(sub);
+    stream_ui_updates.update_change_stream_privacy_settings(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_ui_updates.enable_or_disable_subscribers_tab(sub);
@@ -232,12 +232,12 @@ export function update_stream_privacy(slim_sub, values) {
 
 export function update_stream_post_policy(sub, new_value) {
     stream_data.update_stream_post_policy(sub, new_value);
-    stream_ui_updates.update_setting_element(sub, "stream_post_policy");
+    stream_ui_updates.update_stream_subscription_type_text(sub);
 }
 
 export function update_message_retention_setting(sub, new_value) {
     stream_data.update_message_retention_setting(sub, new_value);
-    stream_ui_updates.update_setting_element(sub, "message_retention_days");
+    stream_ui_updates.update_stream_subscription_type_text(sub);
 }
 
 export function set_color(stream_id, color) {
@@ -313,7 +313,7 @@ export function update_settings_for_subscribed(slim_sub) {
         stream_ui_updates.update_toggler_for_sub(sub);
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
-        stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
+        stream_ui_updates.update_change_stream_privacy_settings(sub);
     } else {
         add_sub_to_table(sub);
     }
@@ -341,7 +341,7 @@ export function update_settings_for_unsubscribed(slim_sub) {
     stream_ui_updates.update_toggler_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
-    stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
+    stream_ui_updates.update_change_stream_privacy_settings(sub);
 
     // If user unsubscribed from private stream then user cannot subscribe to
     // stream without invitation and cannot add subscribers to stream.
@@ -620,7 +620,16 @@ export function setup_page(callback) {
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
+        const notifications_stream = stream_data.get_notifications_stream();
+        const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+        const stream_privacy_symbol_html = render_stream_privacy({
+            invite_only: notifications_stream_sub.invite_only,
+            is_web_public: notifications_stream_sub.is_web_public,
+        });
+
         const template_data = {
+            notifications_stream,
+            stream_privacy_symbol_html,
             ask_to_announce_stream: true,
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||
@@ -664,7 +673,7 @@ export function setup_page(callback) {
         // streams, either explicitly via user_can_create_streams, or
         // implicitly because page_params.realm_is_zephyr_mirror_realm.
         $("#stream_filter input[type='text']").on("keypress", (e) => {
-            if (!keydown_util.is_enter_event(e)) {
+            if (e.key !== "Enter") {
                 return;
             }
 
@@ -1015,44 +1024,29 @@ export function update_web_public_stream_privacy_option_state($container) {
     const $web_public_stream_elem = $container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
     );
-
-    const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
-    if (for_stream_edit_panel) {
-        const stream_id = Number.parseInt(
-            $container.closest(".subscription_settings.show").attr("data-stream-id"),
-            10,
-        );
-        const sub = sub_store.get(stream_id);
-        if (!stream_data.can_change_permissions(sub)) {
-            // We do not want to enable the already disabled web-public option
-            // in stream-edit panel if user is not allowed to change stream
-            // privacy at all.
-            return;
-        }
-    }
-
     if (
         !page_params.server_web_public_streams_enabled ||
         !page_params.realm_enable_spectator_access
     ) {
-        if (for_stream_edit_panel && $web_public_stream_elem.is(":checked")) {
+        const for_change_privacy_modal = $container.attr("id") === "stream_privacy_modal";
+        if (for_change_privacy_modal && $web_public_stream_elem.is(":checked")) {
             // We do not hide web-public option in the "Change privacy" modal if
             // stream is web-public already. The option is disabled in this case.
             $web_public_stream_elem.prop("disabled", true);
             return;
         }
-        $web_public_stream_elem.closest(".settings-radio-input-parent").hide();
+        $web_public_stream_elem.closest(".radio-input-parent").hide();
         $container
-            .find(".stream-privacy-values .settings-radio-input-parent:visible")
+            .find(".stream-privacy-values .radio-input-parent:visible")
             .last()
             .css("border-bottom", "none");
     } else {
         if (!$web_public_stream_elem.is(":visible")) {
             $container
-                .find(".stream-privacy-values .settings-radio-input-parent:visible")
+                .find(".stream-privacy-values .radio-input-parent:visible")
                 .last()
                 .css("border-bottom", "");
-            $web_public_stream_elem.closest(".settings-radio-input-parent").show();
+            $web_public_stream_elem.closest(".radio-input-parent").show();
         }
         $web_public_stream_elem.prop(
             "disabled",
@@ -1098,15 +1092,15 @@ export function update_stream_privacy_choices(policy) {
     if (!overlays.streams_open()) {
         return;
     }
-    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
+    const change_privacy_modal_opened = $("#stream_privacy_modal").is(":visible");
     const stream_creation_form_opened = $("#stream-creation").is(":visible");
 
-    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
+    if (!change_privacy_modal_opened && !stream_creation_form_opened) {
         return;
     }
     let $container = $("#stream-creation");
-    if (stream_edit_panel_opened) {
-        $container = $("#stream_permission_settings");
+    if (change_privacy_modal_opened) {
+        $container = $("#stream_privacy_modal");
     }
 
     if (policy === "create_private_stream_policy") {

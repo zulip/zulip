@@ -63,6 +63,7 @@ import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
@@ -213,7 +214,6 @@ export function dispatch_normal_event(event) {
                 message_retention_days: noop,
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
-                notifications_stream_id: noop,
                 org_type: noop,
                 private_message_policy: noop,
                 send_welcome_emails: noop,
@@ -227,6 +227,7 @@ export function dispatch_normal_event(event) {
                 want_advertise_in_communities_directory: noop,
                 wildcard_mention_policy: noop,
                 enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
+                notifications_stream_id: stream_ui_updates.update_notifications_stream_in_settings,
             };
             switch (event.op) {
                 case "update":
@@ -616,6 +617,7 @@ export function dispatch_normal_event(event) {
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
+                "left_side_userlist",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -683,6 +685,10 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();
+            }
+            if (event.property === "left_side_userlist") {
+                // TODO: Make this change the view immediately rather
+                // than requiring a reload or page resize.
             }
             if (event.property === "default_language") {
                 // TODO: Make this change the view immediately rather than
