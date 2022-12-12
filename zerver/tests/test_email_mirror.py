@@ -1757,3 +1757,24 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
 
             redacted_message = redact_email_address(error_message)
             self.assertEqual(redacted_message, expected_message)
+            
+class TestEmailIntegrationLongSubject(ZulipTestCase):
+    def test_subject_line_in_content(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        incoming_valid_message = 'TestStreamEmailWithTrucnatedTopic Body'
+
+        incoming_valid_message['Subject'] = 'this subject is over 60 characters so the content should include this'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        
+        self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
+        self.assertEqual(message.content, 'Subject: {}\nTestStreamEmailWithTrucnatedTopic Body')
