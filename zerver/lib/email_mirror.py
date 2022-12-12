@@ -183,6 +183,8 @@ def construct_zulip_body(
 
 
 def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
+    if len(topic) > 60:
+        content = f"Subject: {topic}\n{content}"
     internal_send_stream_message(
         sender,
         stream,
