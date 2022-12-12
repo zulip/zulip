@@ -279,7 +279,6 @@
 .compose_banner {
     margin-bottom: 20px;
     border-radius: 5px;
-    padding-right: 11px;
     border: 1px solid;
     display: flex;
     align-items: center;
@@ -307,14 +306,18 @@
         margin-bottom: 4.5px;
         height: 32px;
         white-space: nowrap;
+
+        /* Extra margin to ensure the layout is identical when there is no
+           close button. */
+        &.right_edge {
+            margin-right: 10px;
+        }
     }
 
     .compose_banner_close_button {
         font-size: 17px;
         text-decoration: none;
-        margin-left: 10px;
-        margin-top: 12px;
-        margin-bottom: 12px;
+        padding: 12px 10px;
     }
 
     &.warning {
