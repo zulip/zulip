@@ -1,3 +1,5 @@
+# this file contains the logic for the sending of missed message notifications
+# additionally, this file determines what notification an end user receives
 {% if show_message_content %}
 {% for recipient_block in messages %}
 {% for sender_block in recipient_block.senders %}
@@ -40,15 +42,18 @@ See {{ alert_notif_url }} for more details.
 
 {{ narrow_url }}
 {% else %}
-{% trans %}Reply in {{ realm_name }} Zulip:{% endtrans %}
+{% trans %}[Reply in Zulip]{% endtrans %}
 
 {{ narrow_url }}
 
-{% trans %}
-Do not reply to this email. This Zulip server is not configured to accept
-incoming emails. Help:
-{% endtrans %}
-https://zulip.readthedocs.io/en/latest/production/email-gateway.html
+{% if _reply_warning_in_missed_personal_messages %}
+{% trans %}Do not reply. You are receiving this message from noreply-{{realm_name}}@zulip.com{% endtrans %}
+{% endif %}
+
+{% if _reply_warning_in_missed_personal_messages %}
+{% trans %}Do not reply. You are receiving this message from noreply-{{realm_name}}@zulip.com{% endtrans %}
+{% endif %}
+
 {% endif %}
 
 {% trans %}Manage email preferences: {% endtrans %}
