@@ -2,6 +2,7 @@
 # high-level documentation on how this system works.
 import copy
 import time
+from collections import defaultdict
 from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
@@ -46,7 +47,8 @@ from zerver.lib.streams import do_get_streams, get_web_public_streams
 from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.topic import TOPIC_NAME, get_stream_topics_for_realm
+# from zerver.lib.stream_topic import get_stream_topics_for_realm
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_status_dict
@@ -61,6 +63,7 @@ from zerver.models import (
     Realm,
     RealmUserDefault,
     Stream,
+    StreamTopic,
     UserMessage,
     UserProfile,
     UserStatus,
@@ -575,6 +578,18 @@ def fetch_initial_state_data(
                 get_default_stream_groups(realm)
             )
 
+    if want("stream_topic"):
+        # only topics that have been pinned or are currently pinned
+        stream_topics_by_stream_id = defaultdict(list)
+        for stream_topic in get_stream_topics_for_realm(realm):
+            stream_topics_by_stream_id[stream_topic.recipient.id].append(
+                {
+                    "name": stream_topic.name,
+                    "is_pinned": stream_topic.is_pinned,
+                }
+            )
+        state["stream_topics_by_stream_id"] = stream_topics_by_stream_id
+    
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
 
@@ -912,6 +927,28 @@ def apply_event(
                         bot.update(event["bot"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
+
+    elif event["type"] == "stream_topic":
+        # if topic is not in StreamTopic table
+        if event["op"] == "add" and event["property"] == "is_pinned":
+            added_stream_topic_data = { "name": stream_topic.name, "is_pinned": event["is_pinned"] }
+            for stream in event["stream_topics"]:
+                topic_exists = False
+                for stream_topic in stream: # looping through stream_topic in a list
+                    if stream_topic["name"] == added_stream_topic_data["name"]:
+                        topic_exists = True
+            if not topic_exists:
+                if stream_id in state["topics_by_stream_id"]:
+                    state["topics_by_stream_id"][stream_id].append(added_stream_topic_data)
+                else:
+                    state["topics_by_stream_id"][stream_id] = [added_stream_topic_data]
+        # if topic already exists in StreamTopic table
+        if event["op"] == "update" and event["property"] == "is_pinned":
+            for stream_id in state["stream_topics_by_stream_id"].keys():
+                for stream_topic in state["stream_topics_by_stream_id"][stream_id]:
+                    if stream_topic["name"] == event["name"]:
+                        state["stream_topics_by_stream_id"][stream_id][stream_topic["name"]]["is_pinned"] = event["is_pinned"]
+
     elif event["type"] == "stream":
         if event["op"] == "create":
             for stream in event["streams"]:

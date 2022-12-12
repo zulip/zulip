@@ -4353,6 +4353,10 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_PROPERTY_CHANGED = 607
     STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED = 608
 
+    STREAMTOPIC_CREATED = 701
+    STREAMTOPIC_NAME_CHANGED = 702
+    STREAMTOPIC_PROPERTY_CHANGED = 703
+
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
@@ -4723,11 +4727,19 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
 
-
 class StreamTopic(models.Model):
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
-    topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
     is_pinned = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ("stream", "topic_name")
+        unique_together = ("stream", "name")
+
+def get_stream_topics(realm: Realm, stream: Stream) -> QuerySet[StreamTopic]:
+    return StreamTopic.objects.filter(realm=realm, stream=stream)
+
+class StreamTopicDict(Dict):
+    realm_id: int
+    stream_id: int
+    name: str
+    is_pinned: bool
