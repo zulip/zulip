@@ -46,9 +46,11 @@ from zerver.actions.streams import (
     do_rename_stream,
 )
 from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
     check_add_user_group,
     remove_members_from_user_group,
+    remove_subgroups_from_user_group,
 )
 from zerver.actions.user_settings import (
     do_change_avatar_fields,
@@ -1090,6 +1092,32 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assertListEqual(logged_system_group_ids, system_user_group_ids)
 
+        logged_subgroup_entries = sorted(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+                acting_user=None,
+            ).values_list("modified_user_group_id", "extra_data")
+        )
+        # Excluding nobody_system_group, the rest of the user groups should have
+        # a chain of subgroup memberships in between.
+        self.assert_length(logged_subgroup_entries, expected_system_user_group_count - 2)
+        for i in range(len(logged_subgroup_entries)):
+            # The offset of 1 is due to nobody_system_group being skipped as
+            # the first user group in the list.
+            # For supergroup, we add an additional 1 because of the order we
+            # put the chain together.
+            expected_subgroup_id = system_user_group_ids[i + 1]
+            expected_supergroup_id = system_user_group_ids[i + 2]
+
+            supergroup_id, subgroup_extra_data = logged_subgroup_entries[i]
+            assert subgroup_extra_data is not None
+            self.assertEqual(
+                orjson.loads(subgroup_extra_data)["subgroup_ids"][0], expected_subgroup_id
+            )
+            self.assertEqual(supergroup_id, expected_supergroup_id)
+
     def test_user_group_creation(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -1146,3 +1174,39 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assert_length(audit_log_entries, 1)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+
+    def test_change_user_group_subgroups_memberships(self) -> None:
+        hamlet = self.example_user("hamlet")
+        user_group = check_add_user_group(hamlet.realm, "main", [], acting_user=None)
+        subgroups = [
+            check_add_user_group(hamlet.realm, f"subgroup{num}", [], acting_user=hamlet)
+            for num in range(3)
+        ]
+
+        now = timezone_now()
+        add_subgroups_to_user_group(user_group, subgroups, acting_user=hamlet)
+        # Only one audit log entry for the subgroup membership is expected.
+        audit_log_entry = RealmAuditLog.objects.get(
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+        )
+        self.assertEqual(audit_log_entry.modified_user_group, user_group)
+        self.assertEqual(audit_log_entry.acting_user, hamlet)
+        self.assertDictEqual(
+            orjson.loads(assert_is_not_none(audit_log_entry.extra_data)),
+            {"subgroup_ids": [subgroup.id for subgroup in subgroups]},
+        )
+
+        remove_subgroups_from_user_group(user_group, subgroups[:2], acting_user=hamlet)
+        audit_log_entry = RealmAuditLog.objects.get(
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
+        )
+        self.assertEqual(audit_log_entry.modified_user_group, user_group)
+        self.assertEqual(audit_log_entry.acting_user, hamlet)
+        self.assertDictEqual(
+            orjson.loads(assert_is_not_none(audit_log_entry.extra_data)),
+            {"subgroup_ids": [subgroup.id for subgroup in subgroups[:2]]},
+        )
