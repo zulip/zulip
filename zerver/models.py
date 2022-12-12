@@ -2586,6 +2586,17 @@ post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
 
+class StreamTopic(models.Model):
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    is_pinned = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("stream", "name")
+
+def get_stream_topics(realm: Realm, stream: Stream) -> QuerySet[StreamTopic]:
+    return StreamTopic.objects.filter(realm=realm, stream=stream)
+
 class UserTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
@@ -4423,6 +4434,11 @@ class RealmAuditLog(AbstractRealmAuditLog):
         null=True,
         on_delete=CASCADE,
     )
+    modified_stream_topic = models.ForeignKey(
+        StreamTopic,
+        null=True,
+        on_delete=CASCADE,
+    )
     event_last_message_id = models.IntegerField(null=True)
 
     def __str__(self) -> str:
@@ -4726,20 +4742,3 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
-
-class StreamTopic(models.Model):
-    stream = models.ForeignKey(Stream, on_delete=CASCADE)
-    name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
-    is_pinned = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ("stream", "name")
-
-def get_stream_topics(realm: Realm, stream: Stream) -> QuerySet[StreamTopic]:
-    return StreamTopic.objects.filter(realm=realm, stream=stream)
-
-class StreamTopicDict(Dict):
-    realm_id: int
-    stream_id: int
-    name: str
-    is_pinned: bool
