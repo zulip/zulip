@@ -304,6 +304,17 @@
     line-height: 1em;
 }
 
+.emojifixed {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: top;
+    top: 0;
+    margin: 1px 3px;
+    height: 17px;
+    width: 17px;
+    position: relative;
+}
+
 .typeahead .emoji {
     top: 2px;
 }
