@@ -19,17 +19,14 @@ export function get_actions_popover_content_context(message_id) {
         muted_users.is_user_muted(message.sender_id) &&
         !message_container.is_hidden &&
         not_spectator;
-    const editability = message_edit.get_editability(message);
+    const is_content_editable = message_edit.is_content_editable(message);
     const can_move_message = message_edit.can_move_message(message);
 
     let editability_menu_item;
     let move_message_menu_item;
     let view_source_menu_item;
 
-    if (
-        editability === message_edit.editability_types.FULL ||
-        editability === message_edit.editability_types.CONTENT_ONLY
-    ) {
+    if (is_content_editable) {
         editability_menu_item = $t({defaultMessage: "Edit message"});
     } else {
         view_source_menu_item = $t({defaultMessage: "View message source"});

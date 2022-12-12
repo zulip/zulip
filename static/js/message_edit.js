@@ -44,19 +44,6 @@ export let notify_old_thread_default = false;
 
 export let notify_new_thread_default = true;
 
-export const editability_types = {
-    NO: 1,
-    // Note: TOPIC_ONLY does not include stream messages with no topic sent
-    // by someone else. You can edit the topic of such a message by editing
-    // the topic of the whole recipient_row it appears in, but you can't
-    // directly edit the topic of such a message.
-    // Similar story for messages whose topic you can change only because
-    // you are an admin.
-    TOPIC_ONLY: 3,
-    CONTENT_ONLY: 4,
-    FULL: 5,
-};
-
 export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     if (!is_message_editable_ignoring_permissions(message)) {
         return false;
@@ -125,7 +112,11 @@ export function is_message_editable_ignoring_permissions(message) {
     return true;
 }
 
-function is_content_editable(message, edit_limit_seconds_buffer = 0) {
+export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
+    if (!is_message_editable_ignoring_permissions(message)) {
+        return false;
+    }
+
     if (!page_params.realm_allow_message_editing) {
         return false;
     }
@@ -151,29 +142,6 @@ function is_content_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
     return false;
-}
-
-export function get_editability(message, edit_limit_seconds_buffer = 0) {
-    if (!is_message_editable_ignoring_permissions(message)) {
-        return editability_types.NO;
-    }
-
-    const can_edit_topic = is_topic_editable(message, edit_limit_seconds_buffer);
-    const can_edit_content = is_content_editable(message, edit_limit_seconds_buffer);
-
-    if (can_edit_content && can_edit_topic) {
-        return editability_types.FULL;
-    }
-
-    if (can_edit_topic && !can_edit_content) {
-        return editability_types.TOPIC_ONLY;
-    }
-
-    if (can_edit_content && !can_edit_topic) {
-        return editability_types.CONTENT_ONLY;
-    }
-
-    return editability_types.NO;
 }
 
 export function get_deletability(message) {
@@ -441,7 +409,6 @@ function edit_message($row, raw_content) {
     // If you change this number also change edit_limit_buffer in
     // zerver.actions.message_edit.check_update_message
     const seconds_left_buffer = 5;
-    const editability = get_editability(message, seconds_left_buffer);
     const max_file_upload_size = page_params.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
@@ -449,8 +416,7 @@ function edit_message($row, raw_content) {
         file_upload_enabled = true;
     }
 
-    const is_editable =
-        editability === editability_types.FULL || editability === editability_types.CONTENT_ONLY;
+    const is_editable = is_content_editable(message, seconds_left_buffer);
 
     const $form = $(
         render_message_edit_form({
@@ -900,11 +866,7 @@ export function edit_last_sent_message() {
         return;
     }
 
-    const msg_editability_type = get_editability(msg, 5);
-    if (
-        msg_editability_type !== editability_types.FULL &&
-        msg_editability_type !== editability_types.CONTENT_ONLY
-    ) {
+    if (!is_content_editable(msg, 5)) {
         return;
     }
 

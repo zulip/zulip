@@ -9,104 +9,75 @@ const {page_params} = require("../zjsunit/zpage_params");
 page_params.realm_community_topic_editing_limit_seconds = 259200;
 
 const message_edit = zrequire("message_edit");
-const settings_config = zrequire("settings_config");
 
-const get_editability = message_edit.get_editability;
-const editability_types = message_edit.editability_types;
+const is_content_editable = message_edit.is_content_editable;
 
 const settings_data = mock_esm("../../static/js/settings_data");
 
-run_test("get_editability", ({override}) => {
-    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
+run_test("is_content_editable", () => {
     // You can't edit a null message
-    assert.equal(get_editability(null), editability_types.NO);
+    assert.equal(is_content_editable(null), false);
     // You can't edit a message you didn't send
     assert.equal(
-        get_editability({
+        is_content_editable({
             sent_by_me: false,
         }),
-        editability_types.NO,
+        false,
     );
 
     // Failed request are currently not editable (though we want to
     // change this back).
     assert.equal(
-        get_editability({
+        is_content_editable({
             sent_by_me: true,
             failed_request: true,
         }),
-        editability_types.NO,
+        false,
     );
 
     // Locally echoed messages are not editable, since the message hasn't
     // finished being sent yet.
     assert.equal(
-        get_editability({
+        is_content_editable({
             sent_by_me: true,
             locally_echoed: true,
         }),
-        editability_types.NO,
+        false,
     );
 
     // For the rest of these tests, we only consider messages sent by the
     // user, and that were successfully sent (i.e. no failed_request or local_id)
-    let message = {
+    const message = {
         sent_by_me: true,
     };
 
     page_params.realm_allow_message_editing = false;
-    assert.equal(get_editability(message), editability_types.NO);
+    assert.equal(is_content_editable(message), false);
 
     page_params.realm_allow_message_editing = true;
     // Limit of 0 means no time limit on editing messages
     page_params.realm_message_content_edit_limit_seconds = null;
-    assert.equal(get_editability(message), editability_types.CONTENT_ONLY);
+    assert.equal(is_content_editable(message), true);
 
     page_params.realm_message_content_edit_limit_seconds = 10;
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
     // Have 55+10 > 60 seconds from message.timestamp to edit the message; we're good!
-    assert.equal(get_editability(message, 55), editability_types.CONTENT_ONLY);
+    assert.equal(is_content_editable(message, 55), true);
     // It's been 60 > 45+10 since message.timestamp. When realm_allow_message_editing
     // is true, we can edit the topic if there is one.
-    assert.equal(get_editability(message, 45), editability_types.NO);
+    assert.equal(is_content_editable(message, 45), false);
     // Right now, we prevent users from editing widgets.
     message.submessages = ["/poll"];
-    assert.equal(get_editability(message, 55), editability_types.NO);
+    assert.equal(is_content_editable(message, 55), false);
     delete message.submessages;
     message.type = "private";
-    assert.equal(get_editability(message, 45), editability_types.NO);
+    assert.equal(is_content_editable(message, 45), false);
 
-    assert.equal(get_editability(message, 55), editability_types.CONTENT_ONLY);
+    assert.equal(is_content_editable(message, 55), true);
     // If we don't pass a second argument, treat it as 0
-    assert.equal(get_editability(message), editability_types.NO);
-
-    message = {
-        sent_by_me: false,
-        type: "stream",
-    };
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_everyone.code;
-    page_params.realm_allow_message_editing = true;
-    page_params.realm_message_content_edit_limit_seconds = null;
-    page_params.realm_community_topic_editing_limit_seconds = 50;
-    page_params.is_admin = false;
-    message.timestamp = current_timestamp - 60;
-    assert.equal(get_editability(message), editability_types.NO);
-
-    page_params.is_admin = true;
-    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
-
-    page_params.is_admin = false;
-    page_params.realm_community_topic_editing_limit_seconds = 259200;
-    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
-
-    message.sent_by_me = true;
-    assert.equal(get_editability(message), editability_types.FULL);
-
-    page_params.realm_allow_message_editing = false;
-    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
+    assert.equal(is_content_editable(message), false);
 });
 
 run_test("is_topic_editable", ({override}) => {
