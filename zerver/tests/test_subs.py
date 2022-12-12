@@ -33,7 +33,7 @@ from zerver.actions.streams import (
     do_change_stream_post_policy,
     do_deactivate_stream,
 )
-from zerver.actions.user_groups import add_subgroups_to_user_group
+from zerver.actions.user_groups import add_subgroups_to_user_group, create_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -82,7 +82,6 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     DefaultStream,
