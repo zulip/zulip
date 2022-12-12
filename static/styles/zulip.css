@@ -1477,6 +1477,63 @@ td.pointer {
     line-height: 12px;
 }
 
+@media only screen and (max-width: 589px) {
+    .sender_name {
+        max-width: 250px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: 15px;
+    }
+}
+
+@media only screen and (max-width: 449px) {
+    .sender_name {
+        max-width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: 15px;
+    }
+}
+
+@media only screen and (min-width: 450px) {
+    .sender_name {
+        max-width: 300px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: 15px;
+    }
+}
+
+@media only screen and (min-width: 590px) {
+    .sender_name {
+        max-width: 550px;
+        line-height: 15px;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    .sender_name {
+        max-width: 300px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: 15px;
+    }
+}
+
+@media only screen and (min-width: 850px) {
+    .sender_name {
+        max-width: 700px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: 15px;
+    }
+}
+
 .sender_name-in-status {
     margin-right: 3px;
     font-weight: 700;
@@ -3118,14 +3175,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .message_time {
         left: auto;
         right: -5px;
-    }
-
-    .sender_name {
-        max-width: 250px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        line-height: 15px;
     }
 
     #floating_recipient_bar {
