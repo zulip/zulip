@@ -154,18 +154,18 @@ async function submit_joining_organization_change(page: Page): Promise<void> {
 
 async function test_set_new_user_threshold_to_three_days(page: Page): Promise<void> {
     console.log("Test setting new user threshold to three days.");
-    await page.waitForSelector("#id_realm_waiting_period_setting", {visible: true});
-    await page.select("#id_realm_waiting_period_setting", "three_days");
+    await page.waitForSelector("#id_realm_waiting_period_threshold", {visible: true});
+    await page.select("#id_realm_waiting_period_threshold", "three_days");
     await submit_joining_organization_change(page);
 }
 
 async function test_set_new_user_threshold_to_N_days(page: Page): Promise<void> {
     console.log("Test setting new user threshold to three days.");
-    await page.waitForSelector("#id_realm_waiting_period_setting", {visible: true});
-    await page.select("#id_realm_waiting_period_setting", "custom_period");
+    await page.waitForSelector("#id_realm_waiting_period_threshold", {visible: true});
+    await page.select("#id_realm_waiting_period_threshold", "custom_period");
 
     const N = "10";
-    await common.clear_and_type(page, "#id_realm_waiting_period_threshold", N);
+    await common.clear_and_type(page, "#id_realm_waiting_period_threshold_custom_input", N);
     await submit_joining_organization_change(page);
 }
 

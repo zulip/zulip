@@ -597,8 +597,8 @@ manually handle such situations in a couple key functions:
 
 - `settings_org.update_dependent_subsettings`: This handles settings
   whose value and state depend on other elements. For example,
-  `realm_waiting_period_threshold` is only shown for with the right
-  state of `realm_waiting_period_setting`.
+  `realm_waiting_period_threshold_custom_input` is only shown for with
+  the right state of `realm_waiting_period_threshold`.
 
 Finally, update `server_events_dispatch.js` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
@@ -646,9 +646,9 @@ Here are few important cases you should consider when testing your changes:
 
 - If your setting is dependent on another setting, carefully check
   that both are properly synchronized. For example, the input element
-  for `realm_waiting_period_threshold` is shown only when we have
-  selected the custom time limit option in the
-  `realm_waiting_period_setting` dropdown.
+  for `realm_waiting_period_threshold_custom_input` is shown only when
+  we have selected the custom time limit option in the
+  `realm_waiting_period_threshold` dropdown.
 
 - Do some manual testing for the real-time synchronization of input
   elements across the browsers and just like "Discard changes" button,

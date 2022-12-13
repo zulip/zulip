@@ -1440,7 +1440,7 @@ $option_title_width: 180px;
 
 /* These have enough space for all the options in German. */
 .setting_desktop_icon_count_display,
-#id_realm_waiting_period_setting,
+#id_realm_waiting_period_threshold,
 #id_realm_create_public_stream_policy,
 #id_realm_create_private_stream_policy,
 #id_realm_invite_to_stream_policy,
