@@ -6,7 +6,7 @@
     {{else}}
         <p>
             <div class="emojifixed"></div>
-            <div class="message_reaction_emoji">&#x{{this.emoji_code}}</div>
+            <div class="message_reaction_emoji">&#x{{splitString this.emoji_code}}</div>
         </p>
     {{/if}}
     <div class="message_reaction_count">{{this.vote_text}}</div>
