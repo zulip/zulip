@@ -130,12 +130,12 @@ def send_messages_for_new_members(
     notifications = []
     if recipient_users:
         for recipient_user in recipient_users:
-            if recipient_user.email == acting_user.email:
+            if recipient_user.email == acting_user.email:  # nocoverage
                 # Don't send a Zulip if you invited yourself.
-                continue
-            if bots[recipient_user.email]:
+                continue  # nocoverage
+            if bots[recipient_user.email]:  # nocoverage
                 # Don't send invitation Zulips to bots.
-                continue
+                continue  # nocoverage
 
             sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
 
