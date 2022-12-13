@@ -168,7 +168,7 @@ function get_property_value(property_name, for_realm_default_settings, sub) {
         return sub[property_name];
     }
 
-    if (property_name === "realm_waiting_period_setting") {
+    if (property_name === "realm_waiting_period_threshold") {
         if (page_params.realm_waiting_period_threshold === 0) {
             return "none";
         }
@@ -246,10 +246,10 @@ export function change_element_block_display_property(elem_id, show_element) {
 }
 
 function set_realm_waiting_period_dropdown() {
-    const value = get_property_value("realm_waiting_period_setting");
-    $("#id_realm_waiting_period_setting").val(value);
+    const value = get_property_value("realm_waiting_period_threshold");
+    $("#id_realm_waiting_period_threshold").val(value);
     change_element_block_display_property(
-        "id_realm_waiting_period_threshold",
+        "id_realm_waiting_period_threshold_custom_input",
         value === "custom_period",
     );
 }
@@ -1084,7 +1084,7 @@ export function register_save_discard_widget_handlers(
                         break;
                 }
 
-                const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
+                const waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
                 switch (waiting_period_threshold) {
                     case "none":
                         data.waiting_period_threshold = 0;
@@ -1094,7 +1094,7 @@ export function register_save_discard_widget_handlers(
                         break;
                     case "custom_period":
                         data.waiting_period_threshold = $(
-                            "#id_realm_waiting_period_threshold",
+                            "#id_realm_waiting_period_threshold_custom_input",
                         ).val();
                         break;
                 }
@@ -1190,7 +1190,7 @@ export function build_page() {
         );
     });
 
-    $("#id_realm_waiting_period_setting").on("change", function () {
+    $("#id_realm_waiting_period_threshold").on("change", function () {
         const waiting_period_threshold = this.value;
         change_element_block_display_property(
             "id_realm_waiting_period_threshold",
