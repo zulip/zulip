@@ -1360,20 +1360,20 @@ td.pointer {
 
 .message_header_private_message {
     .message_label_clickable {
-        background-color: hsl(0, 0%, 27%);
+        background-color: hsl(0, 0%, 27%) !important;
         display: inline-block;
         padding: 3px 6px 2px;
         font-weight: normal;
         height: 17px;
         line-height: 17px;
-        border-left-color: hsl(0, 0%, 27%);
+        border-left-color: hsl(0, 0%, 27%) !important;
     }
 
     /* Base color backgrounds for message boxes,
        private messages, mentions, and unread messages */
 
     .message-header-contents {
-        background-color: hsla(192, 19%, 75%, 0.2);
+        background-color: hsla(192, 19%, 75%, 0.2) !important;
         box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
     }
 }
@@ -1395,7 +1395,7 @@ td.pointer {
     align-items: center;
     justify-content: space-between;
     border-right: 1px solid hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%) !important;
 }
 
 .group_mention .messagebox,
@@ -3285,4 +3285,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     body { print-color-adjust: exact !important; }
     a { print-color-adjust: exact !important; }
+
+    .message-header-contents {
+        print-color-adjust: exact !important;
+        background-color: hsl(0, 0%, 88%) !important;
+    }
 }
