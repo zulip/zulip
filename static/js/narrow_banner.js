@@ -1,4 +1,5 @@
 import $ from "jquery";
+
 import {$t, $t_html} from "./i18n";
 import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
