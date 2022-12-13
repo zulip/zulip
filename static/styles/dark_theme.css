@@ -895,7 +895,10 @@
             box-shadow: 0 0 0 1px hsla(330, 40%, 20%, 1);
         }
 
-        .codehilite code,
+        .codehilite code {
+            background-color: hsla(0, 0%, 100%, 0.05);
+        }
+
         .codehilite pre {
             color: hsl(212, 100%, 82%);
             background-color: hsl(212, 25%, 15%);
@@ -1274,10 +1277,15 @@
     }
 
     #feedback_container,
-    code,
     .typeahead.dropdown-menu {
         background-color: hsl(212, 25%, 15%);
         border-color: hsla(0, 0%, 0%, 0.5);
+        color: inherit;
+    }
+
+    code {
+        background-color: hsla(0, 0%, 100%, 0.05);
+        border-color: hsla(0, 0%, 100%, 0.1);
         color: inherit;
     }
 
