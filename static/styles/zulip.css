@@ -3282,4 +3282,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 45px;
         border-left: 1px solid white;
     }
+
+    body { print-color-adjust: exact !important; }
 }
