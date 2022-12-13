@@ -21,11 +21,9 @@ export function update_is_muted(sub, value) {
             saved_ypos = message_viewport.scrollTop();
         } else if (
             message_lists.home === message_lists.current &&
-            message_lists.current.selected_row().offset() !== null
+            message_lists.current.selected_row().offset() !== (null || undefined)
         ) {
-            if (message_lists.current.selected_row().offset()) {
-                msg_offset = message_lists.current.selected_row().offset().top;
-            }
+            msg_offset = message_lists.current.selected_row().offset().top;
         }
 
         message_lists.home.clear({clear_selected_id: false});
