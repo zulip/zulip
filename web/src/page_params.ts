@@ -27,6 +27,7 @@ export const page_params: {
     realm_email_changes_disabled: boolean;
     realm_enable_spectator_access: boolean;
     realm_invite_to_realm_policy: number;
+    realm_create_multiuse_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;
     realm_move_messages_between_streams_policy: number;
     realm_name_changes_disabled: boolean;

@@ -60,6 +60,9 @@ def update_realm(
     invite_to_realm_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.INVITE_TO_REALM_POLICY_TYPES), default=None
     ),
+    create_multiuse_invite_to_realm_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.INVITE_TO_REALM_POLICY_TYPES), default=None
+    ),
     name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -182,7 +185,9 @@ def update_realm(
         )
 
     if (
-        invite_to_realm_policy is not None or invite_required is not None
+        invite_to_realm_policy is not None
+        or invite_required is not None
+        or create_multiuse_invite_to_realm_policy
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
 

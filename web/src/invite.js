@@ -265,13 +265,14 @@ function open_invite_user_modal(e) {
         streams: get_invite_streams(),
         notifications_stream: stream_data.get_notifications_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
+        can_create_multiuse_invite: page_params.can_create_invite_link_to_realm,
     });
 
     function invite_user_modal_post_render() {
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
         $("#email_invite_radio").prop("checked", true);
 
-        if (!page_params.is_admin) {
+        if (!page_params.can_create_invite_link_to_realm) {
             $("#generate_multiuse_invite_radio").prop("disabled", true);
             $("#generate_multiuse_invite_radio_container").addClass("control-label-disabled");
             $("#generate_multiuse_invite_radio_container").addClass("disabled_setting_tooltip");

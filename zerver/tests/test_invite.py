@@ -2366,11 +2366,27 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
         self.check_user_subscribed_only_to_streams("alice", [])
 
-    def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
+    def test_multiuse_invite_user_as_admin_from_normal_account(self) -> None:
+        self.login("hamlet")
+        self.realm.create_multiuse_invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
+        self.realm.save()
+
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["REALM_ADMIN"]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_only_admin_can_create_multiuse_link_policy_api_call(self) -> None:
         self.login("iago")
+        # When the create_multiuse_invite_to_realm_policy is POLICY_ADMINS_ONLY,
         # Only admins should be able to create multiuse invites even if
         # invite_to_realm_policy is set to Realm.POLICY_MEMBERS_ONLY.
         self.realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
+        self.realm.create_multiuse_invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         self.realm.save()
 
         result = self.client_post(
@@ -2381,7 +2397,7 @@ class MultiuseInviteTest(ZulipTestCase):
 
         self.login("hamlet")
         result = self.client_post("/json/invites/multiuse")
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_multiuse_link_for_inviting_as_owner(self) -> None:
         self.login("iago")

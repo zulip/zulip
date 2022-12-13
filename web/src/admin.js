@@ -160,6 +160,8 @@ export function build_page() {
         waiting_period_threshold_dropdown_values:
             settings_config.waiting_period_threshold_dropdown_values,
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+        realm_create_multiuse_invite_to_realm_policy:
+            settings_data.user_create_multiuse_invite_to_realm(),
         realm_invite_required: page_params.realm_invite_required,
         can_edit_user_groups: settings_data.user_can_edit_user_groups(),
         policy_values: settings_config.common_policy_values,

@@ -219,6 +219,7 @@ const simple_dropdown_properties = [
     "realm_private_message_policy",
     "realm_add_custom_emoji_policy",
     "realm_invite_to_realm_policy",
+    "realm_create_multiuse_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
     "realm_move_messages_between_streams_policy",
     "realm_edit_topic_policy",

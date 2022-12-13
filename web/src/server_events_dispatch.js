@@ -195,6 +195,7 @@ export function dispatch_normal_event(event) {
                 user_group_edit_policy: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
+                create_multiuse_invite_to_realm_policy: noop,
                 create_public_stream_policy: noop,
                 create_private_stream_policy: noop,
                 create_web_public_stream_policy: noop,

@@ -141,6 +141,16 @@ export function user_can_invite_others_to_realm(): boolean {
     return user_has_permission(page_params.realm_invite_to_realm_policy);
 }
 
+export function user_create_multiuse_invite_to_realm(): boolean {
+    if (
+        page_params.realm_create_multiuse_invite_to_realm_policy ===
+        settings_config.invite_to_realm_policy_values.nobody.code
+    ) {
+        return false;
+    }
+    return user_has_permission(page_params.realm_create_multiuse_invite_to_realm_policy);
+}
+
 export function user_can_subscribe_other_users(): boolean {
     return user_has_permission(page_params.realm_invite_to_stream_policy);
 }

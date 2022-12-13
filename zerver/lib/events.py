@@ -475,6 +475,9 @@ def fetch_initial_state_data(
         state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
+        state[
+            "can_create_invite_link_to_realm"
+        ] = settings_user.can_create_multiuse_invite_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
@@ -876,6 +879,9 @@ def apply_event(
                     )
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
                     state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
+                    state[
+                        "can_create_invite_link_to_realm"
+                    ] = user_profile.can_create_multiuse_invite_to_realm()
 
                     # TODO: Probably rather than writing the perfect
                     # live-update code for the case of racing with the
@@ -1082,6 +1088,7 @@ def apply_event(
                 "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
+                "create_multiuse_invite_to_realm_policy": "can_create_invite_link_to_realm",
             }
 
             # Tricky interaction: Whether we can create streams and can subscribe other users

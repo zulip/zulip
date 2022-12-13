@@ -53,15 +53,14 @@ Regardless of whether invitations are required, you can:
 
 You can restrict the ability to invite new users to join your Zulip organization
 to specific [roles](/help/roles-and-permissions). To protect your organization,
-while permission to send out individual email invitations is configurable, creating
-*reusable* invitation links is always limited to administrators.
+permissions to send out individual email invitations and create invitation links are configurable.
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
 1. Under **Joining the organization**, configure
-   **Who can invite users to this organization**.
+   **Who can send e-mail invitations to new users** and **Who can create invite links**.
 
 {!save-changes.md!}
 

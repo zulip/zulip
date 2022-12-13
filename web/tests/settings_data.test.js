@@ -272,6 +272,22 @@ run_test("user_can_invite_others_to_realm_nobody_case", () => {
     assert.equal(settings_data.user_can_invite_others_to_realm(), false);
 });
 
+run_test("user_can_create_multiuse_invite_link_nobody_case", () => {
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    page_params.realm_create_multiuse_invite_to_realm_policy =
+        settings_config.invite_to_realm_policy_values.nobody.code;
+    assert.equal(settings_data.user_create_multiuse_invite_to_realm(), false);
+});
+
+run_test("user_can_create_multiuse_invite_link_admin_case", () => {
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    page_params.realm_create_multiuse_invite_to_realm_policy =
+        settings_config.invite_to_realm_policy_values.by_admins_only.code;
+    assert.equal(settings_data.user_create_multiuse_invite_to_realm(), true);
+});
+
 run_test("user_can_create_web_public_streams", () => {
     page_params.is_owner = true;
     page_params.server_web_public_streams_enabled = true;

@@ -429,6 +429,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Who in the organization is allowed to invite other users to organization.
     invite_to_realm_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
+    # Who in the organization is allowed to generate multiuse invites to organization.
+    create_multiuse_invite_to_realm_policy = models.PositiveSmallIntegerField(
+        default=POLICY_ADMINS_ONLY
+    )
+
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
@@ -751,6 +756,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_url_embed_preview=bool,
         invite_required=bool,
         invite_to_realm_policy=int,
+        create_multiuse_invite_to_realm_policy=int,
         invite_to_stream_policy=int,
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
@@ -2134,6 +2140,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
+            "create_multiuse_invite_to_realm_policy",
             "move_messages_between_streams_policy",
             "user_group_edit_policy",
         ]:
@@ -2189,6 +2196,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     def can_invite_others_to_realm(self) -> bool:
         return self.has_permission("invite_to_realm_policy")
+
+    def can_create_multiuse_invite_to_realm(self) -> bool:
+        return self.has_permission("create_multiuse_invite_to_realm_policy")
 
     def can_move_messages_between_streams(self) -> bool:
         return self.has_permission("move_messages_between_streams_policy")

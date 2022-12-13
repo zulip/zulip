@@ -57,8 +57,6 @@ permission to invite users.
 
 ## Create an invitation link
 
-{!admin-only.md!}
-
 {start_tabs}
 
 {relative|gear|invite}

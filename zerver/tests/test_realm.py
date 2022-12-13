@@ -625,6 +625,7 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
+            create_multiuse_invite_to_realm_policy=10,
             create_public_stream_policy=10,
             create_private_stream_policy=10,
             create_web_public_stream_policy=10,
@@ -1162,6 +1163,7 @@ class RealmAPITest(ZulipTestCase):
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
+            create_multiuse_invite_to_realm_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[

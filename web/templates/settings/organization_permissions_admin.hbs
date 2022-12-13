@@ -16,13 +16,19 @@
                       prefix="id_"
                       is_checked=realm_invite_required
                       label=admin_settings_label.realm_invite_required}}
-                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
+                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can send e-mail invitations to new users" }}
                     </label>
                     <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
                     </select>
                 </div>
-
+                <div class="input-group">
+                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can create invite links" }}
+                    </label>
+                    <select name="realm_create_multiuse_invite_to_realm_policy" id="id_realm_create_multiuse_invite_to_realm_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
+                    </select>
+                </div>
                 <div class="input-group">
                     <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
                     <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style">
