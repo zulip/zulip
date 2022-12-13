@@ -3300,4 +3300,58 @@ div.topic_edit_spinner .loading_indicator_spinner {
     a[href]:after {
         content: none !important;
     }
+
+    /* this is the one that actually makes the header stay */
+    .header {
+        position: relative;
+        z-index: 102; /* Needs to be higher than .alert-bar-container */
+        width: 100%;
+        height: $header_height;
+        padding-bottom: $header_padding_bottom;
+        background-color: inherit;
+    }
+
+    /* not working :( */
+    .message_area_padder {
+        /* The height of the header and the message_view_header plus a small gap */
+        margin-top: 0px;
+        overflow: visible;
+    }
+
+    /* not working :( */
+    .message_list {
+        .recipient_row {
+            border-bottom: 1px solid hsl(0, 0%, 88%);
+            margin-bottom: 0px;
+        }
+    }
+
+    /* not working :( */
+    #message_view_header_underpadding {
+        position: relative;
+        width: 100%;
+        top: $header_height;
+        height: $header_padding_bottom;
+        z-index: 99;
+    }
+
+    /* not working :( */
+    div.floating_recipient {
+        content: none !important;
+    }
+
+    /* not working :( */
+    .floating_recipient {
+        .recipient_row {
+            content: none !important;
+        }
+    
+        .recipient_row_date.hide-date {
+            content: none !important;
+        }
+    
+        .message_header_private_message {
+            content: none !important;
+        }
+    }
 }
