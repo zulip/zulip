@@ -165,7 +165,7 @@ function update_narrow_title(filter) {
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
-    blueslip.debug("hiding empty narrow message from reset_ui_state() in narrow.js")
+    //blueslip.debug("hiding empty narrow message from reset_ui_state() in narrow.js")
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
@@ -994,7 +994,10 @@ function handle_post_narrow_deactivate_processes() {
     if (page_params.search_pills_enabled) {
         search_pill_widget.widget.clear(true);
     }
-
+    if (message_lists.current.empty()) {
+        //blueslip.debug("showing empty narrow message from handle_post_narrow_deactivate_processes in narrow.js")
+        narrow_banner.show_empty_narrow_message();
+    }
     top_left_corner.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
@@ -1025,13 +1028,6 @@ export function deactivate(coming_from_recent_topics = false) {
       message_lists.home in it.
      */
     search.clear_search_form();
-    //Display "empty" banner, only check messages after giving some time for messages to load in
-    // setTimeout( () => {
-    //     blueslip.debug(`message_lists.current.empty(): ${JSON.stringify(message_lists.current.empty())}`)
-    //     if (message_lists.current.empty()) {
-    //         narrow_banner.show_empty_narrow_message()
-    //     }
-    // }, 500)
     // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {

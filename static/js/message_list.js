@@ -68,15 +68,32 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
+<<<<<<< HEAD
         if (this.narrowed && !this.empty()) {
+=======
+        if (!this.empty()) {
+>>>>>>> finished up feature functionality and deleted or commented debug statements
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
+            debugger;
             blueslip.debug("hiding empty narrow message from add_messages in message_list.js")
             narrow_banner.hide_empty_narrow_message();
         }
+        else {
+            // Even after loading more messages, we have
+            // no messages to display in this narrow.
+            debugger;
+            blueslip.debug("showing empty narrow message from process_result in message_fetch.js")
+            narrow_banner.show_empty_narrow_message();
+        }
+    
 
+<<<<<<< HEAD
         if (this.narrowed && !this.empty() && this.selected_id() === -1) {
+=======
+        if (!this.empty() && this.selected_id() === -1) {
+>>>>>>> finished up feature functionality and deleted or commented debug statements
             // And also select the newly arrived message.
             this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -360,14 +377,14 @@ export class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this.narrowed) {
-            if (this.empty()) {
-                narrow_banner.show_empty_narrow_message();
-                blueslip.debug("showing empty narrow message from rerender in message_list.js")
-            } else {
-                blueslip.debug("hiding empty narrow message from rerender in message_list.js")
-                narrow_banner.hide_empty_narrow_message();
-            }
+        if (this.empty()) {
+            debugger;
+            narrow_banner.show_empty_narrow_message();
+            blueslip.debug("showing empty narrow message from rerender in message_list.js")
+        } else {
+            debugger;
+            blueslip.debug("hiding empty narrow message from rerender in message_list.js")
+            narrow_banner.hide_empty_narrow_message();
         }
     
         this.rerender_view();
