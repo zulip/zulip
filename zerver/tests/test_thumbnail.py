@@ -88,7 +88,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(response.status_code, 403)
         remove_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
 
-        # Deny random file access
+        # Upon random file access redirect to the missing_image.png
         response = self.client_get(
             "/thumbnail",
             {
@@ -96,4 +96,4 @@ class ThumbnailTest(ZulipTestCase):
                 "size": "full",
             },
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
