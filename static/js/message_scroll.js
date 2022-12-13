@@ -75,8 +75,7 @@ export function hide_indicators() {
 export function show_history_limit_notice() {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
-    debugger;
-    blueslip.debug("hiding empty narrow message from show_history_limit_notice() in message_scroll.js")
+    //blueslip.debug("hiding empty narrow message from show_history_limit_notice() in message_scroll.js")
     narrow_banner.hide_empty_narrow_message();
 }
 
