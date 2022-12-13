@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import orjson
 from django.db import connection
@@ -9,7 +9,7 @@ from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Stream, StreamTopic, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -28,7 +28,6 @@ EXPORT_TOPIC_NAME = "subject"
 The following functions are for user-facing APIs
 where we'll want to support "subject" for a while.
 """
-
 
 def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
     """
@@ -270,3 +269,11 @@ def get_topic_history_for_stream(
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
+
+
+def get_stream_topics_for_realm(realm: Realm) -> Sequence[StreamTopic]:
+    streams = Stream.objects.filter(realm=realm)
+    stream_topics = []
+    for stream in streams:
+        stream_topics.extend(StreamTopic.objects.filter(stream=stream))
+    return stream_topics

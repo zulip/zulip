@@ -462,7 +462,7 @@ Output:
     def client_post(
         self,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -875,7 +875,7 @@ Output:
         self,
         identifier: str,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         **extra: str,
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
@@ -907,7 +907,7 @@ Output:
         self,
         user: UserProfile,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":

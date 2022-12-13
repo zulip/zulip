@@ -9,6 +9,7 @@ This can only use stdlib modules from python.
 import configparser
 import re
 import subprocess
+import sys
 from typing import Dict, List
 
 
@@ -63,7 +64,7 @@ def run_sql_query(query: str) -> List[List[str]]:
         return [x.split("\0") for x in output.split("\n")]
     except subprocess.CalledProcessError as e:
         report("CRITICAL", f"psql failed: {str(e)}: {e.output}")
-        exit(MAXSTATE)
+        sys.exit(MAXSTATE)
 
 
 def loc_to_abs_offset(loc_str: str) -> int:
@@ -142,4 +143,4 @@ else:
             else:
                 report("OK", msg)
 
-exit(MAXSTATE)
+sys.exit(MAXSTATE)

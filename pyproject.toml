@@ -3,7 +3,7 @@ line-length = 100
 target-version = ["py38"]
 
 [tool.isort]
-src_paths = [".", "tools", "tools/setup/emoji"]
+src_paths = [".", "tools"]
 known_third_party = "zulip"
 profile = "black"
 line_length = 100
@@ -51,7 +51,7 @@ no_implicit_reexport = false
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
-    "aioapns.*",
+    "aioapns.*", # https://github.com/Fatal1ty/aioapns/issues/33
     "bitfield.*",
     "bmemcached.*",
     "cairosvg.*",
@@ -102,13 +102,18 @@ django_settings_module = "zproject.settings"
 select = [
     "ANN", # annotations
     "B", # bugbear
-    "C", # comprehensions
+    "C4", # comprehensions
     "E", # style errors
     "F", # flakes
     "I", # import sorting
-    "M", # meta
     "N", # naming
-    "U", # upgrade
+    "PGH", # pygrep-hooks
+    "PLC", # pylint convention
+    "PLE", # pylint error
+    "PLR", # pylint refactor
+    "RUF", # Ruff
+    "T10", # debugger
+    "UP", # upgrade
     "W", # style warnings
     "YTT", # sys.version
 ]
@@ -116,18 +121,21 @@ ignore = [
     "ANN101", # Missing type annotation for `self` in method
     "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
-    "B006", # Do not use mutable data structures for argument defaults
     "B007", # Loop control variable not used within the loop body
-    "B008", # Do not perform function calls in argument defaults.
+    "B008", # Do not perform function calls in argument defaults
+    "B023", # Function definition does not bind loop variable
+    "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
     "C408", # Unnecessary `dict` call (rewrite as a literal)
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
+    "RUF001", # String contains ambiguous unicode character
+    "RUF003", # Comment contains ambiguous unicode character
 ]
 line-length = 100
-src = [".", "tools", "tools/setup/emoji"]
+src = [".", "tools"]
 target-version = "py38"
 
 [tool.ruff.isort]

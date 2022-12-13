@@ -14,7 +14,6 @@ import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
-import * as compose_error from "./compose_error";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
@@ -242,11 +241,6 @@ export function initialize() {
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {
-        // Hide actions popover to keep its options
-        // in sync with revealed/hidden state of
-        // muted user's message.
-        popovers.hide_actions_popover();
-
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
@@ -721,7 +715,7 @@ export function initialize() {
     // COMPOSE
 
     $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
-        compose_error.hide();
+        $("#compose-send-status").stop(true).fadeOut(500);
     });
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {

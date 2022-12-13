@@ -2586,6 +2586,17 @@ post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
 
+class StreamTopic(models.Model):
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    is_pinned = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("stream", "name")
+
+def get_stream_topics(realm: Realm, stream: Stream) -> QuerySet[StreamTopic]:
+    return StreamTopic.objects.filter(realm=realm, stream=stream)
+
 class UserTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
@@ -4353,6 +4364,10 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_PROPERTY_CHANGED = 607
     STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED = 608
 
+    STREAMTOPIC_CREATED = 701
+    STREAMTOPIC_NAME_CHANGED = 702
+    STREAMTOPIC_PROPERTY_CHANGED = 703
+
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.
@@ -4416,6 +4431,11 @@ class RealmAuditLog(AbstractRealmAuditLog):
     )
     modified_stream = models.ForeignKey(
         Stream,
+        null=True,
+        on_delete=CASCADE,
+    )
+    modified_stream_topic = models.ForeignKey(
+        StreamTopic,
         null=True,
         on_delete=CASCADE,
     )
