@@ -22,12 +22,44 @@
         @extend .placeholder;
     }
 
-    a:hover {
-        color: hsl(200, 79%, 66%);
+    a {
+        cursor: pointer;
+        color: hsl(200, 100%, 50%);
+        text-decoration: none;
+
+        &.message_label_clickable {
+            color: inherit;
+        }
+
+        &.message_label_clickable:hover {
+            color: hsl(200, 100%, 40%);
+        }
+
+        &.compose_control_button {
+            color: inherit;
+            text-decoration: inherit;
+        }
+
+        &.compose_control_button:hover {
+            color: hsl(200, 79%, 66%);
+            text-decoration: inherit;
+            opacity: inherit;
+        }
+    }
+
+    a:hover,
+    a:focus {
+        color: hsl(200, 100%, 47%);
+        text-decoration: underline;
+    }
+
+    ul.filters a {
+        color: inherit;
     }
 
     ul.filters a:hover {
         color: inherit;
+        text-decoration: inherit;
     }
 
     /************************* MODAL DARK THEME *******************/
