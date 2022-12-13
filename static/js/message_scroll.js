@@ -1,6 +1,5 @@
 import $ from "jquery";
 import _ from "lodash";
-
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
 import * as loading from "./loading";
@@ -13,7 +12,7 @@ import * as recent_topics_util from "./recent_topics_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
-import * as blueslip from "./blueslip";
+
 let actively_scrolling = false;
 
 // Tracks whether the next scroll that will complete is initiated by

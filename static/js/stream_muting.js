@@ -1,5 +1,4 @@
 import {all_messages_data} from "./all_messages_data";
-import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_util from "./message_util";

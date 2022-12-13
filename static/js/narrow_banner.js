@@ -1,5 +1,4 @@
 import $ from "jquery";
-
 import {$t, $t_html} from "./i18n";
 import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
@@ -8,7 +7,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
-import * as blueslip from "./blueslip";
+
 const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",
     html: $t_html(
