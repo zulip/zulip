@@ -26,7 +26,6 @@ export function update_is_muted(sub, value) {
             if (message_lists.current.selected_row().offset()) {
                 msg_offset = message_lists.current.selected_row().offset().top;
             }
-
         }
 
         message_lists.home.clear({clear_selected_id: false});

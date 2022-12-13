@@ -73,13 +73,11 @@ export class MessageList {
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
-        }
-        else {
+        } else {
             // Even after loading more messages, we have
             // no messages to display in this narrow.
             narrow_banner.show_empty_narrow_message();
         }
-    
 
         if (!this.empty() && this.selected_id() === -1) {
             // And also select the newly arrived message.
@@ -370,7 +368,7 @@ export class MessageList {
         } else {
             narrow_banner.hide_empty_narrow_message();
         }
-    
+
         this.rerender_view();
     }
 
