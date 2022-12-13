@@ -419,13 +419,11 @@ function pick_empty_narrow_banner() {
 }
 
 export function show_empty_narrow_message() {
-    //blueslip.debug("called show_empty_narrow_message")
     $(".empty_feed_notice_main").empty();
     const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner());
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
 }
 
 export function hide_empty_narrow_message() {
-    //blueslip.debug("called hide_empty_narrow_message")
     $(".empty_feed_notice_main").empty();
 }

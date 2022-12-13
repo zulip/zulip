@@ -1,5 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
+
 import * as blueslip from "./blueslip";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
@@ -71,13 +72,11 @@ export class MessageList {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
-            //blueslip.debug("hiding empty narrow message from add_messages in message_list.js")
             narrow_banner.hide_empty_narrow_message();
         }
         else {
             // Even after loading more messages, we have
             // no messages to display in this narrow.
-            //blueslip.debug("showing empty narrow message from process_result in message_fetch.js")
             narrow_banner.show_empty_narrow_message();
         }
     
@@ -354,8 +353,8 @@ export class MessageList {
     }
 
     rerender_view() {
-        this.reselect_selected_id();
         this.view.rerender_preserving_scrolltop();
+        this.reselect_selected_id();
     }
 
     rerender() {
@@ -367,10 +366,8 @@ export class MessageList {
         this.view.update_render_window(this.selected_idx(), false);
 
         if (this.empty()) {
-            //blueslip.debug("showing empty narrow message from rerender in message_list.js")
             narrow_banner.show_empty_narrow_message();
         } else {
-            //blueslip.debug("hiding empty narrow message from rerender in message_list.js")
             narrow_banner.hide_empty_narrow_message();
         }
     

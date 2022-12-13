@@ -165,7 +165,6 @@ function update_narrow_title(filter) {
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
-    //blueslip.debug("hiding empty narrow message from reset_ui_state() in narrow.js")
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
@@ -995,7 +994,6 @@ function handle_post_narrow_deactivate_processes() {
         search_pill_widget.widget.clear(true);
     }
     if (message_lists.current.empty()) {
-        //blueslip.debug("showing empty narrow message from handle_post_narrow_deactivate_processes in narrow.js")
         narrow_banner.show_empty_narrow_message();
     }
     top_left_corner.handle_narrow_deactivated();

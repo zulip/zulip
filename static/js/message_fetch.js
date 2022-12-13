@@ -59,7 +59,6 @@ function process_result(data, opts) {
     ) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
-        //blueslip.debug("showing empty narrow message from process_result in message_fetch.js")
         narrow_banner.show_empty_narrow_message();
     }
 
@@ -250,6 +249,7 @@ export function load_messages(opts, attempt = 1) {
             data.narrow = JSON.stringify(data.narrow);
         }
     }
+
     channel.get({
         url: "/json/messages",
         data,
