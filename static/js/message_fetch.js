@@ -16,7 +16,6 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
-import * as blueslip from "./blueslip";
 const consts = {
     backfill_idle_time: 10 * 1000,
     backfill_batch_size: 1000,
