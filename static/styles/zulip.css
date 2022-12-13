@@ -3284,4 +3284,5 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     body { print-color-adjust: exact !important; }
+    a { print-color-adjust: exact !important; }
 }
