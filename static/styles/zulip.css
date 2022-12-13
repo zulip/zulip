@@ -3262,16 +3262,19 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 @media print
 {    
+    /* created a class that would allow certain elements to not print */
     .no-print, .no-print *
     {
         display: none !important;
     }
 
+    /* takes away the nav bar buttons and the div borders there */
     .top-navbar-border, .top-navbar-border * {
         border-left: 1px WHITE;
         border-right: 1px WHITE;
     }
 
+    /* takes away the nav bar buttons and the div borders there */
     .spectator_narrow_login_button {
         position: absolute;
         top: 0;
@@ -3283,11 +3286,18 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-left: 1px solid white;
     }
 
+    /* print does not adjust color */
     body { print-color-adjust: exact !important; }
     a { print-color-adjust: exact !important; }
 
+    /* helps show the message header colors when printing */
     .message-header-contents {
         print-color-adjust: exact !important;
         background-color: hsl(0, 0%, 88%) !important;
+    }
+   
+    /* don't show URLs of hidden links when printing */
+    a[href]:after {
+        content: none !important;
     }
 }
