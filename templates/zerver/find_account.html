@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% extends "zerver/portico.html" %}
 
 {% block title %}
@@ -49,11 +50,16 @@
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>
-                <div id="errors_realtime", name="errors_realtime"></div>
+                <div id="errors"></div>
+                {% if form.emails.errors %}
+                    {% for error in form.emails.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
                 <script>
                     var inputEmails = document.getElementById('emails');
                     var findAccountButton = document.getElementById('submit_button');
-                    var warningMessage = document.getElementById('errors_realtime');
+                    var warningMessage = document.getElementById('errors');
                     var originalBackgroundColor = findAccountButton.style.backgroundColor;
                     function validEmails(val) {
                         var emails = val.replace(/\s/g,'').split(",");
@@ -83,12 +89,6 @@
                         }
                     }
                 </script>
-                <div id="errors"></div>
-                {% if form.emails.errors %}
-                    {% for error in form.emails.errors %}
-                    <div class="alert alert-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
             </div>
             {% endif %}
         </div>
