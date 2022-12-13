@@ -70,11 +70,19 @@ blockquote p {
 
 a {
     cursor: pointer;
+    color: hsl(200, 90%, 40%);
+    text-decoration: none;
 
     &.message_label_clickable:hover {
         cursor: pointer;
         color: hsl(200, 100%, 40%);
     }
+}
+
+a:hover,
+a:focus {
+    color: hsl(200, 100%, 47%);
+    text-decoration: underline;
 }
 
 code,
