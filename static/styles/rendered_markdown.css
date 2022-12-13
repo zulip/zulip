@@ -157,7 +157,7 @@
 
     /* Mentions and alert words */
     .user-mention-me :not(.silent) {
-        background-color: hsl(112, 88%, 87%);
+        background: hsla(240, 52%, 45%, 1);
     }
 
     .user-group-mention,
@@ -168,13 +168,33 @@
         margin-right: 2px;
         margin-left: 2px;
         white-space: nowrap;
-        background: linear-gradient(
-            to bottom,
-            hsla(0, 0%, 0%, 0.1) 0%,
-            hsla(0, 0%, 0%, 0) 100%
-        );
         display: inline-block;
         margin-bottom: 1px;
+    }
+
+    .user-mention {
+        background: hsla(240, 58%, 52%, 0.1);
+    }
+
+    .user-mention:hover {
+        background: hsla(240, 58%, 52%, 0.15);
+    }
+
+    .user-group-mention {
+        background: hsla(183, 59%, 38%, 0.1);
+    }
+
+    .user-group-mention:hover {
+        background: hsla(183, 59%, 38%, 0.15);
+    }
+
+    .user-mention-me {
+        color: hsla(240, 52%, 45%, 1);
+        font-weight: 600;
+    }
+
+    .user-group-mention.user-mention-me {
+        color: hsla(183, 52%, 26%, 1);
     }
 
     .alert-word {
