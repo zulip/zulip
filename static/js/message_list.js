@@ -1,6 +1,5 @@
 import autosize from "autosize";
 import $ from "jquery";
-
 import * as blueslip from "./blueslip";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
@@ -68,11 +67,7 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-<<<<<<< HEAD
-        if (this.narrowed && !this.empty()) {
-=======
         if (!this.empty()) {
->>>>>>> finished up feature functionality and deleted or commented debug statements
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
@@ -87,11 +82,7 @@ export class MessageList {
         }
     
 
-<<<<<<< HEAD
-        if (this.narrowed && !this.empty() && this.selected_id() === -1) {
-=======
         if (!this.empty() && this.selected_id() === -1) {
->>>>>>> finished up feature functionality and deleted or commented debug statements
             // And also select the newly arrived message.
             this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
         }
