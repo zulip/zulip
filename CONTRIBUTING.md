@@ -343,7 +343,7 @@ labels.
 - **I think my PR is done, but it hasn't been merged yet. What's going on?**
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
-     discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
+     discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
   2. If all the feedback has been addressed, did you [leave a
      comment](#how-to-help-move-the-review-process-forward)
      explaining that you have done so and **requesting another review**? If not,
@@ -372,7 +372,7 @@ experience, these are the best predictors of success:
   you got stuck. Post tracebacks or other error messages if appropriate. For
   more advice, check out [our guide][great-questions]!
 - Learning and practicing
-  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
+  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
 - Submitting carefully tested code. See our [detailed guide on how to review
   code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
   (yours or someone else's).

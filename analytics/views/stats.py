@@ -49,23 +49,35 @@ def is_analytics_ready(realm: Realm) -> bool:
 def render_stats(
     request: HttpRequest,
     data_url_suffix: str,
-    target_name: str,
+    realm: Optional[Realm],
+    *,
+    title: Optional[str] = None,
     for_installation: bool = False,
     remote: bool = False,
     analytics_ready: bool = True,
 ) -> HttpResponse:
     assert request.user.is_authenticated
 
-    # Same query to get guest user count as in get_seat_count in corporate/lib/stripe.py.
-    guest_users = UserProfile.objects.filter(
-        realm=request.user.realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
-    ).count()
+    if realm is not None:
+        # Same query to get guest user count as in get_seat_count in corporate/lib/stripe.py.
+        guest_users = UserProfile.objects.filter(
+            realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
+        ).count()
+        space_used = realm.currently_used_upload_space_bytes()
+        if title:
+            pass
+        else:
+            title = realm.name or realm.string_id
+    else:
+        assert title
+        guest_users = None
+        space_used = None
 
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
         remote=remote,
-        upload_space_used=request.user.realm.currently_used_upload_space_bytes(),
+        upload_space_used=space_used,
         guest_users=guest_users,
     )
 
@@ -81,7 +93,9 @@ def render_stats(
         request,
         "analytics/stats.html",
         context=dict(
-            target_name=target_name, page_params=page_params, analytics_ready=analytics_ready
+            target_name=title,
+            page_params=page_params,
+            analytics_ready=analytics_ready,
         ),
     )
 
@@ -94,9 +108,7 @@ def stats(request: HttpRequest) -> HttpResponse:
         # TODO: Make @zulip_login_required pass the UserProfile so we
         # can use @require_member_or_admin
         raise JsonableError(_("Not allowed for guest users"))
-    return render_stats(
-        request, "", realm.name or realm.string_id, analytics_ready=is_analytics_ready(realm)
-    )
+    return render_stats(request, "", realm, analytics_ready=is_analytics_ready(realm))
 
 
 @require_server_admin
@@ -110,7 +122,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     return render_stats(
         request,
         f"/realm/{realm_str}",
-        realm.name or realm.string_id,
+        realm,
         analytics_ready=is_analytics_ready(realm),
     )
 
@@ -125,7 +137,8 @@ def stats_for_remote_realm(
     return render_stats(
         request,
         f"/remote/{server.id}/realm/{remote_realm_id}",
-        f"Realm {remote_realm_id} on server {server.hostname}",
+        None,
+        title=f"Realm {remote_realm_id} on server {server.hostname}",
     )
 
 
@@ -166,7 +179,8 @@ def get_chart_data_for_remote_realm(
 
 @require_server_admin
 def stats_for_installation(request: HttpRequest) -> HttpResponse:
-    return render_stats(request, "/installation", "installation", True)
+    assert request.user.is_authenticated
+    return render_stats(request, "/installation", None, title="installation", for_installation=True)
 
 
 @require_server_admin
@@ -176,9 +190,10 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
     return render_stats(
         request,
         f"/remote/{server.id}/installation",
-        f"remote installation {server.hostname}",
-        True,
-        True,
+        None,
+        title=f"remote installation {server.hostname}",
+        for_installation=True,
+        remote=True,
     )
 
 

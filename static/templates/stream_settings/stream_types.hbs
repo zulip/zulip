@@ -3,14 +3,17 @@
     <label>{{t 'Who can access the stream?'}}
         {{> ../help_link_widget link="/help/stream-permissions" }}
     </label>
-    {{#each stream_privacy_policy_values}}
-        <div class="settings-radio-input-parent">
-            <label class="radio">
-                <input type="radio" name="privacy" value="{{ this.code }}" {{#if (eq this.code ../stream_privacy_policy) }}checked{{/if}} />
-                <b>{{ this.name }}:</b> {{ this.description }}
-            </label>
-        </div>
-    {{/each}}
+
+    <div class="stream-privacy_choices prop-element" id="id_stream_privacy" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+        {{#each stream_privacy_policy_values}}
+            <div class="settings-radio-input-parent">
+                <label class="radio">
+                    <input type="radio" name="privacy" value="{{ this.code }}" {{#if (eq this.code ../stream_privacy_policy) }}checked{{/if}} />
+                    <b>{{ this.name }}:</b> {{ this.description }}
+                </label>
+            </div>
+        {{/each}}
+    </div>
 </div>
 
 {{#if ask_to_announce_stream}}
@@ -28,7 +31,7 @@
     <label class="dropdown-title">{{t 'Who can post to the stream?'}}
         {{> ../help_link_widget link="/help/stream-sending-policy" }}
     </label>
-    <select name="stream-post-policy" class="stream_post_policy_setting prop-element">
+    <select name="stream-post-policy" class="stream_post_policy_setting prop-element" id="id_stream_post_policy" data-setting-widget-type="number">
         {{#each stream_post_policy_values}}
             <option value="{{this.code}}" {{#if (eq this.code ../stream_post_policy) }}selected{{/if}}>
                 {{ this.description}}
@@ -47,7 +50,8 @@
         </label>
         <select name="stream_message_retention_setting"
           class="stream_message_retention_setting prop-element"
-          {{#if disable_message_retention_setting}}disabled{{/if}}>
+          id="id_message_retention_days"
+          data-setting-widget-type="message-retention-setting">
             <option value="realm_default">{{#tr}}Use organization level settings {org_level_message_retention_setting}{{/tr}}</option>
             <option value="unlimited">{{t 'Retain forever' }}</option>
             <option value="custom_period">{{t 'Custom' }}</option>
@@ -59,9 +63,9 @@
             </label>
             <input type="text" autocomplete="off"
               name="stream-message-retention-days"
-              class="stream-message-retention-days"
-              value="{{ stream_message_retention_days }}"
-              {{#if disable_message_retention_setting}}disabled{{/if}}/>
+              class="stream-message-retention-days message-retention-setting-custom-input"
+              id="stream_message_retention_custom_input"
+              value="{{ stream_message_retention_days }}"/>
         </div>
     </div>
 </div>

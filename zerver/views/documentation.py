@@ -325,6 +325,6 @@ def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> Http
     if isinstance(integration, HubotIntegration):
         context["hubot_docs_url"] = integration.hubot_docs_url
 
-    doc_html_str = render_markdown_path(integration.doc, context)
+    doc_html_str = render_markdown_path(integration.doc, context, integration_doc=True)
 
     return HttpResponse(doc_html_str)
