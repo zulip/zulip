@@ -16,11 +16,7 @@ const compose_actions = mock_esm("../../static/js/compose_actions");
 const compose_closed_ui = mock_esm("../../static/js/compose_closed_ui");
 const hashchange = mock_esm("../../static/js/hashchange");
 const message_fetch = mock_esm("../../static/js/message_fetch");
-const message_list = mock_esm("../../static/js/message_list", {
-    set_narrowed(value) {
-        message_list.narrowed = value;
-    },
-});
+const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists", {
     home: {},
     current: {},
@@ -169,10 +165,12 @@ run_test("basics", () => {
     let cont;
 
     message_fetch.load_messages_for_narrow = (opts) => {
+        // Only validates the anchor and set of fields
         cont = opts.cont;
 
         assert.deepEqual(opts, {
             cont: opts.cont,
+            msg_list: opts.msg_list,
             anchor: 1000,
         });
     };
@@ -181,8 +179,8 @@ run_test("basics", () => {
         then_select_id: selected_id,
     });
 
-    assert.equal(message_list.narrowed.selected_id, selected_id);
-    assert.equal(message_list.narrowed.view.offset, 25);
+    assert.equal(message_lists.current.selected_id, selected_id);
+    assert.equal(message_lists.current.view.offset, 25);
     assert.equal(narrow_state.narrowed_to_pms(), false);
 
     helper.assert_events([

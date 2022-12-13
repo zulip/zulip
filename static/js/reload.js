@@ -10,7 +10,6 @@ import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -73,11 +72,13 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         } else {
             url += "+offset=" + message_lists.home.pre_narrow_offset;
 
-            const narrow_pointer = message_list.narrowed.selected_id();
+            // narrow_state.active() is true, so this is the current
+            // narrowed message list.
+            const narrow_pointer = message_lists.current.selected_id();
             if (narrow_pointer !== -1) {
                 url += "+narrow_pointer=" + narrow_pointer;
             }
-            const $narrow_row = message_list.narrowed.selected_row();
+            const $narrow_row = message_lists.current.selected_row();
             if ($narrow_row.length > 0) {
                 url += "+narrow_offset=" + $narrow_row.offset().top;
             }
