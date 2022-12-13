@@ -42,6 +42,21 @@ body {
     font-family: "Source Sans 3", sans-serif;
 }
 
+/* Scrollbar  */
+::-webkit-scrollbar {
+    width: 15px;
+}
+
+::-webkit-scrollbar-track {
+    border-radius: 5px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background: linear-gradient(to top, #2adfe4f7, #26da96ed);
+}
+
 /* Common background color */
 body,
 #message_view_header_underpadding {
