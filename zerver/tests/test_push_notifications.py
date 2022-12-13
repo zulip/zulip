@@ -1642,6 +1642,25 @@ class TestAPNs(PushNotificationTest):
             self.assertEqual(
                 [notification_drop_log, mobile_notifications_not_configured_log], logger.output
             )
+   
+    def test_configured(self) -> None:
+        self.setup_apns_tokens()
+        with mock.patch(
+            "zerver.lib.push_notifications.get_apns_context"
+        ) as mock_get, self.assertLogs("zerver.lib.push_notifications", level="DEBUG") as logger:
+            mock_get.return_value = None
+            self.send()
+            notification_drop_log = (
+                "DEBUG:zerver.lib.push_notifications:"
+                "APNs: Dropping a notification because nothing configured.  "
+                "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
+            )
+
+            from zerver.lib.push_notifications import initialize_push_notifications
+
+            initialize_push_notifications()
+            settings.DEVELOPMENT = True
+            settings.TEST_SUITE = False
 
     def test_success(self) -> None:
         self.setup_apns_tokens()
