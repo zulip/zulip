@@ -7,7 +7,6 @@ export let current;
 
 export function set_current(msg_list) {
     current = msg_list;
-    debugger;
     home.set_current_message_list(home === current);
 }
 
