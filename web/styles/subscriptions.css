@@ -989,7 +989,7 @@ div.settings-radio-input-parent {
         height: fit-content;
     }
 
-    & select.stream_post_policy_setting {
+    .stream_post_policy_setting_wrapper {
         margin-bottom: 10px;
     }
 

@@ -2,20 +2,24 @@
     <div class="new-profile-field-form wrapper">
         <div class="input-group">
             <label for="profile_field_type" >{{t "Type" }}</label>
-            <select id="profile_field_type" name="field_type" class="modal_select bootstrap-focus-style">
-                {{#each custom_profile_field_types}}
-                    <option value='{{this.id}}'>{{this.name}}</option>
-                {{/each}}
-            </select>
+            <div class="select-wrapper">
+                <select id="profile_field_type" name="field_type" class="modal_select bootstrap-focus-style">
+                    {{#each custom_profile_field_types}}
+                        <option value='{{this.id}}'>{{this.name}}</option>
+                    {{/each}}
+                </select>
+            </div>
         </div>
         <div class="input-group" id="profile_field_external_accounts">
             <label for="profile_field_external_accounts_type" >{{t "External account type" }}</label>
-            <select id="profile_field_external_accounts_type" name="external_acc_field_type" class="modal_select bootstrap-focus-style">
-                {{#each realm_default_external_accounts}}
-                    <option value='{{@key}}'>{{this.text}}</option>
-                {{/each}}
-                <option value="custom">{{t 'Custom' }}</option>
-            </select>
+            <div class="select-wrapper">
+                <select id="profile_field_external_accounts_type" name="external_acc_field_type" class="modal_select bootstrap-focus-style">
+                    {{#each realm_default_external_accounts}}
+                        <option value='{{@key}}'>{{this.text}}</option>
+                    {{/each}}
+                    <option value="custom">{{t 'Custom' }}</option>
+                </select>
+            </div>
         </div>
         <div class="input-group">
             <label for="profile_field_name" >{{t "Label" }}</label>

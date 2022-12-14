@@ -21,9 +21,11 @@
                     <label for="realm_org_type" class="dropdown-title">{{t "Organization type" }}
                         {{> ../help_link_widget link="/help/organization-type" }}
                     </label>
-                    <select name="realm_org_type" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_org_type" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=realm_org_type_values}}
-                    </select>
+                    <div class="select-wrapper">
+                        <select name="realm_org_type" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_org_type" data-setting-widget-type="number">
+                            {{> dropdown_options_widget option_values=realm_org_type_values}}
+                        </select>
+                    </div>
                 </div>
                 {{> settings_checkbox
                   setting_name="realm_want_advertise_in_communities_directory"

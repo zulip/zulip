@@ -20,15 +20,17 @@
                         <label for="timezone" class="dropdown-title inline-block">{{t "Time zone" }}</label>
                         <div class="alert-notification timezone-setting-status"></div>
                         <div class="timezone-input">
-                            <select name="timezone" id="user_timezone" class="bootstrap-focus-style settings_select">
-                                {{#unless settings_object.timezone}}
-                                <option></option>
-                                {{/unless}}
+                            <div class="select-wrapper">
+                                <select name="timezone" id="user_timezone" class="bootstrap-focus-style settings_select">
+                                    {{#unless settings_object.timezone}}
+                                    <option></option>
+                                    {{/unless}}
 
-                                {{#each timezones}}
-                                    <option value="{{ this }}">{{ this }}</option>
-                                {{/each}}
-                            </select>
+                                    {{#each timezones}}
+                                        <option value="{{ this }}">{{ this }}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </form>

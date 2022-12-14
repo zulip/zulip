@@ -73,15 +73,17 @@
         </label>
 
         <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
-            <select name="notification_sound" class="setting_notification_sound prop-element settings_select bootstrap-focus-style" id="{{prefix}}notification_sound" data-setting-widget-type="string"
-              {{#unless enable_sound_select}}
-              disabled
-              {{/unless}}>
-                <option value="none">{{t "None" }}</option>
-                {{#each settings_object.available_notification_sounds}}
-                    <option value="{{ this }}">{{ this }}</option>
-                {{/each}}
-            </select>
+            <div class="select-wrapper">
+                <select name="notification_sound" class="setting_notification_sound prop-element settings_select bootstrap-focus-style" id="{{prefix}}notification_sound" data-setting-widget-type="string"
+                  {{#unless enable_sound_select}}
+                  disabled
+                  {{/unless}}>
+                    <option value="none">{{t "None" }}</option>
+                    {{#each settings_object.available_notification_sounds}}
+                        <option value="{{ this }}">{{ this }}</option>
+                    {{/each}}
+                </select>
+            </div>
             <span class="play_notification_sound">
                 <i class="fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
             </span>
@@ -89,9 +91,11 @@
 
         <div class="input-group">
             <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
-            <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
-            </select>
+            <div class="select-wrapper">
+                <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
+                </select>
+            </div>
         </div>
     </div>
 
@@ -125,14 +129,16 @@
 
         <div class="input-group time-limit-setting">
 
-            <label for="email_notifications_batching_period">
+            <label for="email_notifications_batching_period" class="dropdown-title">
                 {{t "Delay before sending message notification emails" }}
             </label>
-            <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
-                {{#each email_notifications_batching_period_values}}
-                    <option value="{{ this.value }}">{{ this.description }}</option>
-                {{/each}}
-            </select>
+            <div class="select-wrapper">
+                <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
+                    {{#each email_notifications_batching_period_values}}
+                        <option value="{{ this.value }}">{{ this.description }}</option>
+                    {{/each}}
+                </select>
+            </div>
             <div class="dependent-settings-block">
                 <label for="email_notification_batching_period_edit_minutes" class="inline-block">
                     {{t 'Delay period (minutes)' }}:
@@ -148,9 +154,11 @@
 
         <div class="input-group">
             <label for="realm_name_in_email_notifications_policy" class="dropdown-title">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
-            <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
-            </select>
+            <div class="select-wrapper">
+                <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
+                </select>
+            </div>
         </div>
 
         {{#each notification_settings.email_message_notification_settings}}

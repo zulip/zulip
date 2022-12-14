@@ -190,10 +190,9 @@ h3,
     padding: 0 20px;
 }
 
-.setting_notification_sound,
 .play_notification_sound {
     display: inline;
-    margin-right: 4px;
+    margin-left: 4px;
 
     & i {
         font-size: 22px;
@@ -467,7 +466,8 @@ input[type="checkbox"] {
     }
 }
 
-.organization-settings-parent > div:first-of-type {
+.organization-settings-parent > div:first-of-type,
+.dependent-settings-block.allowed-domains-parent {
     margin-top: 10px;
 }
 
@@ -478,7 +478,8 @@ input[type="checkbox"] {
     align-items: center;
 }
 
-.inline-block.organization-permissions-parent div:first-of-type {
+.inline-block.organization-permissions-parent
+    div:first-of-type:not(.select-wrapper) {
     margin-top: 10px;
 }
 
@@ -1485,15 +1486,17 @@ $option_title_width: 180px;
 
 .dropdown-list-widget {
     & button.dropdown-toggle {
+        display: inline-grid;
+        align-items: center;
         text-align: left;
 
         .fa-chevron-down {
-            float: right;
-            position: relative;
-            top: 2px;
-            padding-left: 5px;
-            color: hsl(0deg 0% 58%);
+            grid-area: 1 / 2;
+            justify-self: end;
+            font-size: 10px;
             font-weight: lighter;
+            color: hsl(0deg 0% 58%);
+            padding-left: 6px;
         }
 
         &.dropdown-toggle {
@@ -1626,15 +1629,6 @@ $option_title_width: 180px;
 
 .dropdown-title {
     margin-bottom: 3px;
-}
-
-@supports (-moz-appearance: none) {
-    #settings_page select {
-        appearance: none;
-        background: hsl(0deg 0% 100%) url("../images/dropdown.png") right / 20px
-            no-repeat;
-        padding-right: 20px;
-    }
 }
 
 .profile-field-choices {

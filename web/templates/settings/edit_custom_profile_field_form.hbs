@@ -24,12 +24,14 @@
     {{#if is_external_account_field}}
     <div class="input-group profile_field_external_accounts_edit">
         <label for="external_acc_field_type">{{t "External account type" }}</label>
-        <select name="external_acc_field_type" class="modal_select" disabled>
-            {{#each ../realm_default_external_accounts}}
-                <option value='{{@key}}'>{{this.text}}</option>
-            {{/each}}
-            <option value="custom">{{t 'Custom' }}</option>
-        </select>
+        <div class="select-wrapper">
+            <select name="external_acc_field_type" class="modal_select" disabled>
+                {{#each ../realm_default_external_accounts}}
+                    <option value='{{@key}}'>{{this.text}}</option>
+                {{/each}}
+                <option value="custom">{{t 'Custom' }}</option>
+            </select>
+        </div>
     </div>
     <div class="input-group custom_external_account_detail">
         <label for="url_pattern">{{t "URL pattern" }}</label>

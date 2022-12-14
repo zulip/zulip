@@ -856,3 +856,28 @@ div.overlay {
         }
     }
 }
+
+/* dropdown design */
+.select-wrapper {
+    display: inline-grid;
+    width: fit-content;
+
+    & select {
+        grid-area: 1 / 1;
+        padding-right: 22px;
+        appearance: none;
+    }
+
+    &::after {
+        content: "\f078";
+        grid-area: 1 / 1;
+        align-self: center;
+        justify-self: end;
+        font-family: FontAwesome;
+        font-weight: normal;
+        pointer-events: none;
+        padding-right: 6px;
+        font-size: 10px;
+        color: hsl(0deg 0% 70%);
+    }
+}

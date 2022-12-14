@@ -6,12 +6,14 @@
         {{#if is_long_text_field}}
         <textarea maxlength="500" class="custom_user_field_value settings_textarea">{{ field_value.value }}</textarea>
         {{else if is_select_field}}
-        <select class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style">
-            <option value=""></option>
-            {{#each field_choices}}
-                <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
-            {{/each}}
-        </select>
+        <div class="select-wrapper">
+            <select class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style">
+                <option value=""></option>
+                {{#each field_choices}}
+                    <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
+                {{/each}}
+            </select>
+        </div>
         {{else if is_user_field }}
         <div class="pill-container person_picker">
             <div class="input" contenteditable="true"></div>

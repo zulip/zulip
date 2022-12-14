@@ -534,28 +534,24 @@ test("set_up", ({override, override_rewire}) => {
     const $stub_message_content_edit_limit_parent = $.create(
         "<stub message_content_edit_limit parent",
     );
-    $("#id_realm_message_content_edit_limit_seconds").set_parent(
-        $stub_message_content_edit_limit_parent,
-    );
+    $("#id_realm_message_content_edit_limit_seconds").closest = () =>
+        $stub_message_content_edit_limit_parent;
 
     const $stub_move_within_stream_limit_parent = $.create("<stub move_within_stream_limit parent");
-    $("#id_realm_move_messages_within_stream_limit_seconds").set_parent(
-        $stub_move_within_stream_limit_parent,
-    );
+    $("#id_realm_move_messages_within_stream_limit_seconds").closest = () =>
+        $stub_move_within_stream_limit_parent;
 
     const $stub_move_between_streams_limit_parent = $.create(
         "<stub move_between_streams_limit parent",
     );
-    $("#id_realm_move_messages_between_streams_limit_seconds").set_parent(
-        $stub_move_between_streams_limit_parent,
-    );
+    $("#id_realm_move_messages_between_streams_limit_seconds").closest = () =>
+        $stub_move_between_streams_limit_parent;
 
     const $stub_message_content_delete_limit_parent = $.create(
         "<stub message_content_delete_limit parent",
     );
-    $("#id_realm_message_content_delete_limit_seconds").set_parent(
-        $stub_message_content_delete_limit_parent,
-    );
+    $("#id_realm_message_content_delete_limit_seconds").closest = () =>
+        $stub_message_content_delete_limit_parent;
 
     const $custom_edit_limit_input = $("#id_realm_message_content_edit_limit_minutes");
     $stub_message_content_edit_limit_parent.set_find_results(
@@ -599,8 +595,10 @@ test("set_up", ({override, override_rewire}) => {
         "<stub message retention setting parent>",
     );
     const $realm_message_retention_custom_input = $("#id_realm_message_retention_custom_input");
-    $("#id_realm_message_retention_days").set_parent($stub_realm_message_retention_parent);
-    $realm_message_retention_custom_input.set_parent($stub_realm_message_retention_parent);
+    $("#id_realm_message_retention_days").closest = () => $stub_realm_message_retention_parent;
+    $realm_message_retention_custom_input.set_parent(
+        $.create("<stub message retention custom input parent>"),
+    );
     $stub_realm_message_retention_parent.set_find_results(
         ".message-retention-setting-custom-input",
         $realm_message_retention_custom_input,
@@ -630,7 +628,9 @@ test("set_up", ({override, override_rewire}) => {
         $.create("<stub in-content setting checkbox>"),
     );
     $("#enable_digest_emails_label").set_parent($.create("<stub digest setting checkbox>"));
-    $("#id_realm_digest_weekday").set_parent($.create("<stub digest weekday setting dropdown>"));
+    $("#id_realm_digest_weekday_wrapper").set_parent(
+        $.create("<stub digest weekday setting dropdown>"),
+    );
     $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
     const $waiting_period_parent_elem = $.create("waiting-period-parent-stub");
     $("#id_realm_waiting_period_threshold").set_parent($waiting_period_parent_elem);

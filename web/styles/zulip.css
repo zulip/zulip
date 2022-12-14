@@ -1624,10 +1624,15 @@ div.focused_table {
     outline: none;
 }
 
-#move_topic_modal select {
-    width: auto;
-    margin-bottom: 10px;
-    max-width: 100%;
+#move_topic_modal {
+    .select-wrapper {
+        margin-bottom: 10px;
+
+        & select {
+            width: auto;
+            max-width: 100%;
+        }
+    }
 }
 
 .topic_move_breadcrumb_messages,
@@ -2249,6 +2254,10 @@ textarea.invitee_emails {
     }
 }
 
+.custom-expiration-time-unit-wrapper {
+    vertical-align: middle;
+}
+
 select.invite-expires-in,
 select.custom-expiration-time,
 select.invite-as {
@@ -2260,7 +2269,6 @@ select.invite-as {
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
-    vertical-align: middle;
 }
 
 #multiuse_invite_link {

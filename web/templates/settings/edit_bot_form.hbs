@@ -17,9 +17,11 @@
             <label class="input-label" for="bot-role-select">{{t 'Role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}
             </label>
-            <select name="bot-role-select" id="bot-role-select" class="modal_select bootstrap-focus-style" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
-                {{> dropdown_options_widget option_values=user_role_values}}
-            </select>
+            <div class="select-wrapper">
+                <select name="bot-role-select" id="bot-role-select" class="modal_select bootstrap-focus-style" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
+                    {{> dropdown_options_widget option_values=user_role_values}}
+                </select>
+            </div>
         </div>
         <div class="input-group edit_bot_owner_container">
             <label for="bot_owner_select">{{t "Owner" }}</label>

@@ -283,7 +283,7 @@ function update_message_edit_sub_settings(is_checked) {
 function update_custom_value_input(property_name) {
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
     const custom_input_elem_id = $dropdown_elem
-        .parent()
+        .closest(".time-limit-setting")
         .find(".time-limit-custom-input")
         .attr("id");
 
@@ -314,7 +314,7 @@ function set_time_limit_setting(property_name) {
     $(`#id_${CSS.escape(property_name)}`).val(dropdown_elem_val);
 
     const $custom_input = $(`#id_${CSS.escape(property_name)}`)
-        .parent()
+        .closest(".time-limit-setting")
         .find(".time-limit-custom-input");
     $custom_input.val(get_realm_time_limits_in_minutes(property_name));
 
@@ -355,7 +355,9 @@ function message_move_limit_setting_enabled(related_setting_name) {
 
 function enable_or_disable_related_message_move_time_limit_setting(setting_name, disable_setting) {
     const $setting_elem = $(`#id_${CSS.escape(setting_name)}`);
-    const $custom_input_elem = $setting_elem.parent().find(".time-limit-custom-input");
+    const $custom_input_elem = $setting_elem
+        .closest(".time-limit-setting")
+        .find(".time-limit-custom-input");
 
     settings_ui.disable_sub_setting_onchange(disable_setting, $setting_elem.attr("id"), true);
     settings_ui.disable_sub_setting_onchange(disable_setting, $custom_input_elem.attr("id"), true);
@@ -425,7 +427,9 @@ function get_message_retention_setting_value($input_elem, for_api_data = true) {
         return JSON.stringify("realm_default");
     }
 
-    const $custom_input = $input_elem.parent().find(".message-retention-setting-custom-input");
+    const $custom_input = $input_elem
+        .closest(".time-limit-setting")
+        .find(".message-retention-setting-custom-input");
     if ($custom_input.val().length === 0) {
         return settings_config.retain_message_forever;
     }
@@ -456,7 +460,7 @@ export function set_message_retention_setting_dropdown(sub) {
     $dropdown_elem.val(dropdown_val);
 
     const $custom_input_elem = $dropdown_elem
-        .parent()
+        .closest(".time-limit-setting")
         .find(".message-retention-setting-custom-input")
         .val("");
     if (dropdown_val === "custom_period") {
@@ -487,7 +491,7 @@ function set_message_content_in_email_notifications_visibility() {
 
 function set_digest_emails_weekday_visibility() {
     change_element_block_display_property(
-        "id_realm_digest_weekday",
+        "id_realm_digest_weekday_wrapper",
         page_params.realm_digest_emails_enabled,
     );
 }
@@ -921,7 +925,9 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
         return Number.parseInt(select_elem_val, 10);
     }
 
-    const $custom_input_elem = $input_elem.parent().find(".time-limit-custom-input");
+    const $custom_input_elem = $input_elem
+        .closest(".time-limit-setting")
+        .find(".time-limit-custom-input");
     if ($custom_input_elem.val().length === 0) {
         // This handles the case where the initial setting value is "Any time" and then
         // dropdown is changed to "Custom" where the input box is empty initially and
@@ -1318,7 +1324,7 @@ export function build_page() {
     $("#id_realm_digest_emails_enabled").on("change", (e) => {
         const digest_emails_enabled = $(e.target).is(":checked");
         change_element_block_display_property(
-            "id_realm_digest_weekday",
+            "id_realm_digest_weekday_wrapper",
             digest_emails_enabled === true,
         );
     });

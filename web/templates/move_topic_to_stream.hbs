@@ -15,11 +15,13 @@
         <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
         {{#if from_message_actions_popover}}
-        <select class="message_edit_topic_propagate modal_select bootstrap-focus-style">
-            <option value="change_one"> {{t "Move only this message" }}</option>
-            <option selected="selected" value="change_later"> {{t "Move this and all following messages in this topic" }}</option>
-            <option value="change_all"> {{t "Move all messages in this topic" }}</option>
-        </select>
+        <div class="select-wrapper">
+            <select class="message_edit_topic_propagate modal_select bootstrap-focus-style">
+                <option value="change_one"> {{t "Move only this message" }}</option>
+                <option selected="selected" value="change_later"> {{t "Move this and all following messages in this topic" }}</option>
+                <option value="change_all"> {{t "Move all messages in this topic" }}</option>
+            </select>
+        </div>
         {{/if}}
         <div class="topic_move_breadcrumb_messages">
             <label class="checkbox">
