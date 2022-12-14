@@ -27,7 +27,7 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.streams import bulk_add_subscriptions
-from zerver.actions.user_groups import create_user_group
+from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
@@ -1247,6 +1247,6 @@ def create_user_groups() -> None:
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
-    create_user_group(
+    create_user_group_in_database(
         "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
     )
