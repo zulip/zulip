@@ -23,10 +23,9 @@ export class HomeMessageList {
         }
 
         const collapse_messages = this.data.filter.supports_collapsing_recipients();
-        const table_name = opts.table_name;
-        this.view = new MessageListView(this, table_name, collapse_messages);
-        this.table_name = table_name;
-        this.narrowed = this.table_name === "zfilt";
+        this.table_name = "zhome";
+        this.view = new MessageListView(this, this.table_name, collapse_messages);
+        this.narrowed = false;
         this.num_appends = 0;
         this.reading_prevented = false;
 
