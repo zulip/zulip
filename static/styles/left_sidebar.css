@@ -136,27 +136,16 @@ li.show-more-topics {
     }
 
     .subscription_block {
-        padding: 0;
         margin-right: 25px;
         margin-left: $far_left_gutter_size;
         display: flex;
-        justify-content: space-between;
         align-items: center;
         white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-
-        &::after {
-            content: "";
-            display: block;
-            clear: both;
-        }
 
         .stream-name {
             flex: auto;
             overflow-x: clip;
             text-overflow: ellipsis;
-            position: relative;
             min-width: 0;
             padding-right: 2px;
         }
@@ -571,7 +560,6 @@ li.topic-list-item {
 .pm-box,
 .topic-box {
     display: flex;
-    justify-content: center;
     padding-top: 1px;
     cursor: pointer;
     align-items: center;
