@@ -26,7 +26,7 @@ export class HomeMessageList {
         this.table_name = "zhome";
         this.view = new MessageListView(this, this.table_name, collapse_messages);
         this.narrowed = false;
-        //this.current set as true initially in case we start on All messages after initializing
+        // this.current set as true initially in case we start on All messages after initializing
         this.current = true;
         this.num_appends = 0;
         this.reading_prevented = false;
@@ -40,9 +40,11 @@ export class HomeMessageList {
 
     handle_empty_narrow_banner() {
         if (this.current) {
-            this.empty()
-                ? narrow_banner.show_empty_narrow_message()
-                : narrow_banner.hide_empty_narrow_message();
+            if (this.empty()) {
+                narrow_banner.show_empty_narrow_message();
+            } else {
+                narrow_banner.hide_empty_narrow_message();
+            }
         }
     }
 

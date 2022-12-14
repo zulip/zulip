@@ -994,6 +994,7 @@ function handle_post_narrow_deactivate_processes() {
         search_pill_widget.widget.clear(true);
     }
 
+    message_lists.home.handle_empty_narrow_banner();
     top_left_corner.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
