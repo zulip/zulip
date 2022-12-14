@@ -914,13 +914,15 @@ def update_stream_topic_properties_backend(
         except ValidationError as error:
             raise JsonableError(error.message)
         
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if not StreamTopic.objects.filter(stream_id=stream_id, name=name).exists():
             do_add_pinned_topic_to_stream_topic(
-                user_profile.realm, stream_id, name, value, acting_user=user_profile
+                user_profile.realm, stream, name, value, acting_user=user_profile
             )
         else:
+            stream_topic = StreamTopic.objects.filter(stream_id=stream_id)
             do_change_stream_topic_property(
-                user_profile.realm, stream_id, name, value, acting_user=user_profile
+                user_profile.realm, stream, stream_topic, value, acting_user=user_profile
             )
 
     # TODO: Do this more generally, see update_realm_user_settings_defaults.realm.py

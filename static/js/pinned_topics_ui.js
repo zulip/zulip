@@ -21,11 +21,11 @@ export function pin_topic(stream_id, topic, from_hotkey) {
     // update_subscription_properties_backend that has similar interface
     const raw_data = [{
         stream_id:stream_id,
-        topic:topic,
+        name:topic,
         property:"is_pinned",
         value: true,
     }];
-    const data = {subscription_data: JSON.stringify(raw_data)};
+    const data = {stream_topic_data: JSON.stringify(raw_data)};
 
     channel.patch({
         url: "/json/users/me/subscriptions/pinned_topics",

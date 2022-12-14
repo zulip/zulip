@@ -44,7 +44,7 @@ def do_add_pinned_topic_to_stream_topic(
         name=name,
         is_pinned=is_pinned,
     )
-    transaction.on_commit(lambda: send_event(realm, event, [acting_user]))
+    transaction.on_commit(lambda: send_event(realm, event, [acting_user.id]))
 
 
 def do_change_stream_topic_property(
@@ -83,5 +83,5 @@ def do_change_stream_topic_property(
         value=new_is_pinned,
     )
     transaction.on_commit(
-        lambda: send_event(realm, event, [acting_user])
+        lambda: send_event(realm, event, [acting_user.id])
     )
