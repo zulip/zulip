@@ -753,11 +753,11 @@ test("misc", ({override_rewire}) => {
 
     page_params.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
-    assert.ok(!$("#change_email").prop("disabled"));
+    assert.ok(!$("#change_email_button").prop("disabled"));
 
     page_params.realm_email_changes_disabled = true;
     settings_account.update_email_change_display();
-    assert.ok($("#change_email").prop("disabled"));
+    assert.ok($("#change_email_button").prop("disabled"));
 
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = false;
@@ -783,7 +783,7 @@ test("misc", ({override_rewire}) => {
     assert.equal($(".change_name_tooltip").is(":visible"), false);
 
     settings_account.update_email_change_display();
-    assert.ok(!$("#change_email").prop("disabled"));
+    assert.ok(!$("#change_email_button").prop("disabled"));
 
     override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
