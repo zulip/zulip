@@ -38,6 +38,14 @@ export class HomeMessageList {
         this.current = current;
     }
 
+    handle_empty_narrow_banner() {
+        if (this.current) {
+            this.empty()
+                ? narrow_banner.show_empty_narrow_message()
+                : narrow_banner.hide_empty_narrow_message();
+        }
+    }
+
     prevent_reading() {
         this.reading_prevented = true;
     }
@@ -73,18 +81,12 @@ export class HomeMessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this.current && !this.empty()) {
-            // If adding some new messages to the message tables caused
-            // our current narrow to no longer be empty, hide the empty
-            // feed placeholder text.
-            narrow_banner.hide_empty_narrow_message();
-        }
-
         if (this.current && !this.empty() && this.selected_id() === -1) {
             // And also select the newly arrived message.
             this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
         }
 
+        this.handle_empty_narrow_banner();
         return render_info;
     }
 
@@ -364,13 +366,8 @@ export class HomeMessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this.current) {
-            if (this.empty()) {
-                narrow_banner.show_empty_narrow_message();
-            } else {
-                narrow_banner.hide_empty_narrow_message();
-            }
-        }
+        this.handle_empty_narrow_banner();
+
         this.rerender_view();
     }
 
