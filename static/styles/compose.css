@@ -100,7 +100,7 @@
         padding: 0;
         display: flex;
         align-items: center;
-        width: 100%;
+        flex: 1;
 
         .fa-angle-right {
             font-size: 0.9em;
