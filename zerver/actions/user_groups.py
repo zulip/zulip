@@ -139,15 +139,16 @@ def check_add_user_group(
     realm: Realm,
     name: str,
     initial_members: List[UserProfile],
-    description: str,
+    description: str = "",
     *,
     acting_user: Optional[UserProfile],
-) -> None:
+) -> UserGroup:
     try:
         user_group = create_user_group(
             name, initial_members, realm, description=description, acting_user=acting_user
         )
         do_send_create_user_group_event(user_group, initial_members)
+        return user_group
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{}' already exists.").format(name))
 
