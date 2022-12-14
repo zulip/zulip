@@ -26,10 +26,16 @@ export class HomeMessageList {
         this.table_name = "zhome";
         this.view = new MessageListView(this, this.table_name, collapse_messages);
         this.narrowed = false;
+        //this.current set as true initially in case we start on All messages after initializing
+        this.current = true;
         this.num_appends = 0;
         this.reading_prevented = false;
 
         return this;
+    }
+
+    set_current_message_list(current) {
+        this.current = current;
     }
 
     prevent_reading() {
