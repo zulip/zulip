@@ -92,7 +92,7 @@ in the Zulip app to add more to your repertoire as needed.
 * **Cycle between stream narrows**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
-* **Narrow to all messages**: <kbd>A</kbd> — Shows all unmuted messages.
+* **Narrow to All messages**: <kbd>A</kbd> — Shows all unmuted messages.
 
 * **Narrow to current compose box recipient**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 
@@ -159,7 +159,7 @@ in the Zulip app to add more to your repertoire as needed.
 * **Collapse/show message**: <kbd>-</kbd>
 
 * **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd> — Muted topics
-  don't show up in any views (including All messages), and don't contribute
+  don't show up in any views (including **All messages**), and don't contribute
   to unread counts. Read more about [muting topics](/help/mute-a-topic).
 
 ## Recent conversations

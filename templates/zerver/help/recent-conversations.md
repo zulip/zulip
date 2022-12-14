@@ -11,3 +11,5 @@
 * [Finding a topic to read](/help/finding-a-topic-to-read)
 * [Reading topics](/help/reading-topics)
 * [Reading strategies](/help/reading-strategies)
+* [All messages](/help/all-messages)
+* [Configure default view](/help/configure-default-view)
