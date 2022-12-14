@@ -236,29 +236,6 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     );
 }
 
-async function test_delete_draft_on_sending(page: Page): Promise<void> {
-    await page.click("#drafts_table .message_row.private-message .restore-draft");
-    await wait_for_drafts_to_disappear(page);
-    await page.waitForSelector("#private-message", {visible: true});
-    await common.ensure_enter_does_not_send(page);
-    console.log("Sending draft.");
-    await page.waitForSelector("#compose-send-button", {visible: true});
-    await page.click("#compose-send-button");
-    await page.waitForSelector('xpath///*[@id="compose-textarea" and normalize-space()=""]');
-    await page.waitForSelector(
-        `xpath///*[${common.has_class_x("top_left_drafts")}]//*[${common.has_class_x(
-            "unread_count",
-        )} and text()="1"]`,
-    );
-
-    await page.waitForSelector(drafts_button, {visible: true});
-    await page.click(drafts_button);
-    await wait_for_drafts_to_appear(page);
-    const drafts_count = await get_drafts_count(page);
-    assert.strictEqual(drafts_count, 1, "Draft wasn't cleared on sending.");
-    await page.waitForSelector("#drafts_table .message_row.private-message", {hidden: true});
-}
-
 async function drafts_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click(".top_left_all_messages");
@@ -278,7 +255,6 @@ async function drafts_test(page: Page): Promise<void> {
     await test_restore_private_message_draft_via_draft_overlay(page);
     await test_delete_draft(page);
     await test_save_draft_by_reloading(page);
-    await test_delete_draft_on_sending(page);
 }
 
 common.run_test(drafts_test);

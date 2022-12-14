@@ -1,8 +1,10 @@
 import datetime
+from email.headerregistry import Address
 from unittest import mock
 
 from django.conf import settings
 from django.core import mail
+from django.utils.html import escape
 from django.utils.timezone import now
 
 from confirmation.models import (
@@ -95,7 +97,8 @@ class EmailChangeTestCase(ZulipTestCase):
         )
 
         old_email = user_profile.delivery_email
-        new_email = "hamlet-new@zulip.com"
+        new_email = '"<li>hamlet-new<li>"@zulip.com'
+        new_email_address = Address(addr_spec=new_email)
         new_realm = get_realm("zulip")
         self.login("hamlet")
         obj = EmailChangeStatus.objects.create(
@@ -109,7 +112,11 @@ class EmailChangeTestCase(ZulipTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assert_in_success_response(
-            ["This confirms that the email address for your Zulip"], response
+            [
+                "This confirms that the email address for your Zulip",
+                f'<a href="mailto:{escape(new_email)}">{escape(new_email_address.username)}@<wbr>{escape(new_email_address.domain)}</wbr></a>',
+            ],
+            response,
         )
         user_profile = get_user_by_delivery_email(new_email, new_realm)
         self.assertTrue(bool(user_profile))

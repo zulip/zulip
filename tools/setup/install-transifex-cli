@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# As of 07 December 2022, per https://pkgs.org/download/transifex-cli, only
+# Void Linux and KaOS package the new Go-based Transifex CLI officially, so our
+# safest bet is to pull the binaries from GitHub Releases directly for now.
+#
+# These binaries do not dynamically link to anything, and thus should work on
+# glibc and musl (Alpine, Void, etc.) systems equally well.
+set -euo pipefail
+
+version=1.6.4
+arch="$(uname -m)"
+
+case $arch in
+    x86_64)
+        tarball="tx-linux-amd64.tar.gz"
+        sha256=954207aba3da6139886922c8927c67098a51602c3d78558864f164a791c39e77
+        ;;
+
+    aarch64)
+        tarball="tx-linux-arm64.tar.gz"
+        sha256=2d0a115edef8e2fda6c1a431d28fe3541de073c35dc1ec677ffff0e6d1dd7a08
+        ;;
+esac
+
+check_version() {
+    out="$(tx --version)" && [ "$out" = "TX Client, version=${version}" ]
+}
+
+if ! check_version 2>/dev/null; then
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl_opts=(-fLO --retry 3)
+    curl "${curl_opts[@]}" "https://github.com/transifex/cli/releases/download/v${version}/${tarball}"
+    sha256sum -c <<<"$sha256 $tarball"
+    tar -xzf "$tarball" --no-same-owner tx
+    install -Dm755 tx /usr/local/bin/tx
+    check_version
+fi

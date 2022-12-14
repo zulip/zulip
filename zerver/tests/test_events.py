@@ -1279,45 +1279,60 @@ class NormalActionsTest(BaseAction):
         othello = self.example_user("othello")
         events = self.verify_action(
             lambda: check_add_user_group(
-                self.user_profile.realm, "backend", [othello], "Backend team"
+                self.user_profile.realm, "backend", [othello], "Backend team", acting_user=None
             )
         )
         check_user_group_add("events[0]", events[0])
 
         # Test name update
         backend = UserGroup.objects.get(name="backend")
-        events = self.verify_action(lambda: do_update_user_group_name(backend, "backendteam"))
+        events = self.verify_action(
+            lambda: do_update_user_group_name(backend, "backendteam", acting_user=None)
+        )
         check_user_group_update("events[0]", events[0], "name")
 
         # Test description update
         description = "Backend team to deal with backend code."
-        events = self.verify_action(lambda: do_update_user_group_description(backend, description))
+        events = self.verify_action(
+            lambda: do_update_user_group_description(backend, description, acting_user=None)
+        )
         check_user_group_update("events[0]", events[0], "description")
 
         # Test add members
         hamlet = self.example_user("hamlet")
-        events = self.verify_action(lambda: bulk_add_members_to_user_group(backend, [hamlet.id]))
+        events = self.verify_action(
+            lambda: bulk_add_members_to_user_group(backend, [hamlet.id], acting_user=None)
+        )
         check_user_group_add_members("events[0]", events[0])
 
         # Test remove members
         hamlet = self.example_user("hamlet")
-        events = self.verify_action(lambda: remove_members_from_user_group(backend, [hamlet.id]))
+        events = self.verify_action(
+            lambda: remove_members_from_user_group(backend, [hamlet.id], acting_user=None)
+        )
+
         check_user_group_remove_members("events[0]", events[0])
 
         api_design = create_user_group(
-            "api-design", [hamlet], hamlet.realm, description="API design team"
+            "api-design", [hamlet], hamlet.realm, description="API design team", acting_user=None
         )
 
         # Test add subgroups
-        events = self.verify_action(lambda: add_subgroups_to_user_group(backend, [api_design]))
+        events = self.verify_action(
+            lambda: add_subgroups_to_user_group(backend, [api_design], acting_user=None)
+        )
         check_user_group_add_subgroups("events[0]", events[0])
 
         # Test remove subgroups
-        events = self.verify_action(lambda: remove_subgroups_from_user_group(backend, [api_design]))
+        events = self.verify_action(
+            lambda: remove_subgroups_from_user_group(backend, [api_design], acting_user=None)
+        )
         check_user_group_remove_subgroups("events[0]", events[0])
 
         # Test remove event
-        events = self.verify_action(lambda: check_delete_user_group(backend.id, othello))
+        events = self.verify_action(
+            lambda: check_delete_user_group(backend.id, othello, acting_user=None)
+        )
         check_user_group_remove("events[0]", events[0])
 
     def test_default_stream_groups_events(self) -> None:

@@ -1504,7 +1504,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         large_user_group = create_user_group(
-            "large_user_group", [self.user_profile, othello, cordelia], get_realm("zulip")
+            "large_user_group",
+            [self.user_profile, othello, cordelia],
+            get_realm("zulip"),
+            acting_user=None,
         )
 
         # Personal mention in a stream message should soft reactivate the user
@@ -1873,7 +1876,9 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     def test_get_message_payload_apns_user_group_mention(self) -> None:
         user_profile = self.example_user("othello")
-        user_group = create_user_group("test_user_group", [user_profile], get_realm("zulip"))
+        user_group = create_user_group(
+            "test_user_group", [user_profile], get_realm("zulip"), acting_user=None
+        )
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         payload = get_message_payload_apns(

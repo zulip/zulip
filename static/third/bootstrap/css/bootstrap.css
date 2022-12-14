@@ -54,8 +54,7 @@ img {
 }
 button,
 input,
-select,
-textarea {
+select {
   margin: 0;
   font-size: 100%;
   vertical-align: middle;
@@ -95,10 +94,6 @@ input[type="search"] {
 input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
-}
-textarea {
-  overflow: auto;
-  vertical-align: top;
 }
 @media print {
   * {
@@ -534,16 +529,14 @@ fieldset {
 label,
 input,
 button,
-select,
-textarea {
+select {
   font-size: 14px;
   font-weight: normal;
   line-height: 20px;
 }
 input,
 button,
-select,
-textarea {
+select {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 label {
@@ -551,7 +544,6 @@ label {
   margin-bottom: 5px;
 }
 select,
-textarea,
 input[type="text"],
 input[type="password"],
 input[type="datetime"],
@@ -577,14 +569,9 @@ input[type="color"] {
   border-radius: 4px;
   vertical-align: middle;
 }
-input,
-textarea {
+input {
   width: 206px;
 }
-textarea {
-  height: auto;
-}
-textarea,
 input[type="text"],
 input[type="password"],
 input[type="datetime"],
@@ -608,7 +595,6 @@ input[type="color"] {
   -o-transition: border linear .2s, box-shadow linear .2s;
   transition: border linear .2s, box-shadow linear .2s;
 }
-textarea:focus,
 input[type="text"]:focus,
 input[type="password"]:focus,
 input[type="datetime"]:focus,
@@ -675,16 +661,13 @@ input[type="checkbox"]:focus {
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
-input:-moz-placeholder,
-textarea:-moz-placeholder {
+input:-moz-placeholder {
   color: #999999;
 }
-input:-ms-input-placeholder,
-textarea:-ms-input-placeholder {
+input:-ms-input-placeholder {
   color: #999999;
 }
-input::-webkit-input-placeholder,
-textarea::-webkit-input-placeholder {
+input::-webkit-input-placeholder {
   color: #999999;
 }
 .checkbox {
@@ -710,16 +693,13 @@ textarea::-webkit-input-placeholder {
 .input-xxlarge {
   width: 530px;
 }
-input,
-textarea {
+input {
   margin-left: 0;
 }
 input[disabled],
 select[disabled],
-textarea[disabled],
 input[readonly],
-select[readonly],
-textarea[readonly] {
+select[readonly] {
   cursor: not-allowed;
   background-color: #eeeeee;
 }
@@ -728,13 +708,11 @@ input[type="checkbox"][readonly] {
   background-color: transparent;
 }
 input:focus:invalid,
-textarea:focus:invalid,
 select:focus:invalid {
   color: #b94a48;
   border-color: #ee5f5b;
 }
 input:focus:invalid:focus,
-textarea:focus:invalid:focus,
 select:focus:invalid:focus {
   border-color: #e9322d;
   -webkit-box-shadow: 0 0 6px #f8b9b7;
@@ -827,8 +805,6 @@ input.search-query {
 }
 .form-inline input,
 .form-horizontal input,
-.form-inline textarea,
-.form-horizontal textarea,
 .form-inline select,
 .form-horizontal select,
 .form-inline .help-inline,
@@ -1903,8 +1879,7 @@ button.close {
   .row-fluid:after {
     clear: both;
   }
-  input,
-  textarea {
+  input {
     margin-left: 0;
   }
 }
@@ -1938,8 +1913,7 @@ button.close {
   .row-fluid:after {
     clear: both;
   }
-  input,
-  textarea {
+  input {
     margin-left: 0;
   }
 }
