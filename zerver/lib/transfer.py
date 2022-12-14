@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django.db import connection
 
 from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.upload import S3UploadBackend, upload_image_to_s3
+from zerver.lib.upload.s3 import S3UploadBackend, upload_image_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
 s3backend = S3UploadBackend()

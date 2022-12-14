@@ -43,7 +43,7 @@ from zerver.data_import.slack_message_conversion import (
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.storage import static_path
-from zerver.lib.upload import resize_logo, sanitize_name
+from zerver.lib.upload.base import resize_logo, sanitize_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
