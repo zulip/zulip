@@ -3310,4 +3310,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
         padding-bottom: $header_padding_bottom;
         background-color: inherit;
     }
+
+    .fixed-app {
+        width: 100%;
+        position: relative;
+        z-index: 98;
+        left: 0;
+    }
 }
