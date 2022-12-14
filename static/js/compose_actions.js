@@ -559,7 +559,6 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
-        const prev_caret = $textarea.caret();
         let content = $t(
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
@@ -571,25 +570,8 @@ export function quote_and_reply(opts) {
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
 
-        const placeholder_offset = $textarea.val().indexOf(quoting_placeholder);
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
-
-        // When replacing content in a textarea, we need to move the
-        // cursor to preserve its logical position if and only if the
-        // content we just added was before the current cursor
-        // position.  If we do, we need to move it by the increase in
-        // the length of the content before the placeholder.
-        if (prev_caret >= placeholder_offset + quoting_placeholder.length) {
-            $textarea.caret(prev_caret + content.length - quoting_placeholder.length);
-        } else if (prev_caret > placeholder_offset) {
-            /* In the rare case that our cursor was inside the
-             * placeholder, we treat that as though the cursor was
-             * just after the placeholder. */
-            $textarea.caret(placeholder_offset + content.length + 1);
-        } else {
-            $textarea.caret(prev_caret);
-        }
     }
 
     if (message && message.raw_content) {
