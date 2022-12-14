@@ -153,11 +153,11 @@ li.show-more-topics {
         }
 
         .stream-name {
-            display: inline-block;
-            overflow: hidden;
+            flex: auto;
+            overflow-x: clip;
             text-overflow: ellipsis;
             position: relative;
-            width: 100%;
+            min-width: 0;
             padding-right: 2px;
         }
 
@@ -458,10 +458,10 @@ li.top_left_recent_topics {
 
 .conversation-partners,
 .topic-name {
-    display: block;
-    width: calc(100% - 5px);
+    flex: auto;
+    min-width: 0;
     white-space: nowrap;
-    overflow: hidden;
+    overflow-x: clip;
     text-overflow: ellipsis;
     padding-right: 2px;
 }
