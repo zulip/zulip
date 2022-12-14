@@ -94,7 +94,6 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
-    create_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
@@ -1321,8 +1320,8 @@ class NormalActionsTest(BaseAction):
 
         check_user_group_remove_members("events[0]", events[0])
 
-        api_design = create_user_group(
-            "api-design", [hamlet], hamlet.realm, description="API design team", acting_user=None
+        api_design = check_add_user_group(
+            hamlet.realm, "api-design", [hamlet], description="API design team", acting_user=None
         )
 
         # Test add subgroups
