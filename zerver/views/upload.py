@@ -1,11 +1,15 @@
+import base64
+import binascii
 import os
+from datetime import timedelta
 from mimetypes import guess_type
-from typing import Union
+from typing import Optional, Union
 from urllib.parse import quote, urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import UploadedFile
+from django.core.signing import BadSignature, TimestampSigner
 from django.http import (
     FileResponse,
     HttpRequest,
@@ -15,6 +19,7 @@ from django.http import (
     HttpResponseNotFound,
 )
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.cache import patch_cache_control
 from django.utils.translation import gettext as _
 
@@ -27,11 +32,7 @@ from zerver.lib.upload import (
     upload_message_image_from_request,
 )
 from zerver.lib.upload.base import INLINE_MIME_TYPES
-from zerver.lib.upload.local import (
-    assert_is_local_storage_path,
-    generate_unauthed_file_access_url,
-    get_local_file_path_id_from_token,
-)
+from zerver.lib.upload.local import assert_is_local_storage_path
 from zerver.lib.upload.s3 import get_signed_upload_url
 from zerver.models import UserProfile, validate_attachment_request
 
@@ -173,6 +174,28 @@ def serve_file(
         return serve_local(request, path_id, url_only, download=download)
 
     return serve_s3(request, path_id, url_only, download=download)
+
+
+LOCAL_FILE_ACCESS_TOKEN_SALT = "local_file_"
+
+
+def generate_unauthed_file_access_url(path_id: str) -> str:
+    signed_data = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT).sign(path_id)
+    token = base64.b16encode(signed_data.encode()).decode()
+
+    filename = path_id.split("/")[-1]
+    return reverse("local_file_unauthed", args=[token, filename])
+
+
+def get_local_file_path_id_from_token(token: str) -> Optional[str]:
+    signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
+    try:
+        signed_data = base64.b16decode(token).decode()
+        path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
+    except (BadSignature, binascii.Error):
+        return None
+
+    return path_id
 
 
 def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponseBase:
