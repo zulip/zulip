@@ -153,22 +153,30 @@ run_test("smart_insert", ({override}) => {
 });
 
 run_test("replace_syntax", ({override}) => {
-    $("#compose-textarea").val("abcabc");
-    $("#compose-textarea")[0] = "compose-textarea";
+    const $textbox = make_textbox("aBca$$");
+    $textbox.caret(2);
     override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, "textarea");
         assert.equal(old_syntax, "a");
         assert.equal(new_syntax(), "A");
     });
-    compose_ui.replace_syntax("a", "A");
+    let prev_carat = $textbox.caret();
+    compose_ui.replace_syntax("a", "A", $textbox);
+    assert.equal(prev_carat, $textbox.caret());
 
     override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, "textarea");
         assert.equal(old_syntax, "Bca");
         assert.equal(new_syntax(), "$$\\pi$$");
     });
+
     // Verify we correctly handle `$`s in the replacement syntax
-    compose_ui.replace_syntax("Bca", "$$\\pi$$");
+    // and that on replacing with a different length string, the
+    // cursor is shifted accordingly as expected
+    $textbox.caret(5);
+    prev_carat = $textbox.caret();
+    compose_ui.replace_syntax("Bca", "$$\\pi$$", $textbox);
+    assert.equal(prev_carat + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
 run_test("compute_placeholder_text", () => {
