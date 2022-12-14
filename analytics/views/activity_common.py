@@ -48,7 +48,7 @@ def make_table(
 
 
 def dictfetchall(cursor: CursorWrapper) -> List[Dict[str, Any]]:
-    "Returns all rows from a cursor as a dict"
+    """Returns all rows from a cursor as a dict"""
     desc = cursor.description
     return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
 
