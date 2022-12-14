@@ -1386,7 +1386,21 @@ td.pointer {
     .messagebox,
     .date_row {
         background-color: hsla(192, 19%, 75%, 0.2);
-        box-shadow: inset 2px 0 0 0 hsl(0, 0%, 27%), -1px 0 0 0 hsl(0, 0%, 27%);
+        /* The 5th parameter here is a spread-radius, which, when negative,
+         * causes the shadow to shrink (be smaller than the target
+         * element), resulting in a visual width of 3px-1px=2px. This
+         * is a workaround for a regression found in Electron
+         * v18.3.15+ where the box-shadow with spread-radius >= 0
+         * would cause horizontal separator lines to appear between
+         * messages in the color of the left ruler. The root cause of
+         * that regression is yet unknown.
+         *
+         * Similar CSS for stream messages is present directly in the
+         * Handlebars templates, since the color used there is the
+         * stream's configured color.
+         */
+        box-shadow: inset 3px 0 0 -1px hsl(0, 0%, 27%),
+            -1px 0 0 0 hsl(0, 0%, 27%);
     }
 }
 
