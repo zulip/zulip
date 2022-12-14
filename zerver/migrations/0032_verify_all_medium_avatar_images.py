@@ -23,7 +23,8 @@ def patched_user_avatar_path(user_profile: UserProfile) -> str:
     return make_safe_digest(user_key, hashlib.sha1)
 
 
-@patch("zerver.lib.upload.user_avatar_path", patched_user_avatar_path)
+@patch("zerver.lib.upload.s3.user_avatar_path", patched_user_avatar_path)
+@patch("zerver.lib.upload.local.user_avatar_path", patched_user_avatar_path)
 def verify_medium_avatar_image(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model("zerver", "UserProfile")
     for user_profile in user_profile_model.objects.filter(avatar_source="U"):

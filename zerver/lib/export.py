@@ -29,7 +29,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.upload import get_bucket
+from zerver.lib.upload.s3 import get_bucket
 from zerver.models import (
     AlertWord,
     Attachment,

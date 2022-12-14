@@ -43,7 +43,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT
-from zerver.lib.upload import create_attachment
+from zerver.lib.upload.base import create_attachment
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.user_topics import set_topic_mutes
 from zerver.models import (

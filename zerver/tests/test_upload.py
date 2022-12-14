@@ -46,24 +46,24 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.upload import (
+    delete_export_tarball,
+    delete_message_image,
+    upload_emoji_image,
+    upload_export_tarball,
+    upload_message_file,
+)
+from zerver.lib.upload.base import (
     DEFAULT_AVATAR_SIZE,
     DEFAULT_EMOJI_SIZE,
     MEDIUM_AVATAR_SIZE,
     BadImageError,
-    LocalUploadBackend,
-    S3UploadBackend,
     ZulipUploadBackend,
-    delete_export_tarball,
-    delete_message_image,
-    get_local_file_path,
     resize_avatar,
     resize_emoji,
     sanitize_name,
-    upload_emoji_image,
-    upload_export_tarball,
-    upload_message_file,
-    write_local_file,
 )
+from zerver.lib.upload.local import LocalUploadBackend, get_local_file_path, write_local_file
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
 from zerver.models import (
     ArchivedAttachment,
@@ -1293,7 +1293,9 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
                 # Verify that ensure_medium_avatar_url does not overwrite this file if it exists
-                with mock.patch("zerver.lib.upload.write_local_file") as mock_write_local_file:
+                with mock.patch(
+                    "zerver.lib.upload.local.write_local_file"
+                ) as mock_write_local_file:
                     zerver.lib.upload.upload_backend.ensure_avatar_image(
                         user_profile, is_medium=True
                     )
@@ -1452,15 +1454,15 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertEqual((50, 50), still_image.size)
 
             # Test an image larger than max is resized
-            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
+            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_SIZE", 128):
                 test_resize()
 
             # Test an image file larger than max is resized
-            with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
+            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
                 test_resize()
 
             # Test an image smaller than max and smaller than file size max is not resized
-            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
+            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_SIZE", 512):
                 test_resize(size=256)
 
         # Test a non-animated GIF image which does need to be resized

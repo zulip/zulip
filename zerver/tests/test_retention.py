@@ -20,7 +20,7 @@ from zerver.lib.retention import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
-from zerver.lib.upload import create_attachment
+from zerver.lib.upload.base import create_attachment
 from zerver.models import (
     ArchivedAttachment,
     ArchivedMessage,

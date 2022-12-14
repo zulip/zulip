@@ -29,7 +29,9 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, get_bucket, sanitize_name, upload_backend
+from zerver.lib.upload import upload_backend
+from zerver.lib.upload.base import BadImageError, sanitize_name
+from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches

@@ -46,7 +46,8 @@ from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.request import RequestNotes
-from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
+from zerver.lib.upload.local import LocalUploadBackend
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import (
     Client,
     Message,

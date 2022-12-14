@@ -8,7 +8,8 @@ from zerver.lib.avatar_hash import (
     user_avatar_content_hash,
     user_avatar_path_from_ids,
 )
-from zerver.lib.upload import MEDIUM_AVATAR_SIZE, upload_backend
+from zerver.lib.upload import upload_backend
+from zerver.lib.upload.base import MEDIUM_AVATAR_SIZE
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
 
