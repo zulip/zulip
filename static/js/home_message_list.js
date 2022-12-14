@@ -22,9 +22,9 @@ export class HomeMessageList {
         }
 
         const collapse_messages = this.data.filter.supports_collapsing_recipients();
-        this.table_name = "zhome"
+        this.table_name = "zhome";
         this.view = new MessageListView(this, this.table_name, collapse_messages);
-        this.narrowed = false
+        this.narrowed = false;
         this.current = true;
         this.num_appends = 0;
         this.reading_prevented = false;
@@ -33,13 +33,14 @@ export class HomeMessageList {
     }
 
     set_current_message_list(current) {
-        this.current = current
+        this.current = current;
     }
 
     handle_empty_narrow_banner() {
-        debugger;
         if (this.current) {
-            this.empty() ? narrow_banner.show_empty_narrow_message() : narrow_banner.hide_empty_narrow_message();
+            this.empty()
+                ? narrow_banner.show_empty_narrow_message()
+                : narrow_banner.hide_empty_narrow_message();
         }
     }
 
@@ -54,7 +55,7 @@ export class HomeMessageList {
     add_messages(messages, opts) {
         // This adds all messages to our data, but only returns
         // the currently viewable ones.
-        blueslip.debug(JSON.stringify(messages))
+        blueslip.debug(JSON.stringify(messages));
         const info = this.data.add_messages(messages);
 
         const top_messages = info.top_messages;
@@ -79,7 +80,7 @@ export class HomeMessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        this.handle_empty_narrow_banner()
+        this.handle_empty_narrow_banner();
 
         if (this.current && !this.empty() && this.selected_id() === -1) {
             // And also select the newly arrived message.
@@ -365,7 +366,7 @@ export class HomeMessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        this.handle_empty_narrow_banner()
+        this.handle_empty_narrow_banner();
 
         this.rerender_view();
     }
@@ -418,9 +419,4 @@ export class HomeMessageList {
     get_last_message_sent_by_me() {
         return this.data.get_last_message_sent_by_me();
     }
-
-
-    
 }
-
-
