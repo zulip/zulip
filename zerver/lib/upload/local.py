@@ -1,16 +1,11 @@
-import base64
-import binascii
 import logging
 import os
 import random
 import secrets
 import shutil
-from datetime import timedelta
 from typing import IO, Any, Callable, Literal, Optional
 
 from django.conf import settings
-from django.core.signing import BadSignature, TimestampSigner
-from django.urls import reverse
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.upload.base import (
@@ -66,28 +61,6 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
     file_name = path.split("/")[-1]
     logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
     return False
-
-
-LOCAL_FILE_ACCESS_TOKEN_SALT = "local_file_"
-
-
-def generate_unauthed_file_access_url(path_id: str) -> str:
-    signed_data = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT).sign(path_id)
-    token = base64.b16encode(signed_data.encode()).decode()
-
-    filename = path_id.split("/")[-1]
-    return reverse("local_file_unauthed", args=[token, filename])
-
-
-def get_local_file_path_id_from_token(token: str) -> Optional[str]:
-    signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
-    try:
-        signed_data = base64.b16decode(token).decode()
-        path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
-    except (BadSignature, binascii.Error):
-        return None
-
-    return path_id
 
 
 class LocalUploadBackend(ZulipUploadBackend):
