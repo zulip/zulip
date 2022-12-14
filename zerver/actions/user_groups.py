@@ -26,7 +26,7 @@ class MemberGroupUserDict(TypedDict):
 
 
 @transaction.atomic
-def create_user_group(
+def create_user_group_in_database(
     name: str,
     members: List[UserProfile],
     realm: Realm,
@@ -144,7 +144,7 @@ def check_add_user_group(
     acting_user: Optional[UserProfile],
 ) -> UserGroup:
     try:
-        user_group = create_user_group(
+        user_group = create_user_group_in_database(
             name, initial_members, realm, description=description, acting_user=acting_user
         )
         do_send_create_user_group_event(user_group, initial_members)
