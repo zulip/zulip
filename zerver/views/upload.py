@@ -13,15 +13,14 @@ from django_sendfile import sendfile
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.upload import (
-    INLINE_MIME_TYPES,
-    check_upload_within_quota,
+from zerver.lib.upload import check_upload_within_quota, upload_message_image_from_request
+from zerver.lib.upload.base import INLINE_MIME_TYPES
+from zerver.lib.upload.local import (
     generate_unauthed_file_access_url,
     get_local_file_path,
     get_local_file_path_id_from_token,
-    get_signed_upload_url,
-    upload_message_image_from_request,
 )
+from zerver.lib.upload.s3 import get_signed_upload_url
 from zerver.models import UserProfile, validate_attachment_request
 
 

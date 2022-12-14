@@ -8,7 +8,7 @@ from zerver.actions.users import do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
-from zerver.lib.upload import BadImageError
+from zerver.lib.upload.base import BadImageError
 from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
 
 
@@ -339,7 +339,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_failed_file_upload(self) -> None:
         self.login("iago")
         with mock.patch(
-            "zerver.lib.upload.write_local_file", side_effect=BadImageError(msg="Broken")
+            "zerver.lib.upload.local.write_local_file", side_effect=BadImageError(msg="Broken")
         ):
             with get_test_image_file("img.png") as fp1:
                 emoji_data = {"f1": fp1}
