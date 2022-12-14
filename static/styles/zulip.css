@@ -3300,4 +3300,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
     a[href]:after {
         content: none !important;
     }
+
+    /* this is the one that makes the header stay on top and messages not overlap with it */
+    .header {
+        position: relative;
+        z-index: 102; /* Needs to be higher than .alert-bar-container */
+        width: 100%;
+        height: $header_height;
+        padding-bottom: $header_padding_bottom;
+        background-color: inherit;
+    }
 }
