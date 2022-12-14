@@ -3,6 +3,18 @@
         float: right;
     }
 
+    .date_row > span {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+
+        &::before,
+        &::after {
+            width: 100%;
+            margin: 0;
+        }
+    }
+
     .message_time {
         position: static;
     }
