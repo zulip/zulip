@@ -8,7 +8,7 @@
                 <form class="email-change-form grid">
                     <div class="input-group">
                         <label class="inline-block title">{{t "Email" }}</label>
-                        <button id='change_email' type="button" class="button btn-link small rounded inline-block"
+                        <button id="change_email_button" type="button" class="button btn-link small rounded inline-block"
                           {{#if (and page_params.realm_email_changes_disabled (not page_params.is_admin))}}disabled="disabled"{{/if}}>
                             {{page_params.delivery_email}}
                             <i class="fa fa-pencil"></i>

@@ -32,7 +32,7 @@ import {user_settings} from "./user_settings";
 let password_quality; // Loaded asynchronously
 
 export function update_email(new_email) {
-    const $email_input = $("#change_email");
+    const $email_input = $("#change_email_button");
 
     if ($email_input) {
         $email_input.text(new_email);
@@ -61,10 +61,10 @@ export function update_name_change_display() {
 
 export function update_email_change_display() {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $("#change_email").prop("disabled", true);
+        $("#change_email_button").prop("disabled", true);
         $(".change_email_tooltip").show();
     } else {
-        $("#change_email").prop("disabled", false);
+        $("#change_email_button").prop("disabled", false);
         $(".change_email_tooltip").hide();
     }
 }
@@ -606,7 +606,7 @@ export function set_up() {
         e.stopPropagation();
         const $change_email_error = $("#change_email_modal").find("#dialog_error");
         const data = {};
-        data.email = $("#change_email_container").find("input[name='email']").val();
+        data.email = $("#change_email_form").find("input[name='email']").val();
 
         const opts = {
             success_continuation() {
@@ -640,12 +640,12 @@ export function set_up() {
     }
 
     function change_email_post_render() {
-        const $input_elem = $("#change_email_container").find("input[name='email']");
-        const email = $("#change_email").text().trim();
+        const $input_elem = $("#change_email_form").find("input[name='email']");
+        const email = $("#change_email_button").text().trim();
         $input_elem.val(email);
     }
 
-    $("#change_email").on("click", (e) => {
+    $("#change_email_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
@@ -655,11 +655,11 @@ export function set_up() {
                 html_submit_button: $t_html({defaultMessage: "Change"}),
                 loading_spinner: true,
                 id: "change_email_modal",
-                form_id: "change_email_container",
+                form_id: "change_email_form",
                 on_click: do_change_email,
                 post_render: change_email_post_render,
                 on_shown() {
-                    $("#change_email_container input").trigger("focus");
+                    $("#change_email_form input").trigger("focus");
                 },
             });
         }
