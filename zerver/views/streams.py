@@ -920,7 +920,8 @@ def update_stream_topic_properties_backend(
                 user_profile.realm, stream, name, value, acting_user=user_profile
             )
         else:
-            stream_topic = StreamTopic.objects.filter(stream_id=stream_id)
+            querySet = StreamTopic.objects.filter(stream_id=stream_id, name=name)
+            stream_topic = querySet.__getitem__(0)
             do_change_stream_topic_property(
                 user_profile.realm, stream, stream_topic, value, acting_user=user_profile
             )

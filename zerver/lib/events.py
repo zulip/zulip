@@ -578,6 +578,7 @@ def fetch_initial_state_data(
             )
 
     if want("stream_topic"):
+        # print("entered events")
         # only topics that have been pinned or are currently pinned
         stream_topics_by_stream_id = defaultdict(list)
         for stream_topic in get_stream_topics_for_realm(realm):
@@ -928,6 +929,7 @@ def apply_event(
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
 
     elif event["type"] == "stream_topic":
+        # print("entered event cases")
         # if topic is not in StreamTopic table
         if event["op"] == "add" and event["property"] == "is_pinned":
             added_stream_topic_data = { "name": stream_topic.name, "is_pinned": event["is_pinned"] }
