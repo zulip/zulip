@@ -69,7 +69,7 @@ class RateLimitedObject(ABC):
         request_notes.ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
 
     def block_access(self, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
         self.backend.block_access(self.key(), seconds)
 
     def unblock_access(self) -> None:
@@ -79,11 +79,11 @@ class RateLimitedObject(ABC):
         self.backend.clear_history(self.key())
 
     def max_api_calls(self) -> int:
-        "Returns the API rate limit for the highest limit"
+        """Returns the API rate limit for the highest limit"""
         return self.get_rules()[-1][1]
 
     def max_api_window(self) -> int:
-        "Returns the API time window for the highest limit"
+        """Returns the API time window for the highest limit"""
         return self.get_rules()[-1][0]
 
     def api_calls_left(self) -> Tuple[int, float]:
@@ -161,7 +161,7 @@ def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
 
 
 def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = "api_by_user") -> None:
-    "Add a rate-limiting rule to the ratelimiter"
+    """Add a rate-limiting rule to the ratelimiter"""
     if domain not in rules:
         # If we don't have any rules for domain yet, the domain key needs to be
         # added to the rules dictionary.
@@ -181,7 +181,7 @@ class RateLimiterBackend(ABC):
     @classmethod
     @abstractmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
 
     @classmethod
     @abstractmethod
@@ -337,7 +337,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
         _, _, blocking_key = cls.get_keys(entity_key)
         with client.pipeline() as pipe:
             pipe.set(blocking_key, 1)
@@ -386,7 +386,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def is_ratelimited(cls, entity_key: str, rules: List[Tuple[int, int]]) -> Tuple[bool, float]:
-        "Returns a tuple of (rate_limited, time_till_free)"
+        """Returns a tuple of (rate_limited, time_till_free)"""
         assert rules
         list_key, set_key, blocking_key = cls.get_keys(entity_key)
 
