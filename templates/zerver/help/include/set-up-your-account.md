@@ -6,7 +6,7 @@
 - Get the [mobile and desktop apps](/apps). Zulip also works great in a browser.
 
 - [Add a profile picture](/help/change-your-profile-picture) and
-  [edit your profile information](https://zulip.com/help/edit-your-profile) to tell others
+  [edit your profile information](/help/edit-your-profile) to tell others
   about yourself.
 
 - [Review your display settings](/help/review-your-settings#review-your-display-settings).
