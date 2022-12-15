@@ -2596,7 +2596,12 @@ class StreamTopic(models.Model):
 
 
 def get_stream_topics(realm: Realm, stream: Stream) -> QuerySet[StreamTopic]:
-    return StreamTopic.objects.filter(realm=realm, stream=stream)
+    streams = Stream.objects.filter(realm=realm)
+
+    for currStream in streams:
+        if currStream == stream:
+            return StreamTopic.objects.filter(stream=stream)
+    return StreamTopic.objects.none()
 
 
 class UserTopic(models.Model):

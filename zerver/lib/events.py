@@ -62,7 +62,6 @@ from zerver.models import (
     Realm,
     RealmUserDefault,
     Stream,
-    StreamTopic,
     UserMessage,
     UserProfile,
     UserStatus,
@@ -582,7 +581,7 @@ def fetch_initial_state_data(
         # only topics that have been pinned or are currently pinned
         stream_topics_by_stream_id = defaultdict(list)
         for stream_topic in get_stream_topics_for_realm(realm):
-            stream_topics_by_stream_id[stream_topic.id].append(
+            stream_topics_by_stream_id[str(stream_topic.id)].append(
                 {
                     "name": stream_topic.name,
                     "is_pinned": stream_topic.is_pinned,

@@ -153,10 +153,10 @@ from zerver.views.streams import (
     update_default_stream_group_info,
     update_default_stream_group_streams,
     update_stream_backend,
+    update_stream_topic_properties_backend,
     update_subscription_properties_backend,
     update_subscriptions_backend,
     update_subscriptions_property,
-    update_stream_topic_properties_backend,
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail

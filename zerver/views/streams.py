@@ -27,6 +27,10 @@ from zerver.actions.message_send import (
     internal_prep_private_message,
     internal_prep_stream_message,
 )
+from zerver.actions.stream_topics import (
+    do_add_pinned_topic_to_stream_topic,
+    do_change_stream_topic_property,
+)
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -39,11 +43,6 @@ from zerver.actions.streams import (
     do_rename_stream,
     get_subscriber_ids,
 )
-from zerver.actions.stream_topics import (
-    do_add_pinned_topic_to_stream_topic,
-    do_change_stream_topic_property,
-)
-
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import (
     authenticated_json_view,
@@ -859,7 +858,6 @@ def get_topics_backend(
 @has_request_variables
 def update_stream_topics_property(
     request: HttpRequest,
-    user_profile: UserProfile,
     stream_id: int = REQ(json_validator=check_int),
     name: str = REQ(json_validator=check_string),
     property: str = REQ(),

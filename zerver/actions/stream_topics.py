@@ -1,24 +1,10 @@
-import hashlib
-from collections import defaultdict
-from typing import Any, Collection, Dict, List, Mapping, Optional, Sequence
+from typing import Optional
 
 import orjson
-from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 
-from zerver.lib.streams import can_access_stream_user_ids
-from zerver.lib.types import APISubscriptionDict
-from zerver.models import (
-    Realm,
-    RealmAuditLog,
-    Recipient,
-    Stream,
-    StreamTopic,
-    UserProfile,
-    get_stream_topics,
-)
+from zerver.models import Realm, RealmAuditLog, Stream, StreamTopic, UserProfile
 from zerver.tornado.django_api import send_event
 
 

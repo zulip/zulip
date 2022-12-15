@@ -75,6 +75,10 @@ from zerver.actions.realm_settings import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
 )
+from zerver.actions.stream_topics import (
+    do_add_pinned_topic_to_stream_topic,
+    do_change_stream_topic_property,
+)
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -115,11 +119,6 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
-from zerver.actions.stream_topics import (
-    do_add_pinned_topic_to_stream_topic,
-    do_change_stream_topic_property,
-)
-
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -3038,7 +3037,7 @@ class PinTopicActionTest(BaseAction):
             stream.realm, stream, "BOTS", True, self.user_profile
         )
         self.verify_action(action)
-        assert StreamTopic.objects.get(stream=stream, name="BOTS").exists()
+        assert StreamTopic.objects.fulter(stream=stream, name="BOTS").exists()
 
     def test_unpin_topic(self) -> None:
         # Testing unpinning a topic
