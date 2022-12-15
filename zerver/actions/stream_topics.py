@@ -8,9 +8,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.lib.streams import (
-    can_access_stream_user_ids
-)
+from zerver.lib.streams import can_access_stream_user_ids
 from zerver.lib.types import APISubscriptionDict
 from zerver.models import (
     Realm,
@@ -19,7 +17,7 @@ from zerver.models import (
     Stream,
     StreamTopic,
     UserProfile,
-    get_stream_topics
+    get_stream_topics,
 )
 from zerver.tornado.django_api import send_event
 
@@ -29,8 +27,8 @@ def do_add_pinned_topic_to_stream_topic(
     stream: Stream,
     name: str,
     is_pinned: bool,
-    acting_user: Optional[UserProfile] # Currently this feature is not user specific
-) -> None:  
+    acting_user: Optional[UserProfile],  # Currently this feature is not user specific
+) -> None:
     stream_topic = StreamTopic(
         stream_id=stream.id,
         name=name,
@@ -49,10 +47,10 @@ def do_add_pinned_topic_to_stream_topic(
 
 def do_change_stream_topic_property(
     realm: Realm,
-    stream: Stream, 
-    stream_topic: StreamTopic, 
+    stream: Stream,
+    stream_topic: StreamTopic,
     new_is_pinned: bool,
-    acting_user: Optional[UserProfile]
+    acting_user: Optional[UserProfile],
 ) -> None:
     if stream_topic.is_pinned == new_is_pinned:
         return
@@ -82,6 +80,4 @@ def do_change_stream_topic_property(
         stream_id=stream.id,
         value=new_is_pinned,
     )
-    transaction.on_commit(
-        lambda: send_event(realm, event, [acting_user.id])
-    )
+    transaction.on_commit(lambda: send_event(realm, event, [acting_user.id]))

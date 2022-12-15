@@ -589,7 +589,7 @@ def fetch_initial_state_data(
                 }
             )
         state["stream_topics_by_stream_id"] = stream_topics_by_stream_id
-    
+
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
 
@@ -932,10 +932,10 @@ def apply_event(
         # print("entered event cases")
         # if topic is not in StreamTopic table
         if event["op"] == "add" and event["property"] == "is_pinned":
-            added_stream_topic_data = { "name": stream_topic.name, "is_pinned": event["is_pinned"] }
+            added_stream_topic_data = {"name": stream_topic.name, "is_pinned": event["is_pinned"]}
             for stream in event["stream_topics"]:
                 topic_exists = False
-                for stream_topic in stream: # looping through stream_topic in a list
+                for stream_topic in stream:  # looping through stream_topic in a list
                     if stream_topic["name"] == added_stream_topic_data["name"]:
                         topic_exists = True
             if not topic_exists:
@@ -948,7 +948,9 @@ def apply_event(
             for stream_id in state["stream_topics_by_stream_id"].keys():
                 for stream_topic in state["stream_topics_by_stream_id"][stream_id]:
                     if stream_topic["name"] == event["name"]:
-                        state["stream_topics_by_stream_id"][stream_id][stream_topic["name"]]["is_pinned"] = event["is_pinned"]
+                        state["stream_topics_by_stream_id"][stream_id][stream_topic["name"]][
+                            "is_pinned"
+                        ] = event["is_pinned"]
 
     elif event["type"] == "stream":
         if event["op"] == "create":

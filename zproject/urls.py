@@ -337,10 +337,8 @@ v1_api_and_json_patterns = [
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
     # helper: pinning streams happens here
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
-
     # pinning topics
     rest_path("users/me/subscriptions/pinned_topics", PATCH=update_stream_topic_properties_backend),
-
     rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
     rest_path("submessage", POST=process_submessage),
     # New endpoint for handling reactions.

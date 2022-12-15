@@ -865,10 +865,10 @@ def update_stream_topics_property(
     property: str = REQ(),
     value: bool = REQ(),
 ) -> HttpResponse:
-    stream_topic_data = [{"stream_id": stream_id, "name": name, "property": property, "value": value}]
-    return update_stream_topic_properties_backend(
-        request, stream_topic_data=stream_topic_data
-    )
+    stream_topic_data = [
+        {"stream_id": stream_id, "name": name, "property": property, "value": value}
+    ]
+    return update_stream_topic_properties_backend(request, stream_topic_data=stream_topic_data)
 
 
 @has_request_variables
@@ -886,7 +886,7 @@ def update_stream_topic_properties_backend(
                 ]
             ),
         ),
-    )
+    ),
 ) -> HttpResponse:
     """
     This is the entry point to changing topic properties. This
@@ -897,9 +897,7 @@ def update_stream_topic_properties_backend(
 
     [{"stream_id": "1", "name": "backend", "property": "is_pinned", "value": True}]
     """
-    property_converters = {
-        "is_pinned": check_bool
-    }
+    property_converters = {"is_pinned": check_bool}
     for change in stream_topic_data:
         stream_id = change["stream_id"]
         name = change["name"]
@@ -913,7 +911,7 @@ def update_stream_topic_properties_backend(
             value = property_converters[property](property, value)
         except ValidationError as error:
             raise JsonableError(error.message)
-        
+
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if not StreamTopic.objects.filter(stream_id=stream_id, name=name).exists():
             do_add_pinned_topic_to_stream_topic(

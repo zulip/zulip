@@ -29,6 +29,7 @@ The following functions are for user-facing APIs
 where we'll want to support "subject" for a while.
 """
 
+
 def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
     """
     Use this where you are getting dicts that are based off of messages

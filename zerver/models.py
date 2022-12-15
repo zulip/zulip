@@ -2594,8 +2594,10 @@ class StreamTopic(models.Model):
     class Meta:
         unique_together = ("stream", "name")
 
+
 def get_stream_topics(realm: Realm, stream: Stream) -> QuerySet[StreamTopic]:
     return StreamTopic.objects.filter(realm=realm, stream=stream)
+
 
 class UserTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
