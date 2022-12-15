@@ -7,6 +7,8 @@ from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
+from corporate.lib.stripe import is_realm_on_free_trial
+from corporate.models import get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics
 from zerver.lib.github import (
@@ -55,14 +57,10 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             return redirect_to_login(next="/plans")
         if request.user.is_guest:
             return TemplateResponse(request, "404.html", status=404)
-        if settings.CORPORATE_ENABLED:
-            from corporate.lib.stripe import is_realm_on_free_trial
-            from corporate.models import get_customer_by_realm
-
-            customer = get_customer_by_realm(realm)
-            if customer is not None:
-                sponsorship_pending = customer.sponsorship_pending
-                realm_on_free_trial = is_realm_on_free_trial(realm)
+        customer = get_customer_by_realm(realm)
+        if customer is not None:
+            sponsorship_pending = customer.sponsorship_pending
+            realm_on_free_trial = is_realm_on_free_trial(realm)
 
     return TemplateResponse(
         request,
