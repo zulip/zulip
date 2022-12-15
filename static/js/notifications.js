@@ -624,9 +624,6 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
                     link_msg_id,
                     link_text,
                 );
-                setTimeout(() => {
-                    $("#out-of-view-notification").hide();
-                }, 3000);
             }
 
             // This is the HAPPY PATH--for most messages we do nothing
@@ -718,6 +715,7 @@ export function register_click_handlers() {
         const message_id = $(e.currentTarget).data("message-id");
         message_lists.current.select_id(message_id);
         navigate.scroll_to_selected();
+        $("#out-of-view-notification").hide();
         e.stopPropagation();
         e.preventDefault();
     });
