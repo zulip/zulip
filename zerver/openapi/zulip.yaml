@@ -3890,9 +3890,11 @@ paths:
                                         - 3 = [full members][calc-full-member] only
                                         - 4 = moderators only
                                         - 5 = everyone
+                                        - 6 = nobody
 
                                         **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                                        previous `allow_community_topic_editing` boolean.
+                                        previous `allow_community_topic_editing` boolean. Nobody added
+                                        as an option in Zulip 7.0 (feature level 159).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -4040,8 +4042,10 @@ paths:
                                         - 2 = Administrators only
                                         - 3 = [Full members][calc-full-member] only
                                         - 4 = Moderators only
+                                        - 6 = Nobody
 
-                                        **Changes**: New in Zulip 4.0 (feature level 56)
+                                        **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
+                                        as an option in Zulip 7.0 (feature level 159).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -6455,6 +6459,13 @@ paths:
 
         **Note**: See [configuring message editing][config-message-editing]
         for detailed documentation on when users are allowed to edit topics.
+
+        **Changes**: Before Zulip 7.0 (feature level 159), editing
+        streams and topics of messages was forbidden if
+        `allow_message_editing` was `false`, regardless of the
+        `edit_topic_policy` or `move_messages_between_streams_policy`.
+        Before Zulip 7.0 (feature level 159), message senders were allowed
+        to edit the topic indefinitely.
 
         [config-message-editing]: /help/configure-message-editing-and-deletion
       x-curl-examples-parameters:
@@ -11912,8 +11923,10 @@ paths:
                           - 2 = Administrators only
                           - 3 = [Full members][calc-full-member] only
                           - 4 = Moderators only
+                          - 6 = Nobody
 
-                          **Changes**: New in Zulip 4.0 (feature level 56)
+                          **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
+                          as an option in Zulip 7.0 (feature level 159).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -12155,9 +12168,11 @@ paths:
                           - 3 = [full members][calc-full-member] only
                           - 4 = moderators only
                           - 5 = everyone
+                          - 6 = nobody
 
                           **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                          previous `allow_community_topic_editing` boolean.
+                          previous `allow_community_topic_editing` boolean. Nobody added as
+                          an option in Zulip 7.0 (feature level 159).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member

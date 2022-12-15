@@ -421,6 +421,7 @@ test("merge_message_groups", () => {
             status_message: false,
             type: "stream",
             stream: "Test stream 1",
+            stream_id: 2,
             topic: "Test topic 1",
             sender_email: "test@example.com",
             timestamp: (next_timestamp += 1),

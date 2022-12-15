@@ -39,6 +39,14 @@ function hide_compose_spinner(): void {
     $("#compose-send-button").removeClass("disable-btn");
 }
 
+export function clear_errors(): void {
+    $(`#compose_banners .${ERROR}`).remove();
+}
+
+export function clear_warnings(): void {
+    $(`#compose_banners .${WARNING}`).remove();
+}
+
 export function show_error_message(message: string, classname: string, $bad_input?: JQuery): void {
     $(`#compose_banners .${classname}`).remove();
 

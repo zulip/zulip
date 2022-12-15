@@ -44,15 +44,7 @@ shortcut](/help/keyboard-shortcuts).
 
 ## All messages
 
-If you're all caught up, it can be useful to have a single place to keep
-track of all messages coming in.
-
-* Click on **All messages** near the top left corner of the app, or hit
-  <kbd>A</kbd>.
-
-* You can use <kbd>S</kbd> (narrow to stream) or <kbd>Shift</kbd> +
-  <kbd>S</kbd> (narrow to topic) to zoom in, and <kbd>A</kbd> to get back
-  to All messages.
+{!all-messages.md!}
 
 ## Starring messages for later
 

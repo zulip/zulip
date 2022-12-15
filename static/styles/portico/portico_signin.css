@@ -737,6 +737,7 @@ html {
 
 .confirm-email-change-page .white-box {
     max-width: 500px;
+    word-break: break-word;
 }
 
 .anonymous_access_form {
@@ -869,6 +870,16 @@ button#register_auth_button_gitlab {
             textarea {
                 width: 400px;
                 font-size: 1rem;
+            }
+
+            textarea {
+                color: hsl(0, 0%, 33%);
+                vertical-align: middle;
+                background-color: hsl(0, 0%, 100%);
+
+                &:focus {
+                    outline: 0;
+                }
             }
         }
     }

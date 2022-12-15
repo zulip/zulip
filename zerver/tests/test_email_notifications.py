@@ -821,9 +821,11 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
 
-        hamlet_only = create_user_group("hamlet_only", [hamlet], get_realm("zulip"))
+        hamlet_only = create_user_group(
+            "hamlet_only", [hamlet], get_realm("zulip"), acting_user=None
+        )
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         hamlet_only_message_id = self.send_stream_message(othello, "Denmark", "@*hamlet_only*")
@@ -861,7 +863,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         user_group_mentioned_message_id = self.send_stream_message(
@@ -901,7 +903,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
@@ -1545,7 +1547,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         large_user_group = create_user_group(
-            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip")
+            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip"), acting_user=None
         )
 
         # Do note that the event dicts for the missed messages are constructed by hand

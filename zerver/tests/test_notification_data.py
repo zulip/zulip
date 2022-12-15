@@ -240,8 +240,10 @@ class TestNotificationData(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         realm = hamlet.realm
 
-        hamlet_only = create_user_group("hamlet_only", [hamlet], realm)
-        hamlet_and_cordelia = create_user_group("hamlet_and_cordelia", [hamlet, cordelia], realm)
+        hamlet_only = create_user_group("hamlet_only", [hamlet], realm, acting_user=None)
+        hamlet_and_cordelia = create_user_group(
+            "hamlet_and_cordelia", [hamlet, cordelia], realm, acting_user=None
+        )
 
         mention_backend = MentionBackend(realm.id)
 

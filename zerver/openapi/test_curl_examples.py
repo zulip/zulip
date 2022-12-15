@@ -39,7 +39,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     # should try to either avoid ordering dependencies or make them
     # very explicit.
     rest_endpoints_path = os.path.join(
-        settings.DEPLOY_ROOT, "templates/zerver/help/include/rest-endpoints.md"
+        settings.DEPLOY_ROOT, "templates/zerver/api/include/rest-endpoints.md"
     )
     rest_endpoints_raw = open(rest_endpoints_path).read()
     ENDPOINT_REGEXP = re.compile(r"/api/\s*(.*?)\)")

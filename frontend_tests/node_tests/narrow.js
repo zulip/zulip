@@ -214,7 +214,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: There are no messages here.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -278,7 +278,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: Nothing's been sent here yet!", ""),
+        empty_narrow_html("translated: There are no messages here.", ""),
     );
     page_params.is_spectator = false;
 
@@ -517,7 +517,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: There are no messages here.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -528,7 +528,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: There are no messages here.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -546,7 +546,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: There are no messages here.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );

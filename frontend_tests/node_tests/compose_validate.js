@@ -742,7 +742,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
     $("#compose_banners .topic_resolved").length = 0;
-    override(settings_data, "user_can_edit_topic_of_any_message", () => true);
+    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
 
     let error_shown = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {

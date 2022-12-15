@@ -1237,4 +1237,6 @@ def create_user_groups() -> None:
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
-    create_user_group("hamletcharacters", members, zulip, description="Characters of Hamlet")
+    create_user_group(
+        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
+    )

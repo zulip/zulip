@@ -58,7 +58,7 @@
 * [Open the compose box](/help/open-the-compose-box)
 * [Mastering the compose box](/help/mastering-the-compose-box)
 * [Resize the compose box](/help/resize-the-compose-box)
-* [Format messages using Markdown](/help/format-your-message-using-markdown)
+* [Message formatting](/help/format-your-message-using-markdown)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Typing notifications](/help/typing-notifications)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
@@ -77,6 +77,7 @@
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
+* [All messages](/help/all-messages)
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)

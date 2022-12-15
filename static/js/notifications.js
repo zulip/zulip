@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_compose_notification from "../templates/compose_notification.hbs";
+import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -171,7 +171,7 @@ export function notify_above_composebox(
     link_text,
 ) {
     const $notification = $(
-        render_compose_notification({
+        render_message_sent_banner({
             note,
             link_class,
             above_composebox_narrow_url,
@@ -531,7 +531,7 @@ export function send_test_notification(content) {
 // Handlebars templates that will do further escaping.
 function get_message_header(message) {
     if (message.type === "stream") {
-        return message.stream + " > " + message.topic;
+        return `#${message.stream} > ${message.topic}`;
     }
     if (message.display_recipient.length > 2) {
         return $t(

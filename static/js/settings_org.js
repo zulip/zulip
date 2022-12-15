@@ -21,6 +21,8 @@ import * as settings_notifications from "./settings_notifications";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
+import * as stream_data from "./stream_data";
+import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
@@ -44,7 +46,7 @@ export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         $("#deactivate_realm_button").prop("disabled", true);
         $("#org-message-retention").find("input, select").prop("disabled", true);
-        $("#org-join").find("input, select").prop("disabled", true);
+        $("#org-join-settings").find("input, select").prop("disabled", true);
         $("#id_realm_invite_required_label").parent().addClass("control-label-disabled");
         return;
     }
@@ -112,6 +114,12 @@ export function get_organization_settings_options() {
     options.invite_to_realm_policy_values = get_sorted_options_list(
         settings_config.invite_to_realm_policy_values,
     );
+    options.edit_topic_policy_values = get_sorted_options_list(
+        settings_config.edit_topic_policy_values,
+    );
+    options.move_messages_between_streams_policy_values = get_sorted_options_list(
+        settings_config.move_messages_between_streams_policy_values,
+    );
     return options;
 }
 
@@ -135,7 +143,7 @@ export function get_realm_time_limits_in_minutes(property) {
     return val.toString();
 }
 
-function get_property_value(property_name, for_realm_default_settings) {
+function get_property_value(property_name, for_realm_default_settings, sub) {
     if (for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
         if (property_name === "twenty_four_hour_time") {
@@ -148,6 +156,14 @@ function get_property_value(property_name, for_realm_default_settings) {
             return realm_user_settings_defaults.email_notifications_batching_period_seconds;
         }
         return realm_user_settings_defaults[property_name];
+    }
+
+    if (sub) {
+        if (property_name === "stream_privacy") {
+            return stream_data.get_stream_privacy_policy(sub.stream_id);
+        }
+
+        return sub[property_name];
     }
 
     if (property_name === "realm_waiting_period_setting") {
@@ -195,7 +211,7 @@ export function extract_property_name($elem, for_realm_default_settings) {
     return /^id_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
 }
 
-function get_subsection_property_elements(subsection) {
+export function get_subsection_property_elements(subsection) {
     return Array.from($(subsection).find(".prop-element"));
 }
 
@@ -257,7 +273,6 @@ function update_message_edit_sub_settings(is_checked) {
         "id_realm_message_content_edit_limit_minutes",
         true,
     );
-    settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_edit_topic_policy", true);
 }
 
 function update_custom_value_input(property_name) {
@@ -351,6 +366,13 @@ function get_message_retention_setting_value($input_elem, for_api_data = true) {
         return JSON.stringify("unlimited");
     }
 
+    if (select_elem_val === "realm_default") {
+        if (!for_api_data) {
+            return null;
+        }
+        return JSON.stringify("realm_default");
+    }
+
     const $custom_input = $input_elem.parent().find(".message-retention-setting-custom-input");
     if ($custom_input.val().length === 0) {
         return settings_config.retain_message_forever;
@@ -363,12 +385,19 @@ function get_dropdown_value_for_message_retention_setting(setting_value) {
         return "unlimited";
     }
 
+    if (setting_value === null) {
+        return "realm_default";
+    }
+
     return "custom_period";
 }
 
-function set_message_retention_setting_dropdown() {
-    const property_name = "realm_message_retention_days";
-    const setting_value = get_property_value(property_name, false);
+export function set_message_retention_setting_dropdown(sub) {
+    let property_name = "realm_message_retention_days";
+    if (sub !== undefined) {
+        property_name = "message_retention_days";
+    }
+    const setting_value = get_property_value(property_name, false, sub);
     const dropdown_val = get_dropdown_value_for_message_retention_setting(setting_value);
 
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
@@ -514,10 +543,10 @@ export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 
-function discard_property_element_changes(elem, for_realm_default_settings) {
+export function discard_property_element_changes(elem, for_realm_default_settings, sub) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
-    const property_value = get_property_value(property_name, for_realm_default_settings);
+    const property_value = get_property_value(property_name, for_realm_default_settings, sub);
 
     switch (property_name) {
         case "realm_authentication_methods":
@@ -543,6 +572,7 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             break;
         case "emojiset":
         case "user_list_style":
+        case "stream_privacy":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
@@ -568,7 +598,8 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             set_time_limit_setting(property_name);
             break;
         case "realm_message_retention_days":
-            set_message_retention_setting_dropdown();
+        case "message_retention_days":
+            set_message_retention_setting_dropdown(sub);
             break;
         default:
             if (property_value !== undefined) {
@@ -796,10 +827,10 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     return parse_time_limit($custom_input_elem);
 }
 
-function check_property_changed(elem, for_realm_default_settings) {
+export function check_property_changed(elem, for_realm_default_settings, sub) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
-    let current_val = get_property_value(property_name, for_realm_default_settings);
+    let current_val = get_property_value(property_name, for_realm_default_settings, sub);
     let proposed_val;
 
     switch (property_name) {
@@ -829,6 +860,7 @@ function check_property_changed(elem, for_realm_default_settings) {
             proposed_val = get_time_limit_setting_value($elem, false);
             break;
         case "realm_message_retention_days":
+        case "message_retention_days":
             proposed_val = get_message_retention_setting_value($elem, false);
             break;
         case "realm_default_language":
@@ -838,6 +870,7 @@ function check_property_changed(elem, for_realm_default_settings) {
             break;
         case "emojiset":
         case "user_list_style":
+        case "stream_privacy":
             proposed_val = get_input_element_value($elem, "radio-group");
             break;
         default:
@@ -850,12 +883,12 @@ function check_property_changed(elem, for_realm_default_settings) {
     return current_val !== proposed_val;
 }
 
-export function save_discard_widget_status_handler($subsection, for_realm_default_settings) {
+export function save_discard_widget_status_handler($subsection, for_realm_default_settings, sub) {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem, for_realm_default_settings),
+        check_property_changed(elem, for_realm_default_settings, sub),
     );
 
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
@@ -922,6 +955,45 @@ function enable_or_disable_save_button($subsection_elem) {
         }
     }
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
+export function populate_data_for_request(subsection, for_realm_default_settings, sub) {
+    let data = {};
+    const properties_elements = get_subsection_property_elements(subsection);
+
+    for (const input_elem of properties_elements) {
+        const $input_elem = $(input_elem);
+        if (check_property_changed($input_elem, for_realm_default_settings, sub)) {
+            const input_value = get_input_element_value($input_elem);
+            if (input_value !== undefined) {
+                let property_name;
+                if (for_realm_default_settings || sub) {
+                    property_name = extract_property_name($input_elem, for_realm_default_settings);
+                } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
+                    // Authentication Method component IDs include authentication method name
+                    // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
+                    // We need to strip that whole construct down to extract the actual property name.
+                    // The [\da-z]+ part of the regexp covers the auth method name itself.
+                    // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
+                    // this is ensured by a respective allowlist-based filter in populate_auth_methods().
+                    [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec($input_elem.attr("id"));
+                } else {
+                    [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
+                }
+
+                if (property_name === "stream_privacy") {
+                    data = {
+                        ...data,
+                        ...stream_edit.get_request_data_for_stream_privacy(input_value),
+                    };
+                    continue;
+                }
+                data[property_name] = input_value;
+            }
+        }
+    }
+
+    return data;
 }
 
 export function register_save_discard_widget_handlers(
@@ -1035,42 +1107,6 @@ export function register_save_discard_widget_handlers(
         return data;
     }
 
-    function populate_data_for_request(subsection) {
-        const data = {};
-        const properties_elements = get_subsection_property_elements(subsection);
-
-        for (const input_elem of properties_elements) {
-            const $input_elem = $(input_elem);
-            if (check_property_changed($input_elem, for_realm_default_settings)) {
-                const input_value = get_input_element_value($input_elem);
-                if (input_value !== undefined) {
-                    let property_name;
-                    if (for_realm_default_settings) {
-                        property_name = extract_property_name(
-                            $input_elem,
-                            for_realm_default_settings,
-                        );
-                    } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
-                        // Authentication Method component IDs include authentication method name
-                        // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
-                        // We need to strip that whole construct down to extract the actual property name.
-                        // The [\da-z]+ part of the regexp covers the auth method name itself.
-                        // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
-                        // this is ensured by a respective allowlist-based filter in populate_auth_methods().
-                        [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec(
-                            $input_elem.attr("id"),
-                        );
-                    } else {
-                        [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
-                    }
-                    data[property_name] = input_value;
-                }
-            }
-        }
-
-        return data;
-    }
-
     $container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -1088,7 +1124,7 @@ export function register_save_discard_widget_handlers(
         }
 
         const data = {
-            ...populate_data_for_request($subsection_elem),
+            ...populate_data_for_request($subsection_elem, for_realm_default_settings),
             ...extra_data,
         };
         save_organization_settings(data, $save_button, patch_url);

@@ -100,7 +100,7 @@
         padding: 0;
         display: flex;
         align-items: center;
-        width: 100%;
+        flex: 1;
 
         .fa-angle-right {
             font-size: 0.9em;
@@ -128,7 +128,6 @@
 
     .pm_recipient {
         margin-left: 5px;
-        margin-right: 35px;
         display: flex;
         align-items: center;
         width: 100%;
@@ -451,6 +450,9 @@ textarea.new_message_textarea {
     margin-bottom: 0;
     resize: vertical !important;
     margin-top: 5px;
+    border-radius: 4px;
+    color: hsl(0, 0%, 33%);
+    background-color: hsl(0, 0%, 100%);
 
     @keyframes flash {
         0% {
@@ -470,6 +472,12 @@ textarea.new_message_textarea {
             animation: flash 0.5s ease-in-out infinite;
         }
     }
+
+    &:read-only,
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0, 0%, 93%);
+    }
 }
 
 textarea.new_message_textarea,
@@ -479,6 +487,7 @@ textarea.new_message_textarea,
     transition: border 0.2s ease;
 
     &:focus {
+        outline: 0;
         border: 1px solid hsl(0, 0%, 67%);
         box-shadow: none;
     }
