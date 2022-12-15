@@ -117,6 +117,10 @@
         border-radius: 5px;
     }
 
+    .hide {
+        display: none;
+    }
+
     &:hover {
         .image-upload-text {
             visibility: visible;
