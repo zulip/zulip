@@ -62,7 +62,7 @@
 
     .poll-option {
         font-weight: 600;
-        font-size: 12pt;
+        font-size: 16px;
     }
 
     .poll-vote {
@@ -89,7 +89,7 @@
     .poll-names {
         color: hsl(0, 0%, 45%);
         padding-left: 4px;
-        font-size: 10pt;
+        font-size: 14px;
     }
 }
 
