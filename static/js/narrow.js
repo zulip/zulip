@@ -124,42 +124,47 @@ export function set_narrow_title(title) {
     notifications.redraw_title();
 }
 
-function update_narrow_title(filter) {
+export function compute_narrow_title(filter) {
     const filter_title = filter.get_title();
-    const search_default = $t({defaultMessage: "Search results"});
 
-    if (filter_title !== undefined) {
-        if (filter.has_operator("stream")) {
-            if (!filter._sub) {
-                // The stream is not set because it does not currently
-                // exist (possibly due to a stream name change), or it
-                // is a private stream and the user is not subscribed.
-                set_narrow_title(filter_title);
-            } else if (filter.has_operator("topic")) {
-                const topic_name = filter.operands("topic")[0];
-                set_narrow_title("#" + filter_title + " > " + topic_name);
-            } else {
-                set_narrow_title("#" + filter_title);
-            }
-        } else if (filter.has_operator("pm-with")) {
-            const emails = filter.operands("pm-with")[0];
-            const user_ids = people.emails_strings_to_user_ids_string(emails);
-            if (user_ids !== undefined) {
-                const names = people.get_recipients(user_ids);
-                set_narrow_title(names);
-            } else {
-                if (emails.includes(",")) {
-                    set_narrow_title("Invalid users");
-                } else {
-                    set_narrow_title("Invalid user");
-                }
-            }
-        } else {
-            set_narrow_title(filter_title);
-        }
-    } else {
-        set_narrow_title(search_default);
+    if (filter_title === undefined) {
+        // Default result for uncommon narrow/search views.
+        return $t({defaultMessage: "Search results"});
     }
+
+    if (filter.has_operator("stream")) {
+        if (!filter._sub) {
+            // The stream is not set because it does not currently
+            // exist (possibly due to a stream name change), or it
+            // is a private stream and the user is not subscribed.
+            return filter_title;
+        }
+        if (filter.has_operator("topic")) {
+            const topic_name = filter.operands("topic")[0];
+            return "#" + filter_title + " > " + topic_name;
+        }
+        return "#" + filter_title;
+    }
+
+    if (filter.has_operator("pm-with")) {
+        const emails = filter.operands("pm-with")[0];
+        const user_ids = people.emails_strings_to_user_ids_string(emails);
+
+        if (user_ids !== undefined) {
+            return people.get_recipients(user_ids);
+        }
+        if (emails.includes(",")) {
+            return $t({defaultMessage: "Invalid users"});
+        }
+        return $t({defaultMessage: "Invalid user"});
+    }
+
+    return filter_title;
+}
+
+function update_narrow_title(filter) {
+    const narrow_title_string = compute_narrow_title(filter);
+    set_narrow_title(narrow_title_string);
 }
 
 export function reset_ui_state() {
