@@ -300,9 +300,21 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     # the request to registration.
     kwargs: Dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
-    kwargs.pop("subdomain", None)
-    kwargs.pop("redirect_to", None)
-    kwargs.pop("is_realm_creation", None)
+
+    # These are the kwargs taken by maybe_send_to_registration. Remove anything
+    # else from the dict.
+    kwargs_to_pass = [
+        "email",
+        "full_name",
+        "mobile_flow_otp",
+        "desktop_flow_otp",
+        "is_signup",
+        "multiuse_object_key",
+        "full_name_validated",
+    ]
+    for key in dict(kwargs):
+        if key not in kwargs_to_pass:
+            kwargs.pop(key, None)
 
     kwargs["password_required"] = False
     return maybe_send_to_registration(request, **kwargs)
