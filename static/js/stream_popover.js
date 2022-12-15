@@ -534,7 +534,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
     }
 
     function move_topic_on_update() {
-        update_submit_button_disabled_state();
+        update_submit_button_disabled_state(stream_widget.value());
         set_stream_topic_typeahead();
     }
 
