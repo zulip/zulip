@@ -262,7 +262,7 @@ class ZulipUploadBackend:
 
 def create_attachment(
     file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
-) -> bool:
+) -> None:
     assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
         user_profile.delivery_email
     )
@@ -276,4 +276,3 @@ def create_attachment(
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
-    return True
