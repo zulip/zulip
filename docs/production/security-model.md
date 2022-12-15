@@ -310,9 +310,14 @@ RATE_LIMITING_RULES` to verify your changes. You can then restart
   across its exit nodes, without enabling this setting, TOR can otherwise be
   used to avoid IP-based rate limiting. The updated list of TOR exit nodes
   is refetched once an hour.
+- If a user runs into the rate limit for login attempts, a server
+  administrator can clear this state using the
+  `manage.py reset_authentication_attempt_count`
+  [management command][management-commands].
 
 See also our [API documentation on rate limiting][rate-limit-api].
 
+[management-commands]: ../production/management-commands.md
 [rate-limit-api]: https://zulip.com/api/rest-error-handling#rate-limit-exceeded
 
 ## Final notes and security response
