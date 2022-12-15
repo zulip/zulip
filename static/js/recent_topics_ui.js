@@ -870,8 +870,7 @@ export function show() {
     compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
-    const recent_topics_title = $t({defaultMessage: "Recent conversations"});
-    narrow.set_narrow_title(recent_topics_title);
+    narrow.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
     pm_list.handle_narrow_deactivated();

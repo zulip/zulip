@@ -22,6 +22,9 @@ const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 mock_esm("../../static/js/spectators", {
     login_to_access() {},
 });
+const recent_topics_util = mock_esm("../../static/js/recent_topics_util", {
+    is_visible() {},
+});
 
 function empty_narrow_html(title, html, search_data) {
     const opts = {
@@ -815,9 +818,17 @@ run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 });
 
-run_test("narrow_compute_title", () => {
+run_test("narrow_compute_title", ({override}) => {
     // Only tests cases where the narrow title is different from the filter title.
     let filter;
+
+    // Recent conversations & All messages have `undefined` filter.
+    filter = undefined;
+    override(recent_topics_util, "is_visible", () => true);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Recent conversations");
+
+    override(recent_topics_util, "is_visible", () => false);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: All messages");
 
     // Search & uncommon narrows
     filter = new Filter([{operator: "search", operand: "potato"}]);
