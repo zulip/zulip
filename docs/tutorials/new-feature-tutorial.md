@@ -68,7 +68,7 @@ organization in Zulip). The following files are involved in the process:
 
 - `zerver/openapi/zulip.yaml`: OpenAPI definitions for the Zulip REST API.
 - `templates/zerver/api/changelog.md`: documentation listing all changes to the Zulip Server API.
-- `templates/zerver/help/...`: end user facing documentation (Help Center) for the application.
+- `templates/help/...`: end user facing documentation (Help Center) for the application.
 
 ### Adding a field to the database
 
@@ -690,7 +690,7 @@ this feature would be to update and/or augment Zulip's existing
 changes and additions.
 
 At the very least, this will involve modifying (or adding) a Markdown
-file documenting the feature to `templates/zerver/help/` in the main
+file documenting the feature to `templates/help/` in the main
 Zulip server repository, where the source for Zulip's end user
 documentation is stored. Details about writing, editing and testing
 these Markdown files can be found in:

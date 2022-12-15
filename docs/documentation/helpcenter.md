@@ -26,7 +26,7 @@ from the Internet, and we'd like the documentation to be available in that
 environment.
 
 The source for help center documentation is the Markdown files under
-`templates/zerver/help/` in the
+`templates/help/` in the
 [main Zulip server repository](https://github.com/zulip/zulip). The file
 `foo.md` is automatically rendered by the `render_markdown_path` function in
 `zerver/templatetags/app_filters.py` when the user accesses a URL of the
@@ -36,7 +36,7 @@ are usually linked from `static/images/help/`.
 
 This means that you can contribute to the Zulip help center documentation
 by just adding to or editing the collection of Markdown files under
-`templates/zerver/help`. If you have the Zulip development environment
+`templates/help`. If you have the Zulip development environment
 set up, you simply need to reload your browser on
 `http://localhost:9991/help/foo` to see the latest version of `foo.md`
 rendered.
@@ -70,7 +70,7 @@ the current documentation as a resource and guide as you begin.
   existing article?
 
   - If so, you can locate that article in
-    `templates/zerver/help` and start working on updating it with
+    `templates/help` and start working on updating it with
     content about the new feature.
 
   - If not, choose an existing article to use as a template for your
@@ -353,7 +353,7 @@ phrases and steps at the location of the macros. Macros help eliminate
 repeated content in our documentation.
 
 The source for macros is the Markdown files under
-`templates/zerver/help/include` in the
+`templates/help/include` in the
 [main Zulip server repository](https://github.com/zulip/zulip).
 
 - **Administrator only feature** `{!admin-only.md!}`: Notes that the feature

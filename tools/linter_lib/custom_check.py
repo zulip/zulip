@@ -865,7 +865,7 @@ markdown_rules = RuleList(
             "description": "Don't link directly to line numbers",
         },
     ],
-    exclude_files_in="templates/zerver/help/",
+    exclude_files_in="templates/help/",
 )
 
 help_markdown_rules = RuleList(
@@ -875,13 +875,13 @@ help_markdown_rules = RuleList(
         {
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
-            "include_only": {"templates/zerver/help/"},
+            "include_only": {"templates/help/"},
             "exclude_pattern": "Rocket.Chat",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",
-            "include_only": {"templates/zerver/help/"},
-            "exclude": {"templates/zerver/help/change-organization-url.md"},
+            "include_only": {"templates/help/"},
+            "exclude": {"templates/help/change-organization-url.md"},
             "good_lines": ["Organization", "deactivate_realm", "realm_filter"],
             "bad_lines": ["Users are in a realm", "Realm is the best model"],
             "description": "Realms are referred to as Organizations in user-facing docs.",

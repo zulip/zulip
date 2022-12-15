@@ -67,9 +67,9 @@ class PublicURLTest(ZulipTestCase):
             404: ["/help/nonexistent", "/help/include/admin", "/help/" + "z" * 1000],
         }
 
-        # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
+        # Add all files in 'templates/help' directory (except for 'main.html' and
         # 'index.md') to `get_urls['200']` list.
-        for doc in os.listdir("./templates/zerver/help"):
+        for doc in os.listdir("./templates/help"):
             if doc.startswith(".") or "~" in doc or "#" in doc:
                 continue  # nocoverage -- just here for convenience
             if doc not in {"main.html", "index.md", "include", "missing.md"}:
