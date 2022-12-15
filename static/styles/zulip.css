@@ -2588,6 +2588,10 @@ textarea.invitee_emails {
 
 #invite-stream-checkboxes {
     padding-bottom: 26px;
+
+    i.zulip-icon-globe {
+        font-size: 80%;
+    }
 }
 
 #invite-method-choice {
