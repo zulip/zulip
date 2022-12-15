@@ -3324,3 +3324,12 @@ textarea.invitee_emails {
         }
     }
 }
+
+@media print
+{    
+    /* created a class that would allow certain elements to not print */
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+}

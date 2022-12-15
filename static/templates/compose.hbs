@@ -1,4 +1,4 @@
-<div id="compose-content">
+<div id="compose-content" class="no-print">
     {{!-- scroll to bottom button is not part of compose but
     helps us align it at various screens sizes with
     minimal css and no JS. We keep it `position: absolute` to prevent
@@ -13,21 +13,21 @@
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
-            <span class="new_message_button reply_button_container ">
+            <span class="new_message_button reply_button_container no-print">
                 <button type="button" class="button small rounded compose_reply_button"
                   id="left_bar_compose_reply_button_big"
                   title="{{t 'Reply to selected message' }} (r)">
                     <span class="compose_reply_button_label">{{t 'Compose message' }}</span>
                 </button>
             </span>
-            <span class="new_message_button mobile_button_container">
+            <span class="new_message_button mobile_button_container no-print">
                 <button type="button" class="button small rounded compose_mobile_button"
                   id="left_bar_compose_mobile_button_big"
                   title="{{t 'New message' }} (c)">
                     <span>+</span>
                 </button>
             </span>
-            <span class="new_message_button stream_button_container">
+            <span class="new_message_button stream_button_container no-print">
                 <button type="button" class="button small rounded compose_stream_button"
                   id="left_bar_compose_stream_button_big"
                   title="{{t 'New topic' }} (c)">
@@ -35,7 +35,7 @@
                 </button>
             </span>
             {{#unless embedded }}
-            <span class="new_message_button private_button_container">
+            <span class="new_message_button private_button_container no-print">
                 <button type="button" class="button small rounded compose_private_button"
                   id="left_bar_compose_private_button_big"
                   title="{{t 'New private message' }} (x)">
@@ -45,7 +45,7 @@
             {{/unless}}
         </div>
     </div>
-    <div class="message_comp">
+    <div class="message_comp no-print">
         <div id="compose_banners"></div>
         <div class="alert" id="compose-send-status">
             <span class="compose-send-status-close">&times;</span>
