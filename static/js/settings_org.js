@@ -114,6 +114,12 @@ export function get_organization_settings_options() {
     options.invite_to_realm_policy_values = get_sorted_options_list(
         settings_config.invite_to_realm_policy_values,
     );
+    options.edit_topic_policy_values = get_sorted_options_list(
+        settings_config.edit_topic_policy_values,
+    );
+    options.move_messages_between_streams_policy_values = get_sorted_options_list(
+        settings_config.move_messages_between_streams_policy_values,
+    );
     return options;
 }
 
@@ -267,7 +273,6 @@ function update_message_edit_sub_settings(is_checked) {
         "id_realm_message_content_edit_limit_minutes",
         true,
     );
-    settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_edit_topic_policy", true);
 }
 
 function update_custom_value_input(property_name) {

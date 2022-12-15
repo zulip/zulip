@@ -18,7 +18,6 @@ import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
 import * as linkifiers from "./linkifiers";
-import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -260,9 +259,6 @@ export function dispatch_normal_event(event) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
                                 page_params["realm_" + key] = value;
-                                if (key === "allow_message_editing") {
-                                    message_edit.update_message_topic_editing_pencil();
-                                }
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }

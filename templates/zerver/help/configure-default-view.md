@@ -6,7 +6,7 @@ keyboard shortcuts.
 
 The default views available in Zulip are
 [Recent conversations](/help/recent-conversations) and
-[All messages](/help/reading-strategies#all-messages). See
+[All messages](/help/all-messages). See
 [Reading strategies](/help/reading-strategies) for recommendations
 on how to use these views.
 
@@ -20,7 +20,7 @@ shortcut.
 Organization administrators can [set the default view for their
 organization](/help/configure-default-new-user-settings) to
 [**Recent conversations**](/help/recent-conversations) or
-[**All messages**](/help/reading-strategies#all-messages).
+[**All messages**](/help/all-messages).
 **Recent conversations** is especially recommended for high-traffic
 organizations, and is configured by default.
 
@@ -68,4 +68,5 @@ shortcut.
 
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
+* [All messages](/help/all-messages)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)

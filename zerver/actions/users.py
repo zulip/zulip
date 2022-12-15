@@ -231,7 +231,9 @@ def do_change_user_role(
     do_send_user_group_members_update_event("add_members", system_group, [user_profile.id])
 
     if UserProfile.ROLE_MEMBER in [old_value, value]:
-        update_users_in_full_members_system_group(user_profile.realm, [user_profile.id])
+        update_users_in_full_members_system_group(
+            user_profile.realm, [user_profile.id], acting_user=acting_user
+        )
 
 
 def do_make_user_billing_admin(user_profile: UserProfile) -> None:

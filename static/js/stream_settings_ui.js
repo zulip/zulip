@@ -303,7 +303,7 @@ export function update_settings_for_subscribed(slim_sub) {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     $(
-        `.subscription_settings[data-stream-id='${CSS.escape(
+        `.stream_settings_header[data-stream-id='${CSS.escape(
             sub.stream_id,
         )}'] #preview-stream-button`,
     ).show();
