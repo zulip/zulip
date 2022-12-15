@@ -21,6 +21,8 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_conversations from "./pm_conversations";
+import * as pm_list from "./pm_list";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
@@ -163,6 +165,10 @@ function composing_to_current_private_message_narrow() {
 }
 
 export function update_narrow_to_recipient_visibility() {
+    // Remove any conversations with no messages from PMs when the
+    // narrow view is changed
+    pm_conversations.recent.removeEmptyConvo();
+
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_name = compose_state.stream_name();
@@ -357,6 +363,11 @@ export function start(msg_type, opts) {
 }
 
 export function cancel() {
+    // Remove any empty conversations from PMs when the compose-box
+    // is closed
+    pm_conversations.recent.removeEmptyConvo();
+    pm_list.update_private_messages();
+
     // As user closes the compose box, restore the compose box max height
     if (compose_ui.is_full_size()) {
         compose_ui.make_compose_box_original_size();

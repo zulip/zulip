@@ -26,6 +26,7 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
@@ -937,6 +938,22 @@ export function by_recipient(target_id, opts) {
 
 // Called by the narrow_to_compose_target hotkey.
 export function to_compose_target() {
+    // If the target has not been in a convo before, then add temp convo marker
+    // to the top
+    const recipient_string = compose_state.private_message_recipient();
+
+    const user_ids = [];
+    const recipient_split = recipient_string.split(",");
+
+    for (const user_email of recipient_split) {
+        user_ids.unshift(people.get_user_id(user_email));
+    }
+
+    // if unique combination of users, then add to list
+    if (!pm_conversations.recent.recent_message_ids.has(user_ids)) {
+        pm_conversations.recent.initInsert(user_ids);
+    }
+
     if (!compose_state.composing()) {
         return;
     }
