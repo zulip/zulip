@@ -4,7 +4,10 @@
     {{else if this.is_realm_emoji}}
         <img src="{{this.url}}" class="emoji" />
     {{else}}
-        <div class="emoji emoji-{{this.emoji_code}}"></div>
+        <p>
+            <div class="emojifixed"></div>
+            <div class="message_reaction_emoji">&#x{{splitString this.emoji_code}}</div>
+        </p>
     {{/if}}
     <div class="message_reaction_count">{{this.vote_text}}</div>
 </div>
