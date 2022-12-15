@@ -42,3 +42,12 @@ run_test("numberFormat", () => {
     const html = require("./templates/numberFormat.hbs")(args);
     assert.equal(html, "1,000,000\n");
 });
+
+run_test("splitString", () => {
+    const args = {
+        string: "1f415-200d-1f9ba",
+    };
+
+    const fiveLetters = require("./templates/splitString.hbs")(args);
+    assert.equal("1f415\n", fiveLetters);
+});

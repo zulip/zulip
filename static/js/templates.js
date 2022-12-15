@@ -16,7 +16,7 @@ import * as util from "./util";
 // other DOM-ready callbacks that attempt to render templates.
 
 // Helper to split the emoji strings by dashes so that the first 5 unicodes would return.
-Handlebars.registerHelper('splitString', function(given_string) {
+Handlebars.registerHelper("splitString", (given_string) => {
     const arr = given_string.split("-");
     return arr[0];
 });

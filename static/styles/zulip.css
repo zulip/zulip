@@ -3325,17 +3325,21 @@ textarea.invitee_emails {
     }
 }
 
-@media print
-{
+@media print {
     /* created a class that would allow certain elements to not print */
-    .no-print, .no-print *
-    {
+    .no-print,
+    .no-print * {
         display: none !important;
     }
 
     /* print does not adjust color */
-    body { print-color-adjust: exact !important; }
-    a { print-color-adjust: exact !important; }
+    body {
+        print-color-adjust: exact !important;
+    }
+
+    a {
+        print-color-adjust: exact !important;
+    }
 
     /* helps show the message header colors when printing */
     .message-header-contents {
@@ -3344,14 +3348,15 @@ textarea.invitee_emails {
     }
 
     /* don't show URLs of hidden links when printing */
-    a[href]:after {
+    a[href]::after {
         content: none !important;
     }
 
     /* blends away the nav bar buttons and the div borders there */
-    .top-navbar-border, .top-navbar-border * {
-        border-left: 1px white;
-        border-right: 1px white;
+    .top-navbar-border,
+    .top-navbar-border * {
+        border-left: 1px hsl(0, 0%, 100%);
+        border-right: 1px hsl(0, 0%, 100%);
     }
 
     /* blends away the nav bar buttons and the div borders there */
@@ -3363,7 +3368,24 @@ textarea.invitee_emails {
         height: 40px;
         /* Width of userlist-toggle button. */
         width: 45px;
-        border-left: 1px solid white;
+        border-left: 1px solid hsl(0, 0%, 100%);
     }
 
+    /* this is the one that makes the header stay on top and messages not overlap with it */
+    .header {
+        position: relative;
+        z-index: 102; /* Needs to be higher than .alert-bar-container */
+        width: 100%;
+        height: $header_height;
+        padding-bottom: $header_padding_bottom;
+        background-color: inherit;
+    }
+
+    /* this makes the message headers stay in place and not float during print */
+    .fixed-app {
+        width: 100%;
+        position: relative;
+        z-index: 98;
+        left: 0;
+    }
 }
