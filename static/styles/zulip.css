@@ -1360,20 +1360,20 @@ td.pointer {
 
 .message_header_private_message {
     .message_label_clickable {
-        background-color: hsl(0, 0%, 27%);
+        background-color: hsl(0, 0%, 27%) !important;
         display: inline-block;
         padding: 3px 6px 2px;
         font-weight: normal;
         height: 17px;
         line-height: 17px;
-        border-left-color: hsl(0, 0%, 27%);
+        border-left-color: hsl(0, 0%, 27%) !important;
     }
 
     /* Base color backgrounds for message boxes,
        private messages, mentions, and unread messages */
 
     .message-header-contents {
-        background-color: hsla(192, 19%, 75%, 0.2);
+        background-color: hsla(192, 19%, 75%, 0.2) !important;
         box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
     }
 }
@@ -1409,7 +1409,7 @@ td.pointer {
     align-items: center;
     justify-content: space-between;
     border-right: 1px solid hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%) !important;
 }
 
 .group_mention .messagebox,
@@ -3326,10 +3326,44 @@ textarea.invitee_emails {
 }
 
 @media print
-{    
+{
     /* created a class that would allow certain elements to not print */
     .no-print, .no-print *
     {
         display: none !important;
     }
+
+    /* print does not adjust color */
+    body { print-color-adjust: exact !important; }
+    a { print-color-adjust: exact !important; }
+
+    /* helps show the message header colors when printing */
+    .message-header-contents {
+        print-color-adjust: exact !important;
+        background-color: hsl(0, 0%, 88%) !important;
+    }
+
+    /* don't show URLs of hidden links when printing */
+    a[href]:after {
+        content: none !important;
+    }
+
+    /* blends away the nav bar buttons and the div borders there */
+    .top-navbar-border, .top-navbar-border * {
+        border-left: 1px white;
+        border-right: 1px white;
+    }
+
+    /* blends away the nav bar buttons and the div borders there */
+    .spectator_narrow_login_button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        /* Height of navbar in tablet sizes */
+        height: 40px;
+        /* Width of userlist-toggle button. */
+        width: 45px;
+        border-left: 1px solid white;
+    }
+
 }
