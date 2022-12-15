@@ -1,1 +1,1 @@
-../help/missing.md
+No such article.
