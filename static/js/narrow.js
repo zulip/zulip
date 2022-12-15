@@ -116,12 +116,7 @@ export function save_pre_narrow_offset_for_reload() {
     }
 }
 
-export let narrow_title = "home";
 export let has_shown_message_list_view = false;
-
-function set_narrow_title(title) {
-    narrow_title = title;
-}
 
 export function compute_narrow_title(filter) {
     if (filter === undefined) {
@@ -170,9 +165,9 @@ export function compute_narrow_title(filter) {
     return filter_title;
 }
 
+export let narrow_title = "home";
 export function update_narrow_title(filter) {
-    const narrow_title_string = compute_narrow_title(filter);
-    set_narrow_title(narrow_title_string);
+    narrow_title = compute_narrow_title(filter);
     notifications.redraw_title();
 }
 
