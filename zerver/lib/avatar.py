@@ -8,7 +8,7 @@ from zerver.lib.avatar_hash import (
     user_avatar_content_hash,
     user_avatar_path_from_ids,
 )
-from zerver.lib.upload import upload_backend
+from zerver.lib.upload import get_avatar_url
 from zerver.lib.upload.base import MEDIUM_AVATAR_SIZE
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
@@ -120,7 +120,7 @@ def _get_unversioned_avatar_url(
 ) -> str:
     if avatar_source == "U":
         hash_key = user_avatar_path_from_ids(user_profile_id, realm_id)
-        return upload_backend.get_avatar_url(hash_key, medium=medium)
+        return get_avatar_url(hash_key, medium=medium)
     assert email is not None
     return _get_unversioned_gravatar_url(email, medium)
 
