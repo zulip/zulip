@@ -9,7 +9,7 @@ from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Stream, StreamTopic, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -270,3 +270,11 @@ def get_topic_history_for_stream(
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
+
+
+def get_stream_topics_for_realm(realm: Realm) -> QuerySet[StreamTopic]:
+    streams = Stream.objects.filter(realm=realm)
+    stream_topics = StreamTopic.objects.none()
+    for stream in streams:
+        stream_topics |= StreamTopic.objects.filter(stream=stream)
+    return stream_topics

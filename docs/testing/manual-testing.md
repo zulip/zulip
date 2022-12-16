@@ -65,7 +65,7 @@ Try narrowing from the message view:
   - narrow to a group PM
 - Click on the Zulip logo
   - narrow to a topic
-  - click on the Zulip logo (and verify you're in the Recent conversations view)
+  - click on the Zulip logo (and verify you're in the view)
 
 ### Messagebox
 
