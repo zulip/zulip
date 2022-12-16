@@ -23,12 +23,20 @@ from zerver.models import Realm
 
 @add_google_analytics
 def apps_view(request: HttpRequest, platform: Optional[str] = None) -> HttpResponse:
-    if settings.ZILENCER_ENABLED:
-        return TemplateResponse(
-            request,
-            "corporate/apps.html",
-        )
-    return HttpResponseRedirect("https://zulip.com/apps/", status=301)
+    if not settings.CORPORATE_ENABLED:
+        # This seems impossible (CORPORATE_ENABLED set to false when
+        # rendering a "corporate" view) -- but we add it to make
+        # testing possible.  Tests default to running with the
+        # "corporate" app installed, and unsetting that is difficult,
+        # as one cannot easily reload the URL resolution -- so we add
+        # a redirect here, equivalent to the one zerver would have
+        # installed when "corporate" is not enabled, to make the
+        # behaviour testable with CORPORATE_ENABLED set to false.
+        return HttpResponseRedirect("https://zulip.com/apps/", status=301)
+    return TemplateResponse(
+        request,
+        "corporate/apps.html",
+    )
 
 
 def app_download_link_redirect(request: HttpRequest, platform: str) -> HttpResponse:

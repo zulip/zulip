@@ -176,9 +176,8 @@ class DocPageTest(ZulipTestCase):
         self._test("/errors/5xx/", "Internal server error", landing_page=False)
 
     def test_corporate_portico_endpoints(self) -> None:
-        if settings.ZILENCER_ENABLED:
-            self._test("/team/", "industry veterans")
-            self._test("/apps/", "Apps for every platform.")
+        self._test("/team/", "industry veterans")
+        self._test("/apps/", "Apps for every platform.")
 
         self._test("/history/", "Zulip released as open source!")
         # Test the i18n version of one of these pages.
@@ -524,34 +523,42 @@ class PlansPageTest(ZulipTestCase):
 
 class AppsPageTest(ZulipTestCase):
     def test_get_apps_page_url(self) -> None:
-        with self.settings(ZILENCER_ENABLED=False):
+        with self.settings(CORPORATE_ENABLED=False):
             apps_page_url = get_apps_page_url()
         self.assertEqual(apps_page_url, "https://zulip.com/apps/")
 
-        with self.settings(ZILENCER_ENABLED=True):
+        with self.settings(CORPORATE_ENABLED=True):
             apps_page_url = get_apps_page_url()
         self.assertEqual(apps_page_url, "/apps/")
 
     def test_apps_view(self) -> None:
-        result = self.client_get("/apps")
-        self.assertEqual(result.status_code, 301)
-        self.assertTrue(result["Location"].endswith("/apps/"))
+        with self.settings(CORPORATE_ENABLED=False):
+            # Note that because this cannot actually uninstall the
+            # "corporate" app and trigger updates to URL resolution,
+            # this does not test the "apps/" path installed in
+            # zproject.urls, but rather the special-case for testing
+            # in corporate.views.portico
+            result = self.client_get("/apps")
+            self.assertEqual(result.status_code, 301)
+            self.assertTrue(result["Location"].endswith("/apps/"))
 
-        with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get("/apps/")
-        self.assertEqual(result.status_code, 301)
-        self.assertTrue(result["Location"] == "https://zulip.com/apps/")
+            self.assertEqual(result.status_code, 301)
+            self.assertTrue(result["Location"] == "https://zulip.com/apps/")
 
-        with self.settings(ZILENCER_ENABLED=False):
             result = self.client_get("/apps/linux")
-        self.assertEqual(result.status_code, 301)
-        self.assertTrue(result["Location"] == "https://zulip.com/apps/")
+            self.assertEqual(result.status_code, 301)
+            self.assertTrue(result["Location"] == "https://zulip.com/apps/")
 
-        with self.settings(ZILENCER_ENABLED=True):
+        with self.settings(CORPORATE_ENABLED=True):
+            result = self.client_get("/apps")
+            self.assertEqual(result.status_code, 301)
+            self.assertTrue(result["Location"].endswith("/apps/"))
+
             result = self.client_get("/apps/")
-        self.assertEqual(result.status_code, 200)
-        html = result.content.decode()
-        self.assertIn("Apps for every platform.", html)
+            self.assertEqual(result.status_code, 200)
+            html = result.content.decode()
+            self.assertIn("Apps for every platform.", html)
 
     def test_app_download_link_view(self) -> None:
         return_value = "https://desktop-download.zulip.com/v5.4.3/Zulip-Web-Setup-5.4.3.exe"
