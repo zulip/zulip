@@ -66,6 +66,10 @@ def delete_message_image(path_id: str) -> bool:
     return upload_backend.delete_message_image(path_id)
 
 
+def get_avatar_url(hash_key: str, medium: bool = False) -> str:
+    return upload_backend.get_avatar_url(hash_key, medium)
+
+
 def upload_avatar_image(
     user_file: IO[bytes],
     acting_user_profile: UserProfile,
