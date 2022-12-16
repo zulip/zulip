@@ -557,6 +557,10 @@ export function can_subscribe_others(sub) {
 }
 
 export function can_post_messages_in_stream(stream) {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
     if (page_params.is_admin) {
         return true;
     }

@@ -36,9 +36,18 @@ function get_or_set(fieldname, keep_leading_whitespace) {
     };
 }
 
-// TODO: Break out setters and getter into their own functions.
-export const stream_name = get_or_set("stream_message_recipient_stream");
+export function stream_name() {
+    return $("#stream_message_recipient_stream").val().trim();
+}
 
+export function set_stream_name(newval) {
+    if (newval !== undefined) {
+        const $elem = $("#stream_message_recipient_stream");
+        $elem.val(newval);
+    }
+}
+
+// TODO: Break out setter and getter into their own functions.
 export const topic = get_or_set("stream_message_recipient_topic");
 
 // We can't trim leading whitespace in `compose_textarea` because

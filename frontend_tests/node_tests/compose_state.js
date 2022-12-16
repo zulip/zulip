@@ -30,14 +30,14 @@ run_test("has_full_recipient", ({override}) => {
     override(compose_pm_pill, "get_emails", () => emails);
 
     compose_state.set_message_type("stream");
-    compose_state.stream_name("");
+    compose_state.set_stream_name("");
     compose_state.topic("");
     assert.equal(compose_state.has_full_recipient(), false);
 
     compose_state.topic("foo");
     assert.equal(compose_state.has_full_recipient(), false);
 
-    compose_state.stream_name("bar");
+    compose_state.set_stream_name("bar");
     assert.equal(compose_state.has_full_recipient(), true);
 
     compose_state.set_message_type("private");

@@ -26,11 +26,6 @@ const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history
 
 let autosize_called;
 
-mock_esm("../../static/js/compose_ui", {
-    autosize_textarea() {
-        autosize_called = true;
-    },
-});
 let set_timeout_called;
 set_global("setTimeout", (f, time) => {
     f();
@@ -48,6 +43,7 @@ const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 const compose_pm_pill = zrequire("compose_pm_pill");
+const compose_ui = zrequire("compose_ui");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -382,6 +378,10 @@ test("topics_seen_for", ({override}) => {
 });
 
 test("content_typeahead_selected", ({override}) => {
+    compose_ui.autosize_textarea = () => {
+        autosize_called = true;
+    };
+
     const fake_this = {
         query: "",
         $element: {},
@@ -735,7 +735,7 @@ test("initialize", ({override, mock_template}) => {
             return topics;
         };
 
-        $("#stream_message_recipient_stream").val("Sweden");
+        compose_state.set_stream_name("Sweden");
         let actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
         let expected_value = topics;
@@ -792,7 +792,7 @@ test("initialize", ({override, mock_template}) => {
         topic_typeahead_called = true;
 
         // Unset the stream name.
-        $("#stream_message_recipient_stream").val("");
+        compose_state.set_stream_name("");
     };
 
     let pm_recipient_typeahead_called = false;

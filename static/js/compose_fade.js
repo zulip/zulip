@@ -27,8 +27,8 @@ export function set_focused_recipient(msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        const stream_name = $("#stream_message_recipient_stream").val();
-        focused_recipient.topic = $("#stream_message_recipient_topic").val();
+        const stream_name = compose_state.stream_name();
+        focused_recipient.topic = compose_state.topic();
         focused_recipient.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
         if (sub) {

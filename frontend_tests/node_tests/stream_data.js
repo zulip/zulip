@@ -992,4 +992,7 @@ test("can_post_messages_in_stream", () => {
 
     social.stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });

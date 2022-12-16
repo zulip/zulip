@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -20,6 +21,9 @@ const settings_config = zrequire("settings_config");
 const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 mock_esm("../../static/js/spectators", {
     login_to_access() {},
+});
+const recent_topics_util = mock_esm("../../static/js/recent_topics_util", {
+    is_visible() {},
 });
 
 function empty_narrow_html(title, html, search_data) {
@@ -708,7 +712,7 @@ run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
 
     // No-op when empty stream.
     compose_state.set_message_type("stream");
-    compose_state.stream_name("");
+    compose_state.set_stream_name("");
     narrow.to_compose_target();
 });
 
@@ -722,7 +726,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
 
     compose_state.set_message_type("stream");
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    compose_state.stream_name("ROME");
+    compose_state.set_stream_name("ROME");
 
     // Test with existing topic
     compose_state.topic("one");
@@ -812,4 +816,62 @@ run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
+});
+
+run_test("narrow_compute_title", ({override}) => {
+    // Only tests cases where the narrow title is different from the filter title.
+    let filter;
+
+    // Recent conversations & All messages have `undefined` filter.
+    filter = undefined;
+    override(recent_topics_util, "is_visible", () => true);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Recent conversations");
+
+    override(recent_topics_util, "is_visible", () => false);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: All messages");
+
+    // Search & uncommon narrows
+    filter = new Filter([{operator: "search", operand: "potato"}]);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Search results");
+
+    filter = new Filter([{operator: "sender", operand: "me"}]);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Search results");
+
+    // Stream narrows
+    const sub = {
+        name: "Foo",
+        stream_id: 43,
+    };
+    stream_data.add_sub(sub);
+
+    filter = new Filter([
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+    ]);
+    assert.equal(narrow.compute_narrow_title(filter), "#Foo > bar");
+
+    filter = new Filter([{operator: "stream", operand: "foo"}]);
+    assert.equal(narrow.compute_narrow_title(filter), "#Foo");
+
+    filter = new Filter([{operator: "stream", operand: "Elephant"}]);
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
+
+    // Private messages with narrows
+    const joe = {
+        email: "joe@example.com",
+        user_id: 31,
+        full_name: "joe",
+    };
+    people.add_active_user(joe);
+
+    filter = new Filter([{operator: "pm-with", operand: "joe@example.com"}]);
+    assert.equal(narrow.compute_narrow_title(filter), "joe");
+
+    filter = new Filter([{operator: "pm-with", operand: "joe@example.com,sally@doesnotexist.com"}]);
+    blueslip.expect("warn", "Unknown emails: joe@example.com,sally@doesnotexist.com");
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid users");
+
+    filter = new Filter([{operator: "pm-with", operand: "sally@doesnotexist.com"}]);
+    blueslip.expect("warn", "Unknown emails: sally@doesnotexist.com");
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid user");
 });

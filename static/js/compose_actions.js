@@ -268,8 +268,8 @@ export function update_placeholder_text() {
 
     const opts = {
         message_type: compose_state.get_message_type(),
-        stream: $("#stream_message_recipient_stream").val(),
-        topic: $("#stream_message_recipient_topic").val(),
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
         private_message_recipient: compose_pm_pill.get_emails(),
     };
 
@@ -329,7 +329,7 @@ export function start(msg_type, opts) {
     //
     // TODO: Move these into a conditional on message_type, using an
     // explicit "clear" function for compose_state.
-    compose_state.stream_name(opts.stream);
+    compose_state.set_stream_name(opts.stream);
     compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
