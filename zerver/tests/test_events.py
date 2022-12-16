@@ -75,6 +75,10 @@ from zerver.actions.realm_settings import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
 )
+from zerver.actions.stream_topics import (
+    do_add_pinned_topic_to_stream_topic,
+    do_change_stream_topic_property,
+)
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -214,6 +218,7 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
+    StreamTopic,
     UserGroup,
     UserMessage,
     UserPresence,
@@ -3037,3 +3042,40 @@ class DraftActionTest(BaseAction):
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
         action = lambda: do_delete_draft(draft_id, self.user_profile)
         self.verify_action(action)
+
+
+class PinTopicActionTest(BaseAction):
+    def test_add_pinned_topic(self) -> None:
+        # Testing pinning a topic that has never been pinned
+        stream = get_stream("Denmark", self.user_profile.realm)
+        action = lambda: do_add_pinned_topic_to_stream_topic(
+            stream.realm, stream, "BOTS", True, self.user_profile
+        )
+        self.verify_action(action)
+        assert StreamTopic.objects.fulter(stream=stream, name="BOTS").exists()
+
+    def test_unpin_topic(self) -> None:
+        # Testing unpinning a topic
+        stream = get_stream("Denmark", self.user_profile.realm)
+        do_add_pinned_topic_to_stream_topic(stream.realm, stream, "BOTS", True, self.user_profile)
+        stream_topic = StreamTopic.objects.get(stream=stream, name="BOTS")
+        action = lambda: do_change_stream_topic_property(
+            stream.realm, stream, stream_topic, False, self.user_profile
+        )
+        self.verify_action(action)
+        self.assertEqual(stream_topic.is_pinned, False)
+
+    def test_repin_topic(self) -> None:
+        # Testing repinning a topic that was previously pinned
+        stream = get_stream("Denmark", self.user_profile.realm)
+        do_add_pinned_topic_to_stream_topic(stream.realm, stream, "BOTS", True, self.user_profile)
+        stream_topic = StreamTopic.objects.get(stream=stream, name="BOTS")
+        do_change_stream_topic_property(
+            stream.realm, stream, stream_topic, False, self.user_profile
+        )
+        self.assertEqual(stream_topic.is_pinned, False)
+        action = lambda: do_change_stream_topic_property(
+            stream.realm, stream, stream_topic, True, self.user_profile
+        )
+        self.verify_action(action)
+        self.assertEqual(stream_topic.is_pinned, False)

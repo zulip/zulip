@@ -27,6 +27,10 @@ from zerver.actions.message_send import (
     internal_prep_private_message,
     internal_prep_stream_message,
 )
+from zerver.actions.stream_topics import (
+    do_add_pinned_topic_to_stream_topic,
+    do_change_stream_topic_property,
+)
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -97,6 +101,7 @@ from zerver.lib.validator import (
 from zerver.models import (
     Realm,
     Stream,
+    StreamTopic,
     UserMessage,
     UserProfile,
     get_active_user,
@@ -267,7 +272,7 @@ def update_stream_backend(
         json_validator=check_string_or_int, default=None
     ),
 ) -> HttpResponse:
-    # We allow realm administrators to to update the stream name and
+    # We allow realm administrators to update the stream name and
     # description even for private streams.
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
 
@@ -848,6 +853,88 @@ def get_topics_backend(
         )
 
     return json_success(request, data=dict(topics=result))
+
+
+@has_request_variables
+def update_stream_topics_property(
+    request: HttpRequest,
+    stream_id: int = REQ(json_validator=check_int),
+    name: str = REQ(json_validator=check_string),
+    property: str = REQ(),
+    value: bool = REQ(),
+) -> HttpResponse:
+    stream_topic_data = [
+        {"stream_id": stream_id, "name": name, "property": property, "value": value}
+    ]
+    return update_stream_topic_properties_backend(request, stream_topic_data=stream_topic_data)
+
+
+@has_request_variables
+def update_stream_topic_properties_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_topic_data: List[Dict[str, Any]] = REQ(
+        json_validator=check_list(
+            check_dict(
+                [
+                    ("stream_id", check_int),
+                    ("name", check_string),
+                    ("property", check_string),
+                    ("value", check_bool),
+                ]
+            ),
+        ),
+    ),
+) -> HttpResponse:
+    """
+    This is the entry point to changing topic properties. This
+    is a bulk endpoint: requestors always provide a topic_data
+    list containing dictionaries for each topic of interest.
+
+    Requests are of the form:
+
+    [{"stream_id": "1", "name": "backend", "property": "is_pinned", "value": True}]
+    """
+    property_converters = {"is_pinned": check_bool}
+    for change in stream_topic_data:
+        stream_id = change["stream_id"]
+        name = change["name"]
+        property = change["property"]
+        value = change["value"]
+
+        if property not in property_converters:
+            raise JsonableError(_("Unknown topic property: {}").format(property))
+
+        try:
+            value = property_converters[property](property, value)
+        except ValidationError as error:
+            raise JsonableError(error.message)
+
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        if not StreamTopic.objects.filter(stream_id=stream_id, name=name).exists():
+            do_add_pinned_topic_to_stream_topic(
+                user_profile.realm, stream, name, value, acting_user=user_profile
+            )
+        else:
+            querySet = StreamTopic.objects.filter(stream_id=stream_id, name=name)
+            stream_topic = querySet.__getitem__(0)
+            do_change_stream_topic_property(
+                user_profile.realm, stream, stream_topic, value, acting_user=user_profile
+            )
+
+    # TODO: Do this more generally, see update_realm_user_settings_defaults.realm.py
+    from zerver.lib.request import RequestNotes
+
+    request_notes = RequestNotes.get_notes(request)
+    for req_var in request.POST:
+        if req_var not in request_notes.processed_parameters:
+            request_notes.ignored_parameters.add(req_var)
+
+    result: Dict[str, Any] = {}
+    if len(request_notes.ignored_parameters) > 0:
+        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
+
+    return json_success(request, data=result)
 
 
 @require_realm_admin

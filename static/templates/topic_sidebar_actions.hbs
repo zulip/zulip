@@ -47,6 +47,23 @@
         </a>
     </li>
 
+    {{#unless is_pinned}}
+    <li>
+        <a tabindex="0" class="sidebar-popover-pin-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+            {{t "Pin topic"}}
+        </a>
+    </li>
+    {{else}}
+    <li>
+        <a tabindex="0" class="sidebar-popover-unpin-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+            {{t "Unpin topic"}}
+        </a>
+    </li>
+    {{/unless}}
+
+
     {{#if can_move_topic}}
     <hr />
 
