@@ -798,6 +798,14 @@ urls += [
     path("policies/<slug:article>", policy_documentation_view),
 ]
 
+if not settings.CORPORATE_ENABLED:
+    # This conditional behavior cannot be tested directly, since
+    # urls.py is not readily reloaded in Django tests. See the block
+    # comment inside apps_view for details.
+    urls += [
+        path("apps/", RedirectView.as_view(url="https://zulip.com/apps/", permanent=True)),
+    ]
+
 # Two-factor URLs
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
     urls += [path("", include(tf_urls)), path("", include(tf_twilio_urls))]

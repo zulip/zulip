@@ -76,7 +76,7 @@ def get_valid_realm_from_request(request: HttpRequest) -> Realm:
 
 
 def get_apps_page_url() -> str:
-    if settings.ZILENCER_ENABLED:
+    if settings.CORPORATE_ENABLED:
         return "/apps/"
     return "https://zulip.com/apps/"
 
