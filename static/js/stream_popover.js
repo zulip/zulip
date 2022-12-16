@@ -474,16 +474,17 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
             // there has been no change in the topic name.
             new_topic_name = undefined;
         }
+        if (select_stream_id === current_stream_id) {
+            // We use `undefined` to tell the server that
+            // there has been no change in stream. This is
+            // important for cases when changing stream is
+            // not allowed or when changes other than
+            // stream-change has been made.
+            select_stream_id = undefined;
+        }
 
         let propagate_mode = "change_all";
         if (message !== undefined) {
-            if (select_stream_id === current_stream_id) {
-                // We use `undefined` to tell the server that
-                // there has been no change in stream. This is
-                // important for cases when changing stream is
-                // not allowed.
-                select_stream_id = undefined;
-            }
             // We already have the message_id here which means that modal is opened using
             // message popover.
             propagate_mode = $("#move_topic_modal select.message_edit_topic_propagate").val();
@@ -503,7 +504,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
             current_stream_id,
             old_topic_name,
             (message_id) => {
-                if (old_topic_name && select_stream_id) {
+                if (old_topic_name) {
                     message_edit.move_topic_containing_message_to_stream(
                         message_id,
                         select_stream_id,
