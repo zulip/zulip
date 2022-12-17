@@ -4,6 +4,7 @@ import * as popovers from "./popovers";
 import * as stream_list from "./stream_list";
 import * as topic_list from "./topic_list";
 
+let pending_stream_list_rerender = false;
 let zoomed_in = false;
 
 export function is_zoomed_in() {
@@ -22,7 +23,14 @@ function zoom_in() {
     zoomed_in = true;
 }
 
+export function set_pending_stream_list_rerender(value) {
+    pending_stream_list_rerender = value;
+}
+
 export function zoom_out() {
+    if (pending_stream_list_rerender) {
+        stream_list.update_streams_sidebar(true);
+    }
     const $stream_li = topic_list.get_stream_li();
 
     popovers.hide_all_except_sidebars();

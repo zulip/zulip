@@ -409,6 +409,18 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
 }
 
 export function update_streams_sidebar(force_rerender) {
+    if (!force_rerender && topic_zoom.is_zoomed_in()) {
+        // We do our best to update topics that are displayed
+        // in case user zoomed in. Streams list will be updated,
+        // once the user zooms out. This avoids user being zoomed out
+        // when a new message causes streams to re-arrange.
+        const filter = narrow_state.filter();
+        update_stream_sidebar_for_narrow(filter);
+        topic_zoom.set_pending_stream_list_rerender(true);
+        return;
+    }
+    topic_zoom.set_pending_stream_list_rerender(false);
+
     build_stream_list(force_rerender);
 
     stream_cursor.redraw();
