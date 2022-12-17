@@ -294,6 +294,8 @@ export function get_timestamp_for_flatpickr(timestring: string): Date {
             timestamp = new Date();
         }
     }
+    // set timestamp minutes to 0
+    timestamp.setMinutes(0, 0);
     return timestamp;
 }
 

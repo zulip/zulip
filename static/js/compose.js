@@ -659,10 +659,12 @@ export function initialize() {
                 compose_ui.insert_syntax_and_focus(timestr, $target_textarea);
             };
 
+            const dateWithoutMinutes = new Date();
+            dateWithoutMinutes.setMinutes(0, 0);
             flatpickr.show_flatpickr(
                 $(compose_click_target)[0],
                 on_timestamp_selection,
-                new Date(),
+                dateWithoutMinutes,
                 {
                     // place the time picker above the icon and center it horizontally
                     position: "above center",

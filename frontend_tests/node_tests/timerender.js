@@ -11,9 +11,9 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {user_settings} = require("../zjsunit/zpage_params");
 
-user_settings.twenty_four_hour_time = true;
-
 const timerender = zrequire("timerender");
+
+user_settings.twenty_four_hour_time = true;
 
 function get_date(time_ISO, DOW) {
     const time = new Date(time_ISO);
@@ -266,11 +266,19 @@ run_test("get_timestamp_for_flatpickr", () => {
     // Freeze time for testing.
     MockDate.set(date_2017.getTime());
 
+    const current_timestamp = new Date();
+
     // Invalid timestamps should show current time.
-    assert.equal(func("random str").valueOf(), Date.now());
+    const invalid_timestamp = func("invalid");
+    assert.ok(invalid_timestamp instanceof Date);
+    assert.strictEqual(invalid_timestamp.getHours(), current_timestamp.getHours());
+    assert.strictEqual(invalid_timestamp.getMinutes(), 0);
 
     // Valid ISO timestamps should return the timestamp.
-    assert.equal(func(date_2017.toISOString()).valueOf(), date_2017.getTime());
+    const valid_timestamp = func(date_2017.toISOString());
+    assert.ok(valid_timestamp instanceof Date);
+    assert.strictEqual(valid_timestamp.getHours(), current_timestamp.getHours());
+    assert.strictEqual(valid_timestamp.getMinutes(), 0);
 
     // Restore the Date object.
     MockDate.reset();
