@@ -155,7 +155,7 @@ li.show-more-topics {
         }
     }
 
-    .inactive_stream {
+    .inactive_stream:not(.active-filter) {
         opacity: 0.5;
     }
 
