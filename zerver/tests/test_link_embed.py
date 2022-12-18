@@ -752,6 +752,45 @@ class PreviewTestCase(ZulipTestCase):
         )
 
     @responses.activate
+    @override_settings(CAMO_URI="")
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_xml_content_type(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        content_type = "text/xml"
+        self.create_mock_response(url, content_type=content_type)
+
+        with self.settings(TEST_SUITE=False):
+            with self.assertLogs(level="INFO") as info_logs:
+                FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+                in info_logs.output[0]
+            )
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        preview_url = (
+            f'<p><a href="{url}">{url}</a></p>\n'
+            f'<div class="message_embed">'
+            f'<a class="message_embed_image" href="{url}" style="background-image: url(http\\:\\/\\/ia\\.media-imdb\\.com\\/images\\/rock\\.jpg)"></a>'
+            f'<div class="data-container">'
+            f'<div class="message_embed_title"><a href="{url}" title="The Rock">The Rock</a></div>'
+            f'<div class="message_embed_description">Description text</div></div></div>'
+        )
+        self.assertEqual(
+            preview_url,
+            msg.rendered_content,
+        )
+
+    @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_open_graph_image(self) -> None:
         user = self.example_user("hamlet")

@@ -67,7 +67,7 @@ def valid_content_type(url: str) -> bool:
     if not content_type or content_type.startswith("text/html"):
         # Verify that the content is actually HTML if the server claims it is
         content_type = guess_mimetype_from_content(response)
-    return content_type.startswith("text/html")
+    return content_type.startswith("text/html") or content_type.startswith("text/xml")
 
 
 def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
