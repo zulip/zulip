@@ -76,12 +76,12 @@
                       data-setting-widget-type="message-retention-setting"
                       {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
                         <option value="unlimited">{{t 'Retain forever' }}</option>
-                        <option value="custom_period">{{t 'Retain for N days after posting' }}</option>
+                        <option value="custom_period">{{t 'Custom' }}</option>
                     </select>
 
                     <div class="dependent-inline-block">
                         <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label">
-                            {{t 'N' }}:
+                            {{t 'Retention period (days)' }}:
                         </label>
                         <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
                           name="realm_message_retention_custom_input"
