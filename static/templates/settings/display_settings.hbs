@@ -26,7 +26,7 @@
             </select>
         </div>
 
-         <div class="input-group">
+        <div class="input-group">
             <label for="color_scheme" class="dropdown-title">{{t "Theme" }}</label>
             <select name="color_scheme" class="setting_color_scheme prop-element" id="{{prefix}}color_scheme" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=color_scheme_values}}
@@ -41,8 +41,6 @@
             <h3 class="light">{{t "Emoji" }}</h3>
             {{> settings_save_discard_widget section_name="theme-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
-
-       
 
         <div class="input-group">
             <label class="emoji-theme title">{{t "Emoji theme" }}</label>
@@ -82,7 +80,6 @@
           label=settings_label.display_emoji_reaction_users
           prefix=prefix}}
 
-        
     </div>
 
     <div class="advanced-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
