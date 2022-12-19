@@ -2,6 +2,7 @@
 This is the header, aka the navbar.
 */
 $header_height: 40px;
+$header_height_sm: 30px;
 
 /*
 We have a 10px gutter below the header,
@@ -17,6 +18,7 @@ with them such as floating recipient bars)
 go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
+$sidebar_top_sm: calc($header_height_sm + $header_padding_bottom);
 
 $left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
@@ -2964,21 +2966,21 @@ select.invite-as {
     #searchbox,
     #searchbox_legacy,
     .header {
-        line-height: 30px;
-        height: 30px;
+        line-height: $header_height_sm;
+        height: $header_height_sm;
     }
 
     .spectator_narrow_login_button {
-        height: 30px !important;
+        height: $header_height_sm !important;
     }
 
     #search_query {
-        height: 30px !important;
+        height: $header_height_sm !important;
         vertical-align: text-bottom;
     }
 
     #streamlist-toggle-button {
-        height: 30px;
+        height: $header_height_sm;
         padding-top: 0;
         padding-bottom: 0;
     }
@@ -3001,7 +3003,7 @@ select.invite-as {
     }
 
     #message_view_header_underpadding {
-        top: 30px;
+        top: $header_height_sm;
         height: 10px;
     }
 
@@ -3016,7 +3018,7 @@ select.invite-as {
     }
 
     #floating_recipient_bar {
-        top: 40px;
+        top: $sidebar_top_sm;
     }
 
     .message_content {
