@@ -140,8 +140,6 @@
     body,
     .app-main,
     .header-main,
-    #message_view_header_underpadding,
-    .floating_recipient .message-header-wrapper,
     .column-middle,
     #compose,
     .column-left .left-sidebar,
@@ -150,7 +148,9 @@
     #subscription_overlay .right,
     #settings_page .right,
     #streams_header,
-    .private_messages_container {
+    .private_messages_container,
+    .message_header,
+    .header {
         background-color: hsl(212, 28%, 18%);
     }
 
@@ -763,10 +763,6 @@
     #user_presences li:hover,
     #user_presences li.highlighted_user {
         background-color: hsla(136, 25%, 73%, 0.2);
-    }
-
-    .floating_recipient .recipient_row {
-        border-top: none;
     }
 
     .group-row.active,

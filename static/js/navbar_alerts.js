@@ -27,14 +27,6 @@ export function resize_app() {
     $("body > .app").height("calc(100% - " + navbar_alerts_wrapper_height + "px)");
     $(".recent_topics_container").height("calc(100vh - " + navbar_alerts_wrapper_height + "px)");
 
-    // the floating recipient bar is usually positioned right below
-    // the `.header` element (including padding).
-    const frb_top =
-        navbar_alerts_wrapper_height +
-        $(".header").height() +
-        Number.parseInt($(".header").css("paddingBottom"), 10);
-    $("#floating_recipient_bar").css("top", frb_top + "px");
-
     // If the compose-box is in expanded state,
     // reset its height as well.
     if (compose_ui.is_full_size()) {

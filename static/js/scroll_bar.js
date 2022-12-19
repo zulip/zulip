@@ -41,27 +41,15 @@ export function initialize() {
     sbWidth = getScrollbarWidth();
     if (sbWidth > 0) {
         // Reduce width of screen-wide parent containers, whose width doesn't vary with scrollbar width, by scrollbar width.
-        $("#navbar-container .header, .fixed-app .app-main, #compose").css(
-            "width",
-            `calc(100% - ${sbWidth}px)`,
-        );
-
-        // Align floating recipient bar with the middle column.
-        $(".fixed-app").css("left", "-" + sbWidth / 2 + "px");
+        $("#navbar-container .header, #compose").css("width", `calc(100% - ${sbWidth}px)`);
     }
     set_layout_width();
 }
 
 export function set_layout_width() {
     if (user_settings.fluid_layout_width) {
-        $(".header-main, .app .app-main, .fixed-app .app-main, #compose-container").css(
-            "max-width",
-            "inherit",
-        );
+        $(".header-main, .app .app-main, #compose-container").css("max-width", "inherit");
     } else {
-        $(".header-main, .app .app-main, .fixed-app .app-main, #compose-container").css(
-            "max-width",
-            "1400px",
-        );
+        $(".header-main, .app .app-main, #compose-container").css("max-width", "1400px");
     }
 }

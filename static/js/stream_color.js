@@ -10,7 +10,7 @@ function update_table_stream_color(table, stream_name, color) {
     // so that we only have color in the headers.
     const style = color;
 
-    const $stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
+    const $stream_labels = table.find(".stream_label");
 
     for (const label of $stream_labels) {
         const $label = $(label);
