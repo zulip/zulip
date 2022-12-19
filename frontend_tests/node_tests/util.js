@@ -303,3 +303,15 @@ run_test("filter_by_word_prefix_match", () => {
     ]);
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
 });
+
+run_test("get_string_diff", () => {
+    assert.deepEqual(
+        util.get_string_diff("#ann is for updates", "#**announce** is for updates"),
+        [1, 4, 13],
+    );
+    assert.deepEqual(util.get_string_diff("/p", "/poll"), [2, 2, 5]);
+    assert.deepEqual(util.get_string_diff("Hey @Aa", "Hey @**aaron** "), [5, 7, 15]);
+    assert.deepEqual(util.get_string_diff("same", "same"), [0, 0, 0]);
+    assert.deepEqual(util.get_string_diff("same-end", "two same-end"), [0, 0, 4]);
+    assert.deepEqual(util.get_string_diff("space", "sp ace"), [2, 2, 3]);
+});
