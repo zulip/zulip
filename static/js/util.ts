@@ -402,3 +402,42 @@ export function call_function_periodically(callback: () => void, delay: number):
 
     callback();
 }
+
+export function get_string_diff(string1: string, string2: string): [number, number, number] {
+    // This function specifies the single minimal diff between 2 strings. For
+    // example, the diff between "#ann is for updates" and "#**announce** is
+    // for updates" is from index 1, till 4 in the 1st string and 13 in the
+    // 2nd string;
+
+    let diff_start_index = -1;
+    for (let i = 0; i < Math.min(string1.length, string2.length); i += 1) {
+        if (string1.charAt(i) === string2.charAt(i)) {
+            diff_start_index = i;
+        } else {
+            break;
+        }
+    }
+    diff_start_index += 1;
+
+    if (string1.length === string2.length && string1.length === diff_start_index) {
+        // if the 2 strings are identical
+        return [0, 0, 0];
+    }
+
+    let diff_end_1_index = string1.length;
+    let diff_end_2_index = string2.length;
+    for (
+        let i = string1.length - 1, j = string2.length - 1;
+        i >= diff_start_index && j >= diff_start_index;
+        i -= 1, j -= 1
+    ) {
+        if (string1.charAt(i) === string2.charAt(j)) {
+            diff_end_1_index = i;
+            diff_end_2_index = j;
+        } else {
+            break;
+        }
+    }
+
+    return [diff_start_index, diff_end_1_index, diff_end_2_index];
+}
