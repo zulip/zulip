@@ -296,8 +296,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     // A little hackish, because it doesn't seem to totally get us the
-    // exact right width for the floating_recipient_bar and compose
-    // box, but, close enough for now.
+    // exact right width for the compose box, but, close enough for now.
     resize.handler();
 
     if (page_params.is_spectator) {

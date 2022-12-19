@@ -1451,4 +1451,104 @@ export class MessageListView {
             message_container.status_message = false;
         }
     }
+
+    /* This function exist for two purposes:
+        * To track the current `sticky_header` which have some different properties
+          like date being always displayed.
+        * Set date on message header corresponding to the message next to the header. */
+    update_sticky_recipient_headers() {
+        const rows_length = this._rows.size;
+        if (!rows_length) {
+            /* No headers are present */
+            return;
+        }
+        /* Intentionally remove sticky headers class here to make calculations simpler. */
+        $(".sticky_header").removeClass("sticky_header");
+        /* visible_top is navbar top position + height for us. */
+        const visible_top = message_viewport.message_viewport_info().visible_top;
+        /* We need date to be properly visible on the header, so partially visible headers
+           who are about to be scrolled out of view are not acceptable. */
+        const partially_hidden_header_position = visible_top - 1;
+
+        function is_sticky(header) {
+            const header_props = header.getBoundingClientRect();
+            // This value is dependent upon margin-bottom applied to recipient row.
+            const margin_between_recipient_rows = 10;
+            const sticky_or_about_to_be_sticky_header_position =
+                visible_top + header_props.height + margin_between_recipient_rows;
+            if (header_props.top < partially_hidden_header_position) {
+                return -1;
+            } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
+                return 1;
+            }
+            /* Headers between `partially_hidden_header_position` and `sticky_or_about_to_be_sticky_header_position`
+               are sticky. If two headers next to each other are completely visible
+               (message header at top has no visible content), we don't mind showing
+               date on any of them. Which header is chosen will depend on which
+               comes first when iterating on the headers. */
+            return 0;
+        }
+
+        const $table = rows.get_table(this.table_name);
+        const $headers = $table.find(".message_header");
+        const iterable_headers = $headers.toArray();
+        let start = 0;
+        let end = iterable_headers.length - 1;
+        let $sticky_header; // This is the first fully visible message header.
+
+        /* Binary search to reach the sticky header */
+        while (start <= end) {
+            const mid = Math.floor((start + end) / 2);
+            const header = iterable_headers[mid];
+            const diff = is_sticky(header);
+            if (diff === 0) {
+                $sticky_header = $(header);
+                break;
+            } else if (diff === 1) {
+                end = mid - 1;
+            } else {
+                start = mid + 1;
+            }
+        }
+        /* Set correct date for the sticky_header. */
+        let $message_row;
+        if (!$sticky_header) {
+            /* If the user is at the top of the scroll container,
+               the header is visible for the first message group, and we can display the date for the first visible message.
+               We don't need to add `sticky_header` class here since date is already visible
+               and header is not truly sticky at top of screen yet. */
+            $sticky_header = $headers.first();
+            $message_row = $sticky_header.nextAll(".message_row").first();
+        } else {
+            $sticky_header.addClass("sticky_header");
+            const sticky_header_props = $sticky_header[0].getBoundingClientRect();
+            /* Get `message_row` under the sticky header. */
+            const elements_below_sticky_header = document.elementsFromPoint(
+                sticky_header_props.left,
+                sticky_header_props.top,
+            );
+            $message_row = $(
+                elements_below_sticky_header.filter((element) =>
+                    element.classList.contains("message_row"),
+                ),
+            ).first();
+            if (!$message_row.length) {
+                /* If there is no message row under the header, it means it is not sticky yet,
+                   so we just get the message next to the header. */
+                $message_row = $sticky_header.nextAll(".message_row").first();
+            }
+        }
+        const msg_id = rows.id($message_row);
+        if (msg_id === undefined) {
+            return;
+        }
+        const message = message_store.get(msg_id);
+        if (!message) {
+            return;
+        }
+        const time = new Date(message.timestamp * 1000);
+        const today = new Date();
+        const rendered_date = timerender.render_date(time, undefined, today);
+        $sticky_header.find(".recipient_row_date").html(rendered_date);
+    }
 }

@@ -5,7 +5,6 @@ import {buddy_list} from "./buddy_list";
 import * as compose_fade_helper from "./compose_fade_helper";
 import * as compose_fade_users from "./compose_fade_users";
 import * as compose_state from "./compose_state";
-import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as people from "./people";
@@ -50,7 +49,6 @@ function display_messages_normally() {
     $table.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
-    floating_recipient_bar.update();
 }
 
 function change_fade_state($elt, should_fade_group) {
@@ -105,8 +103,6 @@ function fade_messages() {
                 );
                 change_fade_state($group_elt, should_fade_group);
             }
-
-            floating_recipient_bar.update();
         },
         0,
         message_lists.current,

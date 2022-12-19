@@ -5,7 +5,6 @@ import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as drafts from "./drafts";
-import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as info_overlay from "./info_overlay";
@@ -92,7 +91,6 @@ function show_all_message_view() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
     narrow.deactivate(coming_from_recent_topics);
     top_left_corner.handle_narrow_deactivated();
-    floating_recipient_bar.update();
     search.update_button_visibility();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
@@ -170,7 +168,6 @@ function do_hashchange_normal(from_reload) {
                 }
             }
             narrow.activate(operators, narrow_opts);
-            floating_recipient_bar.update();
             return true;
         }
         case "":
