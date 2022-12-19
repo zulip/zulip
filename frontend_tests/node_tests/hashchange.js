@@ -19,7 +19,6 @@ const history = set_global("history", {});
 
 const admin = mock_esm("../../static/js/admin");
 const drafts = mock_esm("../../static/js/drafts");
-const floating_recipient_bar = mock_esm("../../static/js/floating_recipient_bar");
 const info_overlay = mock_esm("../../static/js/info_overlay");
 const message_viewport = mock_esm("../../static/js/message_viewport");
 const narrow = mock_esm("../../static/js/narrow");
@@ -127,7 +126,6 @@ function test_helper({override, change_tab}) {
 
     stub(admin, "launch");
     stub(drafts, "launch");
-    stub(floating_recipient_bar, "update");
     stub(message_viewport, "stop_auto_scrolling");
     stub(narrow, "deactivate");
     stub(overlays, "close_for_hash_change");
@@ -187,7 +185,6 @@ run_test("hash_interactions", ({override}) => {
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
         [narrow, "deactivate"],
-        [floating_recipient_bar, "update"],
     ]);
 
     helper.clear_events();
@@ -196,7 +193,6 @@ run_test("hash_interactions", ({override}) => {
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
         [narrow, "deactivate"],
-        [floating_recipient_bar, "update"],
     ]);
 
     // Test old "#recent_topics" hash redirects to "#recent".
@@ -220,7 +216,6 @@ run_test("hash_interactions", ({override}) => {
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
         "narrow.activate",
-        [floating_recipient_bar, "update"],
     ]);
     let terms = helper.get_narrow_terms();
     assert.equal(terms[0].operand, "Denmark");
@@ -233,7 +228,6 @@ run_test("hash_interactions", ({override}) => {
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
         "narrow.activate",
-        [floating_recipient_bar, "update"],
     ]);
     terms = helper.get_narrow_terms();
     assert.equal(terms.length, 0);

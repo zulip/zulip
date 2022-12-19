@@ -95,7 +95,6 @@ export function open_overlay(opts) {
 
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
-    $(".fixed-app").attr("aria-hidden", "true");
     $(".header").attr("aria-hidden", "true");
 
     close_handler = function () {
@@ -229,7 +228,6 @@ export function close_overlay(name) {
 
     $active_overlay.attr("aria-hidden", "true");
     $(".app").attr("aria-hidden", "false");
-    $(".fixed-app").attr("aria-hidden", "false");
     $(".header").attr("aria-hidden", "false");
 
     if (!close_handler) {
