@@ -81,7 +81,22 @@
  *   treated as a separate/invalid -13 key, to prevent them from being incorrectly
  *   processed as a bonus Enter press.
  *
+ * 8. Make the typeahead completions undo friendly:
+ *
+ *   We now use the undo supporting `insert` function from the
+ *   `text-field-edit` module to update the text after autocompletion,
+ *   instead of just resetting the value of the textarea / input, which was
+ *   not undo-able.
+ *
+ *   So that the undo history seems sensible, we replace only the minimal
+ *   diff between the text before and after autocompletion. This ensures that
+ *   only this diff, and not the entire text, is highlighted when undoing,
+ *   as would be ideal.
+ *
  * ============================================================ */
+
+import {insert} from "text-field-edit";
+import {get_string_diff} from "../../js/util";
 
 !function($){
 
@@ -141,7 +156,12 @@
         // converts the input text to html elements.
         this.$element.html('');
       } else {
-        this.$element.val(this.updater(val, e)).trigger("change");
+        const after_text = this.updater(val, e);
+        const [from, to_before, to_after] = get_string_diff(this.$element.val(), after_text);
+        const replacement = after_text.substring(from, to_after);
+        // select / highlight the minimal text to be replaced
+        this.$element[0].setSelectionRange(from, to_before);
+        insert(this.$element[0], replacement);
       }
 
       return this.hide()
