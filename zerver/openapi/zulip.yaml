@@ -15622,8 +15622,7 @@ components:
             avatar_url: {}
             owner_id:
               nullable: true
-            services:
-              items: {} # https://github.com/p1c2u/openapi-core/issues/380
+            services: {}
     BasicBotBase:
       type: object
       properties:
@@ -15730,8 +15729,7 @@ components:
             avatar_url: {}
             owner_id:
               nullable: true
-            services:
-              items: {} # https://github.com/p1c2u/openapi-core/issues/380
+            services: {}
             email:
               type: string
               description: |
