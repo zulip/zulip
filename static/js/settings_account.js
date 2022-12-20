@@ -135,6 +135,23 @@ export function update_account_settings_display() {
     update_avatar_change_display();
 }
 
+export function maybe_update_deactivate_account_button() {
+    if (!page_params.is_owner) {
+        return;
+    }
+
+    const $deactivate_account_container = $("#deactivate_account_container");
+    if ($deactivate_account_container) {
+        if (people.is_current_user_only_owner()) {
+            $("#user_deactivate_account_button").prop("disabled", true);
+            $deactivate_account_container.addClass("only_organization_owner_tooltip");
+        } else {
+            $("#user_deactivate_account_button").prop("disabled", false);
+            $deactivate_account_container.removeClass("only_organization_owner_tooltip");
+        }
+    }
+}
+
 export function update_send_read_receipts_tooltip() {
     if (page_params.realm_enable_read_receipts) {
         $("#send_read_receipts_label .settings-info-icon").hide();
