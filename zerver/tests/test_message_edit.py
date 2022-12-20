@@ -2887,6 +2887,65 @@ class EditMessageTest(EditMessageTestCase):
             f"This topic was moved here from #**public stream>{new_topic}** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
+    def test_notify_resolve_topic_and_move_stream(self) -> None:
+        (
+            user_profile,
+            first_stream,
+            second_stream,
+            msg_id,
+            msg_id_later,
+        ) = self.prepare_move_topics("iago", "first stream", "second stream", "test")
+
+        # 'prepare_move_topics' sends 3 messages in the first_stream
+        messages = get_topic_messages(user_profile, first_stream, "test")
+        self.assert_length(messages, 3)
+
+        # Test resolving a topic (test ->  ✔ test) while changing stream (first_stream -> second_stream)
+        new_topic = "✔ test"
+        new_stream = second_stream
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "topic": new_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, new_stream, new_topic)
+        self.assert_length(messages, 5)
+        self.assertEqual(
+            messages[3].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
+        )
+        self.assertEqual(
+            messages[4].content,
+            f"This topic was moved here from #**{first_stream.name}>test** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
+
+        # Test unresolving a topic (✔ test -> test) while changing stream (second_stream -> first_stream)
+        new_topic = "test"
+        new_stream = first_stream
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "topic": new_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, new_stream, new_topic)
+        self.assert_length(messages, 7)
+        self.assertEqual(
+            messages[5].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
+        )
+        self.assertEqual(
+            messages[6].content,
+            f"This topic was moved here from #**{second_stream.name}>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
+
     def parameterized_test_move_message_involving_private_stream(
         self,
         from_invite_only: bool,
@@ -3152,36 +3211,6 @@ class EditMessageTest(EditMessageTestCase):
             .extra(where=[UserMessage.where_unread()])
             .count()
             == 0
-        )
-
-        # Now move to another stream while resolving the topic and
-        # check the notifications.
-        final_stream = self.make_stream("final")
-        self.subscribe(admin_user, final_stream.name)
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "topic": resolved_topic,
-                "stream_id": final_stream.id,
-                "propagate_mode": "change_all",
-            },
-        )
-        self.assert_json_success(result)
-        for msg_id in [id1, id2]:
-            msg = Message.objects.get(id=msg_id)
-            self.assertEqual(
-                resolved_topic,
-                msg.topic_name(),
-            )
-
-        messages = get_topic_messages(admin_user, final_stream, resolved_topic)
-        # TODO: This should be 7 -- but currently we never trigger
-        # resolve-topic notifications when moving the stream, even if
-        # the resolve-topic state is changed at that time.
-        self.assert_length(messages, 6)
-        self.assertEqual(
-            messages[5].content,
-            f"This topic was moved here from #**new>topic 1** by @_**Iago|{admin_user.id}**.",
         )
 
 
