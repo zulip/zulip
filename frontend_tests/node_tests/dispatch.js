@@ -642,6 +642,7 @@ run_test("realm_domains", ({override}) => {
 });
 
 run_test("realm_user", ({override}) => {
+    override(settings_account, "maybe_update_deactivate_account_button", noop);
     let event = event_fixtures.realm_user__add;
     dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);

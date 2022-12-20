@@ -36,9 +36,12 @@
                 </form>
 
                 <div class="input-group">
-                    <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button">
-                        {{t 'Deactivate account' }}
-                    </button>
+                    <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}only_organization_owner_tooltip{{/if}}">
+                        <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button"
+                          {{#if user_is_only_organization_owner}}disabled="disabled"{{/if}}>
+                            {{t 'Deactivate account' }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

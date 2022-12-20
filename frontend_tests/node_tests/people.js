@@ -590,6 +590,20 @@ test_people("set_custom_profile_field_data", () => {
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
 });
 
+test_people("is_current_user_only_owner", () => {
+    const person = people.get_by_email(me.email);
+    person.is_owner = false;
+    page_params.is_owner = false;
+    assert.ok(!people.is_current_user_only_owner());
+
+    person.is_owner = true;
+    page_params.is_owner = true;
+    assert.ok(people.is_current_user_only_owner());
+
+    people.add_active_user(realm_owner);
+    assert.ok(!people.is_current_user_only_owner());
+});
+
 test_people("recipient_counts", () => {
     const user_id = 99;
     assert.equal(people.get_recipient_count({user_id}), 0);
