@@ -36,6 +36,9 @@ const unread_ops = mock_esm("../src/unread_ops");
 mock_esm("../src/recent_topics_util", {
     is_visible() {},
 });
+mock_esm("../src/pm_list", {
+    handle_narrow_activated() {},
+});
 
 //
 // We have strange hacks in narrow.activate to sleep 0
