@@ -26,7 +26,7 @@ page can be easily identified in it's respective JavaScript file -->
                     <h2>{{_('Anonymous user') }}</h2>
                     <p>
                         <input type="submit" formaction="{{ current_realm.uri }}{{ url('login-local') }}"
-                          name="prefers_web_public_view" class="btn-direct btn-admin" value="Anonymous login" />
+                          name="prefers_web_public_view" class="btn-direct btn-dev-login" value="Anonymous login" />
                     </p>
                     {% endif %}
                     <h2>{{_('Owners') }}</h2>
@@ -34,7 +34,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for direct_owner in direct_owners %}
                         <p>
                             <input type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_owner.delivery_email }}" />
+                              name="direct_email" class="btn-direct btn-dev-login" value="{{ direct_owner.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -45,7 +45,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for direct_admin in direct_admins %}
                         <p>
                             <input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.delivery_email }}" />
+                              name="direct_email" class="btn-direct btn-dev-login" value="{{ direct_admin.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -56,7 +56,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for direct_moderator in direct_moderators %}
                         <p>
                             <input type="submit" formaction="{{ direct_moderator.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_moderator.delivery_email }}" />
+                              name="direct_email" class="btn-direct btn-dev-login" value="{{ direct_moderator.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -67,7 +67,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for guest_user in guest_users %}
                         <p>
                             <input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.delivery_email }}" />
+                              name="direct_email" class="btn-direct btn-dev-login" value="{{ guest_user.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -81,7 +81,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for direct_user in direct_users %}
                         <p>
                             <input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.delivery_email }}" />
+                              name="direct_email" class="btn-direct btn-dev-login" value="{{ direct_user.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -103,13 +103,13 @@ page can be easily identified in it's respective JavaScript file -->
         <div id="devtools-wrapper">
             <div id="devtools-registration">
                 <form name="register_dev_user" action="{{ url('register_dev_user') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create new user" />
+                    <input type="submit" class="btn btn-dev-login" value="Create new user" />
                 </form>
                 <form name="register_dev_realm" action="{{ url('register_dev_realm') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create new realm" />
+                    <input type="submit" class="btn btn-dev-login" value="Create new realm" />
                 </form>
                 <form name="register_demo_dev_realm" action="{{ url('register_demo_dev_realm') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create demo organization" />
+                    <input type="submit" class="btn btn-dev-login" value="Create demo organization" />
                 </form>
             </div>
             <a href="/devtools">Zulip developer tools</a>
