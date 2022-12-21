@@ -43,6 +43,20 @@
     input {
         font-family: inherit;
     }
+
+    select {
+        height: 30px;
+        padding: 4px 6px;
+        width: 220px;
+        font-size: 14px;
+        color: hsl(0, 0%, 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0, 0%, 80%);
+        margin-bottom: 10px;
+        cursor: pointer;
+        background-color: hsl(0, 0%, 100%);
+        vertical-align: middle;
+    }
 }
 
 #fixture_body {
