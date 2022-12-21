@@ -163,27 +163,17 @@ html {
         display: inline-block;
     }
 
-    input[type="submit"] {
-        color: hsl(0, 0%, 67%);
-        border: 1px solid hsl(0, 0%, 87%);
+    .btn-dev-login {
+        color: hsl(170, 41%, 52%);
+        border: 1px solid hsl(170, 41%, 52%);
         border-radius: 4px;
         background-color: transparent;
 
         transition: color 0.3s ease, border 0.3s ease;
 
         &:hover {
-            border-color: hsl(0, 0%, 53%);
-            color: hsl(0, 0%, 27%);
-        }
-
-        &.btn-admin {
-            border-color: hsl(170, 41%, 52%);
-            color: hsl(170, 41%, 52%);
-
-            &:hover {
-                color: hsl(156, 62%, 61%);
-                border-color: hsl(156, 62%, 61%);
-            }
+            color: hsl(156, 62%, 61%);
+            border-color: hsl(156, 62%, 61%);
         }
     }
 }

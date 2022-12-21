@@ -818,13 +818,6 @@ input#terminal:checked ~ #tab-terminal {
     min-width: 300px;
 }
 
-.btn-admin {
-    background-color: hsl(0, 0%, 100%);
-    border-color: hsl(198, 100%, 48%);
-    border-style: solid;
-    color: hsl(207, 89%, 54%);
-}
-
 .login-page {
     text-align: center;
 
