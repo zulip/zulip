@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
+import * as scroll_util from "./scroll_util";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
@@ -123,6 +124,20 @@ function unhighlight_all_private_messages_view() {
     $(".private_messages_container").removeClass("active_private_messages_section");
 }
 
+function scroll_pm_into_view($target_li) {
+    const $container = $("#left_sidebar_scroll_container");
+    const pm_header_height = $("#private_messages_section_header").outerHeight();
+    if ($target_li.length > 0) {
+        scroll_util.scroll_element_into_container($target_li, $container, pm_header_height);
+    }
+}
+
+function scroll_all_private_into_view() {
+    const $container = $("#left_sidebar_scroll_container");
+    const $scroll_element = ui.get_scroll_element($container);
+    $scroll_element.scrollTop(0);
+}
+
 export function handle_narrow_activated(filter) {
     const active_filter = filter;
     const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), [
@@ -131,11 +146,21 @@ export function handle_narrow_activated(filter) {
     const narrow_to_private_messages_section = active_filter.operands("pm-with").length !== 0;
 
     if (is_all_private_message_view) {
+        // In theory, this should get expanded when we scroll to the
+        // top, but empirically that doesn't occur, so we just ensure the
+        // section is expanded before scrolling.
+        expand();
         highlight_all_private_messages_view();
+        scroll_all_private_into_view();
     } else {
         unhighlight_all_private_messages_view();
     }
     if (narrow_to_private_messages_section) {
+        const current_user_ids_string = pm_list_data.get_active_user_ids_string();
+        const $active_filter_li = $(
+            `li[data-user-ids-string='${CSS.escape(current_user_ids_string)}']`,
+        );
+        scroll_pm_into_view($active_filter_li);
         update_private_messages();
     }
 }
