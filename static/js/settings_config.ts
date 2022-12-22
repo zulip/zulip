@@ -348,6 +348,7 @@ export const time_limit_dropdown_values = [
 ];
 export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
+export const msg_move_limit_dropdown_values = time_limit_dropdown_values;
 
 export const waiting_period_threshold_dropdown_values = [
     {
