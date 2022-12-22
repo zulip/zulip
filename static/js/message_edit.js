@@ -179,16 +179,41 @@ export function get_deletability(message) {
     return false;
 }
 
-export function can_move_message(message) {
-    if (!message.is_stream) {
-        return false;
-    }
-
+export function is_stream_editable(message, edit_limit_seconds_buffer = 0) {
     if (!is_message_editable_ignoring_permissions(message)) {
         return false;
     }
 
-    return is_topic_editable(message) || settings_data.user_can_move_messages_between_streams();
+    if (message.type !== "stream") {
+        return false;
+    }
+
+    if (!settings_data.user_can_move_messages_between_streams()) {
+        return false;
+    }
+
+    // Organization admins and moderators can edit stream indefinitely,
+    // irrespective of the stream editing deadline, if
+    // move_messages_between_streams_policy allows them to do so.
+    if (page_params.is_admin || page_params.is_moderator) {
+        return true;
+    }
+
+    if (page_params.realm_move_messages_between_streams_limit_seconds === null) {
+        // This means no time limit for editing streams.
+        return true;
+    }
+
+    return (
+        page_params.realm_move_messages_between_streams_limit_seconds +
+            edit_limit_seconds_buffer +
+            (message.timestamp - Date.now() / 1000) >
+        0
+    );
+}
+
+export function can_move_message(message) {
+    return is_topic_editable(message) || is_stream_editable(message);
 }
 
 export function stream_and_topic_exist_in_edit_history(message, stream_id, topic) {
