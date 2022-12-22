@@ -412,6 +412,14 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         from_message_actions_popover: message !== undefined,
     };
 
+    // When the modal is opened for moving the whole topic from left sidebar,
+    // we do not have any message object and so we disable the stream input
+    // based on the move_messages_between_streams_policy setting. In other
+    // cases message row, message object is available and thus we check
+    // the time-based permissions as well in the below if block to enable or
+    // disable the stream input.
+    let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
+
     let modal_heading = $t_html({defaultMessage: "Move topic"});
     if (message !== undefined) {
         modal_heading = $t_html({defaultMessage: "Move messages"});
@@ -423,6 +431,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         // Though, this will be changed soon as we are going to make topic
         // edit permission independent of message.
         args.disable_topic_input = !message_edit.is_topic_editable(message);
+        disable_stream_input = !message_edit.is_stream_editable(message);
     }
 
     function get_params_from_form() {
@@ -563,10 +572,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
 
         stream_widget.setup();
 
-        $("#select_stream_widget .dropdown-toggle").prop(
-            "disabled",
-            !settings_data.user_can_move_messages_between_streams(),
-        );
+        $("#select_stream_widget .dropdown-toggle").prop("disabled", disable_stream_input);
         update_submit_button_disabled_state(stream_widget.value());
         $("#move_topic_modal .inline_topic_edit").on("input", () => {
             update_submit_button_disabled_state(stream_widget.value());
