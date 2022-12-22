@@ -211,6 +211,7 @@ export function dispatch_normal_event(event) {
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
+                move_messages_within_stream_limit_seconds: noop,
                 message_retention_days: noop,
                 move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,

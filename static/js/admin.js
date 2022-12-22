@@ -154,6 +154,7 @@ export function build_page() {
         admin_settings_label,
         msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
+        msg_move_limit_dropdown_values: settings_config.msg_move_limit_dropdown_values,
         bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
         waiting_period_threshold_dropdown_values:
