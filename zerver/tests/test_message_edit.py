@@ -2148,6 +2148,92 @@ class EditMessageTest(EditMessageTestCase):
         check_move_message_according_to_policy(UserProfile.ROLE_GUEST, expect_fail=True)
         check_move_message_according_to_policy(UserProfile.ROLE_MEMBER)
 
+    def test_move_message_to_stream_time_limit(self) -> None:
+        shiva = self.example_user("shiva")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+
+        test_stream_1 = self.make_stream("test_stream_1")
+        test_stream_2 = self.make_stream("test_stream_2")
+
+        self.subscribe(shiva, test_stream_1.name)
+        self.subscribe(iago, test_stream_1.name)
+        self.subscribe(cordelia, test_stream_1.name)
+        self.subscribe(shiva, test_stream_2.name)
+        self.subscribe(iago, test_stream_2.name)
+        self.subscribe(cordelia, test_stream_2.name)
+
+        msg_id = self.send_stream_message(
+            cordelia, test_stream_1.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(cordelia, test_stream_1.name, topic_name="test", content="Second")
+
+        self.send_stream_message(cordelia, test_stream_1.name, topic_name="test", content="third")
+
+        do_set_realm_property(
+            cordelia.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_MEMBERS_ONLY,
+            acting_user=None,
+        )
+
+        def check_move_message_to_stream(
+            user: UserProfile,
+            old_stream: Stream,
+            new_stream: Stream,
+            *,
+            expect_error_message: Optional[str] = None,
+        ) -> None:
+            self.login_user(user)
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "stream_id": new_stream.id,
+                    "propagate_mode": "change_all",
+                    "send_notification_to_new_thread": orjson.dumps(False).decode(),
+                },
+            )
+
+            if expect_error_message is not None:
+                self.assert_json_error(result, expect_error_message)
+                messages = get_topic_messages(user, old_stream, "test")
+                self.assert_length(messages, 3)
+                messages = get_topic_messages(user, new_stream, "test")
+                self.assert_length(messages, 0)
+            else:
+                self.assert_json_success(result)
+                messages = get_topic_messages(user, old_stream, "test")
+                self.assert_length(messages, 0)
+                messages = get_topic_messages(user, new_stream, "test")
+                self.assert_length(messages, 3)
+
+        # non-admin and non-moderator users cannot move messages sent > 1 week ago
+        # including sender of the message.
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
+        message.save()
+        check_move_message_to_stream(
+            cordelia,
+            test_stream_1,
+            test_stream_2,
+            expect_error_message="The time limit for editing this message's stream has passed",
+        )
+
+        # admins and moderators can move messages irrespective of time limit.
+        check_move_message_to_stream(shiva, test_stream_1, test_stream_2, expect_error_message=None)
+        check_move_message_to_stream(iago, test_stream_2, test_stream_1, expect_error_message=None)
+
+        # set the topic edit limit to two weeks
+        do_set_realm_property(
+            cordelia.realm,
+            "move_messages_between_streams_limit_seconds",
+            604800 * 2,
+            acting_user=None,
+        )
+        check_move_message_to_stream(
+            cordelia, test_stream_1, test_stream_2, expect_error_message=None
+        )
+
     def test_move_message_to_stream_based_on_stream_post_policy(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_1", "new_stream_1", "test"
