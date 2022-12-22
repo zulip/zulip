@@ -134,6 +134,50 @@ run_test("is_topic_editable", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), true);
 });
 
+run_test("is_stream_editable", ({override}) => {
+    const now = new Date();
+    const current_timestamp = now / 1000;
+
+    const message = {
+        sent_by_me: true,
+        locally_echoed: true,
+        type: "stream",
+    };
+    page_params.realm_allow_message_editing = true;
+    override(settings_data, "user_can_move_messages_between_streams", () => true);
+    page_params.is_admin = true;
+
+    assert.equal(message_edit.is_stream_editable(message), false);
+
+    message.locally_echoed = false;
+    message.failed_request = true;
+    assert.equal(message_edit.is_stream_editable(message), false);
+
+    message.failed_request = false;
+    assert.equal(message_edit.is_stream_editable(message), true);
+
+    page_params.sent_by_me = false;
+    assert.equal(message_edit.is_stream_editable(message), true);
+
+    override(settings_data, "user_can_move_messages_between_streams", () => false);
+    assert.equal(message_edit.is_stream_editable(message), false);
+
+    page_params.is_admin = false;
+    assert.equal(message_edit.is_stream_editable(message), false);
+
+    page_params.realm_move_messages_between_streams_limit_seconds = 259200;
+    message.timestamp = current_timestamp - 60;
+
+    override(settings_data, "user_can_move_messages_between_streams", () => true);
+    assert.equal(message_edit.is_stream_editable(message), true);
+
+    message.timestamp = current_timestamp - 600000;
+    assert.equal(message_edit.is_stream_editable(message), false);
+
+    page_params.is_moderator = true;
+    assert.equal(message_edit.is_stream_editable(message), true);
+});
+
 run_test("get_deletability", ({override}) => {
     page_params.is_admin = true;
     override(settings_data, "user_can_delete_own_message", () => false);
