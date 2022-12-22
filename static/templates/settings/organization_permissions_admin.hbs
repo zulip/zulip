@@ -191,9 +191,27 @@
             </div>
             <div class="input-group">
                 <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can move messages to another topic" }}</label>
-                <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element bootstrap-focus-style" data-setting-widget-type="number">
+                <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element move-message-policy-setting bootstrap-focus-style" data-setting-widget-type="number">
                     {{> dropdown_options_widget option_values=edit_topic_policy_values}}
                 </select>
+            </div>
+
+            <div class="input-group time-limit-setting">
+                <label for="realm_move_messages_within_stream_limit_seconds" class="dropdown-title">{{t "Time limit for editing topics" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
+                <select name="realm_move_messages_within_stream_limit_seconds" id="id_realm_move_messages_within_stream_limit_seconds" class="prop-element" data-setting-widget-type="time-limit">
+                    {{#each msg_move_limit_dropdown_values}}
+                        <option value="{{value}}">{{text}}</option>
+                    {{/each}}
+                </select>
+                <div class="dependent-settings-block">
+                    <label for="id_realm_move_messages_within_stream_limit_minutes" class="inline-block realm-time-limit-label">
+                        {{t 'Duration editing is allowed after posting (minutes)'}}:&nbsp;
+                    </label>
+                    <input type="text" id="id_realm_move_messages_within_stream_limit_minutes"
+                      name="realm_move_messages_within_stream_limit_minutes"
+                      class="time-limit-custom-input"
+                      autocomplete="off"/>
+                </div>
             </div>
 
             <div class="input-group">
