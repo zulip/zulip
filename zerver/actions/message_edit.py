@@ -1019,6 +1019,19 @@ def check_update_message(
         new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
         check_stream_access_based_on_stream_post_policy(user_profile, new_stream)
 
+        if (
+            user_profile.realm.move_messages_between_streams_limit_seconds is not None
+            and not user_profile.is_realm_admin
+            and not user_profile.is_moderator
+        ):
+            deadline_seconds = (
+                user_profile.realm.move_messages_between_streams_limit_seconds + edit_limit_buffer
+            )
+            if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+                raise JsonableError(
+                    _("The time limit for editing this message's stream has passed")
+                )
+
     number_changed = do_update_message(
         user_profile,
         message,

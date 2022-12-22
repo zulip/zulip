@@ -6489,11 +6489,12 @@ paths:
         **Note**: See [configuring message editing][config-message-editing]
         for detailed documentation on when users are allowed to edit topics.
 
-        **Changes**: Before Zulip 7.0 (feature level 162), users who
-        were not administrators or moderators could only edit topics
-        if the target message was sent within the last 3 days. That
-        time limit is now controlled by the
-        `move_messages_within_stream_limit_seconds` setting.
+        **Changes**: Before Zulip 7.0 (feature level 162), users who were not
+        administrators or moderators could only edit topics if the target
+        message was sent within the last 3 days. That time limit is now
+        controlled by the `move_messages_within_stream_limit_seconds` setting. A
+        similar time limit for moving topics to different streams was added,
+        controlled by the `move_messages_between_streams_limit_seconds` setting.
 
         **Changes**: Before Zulip 7.0 (feature level 159), editing
         streams and topics of messages was forbidden if
