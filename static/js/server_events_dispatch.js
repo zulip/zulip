@@ -212,6 +212,7 @@ export function dispatch_normal_event(event) {
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
                 message_retention_days: noop,
+                move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: noop,
