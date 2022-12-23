@@ -464,7 +464,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
-    MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
+    MESSAGE_TIME_LIMIT_SETTING_SPECIAL_VALUES_MAP = {
         "unlimited": None,
     }
     message_content_delete_limit_seconds = models.PositiveIntegerField(

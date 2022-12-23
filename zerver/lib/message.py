@@ -1614,7 +1614,7 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
     raise AssertionError("Invalid wildcard mention policy")
 
 
-def parse_message_content_edit_or_delete_limit(
+def parse_message_time_limit_setting(
     value: Union[int, str],
     special_values_map: Mapping[str, Optional[int]],
     *,
