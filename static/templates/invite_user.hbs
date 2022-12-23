@@ -32,7 +32,7 @@
                 <div class="input-group">
                     <label for="expires_in">{{t "Invitation expires after" }}</label>
                     <div>
-                        <select id="expires_in">
+                        <select id="expires_in" class="invite-expires-in">
                             {{#each expires_in_options}}
                                 <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
                             {{/each}}
@@ -55,7 +55,7 @@
                         {{> help_link_widget link="/help/roles-and-permissions" }}
                     </label>
                     <div>
-                        <select id="invite_as">
+                        <select id="invite_as" class="invite-as">
                             <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
                             <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
                             {{#if is_admin}}
