@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Exists, OuterRef
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from typing_extensions import TypeAlias
 
 from confirmation.models import one_click_unsubscribe_link
@@ -408,7 +409,7 @@ def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
             "zerver/emails/digest",
             user.realm,
             to_user_ids=[user.id],
-            from_name="Zulip Digest",
+            from_name=_("{service_name} digest").format(service_name=settings.INSTALLATION_NAME),
             from_address=FromAddress.no_reply_placeholder,
             context=context,
         )
