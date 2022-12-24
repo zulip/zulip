@@ -574,7 +574,9 @@ def do_send_missedmessage_events_reply_in_zulip(
     )
 
     with override_language(user_profile.default_language):
-        from_name: str = _("Zulip notifications")
+        from_name: str = _("{service_name} notifications").format(
+            service_name=settings.INSTALLATION_NAME
+        )
     from_address = FromAddress.NOREPLY
 
     email_dict = {

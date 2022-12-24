@@ -16,7 +16,6 @@ from django.http import HttpResponse, HttpResponseBase
 from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.utils import translation
-from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, one_click_unsubscribe_link
@@ -360,7 +359,7 @@ class PasswordResetTest(ZulipTestCase):
         # The email might be sent in different languages for i18n testing
         self.assertRegex(
             self.email_display_from(message),
-            rf'^{_("Zulip Account Security")} <{self.TOKENIZED_NOREPLY_REGEX}>\Z',
+            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
