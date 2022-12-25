@@ -143,8 +143,8 @@ This is most often used for legal compliance.
         output = {"zerver_message": message_dicts}
         floatify_datetime_fields(output, "zerver_message")
         for item in output["zerver_message"]:
-            item["date_sent_utc"] = datetime.utcfromtimestamp(int(item["date_sent"])).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+            item["date_sent_utc"] = datetime.fromtimestamp(
+                int(item["date_sent"]), timezone.utc
+            ).strftime("%Y-%m-%d %H:%M:%S")
 
         write_table_data(options["output"], output)

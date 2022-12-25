@@ -28,9 +28,9 @@ def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
     # someone has upgraded in the last year but to a release more than
     # a year old.
     git_version_path = os.path.join(settings.DEPLOY_ROOT, "version.py")
-    release_build_time = datetime.datetime.utcfromtimestamp(
-        os.path.getmtime(git_version_path)
-    ).replace(tzinfo=datetime.timezone.utc)
+    release_build_time = datetime.datetime.fromtimestamp(
+        os.path.getmtime(git_version_path), datetime.timezone.utc
+    )
 
     version_no_newer_than = min(LAST_SERVER_UPGRADE_TIME, release_build_time)
     deadline = version_no_newer_than + datetime.timedelta(
