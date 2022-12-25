@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.utils.timezone import now as timezone_now
 
@@ -35,7 +35,10 @@ class TimeZoneTest(ZulipTestCase):
         assert not missing, missing
 
         now = timezone_now()
-        dates = [datetime(now.year, 6, 21), datetime(now.year, 12, 21)]
+        dates = [
+            datetime(now.year, 6, 21, tzinfo=timezone.utc),
+            datetime(now.year, 12, 21, tzinfo=timezone.utc),
+        ]
         extra = {*common_timezones.items(), *ambiguous_abbrevs}
         for name in zoneinfo.available_timezones():
             tz = zoneinfo.ZoneInfo(name)
