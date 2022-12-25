@@ -144,6 +144,7 @@ li.show-more-topics {
 
         .stream-name {
             flex: auto;
+            overflow-x: hidden;
             overflow-x: clip;
             text-overflow: ellipsis;
             min-width: 0;
@@ -450,6 +451,7 @@ li.top_left_recent_topics {
     flex: auto;
     min-width: 0;
     white-space: nowrap;
+    overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
     padding-right: 2px;
