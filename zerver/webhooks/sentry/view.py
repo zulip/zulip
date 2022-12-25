@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
@@ -243,7 +243,9 @@ def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any
     event_path = f"events/{event_id}/"
     event["web_url"] = urljoin(payload["url"], event_path)
     timestamp = event.get("timestamp", event["received"])
-    event["datetime"] = datetime.fromtimestamp(timestamp).isoformat()
+    event["datetime"] = datetime.fromtimestamp(timestamp, timezone.utc).isoformat(
+        timespec="microseconds"
+    )
     return payload
 
 
