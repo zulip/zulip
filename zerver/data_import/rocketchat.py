@@ -979,6 +979,8 @@ def map_user_id_to_user(user_data_list: List[Dict[str, Any]]) -> Dict[str, Dict[
 
 
 def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
+    codec_options = bson.DEFAULT_CODEC_OPTIONS.with_options(tz_aware=True)
+
     rocketchat_data: Dict[str, Any] = {}
     rocketchat_data["instance"] = []
     rocketchat_data["user"] = []
@@ -990,60 +992,60 @@ def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
 
     # Get instance
     with open(os.path.join(rocketchat_data_dir, "instances.bson"), "rb") as fcache:
-        rocketchat_data["instance"] = bson.decode_all(fcache.read())
+        rocketchat_data["instance"] = bson.decode_all(fcache.read(), codec_options)
 
     # Get user
     with open(os.path.join(rocketchat_data_dir, "users.bson"), "rb") as fcache:
-        rocketchat_data["user"] = bson.decode_all(fcache.read())
+        rocketchat_data["user"] = bson.decode_all(fcache.read(), codec_options)
 
     # Get avatar
     with open(os.path.join(rocketchat_data_dir, "rocketchat_avatars.bson"), "rb") as fcache:
-        rocketchat_data["avatar"]["avatar"] = bson.decode_all(fcache.read())
+        rocketchat_data["avatar"]["avatar"] = bson.decode_all(fcache.read(), codec_options)
 
     if rocketchat_data["avatar"]["avatar"]:
         with open(
             os.path.join(rocketchat_data_dir, "rocketchat_avatars.files.bson"), "rb"
         ) as fcache:
-            rocketchat_data["avatar"]["file"] = bson.decode_all(fcache.read())
+            rocketchat_data["avatar"]["file"] = bson.decode_all(fcache.read(), codec_options)
 
         with open(
             os.path.join(rocketchat_data_dir, "rocketchat_avatars.chunks.bson"), "rb"
         ) as fcache:
-            rocketchat_data["avatar"]["chunk"] = bson.decode_all(fcache.read())
+            rocketchat_data["avatar"]["chunk"] = bson.decode_all(fcache.read(), codec_options)
 
     # Get room
     with open(os.path.join(rocketchat_data_dir, "rocketchat_room.bson"), "rb") as fcache:
-        rocketchat_data["room"] = bson.decode_all(fcache.read())
+        rocketchat_data["room"] = bson.decode_all(fcache.read(), codec_options)
 
     # Get messages
     with open(os.path.join(rocketchat_data_dir, "rocketchat_message.bson"), "rb") as fcache:
-        rocketchat_data["message"] = bson.decode_all(fcache.read())
+        rocketchat_data["message"] = bson.decode_all(fcache.read(), codec_options)
 
     # Get custom emoji
     with open(os.path.join(rocketchat_data_dir, "rocketchat_custom_emoji.bson"), "rb") as fcache:
-        rocketchat_data["custom_emoji"]["emoji"] = bson.decode_all(fcache.read())
+        rocketchat_data["custom_emoji"]["emoji"] = bson.decode_all(fcache.read(), codec_options)
 
     if rocketchat_data["custom_emoji"]["emoji"]:
         with open(os.path.join(rocketchat_data_dir, "custom_emoji.files.bson"), "rb") as fcache:
-            rocketchat_data["custom_emoji"]["file"] = bson.decode_all(fcache.read())
+            rocketchat_data["custom_emoji"]["file"] = bson.decode_all(fcache.read(), codec_options)
 
         with open(os.path.join(rocketchat_data_dir, "custom_emoji.chunks.bson"), "rb") as fcache:
-            rocketchat_data["custom_emoji"]["chunk"] = bson.decode_all(fcache.read())
+            rocketchat_data["custom_emoji"]["chunk"] = bson.decode_all(fcache.read(), codec_options)
 
     # Get uploads
     with open(os.path.join(rocketchat_data_dir, "rocketchat_uploads.bson"), "rb") as fcache:
-        rocketchat_data["upload"]["upload"] = bson.decode_all(fcache.read())
+        rocketchat_data["upload"]["upload"] = bson.decode_all(fcache.read(), codec_options)
 
     if rocketchat_data["upload"]["upload"]:
         with open(
             os.path.join(rocketchat_data_dir, "rocketchat_uploads.files.bson"), "rb"
         ) as fcache:
-            rocketchat_data["upload"]["file"] = bson.decode_all(fcache.read())
+            rocketchat_data["upload"]["file"] = bson.decode_all(fcache.read(), codec_options)
 
         with open(
             os.path.join(rocketchat_data_dir, "rocketchat_uploads.chunks.bson"), "rb"
         ) as fcache:
-            rocketchat_data["upload"]["chunk"] = bson.decode_all(fcache.read())
+            rocketchat_data["upload"]["chunk"] = bson.decode_all(fcache.read(), codec_options)
 
     return rocketchat_data
 
