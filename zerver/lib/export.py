@@ -22,7 +22,6 @@ from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
-from django.utils.timezone import make_aware as timezone_make_aware
 from mypy_boto3_s3.service_resource import Object
 
 import zerver.lib.upload
@@ -430,15 +429,11 @@ def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
 def floatify_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field in DATE_FIELDS[table]:
-            orig_dt = item[field]
-            if orig_dt is None:
+            dt = item[field]
+            if dt is None:
                 continue
-            assert isinstance(orig_dt, datetime.datetime)
-            if timezone_is_naive(orig_dt):
-                logging.warning("Naive datetime:", item)
-                dt = timezone_make_aware(orig_dt)
-            else:
-                dt = orig_dt
+            assert isinstance(dt, datetime.datetime)
+            assert not timezone_is_naive(dt)
             utc_naive = dt.replace(tzinfo=None) - assert_is_not_none(dt.utcoffset())
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
 
