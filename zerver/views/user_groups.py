@@ -43,7 +43,9 @@ def add_user_group(
     description: str = REQ(),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    check_add_user_group(user_profile.realm, name, user_profiles, description)
+    check_add_user_group(
+        user_profile.realm, name, user_profiles, description, acting_user=user_profile
+    )
     return json_success(request)
 
 
@@ -69,10 +71,10 @@ def edit_user_group(
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
     if name != user_group.name:
-        do_update_user_group_name(user_group, name)
+        do_update_user_group_name(user_group, name, acting_user=user_profile)
 
     if description != user_group.description:
-        do_update_user_group_description(user_group, description)
+        do_update_user_group_description(user_group, description, acting_user=user_profile)
 
     return json_success(request)
 
@@ -85,7 +87,7 @@ def delete_user_group(
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
 
-    check_delete_user_group(user_group_id, user_profile)
+    check_delete_user_group(user_group_id, user_profile, acting_user=user_profile)
     return json_success(request)
 
 
@@ -133,7 +135,7 @@ def add_members_to_group_backend(
             )
 
     user_profile_ids = [user.id for user in user_profiles]
-    bulk_add_members_to_user_group(user_group, user_profile_ids)
+    bulk_add_members_to_user_group(user_group, user_profile_ids, acting_user=user_profile)
     return json_success(request)
 
 
@@ -151,7 +153,7 @@ def remove_members_from_group_backend(
             raise JsonableError(_("There is no member '{}' in this user group").format(member))
 
     user_profile_ids = [user.id for user in user_profiles]
-    remove_members_from_user_group(user_group, user_profile_ids)
+    remove_members_from_user_group(user_group, user_profile_ids, acting_user=user_profile)
     return json_success(request)
 
 
@@ -172,7 +174,7 @@ def add_subgroups_to_group_backend(
                 )
             )
 
-    add_subgroups_to_user_group(user_group, subgroups)
+    add_subgroups_to_user_group(user_group, subgroups, acting_user=user_profile)
     return json_success(request)
 
 
@@ -193,7 +195,7 @@ def remove_subgroups_from_group_backend(
                 )
             )
 
-    remove_subgroups_from_user_group(user_group, subgroups)
+    remove_subgroups_from_user_group(user_group, subgroups, acting_user=user_profile)
     return json_success(request)
 
 

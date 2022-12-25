@@ -163,7 +163,7 @@ test("snapshot_message", ({override_rewire}) => {
     function set_compose_state() {
         compose_state.set_message_type(curr_draft.type);
         compose_state.message_content(curr_draft.content);
-        compose_state.stream_name(curr_draft.stream);
+        compose_state.set_stream_name(curr_draft.stream);
         compose_state.topic(curr_draft.topic);
         compose_state.private_message_recipient(curr_draft.private_message_recipient);
     }
@@ -413,7 +413,7 @@ test("catch_buggy_draft_error", () => {
     // An error is logged but the draft isn't fixed in this codepath.
     blueslip.expect(
         "error",
-        "Cannot compare strings; at least one value is undefined: undefined, old_topic",
+        "Cannot compare strings; at least one value is undefined: (undefined), old_topic",
     );
     drafts.rename_stream_recipient(
         stream_B.stream_id,

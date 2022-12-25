@@ -914,6 +914,7 @@ test("get_invite_stream_data", () => {
         stream_id: 320,
         invite_only: false,
         subscribed: true,
+        is_web_public: false,
     };
 
     people.init();
@@ -927,6 +928,7 @@ test("get_invite_stream_data", () => {
             stream_id: 320,
             invite_only: false,
             default_stream: true,
+            is_web_public: false,
         },
     ];
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
@@ -936,6 +938,7 @@ test("get_invite_stream_data", () => {
         stream_id: 25,
         invite_only: true,
         subscribed: true,
+        is_web_public: false,
     };
     stream_data.add_sub(inviter);
 
@@ -944,6 +947,7 @@ test("get_invite_stream_data", () => {
         stream_id: 25,
         invite_only: true,
         default_stream: false,
+        is_web_public: false,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
@@ -988,4 +992,7 @@ test("can_post_messages_in_stream", () => {
 
     social.stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });

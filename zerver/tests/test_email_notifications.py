@@ -626,6 +626,29 @@ class TestMissedMessages(ZulipTestCase):
             msg_id, verify_body_include, email_subject, send_as_user, trigger="mentioned"
         )
 
+    def _resolved_topic_missed_stream_messages_thread_friendly(self, send_as_user: bool) -> None:
+        topic_name = "threading and so forth"
+        othello_user = self.example_user("othello")
+        msg_id = -1
+        for i in range(0, 3):
+            msg_id = self.send_stream_message(
+                othello_user,
+                "Denmark",
+                content=str(i),
+                topic_name=topic_name,
+            )
+
+        self.assert_json_success(self.resolve_topic_containing_message(othello_user, msg_id))
+
+        verify_body_include = [
+            "Othello, the Moor of Venice: > 0 > 1 > 2 -- ",
+            "You are receiving this because you have email notifications enabled for #Denmark.",
+        ]
+        email_subject = "[resolved] #Denmark > threading and so forth"
+        self._test_cases(
+            msg_id, verify_body_include, email_subject, send_as_user, trigger="stream_email_notify"
+        )
+
     def _extra_context_in_missed_personal_messages(
         self,
         send_as_user: bool,
@@ -821,9 +844,11 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
 
-        hamlet_only = create_user_group("hamlet_only", [hamlet], get_realm("zulip"))
+        hamlet_only = create_user_group(
+            "hamlet_only", [hamlet], get_realm("zulip"), acting_user=None
+        )
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         hamlet_only_message_id = self.send_stream_message(othello, "Denmark", "@*hamlet_only*")
@@ -861,7 +886,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         user_group_mentioned_message_id = self.send_stream_message(
@@ -901,7 +926,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
@@ -1027,6 +1052,13 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_extra_context_in_missed_stream_messages_email_notify(self) -> None:
         self._extra_context_in_missed_stream_messages_email_notify(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_resolved_topic_missed_stream_messages_thread_friendly_as_user(self) -> None:
+        self._resolved_topic_missed_stream_messages_thread_friendly(True)
+
+    def test_resolved_topic_missed_stream_messages_thread_friendly(self) -> None:
+        self._resolved_topic_missed_stream_messages_thread_friendly(False)
 
     @override_settings(EMAIL_GATEWAY_PATTERN="")
     def test_reply_warning_in_missed_personal_messages(self) -> None:
@@ -1545,7 +1577,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         large_user_group = create_user_group(
-            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip")
+            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip"), acting_user=None
         )
 
         # Do note that the event dicts for the missed messages are constructed by hand

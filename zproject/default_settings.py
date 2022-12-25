@@ -199,31 +199,74 @@ SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
 
 DEFAULT_RATE_LIMITING_RULES = {
+    # Limits total number of API requests per unit time by each user.
+    # Rate limiting general API access protects the server against
+    # clients causing unreasonable server load.
     "api_by_user": [
-        (60, 200),  # 200 requests max every minute
+        # 200 requests per limit
+        (60, 200),
     ],
+    # Limits total number of unauthenticated API requests (primarily
+    # used by the public access option). Since these are
+    # unauthenticated requests, each IP address is a separate bucket.
     "api_by_ip": [
         (60, 100),
     ],
+    # Limits total requests to the Mobile Push Notifications Service
+    # by each individual Zulip server that is using the service. This
+    # is a Zulip Cloud setting that has no effect on self-hosted Zulip
+    # servers that are not hosting their own copy of the push
+    # notifications service.
     "api_by_remote_server": [
         (60, 1000),
     ],
+    # Limits how many authentication attempts with login+password can
+    # be made to a single username. This applies to the authentication
+    # backends such as LDAP or email+password where a login+password
+    # gets submitted to the Zulip server. No limit is applied for
+    # external authentication methods (like GitHub SSO), since with
+    # those authentication backends, we only receive a username if
+    # authentication is successful.
     "authenticate_by_username": [
-        (1800, 5),  # 5 failed login attempts within 30 minutes
+        # 5 failed login attempts within 30 minutes
+        (1800, 5),
     ],
+    # Limits how many requests a user can make to change their email
+    # address. A low/strict limit is recommended here, since there is
+    # not real use case for triggering several of these from a single
+    # user account, and by definition, the emails are sent to an email
+    # address that does not already have a relationship with Zulip, so
+    # this feature can be abused to attack the server's spam
+    # reputation. Applies in addition to sends_email_by_ip.
     "email_change_by_user": [
-        (3600, 2),  # 2 per hour
-        (86400, 5),  # 5 per day
+        # 2 emails per hour, and up to 5 per day.
+        (3600, 2),
+        (86400, 5),
     ],
+    # Limits how many requests to send password reset emails can be
+    # made for a single email address. A low/strict limit is
+    # desirable, since this feature could be used to spam users with
+    # password reset emails, given their email address. Applies in
+    # addition to sends_email_by_ip, below.
     "password_reset_form_by_email": [
-        (3600, 2),  # 2 reset emails per hour
-        (86400, 5),  # 5 per day
+        # 2 emails per hour, and up to 5 per day.
+        (3600, 2),
+        (86400, 5),
     ],
+    # This limit applies to all requests which directly trigger the
+    # sending of an email, restricting the number per IP address. This
+    # is a general anti-spam measure.
     "sends_email_by_ip": [
         (86400, 5),
     ],
+    # Limits access to uploaded files, in web-public contexts, done by
+    # unauthenticated users. Each file gets its own bucket, and every
+    # access to the file by an unauthenticated user counts towards the
+    # limit.  This is important to prevent abuse of Zulip's file
+    # uploads feature for file distribution.
     "spectator_attachment_access_by_file": [
-        (86400, 1000),  # 1000 per day per file
+        # 1000 per day per file
+        (86400, 1000),
     ],
 }
 # Rate limiting defaults can be individually overridden by adding

@@ -365,6 +365,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         POLICY_NOBODY,
     ]
 
+    EDIT_TOPIC_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
+        POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_EVERYONE,
+        POLICY_NOBODY,
+    ]
+
+    MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
+
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
     # Who in the organization is allowed to add custom emojis.
@@ -1338,7 +1349,7 @@ def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     linkifiers = []
-    for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
+    for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("id"):
         linkifiers.append(
             LinkifierDict(
                 pattern=linkifier.pattern,
@@ -2110,7 +2121,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     def can_edit_user_groups(self) -> bool:
         return self.has_permission("user_group_edit_policy")
 
-    def can_edit_topic_of_any_message(self) -> bool:
+    def can_move_messages_to_another_topic(self) -> bool:
         return self.has_permission("edit_topic_policy")
 
     def can_add_custom_emoji(self) -> bool:

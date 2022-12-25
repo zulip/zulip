@@ -340,10 +340,21 @@ labels.
   have a new feature you'd like to add, you can start a conversation [in our
   development community](https://zulip.com/development-community/#where-do-i-send-my-message)
   explaining the feature idea and the problem that you're hoping to solve.
+- **I'm waiting for the next round of review on my PR. Can I pick up
+  another issue in the meantime?** Someone's first Zulip PR often
+  requires quite a bit of iteration, so please [make sure your pull
+  request is reviewable][reviewable-pull-requests] and go through at
+  least one round of feedback from others before picking up a second
+  issue. After that, sure! If
+  [Zulipbot](https://github.com/zulip/zulipbot) does not allow you to
+  claim an issue, you can post a comment describing the status of your
+  other work on the issue you're interested in, and asking for the
+  issue to be assigned to you. Note that addressing feedback on
+  in-progress PRs should always take priority over starting a new PR.
 - **I think my PR is done, but it hasn't been merged yet. What's going on?**
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
-     discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
+     discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
   2. If all the feedback has been addressed, did you [leave a
      comment](#how-to-help-move-the-review-process-forward)
      explaining that you have done so and **requesting another review**? If not,
@@ -361,6 +372,8 @@ labels.
      occasionally take a few weeks for a PR in the final stages of the review
      process to be merged.
 
+[reviewable-pull-requests]: https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html
+
 ## What makes a great Zulip contributor?
 
 Zulip has a lot of experience working with new contributors. In our
@@ -372,7 +385,7 @@ experience, these are the best predictors of success:
   you got stuck. Post tracebacks or other error messages if appropriate. For
   more advice, check out [our guide][great-questions]!
 - Learning and practicing
-  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
+  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
 - Submitting carefully tested code. See our [detailed guide on how to review
   code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
   (yours or someone else's).

@@ -54,6 +54,7 @@ from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscript
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
@@ -71,7 +72,7 @@ from zerver.lib.test_console_output import (
     tee_stdout_and_find_extra_console_output,
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url, queries_captured
-from zerver.lib.topic import filter_by_topic_name_via_message
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_string
@@ -1314,6 +1315,26 @@ Output:
 
         for x, y in zip(subscribed_streams, streams):
             self.assertEqual(x["name"], y.name)
+
+    def resolve_topic_containing_message(
+        self,
+        acting_user: UserProfile,
+        target_message_id: int,
+        **extra: str,
+    ) -> "TestHttpResponse":
+        """
+        Mark all messages within the topic associated with message `target_message_id` as resolved.
+        """
+        message, _ = access_message(acting_user, target_message_id)
+        return self.api_patch(
+            acting_user,
+            f"/api/v1/messages/{target_message_id}",
+            {
+                "topic": RESOLVED_TOPIC_PREFIX + message.topic_name(),
+                "propagate_mode": "change_all",
+            },
+            **extra,
+        )
 
     def send_webhook_payload(
         self,

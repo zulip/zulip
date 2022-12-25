@@ -119,5 +119,5 @@ message](/help/quote-and-reply).
 ## Related articles
 
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
-* [Format your messages using Markdown](/help/format-your-message-using-markdown)
+* [Message formatting](/help/format-your-message-using-markdown)
 * [Linking to your organization](/help/linking-to-zulip)

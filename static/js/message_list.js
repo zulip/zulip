@@ -9,12 +9,6 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 
-export let narrowed;
-
-export function set_narrowed(value) {
-    narrowed = value;
-}
-
 export class MessageList {
     constructor(opts) {
         if (opts.data) {
@@ -74,14 +68,14 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this === narrowed && !this.empty()) {
+        if (this.narrowed && !this.empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (this === narrowed && !this.empty() && this.selected_id() === -1) {
+        if (this.narrowed && !this.empty() && this.selected_id() === -1) {
             // And also select the newly arrived message.
             this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -365,7 +359,7 @@ export class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this === narrowed) {
+        if (this.narrowed) {
             if (this.empty()) {
                 narrow_banner.show_empty_narrow_message();
             } else {

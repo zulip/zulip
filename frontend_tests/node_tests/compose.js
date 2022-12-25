@@ -305,7 +305,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");
-    compose_state.stream_name("social");
+    compose_state.set_stream_name("social");
 
     $("#compose-textarea").val("message me");
     $("#compose-textarea").hide();
@@ -400,7 +400,7 @@ test_ui("finish", ({override, override_rewire, mock_template}) => {
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("stream");
-        compose_state.stream_name("social");
+        compose_state.set_stream_name("social");
         override_rewire(people, "get_by_user_id", () => []);
         compose_finished_event_checked = false;
         let schedule_message = false;
@@ -731,7 +731,7 @@ test_ui("on_events", ({override}) => {
 });
 
 test_ui("create_message_object", ({override, override_rewire}) => {
-    $("#stream_message_recipient_stream").val("social");
+    compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
 
@@ -744,7 +744,7 @@ test_ui("create_message_object", ({override, override_rewire}) => {
 
     blueslip.expect("error", "Trying to send message with bad stream name: BOGUS STREAM");
 
-    $("#stream_message_recipient_stream").val("BOGUS STREAM");
+    compose_state.set_stream_name("BOGUS STREAM");
     message = compose.create_message_object();
     assert.equal(message.to, "BOGUS STREAM");
     assert.equal(message.topic, "lunch");

@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Sequence, TypedDict
+from typing import Dict, Iterable, List, Optional, Sequence, TypedDict
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -104,6 +104,7 @@ def create_user_group(
     members: List[UserProfile],
     realm: Realm,
     *,
+    acting_user: Optional[UserProfile],
     description: str = "",
     is_system_group: bool = False,
 ) -> UserGroup:

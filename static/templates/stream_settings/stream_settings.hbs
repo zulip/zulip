@@ -45,23 +45,21 @@
                   rendered_description=rendered_description
                   }}
             </div>
-            <div class="stream_setting_subsection_header">
-                <h3 class="stream_setting_subsection_title">
-                    {{t "Stream permissions" }}
-                </h3>
-                <div class="stream_permission_change_info alert-notification"></div>
-                <div class="button-group">
-                    <button class="change-stream-privacy button rounded small btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Change stream permissions' }}" {{#unless can_change_stream_permissions}}style="display:none"{{/unless}}>
-                        <i class="fa fa-pencil" aria-hidden="true"></i>
-                    </button>
+            <div class="stream-permissions settings-subsection-parent" id="stream_permission_settings">
+                <div class="subsection-header">
+                    <h3 class="stream_setting_subsection_title">{{t "Stream permissions" }}
+                    </h3>
+                    {{> ../settings/settings_save_discard_widget section_name="stream-permissions" }}
                 </div>
-            </div>
-            <div class="subscription-type">
-                <div class="subscription-type-text">
-                    {{> stream_permission_description
-                      stream_post_policy_values=../stream_post_policy_values
-                      message_retention_text=../message_retention_text}}
-                </div>
+
+                {{> stream_types
+                  stream_post_policy_values=../stream_post_policy_values
+                  stream_privacy_policy_values=../stream_privacy_policy_values
+                  stream_privacy_policy=../stream_privacy_policy
+                  zulip_plan_is_not_limited=../zulip_plan_is_not_limited
+                  upgrade_text_for_wide_organization_logo=../upgrade_text_for_wide_organization_logo
+                  org_level_message_retention_setting=../org_level_message_retention_setting
+                  is_stream_edit=true }}
             </div>
             {{/with}}
             <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>

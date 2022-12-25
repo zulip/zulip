@@ -44,46 +44,27 @@ export let notify_old_thread_default = false;
 
 export let notify_new_thread_default = true;
 
-export const editability_types = {
-    NO: 1,
-    // Note: TOPIC_ONLY does not include stream messages with no topic sent
-    // by someone else. You can edit the topic of such a message by editing
-    // the topic of the whole recipient_row it appears in, but you can't
-    // directly edit the topic of such a message.
-    // Similar story for messages whose topic you can change only because
-    // you are an admin.
-    TOPIC_ONLY: 3,
-    FULL: 4,
-};
-
 export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     if (!is_message_editable_ignoring_permissions(message)) {
         return false;
     }
 
-    if (!page_params.realm_allow_message_editing) {
-        // If message editing is disabled, so is topic editing.
+    if (message.type !== "stream") {
         return false;
-    }
-    // Organization admins and message senders can edit message topics indefinitely.
-    if (page_params.is_admin) {
-        return true;
-    }
-    if (message.sent_by_me) {
-        return true;
     }
 
     if (message.topic === compose.empty_topic_placeholder()) {
         return true;
     }
 
-    if (!settings_data.user_can_edit_topic_of_any_message()) {
+    if (!settings_data.user_can_move_messages_to_another_topic()) {
         return false;
     }
 
-    // moderators can edit the topic if edit_topic_policy allows them to do so,
-    // irrespective of the topic editing deadline.
-    if (page_params.is_moderator) {
+    // Organization admins and moderators can edit message topics indefinitely,
+    // irrespective of the topic editing deadline, if edit_topic_policy allows
+    // them to do so.
+    if (page_params.is_admin || page_params.is_moderator) {
         return true;
     }
 
@@ -131,43 +112,36 @@ export function is_message_editable_ignoring_permissions(message) {
     return true;
 }
 
-export function get_editability(message, edit_limit_seconds_buffer = 0) {
+export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
     if (!is_message_editable_ignoring_permissions(message)) {
-        return editability_types.NO;
-    }
-
-    if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
-        return editability_types.NO;
+        return false;
     }
 
     if (!page_params.realm_allow_message_editing) {
-        return editability_types.NO;
+        return false;
     }
 
-    if (
-        page_params.realm_message_content_edit_limit_seconds === null &&
-        message.sent_by_me &&
-        !is_widget_message(message)
-    ) {
-        return editability_types.FULL;
+    if (!message.sent_by_me) {
+        return false;
+    }
+
+    if (is_widget_message(message)) {
+        return false;
+    }
+
+    if (page_params.realm_message_content_edit_limit_seconds === null) {
+        return true;
     }
 
     if (
         page_params.realm_message_content_edit_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
-            0 &&
-        message.sent_by_me &&
-        !is_widget_message(message)
+        0
     ) {
-        return editability_types.FULL;
+        return true;
     }
-
-    // time's up!
-    if (message.type === "stream") {
-        return editability_types.TOPIC_ONLY;
-    }
-    return editability_types.NO;
+    return false;
 }
 
 export function get_deletability(message) {
@@ -201,10 +175,6 @@ export function get_deletability(message) {
 }
 
 export function can_move_message(message) {
-    if (!page_params.realm_allow_message_editing) {
-        return false;
-    }
-
     if (!message.is_stream) {
         return false;
     }
@@ -213,10 +183,7 @@ export function can_move_message(message) {
         return false;
     }
 
-    return (
-        get_editability(message) !== editability_types.NO ||
-        settings_data.user_can_move_messages_between_streams()
-    );
+    return is_topic_editable(message) || settings_data.user_can_move_messages_between_streams();
 }
 
 export function stream_and_topic_exist_in_edit_history(message, stream_id, topic) {
@@ -264,14 +231,6 @@ export function stream_and_topic_exist_in_edit_history(message, stream_id, topic
     }
 
     return false;
-}
-
-export function update_message_topic_editing_pencil() {
-    if (page_params.realm_allow_message_editing) {
-        $(".on_hover_topic_edit, .always_visible_topic_edit").show();
-    } else {
-        $(".on_hover_topic_edit, .always_visible_topic_edit").hide();
-    }
 }
 
 export function hide_message_edit_spinner($row) {
@@ -413,7 +372,7 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
     return stream_data
         .subscribed_subs()
         .filter((stream) => {
-            if (stream.id === current_stream_id) {
+            if (stream.stream_id === current_stream_id) {
                 return true;
             }
             return stream_data.can_post_messages_in_stream(stream);
@@ -421,7 +380,16 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
         .map((stream) => ({
             name: stream.name,
             value: stream.stream_id.toString(),
-        }));
+        }))
+        .sort((a, b) => {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                return -1;
+            }
+            if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                return 1;
+            }
+            return 0;
+        });
 }
 
 function edit_message($row, raw_content) {
@@ -441,7 +409,6 @@ function edit_message($row, raw_content) {
     // If you change this number also change edit_limit_buffer in
     // zerver.actions.message_edit.check_update_message
     const seconds_left_buffer = 5;
-    const editability = get_editability(message, seconds_left_buffer);
     const max_file_upload_size = page_params.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
@@ -449,7 +416,7 @@ function edit_message($row, raw_content) {
         file_upload_enabled = true;
     }
 
-    const is_editable = editability === editability_types.FULL;
+    const is_editable = is_content_editable(message, seconds_left_buffer);
 
     const $form = $(
         render_message_edit_form({
@@ -477,7 +444,7 @@ function edit_message($row, raw_content) {
     const $message_edit_countdown_timer = $row.find(".message_edit_countdown_timer");
     const $copy_message = $row.find(".copy_message");
 
-    if (editability !== editability_types.FULL) {
+    if (!is_editable) {
         $message_edit_content.attr("readonly", "readonly");
         create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
     } else {
@@ -498,10 +465,7 @@ function edit_message($row, raw_content) {
     }
 
     // Add tooltip and timer
-    if (
-        editability === editability_types.FULL &&
-        page_params.realm_message_content_edit_limit_seconds > 0
-    ) {
+    if (is_editable && page_params.realm_message_content_edit_limit_seconds > 0) {
         $row.find(".message-edit-timer").show();
 
         // Give them at least 10 seconds.
@@ -902,8 +866,7 @@ export function edit_last_sent_message() {
         return;
     }
 
-    const msg_editability_type = get_editability(msg, 5);
-    if (msg_editability_type !== editability_types.FULL) {
+    if (!is_content_editable(msg, 5)) {
         return;
     }
 

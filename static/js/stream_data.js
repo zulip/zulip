@@ -416,6 +416,7 @@ export function get_invite_stream_data() {
             name: sub.name,
             stream_id: sub.stream_id,
             invite_only: sub.invite_only,
+            is_web_public: sub.is_web_public,
             default_stream: default_stream_ids.has(sub.stream_id),
         };
     }
@@ -556,6 +557,10 @@ export function can_subscribe_others(sub) {
 }
 
 export function can_post_messages_in_stream(stream) {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
     if (page_params.is_admin) {
         return true;
     }

@@ -15,10 +15,7 @@ certain users can send messages.
 
 {!select-stream-view-general.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>)
-   to the right of **Stream permissions**.
-
-1. Under **Who can post to the stream?**, select the option you prefer.
+1. Under **Stream permissions**, configure **Who can post to the stream**.
 
 {!save-changes.md!}
 

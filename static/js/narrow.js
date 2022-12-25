@@ -116,50 +116,59 @@ export function save_pre_narrow_offset_for_reload() {
     }
 }
 
-export let narrow_title = "home";
 export let has_shown_message_list_view = false;
 
-export function set_narrow_title(title) {
-    narrow_title = title;
-    notifications.redraw_title();
+export function compute_narrow_title(filter) {
+    if (filter === undefined) {
+        // "All messages" and "Recent conversations" views have
+        // an `undefined` filter.
+        if (recent_topics_util.is_visible()) {
+            return $t({defaultMessage: "Recent conversations"});
+        }
+        return $t({defaultMessage: "All messages"});
+    }
+
+    const filter_title = filter.get_title();
+
+    if (filter_title === undefined) {
+        // Default result for uncommon narrow/search views.
+        return $t({defaultMessage: "Search results"});
+    }
+
+    if (filter.has_operator("stream")) {
+        if (!filter._sub) {
+            // The stream is not set because it does not currently
+            // exist (possibly due to a stream name change), or it
+            // is a private stream and the user is not subscribed.
+            return filter_title;
+        }
+        if (filter.has_operator("topic")) {
+            const topic_name = filter.operands("topic")[0];
+            return "#" + filter_title + " > " + topic_name;
+        }
+        return "#" + filter_title;
+    }
+
+    if (filter.has_operator("pm-with")) {
+        const emails = filter.operands("pm-with")[0];
+        const user_ids = people.emails_strings_to_user_ids_string(emails);
+
+        if (user_ids !== undefined) {
+            return people.get_recipients(user_ids);
+        }
+        if (emails.includes(",")) {
+            return $t({defaultMessage: "Invalid users"});
+        }
+        return $t({defaultMessage: "Invalid user"});
+    }
+
+    return filter_title;
 }
 
-function update_narrow_title(filter) {
-    const filter_title = filter.get_title();
-    const search_default = $t({defaultMessage: "Search results"});
-
-    if (filter_title !== undefined) {
-        if (filter.has_operator("stream")) {
-            if (!filter._sub) {
-                // The stream is not set because it does not currently
-                // exist (possibly due to a stream name change), or it
-                // is a private stream and the user is not subscribed.
-                set_narrow_title(filter_title);
-            } else if (filter.has_operator("topic")) {
-                const topic_name = filter.operands("topic")[0];
-                set_narrow_title("#" + filter_title + " > " + topic_name);
-            } else {
-                set_narrow_title("#" + filter_title);
-            }
-        } else if (filter.has_operator("pm-with")) {
-            const emails = filter.operands("pm-with")[0];
-            const user_ids = people.emails_strings_to_user_ids_string(emails);
-            if (user_ids !== undefined) {
-                const names = people.get_recipients(user_ids);
-                set_narrow_title(names);
-            } else {
-                if (emails.includes(",")) {
-                    set_narrow_title("Invalid users");
-                } else {
-                    set_narrow_title("Invalid user");
-                }
-            }
-        } else {
-            set_narrow_title(filter_title);
-        }
-    } else {
-        set_narrow_title(search_default);
-    }
+export let narrow_title = "home";
+export function update_narrow_title(filter) {
+    narrow_title = compute_narrow_title(filter);
+    notifications.redraw_title();
 }
 
 export function reset_ui_state() {
@@ -488,8 +497,7 @@ export function activate(raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
-    message_list.set_narrowed(msg_list);
-    message_lists.set_current(message_list.narrowed);
+    message_lists.set_current(msg_list);
 
     let then_select_offset;
     if (id_info.target_id === id_info.final_select_id) {
@@ -529,11 +537,13 @@ export function activate(raw_operators, opts) {
                     update_selection({
                         id_info,
                         select_offset: then_select_offset,
+                        msg_list: message_lists.current,
                     });
                 }
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
             },
+            msg_list,
         });
     }
 
@@ -541,6 +551,7 @@ export function activate(raw_operators, opts) {
         update_selection({
             id_info,
             select_offset: then_select_offset,
+            msg_list: message_lists.current,
         });
     }
 
@@ -771,7 +782,15 @@ export function maybe_add_local_messages(opts) {
 }
 
 export function update_selection(opts) {
-    if (message_list.narrowed.empty()) {
+    if (message_lists.current !== opts.msg_list) {
+        // If we navigated away from a view while we were fetching
+        // messages for it, don't attempt to move the currently
+        // selected message.
+        return;
+    }
+
+    if (message_lists.current.empty()) {
+        // There's nothing to select if there are no messages.
         return;
     }
 
@@ -780,15 +799,15 @@ export function update_selection(opts) {
 
     let msg_id = id_info.final_select_id;
     if (msg_id === undefined) {
-        msg_id = message_list.narrowed.first_unread_message_id();
+        msg_id = message_lists.current.first_unread_message_id();
     }
 
     const preserve_pre_narrowing_screen_position =
-        message_list.narrowed.get(msg_id) !== undefined && select_offset !== undefined;
+        message_lists.current.get(msg_id) !== undefined && select_offset !== undefined;
 
     const then_scroll = !preserve_pre_narrowing_screen_position;
 
-    message_list.narrowed.select_id(msg_id, {
+    message_lists.current.select_id(msg_id, {
         then_scroll,
         use_closest: true,
         force_rerender: true,
@@ -798,7 +817,7 @@ export function update_selection(opts) {
         // Scroll so that the selected message is in the same
         // position in the viewport as it was prior to
         // narrowing
-        message_list.narrowed.view.set_message_offset(select_offset);
+        message_lists.current.view.set_message_offset(select_offset);
     }
     unread_ops.process_visible();
 }
@@ -992,8 +1011,7 @@ function handle_post_narrow_deactivate_processes() {
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
-    narrow_title = $t({defaultMessage: "All messages"});
-    notifications.redraw_title();
+    update_narrow_title(narrow_state.filter());
     message_scroll.update_top_of_narrow_notices(message_lists.home);
 }
 

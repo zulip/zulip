@@ -1043,19 +1043,18 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_success(id_, "D")
 
-        # without allow_message_editing, nothing is allowed
+        # without allow_message_editing, editing content is not allowed but
+        # editing topic is allowed if topic-edit time limit has not passed
+        # irrespective of content-edit time limit.
         set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "E", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "B", True)
+
+        set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
+        do_edit_message_assert_success(id_, "E", True)
         set_message_editing_params(False, 120, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "F", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "F", True)
         set_message_editing_params(False, "unlimited", Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "G", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "G", True)
 
     def test_edit_topic_policy(self) -> None:
         def set_message_editing_params(
@@ -1127,22 +1126,37 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(True, "unlimited", Realm.POLICY_FULL_MEMBERS_ONLY)
 
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
         cordelia.save()
+        hamlet.date_joined = timezone_now() - datetime.timedelta(days=9)
+        hamlet.save()
         do_edit_message_assert_error(
             id_, "C", "You don't have permission to edit this message", "cordelia"
+        )
+        # User who sent the message but is not a full member cannot edit
+        # the topic
+        do_edit_message_assert_error(
+            id_, "C", "You don't have permission to edit this message", "hamlet"
         )
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
         cordelia.save()
+        hamlet.date_joined = timezone_now() - datetime.timedelta(days=11)
+        hamlet.save()
         do_edit_message_assert_success(id_, "C", "cordelia")
+        do_edit_message_assert_success(id_, "CD", "hamlet")
 
         # only moderators can edit topic of a message
         set_message_editing_params(True, "unlimited", Realm.POLICY_MODERATORS_ONLY)
         do_edit_message_assert_error(
             id_, "D", "You don't have permission to edit this message", "cordelia"
+        )
+        # even user who sent the message but is not a moderator cannot edit the topic.
+        do_edit_message_assert_error(
+            id_, "D", "You don't have permission to edit this message", "hamlet"
         )
         do_edit_message_assert_success(id_, "D", "shiva")
 
@@ -1153,13 +1167,21 @@ class EditMessageTest(EditMessageTestCase):
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
-        # users cannot edit topics if allow_message_editing is False
-        set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
+        # even owners and admins cannot edit the topics of messages
+        set_message_editing_params(True, "unlimited", Realm.POLICY_NOBODY)
         do_edit_message_assert_error(
-            id_, "D", "Your organization has turned off message editing", "cordelia"
+            id_, "H", "You don't have permission to edit this message", "desdemona"
+        )
+        do_edit_message_assert_error(
+            id_, "H", "You don't have permission to edit this message", "iago"
         )
 
-        # non-admin users cannot edit topics sent > 72 hrs ago
+        # users can edit topics even if allow_message_editing is False
+        set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
+        do_edit_message_assert_success(id_, "D", "cordelia")
+
+        # non-admin users cannot edit topics sent > 72 hrs ago including
+        # sender of the message.
         message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
         message.save()
         set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
@@ -1167,6 +1189,9 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
             id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
+        )
+        do_edit_message_assert_error(
+            id_, "G", "The time limit for editing this message's topic has passed", "hamlet"
         )
 
         # anyone should be able to edit "no topic" indefinitely
@@ -2046,6 +2071,18 @@ class EditMessageTest(EditMessageTestCase):
                 self.assert_length(messages, 0)
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
+
+        # Check sending messages when policy is Realm.POLICY_NOBODY.
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+        check_move_message_according_to_policy(UserProfile.ROLE_REALM_OWNER, expect_fail=True)
+        check_move_message_according_to_policy(
+            UserProfile.ROLE_REALM_ADMINISTRATOR, expect_fail=True
+        )
 
         # Check sending messages when policy is Realm.POLICY_ADMINS_ONLY.
         do_set_realm_property(
@@ -3006,12 +3043,9 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_error(result, "Nothing to change")
 
         resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "topic": resolved_topic,
-                "propagate_mode": "change_all",
-            },
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id1,
             HTTP_ACCEPT_LANGUAGE="de",
         )
 

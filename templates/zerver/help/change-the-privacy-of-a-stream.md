@@ -21,10 +21,7 @@ public.
 
 {!select-stream-view-general.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>)
-   to the right of **Stream permissions**.
-
-1. Under **Who can access the stream?**, select a privacy level.
+1. Under **Stream permissions**, configure **Who can access the stream**.
 
 {!save-changes.md!}
 

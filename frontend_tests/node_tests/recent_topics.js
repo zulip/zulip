@@ -102,7 +102,7 @@ mock_esm("../../static/js/user_topics", {
     },
 });
 const narrow = mock_esm("../../static/js/narrow", {
-    set_narrow_title: noop,
+    update_narrow_title: noop,
     hide_mark_as_read_turned_off_banner: noop,
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,

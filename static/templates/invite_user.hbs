@@ -14,7 +14,7 @@
                 <div class="input-group">
                     <label for="invitee_emails">{{t "Emails (one on each line or comma-separated)" }}</label>
                     <div>
-                        <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{t 'One or more email addresses...' }}"></textarea>
+                        <textarea rows="2" id="invitee_emails" name="invitee_emails" class="invitee_emails" placeholder="{{t 'One or more email addresses...' }}"></textarea>
                         {{#if is_admin}}
                         <div id="invite-method-choice">
                             {{t "or" }} <a role="button" tabindex="0" id="generate_multiuse_invite_button">{{t "Generate invite link" }}</a>

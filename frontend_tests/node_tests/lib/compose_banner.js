@@ -9,4 +9,6 @@ exports.mock_banners = () => {
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         $(`#compose_banners .${classname}`).remove = () => {};
     }
+    $("#compose_banners .warning").remove = () => {};
+    $("#compose_banners .error").remove = () => {};
 };

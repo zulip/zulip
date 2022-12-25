@@ -44,7 +44,7 @@ function make_tab(i) {
             [
                 "translated: Keyboard shortcuts",
                 "translated: Message formatting",
-                "translated: Search operators",
+                "translated: Search filters",
             ][i],
         );
     };
@@ -189,7 +189,7 @@ run_test("basics", () => {
         values: [
             {label: $t({defaultMessage: "Keyboard shortcuts"}), key: "keyboard-shortcuts"},
             {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
-            {label: $t({defaultMessage: "Search operators"}), key: "search-operators"},
+            {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
         html_class: "stream_sorter_toggle",
         callback(name, key) {
@@ -238,13 +238,13 @@ run_test("basics", () => {
     assert.equal(env.tabs[0].class, "first");
     assert.equal(env.tabs[1].class, "middle");
     assert.equal(env.tabs[2].class, "last selected");
-    assert.deepEqual(callback_args, ["translated: Search operators", "search-operators"]);
-    assert.equal(widget.value(), "translated: Search operators");
+    assert.deepEqual(callback_args, ["translated: Search filters", "search-operators"]);
+    assert.equal(widget.value(), "translated: Search filters");
     assert.equal(widget.value(), callback_value);
 
     // try to crash the key handler
     env.keydown_f.call(env.tabs[env.focused_tab], RIGHT_KEY);
-    assert.equal(widget.value(), "translated: Search operators");
+    assert.equal(widget.value(), "translated: Search filters");
 
     callback_args = undefined;
 
@@ -264,7 +264,7 @@ run_test("basics", () => {
     widget.disable_tab("message-formatting");
 
     env.keydown_f.call(env.tabs[env.focused_tab], RIGHT_KEY);
-    assert.equal(widget.value(), "translated: Search operators");
+    assert.equal(widget.value(), "translated: Search filters");
 
     callback_args = undefined;
 

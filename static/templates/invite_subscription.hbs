@@ -10,11 +10,12 @@
             <input type="checkbox" name="stream" value="{{stream_id}}"
               {{#if default_stream}}checked="checked"{{/if}} />
             <span></span>
-            {{#if invite_only}}<i class="fa fa-lock" aria-hidden="true"></i>{{/if}}
-            {{#if (eq name ../notifications_stream)}}
-            #{{name}} <i>({{t 'Receives new stream announcements' }})</i>
+            {{#if (or invite_only is_web_public)}} {{>stream_privacy}} {{name}}
             {{else}}
             #{{name}}
+            {{/if}}
+            {{#if (eq name ../notifications_stream)}}
+            <i>({{t 'Receives new stream announcements' }})</i>
             {{/if}}
         </label>
     {{/each}}

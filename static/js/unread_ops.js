@@ -5,7 +5,6 @@ import * as channel from "./channel";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
@@ -257,7 +256,7 @@ export function process_read_messages_event(message_ids) {
     }
 
     for (const message_id of message_ids) {
-        if (message_lists.current === message_list.narrowed) {
+        if (message_lists.current.narrowed) {
             // I'm not sure this entirely makes sense for all server
             // notifications.
             unread.set_messages_read_in_narrow(true);
@@ -285,7 +284,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
         return;
     }
 
-    if (message_lists.current === message_list.narrowed) {
+    if (message_lists.current.narrowed) {
         unread.set_messages_read_in_narrow(false);
     }
 
@@ -354,7 +353,7 @@ export function notify_server_messages_read(messages, options = {}) {
     message_flags.send_read(messages);
 
     for (const message of messages) {
-        if (message_lists.current === message_list.narrowed) {
+        if (message_lists.current.narrowed) {
             unread.set_messages_read_in_narrow(true);
         }
 

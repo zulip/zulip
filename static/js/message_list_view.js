@@ -173,7 +173,6 @@ function set_timestr(message_container) {
 }
 
 function set_topic_edit_properties(group, message) {
-    group.realm_allow_message_editing = page_params.realm_allow_message_editing;
     group.always_visible_topic_edit = false;
     group.on_hover_topic_edit = false;
     // if a user who can edit a topic, can resolve it as well

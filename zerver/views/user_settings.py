@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 from typing import Any, Dict, Optional
 
 from django.conf import settings
@@ -96,13 +97,14 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
         context=context,
         realm=user_profile.realm,
     )
-
+    old_email_address = Address(addr_spec=old_email)
+    new_email_address = Address(addr_spec=new_email)
     ctx = {
         "new_email_html_tag": SafeString(
-            f'<a href="mailto:{escape(new_email)}">{escape(new_email)}</a>'
+            f'<a href="mailto:{escape(new_email)}">{escape(new_email_address.username)}@<wbr>{escape(new_email_address.domain)}</wbr></a>'
         ),
         "old_email_html_tag": SafeString(
-            f'<a href="mailto:{escape(old_email)}">{escape(old_email)}</a>'
+            f'<a href="mailto:{escape(old_email)}">{escape(old_email_address.username)}@<wbr>{escape(old_email_address.domain)}</wbr></a>'
         ),
     }
     return render(request, "confirmation/confirm_email_change.html", context=ctx)
