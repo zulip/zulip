@@ -105,10 +105,16 @@ export function initialize() {
     render();
 
     // Rerender the realm-logo when the browser detects color scheme changes.
-    const dark_mode_media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
-    dark_mode_media_query_list.addEventListener("change", () => {
+    const media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
+    // MediaQueryList.addEventListener is missing in Safari < 14
+    const listener = () => {
         if ($(":root").hasClass("color-scheme-automatic")) {
             render();
         }
-    });
+    };
+    if ("addEventListener" in media_query_list) {
+        media_query_list.addEventListener("change", listener);
+    } else {
+        media_query_list.addListener(listener);
+    }
 }
