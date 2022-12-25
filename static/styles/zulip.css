@@ -998,6 +998,7 @@ td.pointer {
     top: 16px;
     user-select: none;
     white-space: nowrap;
+    overflow-x: hidden;
     overflow-x: clip;
 }
 
