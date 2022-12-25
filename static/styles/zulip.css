@@ -1659,8 +1659,7 @@ div.focused_table {
     outline: none;
 }
 
-.message_edit_topic_propagate {
-    display: inline-block;
+#move_topic_modal select {
     width: auto;
     margin-bottom: 10px;
     max-width: 100%;
