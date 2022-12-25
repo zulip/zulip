@@ -30,7 +30,6 @@ from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import get_bucket
-from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -434,8 +433,7 @@ def floatify_datetime_fields(data: TableData, table: TableName) -> None:
                 continue
             assert isinstance(dt, datetime.datetime)
             assert not timezone_is_naive(dt)
-            utc_naive = dt.replace(tzinfo=None) - assert_is_not_none(dt.utcoffset())
-            item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
+            item[field] = dt.timestamp()
 
 
 def listify_bithandler_fields(data: TableData, table: TableName) -> None:
