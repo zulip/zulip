@@ -373,6 +373,22 @@ td .button {
     #id_realm_enable_spectator_access_label a {
         color: hsl(0, 0%, 20%);
     }
+
+    select {
+        height: 30px;
+        width: 220px;
+        padding: 4px 6px;
+        color: hsl(0, 0%, 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0, 0%, 80%);
+        cursor: pointer;
+        background-color: hsl(0, 0%, 100%);
+
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0, 0%, 93%);
+        }
+    }
 }
 
 #admin-user-list,
@@ -393,9 +409,10 @@ td .button {
 
 .input-group {
     /* Class to use when the following input-group is related and should
-       appear just after this element. */
+       appear just after this element. Normally the margin is 20px, but
+       for related settings, we set it to 10px. */
     &.thinner {
-        margin: 0;
+        margin-bottom: 10px;
     }
 
     label.checkbox + label {
@@ -1446,7 +1463,8 @@ $option_title_width: 180px;
 }
 
 /* These have enough space for all the options in German. */
-.setting_desktop_icon_count_display,
+#user_desktop_icon_count_display,
+#realm_desktop_icon_count_display,
 #id_realm_waiting_period_threshold,
 #id_realm_create_public_stream_policy,
 #id_realm_create_private_stream_policy,
