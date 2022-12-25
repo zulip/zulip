@@ -50,7 +50,7 @@
     font-size: 1.375rem;
     font-weight: 600;
     line-height: 1.25;
-    overflow:hidden; 
+    overflow-x: hidden; 
     white-space: nowrap;
     text-overflow: ellipsis;
     padding-right: 1rem;
