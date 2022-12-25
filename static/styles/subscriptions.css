@@ -982,6 +982,21 @@ div.settings-radio-input-parent {
         /* Match .setting_desktop_icon_count_display */
         width: 325px;
         height: fit-content;
+        padding: 4px 6px;
+        color: hsl(0, 0%, 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0, 0%, 80%);
+        cursor: pointer;
+        background-color: hsl(0, 0%, 100%);
+
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0, 0%, 93%);
+        }
+    }
+
+    select.stream_post_policy_setting {
+        margin-bottom: 10px;
     }
 }
 
