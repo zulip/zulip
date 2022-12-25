@@ -1,5 +1,5 @@
-import datetime
 import os
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import orjson
@@ -150,7 +150,7 @@ class RocketChatImporter(ZulipTestCase):
         rocketchat_data["user"].append(
             {
                 "_id": "s0m34ndmID",
-                "createdAt": datetime.datetime(2019, 11, 6, 0, 38, 42, 796000),
+                "createdAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
                 "type": "unknown",
                 "roles": ["unknown"],
                 "name": "Unknown user",
@@ -385,7 +385,7 @@ class RocketChatImporter(ZulipTestCase):
         # Add a new channel with no user.
         no_user_channel: Dict[str, Any] = {
             "_id": "rand0mID",
-            "ts": datetime.datetime(2021, 7, 15, 10, 58, 23, 647000),
+            "ts": datetime(2021, 7, 15, 10, 58, 23, 647000, tzinfo=timezone.utc),
             "t": "c",
             "name": "no-user-channel",
         }
@@ -672,7 +672,7 @@ class RocketChatImporter(ZulipTestCase):
             {
                 "_id": "p4v37myxc6yLZ8AHh",
                 "t": "livechat_navigation_history",
-                "ts": datetime.datetime(2019, 11, 6, 0, 38, 42, 796000),
+                "ts": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
                 "msg": " - applewebdata://9124F033-BFEF-43C5-9215-DA369E4DA22D",
                 "u": {"_id": "rocket.cat", "username": "cat"},
                 "groupable": False,
@@ -687,7 +687,7 @@ class RocketChatImporter(ZulipTestCase):
                 },
                 "expireAt": 1575592722794.0,
                 "_hidden": True,
-                "_updatedAt": datetime.datetime(2019, 11, 6, 0, 38, 42, 796000),
+                "_updatedAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
             }
         )
 
