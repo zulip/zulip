@@ -740,7 +740,8 @@ div.overlay {
     }
 }
 
-.save-button-controls {
+#stream_settings .save-button-controls,
+#settings_page .save-button-controls {
     display: inline;
     margin-left: 15px;
 
