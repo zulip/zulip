@@ -20,7 +20,6 @@
         padding: 4px 6px;
         margin-bottom: 10px;
 
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-size: 14px;
 
         box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
@@ -37,6 +36,12 @@
         &:read-only {
             cursor: not-allowed;
         }
+    }
+
+    select,
+    textarea,
+    input {
+        font-family: inherit;
     }
 }
 
