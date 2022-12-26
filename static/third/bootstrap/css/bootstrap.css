@@ -52,8 +52,7 @@ img {
   -ms-interpolation-mode: bicubic;
 }
 button,
-input,
-select {
+input {
   margin: 0;
   font-size: 100%;
   vertical-align: middle;
@@ -76,7 +75,6 @@ input[type="submit"] {
   cursor: pointer;
 }
 label,
-select,
 button,
 input[type="button"],
 input[type="reset"],
@@ -480,22 +478,19 @@ fieldset {
 }
 label,
 input,
-button,
-select {
+button {
   font-size: 14px;
   font-weight: normal;
   line-height: 20px;
 }
 input,
-button,
-select {
+button {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 label {
   display: block;
   margin-bottom: 5px;
 }
-select,
 input[type="text"],
 input[type="password"],
 input[type="datetime"],
@@ -587,7 +582,6 @@ input[type="button"],
 input[type="checkbox"] {
   width: auto;
 }
-select,
 input[type="file"] {
   height: 30px;
   /* In IE7, the height of the select element cannot be changed by height, only font-size */
@@ -597,16 +591,6 @@ input[type="file"] {
 
   line-height: 30px;
 }
-select {
-  width: 220px;
-  border: 1px solid #cccccc;
-  background-color: #ffffff;
-}
-select[multiple],
-select[size] {
-  height: auto;
-}
-select:focus,
 input[type="file"]:focus,
 input[type="checkbox"]:focus {
   outline: thin dotted #333;
@@ -649,9 +633,7 @@ input {
   margin-left: 0;
 }
 input[disabled],
-select[disabled],
-input[readonly],
-select[readonly] {
+input[readonly] {
   cursor: not-allowed;
   background-color: #eeeeee;
 }
@@ -659,13 +641,11 @@ input[type="checkbox"][disabled],
 input[type="checkbox"][readonly] {
   background-color: transparent;
 }
-input:focus:invalid,
-select:focus:invalid {
+input:focus:invalid {
   color: #b94a48;
   border-color: #ee5f5b;
 }
-input:focus:invalid:focus,
-select:focus:invalid:focus {
+input:focus:invalid:focus {
   border-color: #e9322d;
   -webkit-box-shadow: 0 0 6px #f8b9b7;
   -moz-box-shadow: 0 0 6px #f8b9b7;
@@ -691,13 +671,11 @@ select:focus:invalid:focus {
   white-space: nowrap;
 }
 .input-append input,
-.input-append select,
 .input-append .dropdown-menu,
 .input-append .popover {
   font-size: 14px;
 }
-.input-append input,
-.input-append select {
+.input-append input {
   position: relative;
   margin-bottom: 0;
   *margin-left: 0;
@@ -706,8 +684,7 @@ select:focus:invalid:focus {
   -moz-border-radius: 0 4px 4px 0;
   border-radius: 0 4px 4px 0;
 }
-.input-append input:focus,
-.input-append select:focus {
+.input-append input:focus {
   z-index: 2;
 }
 .input-append .btn,
@@ -721,14 +698,12 @@ select:focus:invalid:focus {
   background-color: #a9dba9;
   border-color: #46a546;
 }
-.input-append input,
-.input-append select {
+.input-append input {
   -webkit-border-radius: 4px 0 0 4px;
   -moz-border-radius: 4px 0 0 4px;
   border-radius: 4px 0 0 4px;
 }
-.input-append input + .btn-group .btn:last-child,
-.input-append select + .btn-group .btn:last-child {
+.input-append input + .btn-group .btn:last-child {
   -webkit-border-radius: 0 4px 4px 0;
   -moz-border-radius: 0 4px 4px 0;
   border-radius: 0 4px 4px 0;
@@ -756,7 +731,6 @@ input.search-query {
   border-radius: 15px;
 }
 .form-inline input,
-.form-inline select,
 .form-inline .help-inline,
 .form-inline .input-append {
   display: inline-block;
