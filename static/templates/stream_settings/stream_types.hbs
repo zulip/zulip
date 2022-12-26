@@ -31,7 +31,7 @@
     <label class="dropdown-title">{{t 'Who can post to the stream?'}}
         {{> ../help_link_widget link="/help/stream-sending-policy" }}
     </label>
-    <select name="stream-post-policy" class="stream_post_policy_setting prop-element" id="id_stream_post_policy" data-setting-widget-type="number">
+    <select name="stream-post-policy" class="stream_post_policy_setting prop-element bootstrap-focus-style" id="id_stream_post_policy" data-setting-widget-type="number">
         {{#each stream_post_policy_values}}
             <option value="{{this.code}}" {{#if (eq this.code ../stream_post_policy) }}selected{{/if}}>
                 {{ this.description}}
@@ -50,7 +50,7 @@
         {{> ../settings/upgrade_tip_widget}}
 
         <select name="stream_message_retention_setting"
-          class="stream_message_retention_setting prop-element"
+          class="stream_message_retention_setting prop-element bootstrap-focus-style"
           id="id_message_retention_days"
           data-setting-widget-type="message-retention-setting">
             <option value="realm_default">{{#tr}}Use organization level settings {org_level_message_retention_setting}{{/tr}}</option>
