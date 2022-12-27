@@ -60,6 +60,6 @@ export function set_muted_users(list) {
     }
 }
 
-export function initialize() {
-    set_muted_users(page_params.muted_users);
+export function initialize(params) {
+    set_muted_users(params.muted_users);
 }
