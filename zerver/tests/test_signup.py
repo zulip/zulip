@@ -3220,6 +3220,17 @@ class MultiuseInviteTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid stream ID 54321. No invites were sent.")
 
+    def test_create_multiuse_link_invalid_invite_as_api_call(self) -> None:
+        self.login("iago")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["GUEST_USER"] + 1).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_error(result, "Invalid invite_as")
+
 
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self) -> None:
