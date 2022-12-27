@@ -4656,7 +4656,7 @@ class UserSignUpTest(InviteUserBase):
         self.assert_in_success_response(
             [
                 "Import settings from existing Zulip account",
-                "selected >\n                            Zulip Dev",
+                "selected >\n                                Zulip Dev",
                 "We just need you to do one last thing.",
             ],
             result,
