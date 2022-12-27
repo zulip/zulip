@@ -248,7 +248,7 @@
                                 <label>
                                     <h4>Organization type</h4>
                                 </label>
-                                <select name="organization-type" required style="width: 100%;" required>
+                                <select name="organization-type" style="width: 100%;">
                                     {% for org_type in sorted_org_types %}
                                         {% if not org_type[1].hidden %}
                                         <option data-string-value="{{ org_type[0] }}"
