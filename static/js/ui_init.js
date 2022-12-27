@@ -555,6 +555,8 @@ export function initialize_everything() {
 
     const unread_params = pop_fields("unread_msgs");
 
+    const muted_users_params = pop_fields("muted_users");
+
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
@@ -626,7 +628,7 @@ export function initialize_everything() {
     user_group_edit_members.initialize();
     pm_conversations.recent.initialize(pm_conversations_params);
     user_topics.initialize();
-    muted_users.initialize();
+    muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
     stream_list.initialize();
