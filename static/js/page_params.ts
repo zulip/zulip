@@ -36,6 +36,7 @@ export const page_params: {
     server_web_public_streams_enabled: boolean;
     translation_data: Record<string, string>;
     zulip_plan_is_not_limited: boolean;
+    muted_users: {id: number; timestamp: number}[];
 } = $("#page-params").remove().data("params");
 const t2 = performance.now();
 export const page_params_parse_time = t2 - t1;
