@@ -287,7 +287,7 @@ function retain_unique_language_aliases(matches) {
 }
 
 export function sort_languages(matches, query) {
-    const results = typeahead.triage(query, matches);
+    const results = typeahead.triage(query, matches, (x) => x);
 
     // Languages that start with the query
     results.matches = results.matches.sort(compare_by_popularity);
