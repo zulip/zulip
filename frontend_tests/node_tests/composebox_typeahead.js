@@ -326,6 +326,7 @@ const call_center = {
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
+    reaction_type: "unicode_emoji",
 });
 
 function test(label, f) {

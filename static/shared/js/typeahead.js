@@ -70,9 +70,6 @@ export function clean_query_lowercase(query) {
     return query;
 }
 
-export const is_unicode_emoji = (emoji) =>
-    emoji.reaction_type === "unicode_emoji" && emoji.emoji_code;
-
 export const parse_unicode_emoji_code = (code) =>
     code
         .split("-")
@@ -86,7 +83,8 @@ export function get_emoji_matcher(query) {
 
     return function (emoji) {
         const matches_emoji_literal =
-            is_unicode_emoji(emoji) && parse_unicode_emoji_code(emoji.emoji_code) === query;
+            emoji.reaction_type === "unicode_emoji" &&
+            parse_unicode_emoji_code(emoji.emoji_code) === query;
         return matches_emoji_literal || query_matches_string(query, emoji.emoji_name, "_");
     };
 }
@@ -172,7 +170,7 @@ export function sort_emojis(objs, query) {
     const unicode_emoji_codes = new Set();
     const sorted_unique_results = [];
     for (const emoji of sorted_results_with_possible_duplicates) {
-        if (!is_unicode_emoji(emoji)) {
+        if (emoji.reaction_type !== "unicode_emoji") {
             sorted_unique_results.push(emoji);
         } else if (
             !unicode_emoji_codes.has(emoji.emoji_code) &&

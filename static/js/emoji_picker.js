@@ -223,7 +223,7 @@ function get_rendered_emoji(section, index) {
 export function is_emoji_present_in_text(text, emoji_dict) {
     // fetching emoji details to ensure emoji_code and reaction_type are present
     const emoji_info = emoji.get_emoji_details_by_name(emoji_dict.name);
-    if (typeahead.is_unicode_emoji(emoji_info)) {
+    if (emoji_info.reaction_type === "unicode_emoji") {
         // convert emoji_dict to an actual emoji character
         const parsed_emoji_code = typeahead.parse_unicode_emoji_code(emoji_info.emoji_code);
 
