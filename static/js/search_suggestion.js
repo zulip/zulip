@@ -112,7 +112,7 @@ function get_stream_suggestions(last, operators) {
 
     streams = streams.filter((stream) => stream_matches_query(stream, query));
 
-    streams = typeahead_helper.sorter(query, streams);
+    streams = typeahead_helper.sorter(query, streams, (x) => x);
 
     const regex = typeahead_helper.build_highlight_regex(query);
     const highlight_query = typeahead_helper.highlight_with_escaping_and_regex;

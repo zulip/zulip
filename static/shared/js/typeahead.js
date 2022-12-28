@@ -91,7 +91,7 @@ export function get_emoji_matcher(query) {
     };
 }
 
-export function triage(query, objs, get_item = (x) => x) {
+export function triage(query, objs, get_item) {
     /*
         We split objs into four groups:
 
