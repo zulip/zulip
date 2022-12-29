@@ -241,6 +241,12 @@ export function update_message_retention_setting(sub, new_value) {
     stream_ui_updates.update_setting_element(sub, "message_retention_days");
 }
 
+export function update_can_remove_subscribers_group_id(sub, new_value) {
+    stream_data.update_can_remove_subscribers_group_id(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group_id");
+    stream_edit_subscribers.rerender_subscribers_list(sub);
+}
+
 export function set_color(stream_id, color) {
     const sub = sub_store.get(stream_id);
     stream_edit.set_stream_property(sub, "color", color);
