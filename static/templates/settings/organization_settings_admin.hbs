@@ -40,13 +40,15 @@
               widget_name="realm_notifications_stream_id"
               list_placeholder=(t 'Filter streams')
               reset_button_text=(t '[Disable]')
-              label=admin_settings_label.realm_notifications_stream }}
+              label=admin_settings_label.realm_notifications_stream
+              value_type="number" }}
 
             {{> dropdown_list_widget
               widget_name="realm_signup_notifications_stream_id"
               list_placeholder=(t 'Filter streams')
               reset_button_text=(t '[Disable]')
-              label=admin_settings_label.realm_signup_notifications_stream }}
+              label=admin_settings_label.realm_signup_notifications_stream
+              value_type="number" }}
             <div class="realm_default_language">
                 {{> language_selection_widget
                   section_name="realm_default_language"
@@ -126,7 +128,8 @@
                   widget_name="realm_default_code_block_language"
                   list_placeholder=(t 'Filter languages')
                   reset_button_text=(t '[Unset]')
-                  label=admin_settings_label.realm_default_code_block_language }}
+                  label=admin_settings_label.realm_default_code_block_language
+                  value_type="string" }}
 
                 {{> settings_checkbox
                   setting_name="realm_message_content_allowed_in_email_notifications"
