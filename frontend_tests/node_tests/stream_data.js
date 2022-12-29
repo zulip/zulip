@@ -21,6 +21,7 @@ const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const settings_config = zrequire("settings_config");
+const user_groups = zrequire("user_groups");
 
 const me = {
     email: "me@zulip.com",
@@ -39,6 +40,14 @@ function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
 }
 
+const admins_group = {
+    name: "Admins",
+    id: 1,
+    members: new Set([1]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.is_admin = false;
@@ -48,6 +57,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
+        user_groups.initialize({realm_user_groups: [admins_group]});
         f(helpers);
     });
 }
@@ -333,6 +343,7 @@ test("admin_options", () => {
             stream_id: 1,
             is_muted: true,
             invite_only: false,
+            can_remove_subscribers_group_id: admins_group.id,
         };
         stream_data.add_sub(sub);
         return sub;
@@ -385,6 +396,7 @@ test("stream_settings", () => {
         color: "cinnamon",
         subscribed: true,
         invite_only: false,
+        can_remove_subscribers_group_id: admins_group.id,
     };
 
     const blue = {
@@ -393,6 +405,7 @@ test("stream_settings", () => {
         color: "blue",
         subscribed: false,
         invite_only: false,
+        can_remove_subscribers_group_id: admins_group.id,
     };
 
     const amber = {
@@ -404,6 +417,7 @@ test("stream_settings", () => {
         history_public_to_subscribers: true,
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
         message_retention_days: 10,
+        can_remove_subscribers_group_id: admins_group.id,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -995,4 +1009,86 @@ test("can_post_messages_in_stream", () => {
 
     page_params.is_spectator = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
+});
+
+test("can_unsubscribe_others", () => {
+    const admin_user_id = 1;
+    const moderator_user_id = 2;
+    const member_user_id = 3;
+
+    const admins = {
+        name: "Admins",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const moderators = {
+        name: "Moderators",
+        id: 2,
+        members: new Set([moderator_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 3,
+        members: new Set([member_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([2]),
+    };
+    const nobody = {
+        name: "Nobody",
+        id: 4,
+        members: new Set([]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.initialize({realm_user_groups: [admins, moderators, all, nobody]});
+
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_remove_subscribers_group_id: admins.id,
+    };
+    stream_data.add_sub(sub);
+
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    people.initialize_current_user(moderator_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), false);
+
+    sub.can_remove_subscribers_group_id = moderators.id;
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    people.initialize_current_user(moderator_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    people.initialize_current_user(member_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), false);
+
+    sub.can_remove_subscribers_group_id = all.id;
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    people.initialize_current_user(moderator_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    people.initialize_current_user(member_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+
+    // Even with the nobody system group, admins can still unsubscribe others.
+    sub.can_remove_subscribers_group_id = nobody.id;
+    page_params.is_admin = true;
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    page_params.is_admin = false;
+    assert.equal(stream_data.can_unsubscribe_others(sub), false);
+
+    // This isn't a real state, but we want coverage on !can_view_subscribers.
+    sub.subscribed = false;
+    sub.invite_only = true;
+    page_params.is_admin = true;
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    page_params.is_admin = false;
+    assert.equal(stream_data.can_unsubscribe_others(sub), false);
 });
