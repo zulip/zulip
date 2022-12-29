@@ -23,13 +23,13 @@ export let pill_widget;
 let current_stream_id;
 let subscribers_list_widget;
 
-function format_member_list_elem(person) {
+function format_member_list_elem(person, user_can_remove_subscribers) {
     return render_stream_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
         email: settings_data.email_for_user_settings(person),
-        can_edit_subscribers: page_params.is_admin,
+        can_remove_subscribers: user_can_remove_subscribers,
         show_email: settings_data.show_email(),
     });
 }
@@ -87,6 +87,7 @@ export function enable_subscriber_management({sub, $parent_container}) {
     });
 
     const user_ids = peer_data.get_subscribers(stream_id);
+    const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
 
     // We track a single subscribers_list_widget for this module, since we
     // only ever have one list of subscribers visible at a time.
@@ -94,10 +95,11 @@ export function enable_subscriber_management({sub, $parent_container}) {
         $parent_container,
         name: "stream_subscribers",
         user_ids,
+        user_can_remove_subscribers,
     });
 }
 
-function make_list_widget({$parent_container, name, user_ids}) {
+function make_list_widget({$parent_container, name, user_ids, user_can_remove_subscribers}) {
     const users = people.get_users_from_ids(user_ids);
     people.sort_but_pin_current_user_on_top(users);
 
@@ -109,7 +111,7 @@ function make_list_widget({$parent_container, name, user_ids}) {
     return ListWidget.create($list_container, users, {
         name,
         modifier(item) {
-            return format_member_list_elem(item);
+            return format_member_list_elem(item, user_can_remove_subscribers);
         },
         filter: {
             $element: $parent_container.find(".search"),
