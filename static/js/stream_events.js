@@ -90,6 +90,9 @@ export function update_property(stream_id, property, value, other_values) {
         case "message_retention_days":
             stream_settings_ui.update_message_retention_setting(sub, value);
             break;
+        case "can_remove_subscribers_group_id":
+            stream_settings_ui.update_can_remove_subscribers_group_id(sub, value);
+            break;
         default:
             blueslip.warn("Unexpected subscription property type", {
                 property,

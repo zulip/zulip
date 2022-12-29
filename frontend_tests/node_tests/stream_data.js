@@ -48,6 +48,14 @@ const admins_group = {
     direct_subgroup_ids: new Set([]),
 };
 
+const moderators_group = {
+    name: "Members",
+    id: 2,
+    members: new Set([2]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([1]),
+};
+
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.is_admin = false;
@@ -57,7 +65,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        user_groups.initialize({realm_user_groups: [admins_group]});
+        user_groups.initialize({realm_user_groups: [admins_group, moderators_group]});
         f(helpers);
     });
 }
@@ -450,10 +458,12 @@ test("stream_settings", () => {
     });
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
+    stream_data.update_can_remove_subscribers_group_id(sub, moderators_group.id);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
+    assert.equal(sub.can_remove_subscribers_group_id, moderators_group.id);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();

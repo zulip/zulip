@@ -462,6 +462,10 @@ export function update_message_retention_setting(sub, message_retention_days) {
     sub.message_retention_days = message_retention_days;
 }
 
+export function update_can_remove_subscribers_group_id(sub, can_remove_subscribers_group_id) {
+    sub.can_remove_subscribers_group_id = can_remove_subscribers_group_id;
+}
+
 export function receives_notifications(stream_id, notification_name) {
     const sub = sub_store.get(stream_id);
     if (sub === undefined) {
