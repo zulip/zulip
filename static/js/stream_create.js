@@ -245,6 +245,12 @@ function create_stream() {
     const user_ids = stream_create_subscribers.get_principals();
     data.principals = JSON.stringify(user_ids);
 
+    const can_remove_subscribers_group_id = Number.parseInt(
+        stream_settings_ui.new_stream_can_remove_subscribers_group_widget.value(),
+        10,
+    );
+    data.can_remove_subscribers_group_id = can_remove_subscribers_group_id;
+
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating stream..."}),
     });
@@ -421,4 +427,6 @@ export function set_up_handlers() {
             e.preventDefault();
         }
     });
+
+    stream_settings_ui.new_stream_can_remove_subscribers_group_widget.setup();
 }
