@@ -14,6 +14,7 @@ import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -39,6 +40,7 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 export function set_right_panel_title(sub) {
@@ -549,6 +551,8 @@ export function switch_stream_sort(tab_name) {
     redraw_left_panel();
 }
 
+export let new_stream_can_remove_subscribers_group_widget = null;
+
 export function setup_page(callback) {
     // We should strongly consider only setting up the page once,
     // but I am writing these comments write before a big release,
@@ -623,6 +627,15 @@ export function setup_page(callback) {
 
     function populate_and_fill() {
         $("#manage_streams_container").empty();
+
+        const opts = {
+            widget_name: "new_stream_can_remove_subscribers_group_id",
+            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true),
+            default_text: $t({defaultMessage: "No user groups"}),
+            include_current_item: false,
+            value: user_groups.get_user_group_from_name("@role:administrators").id,
+        };
+        new_stream_can_remove_subscribers_group_widget = new DropdownListWidget(opts);
 
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
