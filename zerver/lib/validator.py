@@ -161,6 +161,11 @@ def check_int(var_name: str, val: object) -> int:
 
 
 def check_int_in(possible_values: List[int]) -> Validator[int]:
+    """
+    Assert that the input is an integer and is contained in `possible_values`. If the input is not in
+    `possible_values`, a `ValidationError` is raised containing the failing field's name.
+    """
+
     def validator(var_name: str, val: object) -> int:
         n = check_int(var_name, val)
         if n not in possible_values:
