@@ -1501,7 +1501,7 @@ class InviteUserTest(InviteUserBase):
         self.login("iago")
         invitee = self.nonreg_email("alice")
         response = self.invite(invitee, ["Denmark"], invite_as=10)
-        self.assert_json_error(response, "Must be invited as an valid type of user")
+        self.assert_json_error(response, "Invalid invite_as")
 
     def test_successful_invite_user_as_guest_from_normal_account(self) -> None:
         self.login("hamlet")

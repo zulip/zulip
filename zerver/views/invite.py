@@ -46,7 +46,12 @@ def invite_users_backend(
     invite_expires_in_minutes: Optional[int] = REQ(
         json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
     ),
-    invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
+    invite_as: int = REQ(
+        json_validator=check_int_in(
+            list(PreregistrationUser.INVITE_AS.values()),
+        ),
+        default=PreregistrationUser.INVITE_AS["MEMBER"],
+    ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
 
@@ -54,8 +59,6 @@ def invite_users_backend(
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
         raise JsonableError(_("Insufficient permission"))
-    if invite_as not in PreregistrationUser.INVITE_AS.values():
-        raise JsonableError(_("Must be invited as an valid type of user"))
     check_if_owner_required(invite_as, user_profile)
     if (
         invite_as
