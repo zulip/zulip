@@ -263,7 +263,7 @@
 
                 <div class="input-group time-limit-setting">
                     <label for="realm_message_content_delete_limit_seconds" class="dropdown-title">
-                        {{t "Time limit for deleting messages" }}
+                        {{t "Time limit for deleting messages" }} <i>({{t "does not apply to administrators" }})</i>
                     </label>
                     <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element bootstrap-focus-style" data-setting-widget-type="time-limit">
                         {{#each msg_delete_limit_dropdown_values}}
