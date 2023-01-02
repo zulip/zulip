@@ -34,6 +34,11 @@ By default, wildcard mentions (`@**all**`, `@**everyone**`) trigger
 email/push notifications as though they were personal @-mentions.  You
 can toggle whether you receive notifications for wildcard mentions.
 
+!!! tip ""
+
+    Unlike personal mentions, wildcard mentions do not trigger notifications
+    in muted streams.
+
 {start_tabs}
 
 {settings_tab|notifications}
