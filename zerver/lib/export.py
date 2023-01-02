@@ -620,12 +620,12 @@ def export_from_config(
         assert parent.table is not None
         assert config.include_rows is not None
         parent_ids = [r["id"] for r in response[parent.table]]
-        filter_parms: Dict[str, Any] = {config.include_rows: parent_ids}
+        filter_params: Dict[str, Any] = {config.include_rows: parent_ids}
         if config.filter_args is not None:
-            filter_parms.update(config.filter_args)
+            filter_params.update(config.filter_args)
         assert model is not None
         try:
-            query = model.objects.filter(**filter_parms)
+            query = model.objects.filter(**filter_params)
         except Exception:
             print(
                 f"""
@@ -635,7 +635,7 @@ def export_from_config(
                 table: {table}
                 parent: {parent.table}
 
-                filter_parms: {filter_parms}
+                filter_params: {filter_params}
                 """
             )
             raise
@@ -654,10 +654,10 @@ def export_from_config(
         if config.source_filter:
             child_rows = [r for r in child_rows if config.source_filter(r)]
         lookup_ids = [r[field] for r in child_rows]
-        filter_parms = dict(id__in=lookup_ids)
+        filter_params = dict(id__in=lookup_ids)
         if config.filter_args:
-            filter_parms.update(config.filter_args)
-        query = model.objects.filter(**filter_parms)
+            filter_params.update(config.filter_args)
+        query = model.objects.filter(**filter_params)
         rows = list(query)
 
     if rows is not None:

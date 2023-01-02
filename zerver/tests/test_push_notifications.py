@@ -31,7 +31,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
     DeviceToken,
-    UserPushIndentityCompat,
+    UserPushIdentityCompat,
     b64_to_hex,
     get_apns_badge_count,
     get_apns_badge_count_future,
@@ -360,7 +360,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             ],
         )
 
-        user_identity = UserPushIndentityCompat(user_id=hamlet.id)
+        user_identity = UserPushIdentityCompat(user_id=hamlet.id)
         apple_push.assert_called_once_with(
             user_identity,
             [apple_token],
@@ -1282,7 +1282,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_push_notifications:
 
             handle_push_notification(self.user_profile.id, missed_message)
-            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
             mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
@@ -1364,7 +1364,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_send_apple:
             handle_remove_push_notification(self.user_profile.id, [message.id])
             mock_push_notifications.assert_called_once()
-            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
             mock_send_android.assert_called_with(
                 user_identity,
                 android_devices,
@@ -1492,7 +1492,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_push_notifications:
             handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_not_called()
-            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
             mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
@@ -1591,7 +1591,7 @@ class TestAPNs(PushNotificationTest):
         payload_data: Mapping[str, Any] = {},
     ) -> None:
         send_apple_push_notification(
-            UserPushIndentityCompat(user_id=self.user_profile.id),
+            UserPushIdentityCompat(user_id=self.user_profile.id),
             devices if devices is not None else self.devices(),
             payload_data,
         )
@@ -2764,20 +2764,20 @@ class PushBouncerSignupTest(ZulipTestCase):
         )
 
 
-class TestUserPushIndentityCompat(ZulipTestCase):
+class TestUserPushIdentityCompat(ZulipTestCase):
     def test_filter_q(self) -> None:
-        user_identity_id = UserPushIndentityCompat(user_id=1)
-        user_identity_uuid = UserPushIndentityCompat(user_uuid="aaaa")
-        user_identity_both = UserPushIndentityCompat(user_id=1, user_uuid="aaaa")
+        user_identity_id = UserPushIdentityCompat(user_id=1)
+        user_identity_uuid = UserPushIdentityCompat(user_uuid="aaaa")
+        user_identity_both = UserPushIdentityCompat(user_id=1, user_uuid="aaaa")
 
         self.assertEqual(user_identity_id.filter_q(), Q(user_id=1))
         self.assertEqual(user_identity_uuid.filter_q(), Q(user_uuid="aaaa"))
         self.assertEqual(user_identity_both.filter_q(), Q(user_uuid="aaaa") | Q(user_id=1))
 
     def test_eq(self) -> None:
-        user_identity_a = UserPushIndentityCompat(user_id=1)
-        user_identity_b = UserPushIndentityCompat(user_id=1)
-        user_identity_c = UserPushIndentityCompat(user_id=2)
+        user_identity_a = UserPushIdentityCompat(user_id=1)
+        user_identity_b = UserPushIdentityCompat(user_id=1)
+        user_identity_c = UserPushIdentityCompat(user_id=2)
         self.assertEqual(user_identity_a, user_identity_b)
         self.assertNotEqual(user_identity_a, user_identity_c)
 

@@ -174,23 +174,23 @@ if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version 
         *VENV_DEPENDENCIES,
     ]
 elif "debian" in os_families():
-    DEBIAN_DEPENDECIES = UBUNTU_COMMON_APT_DEPENDENCIES
+    DEBIAN_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES
     # The below condition is required since libappindicator is
     # not available for Debian 11. "libgroonga1" is an
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
     if vendor == "debian" and os_version == "11":
-        DEBIAN_DEPENDECIES.remove("libappindicator1")
-        DEBIAN_DEPENDECIES.append("libgroonga0")
+        DEBIAN_DEPENDENCIES.remove("libappindicator1")
+        DEBIAN_DEPENDENCIES.append("libgroonga0")
 
     # If we are on an aarch64 processor, ninja will be built from source,
     # so cmake is required
     if platform.machine() == "aarch64":
-        DEBIAN_DEPENDECIES.append("cmake")
+        DEBIAN_DEPENDENCIES.append("cmake")
 
     SYSTEM_DEPENDENCIES = [
-        *DEBIAN_DEPENDECIES,
+        *DEBIAN_DEPENDENCIES,
         f"postgresql-{POSTGRESQL_VERSION}",
         f"postgresql-{POSTGRESQL_VERSION}-pgroonga",
         *VENV_DEPENDENCIES,
@@ -355,8 +355,8 @@ def main(options: argparse.Namespace) -> NoReturn:
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
-    for apt_depedency in SYSTEM_DEPENDENCIES:
-        sha_sum.update(apt_depedency.encode())
+    for apt_dependency in SYSTEM_DEPENDENCIES:
+        sha_sum.update(apt_dependency.encode())
     if "debian" in os_families():
         with open("scripts/lib/setup-apt-repo", "rb") as fb:
             sha_sum.update(fb.read())

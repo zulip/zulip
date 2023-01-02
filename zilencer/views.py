@@ -19,7 +19,7 @@ from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
-    UserPushIndentityCompat,
+    UserPushIdentityCompat,
     send_android_push_notification,
     send_apple_push_notification,
 )
@@ -192,7 +192,7 @@ def unregister_remote_push_device(
     ios_app_id: Optional[str] = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
-    user_identity = UserPushIndentityCompat(user_id=user_id, user_uuid=user_uuid)
+    user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
     deleted = RemotePushDeviceToken.objects.filter(
         user_identity.filter_q(), token=token, kind=token_kind, server=server
@@ -210,7 +210,7 @@ def unregister_all_remote_push_devices(
     user_id: Optional[int] = REQ(json_validator=check_int, default=None),
     user_uuid: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
-    user_identity = UserPushIndentityCompat(user_id=user_id, user_uuid=user_uuid)
+    user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
     RemotePushDeviceToken.objects.filter(user_identity.filter_q(), server=server).delete()
     return json_success(request)
@@ -222,7 +222,7 @@ def remote_server_notify_push(
     server: RemoteZulipServer,
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
-    user_identity = UserPushIndentityCompat(payload.get("user_id"), payload.get("user_uuid"))
+    user_identity = UserPushIdentityCompat(payload.get("user_id"), payload.get("user_uuid"))
 
     gcm_payload = payload["gcm_payload"]
     apns_payload = payload["apns_payload"]

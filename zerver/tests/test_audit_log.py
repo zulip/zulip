@@ -771,7 +771,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_realm_playground_entries(self) -> None:
         user = self.example_user("iago")
-        intial_playgrounds = get_realm_playgrounds(user.realm)
+        initial_playgrounds = get_realm_playgrounds(user.realm)
         now = timezone_now()
         playground_id = do_add_realm_playground(
             user.realm,
@@ -787,7 +787,7 @@ class TestRealmAuditLog(ZulipTestCase):
             url_prefix="https://python.example.com",
         )
         expected_extra_data = {
-            "realm_playgrounds": intial_playgrounds + [added_playground],
+            "realm_playgrounds": initial_playgrounds + [added_playground],
             "added_playground": added_playground,
         }
         self.assertEqual(
@@ -814,7 +814,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "url_prefix": "https://python.example.com",
         }
         expected_extra_data = {
-            "realm_playgrounds": intial_playgrounds,
+            "realm_playgrounds": initial_playgrounds,
             "removed_playground": removed_playground,
         }
         self.assertEqual(
@@ -830,7 +830,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_realm_linkifier_entries(self) -> None:
         user = self.example_user("iago")
-        intial_linkifiers = linkifiers_for_realm(user.realm.id)
+        initial_linkifiers = linkifiers_for_realm(user.realm.id)
         now = timezone_now()
         linkifier_id = do_add_linkifier(
             user.realm,
@@ -845,7 +845,7 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
         )
         expected_extra_data = {
-            "realm_linkifiers": intial_linkifiers + [added_linkfier],
+            "realm_linkifiers": initial_linkifiers + [added_linkfier],
             "added_linkifier": added_linkfier,
         }
         self.assertEqual(
@@ -873,7 +873,7 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
         )
         expected_extra_data = {
-            "realm_linkifiers": intial_linkifiers + [changed_linkifier],
+            "realm_linkifiers": initial_linkifiers + [changed_linkifier],
             "changed_linkifier": changed_linkifier,
         }
         self.assertEqual(
@@ -898,7 +898,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "url_format": "https://realm.com/my_realm_filter/issues/%(id)s",
         }
         expected_extra_data = {
-            "realm_linkifiers": intial_linkifiers,
+            "realm_linkifiers": initial_linkifiers,
             "removed_linkifier": removed_linkifier,
         }
         self.assertEqual(

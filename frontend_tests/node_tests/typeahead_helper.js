@@ -265,7 +265,7 @@ test("sort_languages", () => {
     Object.assign(pygments_data, {
         langs: {
             python: {priority: 26},
-            javscript: {priority: 27},
+            javascript: {priority: 27},
             php: {priority: 16},
             pascal: {priority: 15},
             perl: {priority: 3},
