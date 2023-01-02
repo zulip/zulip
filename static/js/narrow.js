@@ -174,7 +174,12 @@ export function update_narrow_title(filter) {
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
-    narrow_banner.hide_empty_narrow_message();
+    // Checls the current narrow and updates the UI accordingly.
+    if (message_lists.current.data && message_lists.current.data._all_items.length === 0) {
+        narrow_banner.show_empty_narrow_message();
+    } else {
+        narrow_banner.hide_empty_narrow_message();
+    }
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
     unread_ui.reset_mark_as_read_turned_off_banner();
