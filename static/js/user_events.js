@@ -89,6 +89,7 @@ export const update_person = function update(person) {
             settings_profile_fields.maybe_disable_widgets();
             settings_streams.maybe_disable_widgets();
             settings_realm_user_settings_defaults.maybe_disable_widgets();
+            settings_account.update_account_settings_display();
         }
 
         if (

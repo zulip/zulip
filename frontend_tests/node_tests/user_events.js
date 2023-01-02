@@ -11,6 +11,7 @@ const message_live_update = mock_esm("../../static/js/message_live_update");
 const settings_account = mock_esm("../../static/js/settings_account", {
     update_email() {},
     update_full_name() {},
+    update_account_settings_display() {},
 });
 
 mock_esm("../../static/js/activity", {
