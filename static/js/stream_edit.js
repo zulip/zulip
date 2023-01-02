@@ -66,7 +66,7 @@ export function get_display_text_for_realm_message_retention_setting() {
 
 function get_stream_id(target) {
     const $row = $(target).closest(
-        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
+        ".stream-row, .stream-notifications-row, .stream_settings_header, .subscription_settings, .save-button",
     );
     return Number.parseInt($row.attr("data-stream-id"), 10);
 }
