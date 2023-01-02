@@ -288,7 +288,7 @@ export function process_escape_key(e) {
             return true;
         }
 
-        if (giphy.is_popped_from_edit_messsage()) {
+        if (giphy.is_popped_from_edit_message()) {
             giphy.focus_current_edit_message();
             // Hide after setting focus so that `edit_message_id` is
             // still set in giphy.
@@ -299,7 +299,7 @@ export function process_escape_key(e) {
         if (compose_state.composing()) {
             // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
-            if (!giphy.is_popped_from_edit_messsage() && giphy.hide_giphy_popover()) {
+            if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
                 $("#compose-textarea").trigger("focus");
                 return true;
             }

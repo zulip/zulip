@@ -1002,7 +1002,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple streams
 # - multiple subjects per stream
 # - multiple huddles
-# - multiple personals converastions
+# - multiple personal conversations
 # - multiple messages per subject
 # - both single and multi-line content
 def generate_and_send_messages(

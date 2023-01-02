@@ -127,7 +127,7 @@ Use commas in whole sentences where it is required. You can use these instructio
 - Subscribe a stream - **Tilaa kanava**
 - Subdomain - **Aliverkkotunnus**
 - Shortcuts - **Pikanäppäimet**
-- Unsubscripe - **Peru tilaus**
+- Unsubscribe - **Peru tilaus**
 - Unsupported - **Ei-tuettu**
 - Unresolve - **Merkitse ratkaisemattomaksi**
 - Webhook - **Webhook**

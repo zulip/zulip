@@ -184,7 +184,7 @@ $(() => {
         },
     });
 
-    function check_subdomain_avilable(subdomain) {
+    function check_subdomain_available(subdomain) {
         const url = "/json/realm/subdomain/" + subdomain;
         $.get(url, (response) => {
             if (response.msg !== "available") {
@@ -223,7 +223,7 @@ $(() => {
     });
     $("#id_team_subdomain").on("keyup", () => {
         clearTimeout(timer);
-        timer = setTimeout(check_subdomain_avilable, 250, $("#id_team_subdomain").val());
+        timer = setTimeout(check_subdomain_available, 250, $("#id_team_subdomain").val());
     });
 
     // GitHub auth

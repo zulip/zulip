@@ -537,7 +537,7 @@
       "translate_emoticons": true
     },
     {
-      "name": "translate_emoticons_whitepsace",
+      "name": "translate_emoticons_whitespace",
       "input":  "a:) ;)b",
       "expected_output": "<p>a:) ;)b</p>",
       "text_content": "a:) ;)b",
