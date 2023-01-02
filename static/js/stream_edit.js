@@ -118,7 +118,7 @@ function set_stream_message_retention_setting_dropdown(stream) {
 
 function get_stream_id(target) {
     const $row = $(target).closest(
-        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
+        ".stream-row, .stream-notifications-row, .stream_settings_header, .subscription_settings, .save-button",
     );
     return Number.parseInt($row.attr("data-stream-id"), 10);
 }
