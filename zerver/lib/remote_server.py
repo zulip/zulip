@@ -52,6 +52,8 @@ def send_to_push_bouncer(
 
     """
     assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+    assert settings.ZULIP_ORG_ID is not None
+    assert settings.ZULIP_ORG_KEY is not None
     url = urllib.parse.urljoin(
         settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint
     )
