@@ -80,6 +80,12 @@ export function update_avatar_change_display() {
     }
 }
 
+export function update_account_settings_display() {
+    update_name_change_display();
+    update_email_change_display();
+    update_avatar_change_display();
+}
+
 export function update_send_read_receipts_tooltip() {
     if (page_params.realm_enable_read_receipts) {
         $("#send_read_receipts_label .settings-info-icon").hide();
