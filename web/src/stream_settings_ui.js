@@ -251,6 +251,11 @@ export function update_can_remove_subscribers_group_id(sub, new_value) {
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
+export function update_push_notifications_enabled(sub, new_value) {
+    stream_data.update_push_notifications_enabled(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "push_notifications_enabled");
+}
+
 export function set_color(stream_id, color) {
     const sub = sub_store.get(stream_id);
     stream_edit.set_stream_property(sub, "color", color);
@@ -692,6 +697,7 @@ export function setup_page(callback) {
             max_stream_name_length: page_params.max_stream_name_length,
             max_stream_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
+            is_admin: page_params.is_admin,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_privacy_policy,
             stream_post_policy_values: stream_data.stream_post_policy_values,
@@ -704,6 +710,7 @@ export function setup_page(callback) {
                 page_params.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
                 !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
+            realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         };
 
         const rendered = render_stream_settings_overlay(template_data);

@@ -68,3 +68,16 @@
     </div>
 </div>
 {{/if}}
+
+{{#if (or is_admin is_stream_edit)}}
+    <div class="push_notifications_enabled_setting">
+        {{> ../settings/settings_checkbox
+          is_disabled= (not realm_push_notifications_enabled)
+          prefix="id_"
+          setting_name="push_notifications_enabled"
+          is_checked=push_notifications_enabled
+          label=(t "Mobile push notifications enabled by default")
+          }}
+    </div>
+{{/if}}
+

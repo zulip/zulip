@@ -279,6 +279,7 @@ class TestCreateStreams(ZulipTestCase):
                     "invite_only": True,
                     "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     "message_retention_days": -1,
+                    "push_notifications_enabled": True,
                     "can_remove_subscribers_group": moderators_system_group,
                 }
                 for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
@@ -296,12 +297,18 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(stream.invite_only)
             self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
+            self.assertTrue(stream.push_notifications_enabled)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
             [
-                {"name": stream_name, "description": stream_description, "invite_only": True}
+                {
+                    "name": stream_name,
+                    "description": stream_description,
+                    "invite_only": True,
+                    "push_notifications_enabled": True,
+                }
                 for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
             ],
         )
@@ -1611,6 +1618,56 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_delete(f"/json/streams/{stream_id}")
         self.assert_json_error(result, "Invalid stream ID")
 
+    def test_change_push_notifications_enabled(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        self.subscribe(user_profile, "stream_name1")
+
+        stream_id = get_stream("stream_name1", realm).id
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "stream_name1")
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/streams/{stream_id}",
+                {"push_notifications_enabled": orjson.dumps(True).decode()},
+            )
+        self.assert_json_success(result)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                op="update",
+                type="stream",
+                property="push_notifications_enabled",
+                value=True,
+                stream_id=stream_id,
+                name="stream_name1",
+            ),
+        )
+
+        stream = get_stream("stream_name1", realm)
+        self.assertTrue(stream.push_notifications_enabled)
+
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_PUSH_NOTIFICATIONS_ENABLED_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {RealmAuditLog.OLD_VALUE: False, RealmAuditLog.NEW_VALUE: True}
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
     def test_change_stream_description(self) -> None:
         user_profile = self.example_user("iago")
         self.login_user(user_profile)
@@ -2220,6 +2277,53 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(result[1][1].message_retention_days, -1)
         self.assertEqual(result[1][2].name, "new_stream3")
         self.assertEqual(result[1][2].message_retention_days, None)
+
+    def test_stream_push_notifications_enabled_on_stream_creation(self) -> None:
+        """
+        Only admins can create streams with push_notifications_enabled
+        value True.
+        """
+        aaron = self.example_user("aaron")
+
+        streams_raw: List[StreamDict] = [
+            {
+                "name": "new_stream",
+                "message_retention_days": None,
+                "is_web_public": False,
+                "push_notifications_enabled": True,
+            }
+        ]
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
+            list_to_streams(streams_raw, aaron, autocreate=True)
+
+        streams_raw = [
+            {
+                "name": "new_stream",
+                "message_retention_days": None,
+                "is_web_public": False,
+                "push_notifications_enabled": False,
+            }
+        ]
+        result = list_to_streams(streams_raw, aaron, autocreate=True)
+        self.assert_length(result[0], 0)
+        self.assert_length(result[1], 1)
+        self.assertEqual(result[1][0].name, "new_stream")
+        self.assertEqual(result[1][0].push_notifications_enabled, False)
+
+        iago = self.example_user("iago")
+        streams_raw = [
+            {
+                "name": "new_stream1",
+                "message_retention_days": None,
+                "is_web_public": False,
+                "push_notifications_enabled": True,
+            }
+        ]
+        result = list_to_streams(streams_raw, iago, autocreate=True)
+        self.assert_length(result[0], 0)
+        self.assert_length(result[1], 1)
+        self.assertEqual(result[1][0].name, "new_stream1")
+        self.assertEqual(result[1][0].push_notifications_enabled, True)
 
     def set_up_stream_for_archiving(
         self, stream_name: str, invite_only: bool = False, subscribed: bool = True
@@ -3949,6 +4053,59 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(set(peer_add_event["event"]["stream_ids"]), expected_stream_ids)
         self.assertEqual(set(peer_add_event["event"]["user_ids"]), {self.test_user.id})
 
+    def test_successful_subscriptions_add_with_push_notifications_enabled(self) -> None:
+        """
+        Calling POST /json/users/me/subscriptions should successfully add
+        streams, and should determine which are new subscriptions vs
+        which were already subscribed. For new subscriptions value of
+        push_notification field should be value of push_notifications_enabled
+        field for the subscribed stream.
+        """
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        realm = iago.realm
+
+        other_params = {
+            "push_notifications_enabled": orjson.dumps(True).decode(),
+        }
+        self.common_subscribe_to_streams(iago, ["Verona2"], other_params)
+        sub = self.get_subscription(iago, "Verona2")
+        self.assertTrue(sub.push_notifications)
+
+        other_params = {
+            "push_notifications_enabled": orjson.dumps(False).decode(),
+        }
+        self.common_subscribe_to_streams(iago, ["Denmark5"], other_params)
+        sub = self.get_subscription(iago, "Denmark5")
+        self.assertEqual(sub.push_notifications, None)
+
+        # Push notifications should not change for existing subscriptions
+        stream_id = get_stream("Verona2", realm).id
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"push_notifications_enabled": orjson.dumps(False).decode()},
+        )
+        self.assert_json_success(result)
+
+        self.common_subscribe_to_streams(iago, ["Verona2"], other_params)
+        sub = self.get_subscription(iago, "Verona2")
+        self.assertTrue(sub.push_notifications)
+
+        # Push_notifications should change for new subscriptions
+        self.unsubscribe(iago, "Denmark5")
+        stream_id = get_stream("Denmark5", realm).id
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+
+        self.common_subscribe_to_streams(iago, ["Denmark5"], other_params)
+        sub = self.get_subscription(iago, "Denmark5")
+        self.assertTrue(sub.push_notifications)
+
     def test_successful_subscriptions_notifies_pm(self) -> None:
         """
         Calling POST /json/users/me/subscriptions should notify when a new stream is created.
@@ -4824,7 +4981,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         test_user_ids = [user.id for user in test_users]
 
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             with cache_tries_captured() as cache_tries:
                 with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
                     self.common_subscribe_to_streams(

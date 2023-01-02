@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 184**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream), [`POST /users/me/subscriptions`]
+(/api/subscribe): Added a new parameter `push_notifications_enabled`, which allow
+to choose the default value of push notifications on subscribing a stream.
+
 **Feature level 183**
 
 * [`POST /register`](/api/register-queue): Removed the

@@ -53,6 +53,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         rendered_description = stream.rendered_description
         stream_id = stream.id
         stream_post_policy = stream.stream_post_policy
+        push_notifications_enabled = stream.push_notifications_enabled
 
         # Add versions of the Subscription fields based on a simulated
         # new user subscription set.
@@ -95,6 +96,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
             wildcard_mentions_notify=wildcard_mentions_notify,
+            push_notifications_enabled=push_notifications_enabled,
         )
         subscribed.append(sub)
 
@@ -124,7 +126,7 @@ def build_stream_dict_for_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
-
+    push_notifications_enabled = raw_stream_dict["push_notifications_enabled"]
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
     is_muted = sub_dict["is_muted"]
@@ -179,6 +181,7 @@ def build_stream_dict_for_sub(
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
         wildcard_mentions_notify=wildcard_mentions_notify,
+        push_notifications_enabled=push_notifications_enabled,
     )
 
 
@@ -201,7 +204,7 @@ def build_stream_dict_for_never_sub(
     stream_weekly_traffic = get_average_weekly_stream_traffic(
         raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
     )
-
+    push_notifications_enabled = raw_stream_dict["push_notifications_enabled"]
     # Backwards-compatibility addition of removed field.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
@@ -221,6 +224,7 @@ def build_stream_dict_for_never_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        push_notifications_enabled=push_notifications_enabled,
     )
 
 

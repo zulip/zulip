@@ -115,6 +115,13 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
         .find("input, select, button")
         .prop("disabled", !sub.can_change_stream_permissions);
 
+    $general_settings_container
+        .find(".push_notifications_enabled")
+        .prop(
+            "disabled",
+            !page_params.realm_push_notifications_enabled || !sub.can_change_stream_permissions,
+        );
+
     if (!sub.can_change_stream_permissions) {
         return;
     }

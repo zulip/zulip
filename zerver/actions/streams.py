@@ -294,6 +294,7 @@ def send_subscription_add_events(
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
                 stream_post_policy=stream_dict["stream_post_policy"],
+                push_notifications_enabled=stream_dict["push_notifications_enabled"],
                 # Computed fields not present in Stream.API_FIELDS
                 is_announcement_only=stream_dict["is_announcement_only"],
             )
@@ -531,6 +532,10 @@ def bulk_add_subscriptions(
                 if sub.active:
                     already_subscribed.append(sub_info)
                 else:
+                    if not stream.push_notifications_enabled:
+                        sub_info.sub.push_notifications = None
+                    else:
+                        sub_info.sub.push_notifications = True
                     subs_to_activate.append(sub_info)
 
         used_colors = used_colors_for_user_ids.get(user_profile.id, set())
@@ -540,15 +545,24 @@ def bulk_add_subscriptions(
             stream = recipient_id_to_stream[recipient_id]
             color = user_color_map[recipient_id]
 
+            if not stream.push_notifications_enabled:
+                push_notification = None
+            else:
+                push_notification = True
+
             sub = Subscription(
                 user_profile=user_profile,
                 is_user_active=user_profile.is_active,
                 active=True,
                 color=color,
                 recipient_id=recipient_id,
+                push_notifications=push_notification,
             )
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)
+
+    subs = [info.sub for info in subs_to_activate]
+    Subscription.objects.bulk_update(subs, ["push_notifications"])
 
     bulk_add_subs_to_db_with_logging(
         realm=realm,
@@ -1361,4 +1375,44 @@ def do_change_stream_group_based_setting(
     )
     transaction.on_commit(
         lambda: send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    )
+
+
+@transaction.atomic(durable=True)
+def do_change_push_notifications_enabled(
+    stream: Stream,
+    push_notifications_enabled: bool,
+    *,
+    acting_user: UserProfile,
+) -> None:
+    old_push_notifications_enabled = stream.push_notifications_enabled
+
+    stream.push_notifications_enabled = push_notifications_enabled
+    stream.save(update_fields=["push_notifications_enabled"])
+
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_PUSH_NOTIFICATIONS_ENABLED_CHANGED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_push_notifications_enabled,
+                RealmAuditLog.NEW_VALUE: push_notifications_enabled,
+            }
+        ).decode(),
+    )
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="push_notifications_enabled",
+        value=push_notifications_enabled,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+
+    transaction.on_commit(
+        lambda event=event: send_event(stream.realm, event, can_access_stream_user_ids(stream))
     )

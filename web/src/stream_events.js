@@ -96,6 +96,9 @@ export function update_property(stream_id, property, value, other_values) {
         case "can_remove_subscribers_group_id":
             stream_settings_ui.update_can_remove_subscribers_group_id(sub, value);
             break;
+        case "push_notifications_enabled":
+            stream_settings_ui.update_push_notifications_enabled(sub, value);
+            break;
         default:
             blueslip.warn("Unexpected subscription property type", {
                 property,
@@ -107,7 +110,7 @@ export function update_property(stream_id, property, value, other_values) {
 // Add yourself to a stream we already know about client-side.
 // It's likely we should be passing in the full sub object from the caller/backend,
 // but for now we just pass in the subscribers and color (things likely to be different).
-export function mark_subscribed(sub, subscribers, color) {
+export function mark_subscribed(sub, subscribers, color, push_notifications) {
     if (sub === undefined) {
         blueslip.error("Undefined sub passed to mark_subscribed");
         return;
@@ -116,6 +119,8 @@ export function mark_subscribed(sub, subscribers, color) {
     if (sub.subscribed) {
         return;
     }
+    sub.push_notifications = push_notifications;
+    update_property(sub.stream_id, "push_notifications", sub.push_notifications);
 
     // If the backend sent us a color, use that
     if (color !== undefined && sub.color !== color) {

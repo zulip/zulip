@@ -332,6 +332,7 @@ test("stream_settings", () => {
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
         message_retention_days: 10,
         can_remove_subscribers_group_id: admins_group.id,
+        push_notifications_enabled: false,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -356,6 +357,7 @@ test("stream_settings", () => {
         true,
     );
     assert.equal(sub_rows[0].message_retention_days, 10);
+    assert.equal(sub_rows[0].push_notifications_enabled, false);
 
     const sub = stream_data.get_sub("a");
     stream_data.update_stream_privacy(sub, {
@@ -365,12 +367,13 @@ test("stream_settings", () => {
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
     stream_data.update_can_remove_subscribers_group_id(sub, moderators_group.id);
+    stream_data.update_push_notifications_enabled(sub, false);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group_id, moderators_group.id);
-
+    assert.equal(sub.push_notifications_enabled, false);
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);

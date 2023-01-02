@@ -662,6 +662,7 @@ paths:
                                         "stream_weekly_traffic": null,
                                         "can_remove_subscribers_group_id": 2,
                                         "subscribers": [10],
+                                        "push_notifications_enabled": false,
                                       },
                                     ],
                                   "id": 0,
@@ -1176,6 +1177,7 @@ paths:
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group_id": 2,
+                                        "push_notifications_enabled": true,
                                       },
                                     ],
                                   "id": 0,
@@ -1222,6 +1224,7 @@ paths:
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group_id": 2,
+                                        "push_notifications_enabled": true,
                                       },
                                     ],
                                   "id": 0,
@@ -1788,6 +1791,7 @@ paths:
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group_id": 2,
+                                              "push_notifications_enabled": false,
                                             },
                                             {
                                               "name": "Denmark",
@@ -1802,6 +1806,7 @@ paths:
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group_id": 2,
+                                              "push_notifications_enabled": false,
                                             },
                                             {
                                               "name": "Verona",
@@ -1816,6 +1821,7 @@ paths:
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
                                               "can_remove_subscribers_group_id": 2,
+                                              "push_notifications_enabled": false,
                                             },
                                           ],
                                       },
@@ -1861,6 +1867,7 @@ paths:
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
                                         "can_remove_subscribers_group_id": 2,
+                                        "push_notifications_enabled": true,
                                       },
                                     ],
                                   "id": 0,
@@ -8439,6 +8446,20 @@ paths:
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - name: push_notifications_enabled
+          in: query
+          description: |
+            A boolean used to set the value of push_notifications when a user
+            subscribes to the stream.
+
+            When set to `true` push_notifications will be enabled on subscribing to stream.
+            When set to `false` push_notifications will depend on user-level default settings.
+
+            **Changes**: New in Zulip 7.0 (feature level 184).
+          schema:
+            type: boolean
+            default: false
+          example: true
         - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
@@ -11265,6 +11286,7 @@ paths:
                                   nullable: true
                                 is_announcement_only: {}
                                 can_remove_subscribers_group_id: {}
+                                push_notifications_enabled: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -15258,6 +15280,7 @@ paths:
                                   nullable: true
                                 is_announcement_only: {}
                                 can_remove_subscribers_group_id: {}
+                                push_notifications_enabled: {}
                                 is_default:
                                   type: boolean
                                   description: |
@@ -15370,6 +15393,7 @@ paths:
                             "stream_id": 7,
                             "stream_post_policy": 1,
                             "can_remove_subscribers_group_id": 2,
+                            "push_notifications_enabled": true,
                           },
                       }
         "400":
@@ -15529,6 +15553,20 @@ paths:
           required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - name: push_notifications_enabled
+          in: query
+          description: |
+            A boolean used to set the value of push_notifications when a user
+            subscribes to the stream.
+
+            When set to `true` push_notifications will be enabled on subscribing to stream.
+            When set to `false` push_notifications will depend on user-level default settings.
+
+            **Changes**: New in Zulip 7.0 (feature level 184).
+          schema:
+            type: boolean
+          example: true
+          required: false
         - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
@@ -16500,6 +16538,7 @@ components:
               nullable: true
             is_announcement_only: {}
             can_remove_subscribers_group_id: {}
+            push_notifications_enabled: {}
     BasicStreamBase:
       type: object
       description: |
@@ -16574,6 +16613,16 @@ components:
             - `-1` encodes retaining messages in this stream forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
+        push_notifications_enabled:
+          type: boolean
+          description: |
+            A boolean used to set the value of push_notifications when a user
+            subscribes to the stream.
+
+            When set to `true` push_notifications will be enabled on subscribing to stream.
+            When set to `false` push_notifications will depend on user-level default settings.
+
+            **Changes**: New in Zulip 7.0 (feature level 184).
         history_public_to_subscribers:
           type: boolean
           description: |
@@ -17241,6 +17290,16 @@ components:
             from the stream.
 
             **Changes**: New in Zulip 6.0 (feature level 142).
+        push_notifications_enabled:
+          type: boolean
+          description: |
+            A boolean used to set the value of push_notifications when a user
+            subscribes to the stream.
+
+            When set to `true` push_notifications will be enabled on subscribing to stream.
+            When set to `false` push_notifications will depend on user-level default settings.
+
+            **Changes**: New in Zulip 7.0 (feature level 184).
     DefaultStreamGroup:
       type: object
       description: |

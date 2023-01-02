@@ -240,6 +240,7 @@ export function show_settings_for(node) {
             page_params.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: page_params.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
+        realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 

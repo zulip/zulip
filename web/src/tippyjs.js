@@ -644,6 +644,17 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: [".push_notifications_enabled_setting .control-label-disabled"],
+        content: $t({
+            defaultMessage: "Mobile push notifications are not configured on this server.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: [".disabled-compose-send-button-container"],
         maxWidth: 350,
         content: () => compose_recipient.get_posting_policy_error_message(),

@@ -61,6 +61,7 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: Optional[bool]
     message_retention_days: Optional[int]
+    push_notifications_enabled: bool
     can_remove_subscribers_group: Optional[UserGroup]
 
 
@@ -127,6 +128,7 @@ def create_stream_if_needed(
     message_retention_days: Optional[int] = None,
     can_remove_subscribers_group: Optional[UserGroup] = None,
     acting_user: Optional[UserProfile] = None,
+    push_notifications_enabled: bool = False,
 ) -> Tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -152,6 +154,7 @@ def create_stream_if_needed(
                 is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 message_retention_days=message_retention_days,
                 can_remove_subscribers_group=can_remove_subscribers_group,
+                push_notifications_enabled=push_notifications_enabled,
             ),
         )
 
@@ -202,6 +205,7 @@ def create_streams_if_needed(
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             acting_user=acting_user,
+            push_notifications_enabled=stream_dict.get("push_notifications_enabled", False),
         )
 
         if created:
@@ -700,6 +704,7 @@ def list_to_streams(
 
     message_retention_days_not_none = False
     web_public_stream_requested = False
+    push_notifications_enabled_not_false = False
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
@@ -710,6 +715,9 @@ def list_to_streams(
 
             if autocreate and stream_dict["is_web_public"]:
                 web_public_stream_requested = True
+
+            if stream_dict.get("push_notifications_enabled", False):
+                push_notifications_enabled_not_false = True
         else:
             existing_streams.append(stream)
 
@@ -746,6 +754,9 @@ def list_to_streams(
                 raise OrganizationOwnerRequiredError
 
             user_profile.realm.ensure_not_on_limited_plan()
+
+        if push_notifications_enabled_not_false and not user_profile.is_realm_admin:
+            raise JsonableError(_("Insufficient permission"))
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody

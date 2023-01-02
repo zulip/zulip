@@ -250,6 +250,11 @@ function create_stream() {
 
     data.announce = JSON.stringify(announce);
 
+    const push_notifications_enabled = $(
+        "#stream_creation_form input[name=push_notifications_enabled]",
+    ).prop("checked");
+    data.push_notifications_enabled = JSON.stringify(push_notifications_enabled);
+
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
     const user_ids = stream_create_subscribers.get_principals();
@@ -371,6 +376,11 @@ export function show_new_stream_modal() {
         true,
     );
 
+    // Setting for choosing default value of push notifications is visible to administrators only. The below block
+    // sets the default state of setting if it is visible.
+    if (page_params.is_admin && page_params.realm_push_notifications_enabled) {
+        $("#stream_creation_form #id_push_notifications_enabled").prop("checked", false);
+    }
     // set default state for "announce stream" option.
     update_announce_stream_state();
     clear_error_display();

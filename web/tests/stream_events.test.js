@@ -259,6 +259,16 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
     }
+    // Test stream push_notifications_enabled event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_push_notifications_enabled", stub.f);
+        stream_events.update_property(stream_id, "push_notifications_enabled", false);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, false);
+    }
 });
 
 test("marked_unsubscribed (code coverage)", () => {

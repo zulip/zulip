@@ -575,7 +575,12 @@ export function dispatch_normal_event(event) {
                         const sub = sub_store.get(rec.stream_id);
                         if (sub) {
                             stream_data.update_stream_email_address(sub, rec.email_address);
-                            stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
+                            stream_events.mark_subscribed(
+                                sub,
+                                rec.subscribers,
+                                rec.color,
+                                rec.push_notifications,
+                            );
                         } else {
                             blueslip.error("Subscribing to unknown stream", {
                                 stream_id: rec.stream_id,

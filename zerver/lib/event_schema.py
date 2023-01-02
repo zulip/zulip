@@ -63,6 +63,7 @@ basic_stream_fields = [
     ("rendered_description", str),
     ("stream_id", int),
     ("stream_post_policy", int),
+    ("push_notifications_enabled", bool),
 ]
 
 subscription_fields: Sequence[Tuple[str, object]] = [
@@ -1289,6 +1290,9 @@ def check_stream_update(
     elif prop == "can_remove_subscribers_group_id":
         assert extra_keys == set()
         assert isinstance(value, int)
+    elif prop == "push_notifications_enabled":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 

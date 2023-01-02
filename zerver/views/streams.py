@@ -30,6 +30,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_push_notifications_enabled,
     do_change_stream_description,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
@@ -269,6 +270,7 @@ def update_stream_backend(
     message_retention_days: Optional[Union[int, str]] = REQ(
         json_validator=check_string_or_int, default=None
     ),
+    push_notifications_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     can_remove_subscribers_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
@@ -357,6 +359,11 @@ def update_stream_backend(
         )
         do_change_stream_message_retention_days(
             stream, user_profile, new_message_retention_days_value
+        )
+
+    if push_notifications_enabled is not None:
+        do_change_push_notifications_enabled(
+            stream, push_notifications_enabled, acting_user=user_profile
         )
 
     if description is not None:
@@ -577,6 +584,7 @@ def add_subscriptions_backend(
         default=EMPTY_PRINCIPALS,
     ),
     authorization_errors_fatal: bool = REQ(json_validator=check_bool, default=True),
+    push_notifications_enabled: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -617,6 +625,7 @@ def add_subscriptions_backend(
         )
         stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
 
+        stream_dict_copy["push_notifications_enabled"] = push_notifications_enabled
         stream_dicts.append(stream_dict_copy)
 
     is_subscribing_other_users = False

@@ -1030,6 +1030,15 @@ div.settings-radio-input-parent {
             max-width: 100%;
         }
     }
+
+    .push_notifications_enabled_setting {
+        margin: 20px 0;
+        width: fit-content;
+
+        .inline {
+            display: inline;
+        }
+    }
 }
 
 #change_user_group_description,

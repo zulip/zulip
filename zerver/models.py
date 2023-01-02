@@ -2611,6 +2611,9 @@ class Stream(models.Model):
     }
     message_retention_days = models.IntegerField(null=True, default=None)
 
+    # Used to set the value of push_notifications field when user subscribes.
+    # False means we inherit user-level default.
+    push_notifications_enabled = models.BooleanField(default=False)
     # on_delete field here is set to RESTRICT because we don't want to allow
     # deleting a user group in case it is referenced by this settig.
     # We are not using PROTECT since we want to allow deletion of user groups
@@ -2669,6 +2672,7 @@ class Stream(models.Model):
         "rendered_description",
         "stream_post_policy",
         "can_remove_subscribers_group_id",
+        "push_notifications_enabled",
     ]
 
     @staticmethod
@@ -2691,6 +2695,7 @@ class Stream(models.Model):
             stream_id=self.id,
             stream_post_policy=self.stream_post_policy,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+            push_notifications_enabled=self.push_notifications_enabled,
         )
 
 
@@ -4527,6 +4532,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
     STREAM_PROPERTY_CHANGED = 607
     STREAM_GROUP_BASED_SETTING_CHANGED = 608
+    STREAM_PUSH_NOTIFICATIONS_ENABLED_CHANGED = 609
 
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
