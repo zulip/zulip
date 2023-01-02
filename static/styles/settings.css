@@ -858,6 +858,26 @@ input[type="checkbox"] {
     #bot-role-select:disabled {
         opacity: 1;
     }
+
+    #current_bot_avatar_image {
+        margin: 5px 0 8px;
+    }
+
+    .edit_bot_avatar_preview_text {
+        display: none;
+    }
+}
+
+#add_bot_preview_text {
+    display: none;
+}
+
+.edit_bot_avatar_preview_image,
+#add_bot_preview_image {
+    height: 100px;
+    object-fit: cover;
+    width: 100px;
+    margin: 2px 0 8px;
 }
 
 #add-alert-word {

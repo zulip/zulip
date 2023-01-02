@@ -345,6 +345,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
+        bot_avatar_url: bot.avatar_url,
     });
 
     let owner_widget;
@@ -449,6 +450,16 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
                 }),
             );
         }
+
+        // Hide the avatar if the user has uploaded an image
+        $("#bot-edit-form").on("input", ".edit_bot_avatar_file_input", () => {
+            $("#current_bot_avatar_image").hide();
+        });
+
+        // Show the avatar if the user has cleared the image
+        $("#bot-edit-form").on("click", ".edit_bot_avatar_clear_button", () => {
+            $("#current_bot_avatar_image").show();
+        });
 
         $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
             e.preventDefault();

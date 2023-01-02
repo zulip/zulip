@@ -31,9 +31,14 @@
         </div>
         <div class="input-group edit-avatar-section">
             <label>Avatar</label>
+            {{!-- Shows the current avatar --}}
+            <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
             <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
             <div class="edit_bot_avatar_file"></div>
-            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
+            <div class="edit_bot_avatar_preview_text">
+                <img class="edit_bot_avatar_preview_image" />
+            </div>
+            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Change avatar" }}</button>
             <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
             <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
         </div>
