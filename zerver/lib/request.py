@@ -78,7 +78,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
         return RequestNotes()
 
 
-class RequestConfusingParmsError(JsonableError):
+class RequestConfusingParamsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
     data_fields = ["var_name1", "var_name2"]
 
@@ -413,7 +413,7 @@ def has_request_variables(
                         # fails to recognize this for some reason.
                         continue  # nocoverage
                     if post_var_name is not None:
-                        raise RequestConfusingParmsError(post_var_name, req_var)
+                        raise RequestConfusingParamsError(post_var_name, req_var)
                     post_var_name = req_var
 
                 if post_var_name is None:

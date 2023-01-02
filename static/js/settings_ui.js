@@ -43,13 +43,13 @@ export function do_settings_change(
     request_method({
         url,
         data,
-        success(reponse_data) {
+        success(response_data) {
             setTimeout(() => {
                 ui_report.success(success_msg_html, $spinner, remove_after);
                 display_checkmark($spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
-                success_continuation(reponse_data);
+                success_continuation(response_data);
             }
         },
         error(xhr) {

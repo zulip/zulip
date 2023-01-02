@@ -10002,7 +10002,7 @@ paths:
                       zulip_merge_base:
                         type: string
                         description: |
-                          The `git merge-base` between `zulip_verson` and official branches
+                          The `git merge-base` between `zulip_version` and official branches
                           in the public
                           [Zulip server and web app repository](https://github.com/zulip/zulip),
                           in the same format as `zulip_version`. This will equal
@@ -13394,7 +13394,7 @@ paths:
                       zulip_merge_base:
                         type: string
                         description: |
-                          The `git merge-base` between `zulip_verson` and official branches
+                          The `git merge-base` between `zulip_version` and official branches
                           in the public
                           [Zulip server and web app repository](https://github.com/zulip/zulip),
                           in the same format as `zulip_version`. This will equal

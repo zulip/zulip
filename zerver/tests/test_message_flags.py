@@ -148,11 +148,11 @@ class FirstUnreadAnchorTests(ZulipTestCase):
             "zerver.lib.narrow.get_first_visible_message_id",
             return_value=new_message_id + 1,
         ):
-            messages_reponse = self.get_messages_response(
+            messages_response = self.get_messages_response(
                 anchor="first_unread", num_before=0, num_after=1
             )
-        self.assert_length(messages_reponse["messages"], 0)
-        self.assertIn("anchor", messages_reponse)
+        self.assert_length(messages_response["messages"], 0)
+        self.assertIn("anchor", messages_response)
 
         with mock.patch(
             "zerver.lib.narrow.get_first_visible_message_id",

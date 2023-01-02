@@ -200,7 +200,7 @@ def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
     return format_dict
 
 
-def send_formated_pagerduty(
+def send_formatted_pagerduty(
     request: HttpRequest,
     user_profile: UserProfile,
     message_type: str,
@@ -253,7 +253,7 @@ def api_pagerduty_webhook(
                 raise UnsupportedWebhookEventTypeError(message_type)
 
             format_dict = build_pagerduty_formatdict(message)
-            send_formated_pagerduty(request, user_profile, message_type, format_dict)
+            send_formatted_pagerduty(request, user_profile, message_type, format_dict)
 
         for message in messages:
             message_event = message.get("event").tame(check_none_or(check_string))
@@ -267,7 +267,7 @@ def api_pagerduty_webhook(
                 raise UnsupportedWebhookEventTypeError(message_event)
 
             format_dict = build_pagerduty_formatdict_v2(message)
-            send_formated_pagerduty(request, user_profile, message_event, format_dict)
+            send_formatted_pagerduty(request, user_profile, message_event, format_dict)
     else:
         if "event" in payload:
             # V3 has no "messages" field, and it has key "event" instead
@@ -278,6 +278,6 @@ def api_pagerduty_webhook(
                 raise UnsupportedWebhookEventTypeError(event_type)
 
             format_dict = build_pagerduty_formatdict_v3(event)
-            send_formated_pagerduty(request, user_profile, event_type, format_dict)
+            send_formatted_pagerduty(request, user_profile, event_type, format_dict)
 
     return json_success(request)

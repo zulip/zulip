@@ -20,7 +20,7 @@ let $active_popover_element;
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let edit_message_id;
 
-export function is_popped_from_edit_messsage() {
+export function is_popped_from_edit_message() {
     return $active_popover_element && edit_message_id !== undefined;
 }
 

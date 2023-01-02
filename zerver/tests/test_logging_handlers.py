@@ -129,7 +129,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         """A request with no stack and multi-line report.getMessage() is handled properly"""
         record = self.simulate_error()
         record.exc_info = None
-        record.msg = "message\nmoremesssage\nmore"
+        record.msg = "message\nmoremessage\nmore"
 
         report = self.run_handler(record)
         self.assertIn("user", report)
@@ -138,7 +138,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
-        self.assertEqual(report["stack_trace"], "message\nmoremesssage\nmore")
+        self.assertEqual(report["stack_trace"], "message\nmoremessage\nmore")
         self.assertEqual(report["message"], "message")
 
     @patch("zerver.logging_handlers.try_git_describe")

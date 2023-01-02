@@ -6,7 +6,7 @@ from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def move_to_seperate_table(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
+def move_to_separate_table(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
     AlertWord = apps.get_model("zerver", "AlertWord")
 
@@ -47,5 +47,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(move_to_seperate_table, move_back_to_user_profile, elidable=True),
+        migrations.RunPython(move_to_separate_table, move_back_to_user_profile, elidable=True),
     ]

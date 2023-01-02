@@ -181,10 +181,10 @@ export function submit_api_request(
     request_method({
         url,
         data,
-        success(reponse_data) {
+        success(response_data) {
             close_modal();
             if (success_continuation !== undefined) {
-                success_continuation(reponse_data);
+                success_continuation(response_data);
             }
         },
         error(xhr) {

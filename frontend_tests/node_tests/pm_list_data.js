@@ -299,7 +299,7 @@ test("get_list_info", ({override}) => {
         more_conversations_unread_count: 0,
     });
 
-    // Now, add additional converstaions until we exceed
+    // Now, add additional conversations until we exceed
     // `max_conversations_to_show_with_unreads`.
 
     pm_conversations.recent.insert([zoe.user_id], 3);
