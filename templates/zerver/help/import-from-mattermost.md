@@ -69,6 +69,9 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 
 {tab|mm-cloud}
 
+1. Make sure you have [mmctl](https://github.com/mattermost/mmctl) installed - these
+   instructions assume your version is `7.5.1` or higher.
+
 1. Log into your Mattermost Cloud instance using your administrator credentials.
 
     ```
@@ -78,7 +81,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 1. Create a full export of the server, including attached files.
 
     ```
-    mmctl export create --attachments
+    mmctl export create
     ```
 
 1. List all of the exports on the server, and copy the name of the
