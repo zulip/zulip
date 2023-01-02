@@ -412,7 +412,7 @@ function set_org_join_restrictions_dropdown() {
     );
 }
 
-function set_message_content_in_email_notifications_visiblity() {
+function set_message_content_in_email_notifications_visibility() {
     change_element_block_display_property(
         "message_content_in_email_notifications_label",
         page_params.realm_message_content_allowed_in_email_notifications,
@@ -508,7 +508,7 @@ function update_dependent_subsettings(property_name) {
             set_org_join_restrictions_dropdown();
             break;
         case "realm_message_content_allowed_in_email_notifications":
-            set_message_content_in_email_notifications_visiblity();
+            set_message_content_in_email_notifications_visibility();
             break;
         case "realm_digest_emails_enabled":
             settings_notifications.set_enable_digest_emails_visibility(
@@ -1140,7 +1140,7 @@ export function build_page() {
     set_delete_own_message_policy_dropdown(page_params.realm_delete_own_message_policy);
     set_message_retention_setting_dropdown();
     set_org_join_restrictions_dropdown();
-    set_message_content_in_email_notifications_visiblity();
+    set_message_content_in_email_notifications_visibility();
     set_digest_emails_weekday_visibility();
     set_create_web_public_stream_dropdown_visibility();
 

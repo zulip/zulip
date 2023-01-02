@@ -59,7 +59,7 @@ def inline_template(template_source_name: str) -> None:
     # Thus, we strip this stuff out if the template extends
     # another template.
     if template_name not in ["email_base_default", "email_base_marketing", "macros"]:
-        output = strip_unnecesary_tags(output)
+        output = strip_unnecessary_tags(output)
 
     if (
         "zerver/emails/compiled/email_base_default.html" in output
@@ -82,7 +82,7 @@ def escape_jinja2_characters(text: str) -> str:
     return text
 
 
-def strip_unnecesary_tags(text: str) -> str:
+def strip_unnecessary_tags(text: str) -> str:
     end_block = "</body>\n</html>"
     start_block = "{% extends"
     start = text.find(start_block)

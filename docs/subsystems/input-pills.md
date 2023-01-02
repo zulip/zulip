@@ -18,7 +18,7 @@ The pills will automatically be inserted in before the ".input" in order.
 ## Basic usage
 
 ```js
-var $pill_containter = $("#input_container");
+var $pill_container = $("#input_container");
 var pills = input_pill.create({
     $container: $pill_container,
     create_item_from_text: user_pill.create_item_from_email,

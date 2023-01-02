@@ -657,8 +657,8 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         king = self.lear_user("king")
 
         zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(0, 3)]
-        leary_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
-        msg_ids = zulip_msg_ids + leary_msg_ids
+        lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
+        msg_ids = zulip_msg_ids + lear_msg_ids
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()

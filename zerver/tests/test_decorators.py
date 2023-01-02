@@ -49,7 +49,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.request import (
     REQ,
-    RequestConfusingParmsError,
+    RequestConfusingParamsError,
     RequestNotes,
     RequestVariableConversionError,
     RequestVariableMissingError,
@@ -183,7 +183,7 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(orjson.loads(double(request).content).get("number"), 10)
 
         request = HostRequestMock(post_data={"number": "6", "x": "7"})
-        with self.assertRaises(RequestConfusingParmsError) as cm:
+        with self.assertRaises(RequestConfusingParamsError) as cm:
             double(request)
         self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
 

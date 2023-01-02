@@ -542,7 +542,7 @@ export class MessageListView {
             return true;
         }
 
-        // We may need to add a subscripton marker after merging the groups.
+        // We may need to add a subscription marker after merging the groups.
         this.maybe_add_subscription_marker(second_group, last_msg_container, first_msg_container);
 
         return false;

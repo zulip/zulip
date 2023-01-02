@@ -287,7 +287,7 @@ heartbeat_event = event_dict_type(
         ("type", Equals("heartbeat")),
     ]
 )
-_check_hearbeat = make_checker(heartbeat_event)
+_check_heartbeat = make_checker(heartbeat_event)
 
 
 def check_heartbeat(
@@ -295,7 +295,7 @@ def check_heartbeat(
     var_name: str,
     event: Dict[str, object],
 ) -> None:
-    _check_hearbeat(var_name, event)
+    _check_heartbeat(var_name, event)
 
 
 _hotspot = DictType(

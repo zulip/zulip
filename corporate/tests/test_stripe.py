@@ -1482,7 +1482,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(ledger_entry.licenses_at_next_renewal, new_seat_count)
 
     @mock_stripe()
-    def test_upgrade_first_card_fails_and_retry_with_another_card_without_starting_from_begining(
+    def test_upgrade_first_card_fails_and_retry_with_another_card_without_starting_from_beginning(
         self, *mocks: Mock
     ) -> None:
         user = self.example_user("hamlet")
@@ -1652,7 +1652,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/billing/", response["Location"])
 
     @mock_stripe()
-    def test_upgrade_first_card_fails_and_restart_from_begining(self, *mocks: Mock) -> None:
+    def test_upgrade_first_card_fails_and_restart_from_beginning(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
         # From https://stripe.com/docs/testing#cards: Attaching this card to
