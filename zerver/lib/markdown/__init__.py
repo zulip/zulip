@@ -1694,7 +1694,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     """
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
-    RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))" r"[ ]{0,3}>[ ]?(.*)")
+    RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))[ ]{0,3}>[ ]?(.*)")
 
     # run() is very slightly forked from the base class; see notes below.
     def run(self, parent: Element, blocks: List[str]) -> None:

@@ -995,7 +995,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 )
             for _, _, token in gcm_devices:
                 self.assertIn(
-                    "INFO:zerver.lib.push_notifications:" f"GCM: Sent {token} as {message.id}",
+                    f"INFO:zerver.lib.push_notifications:GCM: Sent {token} as {message.id}",
                     pn_logger.output,
                 )
 

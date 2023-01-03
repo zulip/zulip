@@ -90,7 +90,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted user story {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of user story {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of user story {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of user story {subject} to {new}.",
     },
     "milestone": {
         "create": "[{user}]({user_link}) created sprint {subject}.",
@@ -121,9 +121,8 @@ templates = {
         "commented": "[{user}]({user_link}) commented on task {subject}.",
         "delete": "[{user}]({user_link}) deleted task {subject}.",
         "changed_us": "[{user}]({user_link}) moved task {subject} from user story {old} to {new}.",
-        "due_date": "[{user}]({user_link}) changed due date of task {subject}"
-        " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of task {subject}" " to {new}.",
+        "due_date": "[{user}]({user_link}) changed due date of task {subject} from {old} to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of task {subject} to {new}.",
     },
     "issue": {
         "create": "[{user}]({user_link}) created issue {subject}.",
@@ -146,7 +145,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted issue {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of issue {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of issue {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of issue {subject} to {new}.",
         "blocked": "[{user}]({user_link}) blocked issue {subject}.",
         "unblocked": "[{user}]({user_link}) unblocked issue {subject}.",
     },

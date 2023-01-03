@@ -683,7 +683,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/audio.mp3">' "http://test.org/audio.mp3</a></p>"),
+            '<p><a href="http://test.org/audio.mp3">http://test.org/audio.mp3</a></p>',
             msg.rendered_content,
         )
 
@@ -719,7 +719,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/foo.html">' "http://test.org/foo.html</a></p>"),
+            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
             msg.rendered_content,
         )
 
@@ -758,7 +758,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/foo.html">' "http://test.org/foo.html</a></p>"),
+            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
             msg.rendered_content,
         )
 
@@ -795,7 +795,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/foo.html">' "http://test.org/foo.html</a></p>"),
+            '<p><a href="http://test.org/foo.html">http://test.org/foo.html</a></p>',
             msg.rendered_content,
         )
 
