@@ -161,8 +161,7 @@ requests[security]
 requests-oauthlib
 
 # For OpenAPI schema validation.
-openapi-core<0.16.2  # https://github.com/p1c2u/openapi-core/issues/442
-openapi-schema-validator
+openapi-core
 
 # For reporting errors to sentry.io
 sentry-sdk

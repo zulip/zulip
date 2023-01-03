@@ -558,7 +558,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
                 path=settings.LANGUAGE_COOKIE_PATH,
                 domain=settings.LANGUAGE_COOKIE_DOMAIN,
                 secure=settings.LANGUAGE_COOKIE_SECURE,
-                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/pull/1228
+                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
                 samesite=settings.LANGUAGE_COOKIE_SAMESITE,
             )
 
