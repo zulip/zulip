@@ -32,7 +32,7 @@ approach shown above.
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "-f", "--fixture", help="The path to the fixture you'd like to send " "into Zulip"
+            "-f", "--fixture", help="The path to the fixture you'd like to send into Zulip"
         )
 
         parser.add_argument(

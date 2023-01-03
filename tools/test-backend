@@ -256,9 +256,7 @@ def main() -> None:
     parser.add_argument(
         "--rerun",
         action="store_true",
-        help=(
-            "Run the tests which failed the last time " "test-backend was run.  Implies not --stop."
-        ),
+        help="Run the tests which failed the last time test-backend was run.  Implies not --stop.",
     )
     parser.add_argument(
         "--include-webhooks",

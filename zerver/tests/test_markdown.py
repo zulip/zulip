@@ -2027,7 +2027,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">' "@all" "</span> test</p>",
+            '<p><span class="user-mention" data-user-id="*">@all</span> test</p>',
         )
         self.assertTrue(rendering_result.mentions_wildcard)
 
@@ -2039,7 +2039,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">' "@everyone" "</span> test</p>",
+            '<p><span class="user-mention" data-user-id="*">@everyone</span> test</p>',
         )
         self.assertTrue(rendering_result.mentions_wildcard)
 
@@ -2051,7 +2051,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">' "@stream" "</span> test</p>",
+            '<p><span class="user-mention" data-user-id="*">@stream</span> test</p>',
         )
         self.assertTrue(rendering_result.mentions_wildcard)
 
@@ -2105,7 +2105,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
+            f'<p><span class="user-mention" data-user-id="{user_id}">@King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
 
@@ -2113,7 +2113,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
+            f'<p><span class="user-mention" data-user-id="{user_id}">@King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
 
