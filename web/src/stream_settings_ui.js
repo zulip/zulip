@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
@@ -999,6 +1000,7 @@ export function open_create_stream() {
 export function unsubscribe_from_private_stream(sub) {
     const invite_only = sub.invite_only;
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
+    const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream: sub});
 
     const html_body = render_unsubscribe_private_stream_modal({
         message: $t({
@@ -1020,8 +1022,8 @@ export function unsubscribe_from_private_stream(sub) {
 
     confirm_dialog.launch({
         html_heading: $t_html(
-            {defaultMessage: "Unsubscribe from {stream_name}"},
-            {stream_name: sub.name},
+            {defaultMessage: "Unsubscribe from <z-link></z-link>"},
+            {"z-link": () => stream_name_with_privacy_symbol_html},
         ),
         html_body,
         on_click: unsubscribe_from_stream,
