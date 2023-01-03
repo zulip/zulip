@@ -41,11 +41,11 @@ def support_request(request: HttpRequest) -> HttpResponse:
                 "support_url": get_support_url(user.realm),
                 "user_role": user.get_role_name(),
             }
-
+            # Sent to the server's support team, so this email is not user-facing.
             send_email(
                 "zerver/emails/support_request",
                 to_emails=[FromAddress.SUPPORT],
-                from_name="Zulip Support",
+                from_name="Zulip support request",
                 from_address=FromAddress.tokenized_no_reply_address(),
                 reply_to_email=user.delivery_email,
                 context=email_context,

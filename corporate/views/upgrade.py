@@ -202,10 +202,11 @@ def sponsorship(
             "paid_users_count": paid_users_count,
             "paid_users_description": paid_users_description,
         }
+        # Sent to the server's support team, so this email is not user-facing.
         send_email(
             "zerver/emails/sponsorship_request",
             to_emails=[FromAddress.SUPPORT],
-            from_name="Zulip sponsorship",
+            from_name="Zulip sponsorship request",
             from_address=FromAddress.tokenized_no_reply_address(),
             reply_to_email=user.delivery_email,
             context=context,
