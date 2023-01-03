@@ -7,7 +7,7 @@
             <span class="hotkey-hint">(>)</span>
         </a>
     </li>
-    <hr />
+    <hr class="separator" />
     {{/if}}
 
     {{#if editability_menu_item}}
@@ -38,7 +38,7 @@
     {{/if}}
 
     {{#if (or editability_menu_item move_message_menu_item should_display_delete_option)}}
-    <hr />
+    <hr class="separator" />
     {{/if}}
 
     {{#if should_display_add_reaction_option}}
@@ -48,7 +48,7 @@
             {{#tr}}Add emoji reaction{{/tr}}
         </a>
     </li>
-    <hr />
+    <hr class="separator" />
     {{/if}}
 
     {{#if should_display_mark_as_unread}}
@@ -97,7 +97,7 @@
     {{/if}}
 
     {{#if (or should_display_mark_as_unread should_display_reminder_option should_display_hide_option should_display_collapse should_display_uncollapse)}}
-    <hr />
+    <hr class="separator" />
     {{/if}}
 
     {{#if view_source_menu_item}}

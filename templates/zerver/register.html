@@ -201,7 +201,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 {% endif %}
             </fieldset>
             {% if default_stream_groups %}
-            <hr />
+            <hr class="separator" />
             <div class="default-stream-groups">
                 <p class="margin">{{ _('What are you interested in?') }}</p>
                 {% for default_stream_group in default_stream_groups %}
@@ -227,7 +227,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 </div>
                 {% endfor %}
             </div>
-            <hr />
+            <hr class="separator" />
             {% endif %}
 
             <div class="input-group margin terms-of-service">

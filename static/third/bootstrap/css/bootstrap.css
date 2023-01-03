@@ -236,12 +236,6 @@ ol ul {
 li {
   line-height: 20px;
 }
-hr {
-  margin: 20px 0;
-  border: 0;
-  border-top: 1px solid #eeeeee;
-  border-bottom: 1px solid #ffffff;
-}
 blockquote {
   padding: 0 0 0 15px;
   margin: 0 0 20px;

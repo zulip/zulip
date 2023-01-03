@@ -5,7 +5,7 @@
         </p>
         {{#each tags}}
             {{#if (eq this.name "prefer-html") }}
-            <hr />
+            <hr class="separator" />
             {{/if}}
             <div class="input-group" id="{{this.name}}-input-group">
                 <label class="checkbox">
@@ -15,7 +15,7 @@
                 <label class="inline" for="{{this.name}}">{{{this.description}}}</label>
             </div>
         {{/each}}
-        <hr />
+        <hr class="separator" />
         <p class="stream-email-header">
             {{t "Stream email address:"}}
         </p>

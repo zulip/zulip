@@ -77,7 +77,7 @@
     <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
 
     {{#if (or (and user_time is_active) is_me status_content_available) }}
-        <hr />
+        <hr class="separator" />
     {{/if}}
     {{#if (and user_time is_active)}}
         <li class="hidden-for-spectators local_time">{{#tr}}{user_time} local time{{/tr}}</li>
@@ -133,7 +133,7 @@
 
 
     {{#unless spectator_view}}
-        <hr />
+        <hr class="separator" />
         <li>
             <a tabindex="0" class="view_full_user_profile">
                 {{#if is_me}}
@@ -174,7 +174,7 @@
             </a>
         </li>
         {{/if}}
-        <hr />
+        <hr class="separator" />
         <li>
             <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
                 <i class="fa fa-envelope" aria-hidden="true"></i>
