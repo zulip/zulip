@@ -461,7 +461,7 @@ def main(options: argparse.Namespace) -> NoReturn:
     activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
     provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
     with open(activate_this) as f:
-        exec(f.read(), dict(__file__=activate_this))
+        exec(f.read(), dict(__file__=activate_this))  # noqa: S102
     os.execvp(
         provision_inner,
         [

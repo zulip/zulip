@@ -308,7 +308,7 @@ def parse_message(
         events.append(parse_create_or_delete(message))
     elif message["action"].tame(check_string) == "change":
         if message["change"]["diff"]:
-            for value in message["change"]["diff"].keys():
+            for value in message["change"]["diff"].keys():  # noqa: SIM118
                 parsed_event = parse_change_event(value, message)
                 if parsed_event:
                     events.append(parsed_event)
