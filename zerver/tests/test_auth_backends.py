@@ -3303,14 +3303,12 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         The desktop app doesn't use the native flow currently and the desktop app flow in its
         current form happens in the browser, thus only the web flow is viable there.
         """
-        pass
 
     def test_social_auth_no_key(self) -> None:
         """
         The basic validation of server configuration is handled on the
         /login/social/apple/ endpoint which isn't even a part of the native flow.
         """
-        pass
 
 
 class GenericOpenIdConnectTest(SocialAuthBase):
