@@ -71,12 +71,11 @@ export function update_email_change_display() {
 
 export function update_avatar_change_display() {
     if (!settings_data.user_can_change_avatar()) {
-        // We disable this widget by simply hiding its edit UI.
-        $("#user-avatar-upload-widget .image_upload_button").hide();
-        $(".user-avatar-section .settings-info-icon").show();
+        $("#user-avatar-upload-widget .image_upload_button").addClass("hide");
+        $("#user-avatar-upload-widget .image-disabled").removeClass("hide");
     } else {
-        $("#user-avatar-upload-widget .image_upload_button").show();
-        $(".user-avatar-section .settings-info-icon").hide();
+        $("#user-avatar-upload-widget .image_upload_button").removeClass("hide");
+        $("#user-avatar-upload-widget .image-disabled").addClass("hide");
     }
 }
 
