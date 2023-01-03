@@ -103,15 +103,22 @@ select = [
     "ANN", # annotations
     "B", # bugbear
     "C4", # comprehensions
+    "DTZ", # naive datetime
     "E", # style errors
     "F", # flakes
     "I", # import sorting
+    "ISC", # string concatenation
     "N", # naming
     "PGH", # pygrep-hooks
+    "PIE", # miscellaneous
     "PLC", # pylint convention
     "PLE", # pylint error
     "PLR", # pylint refactor
+    "PLW", # pylint warning
+    "Q", # quotes
     "RUF", # Ruff
+    "S", # security
+    "SIM", # simplify
     "T10", # debugger
     "UP", # upgrade
     "W", # style warnings
@@ -133,6 +140,10 @@ ignore = [
     "N806", # Variable in function should be lowercase
     "RUF001", # String contains ambiguous unicode character
     "RUF003", # Comment contains ambiguous unicode character
+    "S101", # Use of `assert` detected
+    "S105", # Possible hardcoded password
+    "S106", # Possible hardcoded password
+    "S107", # Possible hardcoded password
 ]
 line-length = 100
 src = [".", "tools"]

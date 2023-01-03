@@ -377,12 +377,6 @@ python_rules = RuleList(
             "description": "Please use access_stream_by_*() to fetch Stream objects",
         },
         {
-            "pattern": "datetime[.](now|utcnow)",
-            "include_only": {"zerver/", "analytics/"},
-            "description": "Don't use datetime in backend code.\n"
-            "See https://zulip.readthedocs.io/en/latest/contributing/code-style.html#naive-datetime-objects",
-        },
-        {
             "pattern": "from os.path",
             "description": "Don't use from when importing from the standard library",
         },
