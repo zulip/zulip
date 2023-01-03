@@ -85,7 +85,7 @@ class FilteredManagementUtility(ManagementUtility):
                 "",
                 "Available subcommands:",
             ]
-            commands_dict = defaultdict(lambda: [])
+            commands_dict = defaultdict(list)
             for name, app in get_filtered_commands().items():
                 if app == "django.core":
                     app = "django"
