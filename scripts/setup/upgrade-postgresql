@@ -53,6 +53,9 @@ SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPG
 # our configuration immediately
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
+# Make sure the new PostgreSQL is running
+pg_ctlcluster "$UPGRADE_TO" main start
+
 # Update the statistics
 su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"
 
