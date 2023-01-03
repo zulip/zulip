@@ -243,10 +243,13 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
     }
 
     if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+        const sub_count = peer_data.get_subscriber_count(stream_id);
+
         const html_body = render_unsubscribe_private_stream_modal({
             message: $t({
                 defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
             }),
+            display_stream_archive_warning: sub_count === 1,
         });
 
         confirm_dialog.launch({

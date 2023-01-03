@@ -22,6 +22,7 @@ import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
@@ -971,10 +972,14 @@ export function open_create_stream() {
 }
 
 export function unsubscribe_from_private_stream(sub) {
+    const invite_only = sub.invite_only;
+    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
+
     const html_body = render_unsubscribe_private_stream_modal({
         message: $t({
             defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
         }),
+        display_stream_archive_warning: sub_count === 1 && invite_only,
     });
 
     function unsubscribe_from_stream() {
