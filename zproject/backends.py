@@ -2237,7 +2237,6 @@ class SAMLDocument:
         """
         Returns a list of the issuers of the SAML document.
         """
-        pass
 
 
 class SAMLRequest(SAMLDocument):

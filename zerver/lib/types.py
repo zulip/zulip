@@ -75,8 +75,6 @@ class UnspecifiedValue:
     currently an internal implementation detail of the REQ class?
     """
 
-    pass
-
 
 class EditHistoryEvent(TypedDict, total=False):
     """

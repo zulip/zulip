@@ -127,8 +127,6 @@ class InterruptConsumeError(Exception):
     of the current event and normally continue the work of the queue.
     """
 
-    pass
-
 
 class WorkerDeclarationError(Exception):
     pass
