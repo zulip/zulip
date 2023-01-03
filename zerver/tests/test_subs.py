@@ -2082,7 +2082,7 @@ class StreamAdminTest(ZulipTestCase):
         # Simulate that a stream by the same name has already been
         # deactivated, just to exercise our renaming logic:
         # Since we do not know the id of these simulated stream we prepend the name with a random hashed_stream_id
-        ensure_stream(realm, "DB32B77" + "!DEACTIVATED:" + active_name, acting_user=None)
+        ensure_stream(realm, "DB32B77!DEACTIVATED:" + active_name, acting_user=None)
 
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):

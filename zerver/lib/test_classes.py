@@ -226,9 +226,9 @@ Output:
         else:
             # A web app request; use a browser User-Agent string.
             default_user_agent = (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) "
-                + "Chrome/79.0.3945.130 Safari/537.36"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                " AppleWebKit/537.36 (KHTML, like Gecko)"
+                " Chrome/79.0.3945.130 Safari/537.36"
             )
         if skip_user_agent:
             # Provide a way to disable setting User-Agent if desired.

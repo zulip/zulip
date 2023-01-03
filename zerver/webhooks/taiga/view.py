@@ -59,12 +59,12 @@ templates = {
     },
     "relateduserstory": {
         "create": (
-            "[{user}]({user_link}) added a related user story "
-            "{userstory_subject} to the epic {epic_subject}."
+            "[{user}]({user_link}) added a related user story"
+            " {userstory_subject} to the epic {epic_subject}."
         ),
         "delete": (
-            "[{user}]({user_link}) removed a related user story "
-            + "{userstory_subject} from the epic {epic_subject}."
+            "[{user}]({user_link}) removed a related user story"
+            " {userstory_subject} from the epic {epic_subject}."
         ),
     },
     "userstory": {

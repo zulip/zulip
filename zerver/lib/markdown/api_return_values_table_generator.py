@@ -194,7 +194,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         # Directly using `###` for subheading causes errors so use h3 with made up id.
         argument_template = (
             '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
-            + " {event_type} {op}</h3></p></div> \n{description}\n\n\n"
+            "{event_type} {op}</h3></p></div> \n{description}\n\n\n"
         )
         for events in events_dict["oneOf"]:
             event_type: Dict[str, Any] = events["properties"]["type"]

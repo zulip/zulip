@@ -123,8 +123,8 @@ class OpenGraphTest(ZulipTestCase):
             "Logging out | Zulip help center",
             # Ideally we'd do something better here
             [
-                "Your feedback helps us make Zulip better for everyone! Please contact us "
-                + "with questions, suggestions, and feature requests."
+                "Your feedback helps us make Zulip better for everyone! Please contact us with"
+                " questions, suggestions, and feature requests."
             ],
             ["Click on the gear"],
         )

@@ -2894,13 +2894,15 @@ class MarkdownTest(ZulipTestCase):
     def test_disabled_code_block_processor(self) -> None:
         msg = (
             "Hello,\n\n"
-            + "    I am writing this message to test something. I am writing this message to test something."
+            "    I am writing this message to test something. I am writing this message to test"
+            " something."
         )
         converted = markdown_convert_wrapper(msg)
         expected_output = (
             "<p>Hello,</p>\n"
-            + '<div class="codehilite"><pre><span></span><code>I am writing this message to test something. I am writing this message to test something.\n'
-            + "</code></pre></div>"
+            '<div class="codehilite"><pre><span></span><code>I am writing this message to test'
+            " something. I am writing this message to test something.\n"
+            "</code></pre></div>"
         )
         self.assertEqual(converted, expected_output)
 
@@ -2911,7 +2913,8 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = markdown_convert(msg, message_realm=realm, email_gateway=True)
         expected_output = (
             "<p>Hello,</p>\n"
-            + "<p>I am writing this message to test something. I am writing this message to test something.</p>"
+            "<p>I am writing this message to test something. I am writing this message to test"
+            " something.</p>"
         )
         self.assertEqual(rendering_result.rendered_content, expected_output)
 

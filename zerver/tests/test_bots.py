@@ -118,7 +118,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         error_message = (
             "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-            + "Please contact your server administrator."
+            "Please contact your server administrator."
         )
         self.assert_json_error(result, error_message)
         self.assert_num_bots_equal(0)

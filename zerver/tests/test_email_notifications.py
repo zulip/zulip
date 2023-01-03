@@ -1451,7 +1451,7 @@ class TestMissedMessages(ZulipTestCase):
         actual_output = convert(test_data)
         expected_output = (
             '<div><a href="http://example.com/user_uploads/{realm_id}/1f/some_random_value">'
-            + "/user_uploads/{realm_id}/1f/some_random_value</a></div>"
+            "/user_uploads/{realm_id}/1f/some_random_value</a></div>"
         )
         expected_output = expected_output.format(realm_id=zephyr_realm.id)
         self.assertEqual(actual_output, expected_output)
@@ -1465,27 +1465,31 @@ class TestMissedMessages(ZulipTestCase):
         # A narrow URL which begins with a '#'.
         test_data = (
             '<p><a href="#narrow/stream/test/topic/test.20topic/near/142"'
-            + 'title="#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
+            ' title="#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
         )
         actual_output = convert(test_data)
         expected_output = (
-            '<div><p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142" '
-            + 'title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p></div>'
+            '<div><p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142"'
+            ' title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p></div>'
         )
         self.assertEqual(actual_output, expected_output)
 
         # Scrub inline images.
         test_data = (
-            '<p>See this <a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" '
-            + 'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p>'
-            + '<div class="message_inline_image"><a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" '
-            + 'target="_blank" title="avatar_103.jpeg"><img src="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
+            "<p>See this <a"
+            ' href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"'
+            ' target="_blank" title="avatar_103.jpeg">avatar_103.jpeg</a>.</p>'
+            '<div class="message_inline_image"><a'
+            ' href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"'
+            ' target="_blank" title="avatar_103.jpeg"><img'
+            ' src="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
         )
         test_data = test_data.format(realm_id=zulip_realm.id)
         actual_output = convert(test_data)
         expected_output = (
-            '<div><p>See this <a href="http://example.com/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" '
-            + 'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
+            "<div><p>See this <a"
+            ' href="http://example.com/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"'
+            ' target="_blank" title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
         )
         expected_output = expected_output.format(realm_id=zulip_realm.id)
         self.assertEqual(actual_output, expected_output)
@@ -1493,16 +1497,17 @@ class TestMissedMessages(ZulipTestCase):
         # A message containing only an inline image URL preview, we do
         # somewhat more extensive surgery.
         test_data = (
-            '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" '
-            + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
-            + '<img data-src-fullsize="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" '
-            + 'src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
+            '<div class="message_inline_image"><a'
+            ' href="https://www.google.com/images/srpr/logo4w.png"'
+            ' target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
+            '<img data-src-fullsize="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0"'
+            ' src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
         )
         actual_output = convert(test_data)
         expected_output = (
-            '<div><p><a href="https://www.google.com/images/srpr/logo4w.png" '
-            + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
-            + "https://www.google.com/images/srpr/logo4w.png</a></p></div>"
+            '<div><p><a href="https://www.google.com/images/srpr/logo4w.png"'
+            ' target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
+            "https://www.google.com/images/srpr/logo4w.png</a></p></div>"
         )
         self.assertEqual(actual_output, expected_output)
 
@@ -1548,15 +1553,17 @@ class TestMissedMessages(ZulipTestCase):
     def test_fix_emoji(self) -> None:
         # An emoji.
         test_data = (
-            '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8" role="img" title="cloud with lightning and rain">'
-            + ":cloud_with_lightning_and_rain:</span>.</p>"
+            '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8"'
+            ' role="img" title="cloud with lightning and'
+            ' rain">:cloud_with_lightning_and_rain:</span>.</p>'
         )
         fragment = lxml.html.fromstring(test_data)
         fix_emojis(fragment, "http://example.com", "google")
         actual_output = lxml.html.tostring(fragment, encoding="unicode")
         expected_output = (
-            '<p>See <img alt=":cloud_with_lightning_and_rain:" src="http://example.com/static/generated/emoji/images-google-64/26c8.png" '
-            + 'title="cloud with lightning and rain" style="height: 20px;">.</p>'
+            '<p>See <img alt=":cloud_with_lightning_and_rain:"'
+            ' src="http://example.com/static/generated/emoji/images-google-64/26c8.png"'
+            ' title="cloud with lightning and rain" style="height: 20px;">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
 

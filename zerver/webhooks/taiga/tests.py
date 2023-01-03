@@ -81,8 +81,9 @@ class TaigaHookTests(WebhookTestCase):
 
     def test_taiga_userstory_changed_due_date(self) -> None:
         message = (
-            "[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of user story "
-            + "[Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) from 2020-02-15 to 2020-02-22."
+            "[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of user story"
+            " [Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) from 2020-02-15 to"
+            " 2020-02-22."
         )
         self.check_webhook("userstory_changed_due_date", self.TOPIC, message)
 
@@ -145,7 +146,8 @@ class TaigaHookTests(WebhookTestCase):
     def test_taiga_task_changed_due_date(self) -> None:
         message = (
             "[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of task"
-            + " [nice task](https://tree.taiga.io/project/orientor-sd/task/56) from 2020-02-22 to 2020-02-15."
+            " [nice task](https://tree.taiga.io/project/orientor-sd/task/56) from 2020-02-22 to"
+            " 2020-02-15."
         )
         self.check_webhook("task_changed_due_date", self.TOPIC, message)
 
@@ -235,8 +237,9 @@ class TaigaHookTests(WebhookTestCase):
 
     def test_taiga_issue_changed_due_date(self) -> None:
         message = (
-            "[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of issue [Issues](https://tree.taiga.io/project/orientor-sd/issue/49) "
-            + "from 2020-03-08 to 2020-02-22."
+            "[Aditya Verma](https://tree.taiga.io/profile/orientor) changed due date of issue"
+            " [Issues](https://tree.taiga.io/project/orientor-sd/issue/49) from 2020-03-08 to"
+            " 2020-02-22."
         )
         self.check_webhook("issue_changed_due_date", self.TOPIC, message)
 
@@ -302,8 +305,9 @@ class TaigaHookTests(WebhookTestCase):
 
     def test_taiga_relateduserstory_created_link(self) -> None:
         message = (
-            "[Aditya Verma](https://tree.taiga.io/profile/orientor) added a related user story [Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) "
-            + "to the epic [ASAS](https://tree.taiga.io/project/orientor-sd/epic/42)."
+            "[Aditya Verma](https://tree.taiga.io/profile/orientor) added a related user story"
+            " [Nice Issue](https://tree.taiga.io/project/orientor-sd/us/54) to the epic"
+            " [ASAS](https://tree.taiga.io/project/orientor-sd/epic/42)."
         )
         self.check_webhook("relateduserstory_created_link", self.TOPIC, message)
 
