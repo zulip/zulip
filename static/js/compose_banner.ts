@@ -25,7 +25,6 @@ export const CLASSNAMES = {
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
     // errors
-    empty_message: "empty_message",
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
     stream_does_not_exist: "stream_does_not_exist",

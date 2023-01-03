@@ -487,6 +487,12 @@ textarea.new_message_textarea {
         cursor: not-allowed;
         background-color: hsl(0, 0%, 93%);
     }
+
+    &.invalid,
+    &.invalid:focus {
+        border: 1px solid hsl(3, 57%, 33%);
+        box-shadow: 0 0 2px hsl(3, 57%, 33%);
+    }
 }
 
 textarea.new_message_textarea,

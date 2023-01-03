@@ -214,7 +214,6 @@ test_ui("validate", ({override, mock_template}) => {
     assert.ok(compose_validate.validate());
 
     let zephyr_error_rendered = false;
-    let empty_message_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         if (data.classname === compose_banner.CLASSNAMES.zephyr_not_running) {
             assert.equal(
@@ -225,17 +224,17 @@ test_ui("validate", ({override, mock_template}) => {
                 }),
             );
             zephyr_error_rendered = true;
-        } else if (data.classname === compose_banner.CLASSNAMES.empty_message) {
-            assert.equal(data.banner_text, $t({defaultMessage: "You have nothing to send!"}));
-            empty_message_error_rendered = true;
         }
     });
     initialize_pm_pill();
     compose_state.private_message_recipient("welcome-bot@example.com");
+    $("#compose-textarea").toggleClass = (classname, value) => {
+        assert.equal(classname, "invalid");
+        assert.equal(value, true);
+    };
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(empty_message_error_rendered);
     compose_validate.validate();
 
     add_content_to_compose_box();

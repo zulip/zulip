@@ -287,6 +287,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
+    $("#compose-textarea").toggleClass = noop;
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -333,7 +334,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     compose.enter_with_preview_open();
 });
 
-test_ui("finish", ({override, override_rewire, mock_template}) => {
+test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
@@ -345,10 +346,10 @@ test_ui("finish", ({override, override_rewire, mock_template}) => {
     });
 
     (function test_when_compose_validation_fails() {
-        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-            assert.equal(data.classname, "empty_message");
-            assert.equal(data.banner_text, $t({defaultMessage: "You have nothing to send!"}));
-        });
+        $("#compose-textarea").toggleClass = (classname, value) => {
+            assert.equal(classname, "invalid");
+            assert.equal(value, true);
+        };
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");

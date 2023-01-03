@@ -18,7 +18,6 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
-import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 let user_acknowledged_wildcard = false;
@@ -611,18 +610,9 @@ export function warn_for_text_overflow_when_tries_to_send() {
 export function validate() {
     const message_content = compose_state.message_content();
     if (/^\s*$/.test(message_content)) {
-        // Avoid showing an error message when "enter sends" is enabled,
-        // as it is more likely that the user has hit "Enter" accidentally.
-        if (!user_settings.enter_sends) {
-            compose_banner.show_error_message(
-                $t({defaultMessage: "You have nothing to send!"}),
-                compose_banner.CLASSNAMES.empty_message,
-                $("#compose-textarea"),
-            );
-        }
+        $("#compose-textarea").toggleClass("invalid", true);
         return false;
     }
-    $(`#compose_banners .${compose_banner.CLASSNAMES.empty_message}`).remove();
 
     if ($("#zephyr-mirror-error").is(":visible")) {
         compose_banner.show_error_message(

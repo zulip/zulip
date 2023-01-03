@@ -288,6 +288,14 @@
         }
     }
 
+    textarea.new_message_textarea {
+        &.invalid,
+        &.invalid:focus {
+            border-color: hsl(3, 73%, 74%);
+            box-shadow: 0 0 2px hsl(3, 73%, 74%);
+        }
+    }
+
     .message_embed .data-container::after {
         background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
     }
