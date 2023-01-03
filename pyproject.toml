@@ -54,9 +54,9 @@ module = [
     "aioapns.*", # https://github.com/Fatal1ty/aioapns/issues/33
     "bitfield.*",
     "bmemcached.*",
-    "cairosvg.*",
+    "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
     "circuitbreaker.*",
-    "coverage.*",
+    "coverage.*", # https://github.com/nedbat/coveragepy/issues/1434
     "cssutils.*",
     "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
@@ -73,7 +73,7 @@ module = [
     "gcm.*",
     "gitlint.*",
     "jsonref.*",
-    "ldap.*",
+    "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
     "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
     "premailer.*",
