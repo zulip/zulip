@@ -63,7 +63,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     realm: Optional[Realm] = None
     has_fetched_realm: bool = False
     set_language: Optional[str] = None
-    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=lambda: [])
+    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=list)
     query: Optional[str] = None
     error_format: Optional[str] = None
     placeholder_open_graph_description: Optional[str] = None
