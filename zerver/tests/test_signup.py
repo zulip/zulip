@@ -1348,9 +1348,10 @@ class InviteUserTest(InviteUserBase):
         result = self.invite(invitee_emails, ["Denmark"])
         self.assert_json_error(
             result,
-            "Some of those addresses are already using Zulip,"
-            + " so we didn't send them an invitation."
-            + " We did send invitations to everyone else!",
+            (
+                "Some of those addresses are already using Zulip, so we didn't send them an"
+                " invitation. We did send invitations to everyone else!"
+            ),
         )
 
     def test_invite_mirror_dummy_user(self) -> None:

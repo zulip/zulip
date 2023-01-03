@@ -189,9 +189,10 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
         self.subscribe(user_profile, "Denmark")
         body = (
-            "Some files here ... [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...."
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+            "Some files here ..."
+            " [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
+            " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some"
+            " more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
         ).format(id=realm_id, host=host)
 
         expired_message_id = self.send_stream_message(user_profile, "Denmark", body)

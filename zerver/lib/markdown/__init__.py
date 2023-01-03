@@ -849,8 +849,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         schema_re = r"(?:https?://)"
         host_re = r"(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)"
         param_re = (
-            r"(?:(?:(?:v|embed)/)|"
-            + r"(?:(?:(?:watch|playlist)(?:_popup|_videos)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v(?:ideo_ids)?=))"
+            r"(?:(?:(?:v|embed)/)"
+            r"|(?:(?:(?:watch|playlist)(?:_popup|_videos)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v(?:ideo_ids)?=))"
         )
         id_re = r"([0-9A-Za-z_-]+)"
         youtube_re = r"^({schema_re}?{host_re}{param_re}?)?{id_re}(?(1).+)?$"
@@ -883,8 +883,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         vimeo_re = (
             r"^((http|https)?:\/\/(www\.)?vimeo.com\/"
-            + r"(?:channels\/(?:\w+\/)?|groups\/"
-            + r"([^\/]*)\/videos\/|)(\d+)(?:|\/\?))$"
+            r"(?:channels\/(?:\w+\/)?|groups\/"
+            r"([^\/]*)\/videos\/|)(\d+)(?:|\/\?))$"
         )
         match = re.match(vimeo_re, url)
         if match is None:

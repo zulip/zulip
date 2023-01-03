@@ -158,7 +158,7 @@ Billing method: send invoice"""
         expected_topic = "cus_00000000000000"
         expected_message = (
             "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) updated"
-            + "\n* Account balance is now 100"
+            "\n* Account balance is now 100"
         )
         self.check_webhook(
             "customer_updated__account_balance",

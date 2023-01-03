@@ -16,8 +16,8 @@ from .support_event import SUPPORT_EVENTS
 DOCUMENT_TEMPLATE = "{user_name} {verb} the document [{title}]({url})"
 QUESTION_TEMPLATE = "{user_name} {verb} the question [{title}]({url})"
 QUESTIONS_ANSWER_TEMPLATE = (
-    "{user_name} {verb} the [answer]({answer_url}) "
-    + "of the question [{question_title}]({question_url})"
+    "{user_name} {verb} the [answer]({answer_url})"
+    " of the question [{question_title}]({question_url})"
 )
 COMMENT_TEMPLATE = (
     "{user_name} {verb} the [comment]({answer_url}) of the task [{task_title}]({task_url})"

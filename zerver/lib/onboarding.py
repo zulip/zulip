@@ -74,7 +74,7 @@ def send_initial_pms(user: UserProfile) -> None:
                 _(
                     "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
                 ),
-                "{organization_setup_text}" + "\n\n",
+                "{organization_setup_text}\n\n",
                 "{demo_org_warning}",
                 _(
                     "I can also help you get set up! Just click anywhere on this message or press `r` to reply."

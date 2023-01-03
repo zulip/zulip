@@ -132,14 +132,19 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
         super().setUp()
         self.user_agents = [
             (
-                "mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                + "Chrome/54.0.2840.59 Safari/537.36",
+                (
+                    "mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/54.0.2840.59 Safari/537.36"
+                ),
                 "Chrome",
                 "Linux",
             ),
             (
-                "mozilla/5.0 (windows nt 6.1; win64; x64) applewebkit/537.36 (khtml, like gecko) "
-                + "chrome/56.0.2924.87 safari/537.36",
+                (
+                    "mozilla/5.0 (windows nt 6.1; win64; x64) "
+                    " applewebkit/537.36 (khtml, like gecko)"
+                    " chrome/56.0.2924.87 safari/537.36"
+                ),
                 "Chrome",
                 "Windows",
             ),
@@ -159,36 +164,46 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
                 "Android",
             ),
             (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) "
-                "AppleWebKit/602.1.50 (KHTML, like Gecko) "
-                "CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1",
+                (
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X)"
+                    " AppleWebKit/602.1.50 (KHTML, like Gecko)"
+                    " CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1"
+                ),
                 "Chrome",
                 "iOS",
             ),
             (
-                "Mozilla/5.0 (iPad; CPU OS 6_1_3 like Mac OS X) "
-                + "AppleWebKit/536.26 (KHTML, like Gecko) "
-                + "Version/6.0 Mobile/10B329 Safari/8536.25",
+                (
+                    "Mozilla/5.0 (iPad; CPU OS 6_1_3 like Mac OS X)"
+                    " AppleWebKit/536.26 (KHTML, like Gecko)"
+                    " Version/6.0 Mobile/10B329 Safari/8536.25"
+                ),
                 "Safari",
                 "iOS",
             ),
             (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) "
-                + "AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10B350",
+                (
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X)"
+                    " AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10B350"
+                ),
                 None,
                 "iOS",
             ),
             (
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) "
-                + "Chrome/56.0.2924.87 Safari/537.36",
+                (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)"
+                    " AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/56.0.2924.87 Safari/537.36"
+                ),
                 "Chrome",
                 "macOS",
             ),
             (
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) "
-                + "AppleWebKit/602.3.12 (KHTML, like Gecko) "
-                + "Version/10.0.2 Safari/602.3.12",
+                (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)"
+                    " AppleWebKit/602.3.12 (KHTML, like Gecko)"
+                    " Version/10.0.2 Safari/602.3.12"
+                ),
                 "Safari",
                 "macOS",
             ),
@@ -196,37 +211,46 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
             ("ZulipMobile/1.0.12 (Android 7.1.1)", "Zulip", "Android"),
             ("ZulipMobile/0.7.1.1 (iOS 10.3.1)", "Zulip", "iOS"),
             (
-                "ZulipElectron/1.1.0-beta Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) Zulip/1.1.0-beta "
-                + "Chrome/56.0.2924.87 Electron/1.6.8 Safari/537.36",
+                (
+                    "ZulipElectron/1.1.0-beta Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    " AppleWebKit/537.36 (KHTML, like Gecko) Zulip/1.1.0-beta"
+                    " Chrome/56.0.2924.87 Electron/1.6.8 Safari/537.36"
+                ),
                 "Zulip",
                 "Windows",
             ),
             (
-                "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, "
-                "like Gecko) Ubuntu/11.10 Chromium/16.0.912.77 "
-                "Chrome/16.0.912.77 Safari/535.7",
+                (
+                    "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, like Gecko)"
+                    " Ubuntu/11.10 Chromium/16.0.912.77 Chrome/16.0.912.77 Safari/535.7"
+                ),
                 "Chromium",
                 "Linux",
             ),
             (
-                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 "
-                "OPR/15.0.1147.100",
+                (
+                    "Mozilla/5.0 (Windows NT 6.1; WOW64)"
+                    " AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100"
+                ),
                 "Opera",
                 "Windows",
             ),
             (
-                "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/"
-                "<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari"
-                "/<WebKit Rev> Edge/<EdgeHTML Rev>."
-                "<Windows Build>",
+                (
+                    "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>)"
+                    " AppleWebKit/<WebKit Rev> (KHTML, like Gecko)"
+                    " Chrome/<Chrome Rev> Safari/<WebKit Rev>"
+                    " Edge/<EdgeHTML Rev>.<Windows Build>"
+                ),
                 "Edge",
                 "Windows",
             ),
             (
-                "Mozilla/5.0 (X11; CrOS x86_64 10895.56.0) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/69.0.3497.95 Safari/537.36",
+                (
+                    "Mozilla/5.0 (X11; CrOS x86_64 10895.56.0) AppleWebKit/537.36"
+                    " (KHTML, like Gecko) Chrome/69.0.3497.95 Safari/537.36"
+                ),
                 "Chrome",
                 "ChromeOS",
             ),

@@ -163,9 +163,8 @@ server via `ps -ef` or reading bash history. Prefer
             return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
         except MultipleObjectsReturned:
             raise CommandError(
-                "This Zulip server contains multiple users with that email "
-                + "(in different realms); please pass `--realm` "
-                "to specify which one to modify."
+                "This Zulip server contains multiple users with that email (in different realms);"
+                " please pass `--realm` to specify which one to modify."
             )
         except UserProfile.DoesNotExist:
             raise CommandError(f"This Zulip server does not contain a user with email '{email}'")

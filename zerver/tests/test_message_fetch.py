@@ -2178,8 +2178,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(meeting_message[MATCH_TOPIC], "meetings")
         self.assertEqual(
             meeting_message["match_content"],
-            '<p>discuss <span class="highlight">lunch</span> after '
-            + '<span class="highlight">lunch</span></p>',
+            (
+                '<p>discuss <span class="highlight">lunch</span> after <span'
+                ' class="highlight">lunch</span></p>'
+            ),
         )
 
         (lunch_message,) = (m for m in messages if m[TOPIC_NAME] == "lunch plans")
@@ -2224,7 +2226,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(japanese_message[MATCH_TOPIC], '<span class="highlight">日本</span>')
         self.assertEqual(
             japanese_message["match_content"],
-            '<p>昨日、<span class="highlight">日本</span>' + " のお菓子を送りました。</p>",
+            '<p>昨日、<span class="highlight">日本</span> のお菓子を送りました。</p>',
         )
 
         (english_message,) = (m for m in messages if m[TOPIC_NAME] == "english")
@@ -2372,7 +2374,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(japanese_message[MATCH_TOPIC], '<span class="highlight">日本</span>語')
         self.assertEqual(
             japanese_message["match_content"],
-            '<p>昨日、<span class="highlight">日本</span>の' + "お菓子を送りました。</p>",
+            '<p>昨日、<span class="highlight">日本</span>のお菓子を送りました。</p>',
         )
 
         english_message = [m for m in messages if m[TOPIC_NAME] == "english"][0]

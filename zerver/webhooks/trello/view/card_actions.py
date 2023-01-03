@@ -52,7 +52,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     SET_DESC: "set description for {card_url_template} to:\n~~~ quote\n{desc}\n~~~\n",
     CHANGE_DESC: (
         "changed description for {card_url_template} from\n"
-        + "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
+        "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
     ),
     REMOVE_DESC: "removed description from {card_url_template}.",
     ARCHIVE: "archived {card_url_template}.",

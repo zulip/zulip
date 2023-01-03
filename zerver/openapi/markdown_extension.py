@@ -307,16 +307,14 @@ def generate_curl_example(
             authentication_required = True
         else:
             raise AssertionError(
-                "Unhandled global securityScheme."
-                + " Please update the code to handle this scheme."
+                "Unhandled global securityScheme. Please update the code to handle this scheme."
             )
     elif operation_security == []:
         if operation in insecure_operations:
             authentication_required = False
         else:
             raise AssertionError(
-                "Unknown operation without a securityScheme. "
-                + "Please update insecure_operations."
+                "Unknown operation without a securityScheme. Please update insecure_operations."
             )
     else:
         raise AssertionError(

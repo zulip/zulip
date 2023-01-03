@@ -52,15 +52,15 @@ if settings.BILLING_ENABLED:
 # We don't mark this error for translation, because it's displayed
 # only to MIT users.
 MIT_VALIDATION_ERROR = (
-    "That user does not exist at MIT or is a "
-    + '<a href="https://ist.mit.edu/email-lists">mailing list</a>. '
-    + "If you want to sign up an alias for Zulip, "
-    + '<a href="mailto:support@zulip.com">contact us</a>.'
+    "That user does not exist at MIT or is a"
+    ' <a href="https://ist.mit.edu/email-lists">mailing list</a>.'
+    " If you want to sign up an alias for Zulip,"
+    ' <a href="mailto:support@zulip.com">contact us</a>.'
 )
 
 DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
-    "Your account {username} has been deactivated. "
-    + "Please contact your organization administrator to reactivate it."
+    "Your account {username} has been deactivated."
+    " Please contact your organization administrator to reactivate it."
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
 
@@ -451,9 +451,9 @@ class OurAuthenticationForm(AuthenticationForm):
                 assert e.secs_to_freedom is not None
                 secs_to_freedom = int(e.secs_to_freedom)
                 error_message = _(
-                    "You're making too many attempts to sign in. "
-                    + "Try again in {} seconds or contact your organization administrator "
-                    + "for help."
+                    "You're making too many attempts to sign in."
+                    " Try again in {} seconds or contact your organization administrator"
+                    " for help."
                 )
                 raise ValidationError(error_message.format(secs_to_freedom))
 
