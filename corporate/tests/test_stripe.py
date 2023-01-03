@@ -1789,7 +1789,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(message.subject, "Support request for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
-            self.assertIn("Zulip Support <noreply-", self.email_display_from(message))
+            self.assertIn("Zulip support request <noreply-", self.email_display_from(message))
             self.assertIn("Requested by: King Hamlet (Member)", message.body)
             self.assertIn(
                 "Support URL: http://zulip.testserver/activity/support?q=zulip", message.body
@@ -1840,7 +1840,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(message.subject, "Sponsorship request (Open-source project) for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
-            self.assertIn("Zulip sponsorship <noreply-", self.email_display_from(message))
+            self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
             self.assertIn("Requested by: King Hamlet (Member)", message.body)
             self.assertIn(
                 "Support URL: http://zulip.testserver/activity/support?q=zulip", message.body
