@@ -12,7 +12,7 @@
         height: 100%;
     }
 
-    .image-upload-background {
+    .image-hover-background {
         content: "";
         background-color: hsla(0, 0%, 0%, 0.6);
         height: 100%;
@@ -130,7 +130,11 @@
             opacity: 1;
         }
 
-        .image-upload-background {
+        .image-disabled-text {
+            visibility: visible;
+        }
+
+        .image-hover-background {
             display: block;
         }
     }
@@ -147,12 +151,6 @@
     .image-block {
         width: 200px;
         height: 200px;
-    }
-
-    &:hover {
-        .image-disabled-text {
-            visibility: visible;
-        }
     }
 }
 
