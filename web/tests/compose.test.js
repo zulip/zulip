@@ -12,6 +12,8 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
+const settings_config = zrequire("settings_config");
+
 const noop = () => {};
 
 set_global("document", {
@@ -37,6 +39,7 @@ const compose_fade = mock_esm("../src/compose_fade");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
+const narrow_state = mock_esm("../src/narrow_state");
 const reminder = mock_esm("../src/reminder");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
@@ -77,6 +80,7 @@ const alice = {
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
+    is_bot: false,
 };
 
 const bob = {
@@ -85,12 +89,20 @@ const bob = {
     full_name: "Bob",
 };
 
+const bot = {
+    email: "bot@example.com",
+    user_id: 33,
+    full_name: "Bot",
+    is_bot: true,
+};
+
 people.add_active_user(new_user);
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
 people.add_active_user(alice);
 people.add_active_user(bob);
+people.add_active_user(bot);
 
 const social = {
     stream_id: 101,
@@ -767,7 +779,29 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     people.email_list_to_user_ids_string = email_list_to_user_ids_string;
 });
 
-test_ui("narrow_button_titles", () => {
+test_ui("DM policy disabled", ({override, override_rewire}) => {
+    // Disable dms in the organisation
+    override(
+        page_params,
+        "realm_private_message_policy",
+        settings_config.private_message_policy_values.disabled.code,
+    );
+    let reply_disabled = false;
+    override_rewire(compose_closed_ui, "update_reply_button_state", (disabled = false) => {
+        reply_disabled = disabled;
+    });
+    // For single bot recipient, Bot, the "Message X" button is not disabled
+    override(narrow_state, "pm_ids_string", () => "33");
+    compose_closed_ui.update_buttons_for_private();
+    assert.ok(!reply_disabled);
+    // For human user, Alice, the "Message X" button is disabled
+    override(narrow_state, "pm_ids_string", () => "31");
+    compose_closed_ui.update_buttons_for_private();
+    assert.ok(reply_disabled);
+});
+
+test_ui("narrow_button_titles", ({override}) => {
+    override(narrow_state, "pm_ids_string", () => "31");
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
         $("#left_bar_compose_stream_button_big").text(),

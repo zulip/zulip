@@ -702,6 +702,26 @@ export function user_is_bot(user_id) {
     return user.is_bot;
 }
 
+export function user_can_direct_message(recipient_ids_string) {
+    // Common function for checking if a user can send a direct
+    // message to the target user (or group of users) represented by a
+    // user ids string.
+
+    // Regardless of policy, we allow sending private messages to bots.
+    const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
+    if (recipient_ids.length === 1 && user_is_bot(recipient_ids[0])) {
+        return true;
+    }
+
+    if (
+        page_params.realm_private_message_policy ===
+        settings_config.private_message_policy_values.disabled.code
+    ) {
+        return false;
+    }
+    return true;
+}
+
 function gravatar_url_for_email(email) {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
