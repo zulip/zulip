@@ -53,6 +53,15 @@ export function get_recipient_label(message) {
     return "";
 }
 
+function update_reply_button_state(disable = false, title) {
+    $(".compose_reply_button").attr("disabled", disable);
+    if (!title) {
+        const title_text = $t({defaultMessage: "Reply to selected message"});
+        title = title_text + " (r)";
+    }
+    $(".compose_reply_button").prop("title", title);
+}
+
 function update_stream_button(btn_text, title) {
     $("#left_bar_compose_stream_button_big").text(btn_text);
     $("#left_bar_compose_stream_button_big").prop("title", title);
@@ -63,17 +72,31 @@ function update_conversation_button(btn_text, title) {
     $("#left_bar_compose_private_button_big").prop("title", title);
 }
 
-function update_buttons(text_stream) {
+function update_buttons(text_stream, disable_reply, title_reply) {
     const title_stream = text_stream + " (c)";
     const text_conversation = $t({defaultMessage: "New direct message"});
     const title_conversation = text_conversation + " (x)";
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);
+    update_reply_button_state(disable_reply, title_reply);
 }
 
 export function update_buttons_for_private() {
     const text_stream = $t({defaultMessage: "New stream message"});
-    update_buttons(text_stream);
+    if (
+        !narrow_state.pm_ids_string() ||
+        people.user_can_direct_message(narrow_state.pm_ids_string())
+    ) {
+        update_buttons(text_stream);
+        return;
+    }
+    // disable the [Message X] button when in a private narrow
+    // if the user cannot dm the current recipient
+    const disable_reply = true;
+    const title_reply = $t({
+        defaultMessage: "You are not allowed to send private messages in this organization.",
+    });
+    update_buttons(text_stream, disable_reply, title_reply);
 }
 
 export function update_buttons_for_stream() {
