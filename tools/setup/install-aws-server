@@ -29,10 +29,12 @@ image_id=ami-0dc45e3d9be6ab7b5
 instance_type=m4.large
 ssh_secret_id=prod/git/deploy
 EOF
-    exit 1
 }
 
-args="$(getopt -o '' --long help,branch:,roles:,debug-key: -n "$0" -- "$@")" || usage
+args="$(getopt -o '' --long help,branch:,roles:,debug-key: -n "$0" -- "$@")" || {
+    usage >&2
+    exit 1
+}
 eval "set -- $args"
 
 BRANCH="main"
@@ -67,7 +69,7 @@ while true; do
 done
 
 if [ $# -ne 1 ]; then
-    usage
+    usage >&2
     exit 1
 fi
 
