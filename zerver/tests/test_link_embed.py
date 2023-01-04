@@ -294,6 +294,24 @@ class GenericParserTestCase(ZulipTestCase):
         self.assertEqual(result.description, "Description text")
         self.assertEqual(result.image, "http://test.com/test.jpg")
 
+    def test_extract_image_before_heading(self) -> None:
+        html = b"""
+          <html>
+            <body>
+                <img src="http://test.com/test.jpg">
+                <h1>Main header</h1>
+                <div>
+                    <p>Description text</p>
+                </div>
+            </body>
+          </html>
+        """
+        parser = GenericParser(html, "text/html; charset=UTF-8")
+        result = parser.extract_data()
+        self.assertEqual(result.title, "Main header")
+        self.assertEqual(result.description, "Description text")
+        self.assertEqual(result.image, "http://test.com/test.jpg")
+
     def test_extract_bad_image(self) -> None:
         html = b"""
           <html>
