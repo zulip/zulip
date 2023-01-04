@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import re
-from typing import Optional
+from typing import Literal, Optional, TypedDict, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -98,17 +98,17 @@ def render_block(block: WildValue) -> str:
             if element_type == "image":
                 pieces.append(render_block_element(element))
             else:
-                pieces.append(element.tame(check_text_block()))
+                pieces.append(element.tame(check_text_block())["text"])
         return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
     elif block_type == "divider":
         return "----"
     elif block_type == "header":
-        return "## " + block["text"].tame(check_text_block(plain_text_only=True))
+        return "## " + block["text"].tame(check_text_block(plain_text_only=True))["text"]
     elif block_type == "image":
         image_url = block["image_url"].tame(check_url)
         alt_text = block["alt_text"].tame(check_string)
         if "title" in block:
-            alt_text = block["title"].tame(check_text_block(plain_text_only=True))
+            alt_text = block["title"].tame(check_text_block(plain_text_only=True))["text"]
         return f"[{alt_text}]({image_url})"
     elif block_type == "input":
         # Unhandled
@@ -116,7 +116,7 @@ def render_block(block: WildValue) -> str:
     elif block_type == "section":
         pieces = []
         if "text" in block:
-            pieces.append(block["text"].tame(check_text_block()))
+            pieces.append(block["text"].tame(check_text_block())["text"])
 
         if "accessory" in block:
             pieces.append(render_block_element(block["accessory"]))
@@ -133,13 +133,18 @@ def render_block(block: WildValue) -> str:
     return ""
 
 
-def check_text_block(plain_text_only: bool = False) -> Validator[str]:
+class TextField(TypedDict):
+    text: str
+    type: Literal["plain_text", "mrkdwn"]
+
+
+def check_text_block(plain_text_only: bool = False) -> Validator[TextField]:
     if plain_text_only:
         type_validator = check_string_in(["plain_text"])
     else:
-        type_validator = check_string
+        type_validator = check_string_in(["plain_text", "mrkdwn"])
 
-    def f(var_name: str, val: object) -> str:
+    def f(var_name: str, val: object) -> TextField:
         block = check_dict(
             [
                 ("type", type_validator),
@@ -147,15 +152,7 @@ def check_text_block(plain_text_only: bool = False) -> Validator[str]:
             ],
         )(var_name, val)
 
-        # We can't use `value_validator=check_string` above to let
-        # mypy know this is a str, because there's an optional boolean
-        # `emoji` key which can appear -- hence the assert.
-        text = block["text"]
-        assert isinstance(text, str)
-
-        # Ideally we would escape the content if it was plain text,
-        # but out flavor of Markdown doesn't support escapes. :(
-        return text
+        return cast(TextField, block)
 
     return f
 
