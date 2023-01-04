@@ -8,10 +8,11 @@ TEMP=$(getopt -o "" --long skip-provision-check -- "$@")
 eval set -- "$TEMP"
 
 # extract options.
+forcearg=()
 while true; do
     case "$1" in
         --skip-provision-check)
-            FORCEARG="--skip-provision-check"
+            forcearg=(--skip-provision-check)
             shift
             ;;
         --)
@@ -45,12 +46,12 @@ printf '\e[0m'
 echo
 
 # prep
-run ./tools/check-provision $FORCEARG
+run ./tools/check-provision "${forcearg[@]}"
 
 # ci/backend
-run ./tools/lint --groups=backend $FORCEARG
+run ./tools/lint --groups=backend "${forcearg[@]}"
 run ./tools/test-tools
-run ./tools/test-backend --include-webhooks --ban-console-output $FORCEARG
+run ./tools/test-backend --include-webhooks --ban-console-output "${forcearg[@]}"
 run ./tools/test-migrations
 # Not running SVG optimizing since it's low-churn
 # run ./tools/setup/optimize-svg
@@ -58,7 +59,7 @@ run ./tools/test-migrations
 # ./tools/setup/generate_integration_bots_avatars.py --check-missing
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation --skip-external-links
-run ./tools/test-help-documentation --skip-external-links $FORCEARG
+run ./tools/test-help-documentation --skip-external-links "${forcearg[@]}"
 run ./tools/test-api
 # Not running requirements check locally, because slow and low-churn
 # run ./tools/test-locked-requirements
@@ -68,12 +69,12 @@ run ./tools/test-api
 # run ./tools/test-queue-worker-reload
 
 # ci/frontend
-run ./tools/lint --groups=frontend $FORCEARG
+run ./tools/lint --groups=frontend "${forcearg[@]}"
 run ./tools/test-js-with-node
 run ./tools/check-schemas
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
-run ./tools/test-js-with-puppeteer $FORCEARG
+run ./tools/test-js-with-puppeteer "${forcearg[@]}"
 
 printf '\n\e[32mAll OK!\e[0m\n'
