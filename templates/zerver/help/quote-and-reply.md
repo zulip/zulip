@@ -17,6 +17,8 @@ to avoid unnecessarily mentioning someone twice.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!message-actions-menu.md!}
 
 1. Click **Quote and reply or forward**.
@@ -26,12 +28,29 @@ to avoid unnecessarily mentioning someone twice.
 
 1. Send your message.
 
-{end_tabs}
-
 !!! keyboard_tip ""
 
     You can also use <kbd>></kbd> to **quote and reply or forward** the
     selected message.
+
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **Quote and reply**.
+
+1. *(optional)* Delete any parts of the quoted message that are not
+   relevant to your reply.
+
+1. Send your message.
+
+!!! tip ""
+
+    If you are in a stream view, you can set a different destination
+    topic by tapping the compose box and selecting an existing topic
+    or typing a new topic name.
+
+{end_tabs}
 
 ## Related articles
 
