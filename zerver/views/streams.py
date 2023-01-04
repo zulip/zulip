@@ -323,8 +323,9 @@ def update_stream_backend(
 
         # We require even realm administrators to be actually
         # subscribed to make a private stream public, via this
-        # stricted access_stream check.
-        access_stream_by_id(user_profile, stream_id)
+        # check.
+        if sub is None and stream.invite_only:
+            raise JsonableError(_("Invalid stream ID"))
 
     # Enforce restrictions on creating web-public streams. Since these
     # checks are only required when changing a stream to be
