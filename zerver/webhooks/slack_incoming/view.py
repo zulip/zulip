@@ -1,5 +1,6 @@
 # Webhooks for external integrations.
 import re
+from itertools import zip_longest
 from typing import Literal, Optional, TypedDict, cast
 
 from django.http import HttpRequest, HttpResponse
@@ -14,6 +15,7 @@ from zerver.lib.validator import (
     WildValue,
     check_dict,
     check_int,
+    check_list,
     check_string,
     check_string_in,
     check_url,
@@ -122,11 +124,26 @@ def render_block(block: WildValue) -> str:
             pieces.append(render_block_element(block["accessory"]))
 
         if "fields" in block:
-            # TODO -- these should be rendered in two columns,
-            # left-to-right.  We could render them sequentially,
-            # except some may be Title1 / Title2 / value1 / value2,
-            # which would be nonsensical when rendered sequentially.
-            pass
+            fields = block["fields"].tame(check_list(check_text_block()))
+            if len(fields) == 1:
+                # Special-case a single field to display a bit more
+                # nicely, without extraneous borders and limitations
+                # on its contents.
+                pieces.append(fields[0]["text"])
+            else:
+                # It is not possible to have newlines in a table, nor
+                # escape the pipes that make it up; replace them with
+                # whitespace.
+                field_text = [f["text"].replace("\n", " ").replace("|", " ") for f in fields]
+                # Because Slack formats this as two columns, but not
+                # necessarily a table with a bold header, we emit a
+                # blank header row first.
+                table = "| | |\n|-|-|\n"
+                # Then take the fields two-at-a-time to make the table
+                iters = [iter(field_text)] * 2
+                for left, right in zip_longest(*iters, fillvalue=""):
+                    table += f"| {left} | {right} |\n"
+                pieces.append(table)
 
         return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
