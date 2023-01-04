@@ -81,6 +81,9 @@ you need to do a refactoring partway through writing the feature. When that
 happens, we recommend you stash your partial feature, do the refactoring,
 commit it, and then unstash and finish implementing your feature.
 
+For additional guidance on how to structure your commits (and why it matters!),
+check out GitHub's excellent [blog post](https://github.blog/2022-06-30-write-better-commits-build-better-projects).
+
 ## Commit messages
 
 First, check out
