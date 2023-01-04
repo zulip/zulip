@@ -14519,6 +14519,15 @@ paths:
         - Stream [permissions](/help/stream-permissions), including
           [privacy](/help/change-the-privacy-of-a-stream) and [who can
           send](/help/stream-sending-policy).
+
+        For private streams, only organization administrators who are subscribed to the stream
+        can change its permissions.
+
+        **Changes**: Prior to Zulip 7.0 (feature level 163), organization administrators were
+        allowed to change `stream_post_policy` and `message_retention_days` setting even for
+        a private stream that they were not subscribed to. Now, only organization
+        administrators who are subscribed to the stream can change these permissions for a
+        private stream.
       x-curl-examples-parameters:
         oneOf:
           - type: include

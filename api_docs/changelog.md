@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 163**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Only subscribed
+  organization administrators can change the `stream_post_policy`
+  and `message_retention_days` settings for a private stream now.
+
 **Feature level 162**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

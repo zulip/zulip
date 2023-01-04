@@ -351,6 +351,10 @@ def update_stream_backend(
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
+
+        if sub is None and stream.invite_only:
+            raise JsonableError(_("Invalid stream ID"))
+
         user_profile.realm.ensure_not_on_limited_plan()
         new_message_retention_days_value = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
@@ -382,6 +386,9 @@ def update_stream_backend(
         if is_announcement_only:
             stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
     if stream_post_policy is not None:
+        if sub is None and stream.invite_only:
+            raise JsonableError(_("Invalid stream ID"))
+
         do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
 
     if can_remove_subscribers_group_id is not None:

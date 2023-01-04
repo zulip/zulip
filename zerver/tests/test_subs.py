@@ -1855,6 +1855,30 @@ class StreamAdminTest(ZulipTestCase):
             ).decode()
             self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    def test_change_stream_post_policy_for_private_streams(self) -> None:
+        # For private streams, even admins must be subscribed to the stream to change
+        # stream_post_policy setting.
+        self.login("iago")
+        user_profile = self.example_user("iago")
+
+        stream = self.make_stream("stream_name1", invite_only=True)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_post_policy": orjson.dumps(Stream.STREAM_POST_POLICY_ADMINS).decode()},
+        )
+        self.assert_json_error(result, "Invalid stream ID")
+        self.assertEqual(stream.stream_post_policy, Stream.STREAM_POST_POLICY_EVERYONE)
+
+        self.subscribe(user_profile, "stream_name1")
+        stream = get_stream("stream_name1", user_profile.realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_post_policy": orjson.dumps(Stream.STREAM_POST_POLICY_ADMINS).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", user_profile.realm)
+        self.assertEqual(stream.stream_post_policy, Stream.STREAM_POST_POLICY_ADMINS)
+
     def test_change_stream_message_retention_days_notifications(self) -> None:
         user_profile = self.example_user("desdemona")
         self.login_user(user_profile)
@@ -2052,6 +2076,27 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.message_retention_days, 2)
+
+        # For private streams, even owners must be subscribed to the stream to change
+        # message_retention_days setting.
+        stream = self.make_stream("stream_name2", invite_only=True)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
+        )
+        self.assert_json_error(result, "Invalid stream ID")
+        stream = get_stream("stream_name2", realm)
+        self.assertEqual(
+            stream.message_retention_days,
+            Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["realm_default"],
+        )
+
+        self.subscribe(user_profile, "stream_name2")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name2", realm)
         self.assertEqual(stream.message_retention_days, 2)
 
     def test_change_stream_can_remove_subscribers_group(self) -> None:
