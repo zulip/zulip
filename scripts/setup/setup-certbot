@@ -18,6 +18,7 @@ fi
 method=webroot
 args="$(getopt -o '' --long help,email:,method:,skip-symlink,agree-tos -n "$0" -- "$@")"
 eval "set -- $args"
+agree_tos=()
 while true; do
     case "$1" in
         --email)
@@ -35,7 +36,7 @@ while true; do
             shift
             ;;
         --agree-tos)
-            agree_tos=--agree-tos
+            agree_tos=(--agree-tos)
             shift
             ;;
         --help)
@@ -106,7 +107,7 @@ esac
 # an annoying prompt we stifle with --no-eff-email.
 certbot certonly "${method_args[@]}" \
     "${HOSTNAMES[@]}" -m "$EMAIL" \
-    $agree_tos \
+    "${agree_tos[@]}" \
     --force-interactive --no-eff-email
 
 symlink_with_backup() {
