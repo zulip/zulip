@@ -7,7 +7,7 @@ class zulip::golang {
 
   zulip::external_dep { 'golang':
     version        => $version,
-    url            => "https://golang.org/dl/go${version}.linux-${zulip::common::goarch}.tar.gz",
+    url            => "https://go.dev/dl/go${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => 'go',
   }
 }
