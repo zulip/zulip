@@ -149,6 +149,14 @@ export function initialize() {
             return true;
         }
 
+        // Allow toggling of tasks in todo widget
+        if (
+            $target.is(".todo-widget label.checkbox") ||
+            $target.parents(".todo-widget label.checkbox").length > 0
+        ) {
+            return true;
+        }
+
         return false;
     }
 
@@ -1000,6 +1008,7 @@ export function initialize() {
                 // filters or search widgets won't unnecessarily close
                 // compose.
                 !$(e.target).closest("input").length &&
+                !$(e.target).closest(".todo-widget label.checkbox").length &&
                 !$(e.target).closest("textarea").length &&
                 !$(e.target).closest("select").length &&
                 // Clicks inside an overlay, popover, custom
