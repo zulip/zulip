@@ -21,7 +21,7 @@ specified topic.
 ## Stream messages without a topic
 
 If a user sends a message without a topic, the message's topic is
-displayed as **general chat**.
+set to "general chat".
 
 When [message editing](/help/configure-message-editing-and-deletion)
 is enabled, any user can [add a topic](/help/rename-a-topic)

@@ -7,8 +7,8 @@ the community to keep conversations organized, even if some members are still
 learning how to use topics effectively. However, you can restrict the ability to
 edit the topic of any message to specific [roles](/help/roles-and-permissions).
 
-Note that users may still be able to edit the topic of messages with
-**general chat**; see the full article on [message and topic
+Note that users may still be able to add a topic to messages sent without specifying one;
+see the full article on [message and topic
 editing](/help/configure-message-editing-and-deletion) for details.
 
 Also, only administrators and moderators can edit the topics of
