@@ -65,10 +65,10 @@ def process_user(
     def is_team_admin(user_dict: Dict[str, Any]) -> bool:
         if user_dict["teams"] is None:
             return False
-        for team in user_dict["teams"]:
-            if team["name"] == team_name and "team_admin" in team["roles"]:
-                return True
-        return False
+        return any(
+            team["name"] == team_name and "team_admin" in team["roles"]
+            for team in user_dict["teams"]
+        )
 
     def get_full_name(user_dict: Dict[str, Any]) -> str:
         full_name = "{} {}".format(user_dict["first_name"], user_dict["last_name"])
@@ -809,10 +809,7 @@ def check_user_in_team(user: Dict[str, Any], team_name: str) -> bool:
     if user["teams"] is None:
         # This is null for users not on any team
         return False
-    for team in user["teams"]:
-        if team["name"] == team_name:
-            return True
-    return False
+    return any(team["name"] == team_name for team in user["teams"])
 
 
 def label_mirror_dummy_users(

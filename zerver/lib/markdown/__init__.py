@@ -768,10 +768,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if parsed_url.netloc == "pasteboard.co":
             return False
 
-        for ext in IMAGE_EXTENSIONS:
-            if parsed_url.path.lower().endswith(ext):
-                return True
-        return False
+        return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
     def corrected_image_source(self, url: str) -> Optional[str]:
         # This function adjusts any URLs from linx.li and
