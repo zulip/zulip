@@ -263,7 +263,7 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
 
-        actual_keys = sorted(str(k) for k in page_params.keys())
+        actual_keys = sorted(str(k) for k in page_params)
 
         self.assertEqual(actual_keys, self.expected_page_params_keys)
 
@@ -284,7 +284,7 @@ class HomeTest(ZulipTestCase):
             "user_id",
         ]
 
-        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0].keys())
+        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
@@ -307,7 +307,7 @@ class HomeTest(ZulipTestCase):
                 self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        actual_keys = sorted(str(k) for k in page_params.keys())
+        actual_keys = sorted(str(k) for k in page_params)
         expected_keys = self.expected_page_params_keys + [
             "demo_organization_scheduled_deletion_date"
         ]
@@ -331,7 +331,7 @@ class HomeTest(ZulipTestCase):
         # Check no unnecessary params are passed to spectators.
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["is_spectator"], True)
-        actual_keys = sorted(str(k) for k in page_params.keys())
+        actual_keys = sorted(str(k) for k in page_params)
         expected_keys = [
             "apps_page_url",
             "bot_types",

@@ -169,7 +169,7 @@ def get_active_worker_queues(only_test_queues: bool = False) -> List[str]:
     """Returns all (either test, or real) worker queues."""
     return [
         queue_name
-        for queue_name in worker_classes.keys()
+        for queue_name in worker_classes
         if bool(queue_name in test_queues) == only_test_queues
     ]
 

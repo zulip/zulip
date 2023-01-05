@@ -268,9 +268,7 @@ def normalize_fixture_data(
             f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'
         ] = f'"{timestamp_field}": 1{i+1:02}%07d'
 
-    normalized_values: Dict[str, Dict[str, str]] = {
-        pattern: {} for pattern in pattern_translations.keys()
-    }
+    normalized_values: Dict[str, Dict[str, str]] = {pattern: {} for pattern in pattern_translations}
     for fixture_file in fixture_files_for_function(decorated_function):
         with open(fixture_file) as f:
             file_content = f.read()
