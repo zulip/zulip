@@ -59,10 +59,14 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 
 #### Installer options
 
-- `--email=you@example.com`: The email address of the person or team
-  who should get support and error emails from this Zulip server.
-  This becomes `ZULIP_ADMINISTRATOR` ([docs][doc-settings]) in the
-  Zulip settings.
+- `--email=you@example.com`: The email address for the person or team who
+  maintains the Zulip installation. Note that this is a public-facing email
+  address; it may appear on 404 pages, is used as the sender's address for many
+  automated emails, and is advertised as a support address. An email address
+  like support@example.com is totally reasonable, as is admin@example.com. Do
+  not put a display name; e.g. "support@example.com", not "Zulip Support
+  <support@example.com>". This becomes `ZULIP_ADMINISTRATOR`
+  ([docs][doc-settings]) in the Zulip settings.
 
 - `--hostname=zulip.example.com`: The user-accessible domain name for
   this Zulip server, i.e., what users will type in their web browser.
