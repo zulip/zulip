@@ -1402,7 +1402,13 @@
     #settings_page,
     #stream_settings {
         .save-button-controls .discard-button {
-            color: inherit;
+            color: hsl(0, 0%, 80%);
+
+            &:hover {
+                .save-discard-widget-button-text {
+                    color: hsl(0, 0%, 100%);
+                }
+            }
         }
     }
 }
