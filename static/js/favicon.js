@@ -8,6 +8,10 @@ import {page_params} from "./page_params";
 import {user_settings} from "./user_settings";
 
 let favicon_state;
+let favicon_change_retries = 0;
+let icon_data_url = "";
+let current_counts = {new_message_count:0, pm_count:0};
+let fetching_image = false;
 
 function load_and_set_favicon(rendered_favicon) {
     favicon_state = {
@@ -38,6 +42,7 @@ export function update_attrs_and_alt_icon() {
 }
 
 export function update_favicon(new_message_count, pm_count) {
+    current_counts = {new_message_count, pm_count};
     try {
         if (favicon_state !== undefined) {
             favicon_state.image.removeEventListener("load", set_favicon);
@@ -71,14 +76,13 @@ export function update_favicon(new_message_count, pm_count) {
                 : "∞";
         const count_long = count.length > 2;
 
-        let icon_data_url;
-        if (user_settings.realm_icon_as_favicon) {
-            // we need to use a data url, we cannot just pass a href into
-            // the template because we generate an immutable blob (as part
-            // of a the work around for the above web font bug) from the
-            // template which would not include the rendered image
-            icon_data_url = page_params.realm_icon_data_url;
-        }
+        // if (user_settings.realm_icon_as_favicon) {
+        //     // we need to use a data url, we cannot just pass a href into
+        //     // the template because we generate an immutable blob (as part
+        //     // of a the work around for the above web font bug) from the
+        //     // template which would not include the rendered image
+        //     icon_data_url = page_params.realm_icon_data_url;
+        // }
         const rendered_favicon = render_favicon_svg({
             count,
             count_long,
@@ -90,4 +94,40 @@ export function update_favicon(new_message_count, pm_count) {
     } catch (error) {
         blueslip.error("Failed to update favicon", undefined, error.stack);
     }
+}
+
+export async function change_favicon_image() {
+    if (fetching_image) {
+        console.log("already fetching");
+        return;
+    }
+    if (favicon_change_retries > 3) {
+        return;
+    }
+    if (!user_settings.realm_icon_as_favicon) {
+        console.log("not realm_icon_as_favicon");
+        icon_data_url = "";
+        update_favicon(current_counts.new_message_count, current_counts.pm_count);
+        return;
+    }
+    try {
+        fetching_image = true;
+        const response = await fetch(page_params.realm_icon_url);
+        const reader = new FileReader();
+        reader.readAsDataURL(await response.blob());
+        await new Promise((resolve) => {
+            reader.addEventListener("load", () => {
+                resolve();
+            });
+        });
+        fetching_image = false;
+        icon_data_url = reader.result;
+    } catch {
+        fetching_image = false;
+        favicon_change_retries += 1;
+        change_favicon_image();
+        return;
+    }
+    favicon_change_retries = 0;
+    update_favicon(current_counts.new_message_count, current_counts.pm_count);
 }
