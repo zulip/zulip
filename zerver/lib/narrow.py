@@ -121,17 +121,14 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     if narrow is None:
         return False
 
-    for term in narrow:
+    return any(
         # Web-public queries are only allowed for limited types of narrows.
         # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
-        if (
-            term["operator"] == "streams"
-            and term["operand"] == "web-public"
-            and term["negated"] is False
-        ):
-            return True
-
-    return False
+        term["operator"] == "streams"
+        and term["operand"] == "web-public"
+        and term["negated"] is False
+        for term in narrow
+    )
 
 
 def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
