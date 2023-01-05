@@ -139,6 +139,7 @@ ignore = [
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
     "RUF001", # String contains ambiguous unicode character
+    "RUF002", # Docstring contains ambiguous unicode character
     "RUF003", # Comment contains ambiguous unicode character
     "S101", # Use of `assert` detected
     "S105", # Possible hardcoded password
