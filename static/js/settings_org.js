@@ -55,6 +55,8 @@ export function maybe_disable_widgets() {
         .find("input, textarea, button, select")
         .prop("disabled", true);
 
+    $(".organization-box [data-name='organization-profile']").find(".image_upload_button").hide();
+
     $(".organization-box [data-name='organization-settings']")
         .find("input, textarea, button, select")
         .prop("disabled", true);
