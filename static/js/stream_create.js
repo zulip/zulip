@@ -317,17 +317,24 @@ export function show_new_stream_modal() {
     // Select the first visible and enabled choice for stream privacy.
     $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
     // Make the options default to the same each time
-    $("#stream_creation_form .stream-message-retention-days-input").hide();
-    $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
 
-    // Add listener to .show stream-message-retention-days-input that we've hidden above
-    $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
-        if (e.target.value === "custom_period") {
-            $("#stream_creation_form .stream-message-retention-days-input").show();
-        } else {
-            $("#stream_creation_form .stream-message-retention-days-input").hide();
-        }
-    });
+    // The message retention setting is visible to owners only. The below block
+    // sets the default state of setting if it is visible.
+    if (page_params.is_owner) {
+        $("#stream_creation_form .stream-message-retention-days-input").hide();
+        $("#stream_creation_form select[name=stream_message_retention_setting]").val(
+            "realm_default",
+        );
+
+        // Add listener to .show stream-message-retention-days-input that we've hidden above
+        $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+            if (e.target.value === "custom_period") {
+                $("#stream_creation_form .stream-message-retention-days-input").show();
+            } else {
+                $("#stream_creation_form .stream-message-retention-days-input").hide();
+            }
+        });
+    }
 
     // set default state for "announce stream" option.
     update_announce_stream_state();
