@@ -763,10 +763,9 @@ div.overlay {
         &:hover,
         &:focus {
             border: 1px solid hsl(0, 0%, 61%);
-            color: hsl(0, 0%, 18%);
 
-            .save-discard-widget-button-icon {
-                color: hsl(0, 0%, 47%);
+            .discard-button.save-discard-widget-button-text {
+                color: hsl(0, 0%, 18%);
             }
         }
 
