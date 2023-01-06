@@ -6880,12 +6880,13 @@ paths:
             permission for a bot by contacting [Zulip Cloud support][support]
             with an explanation for why it is needed. Self-hosted installations
             can toggle `can_create_users` on an account using the `manage.py
-            change_user_role` command.
+            change_user_role` [management command][management-commands].
 
         **Changes**: Before Zulip 4.0 (feature level 36), this endpoint was
         available to all organization administrators.
 
         [support]: /help/contact-support
+        [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
       x-requires-administrator: true
       parameters:
         - name: email
