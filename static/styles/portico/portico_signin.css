@@ -353,7 +353,7 @@ html {
         vertical-align: top;
         padding: 13px 22px;
 
-        font-family: "Source Sans 3", sans-serif;
+        font-family: "Inter", sans-serif;
 
         font-size: 1.2rem;
         font-weight: 400;
@@ -464,7 +464,7 @@ html {
             padding: 10px 32px 10px 12px;
             margin: 25px 0 5px;
 
-            font-family: "Source Sans 3", sans-serif;
+            font-family: "Inter", sans-serif;
             font-size: 1.2rem;
             line-height: normal;
             height: auto;

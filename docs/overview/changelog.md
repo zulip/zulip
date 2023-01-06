@@ -1009,7 +1009,7 @@ log][commit-log] for an up-to-date list of all changes.
   removing the last forked dependencies from the codebase.
 - Upgraded Django to 3.1 (as well as essentially every other dependency).
 - Updated web app codebase to use many modern ES6 patterns.
-- Upgraded Zulip's core font to Source Sans 3, which supports more languages.
+- Upgraded Zulip's core font to Inter, which supports more languages.
 - Relabeled :smile: and :stuck_out_tongue: emoji to use better codepoints.
 - Reduced the size of Zulip's main JavaScript bundle by removing `moment.js`.
 - Server logs now display the version number for Zulip clients.
