@@ -24,8 +24,8 @@ from zerver.lib.response import json_success
 from zerver.lib.upload import check_upload_within_quota, upload_message_image_from_request
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import (
+    assert_is_local_storage_path,
     generate_unauthed_file_access_url,
-    get_local_file_path,
     get_local_file_path_id_from_token,
 )
 from zerver.lib.upload.s3 import get_signed_upload_url
@@ -96,8 +96,10 @@ def serve_s3(
 def serve_local(
     request: HttpRequest, path_id: str, url_only: bool, download: bool = False
 ) -> HttpResponseBase:
-    local_path = get_local_file_path(path_id)
-    if local_path is None:
+    assert settings.LOCAL_FILES_DIR is not None
+    local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
+    assert_is_local_storage_path("files", local_path)
+    if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
 
     if url_only:
