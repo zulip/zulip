@@ -61,7 +61,7 @@ from zerver.lib.upload.base import (
     resize_emoji,
     sanitize_name,
 )
-from zerver.lib.upload.local import LocalUploadBackend, get_local_file_path, write_local_file
+from zerver.lib.upload.local import LocalUploadBackend, write_local_file
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
 from zerver.models import (
@@ -429,8 +429,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             + ")"
         )
         message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
-        d3_local_path = get_local_file_path(d3_path_id)
-        assert d3_local_path is not None
+        assert settings.LOCAL_FILES_DIR
+        d3_local_path = os.path.join(settings.LOCAL_FILES_DIR, d3_path_id)
         self.assertTrue(os.path.exists(d3_local_path))
 
         do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])

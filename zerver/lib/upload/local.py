@@ -68,16 +68,6 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
     return False
 
 
-def get_local_file_path(path_id: str) -> Optional[str]:
-    local_path = os.path.join(assert_is_not_none(settings.LOCAL_FILES_DIR), path_id)
-    assert_is_local_storage_path("files", local_path)
-
-    if os.path.isfile(local_path):
-        return local_path
-    else:
-        return None
-
-
 LOCAL_FILE_ACCESS_TOKEN_SALT = "local_file_"
 
 
