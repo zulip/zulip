@@ -55,7 +55,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import is_local_addr, rate_limit_request_by_ip, rate_limit_user
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
-from zerver.lib.response import json_method_not_allowed, json_success
+from zerver.lib.response import json_method_not_allowed
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
@@ -962,7 +962,7 @@ def return_success_on_head_request(
         request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
         if request.method == "HEAD":
-            return json_success(request)
+            return HttpResponse()
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view_func
