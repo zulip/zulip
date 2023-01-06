@@ -4,7 +4,7 @@ from typing import Callable, Dict, List, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import webhook_view
+from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -325,6 +325,8 @@ ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("Intercom", all_event_types=ALL_EVENT_TYPES)
+# Intercom sends a HEAD request to validate the webhook URL. In this case, we just assume success.
+@return_success_on_head_request
 @has_request_variables
 def api_intercom_webhook(
     request: HttpRequest,
