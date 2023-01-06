@@ -1080,7 +1080,7 @@ class TestWorker(QueueProcessingWorker):
     # This worker allows you to test the queue worker infrastructure without
     # creating significant side effects.  It can be useful in development or
     # for troubleshooting prod/staging.  It pulls a message off the test queue
-    # and appends it to a file in /tmp.
+    # and appends it to a file in /var/log/zulip.
     def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
         fn = settings.ZULIP_WORKER_TEST_FILE
         message = orjson.dumps(event)

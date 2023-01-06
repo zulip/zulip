@@ -694,7 +694,7 @@ RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 
-ZULIP_WORKER_TEST_FILE = "/tmp/zulip-worker-test-file"
+ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
 
 
 if IS_WORKER:

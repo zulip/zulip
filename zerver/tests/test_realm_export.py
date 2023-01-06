@@ -55,7 +55,7 @@ class RealmExportTest(ZulipTestCase):
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["public_only"], True)
-        self.assertIn("/tmp/zulip-export-", args["output_dir"])
+        self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.
@@ -125,7 +125,7 @@ class RealmExportTest(ZulipTestCase):
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["public_only"], True)
-        self.assertIn("/tmp/zulip-export-", args["output_dir"])
+        self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.
