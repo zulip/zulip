@@ -196,7 +196,7 @@ class TestFullStack(ZulipTestCase):
 
         # We often use assert_json_error for negative tests.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "User not authorized for this query", 400)
+        self.assert_json_error(result, "User not authorized to create users", 400)
 
         do_change_can_create_users(iago, True)
         incomplete_params = dict(

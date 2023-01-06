@@ -878,7 +878,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         self.assertEqual(admin.can_create_users, False)
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "User not authorized for this query")
+        self.assert_json_error(result, "User not authorized to create users")
 
         do_change_can_create_users(admin, True)
         # can_create_users is insufficient without being a realm administrator:

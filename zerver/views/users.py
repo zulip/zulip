@@ -683,7 +683,7 @@ def create_user_backend(
     full_name_raw: str = REQ("full_name"),
 ) -> HttpResponse:
     if not user_profile.can_create_users:
-        raise JsonableError(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized to create users"))
 
     full_name = check_full_name(full_name_raw)
     form = CreateUserForm({"full_name": full_name, "email": email})
