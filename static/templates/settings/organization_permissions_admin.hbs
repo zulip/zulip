@@ -3,8 +3,10 @@
 
         <div id="org-join-settings" class="settings-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Joining the organization" }}</h3>
-                <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
+                <h3>
+                    {{t "Joining the organization" }}
+                    <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
+                </h3>
                 {{> settings_save_discard_widget section_name="join-settings" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
