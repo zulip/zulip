@@ -1,5 +1,6 @@
 import cProfile
 import logging
+import tempfile
 import time
 import traceback
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
@@ -277,8 +278,11 @@ def write_log_line(
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
-        profile_path = "/tmp/profile.data.{}.{}".format(path.split("/")[-1], int(time_delta * 1000))
-        log_data["prof"].dump_stats(profile_path)
+        with tempfile.NamedTemporaryFile(
+            prefix="profile.data.{}.{}.".format(path.split("/")[-1], int(time_delta * 1000)),
+            delete=False,
+        ) as stats_file:
+            log_data["prof"].dump_stats(stats_file.name)
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
