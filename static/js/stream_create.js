@@ -326,14 +326,24 @@ export function show_new_stream_modal() {
             "realm_default",
         );
 
-        // Add listener to .show stream-message-retention-days-input that we've hidden above
-        $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
-            if (e.target.value === "custom_period") {
-                $("#stream_creation_form .stream-message-retention-days-input").show();
-            } else {
-                $("#stream_creation_form .stream-message-retention-days-input").hide();
-            }
-        });
+        // The user is not allowed to set the setting to amy value other than
+        // "realm_default" for realms on limited plans, so we disable the setting.
+        $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
+            "disabled",
+            !page_params.zulip_plan_is_not_limited,
+        );
+
+        // This listener is only needed if the dropdown setting is enabled.
+        if (page_params.zulip_plan_is_not_limited) {
+            // Add listener to .show stream-message-retention-days-input that we've hidden above
+            $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+                if (e.target.value === "custom_period") {
+                    $("#stream_creation_form .stream-message-retention-days-input").show();
+                } else {
+                    $("#stream_creation_form .stream-message-retention-days-input").hide();
+                }
+            });
+        }
     }
 
     // set default state for "announce stream" option.
