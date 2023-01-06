@@ -316,8 +316,7 @@ export function show_new_stream_modal() {
 
     // Select the first visible and enabled choice for stream privacy.
     $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
-    // Make the options default to the same each time:
-    // "announce stream" on.
+    // Make the options default to the same each time
     $("#stream_creation_form .stream-message-retention-days-input").hide();
     $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
 
@@ -330,6 +329,7 @@ export function show_new_stream_modal() {
         }
     });
 
+    // set default state for "announce stream" option.
     update_announce_stream_state();
     clear_error_display();
 }
