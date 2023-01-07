@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, cast
 from unittest import mock
 
 import orjson
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
@@ -23,6 +24,7 @@ from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import JsonableError, MarkdownRenderingError
 from zerver.lib.markdown import (
+    InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
     clear_state_for_testing,
@@ -660,6 +662,38 @@ class MarkdownTest(ZulipTestCase):
         thumbnail_img = f"""<div class="message_inline_image"><a href="{ content }"><img src="{ get_camo_url(content) }"></a></div>"""
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
+
+    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    def test_max_inline_preview(self) -> None:
+        image_links = []
+        # Add a youtube link within a spoiler to ensure other link types are counted
+        image_links.append(
+            """```spoiler Check out this PyCon video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
+        )
+        # Add a link within blockquote to test that it does NOT get counted
+        image_links.append("> http://cdn.wallpapersafari.com/spoiler/dont_count.jpeg\n")
+        # Using INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1 because of the one link in a spoiler added already
+        for x in range(InlineInterestingLinkProcessor.INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1):
+            image_links.append("http://cdn.wallpapersafari.com/{}/6/16eVjx.jpeg".format(x))
+        within_limit_content = "\n".join(image_links)
+        above_limit_content = (
+            within_limit_content + "\nhttp://cdn.wallpapersafari.com/above/0/6/16eVjx.jpeg"
+        )
+
+        # When the number of image links is within the preview limit, the
+        # output should contain the same number of inline images.
+        converted = markdown_convert_wrapper(within_limit_content)
+        soup = BeautifulSoup(converted, "html.parser")
+        self.assert_length(
+            soup(class_="message_inline_image"),
+            InlineInterestingLinkProcessor.INLINE_PREVIEW_LIMIT_PER_MESSAGE,
+        )
+
+        # When the number of image links is over the limit, then there should
+        # be zero inline images.
+        converted = markdown_convert_wrapper(above_limit_content)
+        soup = BeautifulSoup(converted, "html.parser")
+        self.assert_length(soup(class_="message_inline_image"), 0)
 
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_quoted_blocks(self) -> None:
