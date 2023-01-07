@@ -1332,7 +1332,10 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("hi emoji :da ", emoji_list);
     assert_typeahead_equals("hi emoji\n:da", emoji_list);
     assert_typeahead_equals("hi emoji\n :ra", emoji_list);
+    assert_typeahead_equals("<time:2023-01-05T20:06:00-05:00> :+", emoji_list);
     assert_typeahead_equals(":+", emoji_list);
+    // CURRENTLY FAILING
+    // assert_typeahead_equals(":+1: ", false); // Already completed the emoji
     assert_typeahead_equals(":la", emoji_list);
     assert_typeahead_equals(" :lee", emoji_list);
     assert_typeahead_equals("hi :see no", emoji_list);
@@ -1406,16 +1409,28 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);
 
     // time_jump
+    assert_typeahead_equals("@**a person** <tim", false);
     assert_typeahead_equals("<tim", false);
     assert_typeahead_equals("<timerandom", false);
     assert_typeahead_equals("<time", ["translated: Mention a time-zone-aware time"]);
     assert_typeahead_equals("<time:", ["translated: Mention a time-zone-aware time"]);
+    // CURRENTLY FAILING, same bug as above with emoji mentions
+    // assert_typeahead_equals(":octopus: <tim", false);
+    assert_typeahead_equals(":octopus: <timerandom", false);
+    assert_typeahead_equals(":octopus: <time", ["translated: Mention a time-zone-aware time"]);
+    assert_typeahead_equals(":octopus: <time:", ["translated: Mention a time-zone-aware time"]);
+    assert_typeahead_equals(":octopus: <time:something", [
+        "translated: Mention a time-zone-aware time",
+    ]);
     assert_typeahead_equals("<time:something", ["translated: Mention a time-zone-aware time"]);
     assert_typeahead_equals("<time:something", "> ", [
         "translated: Mention a time-zone-aware time",
     ]);
     assert_typeahead_equals("<time:something>", ["translated: Mention a time-zone-aware time"]);
     assert_typeahead_equals("<time:something> ", false); // Already completed the mention
+    assert_typeahead_equals("<time:something> <time", [
+        "translated: Mention a time-zone-aware time",
+    ]);
 
     // Following tests place the cursor before the second string
     assert_typeahead_equals("#test", "ing", false);

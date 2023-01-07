@@ -287,6 +287,8 @@ export function tokenize_compose_str(s) {
         min_i = 0;
     }
 
+    const timestamp_index = s.indexOf("<time");
+
     while (i > min_i) {
         i -= 1;
         switch (s[i]) {
@@ -331,11 +333,10 @@ export function tokenize_compose_str(s) {
                 // maybe topic_list; let's let the stream_topic_regex decide later.
                 return ">topic_list";
         }
-    }
 
-    const timestamp_index = s.indexOf("<time");
-    if (timestamp_index >= 0) {
-        return s.slice(timestamp_index);
+        if (timestamp_index >= i) {
+            return s.slice(timestamp_index);
+        }
     }
 
     return "";
