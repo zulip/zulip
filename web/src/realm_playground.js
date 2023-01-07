@@ -1,3 +1,4 @@
+import generated_pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
 
 import {$t} from "./i18n";
@@ -42,6 +43,23 @@ export function sort_pygments_pretty_names_by_priority(generated_pygments_data) 
     }
 }
 
+// This gets the candidate list for showing autocomplete for a code block in
+// the composebox. The candidate list will include pygments data as well as any
+// Code Playgrounds.
+//
+// May return duplicates, since it's common for playground languages
+// to also be pygments languages! retain_unique_language_aliases will
+// deduplicate them.
+export function get_pygments_typeahead_list_for_composebox() {
+    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
+    const generated_pygment_langs = Object.keys(generated_pygments_data.langs);
+
+    return playground_pygment_langs.concat(generated_pygment_langs);
+}
+
+// This gets the candidate list for showing autocomplete in settings when
+// adding a new Code Playground. This will not include existing Code
+// Playgrounds in the candidate list.
 export function get_pygments_typeahead_list_for_settings(query) {
     const language_labels = new Map();
 
