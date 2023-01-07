@@ -825,4 +825,14 @@ test("compare_language", () => {
     // "abap" and "amdgpu" both have priority = 0 at this time, so there is a tie.
     // Alphabetical order should be used to break that tie.
     assert.equal(th.compare_language("abap", "amdgpu"), util.strcmp("abap", "amdgpu"));
+
+    // Test with languages that aren't in the generated pygments data.
+    assert.equal(actual_pygments_data.langs.custom_a, undefined);
+    assert.equal(actual_pygments_data.langs.custom_b, undefined);
+    // Since custom_a has no popularity score, it gets sorted behind python.
+    assert.equal(th.compare_language("custom_a", "python"), 1);
+    assert.equal(th.compare_language("python", "custom_a"), -1);
+    // Whenever there is a tie, even in the case neither have a popularity
+    // score, then alphabetical order is used to break the tie.
+    assert.equal(th.compare_language("custom_a", "custom_b"), util.strcmp("custom_a", "custom_b"));
 });
