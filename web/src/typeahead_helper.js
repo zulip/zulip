@@ -260,7 +260,50 @@ export function sort_people_for_relevance(objs, current_stream_name, current_top
 }
 
 function compare_language_by_popularity(lang_a, lang_b) {
-    return pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
+    const lang_a_data = pygments_data.langs[lang_a];
+    const lang_b_data = pygments_data.langs[lang_b];
+
+    // If a "language" doesn't have a popularity score, that "language" is
+    // probably a custom language created in the Code Playground feature. That
+    // custom language might not even be an actual programming language. Some
+    // users simply use the Code Playground feature as a shortcut mechanism.
+    // Like the report in issue #23935 is suggesting. Also, because Code
+    // Playground doesn't actually allow custom syntax highlighting, any custom
+    // languages are probably more likely to be attempts to create a shortcut
+    // mechanism. In that case, they're more like custom keywords rather than
+    // languages.
+    //
+    // We need to make a choice for the ordering of those custom languages when
+    // compared with languages available in pygment. It might come down to
+    // individual usage which one is more valuable.
+    //
+    // If most of the time a user uses code block for syntax highlighting, then
+    // sorting custom language later on makes sense. If most of the time a user
+    // uses a code block as a shortcut mechanism, then they might want custom
+    // language earlier on.
+    //
+    // At this time, we chose to sort custom languages after pygment languages
+    // due to the following reasons:
+    // - Code blocks are originally used to display code with syntax
+    //   highlighting. Users can add Code Playground custom language, without
+    //   having the autocomplete ordering they're used to being affected.
+    // - Users can design their custom language name to be more unique or using
+    //   characters such that they appear faster in autocomplete. Therefore,
+    //   they have a way to purposely affect the system to suit their
+    //   autocomplete ordering preference.
+    //
+    // If in the future we find that many users have a need for a configurable
+    // setting, then we could create one. But for now, sorting after pygment
+    // languages seem sensible.
+    if (!lang_a_data && !lang_b_data) {
+        return 0; // Neither have popularity, so they tie.
+    } else if (!lang_a_data) {
+        return 1; // lang_a doesn't have popularity, so sort a after b.
+    } else if (!lang_b_data) {
+        return -1; // lang_b doesn't have popularity, so sort a before b.
+    }
+
+    return lang_b_data.priority - lang_a_data.priority;
 }
 
 // This function compares two languages first by their popularity, then if
