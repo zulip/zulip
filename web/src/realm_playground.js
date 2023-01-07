@@ -42,7 +42,7 @@ export function sort_pygments_pretty_names_by_priority(generated_pygments_data) 
     }
 }
 
-export function get_pygments_typeahead_list(query) {
+export function get_pygments_typeahead_list_for_settings(query) {
     const language_labels = new Map();
 
     // Adds a typeahead that allows selecting a custom language, by adding a

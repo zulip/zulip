@@ -165,7 +165,7 @@ function build_page() {
 
     $search_pygments_box.typeahead({
         source(query) {
-            language_labels = realm_playground.get_pygments_typeahead_list(query);
+            language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
             return Array.from(language_labels.keys());
         },
         items: 5,
