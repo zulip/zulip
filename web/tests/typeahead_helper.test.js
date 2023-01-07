@@ -18,6 +18,7 @@ const stream_data = zrequire("stream_data");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
+const util = zrequire("util");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
@@ -815,4 +816,13 @@ test("sort_slash_commands", () => {
         {name: "poll"},
         {name: "test"},
     ]);
+});
+
+test("compare_language", () => {
+    assert.ok(th.compare_language("javascript", "haskell") < 0);
+    assert.ok(th.compare_language("haskell", "javascript") > 0);
+
+    // "abap" and "amdgpu" both have priority = 0 at this time, so there is a tie.
+    // Alphabetical order should be used to break that tie.
+    assert.equal(th.compare_language("abap", "amdgpu"), util.strcmp("abap", "amdgpu"));
 });
