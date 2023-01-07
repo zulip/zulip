@@ -1,7 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
 
 import * as compose from "./compose";
@@ -17,6 +16,7 @@ import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
@@ -631,7 +631,7 @@ export function get_candidates(query) {
         }
         this.completing = "syntax";
         this.token = current_token;
-        return Object.keys(pygments_data.langs);
+        return realm_playground.get_pygments_typeahead_list_for_composebox();
     }
 
     // Only start the emoji autocompleter if : is directly after one
