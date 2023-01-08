@@ -20,14 +20,52 @@
 
 .todo-widget {
     /* For the box-shadow to be visible on the left */
-    input.add-task,
-    input.add-desc {
-        margin-left: 2px;
+    .add-task,
+    .add-desc {
+        font-size: 14px;
+        font-weight: 400;
+        margin-right: 4px;
     }
 
-    /* Arrange that a multi-line description line wraps properly. */
     label.checkbox {
-        display: flex;
+        display: flex; /* Arrange that a multi-line description line wraps properly. */
+        position: relative;
+        vertical-align: top;
+
+        input[type="checkbox"] {
+            ~ span {
+                height: 12px;
+                width: 12px;
+                border: 2px solid hsl(156, 28%, 70%);
+
+                border-radius: 4px;
+                filter: brightness(1);
+
+                cursor: pointer;
+            }
+
+            &:checked ~ span {
+                background-image: url("../images/checkbox-white.svg");
+                background-size: 75%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+                background-color: hsl(156, 41%, 40%);
+                border: 2px solid hsl(156, 41%, 40%);
+            }
+
+            &:disabled ~ span {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            &:hover ~ span {
+                border-color: hsl(156, 30%, 50%);
+            }
+
+            &:focus ~ span {
+                outline-color: hsla(0, 0%, 100%, 0);
+            }
+        }
     }
 }
 
@@ -55,25 +93,33 @@
 }
 
 .poll-widget {
-    /* For the box-shadow to be visible on the left */
-    input.poll-option {
-        margin-left: 2px;
+    .poll-option {
+        font-weight: 400;
+        font-size: 14px;
     }
 
-    .poll-option {
+    /* For the box-shadow to be visible on the left */
+    input.poll-option {
+        margin-right: 4px;
+    }
+
+    span.poll-option {
         font-weight: 600;
-        font-size: 16px;
+        padding-top: 28px;
     }
 
     .poll-vote {
         color: hsl(156, 41%, 40%);
         border-color: hsl(156, 28%, 70%);
         border-style: solid;
+        font-weight: 600;
         border-radius: 3px;
         margin-right: 4px;
         padding-left: 2px; /* padding for Chromium browsers */
         padding-right: 2px;
-        min-width: 28px;
+        min-width: 25px;
+        height: 25px;
+        font-size: 13px;
         background-color: hsl(0, 0%, 100%);
 
         &:hover {
@@ -89,6 +135,7 @@
     .poll-names {
         color: hsl(0, 0%, 45%);
         padding-left: 4px;
+        padding-top: 28px;
         font-size: 14px;
     }
 }
@@ -108,15 +155,27 @@ button {
     }
 
     &.add-task,
-    &.add-desc,
-    &.poll-option,
-    &.poll-question {
+    &.poll-option {
+        color: hsl(156, 41%, 40%);
+        border: 1px solid hsl(156, 28%, 70%);
+        width: 100px;
         border-radius: 3px;
-        border: 1px solid hsl(0, 0%, 80%);
         background-color: hsl(0, 0%, 100%);
+        padding: 4px;
+        padding-left: 14px;
+        padding-right: 14px;
+        transition: all 0.2s ease;
 
-        &:hover {
-            border-color: hsl(0, 0%, 60%);
+        &:hover,
+        &:focus {
+            outline: 0;
+            border-color: hsl(156, 30%, 50%);
+        }
+
+        &:active {
+            border-color: hsl(156, 30%, 40%);
+            color: hsl(156, 44%, 43%);
+            background-color: hsl(154, 33%, 96%);
         }
     }
 }
