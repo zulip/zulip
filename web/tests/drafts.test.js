@@ -520,28 +520,28 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             dark_background: "",
             topic: "topic",
             raw_content: "Test stream message",
-            time_stamp: "7:55 AM",
+            time_stamp: "7:55 AM",
         },
         {
             draft_id: "id2",
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test private message",
-            time_stamp: "Jan 30",
+            time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test private message 3",
-            time_stamp: "Jan 29",
+            time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test private message 2",
-            time_stamp: "Jan 26",
+            time_stamp: "Jan 26",
         },
         {
             draft_id: "id3",
@@ -551,7 +551,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             dark_background: "",
             topic: "topic",
             raw_content: "Test stream message 2",
-            time_stamp: "Jan 21",
+            time_stamp: "Jan 21",
         },
     ];
 
@@ -658,21 +658,21 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test private message",
-            time_stamp: "Jan 30",
+            time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test private message 3",
-            time_stamp: "Jan 29",
+            time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test private message 2",
-            time_stamp: "Jan 26",
+            time_stamp: "Jan 26",
         },
     ];
 
@@ -685,7 +685,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             dark_background: "",
             topic: "topic",
             raw_content: "Test stream message",
-            time_stamp: "7:55 AM",
+            time_stamp: "7:55 AM",
         },
         {
             draft_id: "id3",
@@ -695,7 +695,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             dark_background: "",
             topic: "topic",
             raw_content: "Test stream message 2",
-            time_stamp: "Jan 21",
+            time_stamp: "Jan 21",
         },
     ];
 

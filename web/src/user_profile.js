@@ -22,6 +22,7 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
@@ -108,7 +109,7 @@ function render_user_group_list(groups, user) {
     });
 }
 
-export function get_custom_profile_field_data(user, field, field_types, dateFormat) {
+export function get_custom_profile_field_data(user, field, field_types) {
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
     const profile_field = {};
@@ -128,7 +129,10 @@ export function get_custom_profile_field_data(user, field, field_types, dateForm
 
     switch (field_type) {
         case field_types.DATE.id:
-            profile_field.value = dateFormat.format(parseISO(field_value.value));
+            profile_field.value = timerender.get_localized_date_or_time_for_format(
+                parseISO(field_value.value),
+                "dayofyear_year",
+            );
             break;
         case field_types.USER.id:
             profile_field.id = field.id;
@@ -179,10 +183,9 @@ function initialize_user_type_fields(user) {
 export function show_user_profile(user, default_tab_key = "profile-tab") {
     popovers.hide_all();
 
-    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
     const field_types = page_params.custom_profile_field_types;
     const profile_data = page_params.custom_profile_fields
-        .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
+        .map((f) => get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
@@ -194,7 +197,10 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         user_avatar: people.medium_avatar_url_for_person(user),
         is_me: people.is_current_user(user.email),
         is_bot: user.is_bot,
-        date_joined: dateFormat.format(parseISO(user.date_joined)),
+        date_joined: timerender.get_localized_date_or_time_for_format(
+            parseISO(user.date_joined),
+            "dayofyear_year",
+        ),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
