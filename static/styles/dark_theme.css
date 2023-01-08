@@ -328,7 +328,15 @@
     .new-style .button {
         background-color: hsla(0, 0%, 0%, 0.2);
 
-        &:not(.sea-green, .btn-danger, .btn-warning, .btn-link, .poll-vote) {
+        &:not(
+                .sea-green,
+                .btn-danger,
+                .btn-warning,
+                .btn-link,
+                .poll-vote,
+                button.poll-option,
+                button.add-task
+            ) {
             border-color: hsla(0, 0%, 0%, 0.6);
             color: inherit;
         }
@@ -1371,6 +1379,31 @@
 
         .poll-names {
             color: hsl(236, 15%, 70%);
+        }
+    }
+
+    /* Widgets: Todo */
+    .todo-widget {
+        label.checkbox {
+            input[type="checkbox"] {
+                ~ span {
+                    border-color: hsl(185, 40%, 45%);
+                    opacity: 0.7;
+                }
+
+                &:hover ~ span {
+                    background-color: hsl(185, 20%, 20%);
+                    border-color: hsl(185, 40%, 35%);
+                }
+
+                &:checked ~ span {
+                    background-color: hsl(185, 40%, 45%);
+                }
+
+                &:focus ~ span {
+                    outline-color: hsla(0, 0%, 100%, 0);
+                }
+            }
         }
     }
 
