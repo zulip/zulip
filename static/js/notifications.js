@@ -166,16 +166,16 @@ export function is_window_focused() {
 export let scroll_to_message_banner_message_id = null;
 
 export function notify_above_composebox(
-    note,
-    link_class,
+    banner_text,
+    classname,
     above_composebox_narrow_url,
     link_msg_id,
     link_text,
 ) {
     const $notification = $(
         render_message_sent_banner({
-            note,
-            link_class,
+            banner_text,
+            classname,
             above_composebox_narrow_url,
             link_msg_id,
             link_text,
@@ -610,16 +610,16 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
             continue;
         }
 
-        let reason = get_local_notify_mix_reason(message);
+        let banner_text = get_local_notify_mix_reason(message);
 
         const link_msg_id = message.id;
 
-        if (!reason) {
+        if (!banner_text) {
             if (need_user_to_scroll) {
-                reason = $t({defaultMessage: "Sent!"});
+                banner_text = $t({defaultMessage: "Sent!"});
                 const link_text = $t({defaultMessage: "Scroll down to view your message."});
                 notify_above_composebox(
-                    reason,
+                    banner_text,
                     "compose_notification_scroll_to_message",
                     // Don't display a URL on hover for the "Scroll to bottom" link.
                     null,
@@ -635,15 +635,15 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
         }
 
         const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
-        const link_class = "compose_notification_narrow_by_topic";
+        const classname = "compose_notification_narrow_by_topic";
         const link_text = $t(
             {defaultMessage: "Narrow to {message_recipient}"},
             {message_recipient: get_message_header(message)},
         );
 
         notify_above_composebox(
-            reason,
-            link_class,
+            banner_text,
+            classname,
             above_composebox_narrow_url,
             link_msg_id,
             link_text,
