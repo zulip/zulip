@@ -29,7 +29,7 @@ export function get_playground_info_for_languages(lang) {
 
 export function sort_pygments_pretty_names_by_priority(generated_pygments_data) {
     const priority_sorted_pygments_data = Object.keys(generated_pygments_data.langs).sort(
-        typeahead_helper.compare_by_popularity,
+        typeahead_helper.compare_language,
     );
     for (const alias of priority_sorted_pygments_data) {
         const pretty_name = generated_pygments_data.langs[alias].pretty_name;

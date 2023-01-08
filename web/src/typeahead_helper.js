@@ -259,7 +259,9 @@ export function sort_people_for_relevance(objs, current_stream_name, current_top
     return objs;
 }
 
-export function compare_by_popularity(lang_a, lang_b) {
+// This function compares two languages first by their popularity, then if
+// there is a tie on popularity, then compare alphabetically to break the tie.
+export function compare_language(lang_a, lang_b) {
     const diff = pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
     if (diff !== 0) {
         return diff;
@@ -289,7 +291,7 @@ export function sort_languages(matches, query) {
     const results = typeahead.triage(query, matches, (x) => x);
 
     // Languages that start with the query
-    results.matches = results.matches.sort(compare_by_popularity);
+    results.matches = results.matches.sort(compare_language);
 
     // Push exact matches to top.
     const match_index = results.matches.indexOf(query);
@@ -299,7 +301,7 @@ export function sort_languages(matches, query) {
     }
 
     // Languages that have the query somewhere in their name
-    results.rest = results.rest.sort(compare_by_popularity);
+    results.rest = results.rest.sort(compare_language);
     return retain_unique_language_aliases(results.matches.concat(results.rest));
 }
 
