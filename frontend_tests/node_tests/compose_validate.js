@@ -571,6 +571,54 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.ok(!banner_rendered);
 });
 
+test_ui("test_edit_check_overflow_text", ({mock_template}) => {
+    mock_banners();
+    page_params.max_message_length = 10000;
+
+    const $textarea = $("#message_edit_content");
+    const $indicator = $("#edit_compose_limit_indicator");
+    const $save_button = $("#edit-save-button");
+    let banner_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage: "Message length shouldn't be greater than 10000 characters.",
+            }),
+        );
+        banner_rendered = true;
+    });
+
+    // Indicator should show red colored text
+    $textarea.val("a".repeat(10000 + 1));
+    compose_validate.edit_check_overflow_text();
+    assert.ok($indicator.hasClass("over_limit"));
+    assert.equal($indicator.text(), "10001/10000");
+    assert.ok($textarea.hasClass("over_limit"));
+    assert.ok(banner_rendered);
+    assert.ok($save_button.prop("disabled"));
+
+    // Indicator should show orange colored text
+    banner_rendered = false;
+    $textarea.val("a".repeat(9000 + 1));
+    compose_validate.edit_check_overflow_text();
+    assert.ok(!$indicator.hasClass("over_limit"));
+    assert.equal($indicator.text(), "9001/10000");
+    assert.ok(!$textarea.hasClass("over_limit"));
+    assert.ok(!$save_button.prop("disabled"));
+    assert.ok(!banner_rendered);
+
+    // Indicator must be empty
+    banner_rendered = false;
+    $textarea.val("a".repeat(9000));
+    compose_validate.edit_check_overflow_text();
+    assert.ok(!$indicator.hasClass("over_limit"));
+    assert.equal($indicator.text(), "");
+    assert.ok(!$textarea.hasClass("over_limit"));
+    assert.ok(!banner_rendered);
+});
+
 test_ui("needs_subscribe_warning", () => {
     const invalid_user_id = 999;
 

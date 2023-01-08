@@ -593,6 +593,46 @@ export function check_overflow_text() {
     return text.length;
 }
 
+export function edit_check_overflow_text() {
+    // This function is called when typing every character while
+    // editing box, so it's important that it not doing anything
+    // expensive.
+    const text = compose_state.edit_message_content();
+    const max_length = page_params.max_message_length;
+    const $indicator = $("#edit_compose_limit_indicator");
+    if (text.length > max_length) {
+        $indicator.addClass("over_limit");
+        $("#message_edit_content").addClass("over_limit");
+        $indicator.text(text.length + "/" + max_length);
+        compose_banner.show_error_message(
+            $t(
+                {
+                    defaultMessage:
+                        "Message length shouldn't be greater than {max_length} characters.",
+                },
+                {max_length},
+            ),
+            compose_banner.CLASSNAMES.message_too_long,
+        );
+        $("#edit-save-button").prop("disabled", true);
+    } else if (text.length > 0.9 * max_length) {
+        $indicator.removeClass("over_limit");
+        $("#message_edit_content").removeClass("over_limit");
+        $indicator.text(text.length + "/" + max_length);
+
+        $("#edit-save-button").prop("disabled", false);
+        $(`#compose_banners .${compose_banner.CLASSNAMES.message_too_long}`).remove();
+    } else {
+        $indicator.text("");
+        $("#message_edit_content").removeClass("over_limit");
+
+        $("#edit-save-button").prop("disabled", false);
+        $(`#compose_banners .${compose_banner.CLASSNAMES.message_too_long}`).remove();
+    }
+
+    return text.length;
+}
+
 export function warn_for_text_overflow_when_tries_to_send() {
     if (compose_state.message_content().length > page_params.max_message_length) {
         $("#compose-textarea").addClass("flash");

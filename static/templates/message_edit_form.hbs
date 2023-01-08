@@ -7,7 +7,9 @@
     </div>
     <div class="edit-controls">
         {{> copy_message_button message_id=this.message_id}}
-        <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
+        <div id="compose_banners"></div>
+        <span id="edit_compose_limit_indicator"></span>
+        <textarea class="message_edit_content" id="message_edit_content">{{content}}</textarea>
         <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
             <div class="markdown_preview_spinner"></div>
             <div class="preview_content rendered_markdown"></div>
@@ -18,7 +20,7 @@
         <div class="controls edit-controls">
             {{#if is_editable}}
                 <div class="btn-wrapper inline-block">
-                    <button type="button" class="button small rounded sea-green message_edit_save">
+                    <button type="button" id="edit-save-button" class="button small rounded sea-green message_edit_save">
                         <img class="loader" alt="" src="" />
                         <span>{{t "Save" }}</span>
                     </button>

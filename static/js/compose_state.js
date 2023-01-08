@@ -53,6 +53,7 @@ export const topic = get_or_set("stream_message_recipient_topic");
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
 export const message_content = get_or_set("compose-textarea", true);
+export const edit_message_content = get_or_set("message_edit_content", true);
 
 export function focus_in_empty_compose() {
     // A user trying to press arrow keys in an empty compose is mostly

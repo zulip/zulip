@@ -553,6 +553,10 @@ export function initialize() {
         $("#compose .file_input").trigger("click");
     });
 
+    $("body").on("input propertychange", "#message_edit_content", () => {
+        compose_validate.edit_check_overflow_text();
+    });
+
     $("body").on("click", ".video_link", (e) => {
         e.preventDefault();
         e.stopPropagation();

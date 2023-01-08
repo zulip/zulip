@@ -222,6 +222,18 @@
     }
 }
 
+#edit_compose_limit_indicator {
+    margin-right: 8px;
+    font-size: 12px;
+    color: hsl(39, 100%, 50%);
+    align-self: center;
+
+    &.over_limit {
+        color: hsl(0, 76%, 65%);
+        font-weight: bold;
+    }
+}
+
 #compose {
     position: fixed;
     bottom: 0;
