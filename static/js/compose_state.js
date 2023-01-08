@@ -22,7 +22,7 @@ export function composing() {
     return Boolean(message_type);
 }
 
-function get_or_set(fieldname, keep_leading_whitespace) {
+function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
     // We can't hoist the assignment of '$elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
     // is called.
@@ -32,7 +32,12 @@ function get_or_set(fieldname, keep_leading_whitespace) {
         if (newval !== undefined) {
             $elem.val(newval);
         }
-        return keep_leading_whitespace ? oldval.trimEnd() : oldval.trim();
+        if (no_trim) {
+            return oldval;
+        } else if (keep_leading_whitespace) {
+            return oldval.trimEnd();
+        }
+        return oldval.trim();
     };
 }
 
@@ -54,11 +59,18 @@ export const topic = get_or_set("stream_message_recipient_topic");
 // of the indented syntax for multi-line code blocks.
 export const message_content = get_or_set("compose-textarea", true);
 
+const untrimmed_message_content = get_or_set("compose-textarea", true, true);
+
+export function cursor_at_start_of_whitespace_in_compose() {
+    const cursor_position = $("#compose-textarea").caret();
+    return message_content() === "" && cursor_position === 0;
+}
+
 export function focus_in_empty_compose() {
     // A user trying to press arrow keys in an empty compose is mostly
     // likely trying to navigate messages. This helper function
-    // decides whether the compose box is "empty" for this purpose.
-    if (!composing() || message_content() !== "") {
+    // decides whether the compose box is empty for this purpose.
+    if (!composing() || untrimmed_message_content() !== "") {
         return false;
     }
 
