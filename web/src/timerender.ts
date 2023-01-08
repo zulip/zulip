@@ -24,6 +24,94 @@ export function clear_for_testing(): void {
     next_timerender_id = 0;
 }
 
+type DateFormat = "weekday" | "dayofyear" | "weekday_dayofyear_year" | "dayofyear_year";
+type DateWithTimeFormat = "dayofyear_time" | "dayofyear_year_time" | "weekday_dayofyear_year_time";
+type TimeFormat = "time" | "time_sec";
+
+type DateOrTimeFormat = DateFormat | TimeFormat | DateWithTimeFormat;
+
+// Translates Zulip-specific format names, documented in the comments
+// below, into the appropriate options to pass to the Intl library
+// along with the user's locale to render date in that style of format.
+//
+// Note that because date/time formats vary with locale, the below
+// examples are what a user with English as their language will see
+// but users in other locales will see something different, especially
+// for any formats that display the name for a month/weekday, but
+// possibly in more subtle ways for languages with different
+// punctuation schemes for date and times.
+function get_format_options_for_type(type: DateOrTimeFormat): Intl.DateTimeFormatOptions {
+    const is_twenty_four_hour_time = user_settings.twenty_four_hour_time;
+
+    const time_format_options: Intl.DateTimeFormatOptions = is_twenty_four_hour_time
+        ? {hourCycle: "h23", hour: "2-digit", minute: "2-digit"}
+        : {
+              hourCycle: "h12",
+              hour: "numeric",
+              minute: "2-digit",
+          };
+
+    const weekday_format_options: Intl.DateTimeFormatOptions = {weekday: "long"};
+    const full_format_options: Intl.DateTimeFormatOptions = {dateStyle: "full"};
+
+    const dayofyear_format_options: Intl.DateTimeFormatOptions = {day: "numeric", month: "short"};
+    const dayofyear_year_format_options: Intl.DateTimeFormatOptions = {
+        ...dayofyear_format_options,
+        year: "numeric",
+    };
+    const long_format_options: Intl.DateTimeFormatOptions = {
+        ...dayofyear_year_format_options,
+        weekday: "short",
+    };
+
+    switch (type) {
+        case "time": // 01:30 PM
+            return time_format_options;
+        case "time_sec": // 01:30:42 PM
+            return {...time_format_options, second: "2-digit"};
+        case "weekday": // Wednesday
+            return weekday_format_options;
+        case "dayofyear": // Jul 27
+            return dayofyear_format_options;
+        case "dayofyear_time": // Jul 27, 01:30 PM
+            return {...dayofyear_format_options, ...time_format_options};
+        case "dayofyear_year": // Jul 27, 2016
+            return dayofyear_year_format_options;
+        case "dayofyear_year_time": // Jul 27, 2016, 01:30 PM
+            return {...dayofyear_year_format_options, ...time_format_options};
+        case "weekday_dayofyear_year": // Wednesday, July 27, 2016
+            return full_format_options;
+        case "weekday_dayofyear_year_time": // Wed, Jul 27, 2016, 13:30
+            return {...long_format_options, ...time_format_options};
+        default:
+            throw new Error("Wrong format provided.");
+    }
+}
+
+function get_user_locale(): string {
+    const user_default_language = user_settings.default_language;
+    let locale = "";
+    try {
+        locale = Intl.DateTimeFormat.supportedLocalesOf(user_default_language)[0];
+    } catch {
+        locale = "default";
+    }
+    return locale;
+}
+
+// Common function for all date/time rendering in the project. Handles
+// localization using the user's configured locale and the
+// twenty_four_hour_time setting.
+//
+// See get_format_options_for_type for details on the supported formats.
+export function get_localized_date_or_time_for_format(
+    date: Date | number,
+    format: DateOrTimeFormat,
+): string {
+    const locale = get_user_locale();
+    return new Intl.DateTimeFormat(locale, get_format_options_for_type(format)).format(date);
+}
+
 // Exported for tests only.
 export function get_tz_with_UTC_offset(time: number | Date): string {
     const tz_offset = format(time, "xxx");
@@ -66,10 +154,7 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
-    // "\xa0" is U+00A0 NO-BREAK SPACE.
-    // Can't use &nbsp; as that represents the literal string "&nbsp;".
-    const formal_time_str = format(time, "EEEE,\u00A0MMMM\u00A0d,\u00A0yyyy");
-
+    const formal_time_str = get_localized_date_or_time_for_format(time, "weekday_dayofyear_year");
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
     // week ago, -1 = tomorrow, etc.
 
@@ -87,12 +172,12 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     } else if (time.getFullYear() !== today.getFullYear()) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is from an older year
-        time_str = format(time, "MMM\u00A0dd,\u00A0yyyy");
+        time_str = get_localized_date_or_time_for_format(time, "dayofyear_year");
         needs_update = false;
     } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
-        time_str = format(time, "MMM\u00A0dd");
+        time_str = get_localized_date_or_time_for_format(time, "dayofyear");
         needs_update = false;
     }
     return {
@@ -139,12 +224,22 @@ export function last_seen_status_from_date(
         // Online more than 90 days ago, in the same year
         return $t(
             {defaultMessage: "{last_active_date}"},
-            {last_active_date: format(last_active_date, "MMM\u00A0dd")},
+            {
+                last_active_date: get_localized_date_or_time_for_format(
+                    last_active_date,
+                    "dayofyear",
+                ),
+            },
         );
     }
     return $t(
         {defaultMessage: "{last_active_date}"},
-        {last_active_date: format(last_active_date, "MMM\u00A0dd,\u00A0yyyy")},
+        {
+            last_active_date: get_localized_date_or_time_for_format(
+                last_active_date,
+                "dayofyear_year",
+            ),
+        },
     );
 }
 
@@ -201,8 +296,7 @@ export function render_date(time: Date, today: Date): JQuery {
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
 export function format_markdown_time(time: number | Date): string {
-    const hourformat = user_settings.twenty_four_hour_time ? "HH:mm" : "h:mm a";
-    return format(time, "E, MMM d yyyy, " + hourformat);
+    return get_localized_date_or_time_for_format(time, "weekday_dayofyear_year_time");
 }
 
 export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragment | string {
@@ -270,10 +364,7 @@ export function get_timestamp_for_flatpickr(timestring: string): Date {
 }
 
 export function stringify_time(time: number | Date): string {
-    if (user_settings.twenty_four_hour_time) {
-        return format(time, "HH:mm");
-    }
-    return format(time, "h:mm a");
+    return get_localized_date_or_time_for_format(time, "time");
 }
 
 export function format_time_modern(time: number | Date, today = new Date()): String {
@@ -282,18 +373,18 @@ export function format_time_modern(time: number | Date, today = new Date()): Str
 
     if (time > today) {
         /* For timestamps in the future, we always show the year*/
-        return format(time, "MMM\u00A0dd,\u00A0yyyy");
+        return get_localized_date_or_time_for_format(time, "dayofyear_year");
     } else if (hours < 24) {
         return stringify_time(time);
     } else if (days_old === 1) {
         return $t({defaultMessage: "Yesterday"});
     } else if (days_old < 7) {
-        return format(time, "EEEE");
+        return get_localized_date_or_time_for_format(time, "weekday");
     } else if (days_old <= 180) {
-        return format(time, "MMM\u00A0dd");
+        return get_localized_date_or_time_for_format(time, "dayofyear");
     }
 
-    return format(time, "MMM\u00A0dd,\u00A0yyyy");
+    return get_localized_date_or_time_for_format(time, "dayofyear_year");
 }
 
 // this is for rendering absolute time based off the preferences for twenty-four
@@ -301,29 +392,17 @@ export function format_time_modern(time: number | Date, today = new Date()): Str
 export function absolute_time(timestamp: number, today = new Date()): string {
     const date = new Date(timestamp);
     const is_older_year = today.getFullYear() - date.getFullYear() > 0;
-    const H_24 = user_settings.twenty_four_hour_time;
 
-    return format(
+    return get_localized_date_or_time_for_format(
         date,
-        is_older_year
-            ? H_24
-                ? "MMM d, yyyy HH:mm"
-                : "MMM d, yyyy hh:mm a"
-            : H_24
-            ? "MMM d HH:mm"
-            : "MMM d hh:mm a",
+        is_older_year ? "dayofyear_year_time" : "dayofyear_time",
     );
 }
 
 export function get_full_datetime(time: Date): string {
-    const time_options: Intl.DateTimeFormatOptions = {timeStyle: "medium"};
-
-    if (user_settings.twenty_four_hour_time) {
-        time_options.hourCycle = "h24";
-    }
-
-    const date_string = time.toLocaleDateString();
-    let time_string = time.toLocaleTimeString(undefined, time_options);
+    const locale = get_user_locale();
+    const date_string = time.toLocaleDateString(locale);
+    let time_string = get_localized_date_or_time_for_format(time, "time_sec");
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
 

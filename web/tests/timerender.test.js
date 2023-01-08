@@ -35,6 +35,135 @@ const date_2021 = get_date("2021-01-27T01:53:08.000Z", "Wednesday");
 
 const date_2025 = get_date("2025-03-03T12:10:00.000Z", "Monday");
 
+run_test("get_localized_date_or_time_for_format returns default date with incorrect locale", () => {
+    const date = date_2019;
+    const expectedDate = "Friday, April 12, 2019";
+
+    user_settings.default_language = "invalidLanguageCode";
+    const actualDate = timerender.get_localized_date_or_time_for_format(
+        date,
+        "weekday_dayofyear_year",
+    );
+
+    assert.equal(actualDate, expectedDate);
+});
+
+run_test("get_localized_date_or_time_for_format returns correct format", () => {
+    const date = date_2021;
+    const formats = [
+        {
+            format: "time",
+            expected: {
+                date: "1:53 AM",
+            },
+        },
+        {
+            format: "time_sec",
+            expected: {
+                date: "1:53:08 AM",
+            },
+        },
+        {
+            format: "weekday",
+            expected: {
+                date: "Wednesday",
+            },
+        },
+        {
+            format: "dayofyear",
+            expected: {
+                date: "Jan 27",
+            },
+        },
+        {
+            format: "dayofyear_time",
+            expected: {
+                date: "Jan 27, 1:53 AM",
+            },
+        },
+        {
+            format: "dayofyear_year",
+            expected: {
+                date: "Jan 27, 2021",
+            },
+        },
+        {
+            format: "dayofyear_year_time",
+            expected: {
+                date: "Jan 27, 2021, 1:53 AM",
+            },
+        },
+        {
+            format: "weekday_dayofyear_year",
+            expected: {
+                date: "Wednesday, January 27, 2021",
+            },
+        },
+        {
+            format: "weekday_dayofyear_year_time",
+            expected: {
+                date: "Wed, Jan 27, 2021, 1:53 AM",
+            },
+        },
+    ];
+
+    for (const format of formats) {
+        const actualDate = timerender.get_localized_date_or_time_for_format(date, format.format);
+        assert.equal(actualDate, format.expected.date);
+    }
+});
+
+run_test("get_localized_date_or_time_for_format returns correct localized date", () => {
+    const date = add(date_2019, {years: -1});
+    const languages = [
+        {
+            language: "en",
+            expected: {
+                date: "Thursday, April 12, 2018",
+            },
+        },
+        {
+            language: "ru",
+            expected: {
+                date: "четверг, 12 апреля 2018 г.",
+            },
+        },
+        {
+            language: "fr",
+            expected: {
+                date: "jeudi 12 avril 2018",
+            },
+        },
+        {
+            language: "de",
+            expected: {
+                date: "Donnerstag, 12. April 2018",
+            },
+        },
+        {
+            language: "su",
+            expected: {
+                date: "Kemis, 12 April 2018",
+            },
+        },
+        {
+            language: "it",
+            expected: {
+                date: "giovedì 12 aprile 2018",
+            },
+        },
+    ];
+
+    for (const language of languages) {
+        user_settings.default_language = language.language;
+        const actualDate = timerender.get_localized_date_or_time_for_format(
+            date,
+            "weekday_dayofyear_year",
+        );
+        assert.equal(actualDate, language.expected.date);
+    }
+});
+
 run_test("get_tz_with_UTC_offset", () => {
     let time = date_2019;
 
@@ -60,7 +189,7 @@ run_test("render_now_returns_today", () => {
 
     const expected = {
         time_str: $t({defaultMessage: "Today"}),
-        formal_time_str: "Friday, April 12, 2019",
+        formal_time_str: "Friday, April 12, 2019",
         needs_update: true,
     };
     const actual = timerender.render_now(today, today);
@@ -75,7 +204,7 @@ run_test("render_now_returns_yesterday", () => {
     const yesterday = add(today, {days: -1});
     const expected = {
         time_str: $t({defaultMessage: "Yesterday"}),
-        formal_time_str: "Thursday, April 11, 2019",
+        formal_time_str: "Thursday, April 11, 2019",
         needs_update: true,
     };
     const actual = timerender.render_now(yesterday, today);
@@ -89,8 +218,8 @@ run_test("render_now_returns_year", () => {
 
     const year_ago = add(today, {years: -1});
     const expected = {
-        time_str: "Apr 12, 2018",
-        formal_time_str: "Thursday, April 12, 2018",
+        time_str: "Apr 12, 2018",
+        formal_time_str: "Thursday, April 12, 2018",
         needs_update: false,
     };
     const actual = timerender.render_now(year_ago, today);
@@ -104,8 +233,8 @@ run_test("render_now_returns_month_and_day", () => {
 
     const three_months_ago = add(today, {months: -3});
     const expected = {
-        time_str: "Jan 12",
-        formal_time_str: "Saturday, January 12, 2019",
+        time_str: "Jan 12",
+        formal_time_str: "Saturday, January 12, 2019",
         needs_update: false,
     };
     const actual = timerender.render_now(three_months_ago, today);
@@ -128,9 +257,9 @@ run_test("format_time_modern", () => {
     const more_than_6_months_ago = add(today, {months: -9});
     const previous_year_but_less_than_6_months = add(today, {months: -1});
 
-    assert.equal(timerender.format_time_modern(few_minutes_in_future, today), "Jan 27, 2021");
-    assert.equal(timerender.format_time_modern(weeks_in_future, today), "Feb 16, 2021");
-    assert.equal(timerender.format_time_modern(less_than_24_hours_ago, today), "2:53 AM");
+    assert.equal(timerender.format_time_modern(few_minutes_in_future, today), "Jan 27, 2021");
+    assert.equal(timerender.format_time_modern(weeks_in_future, today), "Feb 16, 2021");
+    assert.equal(timerender.format_time_modern(less_than_24_hours_ago, today), "2:53 AM");
     assert.equal(
         timerender.format_time_modern(twenty_four_hours_ago, today),
         "translated: Yesterday",
@@ -140,13 +269,13 @@ run_test("format_time_modern", () => {
         "translated: Yesterday",
     );
     assert.equal(timerender.format_time_modern(less_than_a_week_ago, today), "Thursday");
-    assert.equal(timerender.format_time_modern(one_week_ago, today), "Jan 20");
+    assert.equal(timerender.format_time_modern(one_week_ago, today), "Jan 20");
     assert.equal(
         timerender.format_time_modern(previous_year_but_less_than_6_months, today),
-        "Dec 27",
+        "Dec 27",
     );
-    assert.equal(timerender.format_time_modern(less_than_6_months_ago, today), "Oct 27");
-    assert.equal(timerender.format_time_modern(more_than_6_months_ago, today), "Apr 27, 2020");
+    assert.equal(timerender.format_time_modern(less_than_6_months_ago, today), "Oct 27");
+    assert.equal(timerender.format_time_modern(more_than_6_months_ago, today), "Apr 27, 2020");
 });
 
 run_test("format_time_modern_different_timezones", () => {
@@ -182,7 +311,7 @@ run_test("format_time_modern_different_timezones", () => {
     process.env.TZ = "America/Juneau";
     expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
     assert.equal(timerender.get_full_datetime(yesterday), expected);
-    assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
+    assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
     process.env.TZ = utc_tz;
 });
 
@@ -191,8 +320,8 @@ run_test("render_now_returns_year_with_year_boundary", () => {
 
     const six_months_ago = add(today, {months: -6});
     const expected = {
-        time_str: "Oct 12, 2018",
-        formal_time_str: "Friday, October 12, 2018",
+        time_str: "Oct 12, 2018",
+        formal_time_str: "Friday, October 12, 2018",
         needs_update: false,
     };
     const actual = timerender.render_now(six_months_ago, today);
@@ -224,7 +353,7 @@ run_test("render_date_renders_time_html", () => {
 
     const $actual = timerender.render_date(message_time, today);
     assert.equal($actual.html(), expected_html);
-    assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
+    assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
 });
 
@@ -257,13 +386,13 @@ run_test("absolute_time_12_hour", () => {
     let timestamp = date_2019.getTime();
 
     let today = date_2019;
-    let expected = "Apr 12 05:52 PM";
+    let expected = "Apr 12, 5:52 PM";
     let actual = timerender.absolute_time(timestamp, today);
     assert.equal(actual, expected);
 
     // timestamp with hour > 12, different year
     let next_year = add(today, {years: 1});
-    expected = "Apr 12, 2019 05:52 PM";
+    expected = "Apr 12, 2019, 5:52 PM";
     actual = timerender.absolute_time(timestamp, next_year);
     assert.equal(actual, expected);
 
@@ -271,13 +400,13 @@ run_test("absolute_time_12_hour", () => {
     timestamp = date_2017.getTime();
 
     today = date_2017;
-    expected = "May 18 07:12 AM";
+    expected = "May 18, 7:12 AM";
     actual = timerender.absolute_time(timestamp, today);
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, different year
     next_year = add(today, {years: 1});
-    expected = "May 18, 2017 07:12 AM";
+    expected = "May 18, 2017, 7:12 AM";
     actual = timerender.absolute_time(timestamp, next_year);
     assert.equal(actual, expected);
 });
@@ -287,26 +416,26 @@ run_test("absolute_time_24_hour", () => {
 
     // date with hour > 12, same year
     let today = date_2019;
-    let expected = "Apr 12 17:52";
+    let expected = "Apr 12, 17:52";
     let actual = timerender.absolute_time(date_2019.getTime(), today);
     assert.equal(actual, expected);
 
     // date with hour > 12, different year
     let next_year = add(today, {years: 1});
 
-    expected = "Apr 12, 2019 17:52";
+    expected = "Apr 12, 2019, 17:52";
     actual = timerender.absolute_time(date_2019.getTime(), next_year);
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, same year
     today = date_2017;
-    expected = "May 18 07:12";
+    expected = "May 18, 07:12";
     actual = timerender.absolute_time(date_2017.getTime(), today);
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, different year
     next_year = add(today, {years: 1});
-    expected = "May 18, 2017 07:12";
+    expected = "May 18, 2017, 07:12";
     actual = timerender.absolute_time(date_2017.getTime(), next_year);
     assert.equal(actual, expected);
 });
@@ -364,16 +493,16 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({days: -61}, $t({defaultMessage: "61 days ago"}));
 
-    assert_same({days: -300}, $t({defaultMessage: "May 06,\u00A02015"}));
+    assert_same({days: -300}, $t({defaultMessage: "May 6, 2015"}));
 
-    assert_same({days: -366}, $t({defaultMessage: "Mar 01,\u00A02015"}));
+    assert_same({days: -366}, $t({defaultMessage: "Mar 1, 2015"}));
 
-    assert_same({years: -3}, $t({defaultMessage: "Mar 01,\u00A02013"}));
+    assert_same({years: -3}, $t({defaultMessage: "Mar 1, 2013"}));
 
     // Set base_date to May 1 2016 12.30 AM (months are zero based)
     base_date = new Date(2016, 4, 1, 0, 30);
 
-    assert_same({days: -91}, $t({defaultMessage: "Jan\u00A031"}));
+    assert_same({days: -91}, $t({defaultMessage: "Jan 31"}));
 
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);
@@ -397,12 +526,12 @@ run_test("set_full_datetime", () => {
 
     user_settings.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
-    expected = "5:52 PM";
+    expected = "5:52 PM";
     assert.equal(time_str, expected);
 
     time = add(time, {hours: -7}); // time between 1 to 12 o'clock time.
     user_settings.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
-    expected = "10:52 AM";
+    expected = "10:52 AM";
     assert.equal(time_str, expected);
 });
