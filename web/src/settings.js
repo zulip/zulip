@@ -18,6 +18,7 @@ import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 
 export let settings_label;
@@ -65,8 +66,10 @@ function setup_settings_label() {
 
 function get_parsed_date_of_joining() {
     const user_date_joined = people.get_by_user_id(page_params.user_id, false).date_joined;
-    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
-    return dateFormat.format(parseISO(user_date_joined));
+    return timerender.get_localized_date_or_time_for_format(
+        parseISO(user_date_joined),
+        "dayofyear_year",
+    );
 }
 
 export function build_page() {
