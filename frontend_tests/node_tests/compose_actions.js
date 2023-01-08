@@ -30,9 +30,7 @@ const hash_util = mock_esm("../../static/js/hash_util");
 const narrow_state = mock_esm("../../static/js/narrow_state", {
     set_compose_defaults: noop,
 });
-mock_esm("../../static/js/notifications", {
-    clear_compose_notifications: noop,
-});
+
 mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
