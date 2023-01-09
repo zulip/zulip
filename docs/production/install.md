@@ -133,7 +133,7 @@ Learning more:
 - Follow [Zulip on Twitter](https://twitter.com/zulip).
 - Learn how to [configure your Zulip server settings](settings.md).
 - Learn about [Backups, export and import](export-and-import.md)
-  and [upgrading](upgrade-or-modify.md) a production Zulip
+  ,[upgrading](upgrade.md) and [modifying](modify.md) a production Zulip
   server.
 
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip

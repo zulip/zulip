@@ -1,18 +1,18 @@
-# Upgrade or modify Zulip
+# Modify Zulip
 
-This page explains how to upgrade, patch, or modify Zulip, including:
+This page explains how to modify or patch Zulip, including:
 
-- [Upgrading to a release](#upgrading-to-a-release)
+<!-- - [Upgrading to a release](#upgrading-to-a-release)
 - [Upgrading from a Git repository](#upgrading-from-a-git-repository)
 - [Updating `settings.py` inline documentation](#updating-settingspy-inline-documentation)
 - [Troubleshooting and rollback](#troubleshooting-and-rollback)
 - [Preserving local changes to service configuration files](#preserving-local-changes-to-service-configuration-files)
 - [Upgrading the operating system](#upgrading-the-operating-system)
-- [Upgrading PostgreSQL](#upgrading-postgresql)
+- [Upgrading PostgreSQL](#upgrading-postgresql) -->
 - [Modifying Zulip](#modifying-zulip)
 - [Applying changes from `main`](#applying-changes-from-main)
 
-## Upgrading to a release
+<!-- ## Upgrading to a release
 
 Note that there are additional instructions if you're [using
 docker-zulip][docker-upgrade], have [patched Zulip](#modifying-zulip),
@@ -641,7 +641,7 @@ To upgrade the version of PostgreSQL on the Zulip server:
    ```
 
 You should now be able to navigate to the Zulip server's URL and
-confirm everything is working correctly.
+confirm everything is working correctly. -->
 
 ## Modifying Zulip
 
@@ -731,7 +731,7 @@ across future Zulip releases.
 Eventually, you'll want to upgrade to a new Zulip release. If your
 changes were integrated into that Zulip release or are otherwise no
 longer needed, you can just [upgrade as
-usual](#upgrading-to-a-release). If you [upgraded to
+usual](./upgrade.md#upgrading-to-a-release). If you [upgraded to
 `main`](#upgrading-to-main); review that section again; new
 maintenance releases are likely "older" than your current installation
 and you might need to upgrade to `main` again rather than to the
@@ -881,7 +881,7 @@ other organizations, consider [contributing
 them](../contributing/contributing.md).
 
 [fork-clone]: ../git/cloning.md#get-zulip-code
-[upgrade-zulip-from-git]: #upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: ./upgrade.md#upgrading-from-a-git-repository
 [upgrade-zulip]: #upgrading
 [git-guide]: ../git/index.md
 [zulip/zulip]: https://github.com/zulip/zulip/

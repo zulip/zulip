@@ -902,7 +902,7 @@ log][commit-log] for an up-to-date list of all changes.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.md#customizing-the-outgoing-http-proxy
-[update-settings-docs]: ../production/upgrade-or-modify.md#updating-settingspy-inline-documentation
+[update-settings-docs]: ../production/upgrade.md#updating-settingspy-inline-documentation
 
 #### Full feature changelog
 
@@ -1191,7 +1191,7 @@ log][commit-log] for an up-to-date list of all changes.
   Upgrade notes for all releases one is upgrading across.
 
 [manage-shell]: ../production/management-commands.md#managepy-shell
-[postgresql-upgrade]: ../production/upgrade-or-modify.md#upgrading-postgresql
+[postgresql-upgrade]: ../production/upgrade.md#upgrading-postgresql
 
 #### Full feature changelog
 
@@ -1485,7 +1485,7 @@ details.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production. We're now interested in beta testers for this feature.
 - Reorganized Zulip's documentation for sysadmins, and added [new
-  documentation](../production/upgrade-or-modify.md#modifying-zulip)
+  documentation](../production/modify.md#modifying-zulip)
   on maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).

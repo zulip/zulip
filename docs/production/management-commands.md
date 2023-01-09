@@ -176,7 +176,7 @@ symlinking them into
 `/home/zulip/deployments/current/zerver/management/` after each
 upgrade.
 
-[modifying-zulip]: upgrade-or-modify.md#modifying-zulip
+[modifying-zulip]: modify.md#modifying-zulip
 [writing-bots]: https://zulip.com/api/writing-bots
 [integrations]: https://zulip.com/integrations
 [zulip-api]: https://zulip.com/api/rest
