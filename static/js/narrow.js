@@ -1048,7 +1048,7 @@ export function deactivate(coming_from_recent_topics = false) {
         return;
     }
 
-    if (!compose_state.has_message_content()) {
+    if (!compose_state.has_message_content() && !compose_state.is_recipient_edited_manually()) {
         compose_actions.cancel();
     }
 

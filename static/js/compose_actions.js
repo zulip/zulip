@@ -115,6 +115,7 @@ function clear_box() {
     compose.clear_private_stream_alert();
     compose_validate.set_user_acknowledged_wildcard_flag(undefined);
 
+    compose_state.set_recipient_edited_manually(false);
     compose.clear_preview_area();
     clear_textarea();
     compose_validate.check_overflow_text();
@@ -495,8 +496,8 @@ export function on_topic_narrow() {
 
     if (compose_state.stream_name() !== narrow_state.stream()) {
         // If we changed streams, then we only leave the
-        // compose box open if there is content.
-        if (compose_state.has_message_content()) {
+        // compose box open if there is content or if the recipient was edited.
+        if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
             compose_fade.update_message_list();
             return;
         }
@@ -506,14 +507,17 @@ export function on_topic_narrow() {
         return;
     }
 
-    if (compose_state.topic() && compose_state.has_message_content()) {
-        // If the user has written something to a different topic,
+    if (
+        (compose_state.topic() && compose_state.has_message_content()) ||
+        compose_state.is_recipient_edited_manually()
+    ) {
+        // If the user has written something to a different topic or edited it,
         // they probably want that content, so leave compose open.
         //
         // This effectively uses the heuristic of whether there is
-        // content in compose to determine whether the user had firmly
-        // decided to compose to the old topic or is just looking to
-        // reply to what they see.
+        // content in compose or the topic was edited to determine whether
+        // the user had firmly decided to compose to the old topic or is
+        // just looking to reply to what they see.
         compose_fade.update_message_list();
         return;
     }
@@ -612,7 +616,7 @@ export function on_narrow(opts) {
         return;
     }
 
-    if (compose_state.has_message_content()) {
+    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
         compose_fade.update_message_list();
         return;
     }

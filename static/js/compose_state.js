@@ -3,6 +3,15 @@ import $ from "jquery";
 import * as compose_pm_pill from "./compose_pm_pill";
 
 let message_type = false; // 'stream', 'private', or false-y
+let recipient_edited_manually = false;
+
+export function set_recipient_edited_manually(flag) {
+    recipient_edited_manually = flag;
+}
+
+export function is_recipient_edited_manually() {
+    return recipient_edited_manually;
+}
 
 export function set_message_type(msg_type) {
     message_type = msg_type;

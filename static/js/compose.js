@@ -210,6 +210,7 @@ export function send_message_success(local_id, message_id, locally_echoed) {
 }
 
 export function send_message(request = create_message_object()) {
+    compose_state.set_recipient_edited_manually(false);
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
     } else {
@@ -424,7 +425,10 @@ export function initialize() {
     ).on("keyup", update_on_recipient_change);
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("change", update_on_recipient_change);
+    ).on("change", () => {
+        update_on_recipient_change();
+        compose_state.set_recipient_edited_manually(true);
+    });
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });
