@@ -361,7 +361,7 @@ cd /home/zulip/deployments/current
 This could take several minutes to run depending on how much data you're
 importing.
 
-[upgrade-zulip-from-git]: upgrade-or-modify.md#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: upgrade.md#upgrading-from-a-git-repository
 
 #### Import options
 

@@ -1,51 +1,56 @@
 {% extends "!layout.html" %}
 
 {% block sidebartitle %}
-    {%- if logo and theme_logo_only %}
-        <a href="{{ pathto(root_doc) }}">
-            <img src="{{ pathto('_static/' + logo, 1) }}" class="logo" alt="{{ _('Logo') }}"/>
-        </a>
-    {%- endif %}
+{%- if logo and theme_logo_only %}
+<a href="{{ pathto(root_doc) }}">
+    <img src="{{ pathto('_static/' + logo, 1) }}" class="logo" alt="{{ _('Logo') }}" />
+</a>
+{%- endif %}
 
-    {%- if theme_display_version %}
-        {%- set nav_version = version %}
-        {%- if READTHEDOCS and current_version %}
-            {%- set nav_version = current_version %}
-        {%- endif %}
-        {%- if nav_version %}
-            <div class="version">
-                {{ nav_version }}
-            </div>
-        {%- endif %}
-    {%- endif %}
+{%- if theme_display_version %}
+{%- set nav_version = version %}
+{%- if READTHEDOCS and current_version %}
+{%- set nav_version = current_version %}
+{%- endif %}
+{%- if nav_version %}
+<div class="version">
+    {{ nav_version }}
+</div>
+{%- endif %}
+{%- endif %}
 
-    <a class="reference external home-link" href="https://zulip.com/">Zulip homepage</a>
+<a class="reference external home-link" href="https://zulip.com/">Zulip homepage</a>
 
-    {%- include "searchbox.html" %}
+{%- include "searchbox.html" %}
 {% endblock %}
 
 {% block document %}
-    {#
-    # This allows us to insert a warning that appears only on the development
-    # version e.g. to say that something is likely to have changed.
-    # For more info see: https://www.sphinx-doc.org/en/master/templating.html
-    #}
-    {% if pagename in [] and release.endswith('+git') %}
-    {#
-    # This page doesn't exist in the stable documentation yet.
-    # This temporary workaround prevents test failures and should be removed after the next release.
-    #}
-    <div class="admonition warning">
-        <p class="first admonition-title">Warning</p>
-        <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These instructions may not correspond to the latest Zulip Server release.
-        See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/production/">documentation for the latest stable release</a>.</p>
-    </div>
-    {% elif pagename.split("/")[0] == "production" and release.endswith('+git') %}
-    <div class="admonition warning">
-        <p class="first admonition-title">Warning</p>
-        <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These instructions may not correspond to the latest Zulip Server release.
-        See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/{{ pagename }}.html">documentation for the latest stable release</a>.</p>
-    </div>
-    {% endif %}
-    {{ super() }}
+{#
+# This allows us to insert a warning that appears only on the development
+# version e.g. to say that something is likely to have changed.
+# For more info see: https://www.sphinx-doc.org/en/master/templating.html
+#}
+{% if pagename in ["production/upgrade","production/modify"] and release.endswith('+git') %}
+{#
+# This page doesn't exist in the stable documentation yet.
+# This temporary workaround prevents test failures and should be removed after the next release.
+#}
+<div class="admonition warning">
+    <p class="first admonition-title">Warning</p>
+    <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These
+        instructions may not correspond to the latest Zulip Server release.
+        See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/production/">documentation for
+            the latest stable release</a>.</p>
+</div>
+{% elif pagename.split("/")[0] == "production" and release.endswith('+git') %}
+<div class="admonition warning">
+    <p class="first admonition-title">Warning</p>
+    <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These
+        instructions may not correspond to the latest Zulip Server release.
+        See <a class="reference external"
+            href="https://zulip.readthedocs.io/en/stable/{{ pagename }}.html">documentation for the latest stable
+            release</a>.</p>
+</div>
+{% endif %}
+{{ super() }}
 {% endblock %}

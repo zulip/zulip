@@ -19,7 +19,7 @@ git clone https://github.com/zulip/zulip.git zulip-server-git
 
 and then
 [continue the normal installation instructions](install.md#step-2-install-zulip).
-You can also [upgrade Zulip from Git](upgrade-or-modify.md#upgrading-from-a-git-repository).
+You can also [upgrade Zulip from Git](upgrade.md#upgrading-from-a-git-repository).
 
 The most common use case for this is upgrading to `main` to get a
 feature that hasn't made it into an official release yet (often
@@ -33,8 +33,8 @@ In particular, we are always very glad to investigate problems with
 installing Zulip from `main`; they are rare and help us ensure that
 our next major release has a reliable install experience.
 
-[upgrade-to-main]: upgrade-or-modify.md#upgrading-to-main
-[upgrade-to-future-release]: upgrade-or-modify.md#upgrading-to-future-releases
+[upgrade-to-main]: modify.md#upgrading-to-main
+[upgrade-to-future-release]: modify.md#upgrading-to-future-releases
 
 ## Zulip in Docker
 
@@ -646,7 +646,7 @@ for servers that are upgraded frequently by core Zulip developers.
 #### `git_repo_url`
 
 Default repository URL used when [upgrading from a Git
-repository](upgrade-or-modify.md#upgrading-from-a-git-repository).
+repository](upgrade.md#upgrading-from-a-git-repository).
 
 ### `[application_server]`
 
@@ -768,7 +768,7 @@ for potential values.
 #### `version`
 
 The version of PostgreSQL that is in use. Do not set by hand; use the
-[PostgreSQL upgrade tool](upgrade-or-modify.md#upgrading-postgresql).
+[PostgreSQL upgrade tool](upgrade.md#upgrading-postgresql).
 
 ### `[memcached]`
 

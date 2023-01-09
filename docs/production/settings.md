@@ -1,4 +1,4 @@
-# Customize Zulip
+# Server Configuration
 
 Once you've got Zulip set up, you'll likely want to configure it the
 way you like.
@@ -28,7 +28,7 @@ from an old version of Zulip, we recommend [carefully updating your
 comment documentation for new configuration settings after upgrading
 to each new major release.
 
-[update-settings-docs]: upgrade-or-modify.md#updating-settingspy-inline-documentation
+[update-settings-docs]: upgrade.md#updating-settingspy-inline-documentation
 [settings-py-template]: https://github.com/zulip/zulip/blob/main/zproject/prod_settings_template.py
 
 Since Zulip's settings file is a Python script, there are a number of
@@ -115,6 +115,7 @@ Some popular settings in `/etc/zulip/settings.py` include:
 - The [email gateway](email-gateway.md), which lets
   users send emails into Zulip.
 - The [Video call integrations](video-calls.md).
+- The [System and Deployment configuration](deployment.md#system-and-deployment-configuration)
 
 ## Zulip announcement list
 
@@ -133,4 +134,4 @@ Zulip documentation cover everything anyone might want to know about
 running Zulip in production.
 
 Next: [Backups, export and import](export-and-import.md) and
-[upgrading](upgrade-or-modify.md) Zulip in production.
+[upgrading](upgrade.md) Zulip in production.
