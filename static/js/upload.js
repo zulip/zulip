@@ -35,13 +35,13 @@ export function get_item(key, config) {
                 return $("#compose-send-button");
             case "banner_container":
                 return $("#compose_banners");
-            case "send_status_identifier":
+            case "upload_banner_identifier":
                 return "#compose_banners .upload_banner";
-            case "send_status":
+            case "upload_banner":
                 return $("#compose_banners .upload_banner");
-            case "send_status_close_button":
+            case "upload_banner_close_button":
                 return $("#compose_banners .upload_banner .compose_banner_close_button");
-            case "send_status_message":
+            case "upload_banner_message":
                 return $("#compose_banners .upload_banner .upload_msg");
             case "file_input_identifier":
                 return "#compose .file_input";
@@ -67,17 +67,17 @@ export function get_item(key, config) {
                     .find(".message_edit_save");
             case "banner_container":
                 return $(`#edit_form_${CSS.escape(config.row)} .banners`);
-            case "send_status_identifier":
+            case "upload_banner_identifier":
                 return `#edit_form_${CSS.escape(config.row)} .upload_banner`;
-            case "send_status":
+            case "upload_banner":
                 return $(`#edit_form_${CSS.escape(config.row)} .upload_banner`);
-            case "send_status_close_button":
+            case "upload_banner_close_button":
                 return $(
                     `#edit_form_${CSS.escape(
                         config.row,
                     )} .upload_banner .compose_banner_close_button`,
                 );
-            case "send_status_message":
+            case "upload_banner_message":
                 return $(`#edit_form_${CSS.escape(config.row)} .upload_banner .upload_msg`);
             case "file_input_identifier":
                 return `#edit_form_${CSS.escape(config.row)} .file_input`;
@@ -97,7 +97,7 @@ export function get_item(key, config) {
 
 export function hide_upload_status(config) {
     get_item("send_button", config).prop("disabled", false);
-    get_item("send_status", config).remove();
+    get_item("upload_banner", config).remove();
 }
 
 function show_upload_banner(config, banner_type, banner_text) {
@@ -107,11 +107,11 @@ function show_upload_banner(config, banner_type, banner_text) {
     // a different element, so that we can show it at the same
     // time as the upload bar and other uploads can still continue
     // when an error occurs.
-    const $upload_banner = get_item("send_status", config);
+    const $upload_banner = get_item("upload_banner", config);
     if ($upload_banner.length) {
         if (banner_type === "error") {
             // Hide moving bar so that it doesn't do the 1s transition to 0
-            const $moving_bar = $(`${get_item("send_status_identifier", config)} .moving_bar`);
+            const $moving_bar = $(`${get_item("upload_banner_identifier", config)} .moving_bar`);
             $moving_bar.hide();
             $upload_banner.removeClass("info").addClass("error");
             // Show it again once the animation is complete.
@@ -119,7 +119,7 @@ function show_upload_banner(config, banner_type, banner_text) {
         } else {
             $upload_banner.removeClass("error").addClass("info");
         }
-        get_item("send_status_message", config).text(banner_text);
+        get_item("upload_banner_message", config).text(banner_text);
         return;
     }
     const $new_banner = render_upload_banner({
@@ -164,7 +164,7 @@ export async function upload_files(uppy, config, files) {
 
     get_item("send_button", config).prop("disabled", true);
     show_upload_banner(config, "info", $t({defaultMessage: "Uploading…"}));
-    get_item("send_status_close_button", config).one("click", () => {
+    get_item("upload_banner_close_button", config).one("click", () => {
         for (const file of uppy.getFiles()) {
             compose_ui.replace_syntax(
                 get_translated_status(file),
@@ -241,7 +241,7 @@ export function setup_upload(config) {
         if (progress === 0) {
             return;
         }
-        $(`${get_item("send_status_identifier", config)} .moving_bar`).css({
+        $(`${get_item("upload_banner_identifier", config)} .moving_bar`).css({
             width: `${progress}%`,
         });
     });
@@ -314,7 +314,7 @@ export function setup_upload(config) {
             }
         }
 
-        const has_errors = get_item("send_status", config).hasClass("error");
+        const has_errors = get_item("upload_banner", config).hasClass("error");
         if (!uploads_in_progress && !has_errors) {
             // Hide upload status for 100ms after the 1s transition to 100%
             // so that the user can see the progress bar at 100%.
