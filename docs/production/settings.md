@@ -1,4 +1,4 @@
-# Customize Zulip
+# Server Configuration
 
 Once you've got Zulip set up, you'll likely want to configure it the
 way you like.
