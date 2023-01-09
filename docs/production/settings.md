@@ -115,6 +115,7 @@ Some popular settings in `/etc/zulip/settings.py` include:
 - The [email gateway](email-gateway.md), which lets
   users send emails into Zulip.
 - The [Video call integrations](video-calls.md).
+- The [System and Deployment configuration](deployment.md#system-and-deployment-configuration)
 
 ## Zulip announcement list
 
