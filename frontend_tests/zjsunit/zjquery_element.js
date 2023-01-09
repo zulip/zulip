@@ -229,6 +229,14 @@ function FakeElement(selector, opts) {
             shown = show;
             return $self;
         },
+        toggleClass(class_name, add) {
+            if (add) {
+                classes.set(class_name, true);
+            } else {
+                classes.delete(class_name);
+            }
+            return $self;
+        },
         trigger(ev) {
             event_store.trigger($self, ev);
             return $self;
