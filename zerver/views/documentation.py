@@ -111,20 +111,20 @@ class MarkdownDirectoryView(ApiURLView):
                 endpoint_method=None,
             )
 
-        # The following is a somewhat hacky approach to extract titles from articles.
-        # Hack: `context["article"] has a leading `/`, so we use + to add directories.
-        article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
-        if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
-            try:
-                endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
-                path = "/zerver/api/api-doc-template.md"
-            except AssertionError:
-                return DocumentationArticle(
-                    article_path=self.path_template % ("missing",),
-                    article_http_status=404,
-                    endpoint_path=None,
-                    endpoint_method=None,
-                )
+        if self.path_template == "/zerver/api/%s.md":
+            # Hack: `self.path_template` has a leading `/`, so we use + to add directories.
+            api_documentation_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
+            if not os.path.exists(api_documentation_path):
+                try:
+                    endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
+                    path = "/zerver/api/api-doc-template.md"
+                except AssertionError:
+                    return DocumentationArticle(
+                        article_path=self.path_template % ("missing",),
+                        article_http_status=404,
+                        endpoint_path=None,
+                        endpoint_method=None,
+                    )
 
         try:
             loader.get_template(path)
