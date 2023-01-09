@@ -277,9 +277,6 @@ test("upload_files", ({override_rewire}) => {
     upload.upload_files(uppy, config, files);
     assert.equal(add_file_counter, 1);
 
-    set_global("setTimeout", (func) => {
-        func();
-    });
     hide_upload_status_called = false;
     uppy_cancel_all_called = false;
     let compose_ui_replace_syntax_called = false;
