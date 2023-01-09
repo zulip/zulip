@@ -32,6 +32,7 @@ const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
 const dark_theme = mock_esm("../../static/js/dark_theme");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
+const favicon = mock_esm("../../static/js/favicon");
 const hotspots = mock_esm("../../static/js/hotspots");
 const linkifiers = mock_esm("../../static/js/linkifiers");
 const message_events = mock_esm("../../static/js/message_events");
@@ -475,6 +476,14 @@ run_test("realm settings", ({override}) => {
 
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
+    let redraw_favicon_called = false;
+    override(notifications, "redraw_favicon", () => {
+        redraw_favicon_called = true;
+    });
+    let update_alternate_icon_called = false;
+    override(favicon, "update_alternate_icon", () => {
+        update_alternate_icon_called = true;
+    });
 
     test_electron_dispatch(event, (key, val) => {
         assert_same(key, "realm_icon_url");
@@ -483,6 +492,15 @@ run_test("realm settings", ({override}) => {
 
     assert_same(page_params.realm_icon_url, "icon.png");
     assert_same(page_params.realm_icon_source, "U");
+    assert.ok(!redraw_favicon_called);
+    assert.ok(!update_alternate_icon_called);
+
+    with_field(page_params, "realm_icon_as_favicon", true, () => {
+        test_electron_dispatch(event, noop);
+    });
+
+    assert.ok(redraw_favicon_called);
+    assert.ok(update_alternate_icon_called);
 
     override(realm_logo, "render", noop);
 
@@ -916,6 +934,13 @@ run_test("user_settings", ({override}) => {
         assert_same(args.name, event.property);
         assert_same(args.setting, event.value);
     }
+
+    override(notifications, "redraw_favicon", noop);
+    override(favicon, "update_alternate_icon", noop);
+    event = event_fixtures.user_settings__realm_icon_as_favicon;
+    user_settings.realm_icon_as_favicon = false;
+    dispatch(event);
+    assert_same(user_settings.realm_icon_as_favicon, true);
 });
 
 run_test("update_message (read)", ({override}) => {

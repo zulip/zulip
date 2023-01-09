@@ -1504,18 +1504,19 @@ class UserBaseSettings(models.Model):
     # database model is being temporarily preserved in case we want to
     # restore a version of the setting, preserving who had it enabled.
     left_side_userlist = models.BooleanField(default=False)
+    realm_icon_as_favicon: bool = models.BooleanField(default=False)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
-    default_view = models.TextField(default="recent_topics")
-    escape_navigates_to_default_view = models.BooleanField(default=True)
-    dense_mode = models.BooleanField(default=True)
-    fluid_layout_width = models.BooleanField(default=False)
-    high_contrast_mode = models.BooleanField(default=False)
-    translate_emoticons = models.BooleanField(default=False)
-    display_emoji_reaction_users = models.BooleanField(default=True)
-    twenty_four_hour_time = models.BooleanField(default=False)
-    starred_message_counts = models.BooleanField(default=True)
+    default_view: str = models.TextField(default="recent_topics")
+    escape_navigates_to_default_view: bool = models.BooleanField(default=True)
+    dense_mode: bool = models.BooleanField(default=True)
+    fluid_layout_width: bool = models.BooleanField(default=False)
+    high_contrast_mode: bool = models.BooleanField(default=False)
+    translate_emoticons: bool = models.BooleanField(default=False)
+    display_emoji_reaction_users: bool = models.BooleanField(default=True)
+    twenty_four_hour_time: bool = models.BooleanField(default=False)
+    starred_message_counts: bool = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_NIGHT = 2
     COLOR_SCHEME_LIGHT = 3
@@ -1655,6 +1656,7 @@ class UserBaseSettings(models.Model):
         # Add new general settings here.
         display_emoji_reaction_users=bool,
         escape_navigates_to_default_view=bool,
+        realm_icon_as_favicon=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,

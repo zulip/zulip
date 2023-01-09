@@ -109,6 +109,7 @@ export const get_all_display_settings = (): DisplaySettings => ({
             "dense_mode",
             "high_contrast_mode",
             "fluid_layout_width",
+            "realm_icon_as_favicon",
             "starred_message_counts",
         ],
     },
@@ -489,6 +490,9 @@ export const display_settings_labels = {
     dense_mode: $t({defaultMessage: "Dense mode"}),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
+    realm_icon_as_favicon: $t({
+        defaultMessage: "Use organization profile picture as browser tab favicon",
+    }),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(

@@ -29,6 +29,7 @@ export type RealmDefaultSettings = {
     notification_sound: string;
     pm_content_in_desktop_notifications: boolean;
     presence_enabled: boolean;
+    realm_icon_as_favicon: boolean;
     realm_name_in_notifications: boolean;
     starred_message_counts: boolean;
     translate_emoticons: boolean;

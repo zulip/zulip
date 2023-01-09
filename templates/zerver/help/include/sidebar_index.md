@@ -52,6 +52,7 @@
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Configure default view](/help/configure-default-view)
 * [Enable full width display](/help/enable-full-width-display)
+* [Use organization picture as favicon](/help/organization-profile-picture-as-favicon)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 
 ## Sending messages

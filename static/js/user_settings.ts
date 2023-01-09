@@ -35,6 +35,7 @@ export type UserSettings = (StreamNotificationSettings & PmNotificationSettings)
     notification_sound: string;
     pm_content_in_desktop_notifications: boolean;
     presence_enabled: boolean;
+    realm_icon_as_favicon: boolean;
     realm_name_in_notifications: boolean;
     user_list_style: number;
     starred_message_counts: boolean;
