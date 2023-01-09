@@ -399,10 +399,53 @@
             }
         }
     }
+
+    &.info {
+        background-color: hsl(204, 58%, 92%);
+        border-color: hsla(204, 49%, 29%, 0.4);
+        position: relative;
+        color: hsl(204, 49%, 29%);
+
+        .compose_banner_close_button {
+            color: hsla(204, 49%, 29%, 0.5);
+
+            &:hover {
+                color: hsl(204, 49%, 29%);
+            }
+
+            &:active {
+                color: hsla(204, 49%, 29%, 0.75);
+            }
+        }
+    }
+}
+
+.upload_banner {
+    overflow: hidden;
+
+    &.hidden {
+        display: none;
+    }
+
+    .moving_bar {
+        position: absolute;
+        width: 0;
+        /* The progress updates seem to come every second or so,
+        so this is the smoothest it can probably get. */
+        transition: width 1s ease-in-out;
+        background: hsl(204, 63%, 85%);
+        top: 0;
+        bottom: 0;
+    }
+
+    .upload_msg,
+    .compose_banner_close_button {
+        z-index: 1;
+        position: relative;
+    }
 }
 
 /* Like .nav-tabs > li > a */
-div[id^="message-edit-send-status"],
 #compose-send-status {
     padding: 8px 14px;
     margin-bottom: 8px;

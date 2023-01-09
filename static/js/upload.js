@@ -1,7 +1,8 @@
 import {Uppy} from "@uppy/core";
-import ProgressBar from "@uppy/progress-bar";
 import XHRUpload from "@uppy/xhr-upload";
 import $ from "jquery";
+
+import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
@@ -32,14 +33,16 @@ export function get_item(key, config) {
                 return $("#compose-textarea");
             case "send_button":
                 return $("#compose-send-button");
+            case "banner_container":
+                return $("#compose_banners");
             case "send_status_identifier":
-                return "#compose-send-status";
+                return "#compose_banners .upload_banner";
             case "send_status":
-                return $("#compose-send-status");
+                return $("#compose_banners .upload_banner");
             case "send_status_close_button":
-                return $(".compose-send-status-close");
+                return $("#compose_banners .upload_banner .compose_banner_close_button");
             case "send_status_message":
-                return $("#compose-error-msg");
+                return $("#compose_banners .upload_banner .upload_msg");
             case "file_input_identifier":
                 return "#compose .file_input";
             case "source":
@@ -62,16 +65,20 @@ export function get_item(key, config) {
                 return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`)
                     .closest(".message_edit_form")
                     .find(".message_edit_save");
+            case "banner_container":
+                return $(`#edit_form_${CSS.escape(config.row)} .banners`);
             case "send_status_identifier":
-                return `#message-edit-send-status-${CSS.escape(config.row)}`;
+                return `#edit_form_${CSS.escape(config.row)} .upload_banner`;
             case "send_status":
-                return $(`#message-edit-send-status-${CSS.escape(config.row)}`);
+                return $(`#edit_form_${CSS.escape(config.row)} .upload_banner`);
             case "send_status_close_button":
-                return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(
-                    ".send-status-close",
+                return $(
+                    `#edit_form_${CSS.escape(
+                        config.row,
+                    )} .upload_banner .compose_banner_close_button`,
                 );
             case "send_status_message":
-                return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(".error-msg");
+                return $(`#edit_form_${CSS.escape(config.row)} .upload_banner .upload_msg`);
             case "file_input_identifier":
                 return `#edit_form_${CSS.escape(config.row)} .file_input`;
             case "source":
@@ -90,7 +97,36 @@ export function get_item(key, config) {
 
 export function hide_upload_status(config) {
     get_item("send_button", config).prop("disabled", false);
-    get_item("send_status", config).removeClass("alert-info").hide();
+    get_item("send_status", config).remove();
+}
+
+function show_upload_banner(config, banner_type, banner_text) {
+    // We only show one upload banner at a time per compose box,
+    // and all uploads are combined into the same progress bar.
+    // TODO: It would be nice to separate the error banner into
+    // a different element, so that we can show it at the same
+    // time as the upload bar and other uploads can still continue
+    // when an error occurs.
+    const $upload_banner = get_item("send_status", config);
+    if ($upload_banner.length) {
+        if (banner_type === "error") {
+            // Hide moving bar so that it doesn't do the 1s transition to 0
+            const $moving_bar = $(`${get_item("send_status_identifier", config)} .moving_bar`);
+            $moving_bar.hide();
+            $upload_banner.removeClass("info").addClass("error");
+            // Show it again once the animation is complete.
+            setTimeout(() => $moving_bar.show(), 1000);
+        } else {
+            $upload_banner.removeClass("error").addClass("info");
+        }
+        get_item("send_status_message", config).text(banner_text);
+        return;
+    }
+    const $new_banner = render_upload_banner({
+        banner_type,
+        banner_text,
+    });
+    get_item("banner_container", config).append($new_banner);
 }
 
 export function show_error_message(
@@ -98,11 +134,10 @@ export function show_error_message(
     message = $t({defaultMessage: "An unknown error occurred."}),
 ) {
     get_item("send_button", config).prop("disabled", false);
-    get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
-    get_item("send_status_message", config).text(message);
+    show_upload_banner(config, "error", message);
 }
 
-export function upload_files(uppy, config, files) {
+export async function upload_files(uppy, config, files) {
     if (files.length === 0) {
         return;
     }
@@ -128,8 +163,7 @@ export function upload_files(uppy, config, files) {
     }
 
     get_item("send_button", config).prop("disabled", true);
-    get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
-    get_item("send_status_message", config).html($("<p>").text($t({defaultMessage: "Uploading…"})));
+    show_upload_banner(config, "info", $t({defaultMessage: "Uploading…"}));
     get_item("send_status_close_button", config).one("click", () => {
         for (const file of uppy.getFiles()) {
             compose_ui.replace_syntax(
@@ -280,7 +314,7 @@ export function setup_upload(config) {
             }
         }
 
-        const has_errors = get_item("send_status", config).hasClass("alert-error");
+        const has_errors = get_item("send_status", config).hasClass("error");
         if (!uploads_in_progress && !has_errors) {
             // Hide upload status for 100ms after the 1s transition to 100%
             // so that the user can see the progress bar at 100%.
@@ -314,6 +348,8 @@ export function setup_upload(config) {
         if (info.type === "error") {
             // The remaining errors are mostly frontend errors like file being too large
             // for upload.
+            // TODO: It would be nice to keep the other uploads going if one fails,
+            // and show both an error message and the upload bar.
             uppy.cancelAll();
             show_error_message(config, info.message);
         }
