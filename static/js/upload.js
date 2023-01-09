@@ -141,9 +141,7 @@ export function upload_files(uppy, config, files) {
         compose_ui.autosize_textarea(get_item("textarea", config));
         uppy.cancelAll();
         get_item("textarea", config).trigger("focus");
-        setTimeout(() => {
-            hide_upload_status(config);
-        }, 500);
+        hide_upload_status(config);
     });
 
     for (const file of files) {
@@ -204,9 +202,14 @@ export function setup_upload(config) {
         },
     });
 
-    uppy.use(ProgressBar, {
-        target: get_item("send_status_identifier", config),
-        hideAfterFinish: false,
+    uppy.on("progress", (progress) => {
+        // When upload is complete, it resets to 0, but we want to see it at 100%.
+        if (progress === 0) {
+            return;
+        }
+        $(`${get_item("send_status_identifier", config)} .moving_bar`).css({
+            width: `${progress}%`,
+        });
     });
 
     $("body").on("change", get_item("file_input_identifier", config), (event) => {
@@ -279,9 +282,11 @@ export function setup_upload(config) {
 
         const has_errors = get_item("send_status", config).hasClass("alert-error");
         if (!uploads_in_progress && !has_errors) {
+            // Hide upload status for 100ms after the 1s transition to 100%
+            // so that the user can see the progress bar at 100%.
             setTimeout(() => {
                 hide_upload_status(config);
-            }, 500);
+            }, 1100);
         }
     });
 
