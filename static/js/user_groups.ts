@@ -1,5 +1,6 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
+import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
 type UserGroup = {
@@ -14,6 +15,11 @@ type UserGroup = {
 // The members field is a number array which we convert
 // to a Set in the initialize function.
 type UserGroupRaw = Omit<UserGroup, "members"> & {members: number[]};
+
+type UserGroupForDropdownListWidget = {
+    name: string;
+    value: string;
+};
 
 let user_group_name_dict: FoldDict<UserGroup>;
 let user_group_by_id_dict: Map<number, UserGroup>;
@@ -194,4 +200,32 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
         }
     }
     return false;
+}
+
+export function get_realm_user_groups_for_dropdown_list_widget(
+    exclude_internet_group: boolean,
+    exclude_owners_group: boolean,
+): UserGroupForDropdownListWidget[] {
+    return settings_config.system_user_groups_list
+        .filter((group) => {
+            if (exclude_internet_group && group.name === "@role:internet") {
+                return false;
+            }
+
+            if (exclude_owners_group && group.name === "@role:owners") {
+                return false;
+            }
+
+            return true;
+        })
+        .map((group) => {
+            const user_group = get_user_group_from_name(group.name);
+            if (!user_group) {
+                throw new Error(`Unknown group name: ${group.name}`);
+            }
+            return {
+                name: group.display_name,
+                value: user_group.id.toString(),
+            };
+        });
 }
