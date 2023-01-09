@@ -46,11 +46,11 @@ test("feature_check", ({override}) => {
 test("get_item", () => {
     assert.equal(upload.get_item("textarea", {mode: "compose"}), $("#compose-textarea"));
     assert.equal(
-        upload.get_item("send_status_message", {mode: "compose"}),
+        upload.get_item("upload_banner_message", {mode: "compose"}),
         $("#compose_banners .upload_banner .upload_msg"),
     );
     assert.equal(
-        upload.get_item("send_status_close_button", {mode: "compose"}),
+        upload.get_item("upload_banner_close_button", {mode: "compose"}),
         $("#compose_banners .upload_banner .compose_banner_close_button"),
     );
     assert.equal(
@@ -76,11 +76,11 @@ test("get_item", () => {
     assert.equal(upload.get_item("send_button", {mode: "edit", row: 2}), $(".message_edit_save"));
 
     assert.equal(
-        upload.get_item("send_status_identifier", {mode: "edit", row: 11}),
+        upload.get_item("upload_banner_identifier", {mode: "edit", row: 11}),
         `#edit_form_${CSS.escape(11)} .upload_banner`,
     );
     assert.equal(
-        upload.get_item("send_status", {mode: "edit", row: 75}),
+        upload.get_item("upload_banner", {mode: "edit", row: 75}),
         $(`#edit_form_${CSS.escape(75)} .upload_banner`),
     );
 
@@ -89,7 +89,7 @@ test("get_item", () => {
         $(".compose_banner_close_button"),
     );
     assert.equal(
-        upload.get_item("send_status_close_button", {mode: "edit", row: 2}),
+        upload.get_item("upload_banner_close_button", {mode: "edit", row: 2}),
         $(`#edit_form_${CSS.escape(2)} .upload_banner .compose_banner_close_button`),
     );
 
@@ -98,7 +98,7 @@ test("get_item", () => {
         $(".upload_msg"),
     );
     assert.equal(
-        upload.get_item("send_status_message", {mode: "edit", row: 22}),
+        upload.get_item("upload_banner_message", {mode: "edit", row: 22}),
         $(`#edit_form_${CSS.escape(22)} .upload_banner .upload_msg`),
     );
 
