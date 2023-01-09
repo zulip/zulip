@@ -259,14 +259,22 @@ export function sort_people_for_relevance(objs, current_stream_name, current_top
     return objs;
 }
 
+function compare_language_by_popularity(lang_a, lang_b) {
+    return pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
+}
+
 // This function compares two languages first by their popularity, then if
 // there is a tie on popularity, then compare alphabetically to break the tie.
 export function compare_language(lang_a, lang_b) {
-    const diff = pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
-    if (diff !== 0) {
-        return diff;
+    let diff = compare_language_by_popularity(lang_a, lang_b);
+
+    // Check to see if there is a tie. If there is, then use alphabetical order
+    // to break the tie.
+    if (diff === 0) {
+        diff = util.strcmp(lang_a, lang_b);
     }
-    return util.strcmp(lang_a, lang_b);
+
+    return diff;
 }
 
 function retain_unique_language_aliases(matches) {
