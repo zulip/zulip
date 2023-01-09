@@ -30,6 +30,7 @@ import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
 
 let password_quality; // Loaded asynchronously
+let user_avatar_widget_created = false;
 
 export function update_email(new_email) {
     const $email_input = $("#change_email_button");
@@ -69,11 +70,60 @@ export function update_email_change_display() {
     }
 }
 
+function display_avatar_upload_complete() {
+    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
+    $("#user-avatar-upload-widget .image-upload-text").show();
+    $("#user-avatar-upload-widget .image-delete-button").show();
+}
+
+function display_avatar_upload_started() {
+    $("#user-avatar-source").hide();
+    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
+    $("#user-avatar-upload-widget .image-upload-text").hide();
+    $("#user-avatar-upload-widget .image-delete-button").hide();
+}
+
+function upload_avatar($file_input) {
+    const form_data = new FormData();
+
+    form_data.append("csrfmiddlewaretoken", csrf_token);
+    for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
+        form_data.append("file-" + i, file);
+    }
+    display_avatar_upload_started();
+    channel.post({
+        url: "/json/users/me/avatar",
+        data: form_data,
+        cache: false,
+        processData: false,
+        contentType: false,
+        success() {
+            display_avatar_upload_complete();
+            $("#user-avatar-upload-widget .image_file_input_error").hide();
+            $("#user-avatar-source").hide();
+            // Rest of the work is done via the user_events -> avatar_url event we will get
+        },
+        error(xhr) {
+            display_avatar_upload_complete();
+            if (page_params.avatar_source === "G") {
+                $("#user-avatar-source").show();
+            }
+            const $error = $("#user-avatar-upload-widget .image_file_input_error");
+            $error.text(JSON.parse(xhr.responseText).msg);
+            $error.show();
+        },
+    });
+}
+
 export function update_avatar_change_display() {
     if (!settings_data.user_can_change_avatar()) {
         $("#user-avatar-upload-widget .image_upload_button").addClass("hide");
         $("#user-avatar-upload-widget .image-disabled").removeClass("hide");
     } else {
+        if (user_avatar_widget_created === false) {
+            avatar.build_user_avatar_widget(upload_avatar);
+            user_avatar_widget_created = true;
+        }
         $("#user-avatar-upload-widget .image_upload_button").removeClass("hide");
         $("#user-avatar-upload-widget .image-disabled").addClass("hide");
     }
@@ -91,19 +141,6 @@ export function update_send_read_receipts_tooltip() {
     } else {
         $("#send_read_receipts_label .settings-info-icon").show();
     }
-}
-
-function display_avatar_upload_complete() {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
-    $("#user-avatar-upload-widget .image-upload-text").show();
-    $("#user-avatar-upload-widget .image-delete-button").show();
-}
-
-function display_avatar_upload_started() {
-    $("#user-avatar-source").hide();
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
-    $("#user-avatar-upload-widget .image-upload-text").hide();
-    $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
 function settings_change_error(message_html, xhr) {
@@ -759,39 +796,15 @@ export function set_up() {
         user_profile.show_user_profile(user);
     });
 
-    function upload_avatar($file_input) {
-        const form_data = new FormData();
+    // When the personal settings overlay is opened, we reset
+    // the tracking variable for live update behavior of the
+    // user avatar upload widget and handlers.
+    user_avatar_widget_created = false;
 
-        form_data.append("csrfmiddlewaretoken", csrf_token);
-        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
-            form_data.append("file-" + i, file);
-        }
-        display_avatar_upload_started();
-        channel.post({
-            url: "/json/users/me/avatar",
-            data: form_data,
-            cache: false,
-            processData: false,
-            contentType: false,
-            success() {
-                display_avatar_upload_complete();
-                $("#user-avatar-upload-widget .image_file_input_error").hide();
-                $("#user-avatar-source").hide();
-                // Rest of the work is done via the user_events -> avatar_url event we will get
-            },
-            error(xhr) {
-                display_avatar_upload_complete();
-                if (page_params.avatar_source === "G") {
-                    $("#user-avatar-source").show();
-                }
-                const $error = $("#user-avatar-upload-widget .image_file_input_error");
-                $error.text(JSON.parse(xhr.responseText).msg);
-                $error.show();
-            },
-        });
+    if (settings_data.user_can_change_avatar()) {
+        avatar.build_user_avatar_widget(upload_avatar);
+        user_avatar_widget_created = true;
     }
-
-    avatar.build_user_avatar_widget(upload_avatar);
 
     $("#user_timezone").val(user_settings.timezone);
 
