@@ -251,6 +251,31 @@
                 }
             }
         }
+
+        &.info {
+            background-color: hsl(204, 100%, 12%);
+            border-color: hsla(205, 58%, 69%, 0.4);
+            position: relative;
+            color: hsl(205, 58%, 69%);
+
+            .compose_banner_close_button {
+                color: hsla(205, 58%, 69%, 0.5);
+
+                &:hover {
+                    color: hsl(205, 58%, 69%);
+                }
+
+                &:active {
+                    color: hsla(205, 58%, 69%, 0.75);
+                }
+            }
+        }
+    }
+
+    .upload_banner {
+        .moving_bar {
+            background: hsl(204, 63%, 18%);
+        }
     }
 
     .message_embed .data-container::after {
