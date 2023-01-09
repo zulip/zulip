@@ -801,3 +801,34 @@ export const desktop_icon_count_display_values = {
         description: $t({defaultMessage: "None"}),
     },
 };
+
+export const system_user_groups_list = [
+    {
+        name: "@role:internet",
+        display_name: $t({defaultMessage: "Everyone on the internet"}),
+    },
+    {
+        name: "@role:everyone",
+        display_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
+    },
+    {
+        name: "@role:members",
+        display_name: $t({defaultMessage: "Admins, moderators and members"}),
+    },
+    {
+        name: "@role:fullmembers",
+        display_name: $t({defaultMessage: "Admins, moderators and full members"}),
+    },
+    {
+        name: "@role:moderators",
+        display_name: $t({defaultMessage: "Admins and moderators"}),
+    },
+    {
+        name: "@role:administrators",
+        display_name: $t({defaultMessage: "Admins"}),
+    },
+    {
+        name: "@role:owners",
+        display_name: $t({defaultMessage: "Owners"}),
+    },
+];
