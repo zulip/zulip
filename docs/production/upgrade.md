@@ -1,6 +1,6 @@
 # Upgrade Zulip
 
-This page explains how to upgrade  now Zulip, including:
+This page explains how to upgrade now Zulip, including:
 
 - [Upgrading to a release](#upgrading-to-a-release)
 - [Upgrading from a Git repository](#upgrading-from-a-git-repository)
@@ -9,7 +9,6 @@ This page explains how to upgrade  now Zulip, including:
 - [Preserving local changes to service configuration files](#preserving-local-changes-to-service-configuration-files)
 - [Upgrading the operating system](#upgrading-the-operating-system)
 - [Upgrading PostgreSQL](#upgrading-postgresql)
-
 
 ## Upgrading to a release
 
@@ -641,4 +640,3 @@ To upgrade the version of PostgreSQL on the Zulip server:
 
 You should now be able to navigate to the Zulip server's URL and
 confirm everything is working correctly.
-
