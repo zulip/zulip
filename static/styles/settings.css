@@ -456,6 +456,17 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
+#organization-profile,
+#organization-settings,
+#organization-permissions,
+#profile-settings {
+    select,
+    input {
+        /* Override undesired Bootstrap default. */
+        margin-bottom: 0;
+    }
+}
+
 #id_org_profile_preview {
     margin-bottom: 20px;
     display: inline-flex;
