@@ -13,7 +13,14 @@ log][commit-log] for an up-to-date list of all changes.
 
 #### Upgrade notes for 7.0
 
-- None yet.
+- When the [S3 storage backend](../production/upload-backends.md) is used for
+  storing file uploads, those contents are now fetched by nginx, cached locally
+  on the server, and served to clients; this lets clients cache the contents,
+  and saves them a redirect. However, it may require administrators adjust the
+  size of the server's cache if they have a large deploy; see the
+  [documentation](../production/upload-backends.md#s3-local-caching).
+- Removed the `application_server.no_serve_uploads` setting in
+  `/etc/zulip/zulip.conf`, as all uploads requests go through Zulip now.
 
 ## Zulip 6.x series
 
