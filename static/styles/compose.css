@@ -52,6 +52,7 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
+    background-color: #f2f4f7;
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px;
