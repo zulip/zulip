@@ -868,11 +868,19 @@ input[type="checkbox"] {
     #bot-role-select:disabled {
         opacity: 1;
     }
+
+    select {
+        margin-bottom: 0;
+    }
 }
 
 #add-alert-word {
     form {
         margin-bottom: 4px;
+    }
+
+    input {
+        margin-bottom: 0;
     }
 }
 
@@ -1851,6 +1859,17 @@ $option_title_width: 180px;
     #edit-linkifier-format-status {
         margin-top: 10px;
     }
+
+    input {
+        margin-bottom: 0;
+    }
+}
+
+#edit-user-form,
+#create-bot-form {
+    select {
+        margin-bottom: 0;
+    }
 }
 
 .settings_panel_list_header {
@@ -1873,5 +1892,9 @@ $option_title_width: 180px;
     .disabled_label {
         cursor: default;
         opacity: 0.7;
+    }
+
+    select {
+        margin-bottom: 0;
     }
 }
