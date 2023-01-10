@@ -213,6 +213,11 @@ h3,
     text-transform: capitalize;
 }
 
+select.setting_email_notifications_batching_period_seconds {
+    /* Override undesired Bootstrap default. */
+    margin-bottom: 0;
+}
+
 .table {
     tbody {
         border-bottom: 1px solid hsl(0, 0%, 87%);
