@@ -28,7 +28,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {% endtrans %}
         </div>
 
-        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('accounts_register') }}">
+        <form method="post" class="white-box" id="registration" action="{{ url('accounts_register') }}">
             {{ csrf_input }}
 
             <fieldset class="org-registration">

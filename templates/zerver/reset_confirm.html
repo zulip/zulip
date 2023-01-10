@@ -18,7 +18,7 @@
             <!-- TODO: Ask about meta viewport 1:1 scaling -->
 
             {% if validlink %}
-            <form method="post" id="password_reset" class="form-horizontal" autocomplete="off">
+            <form method="post" id="password_reset" autocomplete="off">
                 {{ csrf_input }}
                 <div class="input-box" id="email-section">
                     <label for="id_email">{{ _("Email") }}</label>
