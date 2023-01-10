@@ -641,9 +641,4 @@ To upgrade the version of PostgreSQL on the Zulip server:
 
 You should now be able to navigate to the Zulip server's URL and
 confirm everything is working correctly.
-[fork-clone]: ../git/cloning.md#get-zulip-code
-[upgrade-zulip-from-git]: #upgrading-from-a-git-repository
-[upgrade-zulip]: #upgrading
-[git-guide]: ../git/index.md
-[zulip/zulip]: https://github.com/zulip/zulip/
-[docker-upgrade]: https://github.com/zulip/docker-zulip#upgrading-the-zulip-container -->
+
