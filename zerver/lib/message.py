@@ -826,7 +826,7 @@ def has_message_access(
     else:
         assert stream.recipient_id == message.recipient_id
 
-    if stream.realm != user_profile.realm:
+    if stream.realm_id != user_profile.realm_id:
         # You can't access public stream messages in other realms
         return False
 
