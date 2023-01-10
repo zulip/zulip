@@ -1,6 +1,6 @@
 import sys
 from email.headerregistry import Address
-from typing import Iterable, Optional, Sequence, Union, cast
+from typing import Iterable, Optional, Sequence, Set, Union, cast
 
 from dateutil.parser import parse as dateparser
 from django.core import validators
@@ -17,9 +17,10 @@ from zerver.actions.message_send import (
     create_mirror_user_if_needed,
     extract_private_recipients,
     extract_stream_indicator,
+    get_url_embed_data,
+    render_incoming_message,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import render_markdown
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
@@ -345,5 +346,13 @@ def render_message_backend(
     assert client is not None
     message.sending_client = client
 
-    rendering_result = render_markdown(message, content, realm=user_profile.realm)
+    rendering_result = render_incoming_message(message, content, realm=user_profile.realm)
+    links_for_embed: Set[str] = set()
+    links_for_embed |= rendering_result.links_for_preview
+    rendering_result = render_incoming_message(
+        message,
+        content,
+        realm=user_profile.realm,
+        url_embed_data=get_url_embed_data(list(links_for_embed)),
+    )
     return json_success(request, data={"rendered": rendering_result.rendered_content})

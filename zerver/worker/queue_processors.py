@@ -49,7 +49,11 @@ from zulip_bots.lib import extract_query_without_mention
 from zerver.actions.invites import do_send_confirmation_email
 from zerver.actions.message_edit import do_update_embedded_data
 from zerver.actions.message_flags import do_mark_stream_messages_as_read
-from zerver.actions.message_send import internal_send_private_message, render_incoming_message
+from zerver.actions.message_send import (
+    get_url_embed_data,
+    internal_send_private_message,
+    render_incoming_message,
+)
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.realm_export import notify_realm_export
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
@@ -89,7 +93,6 @@ from zerver.lib.send_email import (
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload import handle_reupload_emojis_event
-from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.models import (
     Message,
@@ -841,13 +844,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
 
     def consume(self, event: Mapping[str, Any]) -> None:
-        url_embed_data: Dict[str, Optional[UrlEmbedData]] = {}
-        for url in event["urls"]:
-            start_time = time.time()
-            url_embed_data[url] = url_preview.get_link_embed_data(url)
-            logging.info(
-                "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
-            )
+        url_embed_data: Dict[str, Optional[UrlEmbedData]] = get_url_embed_data(event["urls"])
 
         with transaction.atomic():
             try:

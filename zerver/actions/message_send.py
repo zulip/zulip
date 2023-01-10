@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import (
@@ -63,6 +64,7 @@ from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import filter_by_exact_message_topic
+from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.user_mutes import get_muting_users
@@ -89,6 +91,15 @@ from zerver.models import (
     query_for_ids,
 )
 from zerver.tornado.django_api import send_event
+
+
+def get_url_embed_data(urls: Any) -> Dict[str, Optional[UrlEmbedData]]:
+    url_embed_data: Dict[str, Optional[UrlEmbedData]] = {}
+    for url in urls:
+        start_time = time.time()
+        url_embed_data[url] = url_preview.get_link_embed_data(url)
+        logging.info("Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time)
+    return url_embed_data
 
 
 def compute_irc_user_fullname(email: str) -> str:
