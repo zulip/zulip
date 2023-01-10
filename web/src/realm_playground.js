@@ -58,8 +58,7 @@ export function get_pygments_typeahead_list_for_composebox() {
 }
 
 // This gets the candidate list for showing autocomplete in settings when
-// adding a new Code Playground. This will not include existing Code
-// Playgrounds in the candidate list.
+// adding a new Code Playground.
 export function get_pygments_typeahead_list_for_settings(query) {
     const language_labels = new Map();
 
@@ -71,6 +70,11 @@ export function get_pygments_typeahead_list_for_settings(query) {
             clean_query,
             $t({defaultMessage: "Custom language: {query}"}, {query: clean_query}),
         );
+    }
+
+    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
+    for (const lang of playground_pygment_langs) {
+        language_labels.set(lang, $t({defaultMessage: "Custom language: {query}"}, {query: lang}));
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
