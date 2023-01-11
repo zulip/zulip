@@ -91,7 +91,7 @@ def upload_image_to_s3(
     )
 
 
-def get_signed_upload_url(path: str) -> str:
+def get_signed_upload_url(path: str, force_download: bool = False) -> str:
     client = boto3.client(
         "s3",
         aws_access_key_id=settings.S3_KEY,
@@ -99,13 +99,16 @@ def get_signed_upload_url(path: str) -> str:
         region_name=settings.S3_REGION,
         endpoint_url=settings.S3_ENDPOINT_URL,
     )
+    params = {
+        "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
+        "Key": path,
+    }
+    if force_download:
+        params["ResponseContentDisposition"] = "attachment"
 
     return client.generate_presigned_url(
         ClientMethod="get_object",
-        Params={
-            "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
-            "Key": path,
-        },
+        Params=params,
         ExpiresIn=SIGNED_UPLOAD_URL_DURATION,
         HttpMethod="GET",
     )
