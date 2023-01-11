@@ -8,9 +8,7 @@ tarball="yarn-$version.tgz"
 check_version() {
     # Reading the version of Yarn from its package.json is much faster
     # than running yarn --version.
-    link="$(command -v yarn)" \
-        && [ "$link" -ef /srv/zulip-yarn/bin/yarn ] \
-        && current_version="$(jq -r '.version' /srv/zulip-yarn/package.json)" \
+    current_version="$(jq -r '.version' /srv/zulip-yarn/package.json)" \
         && [ "$current_version" = "$version" ]
 }
 
@@ -23,6 +21,5 @@ if ! check_version; then
     rm -rf /srv/zulip-yarn
     mkdir /srv/zulip-yarn
     tar -xzf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-yarn
-    ln -nsf /srv/zulip-yarn/bin/yarn /usr/bin/yarn
     check_version
 fi
