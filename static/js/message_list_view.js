@@ -436,7 +436,6 @@ export class MessageListView {
                     current_group,
                     current_group.message_containers[0],
                 );
-                current_group.message_containers.at(-1).include_footer = true;
                 new_message_groups.push(current_group);
             }
         };
@@ -445,7 +444,6 @@ export class MessageListView {
             const message_reactions = reactions.get_message_reactions(message_container.msg);
             message_container.msg.message_reactions = message_reactions;
             message_container.include_recipient = false;
-            message_container.include_footer = false;
 
             if (
                 same_recipient(prev, message_container) &&
