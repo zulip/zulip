@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
+import { get_color } from "./stream_data";
 
 import * as blueslip from "./blueslip";
 import * as narrow from "./narrow";
@@ -67,7 +68,10 @@ export function zoom_out() {
 }
 
 export function keyed_topic_li(conversation) {
-    const render = () => render_topic_list_item(conversation);
+    // TODO Переделать, т.к. если parentTopic имеет в тексте китайские иероглифы например, то поиск по названию проходит не корректно (не нашёл в имеющемся коде возможности дёрнуть цвет по id - странно, что тут сделано получение по title, скорее всего надо самому написать функцию, по получению цета по id)
+    const color = get_color(conversation.url.split('/')[2].split('-')[1]);
+
+    const render = () => render_topic_list_item({...conversation, color});
 
     const eq = (other) => _.isEqual(conversation, other.conversation);
 

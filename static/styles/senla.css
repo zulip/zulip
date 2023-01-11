@@ -1,0 +1,27 @@
+.zero-pm-unreads {
+    margin-bottom: 8px;
+}
+
+.subscribe-to-more-streams__link {
+    display: flex;
+}
+
+.subscribe-to-more-streams__icon {
+    padding-right: 10px;
+}
+
+.conversation-partners {
+    padding-left: 10px;
+}
+
+#private_messages_section_header {
+    margin-bottom: 10px;
+}
+
+#streams_header {
+    margin-bottom: 7px;
+}
+
+.streams_subheader {
+    padding-bottom: 12px;
+}

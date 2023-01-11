@@ -3330,12 +3330,3 @@ textarea.invitee_emails {
         }
     }
 }
-
-/* senla-zulip-styles */
-.subscribe-to-more-streams__link {
-    display: flex;
-}
-
-.subscribe-to-more-streams__icon {
-    padding-right: 10px;
-}

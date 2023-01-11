@@ -605,15 +605,15 @@ export function set_event_handlers() {
 
     $("#clear_search_stream_button").on("click", clear_search);
 
-    $("#streams_header")
-        .expectOne()
-        .on("click", (e) => {
-            e.preventDefault();
-            if (e.target.id === "streams_inline_icon") {
-                return;
-            }
-            toggle_filter_displayed(e);
-        });
+    // $("#streams_header")
+    //     .expectOne()
+    //     .on("click", (e) => {
+    //         e.preventDefault();
+    //         if (e.target.id === "streams_inline_icon") {
+    //             return;
+    //         }
+    //         toggle_filter_displayed(e);
+    //     });
 
     function toggle_pm_header_icon() {
         if (pm_list.is_private_messages_collapsed()) {

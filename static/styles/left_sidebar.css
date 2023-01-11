@@ -63,8 +63,7 @@ li.show-more-topics {
 #streams_inline_icon,
 .streams_filter_icon {
     float: right;
-    opacity: 0.5;
-    padding: 3px;
+    opacity: 1;
     margin-left: 4px;
 
     &:hover {
@@ -197,7 +196,7 @@ li.show-more-topics {
     z-index: 1;
 
     #toggle_private_messages_section_icon {
-        opacity: 0.7;
+        opacity: 0,7;
         margin-left: -15px;
         min-width: 12px;
 
@@ -220,7 +219,7 @@ li.show-more-topics {
             right: 0;
             float: right;
             position: absolute;
-            opacity: 0.7;
+            opacity: 1;
             text-decoration: none;
             color: inherit;
             margin-right: 21px;
@@ -591,10 +590,6 @@ li.topic-list-item {
 .zero-pm-unreads .pm-box,
 .zero-topic-unreads .topic-box {
     margin-right: 15px;
-}
-
-.zero-pm-unreads {
-    margin-bottom: 8px;
 }
 
 .zoom-out {

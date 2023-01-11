@@ -134,7 +134,7 @@ SENTRY_DSN: Optional[str] = None
 # File uploads and avatars
 # TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
 DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
-DEFAULT_LOGO_URI = "/static/images/logo/senla-zulip-icon.svg"
+DEFAULT_LOGO_URI = "/static/images/senla/senla-zulip-icon.svg"
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION: Optional[str] = None
