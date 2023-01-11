@@ -445,6 +445,8 @@ export function get_pm_people(query) {
     const opts = {
         want_broadcast: false,
         filter_pills: true,
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
     };
     return get_person_suggestions(query, opts);
 }

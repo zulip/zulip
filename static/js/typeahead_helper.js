@@ -234,7 +234,7 @@ export function compare_people_for_relevance(
 }
 
 export function sort_people_for_relevance(objs, current_stream_name, current_topic) {
-    // If sorting for recipientbox typeahead or compose state is private, then current_stream = ""
+    // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     let current_stream = false;
     if (current_stream_name) {
         current_stream = stream_data.get_sub(current_stream_name);
