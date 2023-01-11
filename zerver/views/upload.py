@@ -68,7 +68,7 @@ def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bo
     response.headers["Content-Disposition"] = f"{disposition}; {file_expr}"
 
 
-def internal_nginx_redirect(internal_path: str) -> HttpResponse:
+def internal_nginx_redirect(internal_path: str, content_type: Optional[str] = None) -> HttpResponse:
     # The following headers from this initial response are
     # _preserved_, if present, and sent unmodified to the client;
     # all other headers are overridden by the redirected URL:
@@ -78,13 +78,16 @@ def internal_nginx_redirect(internal_path: str) -> HttpResponse:
     #  - Set-Cookie
     #  - Cache-Control
     #  - Expires
-    # As such, we unset the Content-type header to allow nginx to set
-    # it from the static file; the caller can set Content-Disposition
-    # and Cache-Control on this response as they desire, and the
-    # client will see those values.
-    response = HttpResponse()
+    # As such, we default to unsetting the Content-type header to
+    # allow nginx to set it from the static file; the caller can set
+    # Content-Disposition and Cache-Control on this response as they
+    # desire, and the client will see those values.  In some cases
+    # (local files) we do wish to control the Content-Type, so also
+    # support setting it explicitly.
+    response = HttpResponse(content_type=content_type)
     response["X-Accel-Redirect"] = internal_path
-    del response["Content-Type"]
+    if content_type is None:
+        del response["Content-Type"]
     return response
 
 
@@ -133,15 +136,23 @@ def serve_local(
 
     if settings.DEVELOPMENT:
         # In development, we do not have the nginx server to offload
-        # the response to; serve it directly ourselves.
-        # FileResponse handles setting Content-Disposition, etc.
+        # the response to; serve it directly ourselves.  FileResponse
+        # handles setting Content-Type, Content-Disposition, etc.
         response: HttpResponseBase = FileResponse(
             open(local_path, "rb"), as_attachment=download  # noqa: SIM115
         )
         patch_cache_control(response, private=True, immutable=True)
         return response
 
-    response = internal_nginx_redirect(quote(f"/internal/local/uploads/{path_id}"))
+    # For local responses, we are in charge of generating both
+    # Content-Type and Content-Disposition headers; unlike with S3
+    # storage, the Content-Type is not stored with the file in any
+    # way, so Django makes the determination of it, and thus as well
+    # if that type is safe to have a Content-Disposition of "inline".
+    # nginx respects the values we send.
+    response = internal_nginx_redirect(
+        quote(f"/internal/local/uploads/{path_id}"), content_type=mimetype
+    )
     patch_disposition_header(response, local_path, download)
     patch_cache_control(response, private=True, immutable=True)
     return response
