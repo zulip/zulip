@@ -1,7 +1,11 @@
 !!! tip ""
 
-    The organization description supports [full Markdown syntax][markdown-syntax],
+    The **organization description** supports [full Markdown syntax][markdown-syntax],
     including **bold**/*italic*, links, lists, and more.
+
+!!! tip ""
+    Your **organization profile picture** should be a square image. It will be displayed at
+    100×100 pixels, or more on high-resolution displays.
 
 {start_tabs}
 
