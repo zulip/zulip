@@ -756,13 +756,9 @@ input.search-query {
   border-radius: 15px;
 }
 .form-inline input,
-.form-horizontal input,
 .form-inline select,
-.form-horizontal select,
 .form-inline .help-inline,
-.form-horizontal .help-inline,
-.form-inline .input-append,
-.form-horizontal .input-append {
+.form-inline .input-append {
   display: inline-block;
   *display: inline;
   /* IE7 inline-block hack */
@@ -771,8 +767,7 @@ input.search-query {
   margin-bottom: 0;
   vertical-align: middle;
 }
-.form-inline .hide,
-.form-horizontal .hide {
+.form-inline .hide {
   display: none;
 }
 .form-inline label,
