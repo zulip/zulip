@@ -88,8 +88,8 @@ def internal_nginx_redirect(internal_path: str) -> HttpResponse:
     return response
 
 
-def serve_s3(request: HttpRequest, path_id: str, download: bool = False) -> HttpResponse:
-    url = get_signed_upload_url(path_id)
+def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -> HttpResponse:
+    url = get_signed_upload_url(path_id, force_download=force_download)
     assert url.startswith("https://")
 
     if settings.DEVELOPMENT:
@@ -107,17 +107,29 @@ def serve_s3(request: HttpRequest, path_id: str, download: bool = False) -> Http
     assert parsed_url.query is not None
     escaped_path_parts = parsed_url.hostname + quote(parsed_url.path) + "?" + parsed_url.query
     response = internal_nginx_redirect("/internal/s3/" + escaped_path_parts)
-    patch_disposition_header(response, path_id, download)
+
+    # It is important that S3 generate both the Content-Type and
+    # Content-Disposition headers; when the file was uploaded, we
+    # stored the browser-provided value for the former, and set
+    # Content-Disposition according to if that was safe.  As such,
+    # only S3 knows if a given attachment is safe to inline; we only
+    # override Content-Disposition to "attachment", and do so by
+    # telling S3 that is what we want in the signed URL.
     patch_cache_control(response, private=True, immutable=True)
     return response
 
 
-def serve_local(request: HttpRequest, path_id: str, download: bool = False) -> HttpResponseBase:
+def serve_local(
+    request: HttpRequest, path_id: str, force_download: bool = False
+) -> HttpResponseBase:
     assert settings.LOCAL_FILES_DIR is not None
     local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
     assert_is_local_storage_path("files", local_path)
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
+
+    mimetype, encoding = guess_type(path_id)
+    download = force_download or mimetype not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:
         # In development, we do not have the nginx server to offload
@@ -138,7 +150,9 @@ def serve_local(request: HttpRequest, path_id: str, download: bool = False) -> H
 def serve_file_download_backend(
     request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
 ) -> HttpResponseBase:
-    return serve_file(request, user_profile, realm_id_str, filename, url_only=False, download=True)
+    return serve_file(
+        request, user_profile, realm_id_str, filename, url_only=False, force_download=True
+    )
 
 
 def serve_file_backend(
@@ -167,7 +181,7 @@ def serve_file(
     realm_id_str: str,
     filename: str,
     url_only: bool = False,
-    download: bool = False,
+    force_download: bool = False,
 ) -> HttpResponseBase:
     path_id = f"{realm_id_str}/{filename}"
     realm = get_valid_realm_from_request(request)
@@ -181,13 +195,10 @@ def serve_file(
         url = generate_unauthed_file_access_url(path_id)
         return json_success(request, data=dict(url=url))
 
-    mimetype, encoding = guess_type(path_id)
-    download = download or mimetype not in INLINE_MIME_TYPES
-
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, download=download)
+        return serve_local(request, path_id, force_download=force_download)
     else:
-        return serve_s3(request, path_id, download=download)
+        return serve_s3(request, path_id, force_download=force_download)
 
 
 USER_UPLOADS_ACCESS_TOKEN_SALT = "user_uploads_"
@@ -221,13 +232,10 @@ def serve_file_unauthed_from_token(
     if path_id.split("/")[-1] != filename:
         raise JsonableError(_("Invalid filename"))
 
-    mimetype, encoding = guess_type(path_id)
-    download = mimetype not in INLINE_MIME_TYPES
-
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, download=download)
+        return serve_local(request, path_id)
     else:
-        return serve_s3(request, path_id, download=download)
+        return serve_s3(request, path_id)
 
 
 def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponseBase:
