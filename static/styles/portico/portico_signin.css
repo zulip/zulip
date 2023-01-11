@@ -1095,7 +1095,7 @@ button#register_auth_button_gitlab {
         padding: 0;
         margin: 0;
 
-        &.form-horizontal:hover {
+        &.select-email-form:hover {
             background-color: hsl(202, 56%, 91%);
             cursor: pointer;
 
