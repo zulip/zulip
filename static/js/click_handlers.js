@@ -366,19 +366,6 @@ export function initialize() {
         );
     });
 
-    $("body").on("click", ".respond_button", (e) => {
-        // Arguably, we should fetch the message ID to respond to from
-        // e.target, but that should always be the current selected
-        // message in the current message list (and
-        // compose_actions.respond_to_message doesn't take a message
-        // argument).
-        const $row = rows.get_closest_row(e.target);
-        message_lists.current.select_id(rows.id($row));
-        compose_actions.quote_and_reply({trigger: "popover respond"});
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
         const $row = rows.get_closest_row(e.target);

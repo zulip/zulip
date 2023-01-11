@@ -752,8 +752,7 @@ export class MessageListView {
             }
 
             message.url = hash_util.by_conversation_and_time_url(message);
-            message.should_display_quote_and_reply =
-                message.content !== "<p>(deleted)</p>" && !page_params.is_spectator;
+
             return {msg: message};
         });
 

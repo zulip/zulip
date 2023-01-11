@@ -301,6 +301,18 @@ export function initialize() {
             // We want click events to propagate to `instance` so that
             // instance.hide gets called.
             const $popper = $(instance.popper);
+            $popper.one("click", ".respond_button", (e) => {
+                // Arguably, we should fetch the message ID to respond to from
+                // e.target, but that should always be the current selected
+                // message in the current message list (and
+                // compose_actions.respond_to_message doesn't take a message
+                // argument).
+                compose_actions.quote_and_reply({trigger: "popover respond"});
+                e.preventDefault();
+                e.stopPropagation();
+                instance.hide();
+            });
+
             $popper.one("click", ".popover_edit_message, .popover_view_source", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
                 const $row = message_lists.current.get_row(message_id);

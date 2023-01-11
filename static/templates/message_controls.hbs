@@ -1,24 +1,18 @@
 <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
     {{#if msg/sent_by_me}}
-    <div class="edit_content message_control_button"></div>
+        <div class="edit_content message_control_button"></div>
     {{/if}}
 
     {{#unless msg/sent_by_me}}
-    <div class="reaction_button message_control_button" data-tippy-content="{{t 'Add emoji reaction' }} (:)">
-        <i class="fa fa-smile-o" aria-label="{{#tr}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
-    </div>
+        <div class="reaction_button message_control_button" data-tippy-content="{{t 'Add emoji reaction' }} (:)">
+            <i class="fa fa-smile-o" aria-label="{{#tr}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+        </div>
     {{/unless}}
 
-    {{#if msg/should_display_quote_and_reply}}
-    <div class="respond_button message_control_button" data-tippy-content="{{t 'Quote and reply or forward' }} (>)" data-message-id="{{message_id}}" tabindex="0">
-        <i class="fa fa-reply" aria-label="{{#tr}}Quote and reply or forward{{/tr}} (>)" role="button" aria-haspopup="true" tabindex="0"></i>
-    </div>
-    {{/if}}
-
     {{#unless msg/locally_echoed}}
-    <div class="actions_hover message_control_button" data-tippy-content="{{#tr}}Message actions{{/tr}} (i)" >
-        <i class="zulip-icon zulip-icon-ellipsis-v-solid" role="button" aria-haspopup="true" tabindex="0" aria-label="{{#tr}}Message actions{{/tr}}"></i>
-    </div>
+        <div class="actions_hover message_control_button" data-tippy-content="{{#tr}}Message actions{{/tr}} (i)" >
+            <i class="zulip-icon zulip-icon-ellipsis-v-solid" role="button" aria-haspopup="true" tabindex="0" aria-label="{{#tr}}Message actions{{/tr}}"></i>
+        </div>
     {{/unless}}
 
     <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
@@ -32,9 +26,9 @@
     </div>
 
     {{#unless msg/locally_echoed}}
-    <div class="star_container message_control_button {{#if msg/starred}}{{else}}empty-star{{/if}}" data-tippy-content="{{#with msg}}{{#tr}}{starred_status} this message{{/tr}}{{/with}} (Ctrl + s)">
-        <i role="button" tabindex="0" class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}}"></i>
-    </div>
+        <div class="star_container message_control_button {{#if msg/starred}}{{else}}empty-star{{/if}}" data-tippy-content="{{#with msg}}{{#tr}}{starred_status} this message{{/tr}}{{/with}} (Ctrl + s)">
+            <i role="button" tabindex="0" class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}}"></i>
+        </div>
     {{/unless}}
 
 </div>
