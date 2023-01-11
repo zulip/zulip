@@ -1705,3 +1705,29 @@ test("muted users excluded from results", () => {
     const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(results, [mention_all, call_center]);
 });
+
+test("PM recipients sorted according to stream / topic being viewed", ({override_rewire}) => {
+    // This tests that PM recipient results are sorted with subscribers of
+    // the stream / topic being viewed being given priority. If no stream
+    // is being viewed, the sort is alphabetical (for testing, since we do not
+    // simulate PM history)
+    let results;
+
+    // Simulating just cordelia being subscribed to denmark.
+    override_rewire(
+        stream_data,
+        "is_user_subscribed",
+        (stream_id, user_id) =>
+            stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
+    );
+
+    // When viewing no stream, sorting is alphabetical
+    compose_state.set_stream_name("");
+    results = ct.get_pm_people("li");
+    assert.deepEqual(results, [alice, cordelia]);
+
+    // When viewing denmark stream, subscriber twin2 is placed higher
+    compose_state.set_stream_name("Denmark");
+    results = ct.get_pm_people("li");
+    assert.deepEqual(results, [cordelia, alice]);
+});
