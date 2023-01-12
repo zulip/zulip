@@ -154,7 +154,6 @@ input::-ms-reveal {
     float: left;
     font-size: 12px;
     text-align: center;
-    text-shadow: 0 -1px 0 hsl(225, 9%, 18%);
     background-color: hsl(2, 68%, 58%);  
     box-sizing: border-box;
     transition: width 0.6s ease;
