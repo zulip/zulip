@@ -21,6 +21,7 @@ let search_box_opened = false;
 
 export function close_search_box() {
     search_box_opened = false;
+    $(".typeahead.dropdown-menu.search_typeahead").hide();
 }
 
 export function narrow_or_search_for_term(search_string) {
@@ -234,7 +235,7 @@ export function initialize() {
             const filter = narrow_state.filter();
             if (!filter || filter.is_common_narrow()) {
                 message_view_header.close_search_bar_and_open_narrow_description();
-                search_box_opened = false;
+                close_search_box();
             }
         }
 
@@ -250,7 +251,7 @@ export function initialize() {
         $searchbox.on("focusout", () => {
             message_view_header.close_search_bar_and_open_narrow_description();
             $searchbox.css({"box-shadow": "unset"});
-            search_box_opened = false;
+            close_search_box();
         });
     }
 

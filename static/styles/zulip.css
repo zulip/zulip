@@ -1943,9 +1943,11 @@ div.focused_table {
 
         #search_arrows:hover {
             cursor: pointer;
+
             .search_icon {
                 cursor: pointer;
             }
+
             #search_query {
                 box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.15),
                     0 1px 5px hsla(0, 0%, 0%, 0.1);
@@ -1970,9 +1972,6 @@ div.focused_table {
     .navbar-search.expanded {
         float: left;
         overflow: hidden;
-        margin-top: 0;
-        margin-bottom: 0;
-        position: absolute;
         color: hsla(0, 0%, 0%, 1);
         width: 100%;
         box-shadow: 0 10px 20px hsla(0, 0%, 0%, 0.25),

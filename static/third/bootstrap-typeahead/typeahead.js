@@ -481,7 +481,9 @@ import {get_string_diff} from "../../js/util";
   , blur: function (e) {
       var that = this
       setTimeout(function () {
-        if (!that.$container.is(':hover')) {
+        // TODO: with search box, we want to keep it open and flash it
+        // and only close it deliberately. Ideally not from this file.
+        if (!that.$container.is(':hover') && !that.$container.is('.search_typeahead')) {
           that.hide();
         }
       }, 150)
