@@ -38,6 +38,12 @@
 
         .pill-value {
             margin: 0 5px;
+            max-width: max-content;
+            padding-right: 1rem;
+            width: 20vw;
+            overflow-x: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .exit {
