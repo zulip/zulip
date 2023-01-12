@@ -53,6 +53,7 @@ import "../../styles/hotspots.css";
 import "../../styles/dark_theme.css";
 import "../../styles/user_status.css";
 import "../../styles/widgets.css";
+import "../../styles/senla.css";
 
 // This should be last.
 import "../ui_init";

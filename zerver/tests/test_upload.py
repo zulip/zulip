@@ -1678,7 +1678,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response["Location"]
         is_night_str = str(self.night).lower()
         self.assertEqual(
-            redirect_url, f"/static/images/logo/zulip-org-logo.svg?version=0&night={is_night_str}"
+            redirect_url, f"/static/images/senla/senla-zulip-icon.svg?version=0&night={is_night_str}"
         )
 
     def test_get_realm_logo(self) -> None:
@@ -1713,7 +1713,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/json/realm/logo", {"night": orjson.dumps(self.night).decode()})
         redirect_url = response["Location"]
         self.assertEqual(
-            redirect_url, f"/static/images/logo/zulip-org-logo.svg?version=0&night={is_night_str}"
+            redirect_url, f"/static/images/senla/senla-zulip-icon.svg?version=0&night={is_night_str}"
         )
 
     def test_valid_logos(self) -> None:

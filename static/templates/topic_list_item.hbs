@@ -1,5 +1,9 @@
 <li class='bottom_left_row {{#if is_active_topic}}active-sub-filter{{/if}} {{#if is_zero}}zero-topic-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} topic-list-item' data-topic-name='{{topic_name}}'>
     <span class='topic-box'>
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1.25 1V7.15C1.25 8.41012 1.25 9.04018 1.49524 9.52148C1.71095 9.94484 2.05516 10.289 2.47852 10.5048C2.95982 10.75 3.58988 10.75 4.85 10.75H10.25M10.25 10.75C10.25 11.9926 11.2574 13 12.5 13C13.7426 13 14.75 11.9926 14.75 10.75C14.75 9.50736 13.7426 8.5 12.5 8.5C11.2574 8.5 10.25 9.50736 10.25 10.75Z" stroke={{color}} stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+{{!-- <img src="/static/images/senla/topic.svg" alt="topic"> --}}
         <span class="sidebar-topic-check">
             {{topic_resolved_prefix}}
         </span>

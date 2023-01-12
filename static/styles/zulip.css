@@ -16,7 +16,7 @@ Our sidebars (and anything that top-align
 with them such as floating recipient bars)
 go beneath the header.
 */
-$sidebar_top: calc($header_height + $header_padding_bottom);
+$sidebar_top: calc($header_height + $header_padding_bottom - 10px);
 
 $left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
@@ -39,7 +39,7 @@ html {
 body {
     font-size: 14px;
     line-height: calc(20 / 14);
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 /* Common background color */
@@ -57,7 +57,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Inter", sans-serif;
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
     line-height: normal;
@@ -87,7 +87,7 @@ pre {
      * which have different font-family, we force font-family
      * for tooltips here.
      */
-    font-family: "Source Sans 3", sans-serif !important;
+    font-family: "Inter", sans-serif !important;
     word-wrap: break-word;
 
     /* Affects all tippy tooltips not using any theme. */
@@ -442,7 +442,7 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
-    background-color: hsl(0, 0%, 100%);
+    background-color: #f2f4f7;
 }
 
 .fixed-app {
@@ -533,9 +533,12 @@ p.n-margin {
 
     .column-left .left-sidebar,
     .column-right .right-sidebar {
+        padding-top: 10px;
+        background-color: #f2f4f7;
         position: fixed;
         margin-top: $sidebar_top;
         z-index: 100;
+        height: 100%;
     }
 
     .column-left .left-sidebar {
@@ -568,7 +571,7 @@ p.n-margin {
 
 textarea,
 input {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -705,9 +708,10 @@ strong {
 
 .sidebar-title {
     color: hsl(0, 0%, 43%);
-    font-size: inherit;
-    font-weight: normal;
+    font-size: 12px;
+    font-weight: 700;
     display: inline;
+    letter-spacing: 0.051em;
 }
 
 .tooltip {
@@ -767,6 +771,7 @@ strong {
 .narrow-filter {
     display: block;
     position: relative;
+    padding-bottom: 8px;
 }
 
 .message_header_stream a.message_label_clickable {
@@ -2068,7 +2073,7 @@ div.focused_table {
         padding-right: 40px;
         border: none;
         border-radius: 0;
-        font-family: "Source Sans 3", sans-serif;
+        font-family: "Inter", sans-serif;
         font-weight: 300;
         line-height: $header_height;
         text-overflow: ellipsis;

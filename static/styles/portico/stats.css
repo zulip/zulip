@@ -1,5 +1,5 @@
 body {
-    font-family: "Source Sans 3", sans-serif !important;
+    font-family: "Inter", sans-serif !important;
     background-color: hsl(0, 0%, 98%);
 }
 
@@ -109,7 +109,7 @@ p {
 }
 
 .button {
-    font-family: "Source Sans 3", sans-serif !important;
+    font-family: "Inter", sans-serif !important;
     border: none;
     border-radius: 4px;
     outline: none;

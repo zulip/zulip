@@ -575,10 +575,11 @@ div.overlay {
     height: 16px;
     line-height: 16px;
     font-size: 12px;
+    font-weight: 600;
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
-    background-color: hsl(105, 2%, 50%);
+    background-color: #667085;
     color: hsl(0, 0%, 100%);
 }
 

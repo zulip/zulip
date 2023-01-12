@@ -68,7 +68,7 @@ class SubdomainsTest(ZulipTestCase):
         def test(url: str) -> bool:
             return is_static_or_current_realm_url(url, realm)
 
-        self.assertTrue(test("/static/images/logo/zulip-org-logo.svg"))
+        self.assertTrue(test("/static/images/senla/senla-zulip-icon.svg"))
         self.assertTrue(test("/anything"))
         self.assertFalse(test("https://zulip.com"))
         self.assertFalse(test("http://zulip.com"))

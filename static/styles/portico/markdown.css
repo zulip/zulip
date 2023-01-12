@@ -278,14 +278,14 @@
     .tip::before {
         display: inline;
         content: "\f0eb   Tip:  ";
-        font-family: FontAwesome, "Source Sans 3", sans-serif;
+        font-family: FontAwesome, "Inter", sans-serif;
         font-weight: 600;
     }
 
     .keyboard_tip::before {
         display: inline;
         content: "\f11c   Keyboard shortcut:  ";
-        font-family: FontAwesome, "Source Sans 3", sans-serif;
+        font-family: FontAwesome, "Inter", sans-serif;
         font-weight: 600;
     }
 

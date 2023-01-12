@@ -52,6 +52,7 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
+    background-color: #f2f4f7;
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px;
@@ -687,7 +688,7 @@ input.recipient_box {
     .compose_draft_button {
         font-size: 15px;
         font-weight: 600;
-        font-family: "Source Sans 3", sans-serif;
+        font-family: "Inter", sans-serif;
         padding: 0 5px;
         position: relative;
         top: 0.7px;

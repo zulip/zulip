@@ -1,8 +1,12 @@
 {{! This controls whether the swatch next to streams in the left sidebar has a lock icon. }}
 {{#if invite_only}}
-<i class="fa fa-lock" aria-hidden="true"></i>
+<svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10.75 7.25V5C10.75 2.92893 9.07107 1.25 7 1.25C4.92893 1.25 3.25 2.92893 3.25 5V7.25M4.6 14.75H9.4C10.6601 14.75 11.2902 14.75 11.7715 14.5048C12.1948 14.289 12.539 13.9448 12.7548 13.5215C13 13.0402 13 12.4101 13 11.15V10.85C13 9.58988 13 8.95982 12.7548 8.47852C12.539 8.05516 12.1948 7.71095 11.7715 7.49524C11.2902 7.25 10.6601 7.25 9.4 7.25H4.6C3.33988 7.25 2.70982 7.25 2.22852 7.49524C1.80516 7.71095 1.46095 8.05516 1.24524 8.47852C1 8.95982 1 9.58988 1 10.85V11.15C1 12.4101 1 13.0402 1.24524 13.5215C1.46095 13.9448 1.80516 14.289 2.22852 14.5048C2.70982 14.75 3.33988 14.75 4.6 14.75Z" stroke={{color}} stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 {{else if is_web_public}}
 <i class="zulip-icon zulip-icon-globe" aria-hidden="true"></i>
 {{else}}
-<span class="hashtag"></span>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6.12499 1.25L3.87499 14.75M12.125 1.25L9.87497 14.75M14.375 5H1.625M13.625 11H0.875" stroke={{color}} stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 {{/if}}
