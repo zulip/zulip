@@ -113,6 +113,9 @@ on hardware requirements for larger organizations.
   private resources. If your network has its own outgoing HTTP proxy,
   Zulip supports using that instead.
 
+Zulip does not, itself, require SSH, but most installations will also require
+access to incoming port 22 for SSH access for remote access.
+
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-proxy]: deployment.md#customizing-the-outgoing-http-proxy
 [reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
