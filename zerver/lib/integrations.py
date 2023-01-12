@@ -562,6 +562,13 @@ INTEGRATIONS: Dict[str, Integration] = {
         display_name="Jitsi Meet",
         doc="zerver/integrations/jitsi.md",
     ),
+    "mastodon": Integration(
+        "mastodon",
+        "mastodon",
+        ["communication"],
+        display_name="Mastodon",
+        doc="zerver/integrations/mastodon.md",
+    ),
     "matrix": Integration(
         "matrix", "matrix", ["communication"], doc="zerver/integrations/matrix.md"
     ),
