@@ -46,6 +46,7 @@ class DocPageTest(ZulipTestCase):
         landing_missing_strings: Sequence[str] = [],
         landing_page: bool = True,
         doc_html_str: bool = False,
+        search_disabled: bool = False,
     ) -> None:
 
         # Test the URL on the "zephyr" subdomain
@@ -88,7 +89,7 @@ class DocPageTest(ZulipTestCase):
                 self.assertIn(s, str(result.content))
             for s in landing_missing_strings:
                 self.assertNotIn(s, str(result.content))
-            if not doc_html_str:
+            if not doc_html_str and not search_disabled:
                 # Confirm page has the following HTML elements:
                 self.assert_in_success_response(
                     [
@@ -99,9 +100,14 @@ class DocPageTest(ZulipTestCase):
                     ],
                     result,
                 )
-            self.assert_not_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow" />'], result
-            )
+            if search_disabled:
+                self.assert_in_success_response(
+                    ['<meta name="robots" content="noindex,nofollow" />'], result
+                )
+            else:
+                self.assert_not_in_success_response(
+                    ['<meta name="robots" content="noindex,nofollow" />'], result
+                )
 
             # Test the URL on the "zephyr" subdomain with the landing page setting
             result = self.get_doc(url, subdomain="zephyr")
@@ -184,7 +190,6 @@ class DocPageTest(ZulipTestCase):
         self._test("/en/history/", "Zulip released as open source!")
         self._test("/values/", "designed our company")
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
-        self._test("/attribution/", "Website attributions")
         self._test("/communities/", "Open communities directory")
         self._test("/development-community/", "Zulip development community")
         self._test("/features/", "Beautiful messaging")
@@ -208,6 +213,8 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/idrift/", "Case study: iDrift AS")
         self._test("/case-studies/asciidoctor/", "Case study: Asciidoctor")
+        # <meta name="robots" content="noindex,nofollow" /> always true on these pages
+        self._test("/attribution/", "Website attributions", search_disabled=True)
 
     def test_open_organizations_endpoint(self) -> None:
         zulip_dev_info = ["Zulip Dev", "great for testing!"]
