@@ -1,5 +1,5 @@
 body {
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsl(0, 0%, 100%);
     font-family: "Inter", sans-serif;
     line-height: 150%;
     height: 100%;
@@ -852,7 +852,6 @@ input.new-organization-button {
 .login-form {
     margin: auto;
     /* plus input padding. */
-    width: calc(300px - -28px);
     margin-bottom: 10px;
 }
 

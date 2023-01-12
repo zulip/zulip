@@ -14,7 +14,7 @@ hence the name.
         {% include 'zerver/portico-header.html' %}
         {% endif %}
         <div class="app portico-page {% block portico_class_name %}{% endblock %}">
-            <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
+            <div class="app-main-login portico-page-container{% block hello_page_container %}{% endblock %}">
                 {% block portico_content %}
                 {% endblock %}
             </div>
@@ -22,7 +22,7 @@ hence the name.
     </div>
     <div class="alert-box"></div>
     {% if not isolated_page %}
-    {% include 'zerver/footer.html' %}
+    <!-- {% include 'zerver/footer.html' %} -->
     {% endif %}
 </div>
 {% endblock %}

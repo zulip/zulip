@@ -1,0 +1,42 @@
+.app-main-login {
+    min-width: 350px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.login-page-custom {
+    display: flex;
+    padding-top: 59px;
+
+    .login-page__img {
+        height: calc(100vh - 59px);
+    }
+
+    .right-side {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .login__page__title-box {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .login-page__title {
+        font-size: 24px;
+        line-height: 34px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+    }
+
+    .login-page__description { 
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 400;
+        color: #475467;
+        margin: 0;
+    }
+}
+
