@@ -1,0 +1,151 @@
+<form class="display-settings-form">
+    <div class="lang-time-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        <!-- this is inline block so that the alert notification can sit beside
+        it. If there's not an alert, don't make it inline-block.-->
+        <div class="subsection-header inline-block">
+            {{#if for_realm_settings}}
+            <h3>{{t "Time" }}</h3>
+            {{else}}
+            <h3>{{t "Language and time" }}</h3>
+            {{/if}}
+            {{> settings_save_discard_widget section_name="lang-time-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+        {{#unless for_realm_settings}}
+            {{> language_selection_widget
+              section_name="default_language_name"
+              setting_value=default_language_name
+              section_title=settings_label.default_language_settings_label }}
+        {{/unless}}
+
+        <div class="input-group">
+            <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
+            <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element" id="{{prefix}}twenty_four_hour_time" data-setting-widget-type="string">
+                {{#each twenty_four_hour_time_values}}
+                    <option value='{{ this.value }}'>{{ this.description }}</option>
+                {{/each}}
+            </select>
+        </div>
+
+    </div>
+
+
+    <div class="theme-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3 class="light">{{t "Theme" }}</h3>
+            {{> settings_save_discard_widget section_name="theme-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+
+        <div class="input-group">
+            <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}</label>
+            <select name="color_scheme" class="setting_color_scheme prop-element" id="{{prefix}}color_scheme" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=color_scheme_values}}
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label class="emoji-theme title">{{t "Emoji theme" }}</label>
+            <div class="emojiset_choices grey-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+                {{#each settings_object.emojiset_choices}}
+                    <label class="display-settings-radio-choice-label">
+                        <input type="radio" class="setting_emojiset_choice" name="emojiset" value="{{this.key}}"/>
+                        <span>{{this.text}}</span>
+                        <span class="right">
+                            {{#if (eq this.key "text") }}
+                            <div class="emoji_alt_code">&nbsp;:relaxed:</div>
+                            {{else}}
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f642.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f44d.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f680.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f389.png" />
+                            {{/if}}
+                        </span>
+                        {{#if (eq this.key "google-blob")}}
+                        <span>(<em>{{t "deprecated" }}</em>)</span>
+                        {{> ../help_link_widget link="/help/emoji-and-emoticons#change-your-emoji-set" }}
+                        {{/if}}
+                    </label>
+                {{/each}}
+            </div>
+        </div>
+
+        {{> settings_checkbox
+          setting_name="translate_emoticons"
+          is_checked=settings_object.translate_emoticons
+          label=settings_label.translate_emoticons
+          prefix=prefix}}
+
+        {{> settings_checkbox
+          setting_name="display_emoji_reaction_users"
+          is_checked=settings_object.display_emoji_reaction_users
+          label=settings_label.display_emoji_reaction_users
+          prefix=prefix}}
+
+        <div class="input-group">
+            <label class="title">{{t "User list style" }}</label>
+            <div class="user_list_style_values grey-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
+                {{#each user_list_style_values}}
+                    <label class="display-settings-radio-choice-label">
+                        <input type="radio" class="setting_user_list_style_choice" name="user_list_style" value="{{this.code}}"/>
+                        <span>{{this.description}}</span>
+                        <span class="right preview">
+                            {{#if (eq this.code 1)}}
+                            <span class="user-name">{{../full_name}}</span>
+                            <div class="emoji status_emoji emoji-1f3e0"></div>
+                            {{/if}}
+                            {{#if (eq this.code 2)}}
+                            <div class="user-name-and-status-text">
+                                <div class="user-name-and-status-emoji">
+                                    <span class="user-name">{{../full_name}}</span>
+                                    {{> ../status_emoji emoji_code="1f3e0"}}
+                                </div>
+                                <span class="status-text">{{t "Working remotely" }}</span>
+                            </div>
+                            {{/if}}
+                        </span>
+                    </label>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    <div class="advanced-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3 class="light">{{t "Advanced" }}</h3>
+            {{> settings_save_discard_widget section_name="advanced-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+
+        <div class="input-group thinner setting-next-is-related">
+            <label for="default_view" class="dropdown-title">{{t "Default view" }}
+                {{> ../help_link_widget link="/help/configure-default-view" }}
+            </label>
+            <select name="default_view" class="setting_default_view prop-element" id="{{prefix}}default_view" data-setting-widget-type="string">
+                {{> dropdown_options_widget option_values=default_view_values}}
+            </select>
+        </div>
+
+        {{> settings_checkbox
+          setting_name="escape_navigates_to_default_view"
+          is_checked=settings_object.escape_navigates_to_default_view
+          label=settings_label.escape_navigates_to_default_view
+          prefix=prefix}}
+
+        <div class="input-group">
+            <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
+                {{> ../help_link_widget link="/help/manage-inactive-streams" }}
+            </label>
+            <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
+            </select>
+        </div>
+
+        {{#each display_settings.settings.user_display_settings}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../settings_object this)
+              label=(lookup ../settings_label this)
+              render_only=(lookup ../display_settings.render_only this)
+              prefix=../prefix}}
+        {{/each}}
+
+    </div>
+</form>

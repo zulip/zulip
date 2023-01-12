@@ -1,0 +1,173 @@
+<div id="organization-settings" data-name="organization-settings" class="settings-section">
+    <form class="form-horizontal admin-realm-form org-settings-form">
+
+        <div id="org-notifications" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Automated messages and emails" }}</h3>
+                {{> settings_save_discard_widget section_name="notifications" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{> settings_checkbox
+                  setting_name="realm_send_welcome_emails"
+                  prefix="id_"
+                  is_checked=realm_send_welcome_emails
+                  label=admin_settings_label.realm_send_welcome_emails}}
+                {{#if settings_send_digest_emails }}
+                {{> settings_checkbox
+                  setting_name="realm_digest_emails_enabled"
+                  prefix="id_"
+                  is_checked=realm_digest_emails_enabled
+                  label=admin_settings_label.realm_digest_emails_enabled}}
+                {{/if}}
+                <div class="input-group">
+                    <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
+                    <select name="realm_digest_weekday"
+                      id="id_realm_digest_weekday"
+                      class="setting-widget prop-element"
+                      data-setting-widget-type="number">
+                        <option value="0">{{t "Monday" }}</option>
+                        <option value="1">{{t "Tuesday" }}</option>
+                        <option value="2">{{t "Wednesday" }}</option>
+                        <option value="3">{{t "Thursday" }}</option>
+                        <option value="4">{{t "Friday" }}</option>
+                        <option value="5">{{t "Saturday" }}</option>
+                        <option value="6">{{t "Sunday" }}</option>
+                    </select>
+                </div>
+            </div>
+
+            {{> dropdown_list_widget
+              widget_name="realm_notifications_stream_id"
+              list_placeholder=(t 'Filter streams')
+              reset_button_text=(t '[Disable]')
+              label=admin_settings_label.realm_notifications_stream
+              value_type="number" }}
+
+            {{> dropdown_list_widget
+              widget_name="realm_signup_notifications_stream_id"
+              list_placeholder=(t 'Filter streams')
+              reset_button_text=(t '[Disable]')
+              label=admin_settings_label.realm_signup_notifications_stream
+              value_type="number" }}
+            <div class="realm_default_language">
+                {{> language_selection_widget
+                  section_name="realm_default_language"
+                  setting_value=realm_default_language_name
+                  language_code=realm_default_language_code
+                  section_title=admin_settings_label.realm_default_language
+                  help_link_widget_link="/help/configure-organization-language"}}
+            </div>
+        </div>
+
+        <div id="org-message-retention" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message retention" }}
+                    {{> ../help_link_widget link="/help/message-retention-policy" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="message-retention" }}
+            </div>
+
+            {{> upgrade_tip_widget }}
+
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="id_realm_message_retention_days" class="dropdown-title">{{t "Message retention period" }}
+                    </label>
+                    <select name="realm_message_retention_days"
+                      id="id_realm_message_retention_days" class="prop-element"
+                      data-setting-widget-type="message-retention-setting"
+                      {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
+                        <option value="unlimited">{{t 'Retain forever' }}</option>
+                        <option value="custom_period">{{t 'Retain for N days after posting' }}</option>
+                    </select>
+
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
+                          name="realm_message_retention_custom_input"
+                          class="admin-realm-message-retention-days message-retention-setting-custom-input"
+                          data-setting-widget-type="number"
+                          {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-other-settings" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Other settings" }}</h3>
+                {{> settings_save_discard_widget section_name="other-settings" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_video_chat_provider" class="dropdown-title">
+                        {{t 'Video call provider' }}
+                    </label>
+                    <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="number">
+                        {{#each realm_available_video_chat_providers}}
+                            <option value='{{this.id}}'>{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="realm_giphy_rating" class="dropdown-title">
+                        {{t 'GIPHY integration' }}
+                        {{> ../help_link_widget link=giphy_help_link }}
+                    </label>
+                    <select name="realm_giphy_rating" class ="setting-widget prop-element" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if giphy_api_key_empty}}disabled{{/if}}>
+                        {{#each giphy_rating_options}}
+                            <option value='{{this.id}}'>{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+
+                {{> dropdown_list_widget
+                  widget_name="realm_default_code_block_language"
+                  list_placeholder=(t 'Filter languages')
+                  reset_button_text=(t '[Unset]')
+                  label=admin_settings_label.realm_default_code_block_language
+                  value_type="string" }}
+
+                {{> settings_checkbox
+                  setting_name="realm_message_content_allowed_in_email_notifications"
+                  prefix="id_"
+                  is_checked=realm_message_content_allowed_in_email_notifications
+                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
+
+                {{> settings_checkbox
+                  setting_name="realm_mandatory_topics"
+                  prefix="id_"
+                  is_checked=realm_mandatory_topics
+                  label=admin_settings_label.realm_mandatory_topics}}
+
+                {{> settings_checkbox
+                  setting_name="realm_enable_read_receipts"
+                  prefix="id_"
+                  is_checked=realm_enable_read_receipts
+                  label=admin_settings_label.realm_enable_read_receipts
+                  label_parens_text=admin_settings_label.realm_enable_read_receipts_parens_text}}
+
+                {{#if server_inline_image_preview}}
+                {{> settings_checkbox
+                  setting_name="realm_inline_image_preview"
+                  prefix="id_"
+                  is_checked=realm_inline_image_preview
+                  label=admin_settings_label.realm_inline_image_preview
+                  help_link="/help/allow-image-link-previews"}}
+                {{/if}}
+
+                {{#if server_inline_url_embed_preview}}
+                {{> settings_checkbox
+                  setting_name="realm_inline_url_embed_preview"
+                  prefix="id_"
+                  is_checked=realm_inline_url_embed_preview
+                  label=admin_settings_label.realm_inline_url_embed_preview
+                  help_link="/help/allow-image-link-previews"}}
+                {{/if}}
+            </div>
+        </div>
+    </form>
+</div>

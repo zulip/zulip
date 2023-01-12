@@ -1,0 +1,835 @@
+.popover {
+    width: auto;
+    max-width: 100%;
+
+    hr {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .sub_disable_btn_hint {
+        padding-left: 5px;
+        padding-right: 5px;
+        font-size: small;
+        text-align: justify;
+    }
+}
+
+.popover-content {
+    padding: 5px 0;
+}
+
+.popover-title {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+
+    font-size: inherit;
+    line-height: inherit;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.user_full_name,
+.bot_owner {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.popover_user_name_row {
+    display: flex;
+    align-items: center;
+}
+
+.user_info_popover_action_buttons {
+    display: flex;
+    margin-left: auto;
+}
+
+.user_info_popover_manage_menu_btn {
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+}
+
+.user_popover_manage_menu {
+    .zulip-icon {
+        /* Overriding CSS margin */
+        margin-right: 0;
+    }
+}
+
+.info_popover_actions .custom_user_field {
+    display: flex;
+    align-items: center;
+
+    .value {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    /* Overriding CSS from rendered_markdown.css */
+    .rendered_markdown p {
+        margin: 0;
+    }
+
+    /* Overriding CSS from bootstrap > nav-list. */
+    .custom_profile_fields_link {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        &:hover {
+            background-color: transparent;
+        }
+
+        &:focus {
+            background-color: transparent;
+        }
+    }
+}
+
+.info_popover_actions .user_info_popover_manage_menu_btn {
+    /* Create a larger click target around the icon. */
+    padding: 0 6px;
+
+    opacity: 0.8;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.sp-container {
+    z-index: 106;
+}
+
+.streams_popover {
+    .topic-name {
+        text-align: center;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .colorpicker-container {
+        display: none;
+        margin-right: 10px;
+
+        .sp-container {
+            background-color: hsl(0, 0%, 100%);
+            cursor: pointer;
+            border: none;
+
+            .sp-palette-container {
+                border-right: none;
+            }
+
+            input {
+                box-sizing: inherit; /* IE */
+                box-sizing: initial;
+
+                width: calc(100% - 13px);
+            }
+
+            button {
+                background-color: hsl(0, 0%, 100%);
+                background-image: none;
+                border: 1px solid hsl(0, 0%, 80%);
+                border-radius: 4px;
+                color: hsl(0, 0%, 25%);
+                font-size: 12px;
+                padding: 6px;
+                text-transform: capitalize;
+                text-align: center;
+                text-shadow: none;
+            }
+
+            .sp-picker-container {
+                border-left: solid 1px hsl(0, 0%, 88%);
+            }
+        }
+    }
+
+    .popover_sub_unsub_button {
+        margin-top: 0;
+        float: none;
+    }
+}
+
+ul {
+    &.info_popover_actions i,
+    &.actions_popover i,
+    &.streams_popover i,
+    &.topics_popover i {
+        display: inline-block;
+        text-align: center;
+
+        &:not(.popover_action_icon) {
+            width: 14px;
+        }
+
+        &:not(.popover_action_icon, .custom_user_field i) {
+            margin-right: 3px;
+        }
+
+        &.zulip-icon {
+            /* These icons are different from font awesome icons,
+                so they need to be aligned separately. */
+            line-height: 14px;
+            position: relative;
+
+            &:not(.zulip-icon-bot) {
+                top: 2px;
+            }
+        }
+    }
+
+    &.topics_popover {
+        .topic-name {
+            text-align: center;
+            margin-top: 5px;
+            margin-bottom: 5px;
+
+            .fa-chevron-right {
+                font-size: 12px;
+            }
+        }
+    }
+
+    &.info_popover_actions i.fa-edit {
+        vertical-align: middle;
+    }
+}
+
+.actions_popover {
+    /* Override default padding of tippyjs */
+    margin: 0 -9px;
+
+    /* Override bootstrap defaults */
+    .nav-list > li > a {
+        padding: 3px 15px;
+    }
+
+    /* Override bootstrap defaults */
+    hr {
+        margin: 5px 0;
+    }
+
+    .mark_as_unread {
+        .unread_count {
+            /* The icon for this menu item is in the form of an unread count from
+               the left sidebar. We reuse much of the shared styling,
+               but need to override some of the defaults set in app_components.css. */
+            display: inline;
+            float: unset;
+            line-height: 14px;
+            font-size: 11px;
+            font-weight: 550;
+            margin-right: 2px;
+            background-color: hsl(200, 100%, 40%);
+            /* Override random undesired bootstrap style */
+            text-shadow: none;
+            /* Not center aligned but looks better. */
+            position: relative;
+            top: -1px;
+        }
+    }
+}
+
+/* Important note: The user info popover user_popover class is applied
+   to user info popovers ONLY when they are opened from the right
+   sidebar; otherwise, it will have the user-info-popover class
+   instead. */
+.user_popover {
+    width: 240px;
+
+    margin: -14px;
+    padding: 0;
+
+    .popover-title {
+        padding: 0;
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .popover_info li {
+        word-wrap: break-word;
+    }
+}
+
+.message-info-popover,
+.user-info-popover {
+    width: 240px;
+    padding: 0;
+
+    .popover-title {
+        padding: 0;
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
+}
+
+.group-info-popover {
+    .manage-group a {
+        text-align: center;
+    }
+
+    .group-info {
+        text-align: center;
+
+        .group-name {
+            font-weight: bold;
+        }
+    }
+
+    .member-list {
+        position: relative;
+        max-height: 300px;
+        overflow-y: auto;
+        list-style: none;
+        margin-left: 0;
+
+        .bot {
+            color: hsl(180, 5%, 74%);
+            vertical-align: top;
+            width: 20px;
+            padding-top: 3.5px;
+            text-align: center;
+        }
+    }
+}
+
+.user_profile_presence,
+.popover_user_presence {
+    width: 8px;
+    height: 8px;
+    margin: 0 5px;
+    display: inline-block;
+    float: initial;
+    position: relative;
+    top: 0;
+    flex-shrink: 0;
+}
+
+.bot-owner-name {
+    text-decoration: underline;
+
+    &:hover {
+        cursor: pointer;
+        color: hsl(200, 100%, 40%);
+    }
+}
+
+.popover-avatar {
+    height: 240px;
+    width: 240px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+
+    &.guest-avatar::after {
+        outline: 10px solid hsl(0, 0%, 100%);
+    }
+
+    .popover-inner {
+        width: 240px;
+    }
+}
+
+#user-profile-modal {
+    .modal__body {
+        box-sizing: border-box;
+        height: 60vh;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .modal__header {
+        justify-content: center;
+    }
+
+    .user_profile_presence {
+        margin: 5px;
+        vertical-align: middle;
+    }
+
+    .modal__close {
+        position: absolute;
+        right: 20px;
+    }
+
+    #tab-toggle {
+        font-weight: initial;
+        padding: 0 16px 6px;
+    }
+
+    .name {
+        color: hsl(0, 0%, 20%);
+        width: 120px;
+        font-weight: 600;
+        margin-right: 10px;
+    }
+
+    .value {
+        vertical-align: top;
+    }
+
+    #exit-sign {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    #profile-tab {
+        margin: 0 5px;
+    }
+
+    .top {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    @media (width < $ml_min) {
+        .top {
+            flex-direction: column-reverse;
+        }
+    }
+
+    #avatar {
+        display: inline-block;
+        height: 180px;
+        width: 180px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.2);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0, 0%, 100%);
+        }
+    }
+
+    #edit-button {
+        font-size: 18px;
+        margin-left: 10px;
+    }
+
+    #default-section {
+        vertical-align: top;
+
+        .default-field {
+            margin-bottom: 10px;
+        }
+    }
+
+    hr {
+        border: 1px solid hsl(0, 0%, 93%);
+        margin: 5px 0;
+    }
+
+    #content {
+        .field-section {
+            margin-bottom: 10px;
+
+            .name {
+                color: hsl(0, 0%, 20%);
+                font-weight: 600;
+            }
+
+            &[data-type="2"] .value {
+                overflow-wrap: break-word;
+            }
+        }
+
+        .rendered_markdown p {
+            margin: 0;
+        }
+    }
+
+    .col-left {
+        padding: 0 10px 0 0;
+        word-break: break-all;
+    }
+
+    .col-right {
+        width: fit-content;
+    }
+
+    .tab-data {
+        .active {
+            display: block;
+        }
+
+        margin-bottom: 20px;
+    }
+
+    #user-profile-streams-tab {
+        .stream_list_info {
+            margin-bottom: 8px;
+        }
+
+        .stream-privacy {
+            display: inline-block;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
+    }
+
+    .stream-list-top-section {
+        display: flex;
+
+        .stream-list-header {
+            margin: 0;
+            display: inline-block;
+            font-weight: inherit;
+        }
+
+        .stream-search {
+            margin-left: auto;
+            align-self: center;
+            padding-right: 20px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        #clear_stream_search {
+            display: none;
+            padding: 5px 8px 5px 4px;
+            position: relative;
+            right: 0;
+        }
+    }
+
+    .subscription-group-list,
+    .subscription-stream-list {
+        position: relative;
+        border: 1px solid hsl(0, 0%, 83%);
+        border-radius: 4px;
+        overflow: auto;
+        text-align: left;
+        margin-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+
+        .user-stream-list,
+        .user-group-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
+
+            tr {
+                border-bottom: 1px solid hsl(0, 0%, 87%);
+
+                &:last-of-type {
+                    border-bottom: none;
+                }
+
+                td {
+                    padding: 4px 0;
+
+                    &:first-of-type {
+                        padding-left: 10px;
+                    }
+
+                    &:last-of-type {
+                        padding-right: 10px;
+                    }
+
+                    &.remove_subscription {
+                        text-align: right;
+                    }
+                }
+            }
+
+            tbody:empty::after,
+            &:empty::after {
+                content: attr(data-empty);
+                display: block;
+
+                text-align: center;
+                color: hsl(0, 0%, 67%);
+            }
+
+            &:empty {
+                display: block;
+                padding: 5px;
+            }
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .message-info-popover,
+    .user-info-popover {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        /* these are to override JS embedded inline styles. */
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        width: 100%;
+        height: 100%;
+
+        background-color: hsla(0, 0%, 0%, 0.7);
+        border-radius: 0;
+        border: none;
+
+        pointer-events: none;
+
+        .popover-inner {
+            background-color: hsl(0, 0%, 100%);
+            pointer-events: all;
+        }
+    }
+
+    .colorpicker-popover {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        /* these are to override JS embedded inline styles. */
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        width: 100%;
+        height: 100%;
+
+        background-color: hsla(0, 0%, 0%, 0.7);
+        border-radius: 0;
+        border: none;
+
+        pointer-events: none;
+
+        .popover-inner {
+            background-color: hsl(0, 0%, 100%);
+            pointer-events: all;
+        }
+
+        @media (width < $sm_min) {
+            .popover-inner {
+                width: 70%;
+            }
+
+            .sp-picker-container {
+                border-left: none !important;
+            }
+        }
+    }
+
+    .popover-flex {
+        position: absolute;
+        top: 0 !important;
+        left: 0 !important;
+
+        width: 100vw;
+        height: 100vh;
+
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        background-color: hsla(0, 0%, 0%, 0.7);
+
+        /* Needs to be higher than the 105 for div.overlay so that the
+           emoji picker can render on top of the user status picker. */
+        z-index: 106;
+
+        opacity: 0;
+        pointer-events: none;
+
+        transition: all 0.3s ease;
+
+        &.fade.in {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .popover {
+            display: inline-block;
+        }
+    }
+
+    .emoji-info-popover {
+        position: static;
+        margin-right: 0;
+    }
+
+    #user-profile-modal {
+        .stream-list-top-section {
+            display: block;
+
+            .header-section {
+                width: 100%;
+            }
+
+            .stream-search {
+                margin-bottom: 8px;
+            }
+
+            #clear_stream_search {
+                padding-top: 1px;
+            }
+        }
+    }
+}
+
+.popover.top .arrow::after {
+    left: -1px;
+}
+
+#giphy_grid_in_popover {
+    /* 300px of GIPHY grid + 5px is the extra gutter space
+     * between gif columns. */
+    width: 305px;
+    border: 0;
+    padding: 0;
+
+    .giphy-gif {
+        cursor: pointer;
+    }
+
+    .giphy-gif-img:focus {
+        /* Red outline for clear visibility
+         * of which image is in focus.
+         */
+        outline-color: hsl(0, 100%, 50%);
+    }
+
+    .search-box {
+        display: flex;
+        position: sticky;
+        padding: 2px;
+
+        input {
+            flex-grow: 1;
+            margin: 5px;
+            border-radius: 3px;
+        }
+
+        .clear_search_button {
+            position: absolute;
+            top: 5px;
+            right: 3px;
+            font-size: 16px;
+
+            &:focus {
+                .fa-remove {
+                    outline: 2px solid hsl(215, 47%, 50%);
+                }
+            }
+        }
+    }
+
+    .popover-content {
+        overflow: auto;
+        height: 200px;
+        margin: 2px;
+    }
+
+    .popover-footer {
+        text-align: center;
+        background-color: hsl(0, 0%, 0%);
+        border-radius: 0 0 6px 6px;
+
+        img {
+            width: 120px;
+        }
+    }
+}
+
+@media (width < $md_min) {
+    #giphy_grid_in_popover {
+        position: static;
+        top: 0 !important;
+        left: 0 !important;
+    }
+}
+
+.user_info_status_text {
+    opacity: 0.8;
+
+    .status_emoji {
+        height: 18px;
+        width: 18px;
+        /* Override the default 3px left margin for status emoji, which is
+           intended for their presentation elsewhere to the left of a
+           user's name. */
+        margin-left: 0;
+        margin-right: 2px;
+    }
+
+    #status_message {
+        padding: 1px 0;
+        display: flex;
+        align-items: baseline;
+        hyphens: auto;
+    }
+
+    .status_text {
+        overflow-wrap: anywhere;
+    }
+}
+
+#move_topic_modal {
+    form {
+        margin: 0;
+    }
+
+    /* Ensure that the dropdown can overflow the modal. */
+    .modal__content {
+        overflow: visible;
+    }
+
+    /* Override the default border-radius to properly align
+       the button corners with `stream_header_colorblock`. */
+    .dropdown-toggle {
+        border-radius: 1px 4px 4px 1px !important;
+    }
+
+    .dropdown-list-widget,
+    .stream_header_colorblock,
+    .inline_topic_edit {
+        margin-bottom: 10px;
+    }
+
+    .topic_stream_edit_header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+
+        #select_stream_id {
+            border-left: 0;
+            padding-left: 0;
+            border-radius: 3px;
+            margin: 0 5px 5px -10px;
+            text-indent: 10px;
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 125px;
+            left: 40px;
+        }
+    }
+}
+
+#language_selection_modal {
+    width: min(750px, 70vw);
+}
+
+.default_language_modal_table {
+    column-count: 3;
+
+    @media (width < $md_min) {
+        column-count: 2;
+    }
+
+    @media (width < $sm_min) {
+        column-count: 1;
+    }
+}

@@ -1,0 +1,218 @@
+#!/usr/bin/env python3
+import logging
+import os
+import pwd
+import shlex
+import subprocess
+import sys
+import time
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.supervisor import list_supervisor_processes
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    ENDC,
+    OKGREEN,
+    WARNING,
+    get_config,
+    get_config_file,
+    get_tornado_ports,
+    has_application_server,
+    has_process_fts_updates,
+    overwrite_symlink,
+    start_arg_parser,
+)
+
+action = "restart"
+if not sys.argv[0].endswith("restart-server"):
+    action = "start"
+verbing = action.title() + "ing"
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format=f"%(asctime)s {action}-server: %(message)s", level=logging.INFO)
+
+parser = start_arg_parser(action=action, add_help=True)
+args = parser.parse_args()
+
+deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+os.chdir(deploy_path)
+
+if pwd.getpwuid(os.getuid()).pw_name != "zulip":
+    logging.error("Must be run as user 'zulip'.")
+    sys.exit(1)
+
+
+if not args.skip_checks:
+    logging.info("Running syntax and database checks")
+    subprocess.check_call(["./manage.py", "check", "--database", "default"])
+
+if args.fill_cache:
+    logging.info("Filling memcached caches")
+    subprocess.check_call(["./manage.py", "fill_memcached_caches", "--skip-checks"])
+
+current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
+last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")
+change_symlink = os.readlink(current_symlink) != deploy_path
+if change_symlink:
+    overwrite_symlink(os.readlink(current_symlink), last_symlink)
+    overwrite_symlink(deploy_path, current_symlink)
+
+config_file = get_config_file()
+tornado_ports = get_tornado_ports(config_file)
+workers = []
+
+if has_application_server():
+    # Start by restarting the workers and similar processes, one at a
+    # time.  Workers can always support processing events with old event
+    # contents, but cannot necessarily understand events enqueued by a
+    # newer Django process.  Restarting them one at a time, rather than
+    # all-at-once, minimizes the downtime of each, and reduces startup
+    # contention.
+    #
+    # For "start" or less-graceful circumstances, we don't need to
+    # iterate; we'll stop all of them at once, and start them all later.
+    # In those cases, using the glob form is faster -- but if we do need
+    # to iterate, we need to expand the glob.
+    if action == "start" or args.less_graceful:
+        workers.append("zulip-workers:*")
+    else:
+        workers.extend(list_supervisor_processes(["zulip-workers:*"]))
+
+    if has_application_server(once=True):
+        # These used to be included in "zulip-workers:*"; since we may
+        # be restarting an older version of Zulip, which has not
+        # applied puppet to reload the new list of processes, only
+        # stop them if they currently exist according to
+        # `supervisorctl`.
+        workers.extend(
+            list_supervisor_processes(
+                [
+                    "zulip_deliver_scheduled_emails",
+                    "zulip_deliver_scheduled_messages",
+                ]
+            )
+        )
+
+if has_process_fts_updates():
+    workers.append("process-fts-updates")
+
+# Before we start (re)starting main services, make sure to start any
+# optional auxiliary services that we don't stop, but do expect to be
+# running, and aren't currently.
+aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_running=False)
+if aux_services:
+    subprocess.check_call(["supervisorctl", "start", *aux_services])
+
+# If none of the workers nor the application servers are running, this
+# is actually a "start," not a restart, which means we will defer
+# workers to later.
+if (
+    action == "restart"
+    and len(
+        list_supervisor_processes(workers + ["zulip-django", "zulip-tornado:*"], only_running=True)
+    )
+    == 0
+):
+    action = "start"
+    verbing = "Starting"
+
+
+def restart_or_start(service: str) -> None:
+    our_verb = action
+    if our_verb == "restart" and len(list_supervisor_processes([service], only_running=True)) == 0:
+        our_verb = "start"
+    subprocess.check_call(["supervisorctl", our_verb, service])
+
+
+if action == "restart" and len(workers) > 0:
+    if args.less_graceful:
+        # The less graceful form stops every worker now; we start them
+        # back up at the end.
+        logging.info("Stopping workers")
+        subprocess.check_call(["supervisorctl", "stop", *workers])
+    else:
+        # We cannot pass all of these to one `supervisorctl restart`
+        # because that takes them all down at once, waits until they are
+        # all down, and then brings them back up; doing them sequentially
+        # requires multiple `supervisorctl restart` calls.
+        for worker in workers:
+            logging.info("Restarting %s", worker)
+            restart_or_start(worker)
+
+if has_application_server():
+    # Next, we restart the Tornado processes sequentially, in order to
+    # minimize downtime of the tornado service caused by too many Python
+    # processes restarting at the same time, resulting in each receiving
+    # insufficient priority.  This is important, because Tornado is the
+    # main source of user-visible downtime when we restart a Zulip server.
+    # We do this before restarting Django, in case there are new event
+    # types which it will need to know how to deal with.
+    if action == "restart" and args.skip_tornado:
+        logging.info("Skipping restart of Tornado")
+    elif len(tornado_ports) > 1:
+        for p in tornado_ports:
+            # Restart Tornado processes individually for a better rate of
+            # restarts.  This also avoids behavior with restarting a whole
+            # supervisord group where if any individual process is slow to
+            # stop, the whole bundle stays stopped for an extended time.
+            logging.info("%s Tornado process on port %s", verbing, p)
+            restart_or_start(f"zulip-tornado:zulip-tornado-port-{p}")
+    else:
+        logging.info("%s Tornado process", verbing)
+        restart_or_start("zulip-tornado:*")
+
+    # Finally, restart the Django uWSGI processes.
+    if (
+        action == "restart"
+        and not args.less_graceful
+        and get_config(config_file, "application_server", "rolling_restart") != ""
+        and os.path.exists("/home/zulip/deployments/uwsgi-control")
+    ):
+        # See if it's currently running
+        uwsgi_status = subprocess.run(
+            ["supervisorctl", "status", "zulip-django"],
+            stdout=subprocess.DEVNULL,
+        )
+        if uwsgi_status.returncode == 0:
+            logging.info("Starting rolling restart of django server")
+            with open("/home/zulip/deployments/uwsgi-control", "w") as control_socket:
+                # "c" is chain-reloading:
+                # https://uwsgi-docs.readthedocs.io/en/latest/MasterFIFO.html#available-commands
+                control_socket.write("c")
+        else:
+            logging.info("Starting django server")
+            subprocess.check_call(["supervisorctl", "start", "zulip-django"])
+    else:
+        logging.info("%s django server", verbing)
+        restart_or_start("zulip-django")
+
+    using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
+    if using_sso.strip() == b"True":
+        logging.info("Restarting Apache WSGI process...")
+        subprocess.check_call(["pkill", "-x", "apache2", "-u", "zulip"])
+
+# If we were doing this non-gracefully, or starting as opposed to
+# restarting, we need to turn the workers (back) on.  There's no
+# advantage to doing this not-all-at-once.
+if (action == "start" or args.less_graceful) and len(workers) > 0:
+    logging.info("Starting workers")
+    subprocess.check_call(["supervisorctl", "start", *workers])
+
+logging.info("Done!")
+print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
+
+if change_symlink and "PWD" in os.environ:
+    for symlink in [last_symlink, current_symlink]:
+        if os.path.commonprefix([os.environ["PWD"], symlink]) == symlink:
+            print(
+                """
+{}Your shell entered its current directory through a symlink:
+  {}
+which has now changed. Your shell will not see this change until you run:
+  cd {}
+to traverse the symlink again.{}
+""".format(
+                    WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC
+                ),
+                file=sys.stderr,
+            )

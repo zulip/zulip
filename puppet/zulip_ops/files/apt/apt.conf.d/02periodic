@@ -1,0 +1,7 @@
+# Every day, update package lists and install upgrades; see 50unattended-upgrades
+
+APT::Periodic::Enable "1";
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";
+APT::Periodic::Unattended-Upgrade "1";

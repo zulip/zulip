@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import re
+import sys
+
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.join(tools_dir, "..")
+sys.path.insert(0, root_dir)
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+from zulint.command import LinterConfig, add_default_linter_arguments
+
+from tools.linter_lib.custom_check import non_py_rules, python_rules
+
+
+def run() -> None:
+    from tools.lib.test_script import (
+        add_provision_check_override_param,
+        assert_provisioning_status_ok,
+    )
+    from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
+
+    parser = argparse.ArgumentParser()
+    add_provision_check_override_param(parser)
+    parser.add_argument("--full", action="store_true", help="Check some things we typically ignore")
+    parser.add_argument("--use-mypy-daemon", action="store_true", help="Run mypy daemon instead")
+    add_default_linter_arguments(parser)
+    args = parser.parse_args()
+
+    os.chdir(root_dir)
+
+    assert_provisioning_status_ok(args.skip_provision_check)
+
+    # Invoke the appropriate lint checker for each language,
+    # and also check files for extra whitespace.
+
+    linter_config = LinterConfig(args)
+
+    by_lang = linter_config.list_files(
+        groups={
+            "backend": [
+                "bash",
+                "json",
+                "md",
+                "pp",
+                "py",
+                "pyi",
+                "rst",
+                "sh",
+                "text",
+                "txt",
+                "yaml",
+                "yml",
+            ],
+            "frontend": [
+                "css",
+                "flow",
+                "hbs",
+                "html",
+                "js",
+                "lock",
+                "ts",
+            ],
+        },
+        exclude=EXCLUDED_FILES,
+    )
+
+    linter_config.external_linter(
+        "css",
+        ["node", "node_modules/.bin/stylelint"],
+        ["css"],
+        fix_arg="--fix",
+        description="Standard CSS style and formatting linter (config: stylelint.config.js)",
+    )
+    linter_config.external_linter(
+        "eslint",
+        ["node", "node_modules/.bin/eslint", "--max-warnings=0", "--cache", "--ext", ".js,.ts"],
+        ["js", "ts"],
+        fix_arg="--fix",
+        description="Standard JavaScript style and formatting linter (config: .eslintrc).",
+    )
+    linter_config.external_linter(
+        "puppet",
+        ["env", "RUBYOPT=-W0", "puppet", "parser", "validate"],
+        ["pp"],
+        description="Runs the puppet parser validator, checking for syntax errors.",
+    )
+    linter_config.external_linter(
+        "puppet-lint",
+        ["puppet-lint", "--fail-on-warnings", *PUPPET_CHECK_RULES_TO_EXCLUDE],
+        ["pp"],
+        fix_arg="--fix",
+        description="Standard puppet linter (config: tools/linter_lib/exclude.py)",
+    )
+    linter_config.external_linter(
+        "templates",
+        ["tools/check-templates"],
+        ["hbs", "html"],
+        description="Custom linter checks whitespace formatting of HTML templates",
+        fix_arg="--fix",
+    )
+    linter_config.external_linter(
+        "openapi",
+        ["node", "tools/check-openapi"],
+        ["yaml"],
+        description="Validates our OpenAPI/Swagger API documentation "
+        "(zerver/openapi/zulip.yaml) ",
+        fix_arg="--fix",
+    )
+    linter_config.external_linter(
+        "shellcheck",
+        ["shellcheck", "-x", "-P", "SCRIPTDIR"],
+        ["bash", "sh"],
+        description="Standard shell script linter",
+    )
+    linter_config.external_linter(
+        "shfmt",
+        ["shfmt"],
+        ["bash", "sh"],
+        check_arg="-d",
+        fix_arg="-w",
+        description="Formats shell scripts",
+    )
+    command = ["tools/run-mypy", "--quiet"]
+    if args.skip_provision_check:
+        command.append("--skip-provision-check")
+    if args.use_mypy_daemon:
+        command.append("--use-daemon")
+    linter_config.external_linter(
+        "mypy",
+        command,
+        ["py", "pyi"],
+        pass_targets=False,
+        description="Static type checker for Python (config: pyproject.toml)",
+        suppress_line=(
+            lambda line: line.startswith("Daemon") or line == "Restarting: configuration changed"
+        )
+        if args.use_mypy_daemon
+        else lambda _: False,
+    )
+    linter_config.external_linter(
+        "ruff",
+        ["ruff", "--quiet"],
+        ["py", "pyi"],
+        fix_arg="--fix",
+        description="Python linter",
+    )
+    linter_config.external_linter(
+        "tsc",
+        ["tools/run-tsc"],
+        ["ts"],
+        pass_targets=False,
+        description="TypeScript compiler (config: tsconfig.json)",
+    )
+    linter_config.external_linter(
+        "yarn-deduplicate",
+        ["tools/run-yarn-deduplicate"],
+        ["lock"],
+        pass_targets=False,
+        description="Shares duplicate packages in yarn.lock",
+    )
+    linter_config.external_linter(
+        "gitlint",
+        ["tools/commit-message-lint"],
+        description="Checks commit messages for common formatting errors (config: .gitlint)",
+    )
+    linter_config.external_linter(
+        "prettier",
+        ["node_modules/.bin/prettier", "--cache", "--check", "--log-level=warn"],
+        ["css", "flow", "js", "json", "md", "ts", "yaml", "yml"],
+        fix_arg=["--write"],
+        description="Formats CSS, JavaScript, YAML",
+    )
+    linter_config.external_linter(
+        "black",
+        ["black"],
+        ["py", "pyi"],
+        description="Reformats Python code",
+        check_arg=["--check"],
+        suppress_line=lambda line: line == "All done! ✨ 🍰 ✨\n"
+        or re.fullmatch(r"\d+ files? would be left unchanged\.\n", line) is not None,
+    )
+
+    semgrep_command = [
+        "semgrep",
+        "--config=./tools/semgrep.yml",
+        "--error",
+        "--disable-version-check",
+        "--quiet",
+    ]
+    linter_config.external_linter(
+        "semgrep-py",
+        [*semgrep_command, "--lang=python"],
+        ["py"],
+        fix_arg="--autofix",
+        description="Syntactic grep (semgrep) code search tool (config: ./tools/semgrep.yml)",
+    )
+
+    linter_config.external_linter(
+        "thirdparty",
+        ["tools/check-thirdparty"],
+        description="Check docs/THIRDPARTY copyright file syntax",
+    )
+
+    @linter_config.lint
+    def custom_py() -> int:
+        """Runs custom checks for python files (config: tools/linter_lib/custom_check.py)"""
+        failed = python_rules.check(by_lang, verbose=args.verbose)
+        return 1 if failed else 0
+
+    @linter_config.lint
+    def custom_nonpy() -> int:
+        """Runs custom checks for non-python files (config: tools/linter_lib/custom_check.py)"""
+        failed = False
+        for rule in non_py_rules:
+            failed = failed or rule.check(by_lang, verbose=args.verbose)
+        return 1 if failed else 0
+
+    linter_config.do_lint()
+
+
+if __name__ == "__main__":
+    run()

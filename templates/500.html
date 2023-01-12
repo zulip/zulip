@@ -1,0 +1,56 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>{{ _("Internal server error") }} | Zulip</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'" />
+{% endblock %}
+
+{% block portico_class_name %}error{% endblock %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/errors/500art.svg" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    <h1 class="lead">{{ _("Internal server error") }}</h1>
+                    <p>
+                        {% trans %}
+                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.
+                        {% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}
+                        This page will reload automatically when service is restored.
+                        {% endtrans %}
+                        {% if corporate_enabled %}
+                            {% trans %}
+                            In the meantime, you can <a href="mailto:{{support_email}}">contact Zulip support</a>.
+                            {% endtrans %}
+                        {% else %}
+                            {% trans %}
+                            In the meantime, you can <a href="mailto:{{support_email}}">contact
+                            this server's administrators</a> for support.
+                            {% endtrans %}
+                        {% endif %}
+                    </p>
+                    {% if not corporate_enabled %}
+                        <p>
+                            {% trans troubleshooting_url="https://zulip.readthedocs.io/en/latest/production/troubleshooting.html" %}
+                            If you administer this server, you may want to check out the
+                            <a href="{{troubleshooting_url}}">Zulip server troubleshooting guide</a>.
+                            {% endtrans %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

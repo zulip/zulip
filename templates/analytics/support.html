@@ -1,0 +1,115 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "support" %}
+
+{# User activity. #}
+
+{% block title %}
+<title>Support panel | Zulip</title>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <br />
+    <form>
+        <center>
+            <input type="text" name="q" class="input-xxlarge search-query" placeholder="full names, emails, string_ids, organization URLs separated by commas" value="{{ request.GET.get('q', '') }}" autofocus />
+            <button type="submit" class="btn btn-default support-search-button">Search</button>
+        </center>
+    </form>
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <center>
+            {{ error_message }}
+        </center>
+    </div>
+    {% elif success_message %}
+    <div class="alert alert-success">
+        <center>
+            {{ success_message }}
+        </center>
+    </div>
+    {% endif %}
+
+    <div id="query-results">
+        {% for user in users %}
+        {% set realm = user.realm %}
+        <div class="support-query-result">
+            <span class="label">user</span>
+            <h3>{{ user.full_name }}</h3>
+            <b>Email</b>: {{ user.delivery_email }}<br />
+            <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
+            <b>Is active</b>: {{ user.is_active }}<br />
+            <b>Role</b>: {{ user.get_role_name() }}<br />
+            <hr />
+            <div>
+                {% include "analytics/realm_details.html" %}
+            </div>
+            <hr />
+        </div>
+        {% endfor %}
+
+        {% for realm in realms %}
+        <div class="support-query-result">
+            {% include "analytics/realm_details.html" %}
+        </div>
+        {% endfor %}
+
+        {% for confirmation in confirmations %}
+        {% set object = confirmation.object %}
+        <div class="support-query-result">
+            {% if confirmation.type == Confirmation.USER_REGISTRATION %}
+            <span class="label">preregistration user</span>
+            {% set email = object.email %}
+            {% set realm = object.realm %}
+            {% set show_realm_details = True %}
+            {% elif confirmation.type == Confirmation.REALM_CREATION %}
+            <span class="label">preregistration user</span>
+            <span class="label">realm creation</span>
+            {% set email = object.email %}
+            {% set show_realm_details = False %}
+            {% elif confirmation.type == Confirmation.INVITATION %}
+            <span class="label">preregistration user</span>
+            <span class="label">invite</span>
+            {% set email = object.email %}
+            {% set realm = object.realm %}
+            {% set show_realm_details = True %}
+            {% elif confirmation.type == Confirmation.MULTIUSE_INVITE %}
+            <span class="label">multiuse invite</span>
+            {% set realm = object.realm %}
+            {% set show_realm_details = False %}
+            {% elif confirmation.type == Confirmation.REALM_REACTIVATION %}
+            <span class="label">realm reactivation</span>
+            {% set realm = object %}
+            {% set show_realm_details = False %}
+            {% endif %}
+            <br />
+            <br />
+            {% if email %}
+            <b>Email</b>: {{ email }}<br />
+            {% endif %}
+            <b>Link</b>: {{ confirmation.url }}
+            <a title="Copy link" class="copy-button" data-copytext="{{ confirmation.url }}">
+                <i class="fa fa-copy"></i>
+            </a><br />
+            <b>Expires in</b>: {{ confirmation.expires_in }}<br />
+            {% if confirmation.link_status %}
+            <b>Status</b>: {{ confirmation.link_status  }}
+            {% endif %}
+            <br />
+            {% if show_realm_details %}
+            <hr />
+            <div>
+                {% include "analytics/realm_details.html" %}
+            </div>
+            {% elif realm %}
+            <b>Realm</b>: {{ realm.string_id }}
+            <br />
+            {% endif %}
+            <br />
+        </div>
+        <br />
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

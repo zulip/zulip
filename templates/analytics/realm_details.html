@@ -1,0 +1,160 @@
+<span class="label">realm</span>
+<h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
+<b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.uri }}">{{ realm.uri }}</a> |
+<a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
+<a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
+<b>Date created</b>: {{ realm.date_created|timesince }} ago<br />
+{% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
+<b>Owners</b>: {{ owner_emails_string }}
+{% if owner_emails_string %}
+<a title="Copy emails" class="copy-button" data-copytext="{{ owner_emails_string }}">
+    <i class="fa fa-copy"></i>
+</a>
+{% endif %}
+<br />
+{% set admin_emails_string = get_realm_admin_emails_as_string(realm) %}
+<b>Admins</b>: {{ admin_emails_string }}
+{% if admin_emails_string %}
+<a title="Copy emails" class="copy-button" data-copytext="{{ admin_emails_string }}">
+    <i class="fa fa-copy"></i>
+</a>
+{% endif %}
+<br />
+{% set first_human_user = realm.get_first_human_user() %}
+{% if first_human_user %}
+<b>First human user</b>: {{ first_human_user.delivery_email  }}
+<a title="Copy emails" class="copy-button" data-copytext="{{ first_human_user.delivery_email }}">
+    <i class="fa fa-copy"></i>
+</a>
+{% else %}
+<b>First human user</b>:
+{% endif %}
+
+<form method="POST" class="support-realm-status-form">
+    <b>Status</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <select name="status">
+        <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
+        <option value="deactivated" {% if realm.deactivated %}selected{% endif %}>Deactivated</option>
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+<form method="POST">
+    <b>New subdomain</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <input type="text" name="new_subdomain" required />
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+<form method="POST">
+    <b>Org type</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <select name="org_type" id="org_type">
+        {% for realm_type in sorted_realm_types %}
+            <option value="{{ realm_type.id }}" {% if realm.org_type == realm_type.id %}selected{% endif %}>
+                {{ _(realm_type.name) }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+<form method="POST" class="support-plan-type-form">
+    <b>Plan type</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <select name="plan_type">
+        <option value="1" {% if realm.plan_type == 1 %}selected{% endif %}>Self-hosted</option>
+        <option value="2" {% if realm.plan_type == 2 %}selected{% endif %}>Limited</option>
+        <option value="3" {% if realm.plan_type == 3 %}selected{% endif %}>Standard</option>
+        <option value="4" {% if realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>
+        <option value="10" {% if realm.plan_type == 10 %}selected{% endif %}>Plus</option>
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+<form method="POST" class="sponsorship-pending-form">
+    <b>Sponsorship pending</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <select name="sponsorship_pending">
+        <option value="true" {% if plan_data[realm.id].customer and plan_data[realm.id].customer.sponsorship_pending %}selected{% endif %}>Yes</option>
+        <option value="false" {% if not plan_data[realm.id].customer or not plan_data[realm.id].customer.sponsorship_pending %}selected{% endif %}>No</option>
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+
+{% if plan_data[realm.id].customer and plan_data[realm.id].customer.sponsorship_pending %}
+<form method="POST" class="approve-sponsorship-form">
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <input type="hidden" name="approve_sponsorship" value="true" />
+    <button class="btn btn-default sea-green small approve-sponsorship-button">
+        Approve full sponsorship
+    </button>
+    (will email organization owners).
+</form>
+{% endif %}
+
+<form method="POST" class="support-discount-form">
+    <b>Discount (use 85 for nonprofits)</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    {% if plan_data[realm.id].current_plan and plan_data[realm.id].current_plan.fixed_price %}
+    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" disabled />
+    <button type="submit" class="btn btn-default support-submit-button" disabled>Update</button>
+    {% else %}
+    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" required />
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+    {% endif %}
+</form>
+{% if plan_data[realm.id].current_plan %}
+<div class="current-plan-details">
+    <h3>📅 Current plan</h3>
+    <b>Name</b>: {{ plan_data[realm.id].current_plan.name }}<br />
+    <b>Status</b>: {{plan_data[realm.id].current_plan.get_plan_status_as_text()}}<br />
+    <b>Billing schedule</b>: {% if plan_data[realm.id].current_plan.billing_schedule == plan_data[realm.id].current_plan.ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
+    <b>Licenses</b>: {{ plan_data[realm.id].licenses_used }}/{{ plan_data[realm.id].licenses }} ({% if plan_data[realm.id].current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br />
+    {% if plan_data[realm.id].current_plan.price_per_license %}
+    <b>Price per license</b>: ${{ plan_data[realm.id].current_plan.price_per_license/100 }}<br />
+    {% else %}
+    <b>Fixed price</b>: ${{ plan_data[realm.id].current_plan.fixed_price/100 }}<br />
+    {% endif %}
+    <b>Next invoice date</b>: {{ plan_data[realm.id].current_plan.next_invoice_date.strftime('%d %B %Y') }}<br />
+</div>
+
+<form method="POST" class="billing-method-form">
+    <br />
+    <b>Billing method</b><br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <select name="billing_method" class="billing-method-select" required>
+        <option value="charge_automatically" {% if plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
+        <option value="send_invoice" {% if not plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Update</button>
+</form>
+
+<form method="POST" class="downgrade-plan-form">
+    <br />
+    <b>Downgrade plan</b><br />
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <select name="downgrade_method" class="downgrade-plan-method-select" required>
+        <option disabled value="" selected>-- select --</option>
+        <option value="downgrade_at_billing_cycle_end">Downgrade at the end of current billing cycle</option>
+        <option value="downgrade_now_without_additional_licenses">Downgrade now without creating additional invoices</option>
+        <option value="downgrade_now_void_open_invoices">Downgrade now and void open invoices</option>
+    </select>
+    <button type="submit" class="btn btn-default support-submit-button">Downgrade</button>
+</form>
+
+{% endif %}
+
+<form method="POST" class="scrub-realm-form">
+    <h3>❌ Scrub realm</h3>
+    {{ csrf_input }}
+    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+    <input type="hidden" name="scrub_realm" value="true" />
+    <button data-string-id="{{realm.string_id}}" class="btn btn-danger small scrub-realm-button">Scrub realm (danger)</button>
+</form>

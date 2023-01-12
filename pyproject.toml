@@ -1,0 +1,153 @@
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.isort]
+src_paths = [".", "tools"]
+known_third_party = "zulip"
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+# Logistics of what code to check and how to handle the data.
+scripts_are_modules = true
+show_traceback = true
+# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-stubs-for-third-party-modules
+# for notes on how we manage mypy stubs.
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
+
+# Enable strict mode, with some exceptions.
+strict = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+warn_return_any = false
+
+# Enable optional errors.
+enable_error_code = [
+    "redundant-expr",
+    "truthy-bool",
+    "ignore-without-code",
+    "unused-awaitable",
+]
+
+# Display the codes needed for # type: ignore[code] annotations.
+show_error_codes = true
+
+# Warn of unreachable or redundant code.
+warn_unreachable = true
+
+# dmypy enables local_partial_types implicitly. We need mypy to align
+# with this behavior.
+local_partial_types = true
+
+plugins = ["mypy_django_plugin.main"]
+
+[[tool.mypy.overrides]]
+module = ["zproject.configured_settings", "zproject.settings", "zproject.default_settings"]
+no_implicit_reexport = false
+
+[[tool.mypy.overrides]]
+module = [
+    "ahocorasick.*",
+    "aioapns.*", # https://github.com/Fatal1ty/aioapns/issues/33
+    "bitfield.*",
+    "bmemcached.*",
+    "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
+    "circuitbreaker.*",
+    "coverage.*", # https://github.com/nedbat/coveragepy/issues/1434
+    "cssutils.*",
+    "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
+    "digitalocean.*",
+    "disposable_email_domains.*",
+    "django_auth_ldap.*",
+    "django_bmemcached.*",
+    "django_cte.*",
+    "django_otp.*",
+    "django_scim.*",
+    "django_statsd.*",
+    "DNS.*",
+    "fakeldap.*",
+    "gcm.*",
+    "gitlint.*",
+    "jsonref.*",
+    "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
+    "moto.*", # https://github.com/spulec/moto/issues/4944
+    "onelogin.*",
+    "premailer.*",
+    "pyinotify.*",
+    "pyoembed.*",
+    "pyuca.*",
+    "re2.*",
+    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
+    "scim2_filter_parser.attr_paths",
+    "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
+    "social_core.*",
+    "social_django.*",
+    "sourcemap.*",
+    "talon_core.*",
+    "tlds.*",
+    "twitter.*",
+    "two_factor.*",
+]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "zproject.settings"
+
+[tool.ruff]
+# See https://github.com/charliermarsh/ruff#rules for error code definitions.
+select = [
+    "ANN", # annotations
+    "B", # bugbear
+    "C4", # comprehensions
+    "DTZ", # naive datetime
+    "E", # style errors
+    "F", # flakes
+    "I", # import sorting
+    "ISC", # string concatenation
+    "N", # naming
+    "PGH", # pygrep-hooks
+    "PIE", # miscellaneous
+    "PLC", # pylint convention
+    "PLE", # pylint error
+    "PLR", # pylint refactor
+    "PLW", # pylint warning
+    "Q", # quotes
+    "RUF", # Ruff
+    "S", # security
+    "SIM", # simplify
+    "T10", # debugger
+    "UP", # upgrade
+    "W", # style warnings
+    "YTT", # sys.version
+]
+ignore = [
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in classmethod
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+    "B007", # Loop control variable not used within the loop body
+    "B008", # Do not perform function calls in argument defaults
+    "B023", # Function definition does not bind loop variable
+    "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+    "C408", # Unnecessary `dict` call (rewrite as a literal)
+    "E402", # Module level import not at top of file
+    "E501", # Line too long
+    "E731", # Do not assign a lambda expression, use a def
+    "N802", # Function name should be lowercase
+    "N806", # Variable in function should be lowercase
+    "RUF001", # String contains ambiguous unicode character
+    "RUF002", # Docstring contains ambiguous unicode character
+    "RUF003", # Comment contains ambiguous unicode character
+    "S101", # Use of `assert` detected
+    "S105", # Possible hardcoded password
+    "S106", # Possible hardcoded password
+    "S107", # Possible hardcoded password
+]
+line-length = 100
+src = [".", "tools"]
+target-version = "py38"
+
+[tool.ruff.isort]
+known-third-party = ["zulip"]

@@ -1,0 +1,307 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "upgrade" %}
+
+{% block title %}
+<title>{{ _("Upgrade") }} | Zulip</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block content %}
+
+<div class="app portico-page">
+
+    {% include 'zerver/billing_nav.html' %}
+
+    <div class="portico-landing billing-upgrade-page new-style">
+        <div class="hero small-hero"></div>
+
+        <div class="page-content">
+            <div class="main">
+                <h1>🚀 {% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
+                {% if free_trial_days %}
+                <div id="free-trial-alert-message" class="alert alert-info">
+                    Upgrade now to start your {{ free_trial_days }} day free trial
+                    of Zulip Cloud Standard!
+                </div>
+                {% endif %}
+
+                {% if is_demo_organization %}
+                <div class="demo-organization-warning">
+                    Demo organizations cannot be directly upgraded to a paid plan. Please start by
+                    <a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization">
+                    converting your demo organization
+                    </a>
+                    to a permanent organization.
+                </div>
+                {% endif %}
+
+                {% if error_message %}
+                <div class="alert alert-danger" id="upgrade-error-message-box">
+                    {{ error_message }}
+                </div>
+                {% endif %}
+
+                <ul class="nav nav-tabs" id="upgrade-tabs">
+                    <li class="active"><a data-toggle="tab" href="#autopay">💳 Pay automatically</a></li>
+                    <li><a data-toggle="tab" href="#invoice">🧾 Pay by invoice</a></li>
+                    <li><a data-toggle="tab" href="#sponsorship">💚 Request sponsorship</a></li>
+                </ul>
+
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                <div class="tab-content">
+                    <div class="tab-pane active" id="autopay">
+                        <div id="autopay-input-section">
+                            <form id="autopay-form">
+                                <input type="hidden" name="seat_count" value="{{ seat_count }}" />
+                                <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}" />
+                                <input type="hidden" name="salt" value="{{ salt }}" />
+                                <input type="hidden" name="billing_modality" value="charge_automatically" />
+                                {% if onboarding %}
+                                <input type="hidden" name="onboarding" value="true" />
+                                {% endif %}
+                                {% if onboarding and free_trial_days %}
+                                <p><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
+                                <hr />
+                                <h2>Zulip Cloud Standard free trial</h2>
+                                {% endif %}
+                                <div class="payment-schedule">
+                                    <div id="autopay-error" class="alert alert-danger"></div>
+                                    <h3>{{ _("Payment schedule") }}</h3>
+                                    {% if free_trial_days %}
+                                    <p>
+                                        You won't be charged during the free trial. You can also downgrade to
+                                        Zulip Cloud Free, our forever free plan, at any time.
+                                    </p>
+                                    {% endif %}
+                                    <label>
+                                        <input type="radio" name="schedule" value="monthly" checked/>
+                                        <div class="box">
+                                            <div class="schedule-time">{{ _("Pay monthly") }}</div>
+                                            <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="schedule" value="annual"/>
+                                        <div class="box">
+                                            <div class="schedule-time annually">{{ _("Pay annually") }}</div>
+                                            <div class="schedule-amount">
+                                                $<span id="autopay_annual_price_per_month"></span>/user/month
+                                                <div class="schedule-amount-2">
+                                                    ($<span id="autopay_annual_price"></span>/user/year)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div class="license-management">
+                                    <h3>{{ _("License management") }}</h3>
+                                    <label>
+                                        <input type="radio" name="license_management" value="automatic" checked />
+                                        <div class="box">
+                                            <div class="management-type">{{ _("Automatic") }}</div>
+                                            <div class="management-type-text">{{ _("Most convenient") }}</div>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="license_management" value="manual" />
+                                        <div class="box">
+                                            <div class="management-type">{{ _("Manual") }}</div>
+                                            <div class="management-type-text">{{ _("Most control") }}</div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div id="license-automatic-section">
+                                    <p>
+                                        {% if free_trial_days %}
+                                        After the Free Trial, you&rsquo;ll be charged
+                                        <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
+                                        users (or more if you later add more users).<br />
+
+                                        We'll automatically charge you for additional licenses as users
+                                        are added, and remove licenses not in use at the end of each billing
+                                        period.
+                                        {% else %}
+                                        You&rsquo;ll initially be charged
+                                        <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
+                                        users.<br />
+                                        We'll automatically charge you for additional licenses as users
+                                        are added, and remove licenses not in use at the end of each billing
+                                        period.
+                                        {% endif %}
+                                    </p>
+                                    <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}" />
+                                </div>
+
+                                <div id="license-manual-section">
+
+                                    <p>
+                                        {% if free_trial_days %}
+                                        Enter the number of users you would like to pay for after the Free Trial.<br />
+                                        You'll need to manually add licenses to add or invite
+                                        additional users.
+                                        {% else %}
+                                        Enter the number of users you would like to pay for.<br />
+                                        You'll need to manually add licenses to add or invite
+                                        additional users.
+                                        {% endif %}
+                                    </p>
+
+                                    <h4>Number of licenses (minimum {{ seat_count }})</h4>
+                                    <input type="number" name="licenses" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br />
+                                </div>
+                                <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
+                                <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                                    <button id="add-card-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                                        <span id="add-card-button-span">
+                                            Add card
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div id="autopay-loading">
+                            <div class="zulip-loading-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                    <circle cx="386.56" cy="386.56" r="386.56"/>
+                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                                </svg>
+                            </div>
+                            <div id="autopay_loading_indicator"></div>
+                        </div>
+                        <div id="autopay-success" class="alert alert-info">
+                            Redirecting to Stripe Checkout...
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="invoice">
+                        <div id="invoice-error" class="alert alert-danger"></div>
+                        <div id="invoice-input-section">
+                            <form id="invoice-form" method="post">
+                                {% if onboarding and free_trial_days %}
+                                <p><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
+                                <hr />
+                                <h2>Zulip Cloud Standard free trial</h2>
+                                {% endif %}
+                                <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}" />
+                                <input type="hidden" name="salt" value="{{ salt }}" />
+                                <input type="hidden" name="billing_modality" value="send_invoice" />
+                                <div class="payment-schedule">
+                                    <h3>{{ _("Payment schedule") }}</h3>
+                                    <label>
+                                        <input type="radio" name="schedule" value="annual" checked />
+                                        <div class="box">
+                                            <div class="schedule-time annually">{{ _("Pay annually") }}</div>
+                                            <div class="schedule-amount">
+                                                $<span id="invoice_annual_price_per_month"></span>/user/month
+                                                <div class="schedule-amount-2">
+                                                    ($<span id="invoice_annual_price"></span>/user/year)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <p>
+                                    {% if free_trial_days %}
+                                    Enter the number of users you would like to pay for.<br />
+                                    We'll email you an invoice after the free trial.
+                                    Invoices can be paid by ACH transfer or credit card.
+                                    {% else %}
+                                    Enter the number of users you would like to pay for.<br />
+                                    We'll email you an invoice in 1-2 hours. Invoices can be paid by
+                                    ACH transfer or credit card.
+                                    {% endif %}
+                                </p>
+                                <h4>Number of licenses (minimum {{ min_invoiced_licenses }})</h4>
+                                <input type="number" min="{{ min_invoiced_licenses }}" autocomplete="off"
+                                  id="invoiced_licenses" name="licenses" required/><br />
+                                <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
+                                <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                                    <button type="submit" id="invoice-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                                        Buy Standard
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div id="invoice-loading">
+                            <div class="zulip-loading-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                    <circle cx="386.56" cy="386.56" r="386.56"/>
+                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                                </svg>
+                            </div>
+                            <div id="invoice_loading_indicator"></div>
+                        </div>
+                        <div id="invoice-success" class="alert alert-success">
+                            Upgrade complete! The page will now reload.
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="sponsorship">
+                        <div id="sponsorship-error" class="alert alert-danger"></div>
+                        <div id="sponsorship-input-section">
+                            <form id="sponsorship-form" method="post">
+                                <label>
+                                    <h4>Organization type</h4>
+                                </label>
+                                <select name="organization-type" required style="width: 100%;" required>
+                                    {% for org_type in sorted_org_types %}
+                                        {% if not org_type[1].hidden %}
+                                        <option data-string-value="{{ org_type[0] }}"
+                                          {% if org_type[1].id == realm_org_type %}selected{% endif %}
+                                          value="{{ org_type[1].id }}">
+                                            {{ _(org_type[1].name) }}
+                                        </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <br />
+                                <label>
+                                    <h4>Organization website</h4>
+                                </label>
+                                <input name="website" style="width: 100%;" type="text" class="input-large" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
+                                <label>
+                                    <h4>Describe your organization briefly</h4>
+                                </label>
+                                <textarea name="description" style="width: 100%;" cols="100" rows="5" required></textarea>
+                                <br />
+                                <p id="sponsorship-discount-details"></p>
+                                <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
+                                <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                                    <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                                        Submit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div id="sponsorship-loading">
+                            <div class="zulip-loading-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                    <circle cx="386.56" cy="386.56" r="386.56"/>
+                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                                </svg>
+                            </div>
+                            <div id="sponsorship_loading_indicator"></div>
+                        </div>
+                        <div id="sponsorship-success" class="alert alert-info">
+                            Request received! The page will now reload.
+                        </div>
+                    </div>
+
+                </div>
+                <div class="support-link">
+                    <p>
+                        We're happy to help!
+                        Contact <a href="mailto:support@zulip.com">support@zulip.com</a>
+                        for any billing-related questions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

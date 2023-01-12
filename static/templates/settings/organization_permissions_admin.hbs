@@ -1,0 +1,289 @@
+<div id="organization-permissions" data-name="organization-permissions" class="settings-section">
+    <form class="form-horizontal admin-realm-form org-permissions-form">
+
+        <div id="org-join-settings" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Joining the organization" }}</h3>
+                <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
+                {{> settings_save_discard_widget section_name="join-settings" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                <div class="input-group">
+                    {{> settings_checkbox
+                      setting_name="realm_invite_required"
+                      prefix="id_"
+                      is_checked=realm_invite_required
+                      label=admin_settings_label.realm_invite_required}}
+                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
+                    </label>
+                    <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users?" }}</label>
+                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element">
+                        <option value="no_restriction">{{t "No restrictions" }}</option>
+                        <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
+                        <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
+                    </select>
+                    <div class="dependent-settings-block">
+                        <p id="allowed_domains_label" class="inline-block"></p>
+                        {{#if is_owner }}
+                        <a id="show_realm_domains_modal" role="button">{{t "[Configure]" }}</a>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="realm_waiting_period_setting" class="dropdown-title">
+                        {{t "Waiting period before new members turn into full members" }}
+                        {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
+                    </label>
+                    <select name="realm_waiting_period_setting" id="id_realm_waiting_period_setting" class="prop-element">
+                        <option value="none">{{t "None" }}</option>
+                        <option value="three_days">{{t "3 days" }}</option>
+                        <option value="custom_days">{{t "Custom" }}</option>
+                    </select>
+                    {{!-- This setting is hidden unless `custom_days` --}}
+                    <div class="dependent-settings-block">
+                        <label for="id_realm_waiting_period_threshold" class="inline-block">{{t "Waiting period (days)" }}:</label>
+                        <input type="text" id="id_realm_waiting_period_threshold"
+                          name="realm_waiting_period_threshold"
+                          class="admin-realm-time-limit-input prop-element"
+                          value="{{ realm_waiting_period_threshold }}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-user-identity" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "User identity" }}</h3>
+                {{> settings_save_discard_widget section_name="user-identity" }}
+            </div>
+            <div class="inline-block organization-permissions-parent">
+                {{> settings_checkbox
+                  setting_name="realm_name_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_name_changes_disabled
+                  label=admin_settings_label.realm_name_changes_disabled}}
+
+                {{> settings_checkbox
+                  setting_name="realm_email_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_email_changes_disabled
+                  label=admin_settings_label.realm_email_changes_disabled}}
+
+                {{> settings_checkbox
+                  setting_name="realm_avatar_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_avatar_changes_disabled
+                  label=admin_settings_label.realm_avatar_changes_disabled}}
+            </div>
+            <div class="input-group">
+                <label for="realm_email_address_visibility">{{t "Who can access user email addresses" }}
+                    {{> ../help_link_widget link="/help/restrict-visibility-of-email-addresses" }}
+                </label>
+                <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=email_address_visibility_values}}
+                </select>
+            </div>
+        </div>
+
+        <div id="org-stream-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Stream permissions" }}</h3>
+                {{> settings_save_discard_widget section_name="stream-permissions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                <div class="input-group">
+                    <label for="realm_create_public_stream_policy" class="dropdown-title">{{t "Who can create public streams" }}</label>
+                    <select name="realm_create_public_stream_policy" id="id_realm_create_public_stream_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+                {{> upgrade_tip_widget }}
+                {{> settings_checkbox
+                  setting_name="realm_enable_spectator_access"
+                  prefix="id_"
+                  is_checked=realm_enable_spectator_access
+                  label=admin_settings_label.realm_enable_spectator_access
+                  is_disabled=disable_enable_spectator_access_setting
+                  help_link="/help/public-access-option"}}
+                <div class="input-group realm_create_web_public_stream_policy">
+                    <label for="realm_create_web_public_stream_policy" class="dropdown-title">{{t "Who can create web-public streams" }}</label>
+                    <select name="realm_create_web_public_stream_policy" id="id_realm_create_web_public_stream_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=create_web_public_stream_policy_values}}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="realm_create_private_stream_policy" class="dropdown-title">{{t "Who can create private streams" }}</label>
+                    <select name="realm_create_private_stream_policy" id="id_realm_create_private_stream_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="realm_invite_to_stream_policy" class="dropdown-title">{{t "Who can add users to streams" }}</label>
+                    <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="realm_wildcard_mention_policy" class="dropdown-title">{{t "Who can use @all/@everyone mentions in large streams" }}
+                        {{> ../help_link_widget link="/help/restrict-wildcard-mentions" }}
+                    </label>
+                    <select name="realm_wildcard_mention_policy" id="id_realm_wildcard_mention_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=wildcard_mention_policy_values}}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-msg-editing" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message editing" }}
+                    {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="msg-editing" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{> settings_checkbox
+                  setting_name="realm_allow_message_editing"
+                  prefix="id_"
+                  is_checked=realm_allow_message_editing
+                  label=admin_settings_label.realm_allow_message_editing}}
+
+                {{> settings_checkbox
+                  setting_name="realm_allow_edit_history"
+                  prefix="id_"
+                  is_checked=realm_allow_edit_history
+                  label=admin_settings_label.realm_allow_edit_history}}
+
+                <div class="input-group time-limit-setting">
+                    <label for="realm_message_content_edit_limit_seconds" class="dropdown-title">{{t "Time limit for editing messages" }}</label>
+                    <select name="realm_message_content_edit_limit_seconds" id="id_realm_message_content_edit_limit_seconds" class="prop-element" {{#unless realm_allow_message_editing}}disabled{{/unless}} data-setting-widget-type="time-limit">
+                        {{#each msg_edit_limit_dropdown_values}}
+                            <option value="{{value}}">{{text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-settings-block">
+                        <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'Duration editing is allowed after posting (minutes)'}}:&nbsp;
+                        </label>
+                        <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                          name="realm_message_content_edit_limit_minutes"
+                          class="admin-realm-time-limit-input"
+                          autocomplete="off"
+                          value="{{ realm_message_content_edit_limit_minutes }}"
+                          {{#unless realm_allow_message_editing}}disabled{{/unless}}/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-moving-msgs" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Moving messages" }}
+                    {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="moving-msgs" }}
+            </div>
+            <div class="input-group">
+                <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can move messages to another topic" }}</label>
+                <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=edit_topic_policy_values}}
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages to another stream" }}
+                </label>
+                <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=move_messages_between_streams_policy_values}}
+                </select>
+            </div>
+        </div>
+
+        <div id="org-msg-deletion" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message deletion" }}
+                    {{> ../help_link_widget link="/help/edit-or-delete-a-message#delete-a-message" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="msg-deletion" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <label for="org-msg-deletion" class="inline-block">
+                    {{t "Administrators can delete any message." }}
+                </label>
+                <div class="input-group">
+                    <label for="realm_delete_own_message_policy" class="dropdown-title">
+                        {{t "Who can delete their own messages" }}
+                    </label>
+                    <select name="realm_delete_own_message_policy" id="id_realm_delete_own_message_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_message_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group time-limit-setting">
+                    <label for="realm_message_content_delete_limit_seconds" class="dropdown-title">
+                        {{t "Time limit for deleting messages" }}
+                    </label>
+                    <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element" data-setting-widget-type="time-limit">
+                        {{#each msg_delete_limit_dropdown_values}}
+                            <option value="{{value}}">{{text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-settings-block">
+                        <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t "Duration deletion is allowed after posting (minutes)" }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                          name="realm_message_content_delete_limit_minutes"
+                          class="admin-realm-time-limit-input"
+                          autocomplete="off"
+                          value="{{ realm_message_content_delete_limit_minutes }}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-other-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Other permissions" }}</h3>
+                {{> settings_save_discard_widget section_name="other-permissions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                <div class="input-group">
+                    <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
+                    <select name="realm_bot_creation_policy" class="setting-widget prop-element" id="id_realm_bot_creation_policy" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=bot_creation_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_user_group_edit_policy" class="dropdown-title">{{t "Who can create and manage user groups" }}</label>
+                    <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_add_custom_emoji_policy" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
+                    <select name="realm_add_custom_emoji_policy" class="setting-widget prop-element" id="id_realm_add_custom_emoji_policy" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_private_message_policy">{{t "Who can use private messages" }} ({{t "beta" }})
+                        {{> ../help_link_widget link="/help/restrict-private-messages" }}
+                    </label>
+                    <select name="realm_private_message_policy" class="setting-widget prop-element" id="id_realm_private_message_policy" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=private_message_policy_values}}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

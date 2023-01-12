@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+
+usage() {
+    cat <<EOF
+USAGE: $0 [--roles=roles] [--branch=main] [--debug-key=username] server
+
+Installs an empty Ubuntu server in AWS with a Zulip server role.
+
+ * server is the local part of the hostname (e.g. postgres0)
+
+ * roles is a comma-separated list of Puppet profile names; these
+   will get 'zulip_ops::profile::' prepended to them, and passed
+   to scripts/lib/install -- e.g. 'postgresql'
+ * branch is used to override the default branch to install from.
+ * username is the name of the AWS SSH key pair to allow logins as
+   'ubuntu' with during initial boot; this is purely for debugging the
+   bootstrapping process.
+
+Reads configuration from $HOME/.zulip-install-server.conf, which should look like:
+
+[repo]
+repo_url=git@github.com:zulip/zulip.git
+[aws]
+zone_id=Z2U988IEXAMPLE
+security_groups=sg-01234567
+image_id=ami-0dc45e3d9be6ab7b5
+instance_type=m4.large
+ssh_secret_id=prod/git/deploy
+EOF
+}
+
+args="$(getopt -o '' --long help,branch:,roles:,debug-key: -n "$0" -- "$@")" || {
+    usage >&2
+    exit 1
+}
+eval "set -- $args"
+
+BRANCH="main"
+ROLES="base"
+DEBUG_KEY=""
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+        --roles)
+            shift
+            ROLES="$1"
+            shift
+            ;;
+        --branch)
+            shift
+            BRANCH="$1"
+            shift
+            ;;
+        --debug-key)
+            shift
+            DEBUG_KEY="$1"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+if [ $# -ne 1 ]; then
+    usage >&2
+    exit 1
+fi
+
+SERVER="$1"
+
+set -x
+
+cd "$(dirname "$0")"
+
+source ./bootstrap-awscli.sh
+
+zulip_install_config_file="$HOME/.zulip-install-server.conf"
+if [ ! -f "$zulip_install_config_file" ]; then
+    echo "No configuration file found in $zulip_install_config_file"
+    exit 1
+fi
+
+REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
+
+for role in ${ROLES//,/ }; do
+    if ! [ -f "../../puppet/zulip_ops/manifests/profile/$role.pp" ]; then
+        echo "No such role zulip_ops::profile::$role !"
+        exit 1
+    fi
+done
+FULL_ROLES=$(echo "$ROLES" | perl -pe '$_=join(",",map{"zulip_ops::profile::$_"} split ",")')
+
+function lookup() {
+    KEY="$1"
+    crudini --get "$zulip_install_config_file" "aws-$ROLES" "$KEY" 2>/dev/null \
+        || crudini --get "$zulip_install_config_file" aws "$KEY"
+}
+
+AWS_ZONE_ID=$(lookup zone_id)
+SECURITY_GROUPS=$(lookup security_groups)
+AMI_ID=$(lookup image_id)
+INSTANCE_TYPE=$(lookup instance_type)
+IAM_PROFILE=$(lookup iam_profile)
+SSH_SECRET_ID=$(lookup ssh_secret_id)
+AZ=$(lookup availability_zone)
+DISK_SIZE=$(lookup disk_size)
+
+# Verify it doesn't exist already
+ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
+HOSTNAME="$SERVER.${ZONE_NAME%?}" # Remove trailing .
+EXISTING_RECORDS=$($AWS route53 list-resource-record-sets \
+    --hosted-zone-id "$AWS_ZONE_ID" \
+    --query "ResourceRecordSets[?Name == '$HOSTNAME.']" \
+    | jq '. | length')
+if [ "$EXISTING_RECORDS" != "0" ]; then
+    echo "$HOSTNAME already exists!"
+    exit 1
+fi
+
+# https://docs.aws.amazon.com/cli/latest/reference/ec2/run-instances.html
+# shellcheck disable=SC2206  # We intentionally split $SECURITY_GROUPS
+EXTRA_ARGS+=(
+    --iam-instance-profile "Name=\"$IAM_PROFILE\""
+    --image-id "$AMI_ID"
+    --instance-type "$INSTANCE_TYPE"
+    --security-group-ids $SECURITY_GROUPS
+    --monitoring Enabled=true
+    --placement "AvailabilityZone=$AZ"
+    --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
+)
+
+if [ -n "$DEBUG_KEY" ]; then
+    EXTRA_ARGS+=(
+        --key-name "$DEBUG_KEY"
+    )
+fi
+
+# Build up the provisioning script
+BOOTDATA=$(mktemp)
+{
+    echo "#!/bin/bash"
+    echo "SERVER=$SERVER"
+    echo "HOSTNAME=$HOSTNAME"
+    echo "FULL_ROLES=$FULL_ROLES"
+    echo "REPO_URL=$REPO_URL"
+    echo "BRANCH=$BRANCH"
+    echo "SSH_SECRET_ID=$SSH_SECRET_ID"
+    sed '/^AWS=/ r ./bootstrap-awscli.sh' bootstrap-aws-installer
+} >>"$BOOTDATA"
+
+TAG_ROLE_NAMES="$ROLES"
+TAGS="[{Key=Name,Value=$SERVER},{Key=role,Value=\"$TAG_ROLE_NAMES\"}]"
+INSTANCE_DATA=$($AWS ec2 run-instances \
+    --tag-specifications "ResourceType=instance,Tags=$TAGS" \
+    "${EXTRA_ARGS[@]}" \
+    --user-data "file://$BOOTDATA")
+INSTANCEID=$(echo "$INSTANCE_DATA" | jq -r .Instances[0].InstanceId)
+
+# Wait for public IP assignment
+PUBLIC_DNS_NAME=""
+while [ -z "$PUBLIC_DNS_NAME" ]; do
+    sleep 1
+    PUBLIC_DNS_NAME=$($AWS ec2 describe-instances --instance-ids "$INSTANCEID" \
+        | jq -r .Reservations[0].Instances[0].PublicDnsName)
+done
+
+# Add the hostname to the zone
+ROUTE53_CHANGES=$(mktemp)
+cat >"$ROUTE53_CHANGES" <<EOF
+{
+    "Comment": "Add the $HOSTNAME CNAME record",
+    "Changes": [
+        {
+            "Action": "CREATE",
+            "ResourceRecordSet": {
+                "Name": "$HOSTNAME",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": [{"Value": "$PUBLIC_DNS_NAME"}]
+            }
+        }
+    ]
+}
+EOF
+$AWS route53 change-resource-record-sets --hosted-zone-id "$AWS_ZONE_ID" --change-batch "file://$ROUTE53_CHANGES"
+rm "$ROUTE53_CHANGES"
+
+set +x
+echo
+echo
+echo ">>> Install started successfully!  Provisioning takes 5-6min."
+echo "    sleep 360 && ssh root@$HOSTNAME"

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -eu
+
+cd "$(dirname "$0")/.."
+remote="$(git config zulip.zulipRemote)" || remote=upstream
+{
+    git describe --always --tags --match='[0-9]*'
+    if [ -z "${OVERRIDE_MERGE_BASE+x}" ]; then
+        branches="$(git for-each-ref --format='%(objectname)' "refs/remotes/$remote/main" "refs/remotes/$remote/*.x" "refs/remotes/$remote/*-branch")"
+        mapfile -t branches <<<"$branches"
+        if merge_base="$(git merge-base -- HEAD "${branches[@]}")"; then
+            git describe --always --tags --match='[0-9]*' -- "$merge_base"
+        fi
+    else
+        echo "$OVERRIDE_MERGE_BASE"
+    fi
+} >zulip-git-version

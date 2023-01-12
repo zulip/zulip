@@ -1,0 +1,74 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev.txt.
+# See requirements/README.md for more detail.
+-r pip.in
+-r prod.in
+-r docs.in
+
+# moto s3 mock
+moto[s3]
+
+# Needed for running tools/run-dev.py
+Twisted
+
+# Needed for documentation links test
+Scrapy
+
+# Needed to compute test coverage
+coverage<6.4.3  # undiagnosed bug
+
+# fake for LDAP testing
+fakeldap
+
+# For testing mock http requests
+https://github.com/getsentry/responses/archive/b30c13fe1c9a2e60e7e2de7a92322b4d4ad57562.zip#egg=responses==0.22.0+git  # https://github.com/getsentry/responses/pull/593
+
+# For doing highly usable Python profiling
+line-profiler
+
+# Python reformatter
+black
+
+# Python linter
+ruff
+
+# Needed for watching file changes
+pyinotify
+
+# Needed to run tests in parallel
+tblib
+
+# For linting Git commit messages
+gitlint-core
+
+# Needed for visualising cProfile reports
+snakeviz
+
+# Needed for creating DigitalOcean droplets
+python-digitalocean
+
+# Needed for updating the locked pip dependencies
+pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
+
+# zulip's linting framework - zulint
+https://github.com/zulip/zulint/archive/80aba3fd88faf6598665ac670a1d30f3c028df0d.zip#egg=zulint==1.0.0+git
+
+-r mypy.in
+
+# Needed for using integration logo svg files as bot avatars
+cairosvg
+
+# Needed for tools/check-thirdparty
+python-debian
+
+# Pattern-based lint tool
+semgrep
+
+# Contains Pysa, a security-focused static analyzer
+pyre-check
+
+# For sorting versions when uploading releases
+natsort
+
+# For spell check linter
+codespell

@@ -1,0 +1,22 @@
+{{! Client-side Mustache template for rendering subscriptions in the "invite user" form.}}
+<div class="invite-stream-controls">
+    <button class="btn btn-link" type="button" id="invite_check_all_button">{{t "Check all" }}</button> |
+    <button class="btn btn-link" type="button" id="invite_uncheck_all_button">{{t "Uncheck all" }}</button>
+</div>
+<div id="invite-stream-checkboxes" class="new-style">
+    {{#each streams}}
+
+        <label class="checkbox display-block">
+            <input type="checkbox" name="stream" value="{{stream_id}}"
+              {{#if default_stream}}checked="checked"{{/if}} />
+            <span></span>
+            {{#if (or invite_only is_web_public)}} {{>stream_privacy}} {{name}}
+            {{else}}
+            #{{name}}
+            {{/if}}
+            {{#if (eq name ../notifications_stream)}}
+            <i>({{t 'Receives new stream announcements' }})</i>
+            {{/if}}
+        </label>
+    {{/each}}
+</div>

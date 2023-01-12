@@ -1,0 +1,7 @@
+# Enable HSTS: tell browsers to always use HTTPS
+add_header Strict-Transport-Security max-age=15768000 always;
+
+# Set X-Frame-Options to deny to prevent clickjacking
+add_header X-Frame-Options DENY always;
+
+add_header X-Content-Type-Options nosniff;

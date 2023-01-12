@@ -1,0 +1,20 @@
+{% if show_message_content %}
+    {% if group_pm %} {% trans %}Group PMs with {{ huddle_display_name }}{% endtrans %}
+    {% elif private_message %} {% trans %}PMs with {{ sender_str }}{% endtrans %}
+    {% elif stream_email_notify or mention %}
+        {#
+        Some email clients, like Gmail Web (as of 2022), will auto-thread
+        emails that share a subject and recipients, but will disregard
+        [Bracketed Prefixes] in the style of old-school mailing lists. We take
+        advantage of this to retain thread continuity in email notifications
+        even after a topic is resolved.
+        #}
+        {% if topic_resolved %}{% trans %}[resolved] #{{ stream_name }} > {{ topic_name }}{% endtrans %}
+        {% else %}#{{ stream_name }} > {{ topic_name }}
+        {% endif %}
+    {% endif %}
+{% else %}
+    {% trans %}New messages{% endtrans %}
+{% endif %}
+{% if realm_name_in_notifications %} [{{ realm_str }}]
+{% endif %}

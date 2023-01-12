@@ -1,0 +1,1 @@
+Sponsorship request ({{ organization_type }}) for {{ string_id }}

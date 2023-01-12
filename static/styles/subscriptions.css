@@ -1,0 +1,1165 @@
+#subs_page_loading_indicator {
+    margin: 10px auto;
+}
+
+.member_list_loading_indicator,
+.subscriber_list_loading_indicator {
+    margin: 10px auto;
+}
+
+.member_list_loading_indicator:empty,
+.subscriber_list_loading_indicator:empty {
+    margin: 0;
+}
+
+.subscriptions div #response {
+    overflow-wrap: break-word;
+}
+
+.subscription_settings .btn {
+    border-radius: 2px;
+}
+
+.stream-email {
+    font-family: "Source Code Pro", monospace;
+    padding: 10px;
+    font-size: 0.85rem;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+}
+
+.sp-preview {
+    width: 20px;
+    border: none;
+    box-shadow: 0 0 1px hsla(0, 0%, 0%, 1);
+}
+
+.sp-replacer {
+    margin-right: 12px;
+    border: none;
+    box-shadow: 0 0 2px hsla(0, 0%, 0%, 0.8);
+}
+
+.stream-email .email-address {
+    display: block;
+    margin: auto;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
+.muted-sub,
+.control-label-disabled {
+    color: hsl(0, 0%, 64%);
+}
+
+.sub_setting_checkbox .muted-sub label,
+.sub_setting_checkbox .control-label-disabled label {
+    cursor: not-allowed;
+}
+
+.mute-note {
+    font-size: 90%;
+    opacity: 0.5;
+}
+
+.hide-mute-note {
+    display: none;
+}
+
+.sub_setting_control {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.create_stream_plus_button {
+    font-size: 24px;
+    font-weight: 500;
+    position: relative;
+    top: 2px;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 5px;
+    background-color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 0%);
+    margin: 0 0 0 5px;
+    height: 27px;
+
+    &:hover {
+        border: 1px solid hsl(0, 0%, 47%);
+    }
+
+    span {
+        position: relative;
+        top: -5px;
+    }
+}
+
+#create_user_group_description,
+#create_stream_description {
+    width: calc(100% - 15px);
+}
+
+.user_group_creation_error,
+.stream_creation_error {
+    display: none;
+    margin-left: 2px;
+    color: hsl(0, 100%, 50%);
+}
+
+/* TODO: Unify with settings.css definition */
+h3.stream_setting_subsection_title,
+h3.user_group_setting_subsection_title {
+    display: inline-block;
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
+h4.stream_setting_subsection_title,
+h4.user_group_setting_subsection_title {
+    display: inline-block;
+    font-size: 1.35em;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
+.member-list-box,
+.subscriber-list-box {
+    text-align: center;
+    border-left: 1px solid hsl(0, 0%, 87%);
+    border-right: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+
+    .member_list_container,
+    .subscriber_list_container {
+        position: relative;
+        /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) = 282px */
+        max-height: calc(95vh - 282px);
+        overflow: auto;
+        text-align: left;
+        -webkit-overflow-scrolling: touch;
+
+        .member-list,
+        .subscriber-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
+
+            tbody {
+                border-bottom: none;
+
+                tr:last-of-type {
+                    border-bottom: none;
+                }
+            }
+
+            tr {
+                border-bottom: 1px solid hsl(0, 0%, 93%);
+
+                td,
+                th {
+                    padding: 4px 0 4px 5px;
+                    vertical-align: middle;
+
+                    &:first-of-type {
+                        padding-left: 10px;
+                    }
+                }
+            }
+
+            .subscriber_list_remove {
+                display: inline-block;
+            }
+
+            tbody:empty::after,
+            &:empty::after {
+                content: "No subscribers to this stream.";
+                display: block;
+
+                color: hsl(0, 0%, 67%);
+                padding: 5px 5px 5px 10px;
+            }
+
+            thead th {
+                &:first-of-type {
+                    border-top-left-radius: 4px;
+                }
+
+                &:last-of-type {
+                    border-top-right-radius: 4px;
+                }
+
+                position: sticky;
+                top: 0;
+                z-index: 1;
+            }
+
+            .hidden-subscriber-email {
+                font-style: italic;
+            }
+        }
+    }
+}
+
+.subscriber-name,
+.subscriber-email {
+    padding: 5px;
+}
+
+.subscriber-email {
+    margin-left: 20px;
+    padding-right: 8px;
+}
+
+.subscriber_list_add,
+.member_list_add {
+    width: 100%;
+    margin: 0 0 10px;
+
+    .user_group_subscription_request_result,
+    .stream_subscription_request_result {
+        a {
+            color: inherit;
+        }
+    }
+}
+
+.member-search,
+.subscriber-search {
+    margin: 10px 0 0;
+
+    .search {
+        max-width: 160px;
+    }
+}
+
+.subscriber_list_add .form-inline,
+.member_list_add .form-inline {
+    margin-bottom: 0;
+}
+
+.add_subscribers_container {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+
+    .add_subscriber_btn_wrapper {
+        padding-left: 5px;
+    }
+}
+
+.remove-subscriber-form {
+    margin: 0;
+}
+
+#subscriptions h1 {
+    font-size: 25px;
+    font-weight: 300;
+    padding-top: 40px;
+}
+
+.subscriptions-container .subscriptions-header .fa-chevron-left,
+.user-groups-container .user-groups-header .fa-chevron-left,
+#settings_overlay_container .settings-header.mobile .fa-chevron-left {
+    position: relative;
+    transform: translate(-50px, 0);
+    opacity: 0;
+    color: hsl(0, 0%, 67%);
+
+    float: left;
+    padding: 2px 10px;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+.user-groups-container .user-groups-header.slide-left .fa-chevron-left,
+.subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
+#settings_overlay_container
+    .settings-header.mobile.slide-left
+    .fa-chevron-left {
+    transform: translate(0, 0);
+    opacity: 1;
+}
+
+.user-groups-container,
+.subscriptions-container {
+    position: relative;
+    height: 95%;
+    border-radius: 4px;
+    padding: 0;
+    width: 97%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+
+    .search-container .tab-switcher .ind-tab {
+        width: auto;
+    }
+
+    .user-groups-header,
+    .subscriptions-header {
+        padding: 12px;
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 700;
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        .fa-chevron-left {
+            display: none;
+        }
+
+        .user-groups-title,
+        .subscriptions-title {
+            display: inline-block;
+            transition: all 0.3s ease;
+            transform: translate(-13px, 0);
+        }
+
+        .exit {
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+        }
+    }
+
+    .exit-sign {
+        position: relative;
+        top: 1px;
+        margin-left: 3px;
+        font-size: 1.5rem;
+        line-height: 1;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .left,
+    .right {
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+        width: 50%;
+        height: calc(100% - 45px);
+        margin: 0 -2px;
+    }
+
+    .left {
+        border-right: 1px solid hsl(0, 0%, 87%);
+
+        .search-container {
+            padding: 6px 8px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+
+    .right {
+        width: calc(50% + 1px);
+
+        .nothing-selected {
+            display: block;
+            margin-top: calc(45vh - 75px);
+            text-align: center;
+            font-size: 1em;
+            margin-left: 2em;
+            margin-right: 2em;
+
+            span {
+                color: hsl(0, 0%, 67%);
+            }
+
+            button {
+                padding: 6px 10px 8px;
+                display: block;
+                margin: 0 auto 10px;
+            }
+        }
+
+        .display-type {
+            padding: 2px;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+
+            &.preview::after {
+                content: "Preview";
+            }
+
+            &.preferences::after {
+                content: "Preferences";
+            }
+
+            .stream-info-title,
+            .user-group-info-title {
+                display: none;
+                font-size: 1.5em;
+                line-height: 1;
+                margin: 9px 0;
+                font-weight: 600;
+
+                .large-icon {
+                    display: inline-block;
+                }
+
+                .fa-lock {
+                    position: relative;
+                }
+
+                .zulip-icon-globe {
+                    font-size: 15px;
+                }
+            }
+        }
+    }
+
+    input[type="text"].small {
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 4px;
+        padding: 3px;
+        outline: none;
+        color: hsl(0, 0%, 27%);
+        text-align: center;
+
+        &:focus {
+            text-align: left;
+        }
+
+        &:valid {
+            text-align: left;
+        }
+    }
+}
+
+#search_stream_name,
+#search_group_name {
+    width: 100%;
+    padding: 3px 5px;
+    margin: 8px 0;
+    margin-left: 10px;
+    margin-right: -15px !important;
+    display: inline-block;
+    border-radius: 5px;
+    box-shadow: none;
+    padding-right: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.stream_name_search_section,
+.group_name_search_section {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 0;
+    height: auto;
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.user-groups-list,
+.streams-list {
+    position: relative;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    height: calc(100% - 85px);
+    width: 100%;
+}
+
+.user-groups-list {
+    /*
+        This height rule is temporary for this preparatory commit and
+        will be removed as we add other components widgets in groups list
+        and its styling similar to streams list.
+    */
+    height: calc(100% - 42px) !important;
+}
+
+#clear_search_stream_name,
+#clear_search_group_name {
+    right: 5px !important;
+}
+
+.stream-title {
+    font-size: 1.3em;
+    font-weight: 400;
+}
+
+.user-group-creation-body,
+.stream-creation-body {
+    section.block {
+        margin-bottom: 20px;
+    }
+
+    #announce-new-stream {
+        margin: 25px auto;
+
+        div[class^="fa"] {
+            margin-left: 3px;
+            margin-right: 8px;
+        }
+    }
+}
+
+.stream-row,
+.group-row {
+    padding: 15px 10px 11px;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
+    cursor: pointer;
+
+    .check {
+        width: 25px;
+        height: 25px;
+        position: relative;
+        margin-right: 8px;
+        margin-top: 9px;
+        background-size: 60% auto;
+        background-repeat: no-repeat;
+        background-position: center center;
+
+        svg {
+            fill: transparent;
+            width: 70%;
+            margin: 0% 15%;
+        }
+
+        &.checked:hover svg {
+            opacity: 0.5;
+        }
+
+        &.disabled {
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        .sub_unsub_status {
+            display: inline-block !important;
+            height: auto !important;
+            width: auto !important;
+
+            .loading_indicator_spinner {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+
+            .loading_indicator_spinner svg path {
+                fill: hsl(178, 100%, 40%);
+            }
+        }
+    }
+
+    .checked svg {
+        fill: hsl(170, 48%, 54%);
+    }
+
+    .icon {
+        width: 35px;
+        height: 35px;
+        margin-right: 8px;
+        margin-top: 4px;
+        background-color: hsl(300, 100%, 25%);
+        border-radius: 4px;
+        color: hsl(0, 0%, 100%);
+
+        .symbol {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .fa-lock {
+            font-size: 1.4em;
+        }
+
+        .hashtag {
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+    }
+
+    .sub-info-box,
+    .group-info-box {
+        width: calc(100% - 90px);
+
+        .top-bar,
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .top-bar .stream-name,
+        .top-bar .group-name-wrapper,
+        .bottom-bar .description {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 12px;
+        }
+
+        .top-bar .subscriber-count,
+        .bottom-bar .stream-message-count {
+            white-space: nowrap;
+            color: hsl(0, 0%, 67%);
+        }
+
+        .top-bar .subscriber-count-text,
+        .top-bar .subscriber-count-lock,
+        .bottom-bar .stream-message-count-text {
+            margin-right: 5px;
+        }
+
+        .top-bar > div {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .top-bar .stream-name,
+        .top-bar .group-name-wrapper {
+            font-weight: 600;
+        }
+
+        .bottom-bar {
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+
+        .bottom-bar > div {
+            display: inline-block;
+            vertical-align: bottom;
+        }
+    }
+
+    &.active {
+        background-color: hsl(0, 0%, 93%);
+    }
+
+    > div {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    &:hover .check:not(.checked) svg,
+    &.active:hover .check:not(.checked) svg {
+        fill: hsl(0, 0%, 87%);
+    }
+
+    .check:not(.checked):hover svg,
+    &.active .check:not(.checked):hover svg {
+        fill: hsl(0, 0%, 72%);
+    }
+
+    &::selection,
+    .icon .hashtag::selection {
+        background-color: transparent;
+    }
+}
+
+.stream-row .sub-info-box .description:empty::after,
+.group-row .group-info-box .description:empty::after {
+    content: attr(data-no-description);
+    font-style: italic;
+    color: hsl(0, 0%, 67%);
+}
+
+#groups_overlay,
+#subscription_overlay {
+    #user-group-creation,
+    #stream-creation {
+        overflow: auto;
+        outline: none;
+        -webkit-overflow-scrolling: touch;
+
+        .user-group-creation-body,
+        .stream-creation-body {
+            /*
+                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer) + 15px (padding for .simplebar-content)
+            */
+            height: calc(95vh - 164px);
+            padding: 15px 15px 0;
+        }
+
+        .modal-footer {
+            position: absolute;
+            bottom: 0;
+            width: calc(100% - 27px);
+            padding-top: 9px;
+        }
+
+        .add_all_users_to_user_group,
+        .add_all_users_to_stream {
+            margin-left: 10px;
+        }
+
+        .create_user_group_member_list_header,
+        .create_stream_subscriber_list_header {
+            margin-top: 10px;
+            margin-bottom: 3px;
+
+            h5 {
+                display: inline-block;
+            }
+        }
+
+        .add-user-list-filter {
+            width: 140px;
+            float: right;
+        }
+
+        #user_group_creation_form,
+        #stream_creation_form {
+            margin: 0;
+
+            #user_group_creating_indicator,
+            #stream_creating_indicator {
+                &:not(:empty) {
+                    position: absolute;
+                    width: 100% !important;
+                    height: calc(100% - 105px) !important;
+                    display: flex !important;
+                    justify-content: center;
+                    align-items: center;
+                    background-color: hsla(0, 0%, 100%, 0.9);
+                    z-index: 1;
+                }
+
+                .loading_indicator_text {
+                    font-weight: 400;
+                }
+            }
+        }
+    }
+
+    .inner-box {
+        margin: 20px;
+    }
+
+    .group_settings_header,
+    .stream_settings_header {
+        white-space: nowrap;
+        display: flex;
+        margin-left: 15px;
+
+        .tab-container {
+            .ind-tab {
+                padding: 3px 4px;
+                width: 80px;
+            }
+        }
+
+        .button-group {
+            padding-top: 5px;
+            margin-left: auto;
+            margin-right: 15px;
+
+            .subscribe-button,
+            #preview-stream-button,
+            .deactivate {
+                margin-right: 3px;
+                text-decoration: none;
+            }
+        }
+    }
+
+    .group-header,
+    .stream-header {
+        white-space: nowrap;
+        padding-top: 10px;
+
+        .group-name-wrapper,
+        .stream-name {
+            display: inline-block;
+            position: relative;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-left: -3px;
+            margin-top: -5px;
+            white-space: nowrap;
+            max-width: 260px;
+
+            .group-name,
+            .sub-stream-name {
+                display: block;
+                max-width: 20ch;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                float: left;
+            }
+        }
+
+        .button-group {
+            float: right;
+
+            .deactivate {
+                margin-right: 3px;
+                text-decoration: none;
+            }
+        }
+
+        .subscribe-button.unsubscribed {
+            color: hsl(156, 39%, 54%);
+            border-color: hsl(156, 39%, 77%);
+
+            &:active {
+                background-color: hsla(156, 39%, 54%, 0.2);
+            }
+        }
+
+        .large-icon {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 5px;
+            margin-top: -5px;
+            font-size: 1.5em;
+
+            &.hash::after {
+                top: -1px;
+                font-size: 1.09em;
+                font-weight: 800;
+            }
+
+            .zulip-icon-globe {
+                font-size: 15px;
+            }
+        }
+
+        .group_change_property_info,
+        .stream_change_property_info {
+            vertical-align: top;
+            margin: -5px 0 0;
+        }
+    }
+
+    .group-description-wrapper,
+    .stream-description {
+        margin-bottom: 5px;
+
+        .no-description {
+            font-style: italic;
+            color: hsl(0, 0%, 67%);
+        }
+    }
+
+    .checkmark {
+        display: none;
+        margin-left: 5px;
+        color: hsl(0, 0%, 67%);
+
+        cursor: pointer;
+
+        &.show {
+            display: block;
+        }
+    }
+
+    .hash::after {
+        position: relative;
+        content: "#";
+    }
+
+    .settings {
+        position: relative;
+        height: calc(100% - 45px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+
+        .tab-container {
+            padding-top: 5px;
+        }
+    }
+
+    .subscription_settings {
+        display: none;
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        border-radius: 4px;
+        top: -1px;
+
+        &.show {
+            display: block;
+        }
+    }
+
+    #personal-stream-settings {
+        .stream_change_property_status {
+            margin: 9px auto 3px 3px;
+        }
+    }
+
+    .copy_email_button {
+        padding: 10px 15px;
+    }
+
+    .loading_indicator_text {
+        font-weight: 400;
+        line-height: 20px;
+    }
+
+    .subsection-parent .input-group {
+        input[type="checkbox"] {
+            margin-top: 0;
+        }
+
+        &:last-of-type {
+            border-bottom: none;
+        }
+
+        .sp-replacer {
+            box-shadow: none;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .inline {
+            display: inline !important;
+        }
+    }
+}
+
+#archive-stream-modal i {
+    vertical-align: middle;
+}
+
+div.settings-radio-input-parent {
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    margin: 2px 0 2px 5px;
+    padding: 2px 0;
+
+    &:last-of-type {
+        border-bottom: none;
+    }
+
+    label.radio {
+        display: inline;
+        margin: 5px;
+    }
+
+    input {
+        float: left;
+        width: auto;
+        cursor: pointer;
+        margin: 3.5px 0 1px;
+
+        &:focus {
+            outline: 1px dotted hsl(0, 0%, 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+}
+
+.stream-permissions,
+.stream-creation-body {
+    .input-group {
+        margin-bottom: 10px;
+
+        &.message-retention-setting-group {
+            input {
+                width: 5ch;
+                text-align: right;
+            }
+
+            select {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    select {
+        /* Match .setting_desktop_icon_count_display */
+        width: 325px;
+        height: fit-content;
+    }
+}
+
+#change_user_group_description,
+#change_stream_description {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 4px;
+    box-sizing: border-box;
+}
+
+.stream-permissions .stream-message-retention-days-input input[type="text"] {
+    border-radius: 5px;
+    box-shadow: none;
+    margin: 0;
+    height: inherit;
+}
+
+@media (width < $lg_min) {
+    .user-groups-container,
+    .subscriptions-container {
+        max-width: 95%;
+    }
+
+    #groups_overlay,
+    #subscription_overlay {
+        .left {
+            width: 40%;
+        }
+
+        .right {
+            width: calc(60% - 1px);
+        }
+    }
+}
+
+@media (width < $lg_min) {
+    .subscriptions-container .left .search-container {
+        flex-wrap: wrap;
+    }
+
+    .search-container {
+        text-align: center;
+    }
+
+    #groups_overlay .group_settings_header,
+    #subscription_overlay .stream_settings_header {
+        flex-wrap: wrap;
+    }
+}
+
+/* Note that this block has settings_page CSS as well, and thus needs
+   to match the media queries in settings.css.
+
+   Longer-term we should extract this logic two-column-overlay class
+   to read more naturally. */
+@media (width < $md_min) {
+    .user-groups-container,
+    .subscriptions-container {
+        position: relative;
+        overflow: hidden;
+
+        .search-container {
+            text-align: left;
+        }
+
+        .user-groups-header .fa-chevron-left,
+        .subscriptions-header .fa-chevron-left {
+            display: block;
+        }
+    }
+
+    #groups_overlay .left,
+    #groups_overlay .right,
+    #subscription_overlay .left,
+    #subscription_overlay .right,
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        display: block;
+        margin: 0;
+        width: 100%;
+        height: calc(100% - 45px);
+
+        border: none;
+    }
+
+    #groups_overlay .right,
+    #subscription_overlay .right,
+    #settings_page .content-wrapper.right {
+        position: absolute;
+        left: 101%;
+
+        top: 45px;
+        background-color: hsl(0, 0%, 98%);
+        border-top: none;
+
+        transition: all 0.3s ease;
+        z-index: 10;
+
+        &.show {
+            left: 0%;
+        }
+    }
+
+    #groups_overlay {
+        .display-type {
+            display: none;
+        }
+    }
+
+    #subscription_overlay,
+    #groups_overlay {
+        .user-groups-container,
+        .subscriptions-container {
+            height: 95%;
+        }
+
+        .settings {
+            overflow: auto;
+            height: calc(100% - 20px);
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+}
+
+@media (width < $sm_min) {
+    #groups_overlay .user_group_settings_wrapper,
+    #subscription_overlay .subscription_settings {
+        .button-group {
+            display: block;
+            float: right;
+            margin-top: 10px;
+        }
+
+        .group-header,
+        .stream-header {
+            .button-group {
+                margin-top: -5px;
+            }
+        }
+
+        .group_change_property_info,
+        .stream_change_property_info {
+            /* For small widths where there is not enough space
+            to show alert beside stream name we set its display
+            to block so it is shown in new line. But to avoid
+            it covering whole screen width we set max-width
+            so that it does not losses inline-block appearance. */
+
+            /* TODO: This will probably be not required once
+            we have tabbed navigation as button group width
+            will be smaller. */
+            display: block;
+            max-width: max-content;
+            white-space: nowrap;
+        }
+
+        .save-button-controls {
+            display: block;
+            margin: 0 0 10px;
+        }
+    }
+}
+
+@media (width <= 500px) {
+    #groups_overlay,
+    #subscription_overlay {
+        .groups_settings_header,
+        .stream_settings_header {
+            display: block;
+            text-align: center;
+            margin-left: 0;
+
+            .tab-container {
+                .ind-tab {
+                    width: 85px;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,312 @@
+.modal-body {
+    max-height: 60vh;
+}
+
+.modal-bg {
+    background-color: hsl(0, 0%, 98%);
+}
+
+/* Styles for the Micromodal-based modals */
+.modal__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: hsla(0, 0%, 0%, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 105;
+}
+
+.modal__container {
+    display: flex;
+    flex-direction: column;
+    background-color: hsl(0, 0%, 100%);
+    max-width: calc(100% - 32px);
+    max-height: 96%;
+    width: 32.5rem;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.modal__header {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px 24px;
+}
+
+.modal__title {
+    margin: 0;
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.25;
+
+    /* help_link_widget margin for the fa-circle-o. */
+    .help_link_widget {
+        margin-left: 5px;
+    }
+}
+
+.modal__close {
+    &::before {
+        content: "\2715";
+    }
+    margin-right: -4px;
+    background: transparent;
+    border: 0;
+
+    &:hover {
+        background: hsl(0, 0%, 90%);
+    }
+}
+
+.modal__content {
+    font-size: 1rem;
+    overflow-y: auto;
+    padding: 0 24px;
+    line-height: 1.5;
+}
+
+.modal__btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    background-color: hsl(0, 0%, 90%);
+    border-radius: 0.25rem;
+    border-width: 0;
+    cursor: pointer;
+    text-transform: none;
+    overflow: visible;
+    line-height: 1.15;
+    margin: 0;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    transition: transform 0.25s ease-out;
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+    }
+}
+
+.modal__btn:focus,
+.modal__btn:hover {
+    transform: scale(1.05);
+}
+
+.dialog_cancel_button {
+    background: hsl(0, 0%, 100%);
+    border: 1px solid hsla(300, 2%, 11%, 0.3);
+
+    &:hover {
+        background: hsl(0, 0%, 97%);
+    }
+}
+
+.dialog_submit_button {
+    margin-left: 12px;
+    background-color: hsl(240, 96%, 68%);
+    color: hsl(0, 0%, 100%) !important;
+}
+
+#read_receipts_error,
+#dialog_error {
+    margin-bottom: 10px;
+}
+
+#read_receipts_modal {
+    .modal__container {
+        width: 360px;
+
+        .modal__content {
+            /* When showing read receipts, we use simplebar
+            to make the list scrollable.  It requires this to
+            be flex. */
+            display: flex;
+
+            /* Setting a minimum height prevents the loading indicator
+               appearing/disappearing from resizing the modal in the
+               common case that one is requesting read receipts for
+               PMs. */
+            min-height: 120px;
+            /* Setting a maximum height is just for aesthetics; the modal looks
+               weird if its aspect ratio gets too stretched. */
+            max-height: 480px;
+
+            /* For the notification bot error, we want to keep the modal clean and small.
+               The 16px padding is intended to match the padding at the top of the modal. */
+            &.compact {
+                min-height: unset;
+                padding-bottom: 16px;
+            }
+        }
+    }
+
+    .modal__header {
+        padding-bottom: 0;
+    }
+
+    hr {
+        margin: 10px 0;
+    }
+
+    .modal__content {
+        padding: 0 24px 8px;
+    }
+
+    .loading_indicator {
+        margin: auto;
+    }
+
+    #read_receipts_list {
+        margin-left: 0;
+
+        li {
+            .read_receipts_user_avatar {
+                display: inline-block;
+                height: 20px;
+                width: 20px;
+                position: relative;
+                right: 8px;
+                border-radius: 4px;
+            }
+
+            margin: 2px 0;
+            list-style-type: none;
+            overflow-x: hidden;
+            padding-left: 10px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            line-height: 26px;
+
+            &:hover {
+                background-color: hsla(0, 0%, 0%, 0.05);
+            }
+
+            &:active,
+            &:focus {
+                background-color: hsla(0, 0%, 0%, 0.1);
+                outline: none;
+            }
+        }
+    }
+}
+
+.email_field {
+    margin-top: 10px;
+
+    .email_field_textarea {
+        width: 97%;
+        resize: vertical;
+        margin-bottom: 10px;
+    }
+
+    .border-top {
+        border-top: 1px solid hsla(300, 2%, 11%, 0.3);
+        padding-top: 10px;
+    }
+
+    .email-body {
+        margin-left: 20px;
+        margin-top: 20px;
+    }
+}
+
+#select_stream_widget {
+    .dropdown-toggle:disabled {
+        pointer-events: none;
+    }
+}
+
+@keyframes mmfadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes mmfadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+.micromodal {
+    display: none;
+}
+
+.micromodal.modal--opening,
+.micromodal.modal--open {
+    display: block;
+}
+
+.micromodal[aria-hidden="true"] .modal__overlay {
+    animation: mmfadeOut 75ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal[aria-hidden="false"] .modal__overlay {
+    animation: mmfadeIn 120ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal[aria-hidden="true"] .modal__container {
+    animation: mmfadeOut 75ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal[aria-hidden="false"] .modal__container {
+    animation: mmfadeIn 120ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal .modal__container,
+.micromodal .modal__overlay {
+    will-change: transform;
+}
+
+.modal__spinner .loading_indicator_spinner {
+    height: 16px;
+
+    path {
+        fill: hsl(0, 0%, 100%);
+    }
+}
+
+.modal__spinner {
+    display: flex;
+    justify-content: center;
+}
+
+#copy_email_address_modal {
+    width: 800px;
+
+    .inline {
+        display: inline;
+    }
+
+    .question-which-parts {
+        padding-bottom: 10px;
+    }
+
+    .stream-email-header {
+        font-size: 18px;
+    }
+}

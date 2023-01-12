@@ -1,0 +1,433 @@
+#!/usr/bin/env python3
+#
+# See docs/subsystems/emoji.md for a high-level explanation of how this system
+# works.
+import os
+import shutil
+import sys
+from typing import Any, Dict, Iterator, List, Optional, Sequence
+
+import orjson
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
+sys.path.append(ZULIP_PATH)
+
+from scripts.lib.zulip_tools import generate_sha1sum_emoji, run_as_root
+from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS
+from tools.setup.emoji.emoji_setup_utils import (
+    EMOTICON_CONVERSIONS,
+    REMAPPED_EMOJIS,
+    emoji_names_for_picker,
+    generate_codepoint_to_name_map,
+    generate_codepoint_to_names_map,
+    generate_emoji_catalog,
+    generate_name_to_codepoint_map,
+    get_emoji_code,
+)
+
+TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
+TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "static", "generated", "emoji-styles")
+EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
+EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, "tools", "setup", "emoji")
+NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")
+
+
+# The CSS for emoji spritesheet has somewhat tricky requirements.  One
+# is that we want to be able to use the same emoji CSS classes for
+# different display sizes of our emoji (e.g. reactions are smaller
+# than inline message emoji, which are smaller than those in the emoji
+# picker) while only downloading 1 copy of the spritesheet, having
+# good browser rendering performance, and reusing as much common CSS
+# as is possible.
+
+# Our solution to those problem is to use the `background-size` (Which
+# is e.g. 5700%) and background-position attributes to select the
+# region of the spritesheet corresponding to the target sprite and
+# display it properly scaled in an emoji span.
+SPRITE_CSS_FILE_TEMPLATE = """\
+div.emoji,
+span.emoji
+{{
+    display: inline-block;
+    background-image: url(~emoji-datasource-{emojiset}/img/{alt_name}/sheets-256/64.png);
+    background-size: {background_size};
+    background-repeat: no-repeat;
+
+    /* Hide the text. */
+    text-indent: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}}
+
+.emoji-1f419
+{{
+    background-image: url(../emoji/images-google-64/1f419.png) !important;
+    background-position: 0% 0% !important;
+    background-size: contain !important;
+}}
+
+{emoji_positions}
+"""
+
+EMOJI_POS_INFO_TEMPLATE = """\
+.emoji-{codepoint} {{
+    background-position: {pos_x} {pos_y};
+}}
+"""
+
+EMOJI_POS_INFO_OVERRIDE_TEMPLATE = """\
+.emoji-{codepoint} {{
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: {background_size} !important;
+    background-position: {pos_x} {pos_y};
+}}
+"""
+
+# change directory
+os.chdir(EMOJI_SCRIPT_DIR_PATH)
+
+
+def main() -> None:
+    if not os.access(EMOJI_CACHE_PATH, os.W_OK):
+        # Note: In production, this block will fail, since we don't
+        # assume sudo access; but it should never run in production
+        # anyway, because EMOJI_CACHE_PATH is created by Puppet before
+        # build_emoji would be run.
+        run_as_root(["mkdir", "-p", EMOJI_CACHE_PATH])
+        run_as_root(["chown", f"{os.getuid()}:{os.getgid()}", EMOJI_CACHE_PATH])
+
+    sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
+    source_emoji_dump = os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, "emoji")
+    success_stamp = os.path.join(source_emoji_dump, ".success-stamp")
+
+    if not os.path.exists(success_stamp):
+        print("Dumping emojis ...")
+        dump_emojis(source_emoji_dump)
+        with open(success_stamp, "w") as f:
+            f.close()
+
+    print(f"build_emoji: Using cached emojis from {source_emoji_dump}")
+    if os.path.lexists(TARGET_EMOJI_DUMP):
+        os.remove(TARGET_EMOJI_DUMP)
+    os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
+
+    # These must not be symlinked so webpack can resolve module references.
+    os.makedirs(TARGET_EMOJI_STYLES, exist_ok=True)
+    to_remove = set(os.listdir(TARGET_EMOJI_STYLES))
+    for filename in os.listdir(source_emoji_dump):
+        if filename.endswith(".css"):
+            shutil.copy2(os.path.join(source_emoji_dump, filename), TARGET_EMOJI_STYLES)
+            to_remove.discard(filename)
+    for filename in to_remove:
+        os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
+
+
+def percent(f: float) -> str:
+    return f"{f * 100:0.3f}%"
+
+
+def get_square_size(emoji_data: Sequence[Dict[str, Any]]) -> int:
+    """
+    Spritesheets are usually NxN squares, and we have to
+    infer N from the sheet_x/sheet_y values of emojis.
+    """
+
+    def get_offsets(emoji_data: Sequence[Dict[str, Any]]) -> Iterator[int]:
+        for emoji_dict in emoji_data:
+            yield emoji_dict["sheet_x"]
+            yield emoji_dict["sheet_y"]
+            if "skin_variations" in emoji_dict:
+                for img_info in emoji_dict["skin_variations"].values():
+                    yield img_info["sheet_x"]
+                    yield img_info["sheet_y"]
+
+    n = max(get_offsets(emoji_data)) + 1
+    return n
+
+
+def generate_sprite_css_files(
+    cache_path: str,
+    emoji_data: List[Dict[str, Any]],
+    emojiset: str,
+    alt_name: str,
+    fallback_emoji_data: Sequence[Dict[str, Any]],
+) -> None:
+    """
+    Spritesheets are usually NxN squares.
+    """
+    n = get_square_size(emoji_data)
+
+    """
+    Each single emoji is 64x64, with 1px gutters on every border.
+    We just consider the gutters to be part of the image for
+    simplicity reasons, so you can think of the spritesheet as
+    an NxN square of 66x66 pre-padded emojis.  The CSS
+    background-size parameter below says to size the background
+    element as N times the size of the element that you're drawing.
+
+    Note that we use percentages here, instead of absolute
+    pixel values, because when we render emojis as actual elements,
+    their size will vary depending on which part of the UI we're
+    in (message emojis, emoji reactions, emoji popup, emoji
+    popup showcase, etc.).
+
+    (The next step is to offset the image; that will be in the
+    upcoming loop.)
+    """
+    background_size = percent(n)
+
+    emoji_positions = ""
+    for emoji in emoji_data:
+        if emoji["has_img_google"]:
+            # Why is the test here has_img_google and not
+            # emoji_is_universal?  Because we briefly supported all
+            # Google emoji (not just the universal ones), we need to
+            # ensure the spritesheet is set up to correctly display
+            # those Google emoji (in case anyone used them).
+
+            """
+            For background-position we need to use percentages.
+            Absolute pixel values won't work, because the size
+            of the background sprite image is proportional to
+            the size of the element we're rendering, and we render
+            elements in multiple sizes.
+
+            The way that CSS background-position works is linear
+            interpolation.  When you tell CSS background-position
+            is "42% 37%", then in the `x` dimension it will align
+            the image such that 42% of the background image is to
+            the left of the 42% mark in the element itself.
+
+            For simplicity assume we render the emoji as 66px
+            (and everything will scale appropriately for other
+            size images as long as we use percentages).
+
+            The image size will be 66n.
+            The left offset of the x-th emoji (including its
+            padding) will be 66x.  And the element's width
+            will be 66.
+
+            So, solve this equation for `p`, where p is
+            the ratio that we'll later express as a
+            percentage:
+
+                <image offset> = <offset of p% mark of element>
+                (p * 66n) = 66x + p66
+                p * n = x + p
+                p * n - p = x
+                p * (n - 1) = x
+                p = x / (n - 1)
+
+            If you ever want to change the code so that the
+            gutters don't show up in the element, the algebra
+            will get more complicated.
+            """
+            emoji_positions += EMOJI_POS_INFO_TEMPLATE.format(
+                codepoint=get_emoji_code(emoji),
+                pos_x=percent(emoji["sheet_x"] / (n - 1)),
+                pos_y=percent(emoji["sheet_y"] / (n - 1)),
+            )
+
+    SPRITE_CSS_PATH = os.path.join(cache_path, f"{emojiset}-sprite.css")
+    with open(SPRITE_CSS_PATH, "w") as f:
+        f.write(
+            SPRITE_CSS_FILE_TEMPLATE.format(
+                emojiset=emojiset,
+                alt_name=alt_name,
+                emoji_positions=emoji_positions,
+                background_size=background_size,
+            ),
+        )
+
+    # Google Classic stopped being supported in 2017. To be able to use other emoji, we
+    # fallback to Google Modern for any emoji not covered by Google Classic.
+    if emojiset == "google-blob":
+        extra_emoji_positions = ""
+        n = get_square_size(fallback_emoji_data)
+        background_size = percent(n)
+        covered_emoji_codes = [
+            get_emoji_code(emoji) for emoji in emoji_data if emoji["has_img_google"]
+        ]
+        for emoji in fallback_emoji_data:
+            code = get_emoji_code(emoji)
+            if emoji["has_img_google"] and code not in covered_emoji_codes:
+                extra_emoji_positions += EMOJI_POS_INFO_OVERRIDE_TEMPLATE.format(
+                    codepoint=code,
+                    pos_x=percent(emoji["sheet_x"] / (n - 1)),
+                    pos_y=percent(emoji["sheet_y"] / (n - 1)),
+                    background_size=background_size,
+                )
+        with open(SPRITE_CSS_PATH, "a") as f:
+            f.write(extra_emoji_positions)
+
+
+def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
+    def ensure_emoji_image(
+        emoji_dict: Dict[str, Any], src_emoji_farm: str, target_emoji_farm: str
+    ) -> None:
+        # We use individual images from emoji farm for rendering emojis
+        # in notification messages. We have a custom emoji formatter in
+        # notifications processing code that converts `span` tags to
+        # `img` and that logic requires us to have non-qualified
+        # `emoji_code` as file name for emoji.
+        emoji_code = get_emoji_code(emoji_dict)
+        img_file_name = emoji_code + ".png"
+        src_file = os.path.join(src_emoji_farm, emoji_dict["image"])
+        dst_file = os.path.join(target_emoji_farm, img_file_name)
+        shutil.copy2(src_file, dst_file)
+
+    def setup_emoji_farm(
+        emojiset: str,
+        emoji_data: List[Dict[str, Any]],
+        alt_name: Optional[str] = None,
+        fallback_emoji_data: Sequence[Dict[str, Any]] = [],
+    ) -> None:
+        # `alt_name` is an optional parameter that we use to avoid duplicating below
+        # code. It is only used while setting up google-blob emoji set as it is just
+        # a wrapper for an older version of emoji-datasource package due to which we
+        # need to use 'google' at some places in this code. It has no meaning for other
+        # emoji sets and is just equivalent to `emojiset`.
+        alt_name = alt_name or emojiset
+
+        # Copy individual emoji images from npm packages.
+        src_emoji_farm = os.path.join(
+            NODE_MODULES_PATH, "emoji-datasource-" + emojiset, "img", alt_name, "64"
+        )
+        target_emoji_farm = os.path.join(cache_path, "images-" + emojiset + "-64")
+        os.makedirs(target_emoji_farm, exist_ok=True)
+        print("Copying individual image files...")
+        for emoji_dict in emoji_data:
+            if emoji_dict["has_img_" + alt_name]:
+                ensure_emoji_image(emoji_dict, src_emoji_farm, target_emoji_farm)
+                skin_variations = emoji_dict.get("skin_variations", {})
+                for img_info in skin_variations.values():
+                    if img_info["has_img_" + alt_name]:
+                        ensure_emoji_image(img_info, src_emoji_farm, target_emoji_farm)
+
+        # Copy zulip.png to the emoji farm.
+        zulip_image = os.path.join(ZULIP_PATH, "static", "assets", "zulip-emoji")
+        for f in os.listdir(zulip_image):
+            shutil.copy2(os.path.join(zulip_image, f), target_emoji_farm, follow_symlinks=False)
+
+        # We hardcode octopus emoji image to Google emoji set's old
+        # "cute octopus" image. Copy it to the emoji farms.
+        input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, "1f419.png")
+        output_img_file = os.path.join(cache_path, "images-" + emojiset + "-64", "1f419.png")
+        shutil.copyfile(input_img_file, output_img_file)
+
+        generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name, fallback_emoji_data)
+
+    # Set up standard emoji sets.
+    for emojiset in ["google", "twitter"]:
+        setup_emoji_farm(emojiset, emoji_data)
+
+    # Set up old Google "blobs" emoji set.
+    GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(
+        NODE_MODULES_PATH, "emoji-datasource-google-blob", "emoji.json"
+    )
+    with open(GOOGLE_BLOB_EMOJI_DATA_PATH, "rb") as fp:
+        blob_emoji_data = orjson.loads(fp.read())
+    setup_emoji_farm("google-blob", blob_emoji_data, "google", emoji_data)
+
+
+def setup_old_emoji_farm(
+    cache_path: str, emoji_map: Dict[str, str], emoji_data: List[Dict[str, Any]]
+) -> None:
+    # Code for setting up old emoji farm.
+    os.chdir(cache_path)
+    emoji_cache_path = os.path.join(cache_path, "images", "emoji")
+    unicode_emoji_cache_path = os.path.join(cache_path, "images", "emoji", "unicode")
+    google_emoji_cache_path = os.path.join(cache_path, "images-google-64")
+    os.makedirs(emoji_cache_path, exist_ok=True)
+    os.makedirs(unicode_emoji_cache_path, exist_ok=True)
+
+    # Symlink zulip.png image file.
+    image_file_path = os.path.join(google_emoji_cache_path, "zulip.png")
+    symlink_path = os.path.join(emoji_cache_path, "zulip.png")
+    os.symlink(image_file_path, symlink_path)
+
+    unicode_symlink_path = os.path.join(unicode_emoji_cache_path, "zulip.png")
+    os.symlink(image_file_path, unicode_symlink_path)
+
+    for name, codepoint in emoji_map.items():
+        mapped_codepoint = REMAPPED_EMOJIS.get(codepoint, codepoint)
+        image_file_path = os.path.join(google_emoji_cache_path, f"{mapped_codepoint}.png")
+        symlink_path = os.path.join(emoji_cache_path, f"{name}.png")
+        os.symlink(image_file_path, symlink_path)
+        try:
+            # `emoji_map` contains duplicate entries for the same codepoint with different
+            # names. So creation of symlink for <codepoint>.png may throw `FileExistsError`.
+            unicode_symlink_path = os.path.join(unicode_emoji_cache_path, f"{codepoint}.png")
+            os.symlink(image_file_path, unicode_symlink_path)
+        except FileExistsError:
+            pass
+
+
+def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
+    # This function generates the main data files about emoji that are
+    # consumed by the web app, mobile apps, Markdown processor, etc.
+    names = emoji_names_for_picker(EMOJI_NAME_MAPS)
+    codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS)
+    name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS)
+
+    EMOJI_CODES_FILE_PATH = os.path.join(cache_path, "emoji_codes.json")
+    with open(EMOJI_CODES_FILE_PATH, "wb") as emoji_codes_file:
+        emoji_codes_file.write(
+            orjson.dumps(
+                {
+                    "names": names,
+                    "name_to_codepoint": name_to_codepoint,
+                    "codepoint_to_name": codepoint_to_name,
+                    "emoji_catalog": emoji_catalog,
+                    "emoticon_conversions": EMOTICON_CONVERSIONS,
+                }
+            )
+        )
+
+    # This is the more official API for mobile to fetch data about emoji.
+    # emoji_codes.json has a lot of goo, and we're creating this new file
+    # as a cleaner data format to move towards. We could add the rest of
+    # the data into this API-described data, and then the web client could
+    # switch to that which would allow us to drop the existing file. But
+    # we'll probably instead do #18121 which will make this file obsolete.
+    # So this is a temporary solution. CZO discussion:
+    # https://chat.zulip.org/#narrow/stream/378-api-design/topic/currently.20supported.20emoji/near/1394598
+    EMOJI_API_FILE_PATH = os.path.join(cache_path, "emoji_api.json")
+    with open(EMOJI_API_FILE_PATH, "wb") as emoji_api_file:
+        emoji_api_file.write(
+            orjson.dumps(
+                {
+                    "code_to_names": generate_codepoint_to_names_map(EMOJI_NAME_MAPS),
+                }
+            )
+        )
+
+
+def dump_emojis(cache_path: str) -> None:
+    with open("emoji_map.json", "rb") as emoji_map_file:
+        emoji_map = orjson.loads(emoji_map_file.read())
+
+    # `emoji.json` or any other data file can be sourced from any of the supported
+    # emoji set packages, they all contain the same data files.
+    EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, "emoji-datasource-google", "emoji.json")
+    with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
+        emoji_data = orjson.loads(emoji_data_file.read())
+    emoji_catalog = generate_emoji_catalog(emoji_data, EMOJI_NAME_MAPS)
+
+    # Set up emoji farms.
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
+    setup_emoji_farms(cache_path, emoji_data)
+    setup_old_emoji_farm(cache_path, emoji_map, emoji_data)
+
+    # This file is needed to translate emoji when importing data from Slack.
+    shutil.copyfile(
+        EMOJI_DATA_FILE_PATH, os.path.join(cache_path, "emoji-datasource-google-emoji.json")
+    )
+
+    # Generate various map files.
+    generate_map_files(cache_path, emoji_catalog)
+
+
+if __name__ == "__main__":
+    main()

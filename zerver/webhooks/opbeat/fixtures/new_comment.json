@@ -1,0 +1,47 @@
+{
+  "id": "5df00003ea4e42458db48446692f6d37",
+  "html_url": "https://opbeat.com/foo/test-flask-app/errors/2/#activity-5df00003ea4e42458db48446692f6d37",
+  "author": {
+    "first_name": "foo",
+    "last_name": "bar"
+  },
+  "title": "foo commented on E#2",
+  "summary": "test comment",
+  "subject_type": "comment",
+  "subject": {
+    "id": "ca45bf96cd674b3eaa914251f0a08773",
+    "text": "test comment",
+    "author": {
+      "id": "5802edc6e84b4843b23edff00c6d300a",
+      "first_name": "foo",
+      "last_name": "barE"
+    },
+    "html_url": "https://opbeat.com/foo/test-flask-app/errors/2/#activity-5df00003ea4e42458db48446692f6d37",
+    "subject_type": "errorgroup",
+    "subject": {
+      "id": "eac027998bc44fb0b2f6269eb0ab0418",
+      "number": 2,
+      "html_url": "https://opbeat.com/foo/test-flask-app/errors/2/",
+      "last_occurrence": {
+        "id": "24210da90e5b4d659965b2e3ebf360f4",
+        "created": "2017-12-10T18:07:55Z",
+        "culprit": "",
+        "message": "A warning occurred (42 apples)",
+        "logger": "__main__",
+        "client_supplied_id": "13a4410d11724b30af92cd6ef1d556e8",
+        "extra": {
+          "module": "app",
+          "funcName": "foo",
+          "processName": "MainProcess",
+          "pathname": "app.py",
+          "lineno": "17",
+          "message": "A warning occurred (42 apples)"
+        },
+        "type_name": "errorlog"
+      }
+    },
+    "type_name": "comment"
+  },
+  "action": "created",
+  "type_name": "activity"
+}

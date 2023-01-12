@@ -1,0 +1,194 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev.txt
+# and requirements/prod.txt.
+# See requirements/README.md for more detail.
+# Django itself
+Django[argon2]==4.1.*
+
+# needed for NotRequired, ParamSpec
+typing-extensions
+
+# Needed for rendering backend templates
+Jinja2
+
+# Needed for Markdown processing
+Markdown
+importlib-metadata ; python_version < "3.10"  # for Markdown
+Pygments
+jsx-lexer
+
+# Needed for manage.py
+ipython
+
+# Needed for image processing
+Pillow
+
+# Needed for building complex DB queries
+SQLAlchemy==1.4.*
+
+# Needed for S3 file uploads and other AWS tools
+boto3
+
+# The runtime-relevant part of boto3-stubs (see mypy.in)
+mypy-boto3-s3
+mypy-boto3-ses
+mypy-boto3-sns
+mypy-boto3-sqs
+
+# Needed for integrations
+defusedxml
+
+# Needed for LDAP support
+django-auth-ldap
+
+# Django extension providing bitfield support
+django-bitfield
+
+# Django extension for sending data to statsd
+django-statsd-mozilla
+
+# Needed for Android push notifications
+python-gcm
+
+# Needed for the email mirror
+html2text
+# Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
+https://github.com/zulip/talon/archive/137ea31ca506069f9a8bbddde0d0174f395a6893.zip#egg=talon-core==1.6.0.zulip1&subdirectory=talon-core
+
+# Needed for inlining the CSS in emails
+premailer
+
+# Needed for JWT-based auth
+PyJWT
+
+# Needed to access RabbitMQ
+pika
+
+# Needed to access our database
+psycopg2
+
+# Needed for memcached usage
+python-binary-memcached
+
+# Needed for compression support in memcached via python-binary-memcached
+django-bmemcached
+
+# Needed for zerver/tests/test_timestamp.py
+python-dateutil
+
+# Needed for time zone work
+backports.zoneinfo ; python_version < "3.9"
+
+# Needed for Redis
+redis
+
+# Needed to parse source maps for error reporting
+sourcemap
+
+# Tornado used for server->client push system
+tornado
+
+# Fast JSON parser
+orjson
+
+# Needed for iOS push notifications
+aioapns
+
+python-twitter
+
+# To parse po files
+polib
+
+# Needed for cloning virtual environments
+virtualenv-clone
+
+# Needed for link preview
+beautifulsoup4
+pyoembed
+python-magic
+
+# The Zulip API bindings, from its own repository.  We integrate with
+# these tightly, including fetching content not included in the official
+# PyPI release tarballs, such as logos, assets and documentation files
+# that we render on our /integrations page. Therefore, we need to pin
+# the version from Git rather than a PyPI release. Keeping everything in
+# one repository simplifies the process of implementing and documenting
+# new bots for new contributors.
+https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip==0.8.2+git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip_bots==0.8.2+git&subdirectory=zulip_bots
+
+# Used for Hesiod lookups, etc.
+py3dns
+
+# Install Python Social Auth
+social-auth-app-django
+social-auth-core[azuread,openidconnect,saml]
+python3-saml
+
+# For encrypting a login token to the desktop app
+cryptography
+
+# Needed for messages' rendered content parsing in push notifications.
+lxml
+
+# Needed for 2-factor authentication
+django-two-factor-auth[call,phonenumberslite,sms]
+
+# Needed for processing payments (in corporate)
+stripe
+
+# For checking whether email of the user is from a disposable email provider.
+disposable-email-domains
+
+# Needed for parsing YAML with JSON references from the REST API spec files
+jsonref
+
+# Needed for string matching in AlertWordProcessor
+pyahocorasick
+
+# Needed for function decorators that don't break introspection.
+# Used for rate limiting authentication.
+decorator
+
+# For server-side enforcement of password strength
+zxcvbn
+
+# Needed for sending HTTP requests
+requests[security]
+requests-oauthlib
+
+# For OpenAPI schema validation.
+openapi-core
+
+# For reporting errors to sentry.io
+sentry-sdk
+
+# For detecting URLs to link
+tlds
+
+# Unicode Collation Algorithm for sorting multilingual strings
+pyuca
+
+# Handle connection retries with exponential backoff
+backoff
+
+# Needed for reading bson files in rocketchat import tool
+pymongo
+
+# Non-backtracking regular expressions
+google-re2
+
+# For querying recursive group membership
+django-cte
+
+# SCIM integration
+django-scim2
+
+# CSS manipulation
+soupsieve
+
+# Circuit-breaking for outgoing services
+circuitbreaker
+
+# Runtime monkeypatching of django-stubs generics
+django-stubs-ext

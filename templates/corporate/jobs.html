@@ -1,0 +1,232 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Jobs | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "We're hiring! Learn about our openings and how to
+  apply." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing jobs why-page">
+    <div class="hero bg-pycon drone">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Work with us</h1>
+            <p>We're 100% open source, and we're hiring.</p>
+        </div>
+    </div>
+
+    <div class="open-positions-top">
+        <div class="main">
+            <div class="padded-content markdown">
+                <h1>Open positions</h1>
+                <p>
+                    All openings are remote, or partially in-person in our San Francisco, CA office.
+                </p>
+                <ul>
+                    <li><a href="#frontend">Senior Frontend Engineer</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="how-we-work">
+        <div class="main">
+            <div class="padded-content markdown">
+                <h1 id="how-we-work">
+                    How we work
+                </h1>
+                <p>
+                    <strong>Open source.</strong> The Zulip software is 100% free and
+                    open source.  We're <a href="/team/">an open-source project</a> first,
+                    and we’re building a sustainable business as a means to support the
+                    project's growth and long-term future. We provide the same open-source
+                    code to our largest customers as to anyone with <code>git clone</code>.
+                    We get paid by enterprises for support, and by smaller companies using
+                    our rapidly-growing hosted service.
+                </p>
+                <p>
+                    <strong>Open project.</strong> The Zulip project is one where people
+                    really do show up through the Internet and start making real changes.
+                    That doesn’t happen by accident; it takes work and thoughtfulness.  Most
+                    of us work remotely, and we discuss our code and our plans in public, in
+                    writing, primarily asynchronously, using Zulip and GitHub.
+                </p>
+                <p>
+                    <strong>Inclusive community.</strong> The Zulip community is made up of a
+                    mixture of volunteers and professionals from all walks of life. Diversity is
+                    one of our strengths, and we strive to be a community that welcomes and
+                    supports people of all backgrounds and identities from anywhere in the world.
+                </p>
+                <p>
+                    <strong>Globally distributed.</strong> Our company is
+                    headquartered in San Francisco, CA, but like our community,
+                    we work from around the world. Our roles
+                    are open to all applicants without regard for location.
+                </p>
+                <p>
+                    <strong>Maintainable software.</strong> Great
+                    software over time depends on a team’s shared
+                    understanding of a system and how to change it, as
+                    much as on the code itself. Beyond writing our
+                    code so it works today, we put equal effort into
+                    writing code, tests, comments, commit history,
+                    and <a href="https://zulip.readthedocs.io/en/latest/">documentation</a>
+                    clearly, to share with each other and future
+                    contributors our understanding of how and why it
+                    works, so we can build on it tomorrow.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="what-were-building">
+        <div class="main">
+            <div class="padded-content markdown">
+                <h1 id="what-were-building">
+                    What we're building
+                </h1>
+                <p>
+                    People working together need to communicate with their teammates, and they
+                    also need to tune out the conversation to get work done. Teams tired of
+                    wasting time in meetings move discussion to email; tired of waiting all
+                    day for email replies, move to a team chat like Slack or IRC; and then
+                    team chat becomes an always-on meeting, leaving people constantly
+                    distracted, missing out on important conversations, or both.
+                </p>
+                <p>
+                    Zulip is reinventing chat so teams can accomplish more together. We've
+                    created a place where a conversation can shift seamlessly from the
+                    immediacy of chat to the reply-whenever efficiency of email, and back;
+                    where you can participate in the conversations that matter to you and
+                    efficiently tune out the rest, no matter whether you're there in real
+                    time, coming online after a morning hard at work, or returning from a
+                    vacation away from it.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="open-positions">
+        <div class="main">
+            <div class="padded-content markdown">
+                <h1>Open positions</h1>
+
+                To apply for an open position, please send your <b>resume</b>
+                and a brief <b>cover letter</b> (which can be in the body of
+                your email) to
+                <a href="mailto:jobs@zulip.com">jobs@zulip.com</a>. Your cover
+                letter should explain what makes you excited about working at
+                Zulip in the role you're applying for. Applications without a
+                cover letter will not be considered.
+
+                <h2 id="frontend">Senior Frontend Engineer</h2>
+                <p>
+                    We’re looking for an engineer to join our small
+                    core team and help define the future of team chat.
+                </p>
+                <p>
+                    This job is remote, or partially in-person in our San Francisco, CA office.
+                </p>
+                <h3>We'd especially like to get to know you if:</h3>
+                <ul>
+                    <li>
+                        <strong>You love giving a code review, and love receiving one.</strong>
+                        We’re an open-source project welcoming contributions from people with
+                        a wide range of experience.
+                    </li>
+                    <li>
+                        <strong>You communicate with clarity and precision.</strong>
+                        You’ll be doing this a lot in code, comments, code reviews, and chat
+                        conversations. We care about this almost as much as your technical
+                        skills.
+                    </li>
+                    <li>
+                        <strong>You can empathize with the many different types of users</strong>
+                        who rely on Zulip, and see the product from their perspective — and do
+                        the same thing for the project's contributors.
+                    </li>
+                </ul>
+
+                <h3>You will:</h3>
+                <ul>
+                    <li>
+                        Work directly with Zulip’s product and design leads to drive work on a major initiative to <a
+                        href="https://github.com/zulip/zulip/labels/redesign">
+                        redesign</a> Zulip’s core surfaces.
+                    </li>
+                    <li>
+                        Design new features and subsystems, write design
+                        proposals for discussion, and build them.
+                    </li>
+                    <li>
+                        Diagnose and fix bugs small and large and across several
+                        layers of our stack, including spelunking in third-party
+                        dependencies to find the best possible solution.
+                    </li>
+                    <li>
+                        Share your expertise (both newly-acquired and
+                        longstanding) with the rest of the team, through short-
+                        and long-form written communication.
+                    </li>
+                    <li>
+                        Write primarily JavaScript, HTML, CSS, and occasionally
+                        Python.
+                    </li>
+                </ul>
+
+                <h3>Extra credit for any of the following:</h3>
+                <ul>
+                    <li>
+                        You have extensive software engineering experience, with
+                        deep expertise in frontend development.
+                    </li>
+                    <li>
+                        You have significant experience as a technical lead for
+                        your team, including designing systems and collaborating
+                        to get them built, coaching people in writing
+                        high-quality code, and other aspects of technical
+                        leadership.
+                    </li>
+                    <li>
+                        You have experience making complex changes to an
+                        actively developed codebase, such as carefully removing
+                        legacy dependencies, or executing a major refactoring
+                        project.
+                    </li>
+                    <li>
+                        You have the UI design skills to spot where a UI can be
+                        improved; better yet, to design a better one.
+                    </li>
+                    <li>
+                        You have contributed to open-source projects; better
+                        yet, maintained a project and helped many people
+                        contribute to it.
+                    </li>
+                </ul>
+                <p>
+                    Learn more about <a href="/jobs/#how-we-work">how we
+                    work</a>, or apply by sending your resume and a brief cover
+                    letter explaining what makes you excited about this role to
+                    <a href="mailto:jobs@zulip.com">jobs@zulip.com</a>.
+                </p>
+                <br />
+                <hr />
+
+                <h2>How to apply for a job</h2>
+                <p>
+                    You can email us at <a href="mailto:jobs@zulip.com">jobs@zulip.com</a> with your resume.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

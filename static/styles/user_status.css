@@ -1,0 +1,85 @@
+#set_user_status_modal {
+    /* A narrower width is more attractive for this modal. */
+    width: 384px;
+
+    .user_status_content_wrapper {
+        display: flex;
+        border: 1px solid;
+        border-color: hsla(0, 0%, 0%, 0.6);
+        border-radius: 5px;
+
+        input.user_status {
+            width: 95%;
+            border: none;
+            background-color: transparent;
+            padding-right: 25px;
+            @media (width < $ml_min) {
+                width: 92%;
+            }
+        }
+
+        .status_emoji_wrapper {
+            height: 20px;
+            width: 22px;
+            padding: 8px 8px 1px;
+            border-right: 1px solid;
+            border-color: inherit;
+            cursor: pointer;
+
+            .selected_emoji {
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+                /*
+                    the following rule is not necessarily better than the one
+                    from a6bef5154197b15c20445526fd3f219b4f2e5379 but it works.
+                */
+                top: -2px;
+            }
+
+            /* For custom emojis and smiley icon to take full width. */
+            img.selected_emoji,
+            .smiley_icon {
+                min-width: 20px;
+            }
+
+            .smiley_icon {
+                display: block;
+                font-size: 18px;
+                position: relative;
+                top: -2px;
+                left: 2px;
+
+                &:hover {
+                    text-decoration: none;
+                }
+            }
+        }
+    }
+
+    .user-status-options {
+        padding-top: 15px;
+        padding-left: 2px;
+
+        button.user-status-value:hover {
+            /* Important is required for generic night them styling to not
+               have precedence over this. */
+            color: hsl(200, 100%, 40%) !important;
+        }
+
+        .user-status-value {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+            line-height: 1.1em;
+
+            .status_emoji {
+                height: 18px;
+                width: 18px;
+                margin-left: 3px;
+                margin-right: 3px;
+                top: 2px;
+            }
+        }
+    }
+}

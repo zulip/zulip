@@ -1,0 +1,50 @@
+{{! Client-side Mustache template for rendering the message edit form. }}
+
+<form id="edit_form_{{message_id}}" class="new-style">
+    <div class="alert" id="message-edit-send-status-{{message_id}}">
+        <span class="send-status-close">&times;</span>
+        <span class="error-msg"></span>
+    </div>
+    <div class="edit-controls">
+        {{> copy_message_button message_id=this.message_id}}
+        <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
+        <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
+            <div class="markdown_preview_spinner"></div>
+            <div class="preview_content rendered_markdown"></div>
+        </div>
+    </div>
+    <div class="action-buttons">
+        <div class="message_edit_spinner"></div>
+        <div class="controls edit-controls">
+            {{#if is_editable}}
+                <div class="btn-wrapper inline-block">
+                    <button type="button" class="button small rounded sea-green message_edit_save">
+                        <img class="loader" alt="" src="" />
+                        <span>{{t "Save" }}</span>
+                    </button>
+                </div>
+                <div class="btn-wrapper inline-block">
+                    <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
+                </div>
+                {{#if is_editable}}
+                <div class="message-edit-feature-group">
+                    {{> compose_control_buttons }}
+                </div>
+                {{/if}}
+            {{else}}
+                <button type="button" class="button small rounded message_edit_close">{{t "Close" }}</button>
+            {{/if}}
+            {{#if is_editable}}
+            <div class="message-edit-timer">
+                <span class="message_edit_countdown_timer"></span>
+                <span>
+                    <i id="message_edit_tooltip" class="tippy-zulip-tooltip message_edit_tooltip fa fa-question-circle" aria-hidden="true"
+                      data-tippy-content="{{#tr}}This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.{{/tr}}">
+                    </i>
+                </span>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    <div class="alert alert-error edit_error hide"></div>
+</form>

@@ -1,0 +1,20 @@
+{{#with linkifier}}
+<tr class="linkifier_row">
+    <td>
+        <span class="linkifier_pattern">{{pattern}}</span>
+    </td>
+    <td>
+        <span class="linkifier_url_format_string">{{url_format_string}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td class="no-select actions">
+        <button class="button small edit btn-warning" data-linkifier-id="{{id}}" title="{{t 'Edit' }}" aria-label="{{t 'Edit' }}">
+            <i class="fa fa-pencil"></i>
+        </button>
+        <button class="button small delete btn-danger" data-linkifier-id="{{id}}" title="{{t 'Delete' }}" aria-label="{{t 'Delete' }}">
+            <i class="fa fa-trash-o"></i>
+        </button>
+    </td>
+    {{/if}}
+</tr>
+{{/with}}

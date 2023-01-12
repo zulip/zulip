@@ -1,0 +1,68 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Accept the Terms of Service") }} | Zulip</title>
+{% endblock %}
+
+{#
+Allow the user to accept a TOS, creating an email record of that fact.
+Users only hit this page if they are coming from a migration or other update of the TOS;
+the registration flow has its own (nearly identical) copy of the fields below in register.html.
+#}
+
+{% block portico_content %}
+
+<div class="account-accept-terms-page flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1 class="get-started">{{ _("Accept the Terms of Service") }}</h1>
+        </div>
+
+        <div class="form-horizontal white-box">
+            <form method="post" class="form-horizontal" id="registration" action="{{ url('accept_terms') }}">
+                {{ csrf_input }}
+                <div id="registration-email">
+                    <label for="id_email">{{ _("Email") }}</label>
+                    <div class="controls fakecontrol">
+                        <p>{{ email }}</p>
+                    </div>
+                </div>
+
+                {% if first_time_terms_of_service_message_template %}
+                {% include first_time_terms_of_service_message_template %}
+                {% elif terms_of_service_message %}
+                <div class="description">
+                    <p>{{ terms_of_service_message |safe }}</p>
+                </div>
+                {% endif %}
+
+                <div class="input-group terms-of-service">
+                    {#
+                    This is somewhat subtle.
+                    Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                    with name=value. If the checkbox is unticked, the field just isn't present at all.
+
+                    This is distinct from 'checked', which determines whether the checkbox appears
+                    at all. (So, it's not symmetric to the code above.)
+                    #}
+                    <label for="id_terms" class="inline-block checkbox">
+                        <input id="id_terms" class="required" type="checkbox" name="terms"
+                          {% if form.terms.value() %}checked="checked"{% endif %} />
+                        <span></span>
+                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.{% endtrans %}
+                    </label>
+                    {% if form.terms.errors %}
+                        {% for error in form.terms.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="controls">
+                    <button id="accept_tos_button" type="submit">{{ _('Accept') }}</button>
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

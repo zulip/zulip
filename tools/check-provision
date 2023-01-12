@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import sys
+
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(tools_dir)
+sys.path.insert(0, root_dir)
+
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
+
+
+def run() -> None:
+    parser = argparse.ArgumentParser()
+    add_provision_check_override_param(parser)
+
+    options = parser.parse_args()
+
+    assert_provisioning_status_ok(options.skip_provision_check)
+
+
+if __name__ == "__main__":
+    run()

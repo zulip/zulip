@@ -1,0 +1,754 @@
+/* The width of the empty space in the sidebar to separate
+   content from the edge of the window */
+$far_left_gutter_size: 10px;
+/* This represents the space in the sidebar reserved for symbols like
+   the #; labels like the the stream name go to the right of this. */
+$left_col_size: 19px;
+/* The full topic indentation includes 4px of indent in addition to
+   the above (and another 5px of padding not measured here) */
+$topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
+$topic_resolve_width: 13px;
+/* Space between section in the left sidebar. */
+$sections_vertical_gutter: 8px;
+$bottom_scrolling_buffer: 25px;
+
+.hashtag {
+    &:empty {
+        &::after {
+            content: "#";
+            line-height: 0;
+            font-size: 18px;
+            font-weight: 800;
+        }
+    }
+}
+
+.stream-privacy {
+    font-size: 15px;
+    font-weight: 800;
+    min-width: $left_col_size;
+    text-align: center;
+
+    .zulip-icon.zulip-icon-globe {
+        font-size: 12px;
+        position: relative;
+        top: 1px;
+    }
+}
+
+/* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
+.stream-privacy span.hashtag,
+#left-sidebar .filter-icon i {
+    padding-right: 3px;
+
+    &.fa-lock {
+        position: relative;
+        top: 1px;
+    }
+}
+
+#stream_filters,
+#global_filters {
+    margin-right: 12px;
+}
+
+li.show-more-topics {
+    a {
+        font-size: 12px;
+        margin-left: $topic_resolve_width;
+    }
+}
+
+#streams_inline_icon,
+.streams_filter_icon {
+    float: right;
+    opacity: 0.5;
+    padding: 3px;
+    margin-left: 4px;
+
+    &:hover {
+        opacity: 1;
+        cursor: pointer;
+    }
+}
+
+.streams_inline_icon_wrapper {
+    float: right;
+}
+
+.streams_filter_icon.web_public {
+    margin-right: 10px;
+}
+
+#streams_inline_icon {
+    margin-right: 8px;
+}
+
+.tooltip {
+    max-width: 18em;
+}
+
+#stream_filters {
+    overflow: visible;
+    margin-bottom: 5px;
+    margin-right: 12px;
+    padding: 0;
+    font-weight: normal;
+
+    .input-append.topic_search_section {
+        padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
+        margin-bottom: 3px;
+        margin-left: 3px;
+
+        input {
+            width: calc(100% - 50px);
+        }
+    }
+
+    li {
+        a {
+            padding: 1px 0;
+
+            &:hover {
+                text-decoration: none;
+            }
+        }
+
+        ul {
+            margin-left: 0;
+
+            &.topic-list li {
+                padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
+
+                &.filter-topics {
+                    padding-bottom: 0;
+                    position: sticky;
+                    top: calc($sections_vertical_gutter + 43px);
+                    z-index: 2;
+                    background-color: hsl(0, 0%, 100%);
+                }
+            }
+        }
+    }
+
+    .subscription_block .unread_count {
+        margin-right: 15px;
+    }
+
+    .subscription_block {
+        margin-right: 25px;
+        margin-left: $far_left_gutter_size;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+
+        .stream-name {
+            flex: auto;
+            overflow-x: hidden;
+            overflow-x: clip;
+            text-overflow: ellipsis;
+            min-width: 0;
+            padding-right: 2px;
+        }
+
+        &.stream-with-count {
+            margin-right: 15px;
+        }
+    }
+
+    .inactive_stream {
+        opacity: 0.5;
+    }
+
+    .toggle_stream_mute {
+        margin-right: 3px;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+.narrows_panel {
+    li a {
+        margin-top: 1px;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+}
+
+#left_sidebar_scroll_container {
+    outline: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    z-index: 0;
+    width: 100%;
+}
+
+.private_messages_container {
+    background: hsl(0, 0%, 100%);
+    margin-right: 16px;
+    margin-left: 6px;
+    z-index: 1;
+
+    #toggle_private_messages_section_icon {
+        opacity: 0.7;
+        margin-left: -15px;
+        min-width: 12px;
+
+        &.fa-caret-right {
+            position: relative;
+            left: 3px;
+        }
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    #private_messages_section_header {
+        cursor: pointer;
+        padding: 0 10px 1px 6px;
+        white-space: nowrap;
+
+        #show_all_private_messages {
+            right: 0;
+            float: right;
+            position: absolute;
+            opacity: 0.7;
+            text-decoration: none;
+            color: inherit;
+            margin-right: 21px;
+            margin-top: 1px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .unread_count {
+            margin-right: 16px;
+            margin-top: 2px;
+        }
+    }
+
+    ul.pm-list {
+        list-style-type: none;
+        font-weight: 400;
+        margin-left: 0;
+        margin-bottom: 0;
+
+        span.fa-group {
+            font-size: 90%;
+        }
+
+        li.pm-list-item {
+            position: relative;
+            padding: 1px 10px 1px 4px;
+            margin-left: 2px;
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .pm_left_col {
+                min-width: $left_col_size;
+            }
+        }
+
+        li#show_more_private_messages {
+            cursor: pointer;
+            padding-right: 26px;
+            padding-left: 6px;
+
+            a {
+                font-size: 12px;
+            }
+
+            .unread_count {
+                margin-top: 2px;
+            }
+        }
+    }
+}
+
+.active_private_messages_section {
+    #private_messages_section,
+    #private_messages_list,
+    #hide_more_private_messages {
+        background-color: hsl(202, 56%, 91%);
+    }
+
+    #private_messages_section {
+        border-radius: 4px 4px 0 0;
+    }
+
+    #private_messages_list {
+        border-radius: 0 0 4px 4px;
+    }
+
+    #more_private_messages_sidebar_title {
+        font-weight: 600;
+    }
+}
+
+:not(.active-sub-filter) {
+    &.top_left_row:hover,
+    &.bottom_left_row:hover,
+    &#stream_filters li.highlighted_stream {
+        background-color: hsla(120, 12.3%, 71.4%, 0.38);
+        border-radius: 4px;
+    }
+}
+
+#login-link-container,
+#subscribe-to-more-streams {
+    text-decoration: none;
+    margin: 5px auto 5.5px 10px;
+    margin-bottom: $bottom_scrolling_buffer;
+
+    i {
+        min-width: 19px;
+        text-align: center;
+
+        &::before {
+            padding-right: 3px;
+        }
+    }
+}
+
+ul.filters {
+    list-style-type: none;
+    margin-left: 0;
+
+    a {
+        color: inherit;
+    }
+
+    hr {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    li.muted_topic,
+    li.out_of_home_view {
+        opacity: 0.5;
+    }
+
+    li.out_of_home_view {
+        &:hover {
+            opacity: 0.75;
+        }
+
+        li.muted_topic {
+            /* If stream is muted, this resets opacity of muted topics in muted
+            stream to 1; since opacity is multiplied down through child
+            elements, this avoids an unreadably low opacity. */
+            opacity: 1;
+        }
+    }
+}
+
+li.active-filter,
+li.active-sub-filter {
+    font-weight: 600 !important;
+    background-color: hsl(202, 56%, 91%);
+    position: relative;
+    border-radius: 4px;
+}
+
+#stream_filters .narrow-filter.active-filter {
+    .topic-list .filter-topics,
+    > .bottom_left_row {
+        background-color: hsl(202, 56%, 91%);
+        border-radius: 4px;
+    }
+}
+
+#global_filters {
+    margin-bottom: $sections_vertical_gutter;
+
+    .filter-icon {
+        display: inline-block;
+        min-width: $left_col_size;
+        text-align: center;
+    }
+
+    .top_left_row .unread_count {
+        margin-right: 20px;
+        margin-top: 2px;
+        display: none;
+    }
+
+    .top_left_starred_messages .unread_count,
+    .top_left_drafts .unread_count {
+        background-color: inherit;
+        color: inherit;
+        border: 0.5px solid hsl(105, 2%, 50%);
+        /* The border takes up space, so we need to
+           subtract 1px from the usual 2px margin-top */
+        margin-top: 1px !important;
+    }
+
+    i {
+        opacity: 0.7;
+    }
+}
+
+li.top_left_all_messages,
+li.top_left_mentions,
+li.top_left_starred_messages,
+li.top_left_drafts,
+li.top_left_recent_topics {
+    position: relative;
+    padding-top: 1px;
+    padding-bottom: 1px;
+
+    a {
+        display: block;
+    }
+}
+
+.top_left_row {
+    padding-left: $far_left_gutter_size;
+    padding-right: 10px;
+}
+
+.conversation-partners {
+    line-height: 1.25;
+}
+
+.top_left_all_messages i.fa-align-left {
+    position: relative;
+    font-size: 15px;
+}
+
+.top_left_mentions i.fa-at,
+.top_left_starred_messages i.fa-star {
+    font-size: 13px;
+}
+
+.topic-box {
+    padding-left: 5px;
+    margin-right: 30px;
+}
+
+.sidebar-topic-check {
+    display: flex;
+    align-items: center;
+    min-width: $topic_resolve_width;
+    font-size: 15px;
+    height: 20px;
+}
+
+.conversation-partners,
+.topic-name {
+    flex: auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow-x: hidden;
+    overflow-x: clip;
+    text-overflow: ellipsis;
+    padding-right: 2px;
+}
+
+.topic-name {
+    /* TODO: We should figure out how to remove this without changing the spacing */
+    line-height: 1.1;
+}
+
+.left_sidebar_menu_icon_visible {
+    display: block !important;
+}
+
+/*
+    All of our left sidebar handlers use absolute
+    positioning.  We should fix that.
+*/
+.all-messages-sidebar-menu-icon,
+.stream-sidebar-menu-icon,
+.starred-messages-sidebar-menu-icon,
+.drafts-sidebar-menu-icon,
+.topic-sidebar-menu-icon {
+    position: absolute;
+    display: none;
+    right: 10px;
+
+    i {
+        padding-right: 0.25em;
+        display: inline-block;
+        width: 13px;
+        vertical-align: middle;
+    }
+
+    /*
+        If you hover directly over the ellipsis itself,
+        show it in black.
+    */
+
+    &:hover {
+        color: hsl(0, 0%, 0%) !important;
+    }
+
+    /*
+        Hover does not work for touch-based devices like mobile phones.
+        Hence the the icons does not appear, making the user unaware of its
+        presence on such devices. The following media property displays the
+        icon by default for such behaviour.
+    */
+
+    @media (hover: none) {
+        display: block;
+    }
+}
+
+/*
+    The All messages and stream ellipsis-v (vertical 3 dots) are
+    pretty similar.
+*/
+.all-messages-sidebar-menu-icon,
+.starred-messages-sidebar-menu-icon,
+.drafts-sidebar-menu-icon,
+.stream-sidebar-menu-icon {
+    top: 1px;
+    right: 0;
+    font-size: 1em;
+    text-align: center;
+    padding: 0 6px;
+}
+
+/*
+    For topic ellipsis-v(vertical 3 dots) we use a slightly smaller
+    font to show they're "lower" in the hierarchy,
+    which also affects it positioning.
+*/
+.topic-sidebar-menu-icon {
+    top: 2px;
+    right: 0;
+    font-size: 0.9em;
+    text-align: center;
+    padding: 1px 6px 0;
+}
+
+/*
+    When you hover over list items, we hover
+    the relevant ellipsis-v(vertical 3 dots) in light gray.
+*/
+li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
+li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
+li.top_left_drafts:hover .drafts-sidebar-menu-icon,
+#stream_filters li:hover .stream-sidebar-menu-icon,
+li.topic-list-item:hover .topic-sidebar-menu-icon {
+    display: inline;
+    cursor: pointer;
+    color: hsl(0, 0%, 53%);
+}
+
+ul.topic-list {
+    list-style-type: none;
+    font-weight: normal;
+}
+
+li.topic-list-item {
+    position: relative;
+    padding-right: 5px;
+}
+
+.pm-box,
+.topic-box {
+    display: flex;
+    padding-top: 1px;
+    cursor: pointer;
+    align-items: center;
+}
+
+.pm-box {
+    margin-right: 16px;
+    align-items: center;
+
+    .user_circle {
+        min-width: 8px;
+        height: 8px;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 2px;
+        position: relative;
+        top: 0;
+    }
+}
+
+.zero-pm-unreads .pm-box,
+.zero-topic-unreads .topic-box {
+    margin-right: 15px;
+}
+
+.zoom-out {
+    #topics_header {
+        display: none;
+    }
+
+    .zoom-out-hide {
+        display: none;
+    }
+}
+
+#topics_header {
+    position: sticky;
+    top: 0;
+    background-color: hsl(0, 0%, 100%);
+    z-index: 2;
+    margin-right: 10px;
+    padding-top: $sections_vertical_gutter;
+    color: hsl(0, 0%, 43%);
+
+    .show-all-streams {
+        color: inherit;
+        text-decoration: none;
+        text-transform: uppercase;
+        margin-left: calc($far_left_gutter_size + 2px);
+
+        i {
+            margin: 0 6px 0 13px;
+            position: relative;
+            top: 1px;
+        }
+    }
+}
+
+#streams_header {
+    margin-right: 12px;
+    cursor: pointer;
+    padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
+    position: sticky;
+    /* Ideally, 0px should work here, but maybe simplebar is doing something
+       that is creating `0.5px` extra gap in zoomed-in windows. */
+    top: -0.5px;
+    background: hsl(0, 0%, 100%);
+    z-index: 1;
+
+    input {
+        padding-right: 20px;
+    }
+}
+
+.streams_subheader {
+    font-size: 0.8em;
+    font-weight: normal;
+    padding-left: $far_left_gutter_size;
+    cursor: pointer;
+    text-align: center;
+    margin-right: 12px;
+
+    span {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        left: 0.5em;
+        right: 0.5em;
+        opacity: 0.5;
+    }
+
+    span::before,
+    span::after {
+        content: " ";
+        flex: 1 1;
+        vertical-align: middle;
+        margin: auto;
+        border-top: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0, 0%, 100%);
+    }
+
+    span::before {
+        margin-right: 0.5em;
+    }
+
+    span::after {
+        margin-left: 0.5em;
+    }
+}
+
+.stream-list-filter {
+    width: 216px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.topic-list-filter {
+    /* Input width = 100% - 30px right-margin - 6px right-padding */
+    /* To keep the right edge of input along with its borders inline with other
+       topic items we consider to subtract the space given for right margin of
+       other items, and right padding of input element.  */
+    width: calc(100% - 36px);
+}
+
+.zero_count {
+    visibility: hidden;
+}
+
+.searching-for-more-topics img {
+    height: 16px;
+    margin-left: 6px;
+}
+
+.zoom-in {
+    .narrow-filter > .bottom_left_row {
+        position: sticky;
+        top: calc($sections_vertical_gutter + 20px);
+        z-index: 2;
+        padding-bottom: 1px;
+        background-color: hsl(0, 0%, 100%);
+    }
+
+    #subscribe-to-more-streams,
+    .show-more-topics {
+        display: none;
+    }
+
+    &.private_messages_container ul.pm-list {
+        margin-bottom: $bottom_scrolling_buffer;
+    }
+
+    #more_private_messages_sidebar_title {
+        display: inline;
+    }
+
+    #hide_more_private_messages {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        font-size: 12px;
+
+        span {
+            display: block;
+            padding: 2px 0 2px 4px;
+        }
+
+        &:hover {
+            span {
+                background-color: hsla(120, 12.3%, 71.4%, 0.38);
+                border-radius: 4px;
+            }
+        }
+    }
+
+    .zoom-in-hide {
+        display: none;
+    }
+
+    .zoom-in-sticky {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding: 3px 0 3px $far_left_gutter_size;
+    }
+
+    #show_all_private_messages {
+        margin-right: 5px !important;
+    }
+}

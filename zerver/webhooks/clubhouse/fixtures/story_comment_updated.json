@@ -1,0 +1,31 @@
+{
+    "id":"5c6dcbd0-f055-4efb-83f9-d745a444aec2",
+    "changed_at":"2019-02-20T21:51:12.936Z",
+    "primary_id":12,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":12,
+            "entity_type":"story-comment",
+            "action":"update",
+            "text":"Just leaving a comment here! EDIT: Just editing this",
+            "story_id":11,
+            "changes":{
+                "text":{
+                    "new":"Just leaving a comment here! EDIT: Just editing this",
+                    "old":"Just leaving a comment here!"
+                }
+            }
+        }
+    ],
+    "references":[
+        {
+            "id":11,
+            "entity_type":"story",
+            "name":"Add super cool feature!",
+            "story_type":"bug",
+            "app_url":"https://app.clubhouse.io/zulip/story/11"
+        }
+    ]
+}

@@ -1,0 +1,280 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "register" %}
+
+{% block title %}
+<title>{{ _("Registration") }} | Zulip</title>
+{% endblock %}
+
+{#
+Gather other user information, after having confirmed
+their email address.
+
+Form is validated both client-side using jquery-validation (see signup.js) and server-side.
+#}
+
+{% block portico_content %}
+<div class="register-account flex full-page">
+    <div class="center-block new-style" style="padding: 20px 0px">
+
+        <div class="pitch">
+            {% if creating_new_team %}
+            <h1>{{ _('Create your organization') }}</h1>
+            {% else %}
+            <h1>{{ _('Create your account') }}</h1>
+            {% endif %}
+
+            {% trans %}
+            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>
+            {% endtrans %}
+        </div>
+
+        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('accounts_register') }}">
+            {{ csrf_input }}
+
+            <fieldset class="org-registration">
+                {% if creating_new_team %}
+                <legend>{{ _('Your organization') }}</legend>
+                <div class="input-box">
+                    <div class="inline-block relative">
+                        <input id="id_team_name" class="required" type="text"
+                          placeholder="Acme or Ακμή"
+                          value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
+                          name="realm_name" maxlength="{{ MAX_REALM_NAME_LENGTH }}" required />
+                    </div>
+                    <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+                    {% if form.realm_name.errors %}
+                        {% for error in form.realm_name.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="help-text">
+                        {{ _('Shorter is better than longer.') }}
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <div class="inline-block relative">
+                        <select name="realm_type" id="realm_type">
+                            {% for realm_type in sorted_realm_types %}
+                                {% if not realm_type.hidden %}
+                                <option value="{{ realm_type.id }}">{{ _(realm_type.name) }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
+                </div>
+
+                <div class="input-box">
+                    <label class="static org-url">
+                        {{ _('Organization URL') }}
+                    </label>
+                    {% if root_domain_available %}
+                    <label class="checkbox static" for="realm_in_root_domain">
+                        <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
+                          {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
+                        <span></span>
+                        {% trans %}Use {{ external_host }}{% endtrans %}
+                    </label>
+                    {% endif %}
+
+                    <div id="subdomain_section" {% if root_domain_available and
+                      not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+                        <div class="or"><span>{{ _('OR') }}</span></div>
+                        <div class="inline-block relative">
+                            <input id="id_team_subdomain"
+                              class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
+                              placeholder="acme"
+                              value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
+                              name="realm_subdomain" maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
+                              {% if root_domain_landing_page %}required{% endif %} />
+                            <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
+                            <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
+                        </div>
+                        {% if form.realm_subdomain.errors %}
+                            {% for error in form.realm_subdomain.errors %}
+                            <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </fieldset>
+
+            <fieldset class="user-registration">
+                {% if creating_new_team %}
+                <legend>{{ _('Your account') }}</legend>
+                {% endif %}
+                {% if realm_name and not creating_new_team %}
+                <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
+                <div class="info-box inline-block">
+                    <div class="organization-name">{{ realm_name }}</div>
+                    <div class="organization-path">{{ realm_uri }}</div>
+                </div>
+                {% endif %}
+
+                <div class="input-box no-validation">
+                    <input type='hidden' name='key' value='{{ key }}' />
+                    <input type='hidden' name='timezone' id='timezone'/>
+                    <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    <div id="id_email">{{ email }}</div>
+                </div>
+
+                {% if accounts %}
+                <div class="input-box">
+                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}
+                        <a href="{{ root_domain_uri }}/help/import-your-settings"><i class="fa fa-question-circle"></i></a>
+                    </label>
+                </div>
+                <div id="source_realm_select_section" class="input-group m-10 inline-block">
+                    <select class="select" name="source_realm_id" id="source_realm_select">
+                        <option value=""
+                          {% if "source_realm_id" in form.data and form.data["source_realm_id"] == "" %}selected {% endif %}>
+                            {{ _('Don&rsquo;t import settings') }}
+                        </option>
+                        {% for account in accounts %}
+                        <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
+                          {% if ("source_realm_id" in form.data and account.realm_id == form.data["source_realm_id"]|int)
+                          or ("source_realm_id" not in form.data and loop.index0 == 0) %} selected {% endif %}>
+                            {{ account.realm_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div class="input-box" id="full_name_input_section">
+                    {% if lock_name %}
+                        <p class="fakecontrol">{{ full_name }}</p>
+                    {% else %}
+                        <input id="id_full_name" class="required" type="text" name="full_name"
+                          value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
+                          maxlength="{{ MAX_NAME_LENGTH }}" placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
+                        <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
+                        {% if form.full_name.errors %}
+                            {% for error in form.full_name.errors %}
+                            <p class="help-inline text-error">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="input-box" id="profile_info_section" style="display:none;">
+                    <img id="profile_avatar" />
+                    <div id="profile_full_name"></div>
+                </div>
+
+                {% if require_ldap_password %}
+                <div class="input-box password-div">
+                    <input id="ldap-password" class="required" type="password" name="password" autocomplete="off" required />
+                    <label for="ldap-password" class="inline-block">{{ _('Password') }}</label>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
+                    <span class="help-inline">
+                        {{ _('Enter your LDAP/Active Directory password.') }}
+                    </span>
+                </div>
+                {% elif password_required %}
+                <div class="input-box password-div">
+                    <input id="id_password" class="required" type="password" name="password" autocomplete="new-password"
+                      value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
+                      maxlength="{{ MAX_PASSWORD_LENGTH }}"
+                      data-min-length="{{password_min_length}}"
+                      data-min-guesses="{{password_min_guesses}}" required />
+                    <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
+                    {% if full_name %}
+                    <span class="help-inline">
+                        {{ _('This is used for mobile applications and other tools that require a password.') }}
+                    </span>
+                    {% endif %}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
+                        <div class="bar Password-Weak" style="width: 10%;"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </fieldset>
+            {% if default_stream_groups %}
+            <hr />
+            <div class="default-stream-groups">
+                <p class="margin">{{ _('What are you interested in?') }}</p>
+                {% for default_stream_group in default_stream_groups %}
+                <div class="input-group margin">
+                    <label for="id_default_stream_group__{{ default_stream_group.id }}"
+                      class="inline-block checkbox">
+                        <input class="inline-block" type="checkbox"
+                          name="default_stream_group"
+                          id="id_default_stream_group__{{ default_stream_group.id }}" value="{{ default_stream_group.name }}"
+                          {% if "default_stream_group" in form.data and default_stream_group.id in form.data.getlist('default_stream_group') %} checked {% endif %} />
+                        <span></span>
+                        {% set comma = joiner(", ") %}
+                        <div class="default_stream_group_name inline-block"
+                          title="{{ default_stream_group.description }}">
+                            {{ default_stream_group.name }}
+                        </div>
+                        (
+                        {%- for stream in default_stream_group.streams.all() -%}
+                            {{- comma() -}} <div class="stream_name inline-block">#{{ stream.name }}</div>
+                        {%- endfor -%}
+                        )
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            <hr />
+            {% endif %}
+
+            <div class="input-group margin terms-of-service">
+                {% if terms_of_service %}
+                <div class="input-group">
+                    {#
+                    This is somewhat subtle.
+                    Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                    with name=value. If the checkbox is unticked, the field just isn't present at all.
+
+                    This is distinct from 'checked', which determines whether the checkbox appears
+                    at all. (So, it's not symmetric to the code above.)
+                    #}
+                    <label for="id_terms" class="inline-block checkbox">
+                        <input id="id_terms" class="required" type="checkbox" name="terms"
+                          {% if form.terms.value() %}checked="checked"{% endif %} />
+                        <span></span>
+                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.{% endtrans %}
+                    </label>
+                    {% if form.terms.errors %}
+                        {% for error in form.terms.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if corporate_enabled %}
+                <div class="input-group">
+                    <label for="id_enable_marketing_emails" class="inline-block checkbox marketing_emails_checkbox">
+                        <input id="id_enable_marketing_emails" type="checkbox" name="enable_marketing_emails"
+                          checked="checked" />
+                        <span></span>
+                        {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
+                    </label>
+                </div>
+                {% endif %}
+                <div class="register-button-box">
+                    <button class="register-button" type="submit">
+                        <span>{{ _('Sign up') }}</span>
+                        <object class="loader" type="image/svg+xml" data="/static/images/loading/loader-white.svg"></object>
+                    </button>
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

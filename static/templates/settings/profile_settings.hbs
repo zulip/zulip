@@ -1,0 +1,74 @@
+<div id="profile-settings" class="settings-section show" data-name="profile">
+    <div class="profile-settings-form">
+        <div class="profile-main-panel inline-block">
+            <h3 class="inline-block hide" id="user-profile-header">{{t "Profile" }}</h3>
+            <div id="user_details_section">
+                <div class="full-name-change-container">
+                    <div class="input-group inline-block grid user-name-parent">
+                        <div class="user-name-section inline-block">
+                            <label for="full_name" class="title inline-block">{{t "Full name" }}</label>
+                            <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-info-icon"
+                              {{#if user_can_change_name}}style="display:none"{{/if}}
+                              data-tippy-content="{{t 'Name changes are disabled in this organization. Contact an administrator to change your name.' }}">
+                            </i>
+                            <div class="alert-notification full-name-status"></div>
+                            <div class="name-input">
+                                <input id="full_name" name="full_name" type="text" value="{{ page_params.full_name }}" {{#unless user_can_change_name}}disabled="disabled"{{/unless}} maxlength="60" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="form-horizontal timezone-setting-form">
+                    <div class="input-group grid">
+                        <label for="timezone" class="dropdown-title inline-block">{{t "Time zone" }}</label>
+                        <div class="alert-notification timezone-setting-status"></div>
+                        <div class="timezone-input">
+                            <select name="timezone" id="user_timezone" class>
+                                {{#unless settings_object.timezone}}
+                                <option></option>
+                                {{/unless}}
+
+                                {{#each timezones}}
+                                    <option value="{{ this }}">{{ this }}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <form class="form-horizontal custom-profile-fields-form grid"></form>
+            </div>
+        </div>
+
+        <div class="profile-side-panel">
+            <div class="inline-block user-avatar-section">
+                {{> image_upload_widget
+                  widget = "user-avatar"
+                  upload_text = (t "Upload new profile picture")
+                  delete_text = (t "Delete profile picture")
+                  disabled_text = (t "Avatar changes are disabled in this organization")
+                  is_editable_by_current_user = user_can_change_avatar
+                  image = page_params.avatar_url_medium}}
+                <div id="user-avatar-source">
+                    <a href="https://en.gravatar.com/" target="_blank" rel="noopener noreferrer">{{t "Avatar from Gravatar" }}</a>
+                </div>
+            </div>
+            <div class="user-details">
+                <div class="input-group">
+                    <span class="user-details-title">{{t "Role" }}:</span>
+                    <span class="user-details-desc">{{user_role_text}}</span>
+                </div>
+
+                <div class="input-group">
+                    <span class="user-details-title">{{t "Joined" }}: </span>
+                    <span class="user-details-desc">{{date_joined_text}}</span>
+                </div>
+            </div>
+            <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">
+                {{t 'Preview profile' }}
+                <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview profile' }}"></i>
+            </button>
+        </div>
+    </div>
+</div>

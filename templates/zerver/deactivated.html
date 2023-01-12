@@ -1,0 +1,43 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Deactivated organization") }} | Zulip</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'" />
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Deactivated organization") }}</h1>
+            </div>
+
+            <div class="white-box deactivated-realm-container">
+                <p>
+                    {% trans %}
+                    The organization you are trying to join, {{ deactivated_domain_name }}, has been deactivated.
+                    {% endtrans %}
+                    {% if deactivated_redirect %}
+                        {% trans %}
+                        It has moved to <a href="{{ deactivated_redirect }}">{{ deactivated_redirect }}</a>.
+                        {% endtrans %}
+                    {% endif %}
+                    {% trans %}
+                    Please contact <a href="mailto:{{ support_email }}">{{ support_email }}</a> to reactivate
+                    this group.
+                    {% endtrans %}
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

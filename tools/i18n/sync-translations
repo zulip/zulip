@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# See https://zulip.readthedocs.io/en/latest/translating/internationalization.html
+# for background on this subsystem.
+
+set -e
+set -x
+
+./manage.py makemessages --all
+tx pull -a -f --mode=translator --minimum-perc=5 "$@"
+./manage.py compilemessages
+./tools/i18n/process-mobile-i18n

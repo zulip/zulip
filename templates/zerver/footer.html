@@ -1,0 +1,186 @@
+{% if corporate_enabled %}
+<div class="footer">
+    <div class="footer-section">
+        <h3>{{ _("Product") }}</h3>
+        <ul>
+            <li><a href="/">{{ _("Home") }}</a></li>
+            <li><a href="/why-zulip/">{{ _("Why Zulip") }}</a></li>
+            <li><a href="/features/">{{ _("Features") }}</a></li>
+            <li><a href="/plans/">{{ _("Plans &amp; pricing") }}</a></li>
+            <li><a href="/self-hosting/">{{ _("Self-hosting") }}</a></li>
+            <li><a href="/apps/">{{ _("Desktop &amp; mobile apps") }}</a></li>
+            <li><a href="/security/">{{ _("Security") }}</a></li>
+            <li><a href="/integrations/">{{ _("Integrations") }}</a></li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>{{ _("Solutions") }}</h3>
+        <ul>
+            <li>
+                <a href="/for/business/">{{ _("Business") }}</a>
+            </li>
+            <li>
+                <a href="/for/education/">{{ _("Education") }}</a>
+            </li>
+            <li>
+                <a href="/for/research/">{{ _("Research") }}</a>
+            </li>
+            <li>
+                <a href="/for/events/">{{ _("Events and conferences") }}</a>
+            </li>
+            <li>
+                <a href="/for/open-source/">{{ _("Open source projects") }}</a>
+            </li>
+            <li>
+                <a href="/for/communities/">{{ _("Communities") }}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>{{ _("Customer stories") }}</h3>
+        <ul>
+            <li>
+                <a href="/case-studies/idrift/">iDrift AS {{ _("Company") }}</a>
+            </li>
+            <li>
+                <a href="/case-studies/tum/">{{ _("Technical University of Munich") }}</a>
+            </li>
+            <li>
+                <a href="/case-studies/ucsd/">{{ _("University of California San Diego") }}</a>
+            </li>
+            <li>
+                <a href="/case-studies/lean/">{{ _("Lean theorem prover community") }}</a>
+            </li>
+            <li>
+                <a href="/case-studies/asciidoctor/">{{ _("Asciidoctor open-source community") }}</a>
+            </li>
+            <li>
+                <a href="/case-studies/rust/">{{ _("Rust language community") }}</a>
+            </li>
+            <li>
+                <a href="/case-studies/recurse-center/">Recurse Center</a>
+            </li>
+            <li>
+                <a href="/communities/">{{ _("Open communities directory") }}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>{{ _("Accounts") }}</h3>
+        <ul>
+            {% if find_team_link_disabled %}
+            {% else %}
+            <li><a href="{{ root_domain_uri }}/accounts/find">{{ _("Find accounts") }}</a></li>
+            {% endif %}
+            {% if open_realm_creation %}
+            <li><a href="{{ root_domain_uri }}/new/">{{ _("New organization") }}</a></li>
+            {% endif %}
+            <li><a href="{{ root_domain_uri }}/terms/">{{ _("Terms of Service") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/privacy/">{{ _("Privacy policy") }}</a></li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>{{ _("For users") }}</h3>
+        <ul>
+            <li>
+                <a href="/help/getting-started-with-zulip">{{ _("Getting started") }}</a>
+            </li>
+            <li>
+                <a href="/help">{{ _("Help center") }}</a>
+            </li>
+            <li>
+                <a href="/development-community/" target="_blank">
+                    {{ _("Community chat") }}
+                </a>
+            </li>
+            <li>
+                <a href="/help/contact-support">{{ _("Contact support") }}</a>
+            </li>
+            <li>
+                <a href="https://blog.zulip.com/">{{ _("Blog") }}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>{{ _("For administrators") }}</h3>
+        <ul>
+            <li>
+                <a href="/help/getting-your-organization-started-with-zulip">
+                    {{ _("Setting up your organization") }}
+                </a>
+            </li>
+            <li>
+                <a href="https://zulip.readthedocs.io/en/stable/production/install.html">
+                    {{ _("Installing a Zulip server") }}
+                </a>
+            </li>
+            <li>
+                <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">
+                    {{ _("Upgrading a Zulip server") }}
+                </a>
+            </li>
+            <li>
+                <a href="https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#modifying-zulip">
+                    {{ _("Modifying Zulip") }}
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>{{ _("For contributors") }}</h3>
+        <ul>
+            <li><a href="https://github.com/zulip/zulip/">{{ _("GitHub") }}</a></li>
+            <li>
+                <a href="https://zulip.readthedocs.io/en/latest/contributing/contributing.html">
+                    {{ _("Contributing guide") }}
+                </a>
+            </li>
+            <li><a href="/development-community/">{{ _("Development community") }}</a></li>
+            <li>
+                <a href="https://zulip.readthedocs.io/en/latest/translating/translating.html">
+                    {{ _("Translation") }}
+                </a>
+            </li>
+            <li><a href="/api/">REST API</a></li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>{{ _("About us") }}</h3>
+        <ul>
+            <li><a href="/team/">{{ _("Team") }}</a> &amp; <a href="/history/">{{ _("History") }}</a></li>
+            <li><a href="/values/">{{ _("Values") }}</a></li>
+            <li><a href="https://twitter.com/zulip/">Twitter</a></li>
+            <li><a href="/jobs/">{{ _("Jobs") }}</a></li>
+            <li><a href="/attribution">{{ _("Website attributions") }}</a></li>
+            <li><a href="https://github.com/sponsors/zulip">{{ _("Sponsor Zulip") }}</a></li>
+        </ul>
+    </div>
+</div>
+{% else %}
+<div class="footer self-hosted-footer">
+    <div class="footer-section">
+        <ul>
+            <li>
+                <a href="/help">{{ _("Help center") }}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <ul>
+            <li>
+                <a href="/policies">{{ _("Policies") }}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="break"></div>
+    <div class="footer-section powered-by-zulip">
+        <ul>
+            <li>
+                {% trans %}
+                Powered by <a href="https://zulip.com" class="coloured-text">Zulip</a>
+                {% endtrans %}
+            </li>
+        </ul>
+    </div>
+</div>
+{% endif %}

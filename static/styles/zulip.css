@@ -1,0 +1,3229 @@
+/*
+This is the header, aka the navbar.
+*/
+$header_height: 40px;
+
+/*
+We have a 10px gutter below the header,
+which often needs to be respected by both
+the elements above it and below it on
+the y-axis, due to absolute positioning.
+*/
+$header_padding_bottom: 10px;
+
+/*
+Our sidebars (and anything that top-align
+with them such as floating recipient bars)
+go beneath the header.
+*/
+$sidebar_top: calc($header_height + $header_padding_bottom);
+
+$left_sidebar_collapse_widget_gutter: 10px;
+$left_sidebar_width: 270px;
+$right_sidebar_width: 250px;
+
+body,
+html {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+    touch-action: manipulation;
+}
+
+#app-loading.loaded {
+    display: none !important; /* We are now loaded, by definition. */
+}
+
+body {
+    font-size: 14px;
+    line-height: calc(20 / 14);
+    font-family: "Source Sans 3", sans-serif;
+}
+
+/* Common background color */
+body,
+#message_view_header_underpadding {
+    background-color: hsl(0, 0%, 100%);
+    transition: background-color 200ms linear;
+}
+
+:root {
+    color-scheme: light;
+}
+
+input,
+button,
+select,
+textarea {
+    font-family: "Source Sans 3", sans-serif;
+    /* Disable bootstrap size CSS; we want to use our default font size on
+       body for input elements. */
+    line-height: normal;
+    font-size: inherit;
+}
+
+blockquote p {
+    font-weight: normal;
+}
+
+a {
+    cursor: pointer;
+
+    &.message_label_clickable:hover {
+        cursor: pointer;
+        color: hsl(200, 100%, 40%);
+    }
+}
+
+code,
+pre {
+    font-family: "Source Code Pro", monospace;
+}
+
+[data-tippy-root] {
+    /* Since tooltip elements are sometimes inside elements
+     * which have different font-family, we force font-family
+     * for tooltips here.
+     */
+    font-family: "Source Sans 3", sans-serif !important;
+    word-wrap: break-word;
+
+    /* Affects all tippy tooltips not using any theme. */
+    .tippy-box:not([data-theme]) {
+        background-color: hsl(0, 0%, 12%);
+
+        &[data-placement^="top"] {
+            > .tippy-arrow {
+                &::before {
+                    border-top-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="bottom"] {
+            > .tippy-arrow {
+                &::before {
+                    border-bottom-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="left"] {
+            > .tippy-arrow {
+                &::before {
+                    border-left-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="right"] {
+            > .tippy-arrow {
+                &::before {
+                    border-right-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+    }
+
+    .tippy-content {
+        font-size: 13px;
+    }
+
+    .tippy-arrow::before {
+        /* `.tippy-arrow:before` element sometimes
+         * inherits the height of the parent, we
+         * don't want any height here since we
+         * want it to remain an triangle.
+         * The bug was only found in Firefox.
+         */
+        height: 0 !important;
+    }
+    /* If the text in the tooltips stretches to multiple lines,
+     * we want the lines to be left-indented and not right-indented
+     * by default.
+     */
+    text-align: left;
+}
+
+.no-select {
+    user-select: none;
+}
+
+.auto-select {
+    user-select: auto;
+}
+
+.text-select {
+    user-select: text;
+}
+
+p.n-margin {
+    margin: 10px 0 0;
+}
+
+.small-line-height {
+    line-height: 1.1;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-clear {
+    clear: both;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.history-limited-box {
+    color: hsl(16, 60%, 45%);
+    border: 1px solid hsl(16, 60%, 45%);
+    box-shadow: 0 0 2px hsl(16, 60%, 45%);
+}
+
+.all-messages-search-caution {
+    border: 1px solid hsla(192, 19%, 75%, 0.2);
+    box-shadow: 0 0 2px hsla(192, 19%, 75%, 0.2);
+}
+
+.history-limited-box,
+.all-messages-search-caution {
+    border-radius: 4px;
+    display: none;
+    font-size: 16px;
+    margin: 0 auto 12px;
+    padding: 5px;
+    /* Difference should be 16px to accommodate the icon. */
+    /* This emulates hanging indent. */
+    padding-left: 26px;
+    text-indent: -10px;
+
+    i {
+        margin: 0 3px 0 1px;
+    }
+
+    p {
+        margin: 0;
+        padding: 4px;
+    }
+}
+
+.bottom-messages-logo {
+    display: none;
+}
+
+.alert-zulip-logo,
+.top-messages-logo,
+.bottom-messages-logo {
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 12px;
+
+    svg {
+        circle {
+            fill: hsl(0, 0%, 27%);
+            stroke: hsl(0, 0%, 27%);
+        }
+
+        path {
+            fill: hsl(0, 0%, 100%);
+            stroke: hsl(0, 0%, 100%);
+        }
+    }
+}
+
+#feedback_container {
+    display: none;
+    position: absolute;
+    width: 400px;
+    top: 0;
+    left: calc(50vw - 220px);
+    padding: 15px;
+
+    background-color: hsl(0, 0%, 98%);
+    border-radius: 5px;
+    box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.25);
+    z-index: 110;
+
+    animation-name: pulse;
+    animation-iteration-count: infinite;
+    animation-duration: 2s;
+
+    transition-property: top, bottom;
+    transition-duration: 0.5s;
+
+    &.show {
+        top: 50px;
+    }
+
+    h3 {
+        font-size: 16pt;
+        margin-top: 2px;
+    }
+
+    .exit-me {
+        font-size: 20pt;
+        font-weight: 200;
+        margin: 0 0 0 10px;
+        cursor: pointer;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.35);
+    }
+
+    50% {
+        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.15);
+    }
+
+    100% {
+        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.35);
+    }
+}
+
+.fade-in-message {
+    animation-name: fadeInMessage;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+
+    .message_edit_notice {
+        animation-name: fadeInEditNotice;
+        animation-duration: 1s;
+        animation-iteration-count: 1;
+    }
+}
+
+.message_edit_notice_hover:hover {
+    opacity: 1;
+}
+
+.header {
+    position: fixed;
+    z-index: 102; /* Needs to be higher than .alert-bar-container */
+    width: 100%;
+    height: $header_height;
+    padding-bottom: $header_padding_bottom;
+    background-color: inherit;
+}
+
+#top_navbar {
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+}
+
+#navbar_alerts_wrapper {
+    font-size: 1rem;
+    position: relative;
+
+    .alert {
+        /* Since alerts are only rendered into the DOM when they are first
+           displayed, display: block is the right default for this setting. */
+        display: block;
+        margin: 0;
+        padding-top: 12px;
+        padding-bottom: 12px;
+
+        border: none;
+        border-radius: 0;
+
+        text-align: center;
+        text-shadow: none;
+        color: hsl(0, 0%, 100%);
+
+        &.alert-info {
+            background-color: hsl(170, 46%, 54%);
+
+            &.red {
+                background-color: hsl(0, 46%, 54%);
+            }
+        }
+
+        .close {
+            line-height: 24px;
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .alert-link {
+            color: hsl(169, 100%, 88%);
+            font-weight: 600;
+        }
+
+        &.red .alert-link {
+            color: hsl(0, 100%, 88%);
+        }
+
+        .buttons .alert-link {
+            margin: 0 5px;
+        }
+    }
+}
+
+#gear-menu .dropdown-menu {
+    .org-name,
+    .org-url {
+        padding: 0 20px;
+    }
+
+    .org-info {
+        text-align: center;
+
+        a {
+            white-space: normal;
+        }
+    }
+
+    .org-name {
+        font-size: large;
+        font-weight: bold;
+    }
+
+    .org-url {
+        line-height: 100%;
+        color: hsl(0, 0%, 52%);
+    }
+
+    .org-version {
+        padding-top: 3px;
+        white-space: normal;
+    }
+
+    .org-upgrade {
+        color: hsl(226, 82%, 60%);
+
+        a {
+            padding: 0;
+        }
+    }
+
+    .org-plan,
+    .org-upgrade {
+        a {
+            line-height: 16px;
+        }
+    }
+
+    .plan-separator {
+        line-height: 8px;
+    }
+
+    .small-font-size {
+        font-size: 12px;
+    }
+}
+
+.app {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    z-index: 99;
+    -webkit-overflow-scrolling: touch;
+}
+
+.app-main,
+.header-main {
+    width: 100%;
+    /* `max-width` is changed based on `fluid_layout_width` setting in
+       `scroll_bar.js`. User may or may not see a flash of mispositioned content
+       based on how quickly the JS code is executed. */
+    max-width: 1400px;
+    min-width: 950px;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+    background-color: hsl(0, 0%, 100%);
+}
+
+.fixed-app {
+    width: 100%;
+    position: fixed;
+    z-index: 98;
+    left: 0;
+}
+
+.column-right {
+    width: $right_sidebar_width;
+    max-width: $right_sidebar_width;
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    .spectator_login_buttons {
+        display: flex;
+        justify-content: space-evenly;
+        position: absolute;
+        top: 10px;
+        /* width of right column - width of gear icon(250px - 45px) */
+        width: 205px;
+
+        a {
+            font-size: calc(16em / 14);
+            font-weight: 600;
+            color: hsl(0, 0%, 20%);
+
+            &:hover {
+                text-decoration: none;
+                color: hsl(0, 0%, 0%);
+            }
+
+            i {
+                margin-right: 3px;
+            }
+        }
+
+        .divider {
+            color: hsl(0, 0%, 88%);
+            font-size: 20px;
+            line-height: 1;
+        }
+    }
+
+    .spectator_narrow_login_button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        /* Height of navbar in tablet sizes */
+        height: 40px;
+        /* Width of userlist-toggle button. */
+        width: 45px;
+        border-left: 1px solid hsl(0, 0%, 88%);
+
+        .login_button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            opacity: 0.5;
+
+            &:hover {
+                opacity: 1;
+                text-decoration: none;
+            }
+
+            i {
+                color: hsl(0, 0%, 20%);
+                font-size: 1.6em;
+            }
+        }
+    }
+}
+
+.column-left {
+    width: $left_sidebar_width;
+    max-width: $left_sidebar_width;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.app-main {
+    height: 100%;
+    min-height: 100%;
+
+    .column-left .left-sidebar,
+    .column-right .right-sidebar {
+        position: fixed;
+        margin-top: $sidebar_top;
+        z-index: 100;
+    }
+
+    .column-left .left-sidebar {
+        width: $left_sidebar_width;
+        padding-left: $left_sidebar_collapse_widget_gutter;
+    }
+
+    .column-right .right-sidebar {
+        padding-left: 10px;
+        width: 240px;
+    }
+
+    .column-middle {
+        min-height: 100%;
+
+        .column-middle-inner {
+            overflow: auto;
+        }
+    }
+}
+
+.column-middle,
+#compose-content {
+    margin-right: $right_sidebar_width;
+    margin-left: calc(
+        $left_sidebar_width + $left_sidebar_collapse_widget_gutter
+    );
+    position: relative;
+}
+
+textarea,
+input {
+    font-family: "Source Sans 3", sans-serif;
+}
+
+/* Override Bootstrap's fixed sizes for various elements */
+textarea,
+label {
+    font-size: inherit;
+    line-height: inherit;
+}
+
+/* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
+a:not(:active):focus,
+button:focus,
+.new-style label.checkbox input[type="checkbox"]:focus ~ span,
+i.fa:focus,
+i.zulip-icon:focus,
+.auto-select:focus,
+[role="button"]:focus {
+    outline: 2px solid hsl(215, 47%, 50%);
+    /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
+}
+
+/* List of text-like input types taken from Bootstrap */
+input {
+    &[type="text"],
+    &[type="password"],
+    &[type="datetime"],
+    &[type="datetime-local"],
+    &[type="date"],
+    &[type="month"],
+    &[type="time"],
+    &[type="week"],
+    &[type="number"],
+    &[type="email"],
+    &[type="url"],
+    &[type="search"],
+    &[type="tel"],
+    &[type="color"] {
+        font-size: inherit;
+        height: 1.4em;
+    }
+}
+
+li,
+.table th,
+.table td {
+    line-height: inherit;
+}
+
+.btn {
+    font-size: inherit;
+    height: auto;
+    line-height: 100%;
+}
+
+/* Classes which style copy buttons */
+.copy_button_base {
+    outline-color: hsl(0, 0%, 73%);
+    height: 18px;
+    width: 10px;
+    padding: 6px;
+    display: block;
+    /* The below two avoids the padded element from displaying
+    its own border and background color */
+    border: none;
+    background-clip: content-box;
+    /* The z-index here ensures that the copy-message
+    icon is clickable and is needed because of reduced
+    opacity of readonly textarea */
+    z-index: 2;
+
+    &:hover svg path {
+        fill: hsl(200, 100%, 40%);
+    }
+}
+
+.copy_message {
+    position: relative;
+    top: 27px;
+    left: -10px;
+    margin-top: -24px;
+}
+
+#copy_generated_invite_link {
+    position: relative;
+    margin-right: -32px;
+    margin-top: -1px;
+    padding: 6px 3px 6px 13px;
+
+    /* This property nullifies the box-shadow rendered by .btn class */
+    &:active {
+        box-shadow: none;
+    }
+}
+
+#clipboard_image {
+    margin-top: -5px;
+    margin-left: -8px;
+}
+
+/* Classes for hiding and showing controls */
+
+.notdisplayed {
+    display: none !important;
+}
+
+.notvisible {
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+}
+
+/* Lighter strong */
+
+strong {
+    font-weight: 600;
+}
+
+.preserve_spaces {
+    white-space: pre-wrap;
+}
+
+.sp-input {
+    width: calc(100% - 14px);
+    box-sizing: initial !important;
+}
+
+.logout {
+    white-space: nowrap;
+}
+
+.sidebar-title {
+    color: hsl(0, 0%, 43%);
+    font-size: inherit;
+    font-weight: normal;
+    display: inline;
+}
+
+.tooltip {
+    &.in {
+        font-size: 12px;
+        line-height: 1.3;
+
+        opacity: 1;
+
+        &.left {
+            margin-left: -12px;
+            margin-top: 3px;
+        }
+    }
+
+    .tooltip-inner {
+        background-color: hsla(0, 0%, 7%, 0.8);
+        padding: 3px 5px;
+    }
+
+    /*
+    Since hover and click are activated together on touchscreen
+    devices, the hover state persists until the next click, creating
+    awkward UI where the tooltip sticks around forever :(.
+
+    To resolve this, we just hide the tooltip for touch-events on
+    touch-enabled devices resolving the above problem.  This means
+    that tooltips will never appear on touchscreen devices, but that's
+    probably a reasonable tradeoff here.
+
+    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
+    */
+
+    @media (hover: none) {
+        visibility: hidden !important;
+    }
+}
+
+.buddy_list_tooltip_content {
+    text-align: left;
+    word-wrap: break-word;
+}
+
+#message_edit_tooltip {
+    float: right;
+    color: hsl(0, 0%, 0%);
+    margin-top: 2px;
+    margin-left: 6px;
+    opacity: 0.5;
+    cursor: pointer;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.narrow-filter {
+    display: block;
+    position: relative;
+}
+
+.message_header_stream a.message_label_clickable {
+    color: inherit;
+}
+
+#gear-menu .light-theme {
+    display: none;
+}
+
+/* .dropdown-menu from v2.3.2
+   + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
+   basic idea of this fix is to remove decorations from :hover and apply them only
+   on :focus. */
+.typeahead-menu {
+    li {
+        a {
+            display: block;
+            padding: 3px 20px;
+            clear: both;
+            font-weight: normal;
+            line-height: 20px;
+            color: hsl(0, 0%, 20%);
+            white-space: nowrap;
+
+            &:hover {
+                text-decoration: none;
+            }
+
+            &:focus {
+                color: hsl(0, 0%, 100%);
+                text-decoration: none;
+                background-color: hsl(200, 100%, 38%);
+                background-image: linear-gradient(
+                    to bottom,
+                    hsl(200, 100%, 40%),
+                    hsl(200, 100%, 35%)
+                );
+            }
+
+            .search_list_item {
+                display: flex;
+                align-items: center;
+            }
+
+            .search_list_item .pill-container {
+                margin-left: 5px;
+            }
+
+            /* styles defined for user_circle here only deal with positioning of user_presence_circle
+            in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
+            Most of the style rules related to color, gradient etc. which are generally common throughout
+            the app are defined in user_circles.css and are not overridden here. */
+            .user_circle {
+                width: 8px;
+                height: 8px;
+                margin: 0 5px 0 -6px;
+                position: relative;
+                top: 6px;
+                right: 8px;
+                display: inline-block;
+            }
+        }
+    }
+
+    .active > a {
+        color: hsl(0, 0%, 100%);
+        text-decoration: none;
+        background-color: hsl(200, 100%, 38%);
+        background-image: linear-gradient(
+            to bottom,
+            hsl(200, 100%, 40%),
+            hsl(200, 100%, 35%)
+        );
+        outline: 0;
+
+        .user_circle_empty {
+            border-color: hsl(0, 0%, 25%);
+        }
+    }
+
+    .active > a:hover {
+        text-decoration: none;
+    }
+}
+
+/* Copied from bootstrap 2.1.1 CSS for dropdown-menu li > a:focus */
+li.actual-dropdown-menu > a:focus {
+    color: hsl(0, 0%, 100%);
+    text-decoration: none;
+    background-color: transparent;
+    background-image: none;
+    filter: none;
+    outline: 0;
+}
+
+li.actual-dropdown-menu i {
+    /* In gear menu, make icons the same width so labels line up. */
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+#gear_menu_about_zulip {
+    .white_zulip_icon_without_text {
+        position: relative;
+        top: 3px;
+        width: 14px;
+        height: 14px;
+        margin-right: 3px;
+        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
+            brightness(20%) contrast(95%);
+    }
+
+    .about_zulip_text {
+        position: relative;
+        top: 1.4px;
+    }
+
+    :hover {
+        .white_zulip_icon_without_text {
+            filter: none;
+        }
+    }
+}
+
+.settings-dropdown-cog {
+    padding: 6px 12px;
+}
+
+.message_area_padder {
+    /* The height of the header and the message_view_header plus a small gap */
+    margin-top: 57px;
+    /* This is needed for the floating recipient bar
+       in Firefox only, for some reason;
+       otherwise it gets a scrollbar */
+    overflow: visible;
+}
+
+td.pointer {
+    vertical-align: top;
+    padding-top: 10px;
+    background-color: hsl(0, 0%, 100%);
+}
+
+.new_messages {
+    background-color: hsl(194, 53%, 79%);
+}
+
+.new_messages,
+.new_messages_fadeout {
+    transition: all 3s ease-in-out;
+}
+
+.include-sender {
+    .message_edit_notice {
+        display: inline-block;
+        vertical-align: top;
+        line-height: 14px;
+        /* A bit of margin here helps these not look associated with the name. */
+        margin-left: 4px;
+        position: static;
+        padding: 0;
+        width: auto;
+    }
+}
+
+.sender-status {
+    display: inline-block;
+    margin: 8px 0 8px -3px;
+    /* this normalizes the margin of the emoji reactions with normal messages. */
+    padding-bottom: 5px;
+    vertical-align: middle;
+
+    position: relative;
+    max-width: calc(100% - 50px);
+
+    .message_edit_notice {
+        vertical-align: middle;
+    }
+
+    &.sender-status-edit {
+        /* Hackery to place the textarea for the message edit form nicely
+           for /me messages. */
+
+        vertical-align: top;
+        line-height: 0;
+
+        .message_edit_notice {
+            line-height: 0;
+        }
+    }
+}
+
+.message_edit_notice {
+    font-size: 10px;
+    opacity: 0.5;
+    user-select: none;
+    white-space: nowrap;
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
+.message_time {
+    display: block;
+    font-size: 12px;
+    opacity: 0.4;
+    font-weight: 400;
+    /* Disable blue link styling for the message timestamp link. */
+    color: hsl(0, 0%, 20%);
+    transition: background-color 1.5s ease-in, color 1.5s ease-in;
+
+    a& {
+        z-index: 1;
+    }
+}
+
+/* The way this overrides the menus with a background-color and a high
+   z-index is kinda hacky, and requires some annoying color-matching,
+   but it works. */
+.alert-msg {
+    color: hsl(170, 48%, 54%);
+    background-color: hsl(0, 0%, 100%);
+    z-index: 999;
+    font-weight: 400;
+    display: none;
+}
+
+.status-time {
+    top: 8px !important;
+}
+
+.message_controls {
+    display: inline-block;
+    z-index: 1;
+
+    /* This is a bit tricky; we need to reserve space for the message
+       controls even when the message isn't hovered, so that hover
+       doesn't disturb the layout.  Usually that would be just
+       visibility: hidden, but that cannot be animated, so we set
+       opacity as well, which can be animated. */
+    .message_control_button {
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        width: 16px;
+        text-align: center;
+        display: inline-block;
+        position: relative;
+        color: hsl(0, 0%, 73%);
+
+        > i {
+            vertical-align: middle;
+        }
+    }
+
+    .actions_hover {
+        line-height: 1;
+
+        .zulip-icon-ellipsis-v-solid {
+            padding: 2px 5.33px;
+            outline: none;
+        }
+    }
+
+    /* Tooltips should not follow the width restrictions of their parent element. */
+    [data-tippy-root] {
+        width: max-content;
+        word-wrap: unset;
+    }
+
+    > .reaction_button {
+        &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    > .view_read_receipts {
+        font-size: 14px;
+        height: 16px;
+
+        &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    .edit_content {
+        width: 12px;
+
+        &:hover {
+            cursor: pointer;
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    &.sender-status-controls {
+        top: 8px;
+    }
+
+    .message_failed {
+        opacity: 1 !important;
+        display: inline-flex;
+        justify-content: space-between;
+        cursor: pointer;
+        position: relative;
+        vertical-align: middle;
+        padding-left: 2px;
+
+        .rotating {
+            display: inline-block;
+
+            animation: rotate 1s infinite linear;
+        }
+
+        .failed_message_action {
+            opacity: 1 !important;
+            color: hsl(0, 100%, 50%);
+            font-weight: bold;
+            padding: 1px;
+        }
+
+        .message_control_button {
+            visibility: inherit;
+        }
+    }
+
+    .star_container {
+        &:not(.empty-star) {
+            color: hsl(106, 77%, 29%);
+
+            /* Opacity/visibility as though the message is hovered. */
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    }
+}
+
+.star {
+    &:hover {
+        cursor: pointer;
+        color: hsl(153, 80%, 25%);
+    }
+}
+
+.messagebox {
+    position: relative;
+    word-wrap: break-word;
+    cursor: pointer;
+    vertical-align: top;
+    border: none;
+
+    &:hover .message_controls,
+    &:focus-within .message_controls,
+    &:hover .message_failed,
+    &:focus-within .message_failed {
+        .empty-star:hover {
+            cursor: pointer;
+        }
+
+        > div {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+}
+
+.message_header {
+    vertical-align: middle;
+    text-align: left;
+    /* We can overflow-y if the font size gets big */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    line-height: 14px;
+    position: relative;
+    z-index: 0;
+}
+
+.message_list {
+    .recipient_row {
+        border-bottom: 1px solid hsl(0, 0%, 88%);
+        margin-bottom: 10px;
+    }
+}
+
+.floating_recipient {
+    .recipient_row {
+        border-top: 1px solid hsl(0, 0%, 88%);
+    }
+
+    .recipient_row_date.hide-date {
+        display: block;
+    }
+
+    .message_header_private_message {
+        border-bottom: 0;
+        border-left: 0;
+    }
+}
+
+.stream_label {
+    display: inline-block;
+    padding: 4px 6px 3px;
+    font-weight: normal;
+    height: 17px;
+    line-height: 17px;
+    border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
+        hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
+    border-width: 0;
+    position: relative;
+    text-decoration: none;
+
+    .recipient-row-stream-icon {
+        font-size: 12px;
+        line-height: 12px;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        position: relative;
+        top: 1px;
+    }
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &::after {
+        left: 100%;
+        top: 50%;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+        margin-top: -11px;
+        border-style: solid;
+        border-width: 11px 0 11px 5px;
+        border-color: inherit;
+        z-index: 2;
+        transform: scale(0.9999);
+    }
+}
+
+.stream_topic {
+    display: inline-block;
+    padding: 3px 3px 2px 9px;
+    height: 17px;
+    line-height: 17px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recipient_bar_controls {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.recipient_row_date {
+    color: hsl(0, 0%, 53%);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 11px 2px 10px;
+    height: 17px;
+    line-height: 17px;
+
+    &.hide-date {
+        display: none;
+    }
+}
+
+.recipient_bar_icon {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+#mark_as_read_turned_off_banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 8px 8px 14px;
+    column-gap: 10px;
+
+    #mark_as_read_turned_off_content {
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    #mark_as_read_controls {
+        display: flex;
+    }
+
+    #mark_as_read_close {
+        align-self: flex-start;
+        margin-top: -5px;
+        /* override bootstrap */
+        top: 0;
+        right: 0;
+        position: static;
+    }
+}
+
+.copy-paste-text {
+    /* Hide the text that we want copy paste to capture */
+    position: absolute;
+    text-indent: -99999px;
+    float: left;
+    width: 0;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.message_header_private_message {
+    .message_label_clickable {
+        background-color: hsl(0, 0%, 27%);
+        display: inline-block;
+        padding: 3px 6px 2px;
+        font-weight: normal;
+        height: 17px;
+        line-height: 17px;
+        border-left-color: hsl(0, 0%, 27%);
+    }
+
+    /* Base color backgrounds for message boxes,
+       private messages, mentions, and unread messages */
+
+    .message-header-contents {
+        background-color: hsla(192, 19%, 75%, 0.2);
+        box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
+    }
+}
+
+.private-message {
+    .alert-msg {
+        background-color: hsl(192, 20%, 95%);
+    }
+
+    .messagebox,
+    .date_row {
+        background-color: hsla(192, 19%, 75%, 0.2);
+        /* The 5th parameter here is a spread-radius, which, when negative,
+         * causes the shadow to shrink (be smaller than the target
+         * element), resulting in a visual width of 3px-1px=2px. This
+         * is a workaround for a regression found in Electron
+         * v18.3.15+ where the box-shadow with spread-radius >= 0
+         * would cause horizontal separator lines to appear between
+         * messages in the color of the left ruler. The root cause of
+         * that regression is yet unknown.
+         *
+         * Similar CSS for stream messages is present directly in the
+         * Handlebars templates, since the color used there is the
+         * stream's configured color.
+         */
+        box-shadow: inset 3px 0 0 -1px hsl(0, 0%, 27%),
+            -1px 0 0 0 hsl(0, 0%, 27%);
+    }
+}
+
+.message-header-contents {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-right: 1px solid hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
+}
+
+.group_mention .messagebox,
+.direct_mention .messagebox {
+    background-color: hsl(8, 94%, 94%);
+}
+
+.recipient_row .message_row:first-child .unread_marker {
+    top: 0;
+}
+
+.unread_marker {
+    display: block;
+    position: absolute;
+    height: 100%;
+    left: 2px;
+    top: 0;
+    opacity: 0;
+    z-index: 2;
+    bottom: 1px;
+    transition: all 0.3s ease-out;
+
+    &.slow_fade {
+        transition: all 2s ease-out;
+    }
+
+    &.fast_fade {
+        transition: all 0.3s ease-out;
+    }
+}
+
+.unread-marker-fill {
+    background-color: hsl(107, 74%, 29%);
+    width: 3px;
+    height: 100%;
+}
+
+.unread .unread_marker {
+    transition: all 0.3s ease-out;
+    opacity: 1;
+}
+
+.selected_message {
+    .messagebox {
+        z-index: 1;
+    }
+
+    .messagebox-content {
+        box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
+            -1px -1px 0 0 hsl(215, 47%, 50%), 1px 1px 0 0 hsl(215, 47%, 50%),
+            -1px 1px 0 0 hsl(215, 47%, 50%), 1px -1px 0 0 hsl(215, 47%, 50%);
+    }
+}
+
+.message_sender {
+    i.zulip-icon.zulip-icon-bot {
+        font-size: 12px;
+    }
+}
+
+.sender_name {
+    display: inline-block;
+    font-weight: 700;
+}
+
+.sender_name-in-status {
+    margin-right: 3px;
+    font-weight: 700;
+}
+
+.sender_name_hovered {
+    .sender_name,
+    .sender_name-in-status {
+        color: hsl(200, 100%, 40%);
+    }
+}
+
+.actions_hover:hover {
+    color: hsl(200, 100%, 40%);
+}
+
+.always_visible_topic_edit,
+.on_hover_topic_read,
+.on_hover_topic_unmute {
+    opacity: 0.7;
+
+    &:hover {
+        cursor: pointer;
+        opacity: 1;
+    }
+}
+
+.on_hover_topic_edit,
+.on_hover_topic_unresolve,
+.on_hover_topic_resolve,
+.on_hover_topic_mute {
+    opacity: 0.2;
+
+    &:hover {
+        cursor: pointer;
+        opacity: 0.7;
+    }
+}
+
+/* Make the action icon on the message row
+   always visible while the popover is open */
+.has_actions_popover .actions_hover {
+    visibility: visible !important;
+    pointer-events: all !important;
+    opacity: 1 !important;
+
+    i:focus {
+        /* Avoid displaying a focus outline outside the popover on the \vdots
+           icon when opened via the mouse. */
+        outline: 0 !important;
+    }
+}
+
+.has_actions_popover .info {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Brighten text because of the dark background */
+.dark_background a,
+.dark_background a:hover,
+a.dark_background:hover,
+.dark_background {
+    color: hsl(0, 0%, 100%) !important;
+}
+
+.dark_background a.message_label_clickable:hover {
+    color: hsl(200, 99%, 60%);
+}
+
+.small {
+    font-size: 80%;
+}
+
+.tiny {
+    font-size: 60%;
+}
+
+.settings-forgot-password {
+    display: inline-block;
+    position: relative;
+    color: hsl(0, 0%, 73%);
+    bottom: 4px;
+}
+
+div.message_table {
+    border-collapse: separate;
+    margin-left: auto;
+    display: none;
+    width: 100%;
+}
+
+.message_row {
+    position: relative;
+    border-left: 1px solid hsla(0, 0%, 0%, 0.1);
+    border-right: 1px solid hsla(0, 0%, 0%, 0.1);
+
+    &.selected_message {
+        z-index: 2;
+    }
+
+    .date_row {
+        /* We only want padding for the date rows between recipient blocks */
+        padding-bottom: 0;
+    }
+}
+
+div.focused_table {
+    display: block;
+}
+
+.message_content {
+    line-height: 1.214;
+    min-height: 17px;
+    display: block;
+    position: relative;
+    overflow: hidden;
+
+    &:empty {
+        display: none;
+    }
+
+    &.condensed {
+        max-height: 8.5em;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    &.collapsed {
+        max-height: 0;
+        min-height: 0;
+        overflow: hidden;
+    }
+}
+
+.rtl {
+    direction: rtl;
+}
+
+.message_edit_content {
+    line-height: 18px;
+    resize: vertical !important;
+    max-height: 24em;
+}
+
+.message_edit_countdown_timer {
+    text-align: right;
+    display: inline;
+    color: hsl(0, 0%, 63%);
+}
+
+.message_edit_tooltip {
+    display: inline;
+    color: hsl(0, 0%, 63%);
+}
+
+.message-edit-timer {
+    float: right;
+    display: none;
+    margin-top: 5px;
+}
+
+.message-edit-feature-group {
+    display: inline-flex;
+    margin: 0 auto -5px 10px;
+    align-items: baseline;
+}
+
+.message_edit_save .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+    height: 28px;
+    margin-top: -10px;
+    top: 6px;
+    width: 30px;
+}
+
+.edit-controls {
+    .btn-wrapper {
+        cursor: not-allowed;
+    }
+
+    .disable-btn {
+        pointer-events: none;
+    }
+}
+
+.topic_edit {
+    display: none;
+    line-height: 22px;
+
+    .alert {
+        display: inline-block;
+        margin: 0;
+        padding: 0 10px;
+        line-height: 17px;
+    }
+}
+
+#inline_topic_edit {
+    margin-bottom: 5px;
+
+    &.header-v {
+        height: 18px;
+        display: inline-block;
+        padding: 0 3px;
+        vertical-align: baseline;
+        line-height: 0px;
+        box-shadow: none;
+    }
+}
+
+#message_edit_topic {
+    margin: 0 5px 10px 0;
+}
+
+.message_edit_header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+#inline_topic_edit:focus,
+#message_edit_topic:focus {
+    outline: none;
+}
+
+.message_edit_topic_propagate {
+    display: inline-block;
+    width: auto;
+    margin-bottom: 10px;
+    max-width: 100%;
+}
+
+.topic_move_breadcrumb_messages,
+.message_edit_breadcrumb_messages {
+    margin: 0 5px 5px 0;
+    align-self: center;
+    width: 100%;
+    white-space: nowrap;
+
+    label.checkbox {
+        /* Place the checkboxes on their own lines. */
+        display: block;
+
+        input {
+            margin: 0;
+            vertical-align: baseline;
+        }
+
+        & + label.checkbox {
+            margin-top: 10px;
+        }
+    }
+
+    label {
+        display: inline-block;
+        margin-right: 10px;
+    }
+}
+
+.message_edit_breadcrumb_messages {
+    margin-bottom: 10px;
+}
+
+.message_length_controller {
+    display: none;
+    text-align: center;
+    color: hsl(200, 100%, 40%);
+
+    /* to make message-uncollapse easier */
+    margin-top: 10px;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
+.next_is_same_sender {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.inline_profile_picture {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    margin-right: 11px;
+    vertical-align: top;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &.guest-avatar::after {
+        outline: 2px solid hsl(0, 0%, 100%);
+    }
+}
+
+.home-error-bar {
+    margin-top: 5px;
+    display: none;
+
+    .alert {
+        margin-bottom: auto;
+    }
+}
+
+.streamname {
+    font-weight: bold;
+}
+
+.top-navbar-border {
+    border-right: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid hsl(0, 0%, 88%);
+}
+
+.search_icon {
+    /* These rules match the .dropdown-toggle CSS for the gear menu. */
+    color: inherit;
+    opacity: 0.5;
+    text-decoration: none;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+#message_view_header {
+    z-index: 2;
+    float: left;
+    height: $header_height;
+    width: 100%;
+    line-height: $header_height;
+    font-size: 16px;
+    display: flex;
+    align-content: flex-start;
+    flex-wrap: nowrap;
+    margin: 0;
+    border: none;
+    white-space: nowrap;
+    cursor: default;
+
+    .hidden {
+        display: none;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        font-size: 14px;
+        position: relative;
+        top: 1px;
+    }
+
+    .sub_count,
+    .stream,
+    & > span {
+        white-space: nowrap;
+        list-style-type: none;
+        display: inline-block;
+        vertical-align: top;
+        position: relative;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 16px;
+        margin: 0 -4px 0 0;
+        padding: 12px 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        @media (width < $sm_min) {
+            padding: 7px 3.5px; /* based on having ~41.66% decrease */
+        }
+
+        i {
+            margin: 0 3px 0 5px;
+        }
+
+        .fa {
+            &.fa-lock {
+                position: relative;
+                top: 0.5px;
+            }
+
+            .fa-envelope {
+                font-size: 14px;
+                margin: 0 5px;
+            }
+
+            .fa-hashtag {
+                font-size: 1.2rem;
+                /* font-weight: 800; */
+                margin: 0 2px 0 5px;
+            }
+        }
+    }
+
+    .stream {
+        text-overflow: clip;
+        color: inherit;
+        text-decoration: none;
+        /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
+        padding-right: calc(3px + 10px);
+    }
+
+    .divider {
+        color: hsl(0, 0%, 88%);
+        font-size: 20px;
+        margin: 0 3px;
+    }
+
+    .sub_count,
+    .narrow_description {
+        background: none;
+        font-size: 14px;
+        color: hsl(0, 0%, 40%);
+        font-weight: 400;
+        line-height: 20px;
+    }
+
+    .sub_count {
+        padding-left: 10px;
+        margin-left: 1px;
+        padding-right: 10px;
+        margin-right: 1px;
+        overflow: visible;
+
+        .fa.fa-user-o {
+            margin-left: 0;
+        }
+
+        &::before,
+        &::after {
+            content: "|";
+            position: absolute;
+            top: 25%;
+            height: 50%;
+            color: hsl(0, 0%, 88%);
+            font-size: 20px;
+            @media (width < $sm_min) {
+                top: 10%;
+            }
+        }
+
+        &::before {
+            left: -3px;
+            @media (width < $sm_min) {
+                /* this ensures the before "|" doesn't overlap
+                   with the stream name text on small narrows */
+                left: 0;
+            }
+        }
+
+        &::after {
+            right: -3px;
+        }
+    }
+
+    .narrow_description {
+        /* the actual value of flex shrink does not matter, it is the
+           ratio of this value to other flex items that determines the
+           behavior while shrinking, here the other item has the .stream
+           class and a flex of 1, so the value here *is* the ratio, and
+           is chosen such that the narrow description shrinks to close
+           before the stream name must begin to shrink */
+        flex-shrink: 100;
+        white-space: nowrap;
+        margin: 0;
+        padding: 12px 0;
+        padding-left: 10px;
+
+        @media (width < $sm_min) {
+            padding: 7px 0;
+            padding-left: 10px;
+        }
+
+        & > a {
+            padding: 12px 0;
+        }
+    }
+
+    .search_closed {
+        overflow: visible;
+        flex: 0; /* makes sure search icon is always visible */
+
+        cursor: pointer;
+        font-size: 20px;
+
+        padding: 10px 15px 0 0;
+        @media (width < $sm_min) {
+            padding: 5px 15px 0 0;
+        }
+    }
+
+    /* The very last element in the navbar is the search icon, the second
+       last element is either the narrow description (for stream narrows) or
+       the "title" (for other narrows). The flex-grow property ensures these
+       elements take up the entirety of the white space. */
+    .navbar-click-opens-search {
+        flex-grow: 1;
+
+        /* Provide the visual cue that clicking this will work as expected. */
+        cursor: pointer;
+
+        &:hover ~ .search_closed {
+            opacity: 1;
+        }
+    }
+}
+
+#searchbox,
+#searchbox_legacy {
+    width: 100%;
+    height: $header_height;
+
+    .navbar-search:not(.expanded) {
+        display: none;
+    }
+
+    .navbar-search.expanded {
+        float: left;
+        overflow: hidden;
+        margin-top: 0;
+        margin-bottom: 0;
+        width: calc(100% - 2px);
+        position: absolute;
+
+        .search_button {
+            display: inline;
+            margin-right: 15px;
+        }
+    }
+
+    .input-append {
+        position: relative;
+        width: 100%;
+        width: max-content;
+        min-width: 100%;
+
+        .fa-search {
+            padding: 0;
+            font-size: 20px;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 5;
+        }
+
+        .fa-search:not(.deactivated) {
+            cursor: pointer;
+        }
+    }
+
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: $header_height;
+        padding: 0;
+        padding-left: 5px;
+        padding-right: 40px;
+        border: none;
+        border-radius: 0;
+        font-family: "Source Sans 3", sans-serif;
+        font-weight: 300;
+        line-height: $header_height;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    #search_arrows:focus {
+        box-shadow: inset 0 0 0 2px hsl(204, 20%, 74%);
+    }
+
+    .search_button,
+    .search_button:disabled:hover {
+        position: absolute;
+        right: 35px;
+        top: 6px;
+        background: none;
+        border-radius: 0;
+        border: none;
+        height: 30px;
+        text-align: center;
+        padding: 4px;
+        color: inherit;
+        opacity: 0.5;
+        font-size: 18px;
+        box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+    }
+
+    .search_button:hover {
+        opacity: 1;
+    }
+
+    .search_button:disabled {
+        visibility: hidden;
+    }
+
+    .search_icon {
+        position: absolute;
+        height: 100%;
+        text-decoration: none;
+        padding: 0 10px;
+        font-size: 20px;
+        z-index: 5;
+        left: 0;
+    }
+
+    #search_arrows {
+        padding-left: 35px;
+        font-size: 90%;
+        letter-spacing: normal;
+    }
+
+    .pill-container {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        border: none;
+        padding: 0;
+    }
+
+    @media (width >= $sm_min) {
+        .pill {
+            padding: 2px 0 !important;
+            font-size: 14px;
+        }
+    }
+    @media (width < $sm_min) {
+        #search_arrows .pill {
+            line-height: 20px;
+
+            .exit {
+                top: 0;
+            }
+        }
+    }
+}
+
+#searchbox_legacy {
+    #search_arrows {
+        padding-left: 0;
+    }
+
+    #search_query {
+        padding-left: 35px;
+    }
+
+    .search_button {
+        right: 0;
+    }
+
+    .navbar-search.expanded {
+        .search_button {
+            margin-right: 14px;
+        }
+    }
+}
+
+#message_view_header_underpadding {
+    position: absolute;
+    width: 100%;
+    top: $header_height;
+    height: $header_padding_bottom;
+    z-index: 99;
+}
+
+#navbar-buttons {
+    white-space: nowrap;
+    margin-left: 15px;
+    margin-top: 7px;
+    display: inline-block;
+    float: right;
+
+    ul.nav {
+        margin: 0;
+
+        .dropdown-toggle,
+        li.active .dropdown-toggle {
+            font-size: 20px;
+            color: inherit;
+            opacity: 0.5;
+            text-shadow: none;
+            padding-left: 0 !important;
+            background-color: inherit;
+            box-shadow: inherit;
+            display: block;
+            position: absolute;
+            right: 6px;
+            top: -3px;
+        }
+
+        .dropdown-toggle:hover,
+        li.active .dropdown-toggle:hover {
+            opacity: 1;
+        }
+
+        li.dropdown.open .dropdown-toggle {
+            background: none;
+            opacity: 1;
+            text-shadow: none;
+        }
+
+        li.dropdown li.divider {
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+    }
+}
+
+#streamlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align: center;
+    vertical-align: middle;
+    /* border-right: 2px solid hsl(204, 20%, 74%); */
+}
+
+.hide-streamlist-toggle-visibility,
+.hide-navbar-buttons-visibility {
+    visibility: hidden;
+}
+
+#streamlist-toggle-button {
+    text-decoration: none;
+    color: hsl(0, 0%, 52%);
+    display: block;
+    position: relative;
+    background-color: hsl(0, 0%, 89%);
+    width: 40px;
+    height: 19px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    position: absolute;
+    display: none;
+    height: 12px;
+    min-width: 12px;
+    line-height: 12px;
+    background-color: hsl(0, 100%, 20%);
+    top: 4px;
+    right: 4px;
+    border: 1px solid hsl(0, 0%, 93%);
+    box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.2);
+    border-radius: 12px;
+    padding: 1px;
+    font-size: 9px;
+    z-index: 15;
+    font-weight: normal;
+    color: hsl(0, 0%, 100%);
+}
+
+.nav .dropdown-menu {
+    left: auto;
+    right: 0;
+    top: 30px;
+    /* Match the width of the right sidebar so that we don't have
+       the presence dots distracting you when looking at this. */
+    min-width: 240px;
+    box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
+
+    &::after {
+        position: absolute;
+        width: 0;
+        height: 0;
+        top: -7px;
+        right: 19px;
+        display: inline-block;
+        border-right: 7px solid transparent;
+        border-bottom: 7px solid hsl(0, 0%, 67%);
+        border-left: 7px solid transparent;
+        content: "";
+        z-index: 10;
+    }
+}
+
+#gear-menu .zulip-icon-language {
+    position: relative;
+    top: 2.5px;
+    left: -0.5px;
+}
+
+.nav .dropdown-menu a,
+.typeahead.dropdown-menu a {
+    color: inherit;
+}
+
+.typeahead.dropdown-menu {
+    .active {
+        color: hsl(0, 0%, 100%);
+
+        .unsubscribed_icon {
+            display: block;
+            float: right;
+            margin-top: 5px;
+            margin-right: -12px;
+            font-size: 0.8em;
+            color: hsl(96, 7%, 73%);
+        }
+    }
+
+    .unsubscribed_icon {
+        display: none;
+    }
+}
+
+.typeahead-image {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    position: relative;
+    margin-top: -4px;
+    vertical-align: middle;
+    top: 2px;
+    right: 8px;
+    border-radius: 4px;
+
+    /* For FontAwesome icons used in place of images for some users. */
+    font-size: 19px;
+    text-align: center;
+
+    &.no-presence-circle {
+        margin-left: 9px;
+        top: 3px;
+    }
+}
+
+nav {
+    .column-left {
+        text-align: center;
+
+        .nav-logo {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 8px;
+            height: 25px;
+            max-width: 200px;
+        }
+    }
+
+    a {
+        &.no-style:hover {
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .no-style {
+            text-decoration: none;
+        }
+    }
+}
+
+div.floating_recipient {
+    border-collapse: separate;
+    width: 100%;
+    position: relative;
+}
+
+#floating_recipient_bar {
+    top: $sidebar_top;
+}
+
+#bottom_whitespace {
+    display: block;
+    height: 300px;
+}
+
+.operator_value {
+    font-family: "Source Code Pro", monospace;
+    color: hsl(353, 70%, 65%);
+}
+
+.operator {
+    font-family: "Source Code Pro", monospace;
+}
+
+#loading_older_messages_indicator,
+#loading_newer_messages_indicator {
+    margin: 10px;
+}
+
+#loading_older_messages_indicator_box_container,
+#loading_newer_messages_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#loading_older_messages_indicator_box,
+#loading_newer_messages_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#page_loading_indicator {
+    margin: 10px auto;
+}
+
+#page_loading_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#page_loading_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#create_stream_subscribers {
+    margin-top: 10px;
+
+    .checkbox {
+        display: block;
+
+        input[type="checkbox"] {
+            margin: 5px 0;
+            float: none;
+        }
+    }
+}
+
+.sub_button_row {
+    text-align: center;
+}
+
+.small_square_button {
+    padding: 0;
+    border: none;
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+
+    &:focus {
+        outline: none;
+    }
+
+    &.small_square_x {
+        background-color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 47%);
+
+        &:hover {
+            color: hsl(0, 0%, 18%);
+        }
+    }
+}
+
+div.topic_edit_spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-top: -1px;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+div.topic_edit_spinner .loading_indicator_spinner {
+    width: 14px;
+    height: 14px;
+}
+
+.message_edit_spinner {
+    margin-right: 8px;
+    padding-top: 5px;
+}
+
+.message_edit_spinner .loading_indicator_spinner {
+    width: 20px;
+    height: 20px;
+}
+
+textarea.invitee_emails {
+    min-height: 40px;
+    max-height: 300px;
+    width: 96%;
+    max-width: 96%;
+
+    color: hsl(0, 0%, 33%);
+    background-color: hsl(0, 0%, 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 4px 6px;
+
+    box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
+    transition: border linear 0.2s, box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsla(206.5, 80%, 62%, 0.8);
+        outline: 0;
+
+        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
+            0 0 8px hsla(206.5, 80%, 62%, 0.6);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0, 0%, 93%);
+    }
+}
+
+#invite-user {
+    .modal-header {
+        padding: 7px 15px;
+        border-color: hsl(0, 0%, 87%);
+
+        .exit {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background-color: transparent;
+            border: none;
+            position: absolute;
+            top: 6px;
+            right: 5px;
+            color: hsl(0, 0%, 67%);
+        }
+    }
+
+    .overlay-content {
+        position: relative;
+        width: 500px;
+        border-radius: 4px;
+    }
+
+    .modal-body {
+        margin-bottom: 58px;
+        position: relative;
+    }
+
+    .modal-footer {
+        position: absolute;
+        bottom: 0;
+        width: calc(100% - 30px);
+    }
+
+    .invite-stream-controls {
+        margin-top: 5px;
+    }
+}
+
+#invite_status {
+    display: none;
+}
+
+#invite-user-label {
+    font-size: 1em;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+#multiuse_invite_status {
+    display: none;
+    margin-top: 7px;
+    margin-bottom: -5px;
+    text-align: left;
+}
+
+#multiuse_invite_link {
+    width: 350px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+
+#invite-stream-checkboxes {
+    padding-bottom: 26px;
+
+    i.zulip-icon-globe {
+        font-size: 80%;
+    }
+}
+
+#invite-method-choice {
+    margin-top: 2px;
+}
+
+#multiuse_radio_section {
+    margin-top: 4px;
+    margin-bottom: -2px;
+    display: none;
+}
+
+#generate_multiuse_invite_button {
+    position: relative;
+    top: 1px;
+}
+
+#custom-invite-expiration-time {
+    #custom-expiration-time-input {
+        width: 5ch;
+        margin-right: 15px;
+    }
+
+    #custom-expiration-time-unit {
+        width: auto;
+    }
+}
+
+.empty_feed_notice {
+    padding: 3em 1em;
+    text-align: center;
+}
+
+.message-fade,
+.user_sidebar_entry.user-fade {
+    opacity: 0.4;
+}
+
+.emoji {
+    height: 25px;
+    width: 25px;
+    position: relative;
+    margin-top: -7px;
+    vertical-align: middle;
+    top: 3px;
+}
+
+.status_emoji {
+    height: 16px;
+    width: 16px;
+    /* We are setting minimum width here because when the user's name is very long,
+    emoji's width decreases and causes it to break. */
+    min-width: 16px;
+    /* In most contexts, status emoji appear immediately after a name
+      field with no margin. Position the status emoji with 3px of left
+      margin to space it from the name, and set no right margin so
+      that any components to the right appear equally distant as they
+      would be from a name. */
+    margin-left: 3px;
+    margin-right: 0;
+}
+
+/* FIXME: Combine this rule with the one in portico.css somehow? */
+#pw_strength {
+    width: 100%;
+    height: 10px;
+    margin-bottom: 0;
+}
+
+#pw_change_controls {
+    display: none;
+}
+
+.sub-unsub-message,
+.date_row {
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+.date_row {
+    padding-left: 2px;
+
+    .date-direction {
+        display: inline-block;
+        padding-right: 5px;
+    }
+
+    .date-line {
+        display: inline-block;
+        vertical-align: middle;
+        width: 33%;
+        border-top: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0, 0%, 100%);
+        margin: 0 5px;
+    }
+}
+
+.sub-unsub-message span,
+.date_row span {
+    display: block;
+    padding: 4px;
+    overflow: hidden;
+    text-transform: uppercase;
+    font-size: 0.8em;
+}
+
+.sub-unsub-message .stream-status,
+.date_row span {
+    opacity: 0.5;
+}
+
+.sub-unsub-message span {
+    font-size: 1em;
+    text-transform: none;
+}
+
+.sub-unsub-message span::before,
+.sub-unsub-message span::after,
+.date_row span::before,
+.date_row span::after {
+    display: inline-block;
+    position: relative;
+    content: " ";
+    vertical-align: middle;
+    width: 50%;
+    height: 0;
+    border-top: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid hsl(0, 0%, 100%);
+}
+
+.sub-unsub-message span::before,
+.date_row span::before {
+    right: 0.5em;
+    margin-left: -50%;
+}
+
+.sub-unsub-message span::after,
+.date_row span::after {
+    left: 0.5em;
+    margin-right: -50%;
+}
+
+.message_edit {
+    display: none;
+}
+
+/* Reduce some of the heavy padding from Bootstrap. */
+.message_edit_form {
+    margin-bottom: 10px;
+    cursor: default;
+
+    .edit-controls {
+        margin-left: 0;
+        margin-top: 0;
+    }
+
+    /* Override the default border-radius to properly align
+       the button corners with `stream_header_colorblock`. */
+    .dropdown-toggle {
+        border-radius: 1px 4px 4px 1px !important;
+    }
+
+    .dropdown-list-widget,
+    .stream_header_colorblock {
+        margin-bottom: 10px;
+    }
+
+    textarea {
+        width: 100%;
+        min-width: 206px;
+        box-sizing: border-box;
+        /* Setting resize as none hides the bottom right diagonal box
+           (which even has a background color of its own!). */
+        resize: none !important;
+        color: hsl(0, 0%, 33%);
+        background-color: hsl(0, 0%, 100%);
+        border-radius: 4px;
+        vertical-align: middle;
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 4px 6px;
+        margin-bottom: 10px;
+
+        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
+        transition: border linear 0.2s, box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsla(206.5, 80%, 62%, 0.8);
+            outline: 0;
+
+            box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
+                0 0 8px hsla(206.5, 80%, 62%, 0.6);
+        }
+
+        &:read-only,
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0, 0%, 93%);
+        }
+    }
+}
+
+#topic_edit_form {
+    display: inline-block;
+    margin: 0;
+    height: 22px;
+    padding-left: 20px;
+    padding-right: 3px;
+    line-height: 22px;
+    margin-left: -15px;
+}
+
+#message_feed_container {
+    margin-top: 41px;
+}
+
+.screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: hsl(0, 0%, 0%);
+    z-index: 20000;
+}
+
+.deactivated_user .deactivated-user-icon {
+    color: inherit;
+    margin-left: 2px;
+    font-size: 0.9em;
+}
+
+.no-drag {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.user_popover_email {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: all 0.4s ease;
+
+    i {
+        cursor: pointer;
+
+        &.hide_copy_icon {
+            display: none;
+        }
+    }
+}
+
+.email_copied,
+.user_popover_email i:hover {
+    color: hsl(170, 48%, 54%);
+}
+
+.email_copied i {
+    display: none !important;
+}
+
+.hotkey-hint {
+    opacity: 0.75;
+}
+
+.flatpickr-calendar {
+    /* Hide the up and down arrows in the Flatpickr datepicker year */
+    .flatpickr-months .numInputWrapper span {
+        display: none;
+    }
+
+    .flatpickr-time-separator {
+        position: relative;
+        left: 5px;
+    }
+
+    .flatpickr-time input {
+        margin: 0 5px;
+        min-height: 30px;
+    }
+
+    .flatpickr-confirm {
+        color: hsl(0, 0%, 100%);
+        background-color: hsl(213, 90%, 65%);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    @media (width < $md_min) {
+        /* Center align flatpickr on mobile
+         * devices so that it doesn't go out of
+         * the viewport. */
+        left: 0 !important;
+        right: 0 !important;
+        margin: auto;
+
+        &::after,
+        &::before {
+            border-top-width: 0 !important;
+        }
+    }
+}
+
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0, 0%, 67%);
+    }
+
+    .overlay-content {
+        width: 440px;
+        border-radius: 4px;
+    }
+
+    .about-zulip-logo {
+        text-align: center;
+        margin: 30px;
+    }
+
+    .about-zulip-logo img {
+        height: 40px;
+    }
+
+    i.fa-copy {
+        cursor: pointer;
+    }
+}
+
+@media (width < $xl_min) {
+    .app-main,
+    .header-main {
+        min-width: 750px;
+    }
+
+    .column-right {
+        display: none;
+
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            right: 15px;
+            top: 0;
+
+            .right-sidebar {
+                background-color: hsla(0, 0%, 100%, 1);
+                box-shadow: 0 -2px 3px 0 hsla(0, 0%, 0%, 0.1);
+                border-left: 1px solid hsl(0, 0%, 87%);
+
+                /* We use both margin and padding to
+                   hide little artifacts from showing up in
+                   the gutter below the navbar. */
+                margin-top: $header_height;
+                padding: $header_padding_bottom 15px 0 15px;
+                height: 100%;
+                right: 0;
+            }
+        }
+    }
+
+    .header-main .column-right {
+        display: inline-block;
+        width: 30px;
+    }
+
+    #top_navbar.rightside-userlist #navbar-buttons {
+        margin-right: 41px;
+    }
+
+    .nav .dropdown-menu {
+        min-width: 180px;
+        box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
+
+        &::after {
+            right: 21px;
+        }
+    }
+
+    .column-middle {
+        margin-right: 7px;
+    }
+
+    .top-navbar-container,
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
+        width: calc(100% - 84px);
+    }
+
+    .search_closed .fa-search {
+        right: 115px;
+    }
+
+    #top_navbar:not(.rightside-userlist) {
+        .search_closed .fa-search {
+            right: 72px;
+        }
+
+        .top-navbar-border,
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
+            width: calc(100% - 50px);
+        }
+    }
+}
+
+@media (width < $md_min) {
+    body {
+        padding: 0;
+    }
+
+    .column-left {
+        display: none;
+
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0;
+            top: 0;
+
+            .left-sidebar {
+                background-color: hsla(0, 0%, 100%, 1);
+                box-shadow: 0 2px 3px 0 hsla(0, 0%, 0%, 0.1);
+                border-right: 1px solid hsl(0, 0%, 87%);
+
+                /* We use both margin and padding to
+                   hide little artifacts from showing up in
+                   the gutter below the navbar. */
+                margin-top: $header_height;
+                padding-top: $header_padding_bottom;
+
+                height: 100%;
+                padding-left: 10px;
+                width: $left_sidebar_width;
+            }
+        }
+    }
+
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 350px;
+    }
+
+    .column-middle,
+    .app-main .column-middle {
+        margin-left: 7px;
+        margin-right: 7px;
+    }
+
+    .header-main .column-middle {
+        margin-left: 0;
+    }
+
+    .column-middle-inner {
+        margin-left: 0;
+        margin-right: 15px;
+    }
+
+    .app-main .column-middle .column-middle-inner {
+        margin-right: 0;
+    }
+
+    #streamlist-toggle {
+        display: block;
+    }
+
+    .top-navbar-border {
+        margin-left: 40px;
+        width: calc(100% - 108px);
+    }
+    /* todo: Figure out why this has to be different
+       from above at this width and resolve it */
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
+        width: calc(100% - 123px);
+    }
+
+    .search_closed .fa-search {
+        right: 115px;
+    }
+
+    #top_navbar:not(.rightside-userlist) {
+        .top-navbar-border {
+            width: calc(100% - 75px);
+        }
+
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
+            width: calc(100% - 90px);
+        }
+    }
+}
+
+@media (width < $sm_min) {
+    .column-right.expanded .right-sidebar,
+    .column-left.expanded .left-sidebar {
+        margin-top: 31px;
+    }
+
+    .column-left.expanded {
+        .left-sidebar {
+            padding: 0;
+
+            #streams_header {
+                padding-right: 10px;
+            }
+        }
+
+        .narrows_panel {
+            margin-top: 10px;
+        }
+    }
+
+    .search_closed .fa-search {
+        top: 5px;
+    }
+
+    #streamlist-toggle,
+    #navbar-buttons,
+    .navbar-search,
+    #message_view_header,
+    #searchbox,
+    #searchbox_legacy,
+    .header {
+        line-height: 30px;
+        height: 30px;
+    }
+
+    .spectator_narrow_login_button {
+        height: 30px !important;
+    }
+
+    #search_query {
+        height: 30px !important;
+        vertical-align: text-bottom;
+    }
+
+    #streamlist-toggle-button {
+        height: 30px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    #navbar-buttons ul.nav .dropdown-toggle,
+    #navbar-buttons ul.nav li.active .dropdown-toggle {
+        top: -8px;
+    }
+
+    #searchbox,
+    #searchbox_legacy {
+        .input-append .fa-search {
+            top: 5px;
+        }
+
+        .search_button,
+        .search_button:disabled:hover {
+            top: 0;
+        }
+    }
+
+    #message_view_header_underpadding {
+        top: 30px;
+        height: 10px;
+    }
+
+    .messagebox-content {
+        padding-right: 15px;
+    }
+
+    .include-sender .message_controls {
+        background: none !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #floating_recipient_bar {
+        top: 40px;
+    }
+
+    .message_content {
+        padding-right: 50px;
+    }
+}
+
+@media (width < $mm_min) {
+    html {
+        overflow-x: hidden;
+    }
+
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 320px;
+    }
+}
+
+@media (width < $md_min) {
+    #feedback_container {
+        width: calc(90% - 30px);
+        left: 5%;
+        top: 5%;
+    }
+}
+
+#scroll-to-bottom-button-container {
+    display: block;
+    position: absolute;
+    bottom: 41px;
+    right: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 500ms, opacity 500ms ease-in-out;
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    #scroll-to-bottom-button-clickable-area {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &:hover #scroll-to-bottom-button {
+            background: hsl(240, 96%, 68%);
+        }
+
+        #scroll-to-bottom-button {
+            text-align: center;
+            width: 40px;
+            height: 40px;
+            background: hsl(240, 96%, 68%, 0.5);
+            border-radius: 50%;
+
+            i {
+                color: hsl(0, 0%, 100%);
+                margin: 0 auto;
+                font-size: 21px;
+                position: relative;
+                top: 8px;
+            }
+        }
+    }
+}
+
+.tooltip_right_arrow {
+    position: relative;
+    top: -1px;
+    font-weight: 600;
+}
+
+.spectator_login_for_image_button {
+    max-width: 250px;
+    height: 50px;
+
+    :hover {
+        text-decoration: none;
+    }
+
+    .login_button {
+        padding: 5px;
+        margin-top: 5px;
+
+        .fa {
+            top: 1px;
+        }
+    }
+}
+
+.recipient_row {
+    /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
+       for details on how this works */
+    .message_row.unread {
+        .date_row {
+            position: relative;
+            z-index: 3;
+            background-color: hsl(0, 0%, 100%);
+        }
+    }
+
+    .private-message.unread {
+        .date_row {
+            background-color: hsl(192, 20%, 95%);
+        }
+    }
+
+    /* Select all but the first .message_row.unread,
+       and remove the properties set from the previous rule. */
+    .message_row.unread ~ .message_row.unread {
+        .date_row {
+            position: unset;
+            z-index: 0;
+            background-color: transparent;
+        }
+    }
+
+    .private-message.unread ~ .private-message.unread {
+        .date_row {
+            background-color: hsl(192, 20%, 95%);
+        }
+    }
+}

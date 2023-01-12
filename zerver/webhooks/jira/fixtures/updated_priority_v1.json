@@ -1,0 +1,221 @@
+{
+  "webhookEvent": "jira:issue_updated",
+  "user": {
+    "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+    "name": "leo",
+    "emailAddress": "leo@zulip.com",
+    "avatarUrls": {
+      "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+      "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+      "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+      "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+    },
+    "displayName": "Leonardo Franchi [Administrator]",
+    "active": true
+  },
+  "issue": {
+    "id": "10000",
+    "self": "https://zulipp.atlassian.net/rest/api/2/issue/10000",
+    "key": "TEST-1",
+    "fields": {
+      "summary": "Fix That",
+      "progress": {
+        "progress": 0,
+        "total": 0
+      },
+      "timetracking": {},
+      "issuetype": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issuetype/2",
+        "id": "2",
+        "description": "A new feature of the product, which has yet to be developed.",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/issuetypes/newfeature.png",
+        "name": "New Feature",
+        "subtask": false
+      },
+      "timespent": null,
+      "reporter": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+        "name": "leo",
+        "emailAddress": "leo@zulip.com",
+        "avatarUrls": {
+          "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+          "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+          "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+          "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+        },
+        "displayName": "Leonardo Franchi [Administrator]",
+        "active": true
+      },
+      "created": "2013-09-06T11:07:19.972-0400",
+      "updated": "2014-02-26T14:57:13.139-0500",
+      "priority": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/priority/3",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/priorities/major.png",
+        "name": "Major",
+        "id": "3"
+      },
+      "description": "Please",
+      "customfield_10001": null,
+      "customfield_10002": null,
+      "customfield_10003": null,
+      "issuelinks": [],
+      "customfield_10000": null,
+      "subtasks": [],
+      "customfield_10008": null,
+      "customfield_10007": null,
+      "status": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/status/10001",
+        "description": "",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/statuses/open.png",
+        "name": "To Do",
+        "id": "10001",
+        "statusCategory": {
+          "self": "https://zulipp.atlassian.net/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "blue-gray",
+          "name": "New"
+        }
+      },
+      "customfield_10006": "1",
+      "labels": [],
+      "workratio": -1,
+      "project": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/project/10000",
+        "id": "10000",
+        "key": "TEST",
+        "name": "TestProject",
+        "avatarUrls": {
+          "16x16": "https://zulipp.atlassian.net/secure/projectavatar?size=xsmall&pid=10000&avatarId=10011",
+          "24x24": "https://zulipp.atlassian.net/secure/projectavatar?size=small&pid=10000&avatarId=10011",
+          "32x32": "https://zulipp.atlassian.net/secure/projectavatar?size=medium&pid=10000&avatarId=10011",
+          "48x48": "https://zulipp.atlassian.net/secure/projectavatar?pid=10000&avatarId=10011"
+        }
+      },
+      "environment": null,
+      "customfield_10014": null,
+      "customfield_10015": null,
+      "lastViewed": "2014-02-26T14:56:59.145-0500",
+      "aggregateprogress": {
+        "progress": 0,
+        "total": 0
+      },
+      "customfield_10012": null,
+      "components": [],
+      "customfield_10013": null,
+      "comment": {
+        "startAt": 0,
+        "maxResults": 1,
+        "total": 1,
+        "comments": [
+          {
+            "self": "https://zulipp.atlassian.net/rest/api/2/issue/10000/comment/10100",
+            "id": "10100",
+            "author": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "body": "test",
+            "updateAuthor": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "created": "2014-02-26T14:55:10.416-0500",
+            "updated": "2014-02-26T14:55:10.416-0500"
+          }
+        ]
+      },
+      "timeoriginalestimate": null,
+      "customfield_10017": null,
+      "customfield_10016": null,
+      "customfield_10019": null,
+      "customfield_10018": null,
+      "votes": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issue/TEST-1/votes",
+        "votes": 0,
+        "hasVoted": false
+      },
+      "fixVersions": [],
+      "resolution": null,
+      "resolutiondate": null,
+      "creator": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+        "name": "leo",
+        "emailAddress": "leo@zulip.com",
+        "avatarUrls": {
+          "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+          "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+          "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+          "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+        },
+        "displayName": "Leonardo Franchi [Administrator]",
+        "active": true
+      },
+      "aggregatetimeoriginalestimate": null,
+      "duedate": null,
+      "customfield_10020": null,
+      "customfield_10021": "Not Started",
+      "watches": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issue/TEST-1/watchers",
+        "watchCount": 1,
+        "isWatching": true
+      },
+      "worklog": {
+        "startAt": 0,
+        "maxResults": 20,
+        "total": 0,
+        "worklogs": []
+      },
+      "assignee": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+        "name": "leo",
+        "emailAddress": "leo@zulip.com",
+        "avatarUrls": {
+          "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+          "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+          "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+          "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+        },
+        "displayName": "Leonardo Franchi [Administrator]",
+        "active": true
+      },
+      "attachment": [],
+      "aggregatetimeestimate": null,
+      "versions": [],
+      "timeestimate": null,
+      "aggregatetimespent": null
+    }
+  },
+  "changelog": {
+    "id": "10102",
+    "items": [
+      {
+        "field": "priority",
+        "fieldtype": "jira",
+        "from": "2",
+        "fromString": "Critical",
+        "to": "3",
+        "toString": "Major"
+      }
+    ]
+  },
+  "timestamp": 1393444633145
+}

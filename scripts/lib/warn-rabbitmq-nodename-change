@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# For security reasons, we need to configure RabbitMQ to listen only
+# on localhost, which we cannot do if the nodename contains the
+# hostname (e.g. rabbit@zulip-host).  Containing the hostname also
+# makes it brittle to hostname changes, which are (for example) common
+# in containerized environments.
+
+set -eu
+
+# Try to find the current nodename
+CURRENT=$(sh -c 'cd /usr/lib/rabbitmq/bin/ && . ./rabbitmq-env && echo $NODENAME')
+if [ "$CURRENT" != "zulip@localhost" ]; then
+    cat <<EOF
+
+***** WARNING *****
+
+We are renaming the rabbitmq server's nodename from '$CURRENT' to
+'zulip@localhost', as rabbitmq is being reconfigured to listen only on
+localhost.  This will also make the server more resilient to hostname
+changes.  This will only affect you if you were using the rabbitmq
+server for other, non-Zulip uses.
+
+*******************
+
+EOF
+
+    service rabbitmq-server stop || true
+fi

@@ -1,0 +1,41 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "activity" %}
+
+{# User activity. #}
+
+{% block title %}
+<title>{{ title }} | Zulip analytics</title>
+{% endblock %}
+
+
+{% block content %}
+
+    {% if not is_home %}
+    <a class="show-all" href="/activity">Home</a>
+    <br />
+    {% endif %}
+
+    <h4>{{ title }} {% if realm_stats_link %}{{ realm_stats_link }}{% endif %}</h4>
+
+
+    <ul class="nav nav-tabs">
+        {% for name, activity in data %}
+        <li {% if loop.first %} class="active" {% endif %}>
+            <a href="#{{ name|slugify }}" data-toggle="tab">{{ name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content">
+
+        {% for name, activity in data %}
+
+        <div class="tab-pane {% if loop.first %} active {% endif %}" id="{{ name|slugify }}">
+            {{ activity|safe }}
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+{% endblock %}

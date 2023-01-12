@@ -1,0 +1,733 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Zulip for open-source projects" %}
+
+{% set PAGE_DESCRIPTION = "Grow your community with thoughtful and inclusive
+  discussion, using the only modern team chat app that is ideal for both live
+  and asynchronous conversations." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page">
+    <div class="hero bg-pycon">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Zulip for open source projects</h1>
+            <p>
+                Grow your community with thoughtful and inclusive discussion.
+                <br/><a href="/plans">Zulip Cloud Standard</a> is free for open-source
+                projects!
+            </p>
+        </div>
+        <div class="hero-text">
+            Learn how the <a href="/case-studies/rust/">Rust language</a>,
+            <a href="/case-studies/lean/">Lean theorem prover</a>,
+            <br />and <a href="/case-studies/asciidoctor/">Asciidoctor</a> communities are using Zulip.
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+                {{ _('Request sponsorship') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-intro">
+        <h1 class="center"> Make Zulip the communication hub for your open-source community. </h1>
+        <p>
+            <a href="/hello">Zulip</a> is the only <a href="/features">modern
+            team chat app</a> that is <a href="/why-zulip">ideal</a> for both
+            live and asynchronous conversations. Discuss issues, pull requests
+            and feature ideas, engage with users, answer questions, and
+            onboard new contributors.
+        </p>
+        <div class="quote">
+            <blockquote>
+                Rust development would not be moving at the pace that it has been without Zulip.
+            </blockquote>
+            <div class="author">
+                &mdash; <a href="https://www.rust-lang.org/governance/teams/lang">Rust Language team</a>
+                co-lead <a href="https://joshtriplett.org/">Josh Triplett</a>
+            </div>
+            <a class="case-study-link" href="/case-studies/rust/"
+              target="_blank">How the Rust language community uses Zulip ↗</a>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Use topics to organize the discussion
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Like email threads,
+                            <a href="/help/streams-and-topics">Zulip topics</a>
+                            create a separate space for each discussion, so
+                            different conversations will never get in each
+                            other’s way.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Find active conversations, or see what happened while you were away,
+                            with the <a href="/help/recent-conversations">Recent conversations</a>
+                            view. Read the topics you care about, and skip the rest.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Keep discussions orderly
+                            by <a href="/help/rename-a-topic">moving</a>
+                            or <a href="/help/move-content-to-another-topic">splitting</a>
+                            topics when conversations digress.
+                        </div>
+                    </li>
+                </ul>
+                <blockquote class="twitter-tweet" data-cards="hidden"><p lang="en" dir="ltr">We just moved the Lichess team (~100 persons) to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a>, and I&#39;m loving it. The topics in particular make it vastly superior to slack &amp; discord, when it comes to dealing with many conversations.<br />Zulip is also open-source! <a href="https://t.co/lxHjf3YPMe">https://t.co/lxHjf3YPMe</a></p>&mdash; Thibault D (@ornicar) <a href="https://twitter.com/ornicar/status/1412672302601457664?ref_src=twsrc%5Etfw">July 7, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js"></script>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image topics-image">
+                <img alt="" src="/static/images/landing-page/open_source/streams_and_topics_day.png" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/education/knowledge-repository.svg" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Lasting knowledge repository
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Maintain access to your organization's entire
+                            message history with free <a href="/plans">Zulip
+                            Cloud Standard</a> hosting. Information is at your
+                            fingertips with Zulip's <a
+                            href="/help/search-for-messages">powerful full-text
+                            search</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere">Permanently link</a>
+                            to a Zulip conversation or a message in context
+                            from your issue tracker, forum, or anywhere else.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            With the <a href="/help/public-access-option">public
+                            access option</a>, anyone can view, browse, and
+                            search your organization's public content — no
+                            account required.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Conversations are organized by topic, so you can
+                            review old discussions to understand past work,
+                            explanations, and decisions.
+                        </div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        The core of the Recurse Center is the community, and the
+                        core of our online community is Zulip… Switching to
+                        Zulip has turned out to be one of the best decisions
+                        we’ve made, and it’s impossible to imagine RC today
+                        without it. No other tool has a user experience that
+                        scales to a community of our size.
+                    </blockquote>
+                    <div class="author">&mdash; Nick Bergson-Shilcock, founder and CEO,
+                        <a href="https://www.recurse.com/">Recurse Center</a></div>
+                    <a class="case-study-link" href="/case-studies/recurse-center/"
+                      target="_blank">How the Recurse Center
+                    community uses Zulip ↗</a>
+                </div>
+
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/education/knowledge-repository.svg" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Build inclusive communities
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Conversations in Zulip can
+                            continue for hours or days, enabling effective
+                            discussions between community members around the
+                            world.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Core contributors can answer a question when they
+                            have a few minutes, without digging through dozens
+                            of messages.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Part-time participants <a href="/help/finding-a-topic-to-read">
+                            quickly zero in</a> on the conversations they care
+                            about. This is not possible with other chat tools
+                            like Slack or Discord.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Topics provide a safe space to ask a question without
+                            interrupting other conversations.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Zulip offers dozens of features
+                            for <a href="/help/moderating-open-organizations">
+                            moderating discussions</a>. Members can
+                            also <a href="/help/mute-a-user">mute</a> anyone
+                            they'd rather not interact with.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Check out <a href="/for/communities">Zulip for
+                            communities</a>
+                            to learn more about how Zulip facilitates
+                            contributor engagement and inclusion.
+                        </div>
+                    </li>
+                </ul>
+                <blockquote class="twitter-tweet"><p lang="en" dir="ltr">When we made the switch to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a> a few months ago for chat, never in my wildest dreams did I imagine it was going to become the beating heart of the community, and so quickly. It&#39;s a game changer. 🧑‍💻🗨️👩‍💻</p>&mdash; Dan Allen (@mojavelinux) <a href="https://twitter.com/mojavelinux/status/1409702273400201217?ref_src=twsrc%5Etfw">June 29, 2021</a></blockquote><script async src="https://platform.twitter.com/widgets.js"></script>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/open_source/build_inclusive_communities.svg" />
+            </div>
+        </div>
+    </div>
+
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/companies/software-engineer.svg" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Open ecosystem
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Zulip is <a href="https://github.com/zulip">100%
+                            open-source software</a>, with no "open core"
+                            catch. We work hard to make it <a href="https://zulip.readthedocs.io/en/latest/production/install.html">easy to set up</a>,
+                            <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups">backup</a>,
+                            and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintain</a>
+                            a self-hosted Zulip installation, where you
+                            have full control of your data.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Our high quality <a href="/help/export-your-organization">export</a>
+                            and <a href="https://zulip.readthedocs.io/en/latest/production/export-and-import.html">import</a>
+                            tools ensure that you can always move from
+                            <a href="/plans/">Zulip Cloud</a> hosting to your
+                            own servers. There is no lock-in.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Zulip's <a href="https://chat.zulip.org/api/rest">open API</a>
+                            is shared by the official web/desktop, mobile, and terminal
+                            clients, with a <a href="https://chat.zulip.org/api/changelog">complete
+                            API changelog</a> and
+                            <a href="https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#compatibility-and-upgrading">
+                            backwards-compatibility policy</a> designed to support
+                            developers of third-party clients.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Zulip supports mirroring channels with
+                            <a href="/integrations/doc/irc">IRC</a>,
+                            <a href="/integrations/doc/slack">Slack</a>, and
+                            <a href="/integrations/doc/matrix">Matrix</a>, and
+                            you can connect to other modern chat protocols using
+                            <a href="https://github.com/42wim/matterbridge">Matterbridge</a>.
+                        </div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        I highly recommend Zulip to other communities. We’re
+                        coming from Freenode as our only real-time
+                        communication so the difference is night and day. Slack
+                        is a no-go for many due to not being FLOSS, and I’m
+                        concerned about vendor lock-in if they were to stop
+                        being so generous. Slack’s threading model is much
+                        worse than Zulip’s IMO. The streams/topics flow is an
+                        incredibly intuitive way to keep track of everything
+                        that is going on.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; RJ Ryan, <a href="https://mixxx.org/">Mixxx</a>
+                        Developer
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/companies/software-engineer.svg" />
+            </div>
+        </div>
+    </div>
+
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Powerful formatting
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/code-blocks">Zulip code blocks</a> come with
+                            syntax highlighting for over 250 languages, ability to
+                            <a href="/help/code-blocks#default-code-block-language">set a default language</a>,
+                            and integrated <a href="/help/code-blocks#code-playgrounds">code playgrounds.</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/format-your-message-using-markdown#latex">Type LaTeX</a>
+                            directly into your Zulip message, and see it beautifully rendered.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Enjoy inline image, video and Tweet previews.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            If you made a mistake, no worries! You
+                            can <a href="/help/edit-or-delete-a-message">edit your
+                            message</a>, or move it to a
+                            different <a href="/help/move-content-to-another-topic">topic</a>
+                            or <a href="/help/move-content-to-another-stream">stream</a>.
+                        </div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        At rust-lang, at Ferrous Systems, and now at Near,
+                        Zulip is absolutely invaluable for making technical
+                        discussion work!
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a href="https://github.com/matklad/">Aleksey Kladov</a>
+                        , Senior software engineer, NEAR Protocol
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/companies/message-formatting-top.png" />
+            </div>
+        </div>
+    </div>
+
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/companies/message-formatting-bottom.png" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Interactive messaging
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Start a <a href="/help/start-a-call">video
+                            call</a> with the click of a button, or
+                            plan events without worrying
+                            about time zones
+                            using
+                            <a
+                              href="/help/format-your-message-using-markdown#global-times">global times</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Use <a href="/help/emoji-reactions">emoji
+                            reactions</a> for lightweight
+                            interactions. Have fun
+                            with <a href="/help/add-custom-emoji">custom
+                            emoji</a> and gather feedback
+                            with <a href="/help/create-a-poll">polls</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Share files or images with <a href="/help/share-and-upload-files">drag-and-drop
+                            uploads</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Enjoy animated GIFs with Zulip's native
+                            <a href="/help/animated-gifs-from-giphy">GIPHY integration</a>.
+                        </div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        Wikimedia uses Zulip for its participation in open
+                        source mentoring programs. Zulip’s threaded discussions
+                        help busy organization administrators and mentors stay
+                        in close communication with students during all phases
+                        of the programs.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; Srishti Sethi, Developer Advocate, <a href="https://wikimediafoundation.org/">Wikimedia Foundation</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/companies/message-formatting-bottom.png" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Effective workflows with integrations
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Use topics to manage support workflows, answer
+                            questions, and collaborate to investigate issues.
+                            <a href="/help/resolve-a-topic">Mark the topic ✓
+                            resolved</a> when done!
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/add-a-custom-linkifier">Customize
+                            Zulip’s markup with linkifiers</a>, so that
+                            “TRAC-1234” and “#1234” automatically
+                            link to issues or tickets in the tools you use.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Native integrations for GitHub, Jira, Twitter, Sentry
+                            and <a href="/integrations">hundreds of
+                            other tools</a> can initiate new topics,
+                            creating lightweight discussion spaces for
+                            each issue.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Bots can also use a dedicated topic to avoid
+                            crowding out conversations.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Connect to thousands of tools
+                            using <a href="https://zapier.com/apps/zulip/integrations">Zapier</a>.
+                            Integrations written for Slack can post
+                            into Zulip via
+                            the <a href="/integrations/doc/slack_incoming">Slack
+                            compatible webhook</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Build your own integrations with Zulip’s
+                            easy-to-use <a href="/api">RESTful
+                            API</a>, <a href="/api/installation-instructions">client
+                            bindings</a>, <a href="/api/incoming-webhooks-overview">incoming
+                            webhooks</a>, <a href="/api/outgoing-webhooks">outgoing
+                            webhooks</a>
+                            and <a href="/api/running-bots">interactive
+                            bot framework</a>.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/companies/integrations_with_border.png" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Flexible administration and moderation
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Invite new members with <a href="/help/invite-new-users">multi-use invite links</a>,
+                            or make your community open for anyone to
+                            <a href="/help/restrict-account-creation#set-whether-invitations-are-required-to-join">join without an invitation</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Allow (or require) users to authenticate with
+                            <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">
+                            single sign-on options</a> like
+                            <a href="/help/configure-authentication-methods">GitHub or GitLab</a>,
+                            instead of with a username and password.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Automatically subscribe members to
+                            streams <a href="/help/set-default-streams-for-new-users">when
+                            they join.</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">Manage your community with
+                            <a href="/help/stream-permissions#detailed-permissions">
+                            fine-grained permission settings</a> for
+                            <a href="/help/roles-and-permissions">
+                            administrators and moderators</a>.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    When and how you want it
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            With <a href="/apps">apps for every
+                            platform</a>, you can check Zulip at your computer or on your
+                            phone. Zulip works great in a browser, so no download is
+                            required.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Zulip alerts you about timely messages with <a href="/help/stream-notifications">fully customizable</a> mobile, email and desktop notifications.</div></li>
+                    <li>
+                        <div class="list-content">
+                            Mention <a href="/help/mention-a-user-or-group">users</a>, <a href="/help/user-groups">groups
+                            of users</a>
+                            or <a href="/help/pm-mention-alert-notifications#wildcard-mentions">everyone</a>
+                            when you need their attention.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Use Zulip in your language of choice, with translations into
+                            <a href="https://www.transifex.com/zulip/zulip/">23 languages</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Zulip is built for scale and works reliably for open organizations
+                            with 10,000s of users, with
+                            <a href="https://zulip.readthedocs.io/en/stable/production/requirements.html#scalability">
+                            modest hardware</a>.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image">
+                <img class="mirror-image" alt="" src="/static/images/landing-page/education/mobile.svg" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <div class="quote">
+                    <blockquote>
+                        The Lean community switched from Gitter to Zulip in early 2018,
+                        and never looked back. Zulip’s stream/topic model has been
+                        essential for organising research work and simultaneously
+                        onboarding newcomers as our community scaled. My experience with
+                        both the app and the website is extremely positive!
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a href="https://www.imperial.ac.uk/people/k.buzzard">Kevin Buzzard</a>, Professor of Pure Mathematics at <a href="https://www.imperial.ac.uk/">Imperial College London</a>
+                    </div>
+                    <a class="case-study-link" href="/case-studies/lean/"
+                      target="_blank">How the Lean prover
+                    community uses Zulip ↗</a>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Make the move today
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            The Zulip core developers have decades of combined
+                            experience leading and growing open source
+                            communities, and we love helping other communities
+                            reach their potential.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Getting started or moving
+                            from another platform is easy! Import your existing
+                            organization from <a href="/help/import-from-slack">
+                            Slack</a>, <a href="/help/import-from-mattermost">
+                            Mattermost</a>, <a href="/help/import-from-gitter">
+                            Gitter</a>, or <a href="/help/import-from-rocketchat">
+                            Rocket.Chat</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            See how <a href="/communities/">other open
+                            communities</a> are using Zulip, and learn about <a
+                            href="/help/moderating-open-organizations">best
+                            practices</a> for moderating an open Zulip
+                            organization.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            If you have any questions,
+                            please contact us at <a href="mailto:sales@zulip.com">
+                            sales@zulip.com</a>. You can also drop by our
+                            <a href="/development-community/">friendly development
+                            community at chat.zulip.org</a> to ask for help or
+                            suggest improvements!
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <div class="quote">
+                    <blockquote>
+                        The Lean community switched from Gitter to Zulip in early 2018,
+                        and never looked back. Zulip’s stream/topic model has been
+                        essential for organising research work and simultaneously
+                        onboarding newcomers as our community scaled. My experience with
+                        both the app and the website is extremely positive!
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a href="https://www.imperial.ac.uk/people/k.buzzard">Kevin Buzzard</a>, Professor of Pure Mathematics at <a href="https://www.imperial.ac.uk/">Imperial College London</a>
+                    </div>
+                    <a class="case-study-link" href="/case-studies/lean/"
+                      target="_blank">How the Lean prover
+                    community uses Zulip ↗</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="bottom-register-buttons">
+        <h1>
+            <a href="/plans">Zulip Cloud Standard</a> is free for open-source projects!
+        </h1>
+        <div class="bottom-text-large">
+            <p>Join the hundreds of open-source projects we sponsor.</p>
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+                {{ _('Request sponsorship') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

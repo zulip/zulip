@@ -1,0 +1,13 @@
+<div>
+    <label for="change_stream_name">
+        {{t 'Stream name' }}
+    </label>
+    <input type="text" id="change_stream_name" value="{{ stream_name }}" maxlength="{{ max_stream_name_length }}" />
+</div>
+<div>
+    <label for="change_stream_description">
+        {{t 'Description' }}
+        {{> ../help_link_widget link="/help/change-the-stream-description" }}
+    </label>
+    <textarea id="change_stream_description" class="settings_textarea" maxlength="{{ max_stream_description_length }}">{{ stream_description }}</textarea>
+</div>

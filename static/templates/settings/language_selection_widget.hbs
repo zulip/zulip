@@ -1,0 +1,12 @@
+<div class="language_selection_widget input-group prop-element" id="id_{{section_name}}">
+    <label class="title">
+        {{section_title}}
+        {{#if help_link_widget_link}}
+        {{> ../help_link_widget link=help_link_widget_link }}
+        {{/if}}
+    </label>
+    <button type="button" class="language_selection_button button rounded small" data-section="{{section_name}}">
+        <span class="{{section_name}}" data-language-code="{{language_code}}">{{setting_value}}</span>
+        <i class="fa fa-pencil"></i>
+    </button>
+</div>

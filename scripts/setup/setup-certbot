@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage() {
+    cat <<EOF >&2
+Usage: $0 --email=admin@example.com [--method={webroot|standalone}] \
+hostname.example.com [another.example.com]
+EOF
+    exit 1
+}
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+method=webroot
+args="$(getopt -o '' --long help,email:,method:,skip-symlink,agree-tos -n "$0" -- "$@")"
+eval "set -- $args"
+agree_tos=()
+while true; do
+    case "$1" in
+        --email)
+            EMAIL="$2"
+            shift
+            shift
+            ;;
+        --method)
+            method="$2"
+            shift
+            shift
+            ;;
+        --skip-symlink)
+            skip_symlink=1
+            shift
+            ;;
+        --agree-tos)
+            agree_tos=(--agree-tos)
+            shift
+            ;;
+        --help)
+            show_help=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+# Parse the remaining arguments as Subject Alternative Names to pass to certbot
+HOSTNAMES=()
+for arg; do
+    HOSTNAMES+=(-d "$arg")
+done
+DOMAIN=$1
+
+if [ -n "$show_help" ]; then
+    usage
+fi
+
+if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
+    usage
+fi
+
+case "$method" in
+    standalone)
+        method_args=(--standalone --no-directory-hooks)
+        ;;
+    webroot)
+        method_args=(--webroot '--webroot-path=/var/lib/zulip/certbot-webroot/')
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+# Check for a supported OS release.
+if [ -f /etc/os-release ]; then
+    os_info="$(
+        . /etc/os-release
+        printf '%s\n' "$ID" "$ID_LIKE"
+    )"
+    {
+        read -r os_id
+        read -r os_id_like || true
+    } <<<"$os_info"
+fi
+
+set -x
+
+case " $os_id $os_id_like " in
+    *' debian '*)
+        apt-get update
+        apt-get install -y certbot
+        ;;
+    *' rhel '*)
+        yum install -y certbot
+        ;;
+esac
+
+# We don't use --no-interactive, because certbot needs to ask the user
+# to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
+# Passing --force-interactive suppresses a warning, but also brings up
+# an annoying prompt we stifle with --no-eff-email.
+certbot certonly "${method_args[@]}" \
+    "${HOSTNAMES[@]}" -m "$EMAIL" \
+    "${agree_tos[@]}" \
+    --force-interactive --no-eff-email
+
+symlink_with_backup() {
+    if [ -e "$2" ]; then
+        # If the user is setting up our automatic certbot-management on a
+        # system that already has certs for Zulip, use some extra caution
+        # to keep the old certs available.
+        mv -f --backup=numbered "$2" "$2".setup-certbot || true
+    fi
+    ln -nsf "$1" "$2"
+}
+
+if [ -z "$skip_symlink" ]; then
+    CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
+    symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
+    symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+fi
+
+# "certbot certonly" does not run deploy hooks, so reload nginx if
+# need be to pick up the new certificate.
+case "$method" in
+    webroot)
+        service nginx reload
+        ;;
+esac
+
+echo "Certbot SSL certificate configuration succeeded."
