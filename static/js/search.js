@@ -271,21 +271,6 @@ export function initialize() {
         e.preventDefault();
         if (!search_box_opened) {
             $search_query_box.trigger("click");
-        } else {
-            // const query = $search_query_box.val();
-            // // There's nothing to search, but they probably don't want to close
-            // // the search bar. Move the focus back to the input field and reopen
-            // // the lookahead. Wait 100ms because the typeahead will want to close
-            // // because there's nothing there.
-            // if(!query) {
-            //     setTimeout(() => {
-            //         open_typeahead();
-            //     }, 100);
-            //     return;
-            // }
-            narrow_or_search_for_term($search_query_box.val());
-            $search_query_box.trigger("blur");
-            update_buttons_with_focus(false);
         }
     });
 }

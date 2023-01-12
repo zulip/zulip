@@ -1918,6 +1918,7 @@ div.focused_table {
         .search_icon {
             text-decoration: none;
             color: hsla(0, 0%, 0%, 0.5);
+            cursor: default;
         }
     }
 
@@ -1933,15 +1934,22 @@ div.focused_table {
             color: hsl(0, 0, 0);
 
             box-shadow: none;
-            
-            &:hover {
-                box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.15),
-                    0 1px 5px hsla(0, 0%, 0%, 0.1);
-            }
+            cursor: pointer;
         }
 
         #search_arrows {
             width: 150px;
+        }
+
+        #search_arrows:hover {
+            cursor: pointer;
+            .search_icon {
+                cursor: pointer;
+            }
+            #search_query {
+                box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.15),
+                    0 1px 5px hsla(0, 0%, 0%, 0.1);
+            }
         }
 
         @media (width < $md_min) {
@@ -1997,10 +2005,6 @@ div.focused_table {
             left: 8px;
             top: 7px;
             z-index: 5;
-        }
-
-        .zulip-icon-search:not(.deactivated) {
-            cursor: pointer;
         }
 
         @media (width < $md_min) {
