@@ -50,14 +50,6 @@ h3,
     }
 }
 
-.user-name-section {
-    .settings-info-icon {
-        position: relative;
-        top: 2px;
-        left: 1px;
-    }
-}
-
 h3,
 .settings-section-title {
     .fa-question-circle-o {

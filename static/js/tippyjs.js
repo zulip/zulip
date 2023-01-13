@@ -399,6 +399,18 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: [".name-input.name_changes_disabled_tooltip"],
+        content: $t({
+            defaultMessage:
+                "Name changes are disabled in this organization. Contact an administrator to change your name.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: ["#change_email_button_container.email_changes_disabled_tooltip"],
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
