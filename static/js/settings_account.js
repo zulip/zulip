@@ -57,10 +57,10 @@ export function update_name_change_display() {
 
     if (!settings_data.user_can_change_name()) {
         $("#full_name").prop("disabled", true);
-        $(".change_name_tooltip").show();
+        $(".name-input").addClass("name_changes_disabled_tooltip");
     } else {
         $("#full_name").prop("disabled", false);
-        $(".change_name_tooltip").hide();
+        $(".name-input").removeClass("name_changes_disabled_tooltip");
     }
 }
 
