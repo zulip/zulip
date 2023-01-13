@@ -20,7 +20,7 @@ import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as $message_viewport from "./message_viewport";
+import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -765,7 +765,7 @@ export class MessageListView {
         // the bottom message is not visible), then we will respect
         // the user's current position after rendering, rather
         // than auto-scrolling.
-        const started_scrolled_up = $message_viewport.is_scrolled_up();
+        const started_scrolled_up = message_viewport.is_scrolled_up();
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
@@ -907,7 +907,7 @@ export class MessageListView {
             // additional fetches (from bottom_whitespace ending up in
             // the view).  During debugging, we found that this adding
             // this next line seems to prevent the Chrome bug from firing.
-            $message_viewport.scrollTop();
+            message_viewport.scrollTop();
 
             $table.append($rendered_groups);
             condense.condense_and_collapse($dom_messages);
@@ -1035,7 +1035,7 @@ export class MessageListView {
             return false;
         }
 
-        const info = $message_viewport.message_viewport_info();
+        const info = message_viewport.message_viewport_info();
         const scroll_limit = this._scroll_limit($selected_row, info);
 
         // This next decision is fairly debatable.  For a big message that
@@ -1061,7 +1061,7 @@ export class MessageListView {
             // (Even if we are somewhat constrained here, the message may
             // still end up being visible, so we do some arithmetic.)
             scroll_amount = scroll_limit;
-            const offset = $message_viewport.offset_from_bottom($last_visible);
+            const offset = message_viewport.offset_from_bottom($last_visible);
 
             // For determining whether we need to show the user a "you
             // need to scroll down" notification, the obvious check
@@ -1085,7 +1085,7 @@ export class MessageListView {
 
         // Ok, we are finally ready to actually scroll.
         if (scroll_amount > 0) {
-            $message_viewport.system_initiated_animate_scroll(scroll_amount);
+            message_viewport.system_initiated_animate_scroll(scroll_amount);
         }
 
         return need_user_to_scroll;
@@ -1167,7 +1167,7 @@ export class MessageListView {
 
     set_message_offset(offset) {
         const $msg = this.selected_row();
-        $message_viewport.scrollTop($message_viewport.scrollTop() + $msg.offset().top - offset);
+        message_viewport.scrollTop(message_viewport.scrollTop() + $msg.offset().top - offset);
     }
 
     rerender_with_target_scrolltop(selected_row, target_offset) {
