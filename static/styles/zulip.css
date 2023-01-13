@@ -1711,11 +1711,6 @@ div.focused_table {
     background-color: transparent;
 }
 
-.next_is_same_sender {
-    border-bottom: 0;
-    padding-bottom: 0;
-}
-
 .inline_profile_picture {
     display: inline-block;
     width: 35px;
