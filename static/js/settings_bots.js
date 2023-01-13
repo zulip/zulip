@@ -28,7 +28,6 @@ const EMBEDDED_BOT_TYPE = "4";
 
 export function hide_errors() {
     $("#bot_table_error").hide();
-    $(".bot_error").hide();
 }
 
 const focus_tab = {
