@@ -840,11 +840,6 @@ input[type="checkbox"] {
     }
 }
 
-.bot_error {
-    margin-top: 10px;
-    margin-bottom: 0 !important;
-}
-
 #bots_lists_navbar .active a {
     background-color: hsl(0, 0%, 98%);
 }
