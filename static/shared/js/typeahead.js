@@ -153,5 +153,22 @@ export function sort_emojis(objs, query) {
 
     const triage_results = triage(query, others, (x) => x.emoji_name);
 
-    return [...popular_emoji_matches, ...triage_results.matches, ...triage_results.rest];
+    const sorted_results_with_possible_duplicates = [
+        ...popular_emoji_matches,
+        ...triage_results.matches,
+        ...triage_results.rest,
+    ];
+    // remove unicode emojis with same code but different names
+    const unicode_emoji_codes = new Set();
+    const sorted_unique_results = [];
+    for (const emoji of sorted_results_with_possible_duplicates) {
+        if (!is_unicode_emoji(emoji)) {
+            sorted_unique_results.push(emoji);
+        } else if (!unicode_emoji_codes.has(emoji.emoji_code)) {
+            unicode_emoji_codes.add(emoji.emoji_code);
+            sorted_unique_results.push(emoji);
+        }
+    }
+
+    return sorted_unique_results;
 }
