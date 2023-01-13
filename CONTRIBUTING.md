@@ -76,12 +76,13 @@ to help.
 
 - First, make an account on the
   [Zulip community server](https://zulip.com/development-community/),
-  paying special attention to the community norms. If you'd like, introduce
-  yourself in
+  paying special attention to the
+  [community norms](https://zulip.com/development-community/#community-norms).
+  If you'd like, introduce yourself in
   [#new members](https://chat.zulip.org/#narrow/stream/95-new-members), using
   your name as the topic. Bonus: tell us about your first impressions of
-  Zulip, and anything that felt confusing/broken as you started using the
-  product.
+  Zulip, and anything that felt confusing/broken or interesting/helpful as you
+  started using the product.
 - Read [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
 - [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
   getting help in
@@ -145,14 +146,6 @@ We recommend the following process for finding an issue to work on:
 Note that you are _not_ claiming an issue while you are iterating through steps
 1-4. _Before you claim an issue_, you should be confident that you will be able to
 tackle it effectively.
-
-If the lists of issues are overwhelming, you can post in
-[#new members](https://chat.zulip.org/#narrow/stream/95-new-members) with a
-bit about your background and interests, and we'll help you out. The most
-important thing to say is whether you're looking for a backend (Python),
-frontend (JavaScript and TypeScript), mobile (React Native), desktop (Electron),
-documentation (English) or visual design (JavaScript/TypeScript + CSS) issue, and a
-bit about your programming experience and available time.
 
 Additional tips for the [main server and web app
 repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22):
