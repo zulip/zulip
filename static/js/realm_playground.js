@@ -56,7 +56,10 @@ export function get_pygments_typeahead_list(query) {
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        language_labels.set(key, key + " (" + Array.from(values).join(", ") + ")");
+        language_labels.set(
+            key.toLowerCase(),
+            key.toLowerCase() + " (" + Array.from(values).join(", ") + ")",
+        );
     }
 
     return language_labels;
