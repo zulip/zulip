@@ -48,20 +48,6 @@ const focus_tab = {
     },
 };
 
-export function get_bot_info_div(bot_id) {
-    const sel = `.bot_info[data-user-id="${CSS.escape(bot_id)}"]`;
-    return $(sel).expectOne();
-}
-
-export function bot_error(bot_id, xhr) {
-    const $bot_info = get_bot_info_div(bot_id);
-    const $bot_error_div = $bot_info.find(".bot_error");
-    $bot_error_div.text(JSON.parse(xhr.responseText).msg);
-    $bot_error_div.show();
-    const $bot_box = $bot_info.closest(".bot-information-box");
-    $bot_box.scrollTop($bot_box[0].scrollHeight - $bot_box[0].clientHeight);
-}
-
 function add_bot_row(info) {
     const $row = $(render_bot_avatar_row(info));
     if (info.is_active) {
