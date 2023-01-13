@@ -210,3 +210,13 @@ run_test("sort_emojis: prefix before midphrase, with space (traffic li)", () => 
         "horizontal_traffic_light",
     ]);
 });
+
+run_test("sort_emojis: remove duplicates", () => {
+    // notice the last 2 are aliases of the same emoji (same emoji code)
+    const emoji_list = [
+        {emoji_name: "laughter_tears", emoji_code: "1f602", reaction_type: "unicode_emoji"},
+        {emoji_name: "tear", emoji_code: "1f972", reaction_type: "unicode_emoji"},
+        {emoji_name: "smile_with_tear", emoji_code: "1f972", reaction_type: "unicode_emoji"},
+    ];
+    assert.deepEqual(typeahead.sort_emojis(emoji_list, "tear"), [emoji_list[1], emoji_list[0]]);
+});
