@@ -894,7 +894,7 @@ msgstr "Если это сообщение не исчезнет, попробу
 
 #: templates/zerver/app/index.html:110
 msgid "Unable to connect to Zulip."
-msgstr "Невозможно подключится к Zulip."
+msgstr "Невозможно подключиться к Zulip."
 
 #: templates/zerver/app/index.html:111
 msgid "Updates may be delayed."
