@@ -26,24 +26,18 @@ import * as user_profile from "./user_profile";
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
 
-export function hide_errors() {
-    $("#bot_table_error").hide();
-}
-
 const focus_tab = {
     active_bots_tab() {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .active-bots-tab").addClass("active");
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
-        hide_errors();
     },
     inactive_bots_tab() {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
-        hide_errors();
     },
 };
 
@@ -190,7 +184,6 @@ function update_add_bot_button() {
 
 export function update_bot_permissions_ui() {
     update_bot_settings_tip();
-    hide_errors();
     update_add_bot_button();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 }
@@ -243,7 +236,6 @@ export function add_a_new_bot() {
             processData: false,
             contentType: false,
             success() {
-                hide_errors();
                 create_avatar_widget.clear();
                 dialog_widget.close_modal();
             },
