@@ -220,3 +220,14 @@ run_test("sort_emojis: remove duplicates", () => {
     ];
     assert.deepEqual(typeahead.sort_emojis(emoji_list, "tear"), [emoji_list[1], emoji_list[0]]);
 });
+
+run_test("sort_emojis: prioritise realm emojis", () => {
+    const emoji_list = [
+        {emoji_name: "thank_you", emoji_code: "1f64f", reaction_type: "unicode_emoji"},
+        {emoji_name: "thank_you_custom", url: "something", is_realm_emoji: true},
+    ];
+    assert.deepEqual(typeahead.sort_emojis(emoji_list, "thank you"), [
+        emoji_list[1],
+        emoji_list[0],
+    ]);
+});

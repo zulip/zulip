@@ -153,10 +153,17 @@ export function sort_emojis(objs, query) {
 
     const triage_results = triage(query, others, (x) => x.emoji_name);
 
+    function prioritise_realm_emojis(emojis) {
+        return [
+            ...emojis.filter((emoji) => emoji.is_realm_emoji),
+            ...emojis.filter((emoji) => !emoji.is_realm_emoji),
+        ];
+    }
+
     const sorted_results_with_possible_duplicates = [
         ...popular_emoji_matches,
-        ...triage_results.matches,
-        ...triage_results.rest,
+        ...prioritise_realm_emojis(triage_results.matches),
+        ...prioritise_realm_emojis(triage_results.rest),
     ];
     // remove unicode emojis with same code but different names
     const unicode_emoji_codes = new Set();
