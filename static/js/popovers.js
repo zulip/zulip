@@ -784,9 +784,14 @@ export function register_click_handlers() {
             const $view_in_playground_button = $(this);
             const $codehilite_div = $(this).closest(".codehilite");
             e.stopPropagation();
-            const playground_info = realm_playground.get_playground_info_for_languages(
+            let playground_info = realm_playground.get_playground_info_for_languages(
                 $codehilite_div.data("code-language"),
             );
+            if (playground_info === undefined) {
+                playground_info = realm_playground.get_playground_info_for_languages(
+                    $codehilite_div.data("code-language").toLowerCase(),
+                );
+            }
             // We do the code extraction here and set the target href combining the url_prefix
             // and the extracted code. Depending on whether the language has multiple playground
             // links configured, a popover is show.

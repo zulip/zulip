@@ -203,8 +203,13 @@ export const update_elements = ($content) => {
         const $pre = $codehilite.find("pre");
         const fenced_code_lang = $codehilite.data("code-language");
         if (fenced_code_lang !== undefined) {
-            const playground_info =
+            let playground_info =
                 realm_playground.get_playground_info_for_languages(fenced_code_lang);
+            if (playground_info === undefined) {
+                playground_info = realm_playground.get_playground_info_for_languages(
+                    fenced_code_lang.toLowerCase(),
+                );
+            }
             if (playground_info !== undefined) {
                 // If a playground is configured for this language,
                 // offer to view the code in that playground.  When
