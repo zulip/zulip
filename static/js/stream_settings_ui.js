@@ -746,10 +746,16 @@ export function change_state(section) {
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
-        // Guest users can not access unsubscribed streams
-        // So redirect guest users to 'subscribed' tab
-        // for any unsubscribed stream settings hash
-        if (page_params.is_guest && !stream_data.is_subscribed(stream_id)) {
+        const sub = sub_store.get(stream_id);
+        // There are a few situations where we can't display stream settings:
+        // 1. This is a stream that's been archived. (sub=undefined)
+        // 2. The stream ID is invalid. (sub=undefined)
+        // 3. The current user is a guest, and was unsubscribed from the stream
+        //    stream in the current session. (In future sessions, the stream will
+        //    not be in sub_store).
+        //
+        // In all these cases we redirect the user to 'subscribed' tab.
+        if (!sub || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
             toggler.goto("subscribed");
         } else {
             show_right_section();
