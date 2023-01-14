@@ -121,9 +121,9 @@ input::placeholder {
 
 .new-style {
     /* -- base button styling -- */
-    .button {
-        padding: 7px 14px;
-        margin: 0;
+}.button {
+        padding: 8px 15px;
+        margin: (0,0,1);
         min-width: 130px;
 
         font-weight: 400;
@@ -142,7 +142,7 @@ input::placeholder {
         transition: all 0.2s ease;
 
         /* -- button style variations -- */
-        &.no-style {
+}&.no-style {
             padding: 0;
             background-color: transparent;
             border: none;
@@ -152,56 +152,56 @@ input::placeholder {
             box-shadow: none !important;
         }
 
-        &.rounded {
+        .rounded {
             border-radius: 4px;
         }
 
-        &.green {
+        .green {
             background-color: hsl(150, 31%, 53%);
         }
 
-        &.grey {
+        .grey {
             background-color: hsl(0, 0%, 67%);
         }
 
-        &.small {
+        .small {
             font-size: 0.8rem;
             min-width: inherit;
             padding: 6px 10px;
         }
 
-        &:hover,
-        &:focus {
+        :hover,
+        :focus {
             border-color: hsl(0, 0%, 60%);
         }
 
-        &:active {
+        :active {
             border-color: hsl(0, 0%, 60%);
             color: inherit;
             background-color: hsl(0, 0%, 95%);
         }
 
-        &.sea-green {
+    .sea-green {
             color: hsl(156, 41%, 40%);
             border-color: hsl(156, 28%, 70%);
 
-            &:hover,
-            &:focus {
+    }hover,
+            :focus {
                 border-color: hsl(156, 30%, 50%);
             }
 
-            &:active {
+            :active {
                 border-color: hsl(156, 30%, 40%);
                 color: hsl(156, 44%, 43%);
                 background-color: hsl(154, 33%, 96%);
             }
-        }
+        
 
-        &.btn-warning {
+        .btn-warning {
             color: hsl(35, 70%, 56%);
             border-color: hsl(35, 98%, 84%);
 
-            &:hover,
+            :hover,
             &:focus {
                 border-color: hsl(35, 55%, 70%);
             }
@@ -351,10 +351,10 @@ div.overlay {
     transition: all 0.2s ease-in;
     overflow: hidden;
 
-    .overlay-content {
+}.overlay-content {
         transform: translateY(20px);
         transition: transform 0.2s ease-in;
-        z-index: 102;
+        z-index: 105;
     }
 
     &.show {
@@ -363,12 +363,12 @@ div.overlay {
         visibility: visible;
         transition: opacity 0.2s ease-out;
 
-        .overlay-content {
+    }.overlay-content {
             transform: translateY(0);
             transition-timing-function: ease-out;
         }
-    }
-}
+    
+
 
 .input-append {
     font-size: 90%;
@@ -384,7 +384,7 @@ div.overlay {
 }
 
 .clear_search_button {
-    &:hover {
+}:hover {
         color: hsl(0, 0%, 0%);
     }
 
@@ -415,7 +415,7 @@ div.overlay {
             padding-top: 6px;
         }
     }
-}
+
 
 .grey-box {
     margin: 0;
@@ -436,7 +436,7 @@ div.overlay {
     position: relative;
     overflow: hidden;
 
-    &::after {
+}::after {
         content: " ";
         background-color: hsl(0, 0%, 47%);
         position: absolute;
@@ -446,7 +446,7 @@ div.overlay {
         height: 50%;
         transform: rotate(45deg);
     }
-}
+
 
 .dependent-settings-block {
     margin: 15px 0 -5px 23px;
@@ -624,14 +624,14 @@ div.overlay {
 .spectator-view {
     /* Add this class to elements which a
      * spectator cannot use. */
-    .hidden-for-spectators {
+}.hidden-for-spectators {
         display: none !important;
     }
 
     .only-visible-for-spectators {
         display: revert;
     }
-}
+
 
 .animated-purple-button {
     color: hsl(0, 0%, 100%);
@@ -675,8 +675,8 @@ div.overlay {
         color: hsl(0, 0%, 100%);
 
         span {
-            color: hsl(0, 0%, 100%);
-            transition: all 0.2s ease;
+            color: (0, 0%, 100%);
+            transition::after 0.2s ease;
         }
 
         transition: all 0.2s ease;
@@ -727,7 +727,7 @@ div.overlay {
             background-color: hsla(0, 0%, 95%) !important;
             transition: background-color 100ms ease-in-out;
 
-            &:not(.active)::after {
+        }:not(.active)::after {
                 opacity: 0.3;
             }
         }
@@ -738,13 +738,13 @@ div.overlay {
         width: 1%;
         white-space: nowrap;
     }
-}
+
 
 .save-button-controls {
     display: inline;
     margin-left: 15px;
 
-    &.hide {
+}.hide {
         display: none;
     }
 
@@ -759,18 +759,18 @@ div.overlay {
         line-height: 1.2;
         vertical-align: text-bottom;
 
-        &:hover,
-        &:focus {
+    }:hover,
+:focus {
             background-color: hsl(0, 0%, 100%);
             border: 1px solid hsl(0, 0%, 61%);
             color: hsl(0, 0%, 18%);
 
-            .save-discard-widget-button-icon {
+}.save-discard-widget-button-icon {
                 color: hsl(0, 0%, 47%);
             }
-        }
+        
 
-        &.primary {
+        .primary {
             background-color: hsl(156, 30%, 50%);
             color: hsl(0, 0%, 100%);
             border: 1px solid hsl(155, 30%, 50%);
@@ -786,21 +786,21 @@ div.overlay {
                 color: hsl(0, 0%, 100%);
             }
 
-            &.saving {
+        }.saving {
                 background-color: hsl(156, 14%, 40%);
                 border-color: hsl(156, 14%, 40%);
             }
-        }
+        
 
-        &.save-button {
+        .save-button {
             margin-right: 5px;
 
-            .save-discard-widget-button-loading {
+        }.save-discard-widget-button-loading {
                 display: none;
             }
 
-            &.saving {
-                .save-discard-widget-button-icon {
+        .saving {
+        }.save-discard-widget-button-icon {
                     display: none;
                 }
 
@@ -808,8 +808,8 @@ div.overlay {
                     display: inline-block;
                     margin-right: 2px;
                 }
-            }
-        }
+            
+    
 
         .save-discard-widget-button-icon {
             vertical-align: middle;
@@ -822,5 +822,5 @@ div.overlay {
             vertical-align: middle;
             line-height: 1;
         }
-    }
-}
+    
+
