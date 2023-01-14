@@ -1597,8 +1597,19 @@ class UserBaseSettings(models.Model):
     enable_digest_emails = models.BooleanField(default=True)
     enable_login_emails = models.BooleanField(default=True)
     enable_marketing_emails = models.BooleanField(default=True)
-    realm_name_in_notifications = models.BooleanField(default=False)
     presence_enabled = models.BooleanField(default=True)
+
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC = 1
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS = 2
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER = 3
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES = [
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER,
+    ]
+    realm_name_in_email_notifications_policy = models.PositiveSmallIntegerField(
+        default=REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
+    )
 
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
@@ -1671,7 +1682,7 @@ class UserBaseSettings(models.Model):
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
         presence_enabled=bool,
-        realm_name_in_notifications=bool,
+        realm_name_in_email_notifications_policy=int,
         wildcard_mentions_notify=bool,
     )
 

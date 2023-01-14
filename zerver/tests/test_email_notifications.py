@@ -16,6 +16,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
+from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.email_notifications import (
@@ -24,6 +25,7 @@ from zerver.lib.email_notifications import (
     fix_spoilers_in_html,
     followup_day2_email_delay,
     handle_missedmessage_emails,
+    include_realm_name_in_missedmessage_emails_subject,
     relative_to_full_url,
 )
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
@@ -1001,18 +1003,80 @@ class TestMissedMessages(ZulipTestCase):
         for text in expected_email_include:
             self.assertIn(text, self.normalize_string(mail.outbox[0].body))
 
-    def test_realm_name_in_notifications(self) -> None:
-        # Test with realm_name_in_notifications for hamlet disabled.
-        self._realm_name_in_missed_message_email_subject(False)
+    def test_include_realm_name_in_missedmessage_emails_subject(self) -> None:
+        user = self.example_user("hamlet")
 
-        # Enable realm_name_in_notifications for hamlet and test again.
+        # Test with 'realm_name_in_notification_policy' set to 'Always'
+        do_change_user_setting(
+            user,
+            "realm_name_in_email_notifications_policy",
+            UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS,
+            acting_user=None,
+        )
+        self.assertTrue(include_realm_name_in_missedmessage_emails_subject(user))
+
+        # Test with 'realm_name_in_notification_policy' set to 'Never'
+        do_change_user_setting(
+            user,
+            "realm_name_in_email_notifications_policy",
+            UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER,
+            acting_user=None,
+        )
+        self.assertFalse(include_realm_name_in_missedmessage_emails_subject(user))
+
+        # Test with 'realm_name_in_notification_policy' set to 'Automatic'
+        do_change_user_setting(
+            user,
+            "realm_name_in_email_notifications_policy",
+            UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC,
+            acting_user=None,
+        )
+        # Case 1: if user is part of a single realm, then realm_name is not present in notifications.
+        self.assertFalse(include_realm_name_in_missedmessage_emails_subject(user))
+
+        # Case 2: if user is part of multiple realms, then realm_name should be present in notifications.
+        # Create and verify a cross realm user.
+        cross_realm_user = do_create_user(
+            user.delivery_email, None, get_realm("lear"), user.full_name, acting_user=None
+        )
+        self.assertEqual(cross_realm_user.delivery_email, user.delivery_email)
+
+        self.assertTrue(include_realm_name_in_missedmessage_emails_subject(cross_realm_user))
+
+    def test_realm_name_in_email_notifications_policy(self) -> None:
+        # Test with realm_name_in_email_notifications_policy set to Never.
         hamlet = self.example_user("hamlet")
-        hamlet.realm_name_in_notifications = True
-        hamlet.save(update_fields=["realm_name_in_notifications"])
+        hamlet.realm_name_in_email_notifications_policy = (
+            UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER
+        )
+        hamlet.save(update_fields=["realm_name_in_email_notifications_policy"])
+        with mock.patch(
+            "zerver.lib.email_notifications.include_realm_name_in_missedmessage_emails_subject",
+            return_value=False,
+        ):
+            is_allowed = include_realm_name_in_missedmessage_emails_subject(hamlet)
+            self._realm_name_in_missed_message_email_subject(is_allowed)
 
-        # Empty the test outbox
-        mail.outbox = []
-        self._realm_name_in_missed_message_email_subject(True)
+        # Test with realm_name_in_email_notifications_policy set to Always.
+
+        # Note: We don't need to test separately for 'realm_name_in_email_notifications_policy'
+        # set to 'Automatic'.
+        # Here, we are concerned about the subject after the mocked function returns True/False.
+        # We already have separate test to check the appropriate behaviour of
+        # 'include_realm_name_in_missedmessage_emails_subject' for Automatic, Always, Never.
+        hamlet = self.example_user("hamlet")
+        hamlet.realm_name_in_email_notifications_policy = (
+            UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS
+        )
+        hamlet.save(update_fields=["realm_name_in_email_notifications_policy"])
+        with mock.patch(
+            "zerver.lib.email_notifications.include_realm_name_in_missedmessage_emails_subject",
+            return_value=True,
+        ):
+            is_allowed = include_realm_name_in_missedmessage_emails_subject(hamlet)
+            # Empty the test outbox
+            mail.outbox = []
+            self._realm_name_in_missed_message_email_subject(is_allowed)
 
     def test_message_content_disabled_in_missed_message_notifications(self) -> None:
         # Test when user disabled message content in email notifications.
