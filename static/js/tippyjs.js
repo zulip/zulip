@@ -432,6 +432,17 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ["#deactivate_realm_button_container.realm_deactivation_tooltip"],
+        content: $t({
+            defaultMessage: "Only organization owners may deactivate an organization.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: "#pm_tooltip_container",
         onShow(instance) {
             if ($(".private_messages_container").hasClass("zoom-in")) {

@@ -175,13 +175,20 @@ h3,
     }
 }
 
+#deactivate_realm_button_container {
+    &.realm_deactivation_tooltip {
+        cursor: not-allowed;
+    }
+}
+
 #deactivate_account_container {
     &.only_organization_owner_tooltip {
         cursor: not-allowed;
     }
 }
 
-#user_deactivate_account_button {
+#user_deactivate_account_button,
+#deactivate_realm_button {
     &:disabled {
         pointer-events: none;
     }
