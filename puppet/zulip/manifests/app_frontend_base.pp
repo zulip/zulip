@@ -69,6 +69,38 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
 
+  $s3_memory_cache_size = zulipconf('application_server', 's3_memory_cache_size', '1M')
+  $s3_disk_cache_size = zulipconf('application_server', 's3_disk_cache_size', '200M')
+  $s3_cache_inactive_time = zulipconf('application_server', 's3_cache_inactive_time', '30d')
+  file { '/etc/nginx/zulip-include/s3-cache':
+    require => [Package[$zulip::common::nginx], File['/srv/zulip-uploaded-files-cache']],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/nginx/s3-cache.template.erb'),
+    notify  => Service['nginx'],
+  }
+
+  file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
+    ensure  => file,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    notify  => Service['nginx'],
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads-internal.conf',
+  }
+
+  file { [
+    # TODO/compatibility: Removed 2021-04 in Zulip 4.0; these lines can
+    # be removed once one must have upgraded through Zulip 4.0 or higher
+    # to get to the next release.
+    '/etc/nginx/zulip-include/uploads.route',
+    '/etc/nginx/zulip-include/app.d/thumbor.conf',
+  ]:
+    ensure => absent,
+  }
+
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
@@ -180,7 +212,12 @@ class zulip::app_frontend_base {
     group  => 'zulip',
     mode   => '0755',
   }
-
+  file { '/srv/zulip-uploaded-files-cache':
+    ensure => directory,
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0755',
+  }
   file { '/var/log/zulip/queue_error':
     ensure => directory,
     owner  => 'zulip',

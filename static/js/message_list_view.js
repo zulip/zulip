@@ -256,10 +256,12 @@ export class MessageListView {
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
             const today = new Date();
-            return (
-                timerender.render_date(last_edit_time, undefined, today)[0].textContent +
-                " at " +
-                timerender.stringify_time(last_edit_time)
+            return $t(
+                {defaultMessage: "{date} at {time}"},
+                {
+                    date: timerender.render_date(last_edit_time, undefined, today)[0].textContent,
+                    time: timerender.stringify_time(last_edit_time),
+                },
             );
         }
         return undefined;
@@ -436,7 +438,6 @@ export class MessageListView {
                     current_group,
                     current_group.message_containers[0],
                 );
-                current_group.message_containers.at(-1).include_footer = true;
                 new_message_groups.push(current_group);
             }
         };
@@ -445,7 +446,6 @@ export class MessageListView {
             const message_reactions = reactions.get_message_reactions(message_container.msg);
             message_container.msg.message_reactions = message_reactions;
             message_container.include_recipient = false;
-            message_container.include_footer = false;
 
             if (
                 same_recipient(prev, message_container) &&

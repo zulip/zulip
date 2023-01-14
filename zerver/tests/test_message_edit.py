@@ -1412,7 +1412,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(30):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1443,7 +1443,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with self.assert_database_query_count(33):
+        with self.assert_database_query_count(32):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1476,7 +1476,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(30):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1499,7 +1499,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(24):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,

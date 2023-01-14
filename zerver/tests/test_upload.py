@@ -8,6 +8,7 @@ import urllib
 from io import StringIO
 from unittest import mock
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import botocore.exceptions
 import orjson
@@ -15,7 +16,6 @@ from django.conf import settings
 from django.http.response import StreamingHttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from django_sendfile.utils import _get_sendfile
 from PIL import Image
 from urllib3 import encode_multipart_formdata
 
@@ -46,24 +46,24 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.upload import (
+    delete_export_tarball,
+    delete_message_image,
+    upload_emoji_image,
+    upload_export_tarball,
+    upload_message_file,
+)
+from zerver.lib.upload.base import (
     DEFAULT_AVATAR_SIZE,
     DEFAULT_EMOJI_SIZE,
     MEDIUM_AVATAR_SIZE,
     BadImageError,
-    LocalUploadBackend,
-    S3UploadBackend,
     ZulipUploadBackend,
-    delete_export_tarball,
-    delete_message_image,
-    get_local_file_path,
     resize_avatar,
     resize_emoji,
     sanitize_name,
-    upload_emoji_image,
-    upload_export_tarball,
-    upload_message_file,
-    write_local_file,
 )
+from zerver.lib.upload.local import LocalUploadBackend, write_local_file
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
 from zerver.models import (
     ArchivedAttachment,
@@ -430,8 +430,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             + ")"
         )
         message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
-        d3_local_path = get_local_file_path(d3_path_id)
-        assert d3_local_path is not None
+        assert settings.LOCAL_FILES_DIR
+        d3_local_path = os.path.join(settings.LOCAL_FILES_DIR, d3_path_id)
         self.assertTrue(os.path.exists(d3_local_path))
 
         do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
@@ -934,39 +934,35 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             content_disposition: str = "",
             download: bool = False,
         ) -> None:
-            with self.settings(SENDFILE_BACKEND="django_sendfile.backends.nginx"):
-                _get_sendfile.cache_clear()  # To clearout cached version of backend from djangosendfile
-                self.login("hamlet")
-                fp = StringIO("zulip!")
-                fp.name = name
-                result = self.client_post("/json/user_uploads", {"file": fp})
-                uri = self.assert_json_success(result)["uri"]
-                fp_path_id = re.sub("/user_uploads/", "", uri)
-                fp_path = os.path.split(fp_path_id)[0]
-                if download:
-                    uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+            self.login("hamlet")
+            fp = StringIO("zulip!")
+            fp.name = name
+            result = self.client_post("/json/user_uploads", {"file": fp})
+            uri = self.assert_json_success(result)["uri"]
+            fp_path_id = re.sub("/user_uploads/", "", uri)
+            fp_path = os.path.split(fp_path_id)[0]
+            if download:
+                uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+            with self.settings(DEVELOPMENT=False):
                 response = self.client_get(uri)
-                _get_sendfile.cache_clear()
-                assert settings.LOCAL_UPLOADS_DIR is not None
-                test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
-                self.assertEqual(
-                    response["X-Accel-Redirect"],
-                    "/serve_uploads/" + fp_path + "/" + name_str_for_test,
-                )
-                if content_disposition != "":
-                    self.assertIn("attachment;", response["Content-disposition"])
-                    self.assertIn(content_disposition, response["Content-disposition"])
-                else:
-                    self.assertIn("inline;", response["Content-disposition"])
-                self.assertEqual(
-                    set(response["Cache-Control"].split(", ")), {"private", "immutable"}
-                )
+            assert settings.LOCAL_UPLOADS_DIR is not None
+            test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
+            self.assertEqual(
+                response["X-Accel-Redirect"],
+                "/internal/local/uploads/" + fp_path + "/" + name_str_for_test,
+            )
+            if content_disposition != "":
+                self.assertIn("attachment;", response["Content-disposition"])
+                self.assertIn(content_disposition, response["Content-disposition"])
+            else:
+                self.assertIn("inline;", response["Content-disposition"])
+            self.assertEqual(set(response["Cache-Control"].split(", ")), {"private", "immutable"})
 
         check_xsend_links("zulip.txt", "zulip.txt", 'filename="zulip.txt"')
         check_xsend_links(
             "áéБД.txt",
             "%C3%A1%C3%A9%D0%91%D0%94.txt",
-            "filename*=UTF-8''%C3%A1%C3%A9%D0%91%D0%94.txt",
+            "filename*=utf-8''%C3%A1%C3%A9%D0%91%D0%94.txt",
         )
         check_xsend_links("zulip.html", "zulip.html", 'filename="zulip.html"')
         check_xsend_links("zulip.sh", "zulip.sh", 'filename="zulip.sh"')
@@ -1293,7 +1289,9 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
                 # Verify that ensure_medium_avatar_url does not overwrite this file if it exists
-                with mock.patch("zerver.lib.upload.write_local_file") as mock_write_local_file:
+                with mock.patch(
+                    "zerver.lib.upload.local.write_local_file"
+                ) as mock_write_local_file:
                     zerver.lib.upload.upload_backend.ensure_avatar_image(
                         user_profile, is_medium=True
                     )
@@ -1452,15 +1450,15 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertEqual((50, 50), still_image.size)
 
             # Test an image larger than max is resized
-            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
+            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_SIZE", 128):
                 test_resize()
 
             # Test an image file larger than max is resized
-            with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
+            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
                 test_resize()
 
             # Test an image smaller than max and smaller than file size max is not resized
-            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
+            with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_SIZE", 512):
                 test_resize(size=256)
 
         # Test a non-animated GIF image which does need to be resized
@@ -1822,7 +1820,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(base, uri[: len(base)])
         path_id = re.sub("/user_uploads/", "", uri)
         assert settings.LOCAL_UPLOADS_DIR is not None
-        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", path_id)
+        assert settings.LOCAL_FILES_DIR is not None
+        file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
         self.assertTrue(os.path.isfile(file_path))
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
@@ -1855,6 +1854,39 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         path_id = re.sub("/user_uploads/", "", response_dict["uri"])
         self.assertTrue(delete_message_image(path_id))
 
+    def test_avatar_url_local(self) -> None:
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post("/json/users/me/avatar", {"file": image_file})
+
+        response_dict = self.assert_json_success(result)
+        self.assertIn("avatar_url", response_dict)
+        base = "/user_avatars/"
+        url = self.assert_json_success(result)["avatar_url"]
+        self.assertEqual(base, url[: len(base)])
+
+        # That URL is accessible when logged out
+        self.logout()
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+
+        # We get a resized avatar from it
+        image_data = read_test_image_file("img.png")
+        resized_avatar = resize_avatar(image_data)
+        assert isinstance(result, StreamingHttpResponse)
+        self.assertEqual(resized_avatar, b"".join(result.streaming_content))
+
+        with self.settings(DEVELOPMENT=False):
+            # In production, this is an X-Accel-Redirect to the
+            # on-disk content, which nginx serves
+            result = self.client_get(url)
+            self.assertEqual(result.status_code, 200)
+            internal_redirect_path = urlparse(url).path.replace(
+                "/user_avatars/", "/internal/local/user_avatars/"
+            )
+            self.assertEqual(result["X-Accel-Redirect"], internal_redirect_path)
+            self.assertEqual(b"", result.content)
+
     def test_ensure_avatar_image_local(self) -> None:
         user_profile = self.example_user("hamlet")
         file_path = user_avatar_path(user_profile)
@@ -1862,19 +1894,20 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         write_local_file("avatars", file_path + ".original", read_test_image_file("img.png"))
 
         assert settings.LOCAL_UPLOADS_DIR is not None
-        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
+        assert settings.LOCAL_AVATARS_DIR is not None
+        image_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + ".original")
         with open(image_path, "rb") as f:
             image_data = f.read()
 
         resized_avatar = resize_avatar(image_data)
         zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
-        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".png")
+        output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + ".png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
 
         resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
-        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + "-medium.png")
+        output_path = os.path.join(settings.LOCAL_AVATARS_DIR, file_path + "-medium.png")
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
 
@@ -1890,8 +1923,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             emoji_file_name=file_name,
         )
 
-        assert settings.LOCAL_UPLOADS_DIR is not None
-        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        assert settings.LOCAL_AVATARS_DIR is not None
+        file_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path)
         with open(file_path + ".original", "rb") as original_file:
             self.assertEqual(read_test_image_file("img.png"), original_file.read())
 
@@ -1945,11 +1978,9 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         with open(tarball_path, "w") as f:
             f.write("dummy")
 
-        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_AVATARS_DIR is not None
         uri = upload_export_tarball(user_profile.realm, tarball_path)
-        self.assertTrue(
-            os.path.isfile(os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", tarball_path))
-        )
+        self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_AVATARS_DIR, tarball_path)))
 
         result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), uri)
         if result is not None:
@@ -2067,20 +2098,31 @@ class S3Test(ZulipTestCase):
         uri = response_dict["uri"]
         self.assertEqual(base, uri[: len(base)])
 
+        # In development, this is just a redirect
         response = self.client_get(uri)
         redirect_url = response["Location"]
         path = urllib.parse.urlparse(redirect_url).path
         assert path.startswith("/")
-        key = path[1:]
+        key = path[len("/") :]
+        self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
+
+        prefix = f"/internal/s3/{settings.S3_AUTH_UPLOADS_BUCKET}.s3.amazonaws.com/"
+        with self.settings(DEVELOPMENT=False):
+            response = self.client_get(uri)
+        redirect_url = response["X-Accel-Redirect"]
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith(prefix)
+        key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Check the download endpoint
         download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
-        response = self.client_get(download_uri)
-        redirect_url = response["Location"]
+        with self.settings(DEVELOPMENT=False):
+            response = self.client_get(download_uri)
+        redirect_url = response["X-Accel-Redirect"]
         path = urllib.parse.urlparse(redirect_url).path
-        assert path.startswith("/")
-        key = path[1:]
+        assert path.startswith(prefix)
+        key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
         # Now try the endpoint that's supposed to return a temporary URL for access
@@ -2088,19 +2130,49 @@ class S3Test(ZulipTestCase):
         result = self.client_get("/json" + uri)
         data = self.assert_json_success(result)
         url_only_url = data["url"]
-        path = urllib.parse.urlparse(url_only_url).path
-        assert path.startswith("/")
-        key = path[1:]
+
+        self.assertNotEqual(url_only_url, uri)
+        self.assertIn("user_uploads/temporary/", url_only_url)
+        self.assertTrue(url_only_url.endswith("zulip.txt"))
+        # The generated URL has a token authorizing the requestor to access the file
+        # without being logged in.
+        self.logout()
+        with self.settings(DEVELOPMENT=False):
+            self.client_get(url_only_url)
+        redirect_url = response["X-Accel-Redirect"]
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith(prefix)
+        key = path[len(prefix) :]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
-        # Note: Depending on whether the calls happened in the same
-        # second (resulting in the same timestamp+signature),
-        # url_only_url may or may not equal redirect_url.
+        # The original uri shouldn't work when logged out:
+        with self.settings(DEVELOPMENT=False):
+            result = self.client_get(uri)
+        self.assertEqual(result.status_code, 403)
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
         self.send_stream_message(hamlet, "Denmark", body, "test")
+
+    @use_s3_backend
+    def test_user_avatars_redirect(self) -> None:
+        create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post("/json/users/me/avatar", {"file": image_file})
+
+        response_dict = self.assert_json_success(result)
+        self.assertIn("avatar_url", response_dict)
+        base = f"https://{settings.S3_AVATAR_BUCKET}.s3.amazonaws.com/"
+        url = self.assert_json_success(result)["avatar_url"]
+        self.assertEqual(base, url[: len(base)])
+
+        # Try hitting the equivalent `/user_avatars` endpoint
+        wrong_url = "/user_avatars/" + url[len(base) :]
+        result = self.client_get(wrong_url)
+        self.assertEqual(result.status_code, 301)
+        self.assertEqual(result["Location"], url)
 
     @use_s3_backend
     def test_upload_avatar_image(self) -> None:

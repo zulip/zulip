@@ -39,7 +39,7 @@ from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.markdown import IMAGE_EXTENSIONS
-from zerver.lib.upload import sanitize_name
+from zerver.lib.upload.base import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 

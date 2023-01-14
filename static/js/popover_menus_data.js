@@ -87,6 +87,17 @@ export function get_actions_popover_content_context(message_id) {
     const should_display_read_receipts_option =
         page_params.realm_enable_read_receipts && not_spectator;
 
+    function is_add_reaction_icon_visible() {
+        const $message_row = message_lists.current.get_row(message_id);
+        return $message_row.find(".message_controls.reaction_button").is(":visible");
+    }
+
+    // Since we only display msg actions and star icons on windows smaller than
+    // `media_breakpoints.sm_min`, we need to include the reaction button in the
+    // popover if it is not displayed.
+    const should_display_add_reaction_option =
+        !message.is_me_message && !is_add_reaction_icon_visible();
+
     return {
         message_id: message.id,
         stream_id: message.stream_id,
@@ -96,7 +107,7 @@ export function get_actions_popover_content_context(message_id) {
         view_source_menu_item,
         should_display_collapse,
         should_display_uncollapse,
-        should_display_add_reaction_option: message.sent_by_me,
+        should_display_add_reaction_option,
         should_display_edit_history_option,
         should_display_hide_option,
         conversation_time_uri,

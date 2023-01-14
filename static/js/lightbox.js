@@ -335,15 +335,22 @@ export function show_from_selected_message() {
     let $image = $message.find(".message_inline_image img");
     let $prev_traverse = false;
 
+    // First, we walk upwards/backwards, starting with the current
+    // message, looking for an image to preview.
+    //
+    // Care must be taken, since both recipient_row elements and
+    // message_row objects have siblings of different types, such as
+    // date elements.
     while ($image.length === 0) {
         if ($message.prev().length === 0) {
-            $message = $message.parent().prev();
-            if ($message.length === 0) {
+            const $prev_message_group = $message.parent().prevAll(".recipient_row").first();
+            if ($prev_message_group.length === 0) {
                 $prev_traverse = true;
                 $message = $message_selected;
                 break;
             } else {
-                $message = $message.find(".last_message");
+                $message = $prev_message_group.find(".message_row").last();
+                $image = $message.find(".message_inline_image img");
                 continue;
             }
         }
@@ -354,11 +361,12 @@ export function show_from_selected_message() {
     if ($prev_traverse) {
         while ($image.length === 0) {
             if ($message.next().length === 0) {
-                $message = $message.parent().next();
-                if ($message.length === 0) {
+                const $next_message_group = $message.parent().nextAll(".recipient_row").first();
+                if ($next_message_group.length === 0) {
                     break;
                 } else {
-                    $message = $message.children().first();
+                    $message = $next_message_group.find(".message_row").first();
+                    $image = $message.find(".message_inline_image img");
                     continue;
                 }
             }

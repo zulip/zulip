@@ -43,7 +43,7 @@ location /api/v1/events {
 }
 
 # Handle X-Accel-Redirect from Tornado to Tornado
-location ~ ^/tornado/(\d+)(/.*)$ {
+location ~ ^/internal/tornado/(\d+)(/.*)$ {
     internal;
     proxy_pass http://tornado$1$2$is_args$args;
     include /etc/nginx/zulip-include/proxy_longpolling;

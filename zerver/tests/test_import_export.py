@@ -1329,9 +1329,10 @@ class RealmImportExportTest(ExportFile):
         self.assert_length(b"zulip!", uploaded_file.size)
 
         assert settings.LOCAL_UPLOADS_DIR is not None
-        attachment_file_path = os.path.join(
-            settings.LOCAL_UPLOADS_DIR, "files", uploaded_file.path_id
-        )
+        assert settings.LOCAL_FILES_DIR is not None
+        assert settings.LOCAL_AVATARS_DIR is not None
+
+        attachment_file_path = os.path.join(settings.LOCAL_FILES_DIR, uploaded_file.path_id)
         self.assertTrue(os.path.isfile(attachment_file_path))
 
         # Test emojis
@@ -1340,18 +1341,18 @@ class RealmImportExportTest(ExportFile):
             realm_id=imported_realm.id,
             emoji_file_name=realm_emoji.file_name,
         )
-        emoji_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        emoji_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path)
         self.assertTrue(os.path.isfile(emoji_file_path))
 
         # Test avatars
         user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
         avatar_path_id = user_avatar_path(user_profile) + ".original"
-        avatar_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path_id)
+        avatar_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path_id)
         self.assertTrue(os.path.isfile(avatar_file_path))
 
         # Test realm icon and logo
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
-        full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, upload_path)
+        full_upload_path = os.path.join(settings.LOCAL_AVATARS_DIR, upload_path)
 
         test_image_data = read_test_image_file("img.png")
         self.assertIsNotNone(test_image_data)

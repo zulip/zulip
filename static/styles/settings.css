@@ -183,6 +183,18 @@ h3,
     }
 }
 
+#deactivate_account_container {
+    &.only_organization_owner_tooltip {
+        cursor: not-allowed;
+    }
+}
+
+#user_deactivate_account_button {
+    &:disabled {
+        pointer-events: none;
+    }
+}
+
 .admin-realm-description {
     height: 16em;
     width: 100%;

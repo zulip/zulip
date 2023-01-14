@@ -98,7 +98,8 @@ def get_events(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
         # which is efficient and keeps this redirect invisible to
         # clients.
         return HttpResponse(
-            "", headers={"X-Accel-Redirect": f"/tornado/{user_port}{request.get_full_path()}"}
+            "",
+            headers={"X-Accel-Redirect": f"/internal/tornado/{user_port}{request.get_full_path()}"},
         )
 
     return get_events_backend(request, user_profile)

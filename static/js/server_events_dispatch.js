@@ -429,15 +429,18 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     people.add_active_user(event.person);
+                    settings_account.maybe_update_deactivate_account_button();
                     break;
                 case "remove":
                     people.deactivate(event.person);
                     stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
                     settings_users.update_view_on_deactivate(event.person.user_id);
                     buddy_list.maybe_remove_key({key: event.person.user_id});
+                    settings_account.maybe_update_deactivate_account_button();
                     break;
                 case "update":
                     user_events.update_person(event.person);
+                    settings_account.maybe_update_deactivate_account_button();
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);

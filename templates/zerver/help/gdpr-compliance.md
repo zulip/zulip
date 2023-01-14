@@ -128,12 +128,11 @@ In addition to the features described above that are available in
 Zulip Cloud (which are also available on-premises), the following tools
 may be useful:
 
-* The Zulip server comes with a command-line tool, `manage.py export_single_user`,
-  which is a variant of the main server
-  [export tool](https://zulip.readthedocs.io/en/latest/production/export-and-import.html),
-  that exports a single Zulip user's account details,
-  preferences, stream subscriptions, and message history in a
-  structured JSON format.
+* The Zulip server comes with a [command-line tool][management-commands],
+  `manage.py export_single_user`, which is a variant of the main server
+  [export tool][export-and-import-tool], that exports a single Zulip
+  user's account details, preferences, stream subscriptions, and message
+  history in a structured JSON format.
 * The Django management shell (`manage.py shell`) and database shell
   (`manage.py dbshell`) allows you to query, access, edit, and delete
   data directly.
@@ -143,3 +142,6 @@ your server infrastructure responsibly, internal policies around
 access, logging, and backups, etc.  If you need detailed guidance, we
 recommend contacting support@zulip.com; our paid support contracts
 include assistance with understanding GDPR compliance with Zulip.
+
+[management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
+[export-and-import-tool]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html
