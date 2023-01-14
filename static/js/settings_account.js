@@ -51,6 +51,10 @@ export function update_full_name(new_full_name) {
 }
 
 export function update_name_change_display() {
+    if ($("#user_details_section").length === 0) {
+        return;
+    }
+
     if (!settings_data.user_can_change_name()) {
         $("#full_name").prop("disabled", true);
         $(".change_name_tooltip").show();
@@ -61,6 +65,10 @@ export function update_name_change_display() {
 }
 
 export function update_email_change_display() {
+    if ($("#user_details_section").length === 0) {
+        return;
+    }
+
     if (!settings_data.user_can_change_email()) {
         $("#change_email_button").prop("disabled", true);
         $("#change_email_button_container").addClass("email_changes_disabled_tooltip");
@@ -116,6 +124,10 @@ function upload_avatar($file_input) {
 }
 
 export function update_avatar_change_display() {
+    if ($("#user-avatar-upload-widget").length === 0) {
+        return;
+    }
+
     if (!settings_data.user_can_change_avatar()) {
         $("#user-avatar-upload-widget .image_upload_button").addClass("hide");
         $("#user-avatar-upload-widget .image-disabled").removeClass("hide");
@@ -130,6 +142,10 @@ export function update_avatar_change_display() {
 }
 
 export function update_account_settings_display() {
+    if ($("#user_details_section").length === 0) {
+        return;
+    }
+
     update_name_change_display();
     update_email_change_display();
     update_avatar_change_display();

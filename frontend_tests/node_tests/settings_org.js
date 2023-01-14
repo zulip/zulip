@@ -720,6 +720,8 @@ test("test get_sorted_options_list", () => {
 
 test("misc", ({override_rewire}) => {
     page_params.is_admin = false;
+    $("#user-avatar-upload-widget").length = 1;
+    $("#user_details_section").length = 1;
 
     const $stub_notification_disable_parent = $.create("<stub notification_disable parent");
     $stub_notification_disable_parent.set_find_results(
