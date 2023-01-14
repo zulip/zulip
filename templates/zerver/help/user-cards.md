@@ -9,6 +9,8 @@ sent](/help/view-messages-sent-by-a-user).
 
 {start_tabs}
 
+{tab|user}
+
 - Their avatar.
 - Their name.
 - Their email address, if you [have
@@ -20,11 +22,21 @@ sent](/help/view-messages-sent-by-a-user).
 - Their current [local time](/help/change-your-timezone).
 - Their [status and availability](/help/status-and-availability).
 
+{tab|bot}
+
+- Its avatar.
+- Its name.
+- Its owner's name.
+- Its email address, if you [have
+permission](/help/restrict-visibility-of-email-addresses) to view it.
+
 {end_tabs}
 
 ## View someone's user card
 
 {start_tabs}
+
+{tab|user}
 
 {!right-sidebar-user-card.md!}
 
@@ -36,6 +48,12 @@ sent](/help/view-messages-sent-by-a-user).
 
     Alternatively, open someone's **user card** by selecting a message they sent, and
     using the <kbd>U</kbd> shortcut.
+
+{tab|bot}
+
+{settings_tab|bot-list-admin}
+
+1. Click on the name of a bot in the **Name** column to open its **user card**.
 
 {end_tabs}
 
