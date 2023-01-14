@@ -29,7 +29,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.upload import get_bucket
+from zerver.lib.upload.s3 import get_bucket
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -1409,23 +1409,25 @@ def export_uploads_and_avatars(
         realm_emojis = list(RealmEmoji.objects.filter(author_id=user.id))
 
     if settings.LOCAL_UPLOADS_DIR:
+        assert settings.LOCAL_FILES_DIR
+        assert settings.LOCAL_AVATARS_DIR
         # Small installations and developers will usually just store files locally.
         export_uploads_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "files"),
+            local_dir=settings.LOCAL_FILES_DIR,
             output_dir=uploads_output_dir,
             attachments=attachments,
         )
         export_avatars_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+            local_dir=settings.LOCAL_AVATARS_DIR,
             output_dir=avatars_output_dir,
             users=users,
             handle_system_bots=handle_system_bots,
         )
         export_emoji_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+            local_dir=settings.LOCAL_AVATARS_DIR,
             output_dir=emoji_output_dir,
             realm_emojis=realm_emojis,
         )
@@ -1433,7 +1435,7 @@ def export_uploads_and_avatars(
         if user is None:
             export_realm_icons(
                 realm,
-                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
+                local_dir=settings.LOCAL_AVATARS_DIR,
                 output_dir=realm_icons_output_dir,
             )
     else:

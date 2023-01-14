@@ -396,7 +396,7 @@ function edit_message($row, raw_content) {
     $row.find(".message_reactions").hide();
     condense.hide_message_expander($row);
     condense.hide_message_condenser($row);
-    const content_top = $row.find(".message_top_line")[0].getBoundingClientRect().top;
+    const content_top = $row.find(".message_controls")[0].getBoundingClientRect().top;
 
     const message = message_lists.current.get(rows.id($row));
 

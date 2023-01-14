@@ -141,6 +141,8 @@ S3_REGION: Optional[str] = None
 S3_ENDPOINT_URL: Optional[str] = None
 S3_SKIP_PROXY = True
 LOCAL_UPLOADS_DIR: Optional[str] = None
+LOCAL_AVATARS_DIR: Optional[str] = None
+LOCAL_FILES_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
@@ -171,7 +173,6 @@ REMOTE_POSTGRES_HOST = ""
 REMOTE_POSTGRES_PORT = ""
 REMOTE_POSTGRES_SSLMODE = ""
 THUMBNAIL_IMAGES = False
-SENDFILE_BACKEND: Optional[str] = None
 
 TORNADO_PORTS: List[int] = []
 USING_TORNADO = True

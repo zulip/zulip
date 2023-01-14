@@ -45,26 +45,6 @@ backend. To enable this backend, you need to do the following:
    For certain AWS regions, you may need to set the `S3_REGION`
    setting to your default AWS region's code (e.g. `"eu-central-1"`).
 
-1. You will need to configure `nginx` to direct requests for uploaded
-   files to the Zulip server (which will then serve a redirect to the
-   appropriate place in S3), rather than serving them directly.
-
-   With Zulip 1.9.0 and newer, you can do this automatically with the
-   following commands run as root:
-
-   ```bash
-   crudini --set /etc/zulip/zulip.conf application_server no_serve_uploads true
-   /home/zulip/deployments/current/scripts/zulip-puppet-apply
-   ```
-
-   (The first line will update your `/etc/zulip/zulip.conf`).
-
-   With older Zulip, you need to edit
-   `/etc/nginx/sites-available/zulip-enterprise` to comment out the
-   `nginx` configuration block for `/user_avatars` and the
-   `include /etc/nginx/zulip-include/uploads.route` line and then
-   reload the `nginx` service (`service nginx reload`).
-
 1. Finally, restart the Zulip server so that your settings changes
    take effect
    (`/home/zulip/deployments/current/scripts/restart-server`).
@@ -74,6 +54,36 @@ server for production usage. Note that if you had any existing
 uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
+
+## S3 local caching
+
+For performance reasons, Zulip stores a cache of recently served user
+uploads on disk locally, even though the durable storage is kept in
+S3. There are a number of parameters which control the size and usage
+of this cache, which is maintained by nginx:
+
+- `s3_memory_cache_size` controls the in-memory size of the cache
+  _index_; the default is 1MB, which is enough to store about 8 thousand
+  entries.
+- `s3_disk_cache_size` controls the on-disk size of the cache
+  _contents_; the default is 200MB.
+- `s3_cache_inactive_time` controls the longest amount of time an
+  entry will be cached since last use; the default is 30 days. Since
+  the contents of the cache are immutable, this serves only as a
+  potential additional limit on the size of the contents on disk;
+  `s3_disk_cache_size` is expected to be the primary control for cache
+  sizing.
+
+These defaults are likely sufficient for small-to-medium deployments.
+Large deployments, or deployments with image-heavy use cases, will
+want to increase `s3_disk_cache_size`, potentially to be several
+gigabytes. `s3_memory_cache_size` should potentially be increased,
+based on estimating the number of files that the larger disk cache
+will hold.
+
+You may also wish to increase the cache sizes if the S3 storage (or
+S3-compatible equivalent) is not closely located to your Zulip server,
+as cache misses will be more expensive.
 
 ## S3 bucket policy
 

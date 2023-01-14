@@ -106,6 +106,7 @@ export function build_page() {
         send_read_receipts_tooltip: $t({
             defaultMessage: "Read receipts are currently disabled in this organization.",
         }),
+        user_is_only_organization_owner: people.is_current_user_only_owner(),
     });
 
     $(".settings-box").html(rendered_settings_tab);

@@ -408,6 +408,18 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ["#deactivate_account_container.only_organization_owner_tooltip"],
+        content: $t({
+            defaultMessage:
+                "Because you are the only organization owner, you cannot deactivate your account.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: "#pm_tooltip_container",
         onShow(instance) {
             if ($(".private_messages_container").hasClass("zoom-in")) {

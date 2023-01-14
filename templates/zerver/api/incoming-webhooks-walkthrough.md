@@ -280,6 +280,11 @@ The format is a JSON dictionary, so make sure that the header names do
 not contain any spaces in them and that you use the precise quoting
 approach shown above.
 
+For more information about `manage.py` command-line tools in Zulip, see
+the [management commands][management-commands] documentation.
+
+[management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
+
 ### Integrations Dev Panel
 This is the GUI tool.
 

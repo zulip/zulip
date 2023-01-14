@@ -50,7 +50,6 @@ from .configured_settings import (
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
     ROOT_SUBDOMAIN_ALIASES,
-    SENDFILE_BACKEND,
     SENTRY_DSN,
     SOCIAL_AUTH_APPLE_APP_ID,
     SOCIAL_AUTH_APPLE_SERVICES_ID,
@@ -440,12 +439,6 @@ ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
 
-if LOCAL_UPLOADS_DIR is not None:
-    if SENDFILE_BACKEND is None:
-        SENDFILE_BACKEND = "django_sendfile.backends.nginx"
-    SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, "files")
-    SENDFILE_URL = "/serve_uploads"
-
 # GCM tokens are IP-whitelisted; if we deploy to additional
 # servers you will need to explicitly add their IPs here:
 # https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
@@ -546,6 +539,9 @@ if PRODUCTION or IS_DEV_DROPLET or os.getenv("EXTERNAL_HOST") is not None:
     STATIC_URL = urljoin(ROOT_DOMAIN_URI, "/static/")
 else:
     STATIC_URL = "http://localhost:9991/static/"
+
+LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars") if LOCAL_UPLOADS_DIR else None
+LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR else None
 
 # ZulipStorage is a modified version of ManifestStaticFilesStorage,
 # and, like that class, it inserts a file hash into filenames
