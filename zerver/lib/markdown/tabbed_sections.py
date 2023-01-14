@@ -90,6 +90,8 @@ TAB_SECTION_LABELS = {
     "keycloak": "Keycloak",
     "logged-in": "If you are logged in",
     "logged-out": "If you are logged out",
+    "user": "User",
+    "bot": "Bot",
 }
 
 
