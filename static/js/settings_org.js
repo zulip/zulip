@@ -47,6 +47,7 @@ export function maybe_disable_widgets() {
 
     if (page_params.is_admin) {
         $("#deactivate_realm_button").prop("disabled", true);
+        $("#deactivate_realm_button_container").addClass("realm_deactivation_tooltip");
         $("#org-message-retention").find("input, select").prop("disabled", true);
         $("#org-join-settings").find("input, select").prop("disabled", true);
         $("#id_realm_invite_required_label").parent().addClass("control-label-disabled");
