@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 168**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue),
+  [`PATCH /settings`](/api/update-settings): Replaced the `realm_name_in_notifications`
+  boolean field with an integer field `realm_name_in_email_notifications_policy`.
+
 **Feature level 167**
 
 * [All REST API endpoints](/api/rest-error-handling#ignored-parameters):
