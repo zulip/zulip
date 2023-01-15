@@ -26,6 +26,7 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as modals from "./modals";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -873,7 +874,11 @@ export function initialize() {
             ui_report.client_error(error_message, $alert_box, 1200);
         }
 
-        if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+        if (
+            sub.invite_only &&
+            (people.is_my_user_id(target_user_id) ||
+                peer_data.get_subscriber_count(stream_id) === 1)
+        ) {
             const new_hash = hash_util.stream_edit_url(sub);
             hide_user_profile();
             browser_history.go_to_location(new_hash);
