@@ -551,14 +551,14 @@ test("set_up", ({override, override_rewire}) => {
 
     const $custom_edit_limit_input = $("#id_realm_message_content_edit_limit_minutes");
     $stub_message_content_edit_limit_parent.set_find_results(
-        ".admin-realm-time-limit-input",
+        ".time-limit-custom-input",
         $custom_edit_limit_input,
     );
     $custom_edit_limit_input.attr("id", "id_realm_message_content_edit_limit_minutes");
 
     const $custom_delete_limit_input = $("#id_realm_message_content_delete_limit_minutes");
     $stub_message_content_delete_limit_parent.set_find_results(
-        ".admin-realm-time-limit-input",
+        ".time-limit-custom-input",
         $custom_delete_limit_input,
     );
     $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
@@ -586,7 +586,7 @@ test("set_up", ({override, override_rewire}) => {
         $stub_realm_waiting_period_threshold_parent,
     );
     $stub_realm_waiting_period_threshold_parent.set_find_results(
-        ".admin-realm-time-limit-input",
+        ".time-limit-custom-input",
         $realm_waiting_period_threshold_custom_input,
     );
     $realm_waiting_period_threshold_custom_input.attr(

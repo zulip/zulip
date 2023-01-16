@@ -281,7 +281,7 @@ function update_custom_value_input(property_name) {
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
     const custom_input_elem_id = $dropdown_elem
         .parent()
-        .find(".admin-realm-time-limit-input")
+        .find(".time-limit-custom-input")
         .attr("id");
 
     const show_custom_limit_input = $dropdown_elem.val() === "custom_period";
@@ -312,7 +312,7 @@ function set_time_limit_setting(property_name) {
 
     const $custom_input = $(`#id_${CSS.escape(property_name)}`)
         .parent()
-        .find(".admin-realm-time-limit-input");
+        .find(".time-limit-custom-input");
     $custom_input.val(get_realm_time_limits_in_minutes(property_name));
 
     change_element_block_display_property(
@@ -838,7 +838,7 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
         return Number.parseInt(select_elem_val, 10);
     }
 
-    const $custom_input_elem = $input_elem.parent().find(".admin-realm-time-limit-input");
+    const $custom_input_elem = $input_elem.parent().find(".time-limit-custom-input");
     if ($custom_input_elem.val().length === 0) {
         // This handles the case where the initial setting value is "Any time" and then
         // dropdown is changed to "Custom" where the input box is empty initially and
@@ -965,7 +965,7 @@ function enable_or_disable_save_button($subsection_elem) {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
         const dropdown_elem_val = $(setting_elem).find("select").val();
-        const $custom_input_elem = $(setting_elem).find(".admin-realm-time-limit-input");
+        const $custom_input_elem = $(setting_elem).find(".time-limit-custom-input");
         const custom_input_elem_val = Number.parseInt(Number($custom_input_elem.val()), 10);
 
         disable_save_btn =
