@@ -1173,7 +1173,7 @@ $option_title_width: 180px;
     overflow: hidden;
     border-radius: 4px;
 
-    .admin-realm-time-limit-input {
+    .time-limit-custom-input {
         width: 5ch;
         text-align: right;
     }

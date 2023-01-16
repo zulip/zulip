@@ -48,7 +48,7 @@
                         <label for="id_realm_waiting_period_threshold_custom_input" class="inline-block">{{t "Waiting period (days)" }}:</label>
                         <input type="text" id="id_realm_waiting_period_threshold_custom_input"
                           name="realm_waiting_period_threshold_custom_input"
-                          class="admin-realm-time-limit-input"
+                          class="time-limit-custom-input"
                           value="{{ realm_waiting_period_threshold }}"/>
                     </div>
                 </div>
@@ -171,7 +171,7 @@
                         </label>
                         <input type="text" id="id_realm_message_content_edit_limit_minutes"
                           name="realm_message_content_edit_limit_minutes"
-                          class="admin-realm-time-limit-input"
+                          class="time-limit-custom-input"
                           autocomplete="off"
                           value="{{ realm_message_content_edit_limit_minutes }}"
                           {{#unless realm_allow_message_editing}}disabled{{/unless}}/>
@@ -238,7 +238,7 @@
                         </label>
                         <input type="text" id="id_realm_message_content_delete_limit_minutes"
                           name="realm_message_content_delete_limit_minutes"
-                          class="admin-realm-time-limit-input"
+                          class="time-limit-custom-input"
                           autocomplete="off"
                           value="{{ realm_message_content_delete_limit_minutes }}"/>
                     </div>
