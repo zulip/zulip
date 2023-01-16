@@ -70,7 +70,7 @@
             {{> upgrade_tip_widget }}
 
             <div class="inline-block organization-settings-parent">
-                <div class="input-group">
+                <div class="input-group time-limit-setting">
                     <label for="id_realm_message_retention_days" class="dropdown-title">{{t "Message retention period" }}
                     </label>
                     <select name="realm_message_retention_days"
@@ -87,7 +87,7 @@
                         </label>
                         <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
                           name="realm_message_retention_custom_input"
-                          class="admin-realm-message-retention-days message-retention-setting-custom-input"
+                          class="admin-realm-message-retention-days message-retention-setting-custom-input time-limit-custom-input"
                           data-setting-widget-type="number"
                           {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}/>
                     </div>
