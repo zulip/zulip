@@ -84,7 +84,12 @@ export function update_unread_counts() {
     // Set the unread counts that we show in the buttons that
     // toggle open the sidebar menus when we have a thin window.
     set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
-    set_count_toggle_button($("#userlist-toggle-unreadcount"), res.private_message_count);
+    // Bots and group PMs do not appear in the right sidebar user list, so
+    // we show unread count for only non bot 1:1 private messages there.
+    set_count_toggle_button(
+        $("#userlist-toggle-unreadcount"),
+        res.right_sidebar_private_message_count,
+    );
 }
 
 export function should_display_bankruptcy_banner() {
