@@ -6,13 +6,25 @@
           data-user-id="{{user_id}}"
           data-name="{{name}}">
             {{#if user_list_style.WITH_STATUS}}
-                <div class="user-name-and-status-wrapper">
-                    <div class="user-name-and-status-emoji">
-                        <span class="user-name">{{name}}</span>
-                        {{> status_emoji status_emoji_info}}
+                {{#if (and status_text status_emoji_info)}}
+                    <div class="user-name-and-status-wrapper">
+                        <div class="user-name">
+                            <span class="user-name">{{name}}</span>
+                        </div>
+                        <div class="status">
+                            {{> status_emoji status_emoji_info}}
+                            <span class="status-text">{{status_text}}</span>
+                        </div>
                     </div>
-                    <span class="status-text">{{status_text}}</span>
-                </div>
+                {{else}}
+                    <div class="user-name-and-status-wrapper">
+                        <div class="user-name-and-status-emoji">
+                            <span class="user-name">{{name}}</span>
+                            {{> status_emoji status_emoji_info}}
+                        </div>
+                        <span class="status-text">{{status_text}}</span>
+                    </div>
+                {{/if}}
             {{else}}
                 <span class="user-name">{{name}}</span>
                 {{> status_emoji status_emoji_info}}

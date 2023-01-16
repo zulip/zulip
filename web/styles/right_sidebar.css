@@ -87,6 +87,21 @@ $user_status_emoji_width: 24px;
         color: inherit;
         margin-left: 0;
     }
+
+    .status {
+        display: flex;
+        justify-content: center;
+        margin-top: -3px;
+
+        .status_emoji {
+            margin-right: 3px;
+            margin-left: 0;
+        }
+
+        .status-text {
+            margin-top: 0;
+        }
+    }
 }
 
 #invite-user-link i {
