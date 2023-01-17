@@ -1,4 +1,4 @@
-# Customize Zulip
+# Server configuration
 
 Once you've got Zulip set up, you'll likely want to configure it the
 way you like.
@@ -31,10 +31,11 @@ to each new major release.
 [update-settings-docs]: upgrade.md#updating-settingspy-inline-documentation
 [settings-py-template]: https://github.com/zulip/zulip/blob/main/zproject/prod_settings_template.py
 
-Since Zulip's settings file is a Python script, there are a number of
-other things that one can configure that are not documented; ask in
-[the Zulip development community](https://zulip.com/development-community/)
-if there's something you'd like to do but can't figure out how to.
+Since Zulip’s settings file is a Python script, there are a number of
+other things that one can configure that are documented in
+[System and deployment configuration](deployment.md#system-and-deployment-configuration).
+Otherwise, ask in [the Zulip development community](https://zulip.com/development-community/)
+if there’s something you’d like to do but can’t figure out how to.
 
 ## Specific settings
 
