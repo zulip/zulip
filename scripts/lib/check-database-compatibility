@@ -56,7 +56,7 @@ if os.path.exists("/etc/init.d/postgresql") and os.path.exists("/etc/zulip/zulip
             "\n"
             "In general, this results from manually upgrading PostgreSQL; you\n"
             "should follow our instructions for using our tool to do so:\n"
-            "https://zulip.readthedocs.io/en/latest/production/upgrade.html#upgrading-postgresql",
+            "https://zulip.readthedocs.io/en/stable/production/upgrade.html#upgrading-postgresql",
             postgresql_version,
             django_pg_version,
         )
@@ -66,8 +66,8 @@ if django_pg_version < 12:
     logging.critical("Unsupported PostgreSQL version: %d", postgresql_version)
     logging.info(
         "Please upgrade to PostgreSQL 12 or newer first.\n"
-        "See https://zulip.readthedocs.io/en/latest/production/"
-        "upgrade-or-modify.html#upgrading-postgresql"
+        "See https://zulip.readthedocs.io/en/stable/production/"
+        "upgrade.html#upgrading-postgresql"
     )
     sys.exit(1)
 
