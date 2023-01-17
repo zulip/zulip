@@ -1,0 +1,9 @@
+<label class="checkbox">
+    <input type="checkbox" name="announce" value="announce" checked />
+    <span></span>
+    {{#tr}}
+        Announce new stream in <z-notifications-stream></z-notifications-stream>.
+        {{#*inline "z-notifications-stream"}}<strong>{{{stream_privacy_symbol_html}}}{{notifications_stream}}</strong>{{/inline}}
+    {{/tr}}
+    {{> ../help_link_widget link="/help/configure-notification-bot#new-stream-announcements"}}
+</label>
