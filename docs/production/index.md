@@ -11,7 +11,7 @@ troubleshooting
 management-commands
 settings
 mobile-push-notifications
-upgrade-or-modify
+upgrade
 modify
 security-model
 authentication-methods
