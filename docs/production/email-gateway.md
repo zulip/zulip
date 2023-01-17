@@ -80,9 +80,10 @@ using an [HTTP reverse proxy][reverse-proxy]).
    mailname = emaildomain.example.com
    ```
 
-   This tells postfix to expect to receive emails at addresses ending
-   with `@emaildomain.example.com`, overriding the default of
-   `@hostname.example.com`.
+   This tells postfix to expect to receive emails at addresses ending with
+   `@emaildomain.example.com`, overriding the default of
+   `@hostname.example.com`. It will also identify itself as
+   `emaildomain.example.com` on any outgoing emails it sends.
 
 1. Run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`
    (and answer `y`) to apply your new `/etc/zulip/zulip.conf`
