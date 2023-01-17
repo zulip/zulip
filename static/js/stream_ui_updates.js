@@ -1,11 +1,14 @@
 import $ from "jquery";
 
+import render_stream_privacy from "../templates/stream_privacy.hbs";
+import render_announce_stream from "../templates/stream_settings/announce_stream.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as settings_org from "./settings_org";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -176,6 +179,46 @@ export function update_permissions_banner(sub) {
 
     const rendered_tip = render_stream_settings_tip(sub);
     $settings.find(".stream-settings-tip-container").html(rendered_tip);
+}
+
+export function update_notifications_stream_in_settings() {
+    // if stream creation form is not open, return
+    if (!hash_util.is_create_new_stream_narrow()) {
+        return;
+    }
+
+    const notifications_stream = stream_data.get_notifications_stream();
+    const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+    const notifications_stream_id = notifications_stream_sub.stream_id;
+
+    const user_id = people.my_current_user_id();
+
+    // check if user has access to notifications stream
+    const has_access_to_notification_stream =
+        !notifications_stream_sub.invite_only ||
+        stream_data.is_user_subscribed(notifications_stream_id, user_id);
+
+    // if announcement is turned off, hide the checkbox
+    // if user doesn't have access to notifications stream, hide checkbox
+    if (!stream_data.realm_has_notifications_stream() || !has_access_to_notification_stream) {
+        $("#announce-new-stream .checkbox").hide();
+        return;
+    }
+
+    if (stream_data.realm_has_notifications_stream()) {
+        $("#announce-new-stream .checkbox").show();
+    }
+
+    const stream_privacy_symbol_html = render_stream_privacy({
+        invite_only: notifications_stream_sub.invite_only,
+        is_web_public: notifications_stream_sub.is_web_public,
+    });
+
+    const rendered_html = render_announce_stream({
+        notifications_stream,
+        stream_privacy_symbol_html,
+    });
+    $("#announce-new-stream").expectOne().html(rendered_html);
 }
 
 export function update_notification_setting_checkbox(notification_name) {
