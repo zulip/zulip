@@ -583,8 +583,8 @@ If you are using password authentication, you can set a
 
 The file `/etc/zulip/zulip.conf` is used to configure properties of
 the system and deployment; `/etc/zulip/settings.py` is used to
-configure the application itself. The `zulip.conf` sections and
-settings are described below.
+[configure the application itself](settings.md). The `zulip.conf`
+sections and settings are described below.
 
 When a setting refers to "set to true" or "set to false", the values
 `true` and `false` are canonical, but any of the following values will
