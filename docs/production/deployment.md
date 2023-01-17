@@ -721,7 +721,8 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 #### `mailname`
 
 The hostname that [Postfix should be configured to receive mail
-at](email-gateway.md#local-delivery-setup).
+at](email-gateway.md#local-delivery-setup), as well as identify itself as for
+outgoing email.
 
 ### `[postgresql]`
 
