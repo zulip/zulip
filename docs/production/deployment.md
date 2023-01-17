@@ -33,8 +33,8 @@ In particular, we are always very glad to investigate problems with
 installing Zulip from `main`; they are rare and help us ensure that
 our next major release has a reliable install experience.
 
-[upgrade-to-main]: upgrade-or-modify.md#upgrading-to-main
-[upgrade-to-future-release]: upgrade-or-modify.md#upgrading-to-future-releases
+[upgrade-to-main]: modify.md#upgrading-to-main
+[upgrade-to-future-release]: modify.md#upgrading-to-future-releases
 
 ## Zulip in Docker
 

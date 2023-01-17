@@ -12,6 +12,7 @@ management-commands
 settings
 mobile-push-notifications
 upgrade-or-modify
+modify
 security-model
 authentication-methods
 export-and-import
