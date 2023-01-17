@@ -1530,7 +1530,7 @@ details.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production. We're now interested in beta testers for this feature.
 - Reorganized Zulip's documentation for sysadmins, and added [new
-  documentation](../production/upgrade-or-modify.md#modifying-zulip)
+  documentation](../production/modify.md)
   on maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).
