@@ -33,5 +33,5 @@ See also our documentation on the [Zulip release
 lifecycle][release-lifecycle].
 
 [security-model]: https://zulip.readthedocs.io/en/latest/production/security-model.html
-[upgrades]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-to-a-release
+[upgrades]: https://zulip.readthedocs.io/en/stable/production/upgrade.html#upgrading-to-a-release
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html

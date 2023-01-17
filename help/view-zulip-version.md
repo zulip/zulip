@@ -10,7 +10,7 @@ web app your organization is using.
 Zulip Cloud organizations are always updated to the latest version of Zulip.
 
 [upgrade-zulip]:
-    https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html
+    https://zulip.readthedocs.io/en/stable/production/upgrade.html
 [changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
 
 ### View Zulip server and web app version
