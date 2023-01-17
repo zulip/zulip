@@ -947,7 +947,7 @@ up-to-date list of all changes.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.md#customizing-the-outgoing-http-proxy
-[update-settings-docs]: ../production/upgrade-or-modify.md#updating-settingspy-inline-documentation
+[update-settings-docs]: ../production/upgrade.md#updating-settingspy-inline-documentation
 
 #### Full feature changelog
 
@@ -1236,7 +1236,7 @@ up-to-date list of all changes.
   Upgrade notes for all releases one is upgrading across.
 
 [manage-shell]: ../production/management-commands.md#managepy-shell
-[postgresql-upgrade]: ../production/upgrade-or-modify.md#upgrading-postgresql
+[postgresql-upgrade]: ../production/upgrade.md#upgrading-postgresql
 
 #### Full feature changelog
 

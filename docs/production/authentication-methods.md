@@ -888,4 +888,4 @@ passwordless login as any user in a development environment. It's
 mentioned on this page only for completeness.
 
 [custom-profile-fields]: https://zulip.com/help/custom-profile-fields
-[update-inline-comments]: upgrade-or-modify.md#updating-settingspy-inline-documentation
+[update-inline-comments]: upgrade.md#updating-settingspy-inline-documentation

@@ -86,7 +86,7 @@ across future Zulip releases.
 Eventually, you'll want to upgrade to a new Zulip release. If your
 changes were integrated into that Zulip release or are otherwise no
 longer needed, you can just [upgrade as
-usual](upgrade-or-modify.md#upgrading-to-a-release). If you [upgraded to
+usual](upgrade.md#upgrading-to-a-release). If you [upgraded to
 `main`](#upgrading-to-main); review that section again; new
 maintenance releases are likely "older" than your current installation
 and you might need to upgrade to `main` again rather than to the
@@ -236,6 +236,6 @@ other organizations, consider [contributing
 them](../contributing/contributing.md).
 
 [fork-clone]: ../git/cloning.md#get-zulip-code
-[upgrade-zulip-from-git]: ./upgrade-or-modify.md#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: ./upgrade.md#upgrading-from-a-git-repository
 [git-guide]: ../git/index.md
 [zulip/zulip]: https://github.com/zulip/zulip/
