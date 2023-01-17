@@ -1274,6 +1274,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@zulip :ta", emoji_list);
     assert_stream_list(":tada: #foo");
     assert_typeahead_equals("#foo\n~~~py", lang_list);
+    assert_typeahead_equals(":tada: <time:", ["translated: Mention a time-zone-aware time"]);
 
     assert_typeahead_equals("@", all_mentions);
     assert_typeahead_equals("@_", people_only);
