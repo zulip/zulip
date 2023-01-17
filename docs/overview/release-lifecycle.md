@@ -227,10 +227,10 @@ core community, like the Python and JavaScript bindings, are released
 independently as needed.
 
 [electron]: https://www.electronjs.org/
-[upgrading-to-main]: ../production/upgrade-or-modify.md#upgrading-to-main
+[upgrading-to-main]: ../production/modify.md#upgrading-to-main
 [os-upgrade]: ../production/upgrade-or-modify.md#upgrading-the-operating-system
 [chat-zulip-org]: https://zulip.com/development-community/
-[fork-zulip]: ../production/upgrade-or-modify.md#modifying-zulip
+[fork-zulip]: ../production/modify.md
 [zulip-server]: https://github.com/zulip/zulip
 [mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
 [label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
