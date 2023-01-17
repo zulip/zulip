@@ -17,17 +17,17 @@ Moved to [Security model](security-model.md).
 
 ### Upgrading
 
-Moved to [Upgrading to a release](upgrade-or-modify.md#upgrading-to-a-release).
+Moved to [Upgrading to a release](upgrade.md#upgrading-to-a-release).
 
 ### Upgrading from a Git repository
 
 Moved to [Upgrading from a Git
-repository](upgrade-or-modify.md#upgrading-from-a-git-repository).
+repository](upgrade.md#upgrading-from-a-git-repository).
 
 ### Upgrading the operating system
 
 Moved to [Upgrading the operating
-system](upgrade-or-modify.md#upgrading-the-operating-system).
+system](upgrade.md#upgrading-the-operating-system).
 
 ### Scalability
 
