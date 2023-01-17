@@ -55,7 +55,7 @@ def error_desupported_os(vendor: str, os_version: str) -> NoReturn:
         "Sorry! The support for your OS has been discontinued.\n"
         "Please upgrade your OS to a supported release first.\n"
         "See https://zulip.readthedocs.io/en/latest/production/"
-        "upgrade-or-modify.html#upgrading-the-operating-system"
+        "upgrade.html#upgrading-the-operating-system"
     )
     sys.exit(1)
 

@@ -71,7 +71,7 @@ ensure you can always move from our hosting to yours (and back).
 
 [install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
 [back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
-[maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html
+[maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade.html
 
 
 ## Do I need a separate Zulip organization for each class?
