@@ -1,4 +1,4 @@
-# Upgrade or modify Zulip
+# Upgrade Zulip
 
 This page explains how to upgrade Zulip, including:
 
