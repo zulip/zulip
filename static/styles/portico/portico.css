@@ -1317,15 +1317,6 @@ label.label-title {
     float: right;
 }
 
-#find_account .form-control {
-    height: 30px;
-}
-
-#find_account .btn {
-    height: 40px;
-    border-radius: 5px;
-}
-
 .documentation-footer {
     font-size: 0.85rem;
     opacity: 0.8;
