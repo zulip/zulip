@@ -314,6 +314,11 @@ export function tokenize_compose_str(s) {
                     return s.slice(i);
                 }
                 break;
+            case "<":
+                if (s.indexOf("<time", i) === i) {
+                    return s.slice(i);
+                }
+                break;
             case ">":
                 // topic_jump
                 //
@@ -331,11 +336,6 @@ export function tokenize_compose_str(s) {
                 // maybe topic_list; let's let the stream_topic_regex decide later.
                 return ">topic_list";
         }
-    }
-
-    const timestamp_index = s.indexOf("<time");
-    if (timestamp_index >= 0) {
-        return s.slice(timestamp_index);
     }
 
     return "";
