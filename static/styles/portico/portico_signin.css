@@ -163,17 +163,35 @@ html {
         display: inline-block;
     }
 
-    .btn-dev-login {
+    .dev-button {
         color: hsl(170, 41%, 52%);
         border: 1px solid hsl(170, 41%, 52%);
         border-radius: 4px;
         background-color: transparent;
+        font-family: inherit;
+        font-weight: normal;
+        line-height: 20px;
+        vertical-align: middle;
+        margin: 0;
+        width: auto;
 
         transition: color 0.3s ease, border 0.3s ease;
 
         &:hover {
             color: hsl(156, 62%, 61%);
             border-color: hsl(156, 62%, 61%);
+        }
+
+        &.dev-login-button {
+            padding: 8px;
+            font-size: 19px;
+            min-width: 300px;
+        }
+
+        &.dev-create-button {
+            padding: 6px 12px;
+            margin-bottom: 4px;
+            font-size: 15px;
         }
     }
 }

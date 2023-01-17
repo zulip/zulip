@@ -809,15 +809,6 @@ input#terminal:checked ~ #tab-terminal {
     width: 100%;
 }
 
-.btn-direct {
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 8px;
-    font-size: 18px;
-    border-radius: 0;
-    min-width: 300px;
-}
-
 .login-page {
     text-align: center;
 
