@@ -151,9 +151,7 @@ def render_markdown_path(
             base_path="templates/zerver/integrations/include/"
         )
     elif help_center:
-        md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path="templates/zerver/help/include/"
-        )
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(base_path="help/include/")
     else:
         md_macro_extension = zerver.lib.markdown.include.makeExtension(
             base_path="templates/zerver/api/include/"
