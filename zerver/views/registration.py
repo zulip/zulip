@@ -614,12 +614,11 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             request,
             "zerver/realm_creation_link_invalid.html",
         )
-    if not settings.OPEN_REALM_CREATION:
-        if key_record is None:
-            return TemplateResponse(
-                request,
-                "zerver/realm_creation_disabled.html",
-            )
+    if not settings.OPEN_REALM_CREATION and key_record is None:
+        return TemplateResponse(
+            request,
+            "zerver/realm_creation_disabled.html",
+        )
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # with a few restrictions on their email address.

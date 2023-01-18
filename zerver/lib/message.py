@@ -1284,10 +1284,12 @@ def apply_unread_message_event(
             topic=topic,
         )
 
-        if stream_id not in state["muted_stream_ids"]:
+        if (
+            stream_id not in state["muted_stream_ids"]
             # This next check hits the database.
-            if not topic_is_muted(user_profile, stream_id, topic):
-                state["unmuted_stream_msgs"].add(message_id)
+            and not topic_is_muted(user_profile, stream_id, topic)
+        ):
+            state["unmuted_stream_msgs"].add(message_id)
 
     elif message_type == "private":
         if len(others) == 1:
@@ -1311,9 +1313,8 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
-    if "wildcard_mentioned" in flags:
-        if message_id in state["unmuted_stream_msgs"]:
-            state["mentions"].add(message_id)
+    if "wildcard_mentioned" in flags and message_id in state["unmuted_stream_msgs"]:
+        state["mentions"].add(message_id)
 
 
 def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id: int) -> None:

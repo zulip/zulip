@@ -58,9 +58,12 @@ def adjust_block_indentation(tokens: List[Token], fn: str) -> None:
             continue
 
         if start_token and token.indent is not None:
-            if not start_token.indent_is_final and token.indent == start_token.orig_indent:
-                if token_allows_children_to_skip_indents(start_token):
-                    start_token.child_indent = start_token.indent
+            if (
+                not start_token.indent_is_final
+                and token.indent == start_token.orig_indent
+                and token_allows_children_to_skip_indents(start_token)
+            ):
+                start_token.child_indent = start_token.indent
             start_token.indent_is_final = True
 
         # Detect start token by its having a end token

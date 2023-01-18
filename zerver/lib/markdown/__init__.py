@@ -306,9 +306,8 @@ def url_embed_preview_enabled(
     if no_previews:
         return False
 
-    if realm is None:
-        if message is not None:
-            realm = message.get_realm()
+    if realm is None and message is not None:
+        realm = message.get_realm()
 
     if realm is None:
         # realm can be None for odd use cases
@@ -328,9 +327,8 @@ def image_preview_enabled(
     if no_previews:
         return False
 
-    if realm is None:
-        if message is not None:
-            realm = message.get_realm()
+    if realm is None and message is not None:
+        realm = message.get_realm()
 
     if realm is None:
         # realm can be None for odd use cases
@@ -1780,12 +1778,16 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
             # a newline.
             li1 = self.LI_RE.match(lines[i])
             li2 = self.LI_RE.match(lines[i + 1])
-            if not in_code_fence and lines[i]:
-                if (li2 and not li1) or (
-                    li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1)
-                ):
-                    copy.insert(i + inserts + 1, "")
-                    inserts += 1
+            if (
+                not in_code_fence
+                and lines[i]
+                and (
+                    (li2 and not li1)
+                    or (li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1))
+                )
+            ):
+                copy.insert(i + inserts + 1, "")
+                inserts += 1
         return copy
 
 
@@ -1865,9 +1867,8 @@ class UserMentionPattern(CompiledInlineProcessor):
                 # name matches the full_name of user in mention_data.
                 # This enforces our decision that
                 # @**user_1_name|id_for_user_2** should be invalid syntax.
-                if full_name:
-                    if user and user.full_name != full_name:
-                        return None, None, None
+                if full_name and user and user.full_name != full_name:
+                    return None, None, None
             else:
                 # For @**name** syntax.
                 user = db_data.mention_data.get_user_by_name(name)
@@ -2538,9 +2539,8 @@ def do_convert(
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
     # * message is passed, but no realm is -> look up realm from message
     # * message_realm is passed -> use that realm for Markdown purposes
-    if message is not None:
-        if message_realm is None:
-            message_realm = message.get_realm()
+    if message is not None and message_realm is None:
+        message_realm = message.get_realm()
     if message_realm is None:
         linkifiers_key = DEFAULT_MARKDOWN_KEY
     else:
@@ -2551,12 +2551,15 @@ def do_convert(
     else:
         logging_message_id = "unknown"
 
-    if message is not None and message_realm is not None:
-        if message_realm.is_zephyr_mirror_realm:
-            if message.sending_client.name == "zephyr_mirror":
-                # Use slightly customized Markdown processor for content
-                # delivered via zephyr_mirror
-                linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
+    if (
+        message is not None
+        and message_realm is not None
+        and message_realm.is_zephyr_mirror_realm
+        and message.sending_client.name == "zephyr_mirror"
+    ):
+        # Use slightly customized Markdown processor for content
+        # delivered via zephyr_mirror
+        linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
 
     maybe_update_markdown_engines(linkifiers_key, email_gateway)
     md_engine_key = (linkifiers_key, email_gateway)

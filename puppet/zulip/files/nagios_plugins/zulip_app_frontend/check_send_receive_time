@@ -47,18 +47,17 @@ if not options.nagios and not options.munin:
     print("No output options specified! Please provide --munin or --nagios")
     sys.exit(0)
 
-if options.munin:
-    if options.config == "config":
-        print(
-            """graph_title Send-Receive times
+if options.munin and options.config == "config":
+    print(
+        """graph_title Send-Receive times
 graph_info The number of seconds it takes to send and receive a message from the server
 graph_args -u 5 -l 0
 graph_vlabel RTT (seconds)
 sendreceive.label Send-receive round trip time
 sendreceive.warning 3
 sendreceive.critical 5"""
-        )
-        sys.exit(0)
+    )
+    sys.exit(0)
 
 sys.path.append("/home/zulip/deployments/current")
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"

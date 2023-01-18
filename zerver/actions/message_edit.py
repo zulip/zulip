@@ -668,55 +668,52 @@ def do_update_message(
     # newly sent messages anyway) and having magical live-updates
     # where possible.
     users_to_be_notified = list(map(user_info, ums))
-    if stream_being_edited is not None:
-        if stream_being_edited.is_history_public_to_subscribers():
-            subscriptions = get_active_subscriptions_for_stream_id(
-                stream_id, include_deactivated_users=False
-            )
-            # We exclude long-term idle users, since they by
-            # definition have no active clients.
-            subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-            # Remove duplicates by excluding the id of users already
-            # in users_to_be_notified list.  This is the case where a
-            # user both has a UserMessage row and is a current
-            # Subscriber
+    if stream_being_edited is not None and stream_being_edited.is_history_public_to_subscribers():
+        subscriptions = get_active_subscriptions_for_stream_id(
+            stream_id, include_deactivated_users=False
+        )
+        # We exclude long-term idle users, since they by
+        # definition have no active clients.
+        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
+        # Remove duplicates by excluding the id of users already
+        # in users_to_be_notified list.  This is the case where a
+        # user both has a UserMessage row and is a current
+        # Subscriber
+        subscriptions = subscriptions.exclude(
+            user_profile_id__in=[um.user_profile_id for um in ums]
+        )
+
+        if new_stream is not None:
+            assert delete_event_notify_user_ids is not None
+            subscriptions = subscriptions.exclude(user_profile_id__in=delete_event_notify_user_ids)
+
+        # All users that are subscribed to the stream must be
+        # notified when a message is edited
+        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+
+        if new_stream is not None:
+            # TODO: Guest users don't see the new moved topic
+            # unless breadcrumb message for new stream is
+            # enabled. Excluding these users from receiving this
+            # event helps us avoid a error traceback for our
+            # clients. We should figure out a way to inform the
+            # guest users of this new topic if sending a 'message'
+            # event for these messages is not an option.
+            #
+            # Don't send this event to guest subs who are not
+            # subscribers of the old stream but are subscribed to
+            # the new stream; clients will be confused.
+            old_stream_unsubbed_guests = [
+                sub
+                for sub in subs_to_new_stream
+                if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
+            ]
             subscriptions = subscriptions.exclude(
-                user_profile_id__in=[um.user_profile_id for um in ums]
+                user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
             )
-
-            if new_stream is not None:
-                assert delete_event_notify_user_ids is not None
-                subscriptions = subscriptions.exclude(
-                    user_profile_id__in=delete_event_notify_user_ids
-                )
-
-            # All users that are subscribed to the stream must be
-            # notified when a message is edited
             subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
-            if new_stream is not None:
-                # TODO: Guest users don't see the new moved topic
-                # unless breadcrumb message for new stream is
-                # enabled. Excluding these users from receiving this
-                # event helps us avoid a error traceback for our
-                # clients. We should figure out a way to inform the
-                # guest users of this new topic if sending a 'message'
-                # event for these messages is not an option.
-                #
-                # Don't send this event to guest subs who are not
-                # subscribers of the old stream but are subscribed to
-                # the new stream; clients will be confused.
-                old_stream_unsubbed_guests = [
-                    sub
-                    for sub in subs_to_new_stream
-                    if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
-                ]
-                subscriptions = subscriptions.exclude(
-                    user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
-                )
-                subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-
-            users_to_be_notified += list(map(subscriber_info, sorted(subscriber_ids)))
+        users_to_be_notified += list(map(subscriber_info, sorted(subscriber_ids)))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -927,10 +924,12 @@ def check_update_message(
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
-    if content is not None:
+    if (
+        content is not None
         # You cannot edit the content of message sent by someone else.
-        if message.sender_id != user_profile.id:
-            raise JsonableError(_("You don't have permission to edit this message"))
+        and message.sender_id != user_profile.id
+    ):
+        raise JsonableError(_("You don't have permission to edit this message"))
 
     is_no_topic_msg = message.topic_name() == "(no topic)"
 

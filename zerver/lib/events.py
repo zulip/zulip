@@ -204,14 +204,16 @@ def fetch_initial_state_data(
             user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
             state["drafts"] = user_draft_dicts
 
-    if want("muted_topics"):
+    if want("muted_topics") and (
         # Suppress muted_topics data for clients that explicitly
         # support user_topic. This allows clients to request both the
         # user_topic and muted_topics, and receive the duplicate
         # muted_topics data only from older servers that don't yet
         # support user_topic.
-        if event_types is None or not want("user_topic"):
-            state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
+        event_types is None
+        or not want("user_topic")
+    ):
+        state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
     if want("muted_users"):
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
@@ -542,21 +544,20 @@ def fetch_initial_state_data(
             [] if user_profile is None else get_starred_message_ids(user_profile)
         )
 
-    if want("stream"):
-        if include_streams:
-            # The web app doesn't use the data from here; instead,
-            # it uses data from state["subscriptions"] and other
-            # places.
-            if user_profile is not None:
-                state["streams"] = do_get_streams(
-                    user_profile, include_all_active=user_profile.is_realm_admin
-                )
-            else:
-                # TODO: This line isn't used by the web app because it
-                # gets these data via the `subscriptions` key; it will
-                # be used when the mobile apps support logged-out
-                # access.
-                state["streams"] = get_web_public_streams(realm)  # nocoverage
+    if want("stream") and include_streams:
+        # The web app doesn't use the data from here; instead,
+        # it uses data from state["subscriptions"] and other
+        # places.
+        if user_profile is not None:
+            state["streams"] = do_get_streams(
+                user_profile, include_all_active=user_profile.is_realm_admin
+            )
+        else:
+            # TODO: This line isn't used by the web app because it
+            # gets these data via the `subscriptions` key; it will
+            # be used when the mobile apps support logged-out
+            # access.
+            state["streams"] = get_web_public_streams(realm)  # nocoverage
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
@@ -707,13 +708,17 @@ def apply_event(
 
         # Below, we handle maintaining first_message_id.
         for sub_dict in state.get("subscriptions", []):
-            if event["message"]["stream_id"] == sub_dict["stream_id"]:
-                if sub_dict["first_message_id"] is None:
-                    sub_dict["first_message_id"] = event["message"]["id"]
+            if (
+                event["message"]["stream_id"] == sub_dict["stream_id"]
+                and sub_dict["first_message_id"] is None
+            ):
+                sub_dict["first_message_id"] = event["message"]["id"]
         for stream_dict in state.get("streams", []):
-            if event["message"]["stream_id"] == stream_dict["stream_id"]:
-                if stream_dict["first_message_id"] is None:
-                    stream_dict["first_message_id"] = event["message"]["id"]
+            if (
+                event["message"]["stream_id"] == stream_dict["stream_id"]
+                and stream_dict["first_message_id"] is None
+            ):
+                stream_dict["first_message_id"] = event["message"]["id"]
 
     elif event["type"] == "heartbeat":
         # It may be impossible for a heartbeat event to actually reach
@@ -767,9 +772,8 @@ def apply_event(
 
         if event["op"] == "add":
             person = copy.deepcopy(person)
-            if client_gravatar:
-                if person["avatar_url"].startswith("https://secure.gravatar.com/"):
-                    person["avatar_url"] = None
+            if client_gravatar and person["avatar_url"].startswith("https://secure.gravatar.com/"):
+                person["avatar_url"] = None
             person["is_active"] = True
             if not person["is_bot"]:
                 person["profile_data"] = {}
@@ -857,11 +861,14 @@ def apply_event(
                     if not was_admin and now_admin:
                         state["realm_bots"] = get_owned_bot_dicts(user_profile)
 
-            if client_gravatar and "avatar_url" in person:
+            if (
+                client_gravatar
+                and "avatar_url" in person
                 # Respect the client_gravatar setting in the `users` data.
-                if person["avatar_url"].startswith("https://secure.gravatar.com/"):
-                    person["avatar_url"] = None
-                    person["avatar_url_medium"] = None
+                and person["avatar_url"].startswith("https://secure.gravatar.com/")
+            ):
+                person["avatar_url"] = None
+                person["avatar_url_medium"] = None
 
             if person_user_id in state["raw_users"]:
                 p = state["raw_users"][person_user_id]
@@ -1011,11 +1018,13 @@ def apply_event(
                     if permission in state:
                         state[permission] = user_profile.has_permission(policy)
 
-            if event["property"] in policy_permission_dict:
-                if policy_permission_dict[event["property"]] in state:
-                    state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
-                        event["property"]
-                    )
+            if (
+                event["property"] in policy_permission_dict
+                and policy_permission_dict[event["property"]] in state
+            ):
+                state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
+                    event["property"]
+                )
 
             # Finally, we need to recompute this value from its inputs.
             state["can_create_streams"] = (

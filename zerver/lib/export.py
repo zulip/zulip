@@ -1595,9 +1595,8 @@ def export_files_from_s3(
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
-        if valid_hashes is not None:
-            if bkey.Object().key not in valid_hashes:
-                continue
+        if valid_hashes is not None and bkey.Object().key not in valid_hashes:
+            continue
 
         key = bucket.Object(bkey.key)
 

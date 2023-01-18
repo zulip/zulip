@@ -4462,9 +4462,8 @@ def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = F
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid user ID: {}").format(user_id))
 
-        if not allow_deactivated:
-            if not user_profile.is_active:
-                raise ValidationError(_("User with ID {} is deactivated").format(user_id))
+        if not allow_deactivated and not user_profile.is_active:
+            raise ValidationError(_("User with ID {} is deactivated").format(user_id))
 
         if user_profile.is_bot:
             raise ValidationError(_("User with ID {} is a bot").format(user_id))

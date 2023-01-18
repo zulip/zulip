@@ -222,16 +222,17 @@ def update_realm_custom_profile_field(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
         )
 
-    if field.field_type == CustomProfileField.EXTERNAL_ACCOUNT:
+    if (
+        field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
         # HACK: Allow changing the display_in_profile_summary property
         # of default external account types, but not any others.
         #
         # TODO: Make the name/hint/field_data parameters optional, and
         # just require that None was passed for all of them for this case.
-        if is_default_external_field(
-            field.field_type, orjson.loads(field.field_data)
-        ) and not update_only_display_in_profile_summary(name, hint, field_data, field):
-            raise JsonableError(_("Default custom field cannot be updated."))
+        and is_default_external_field(field.field_type, orjson.loads(field.field_data))
+        and not update_only_display_in_profile_summary(name, hint, field_data, field)
+    ):
+        raise JsonableError(_("Default custom field cannot be updated."))
 
     validate_custom_profile_field(
         name, hint, field.field_type, field_data, display_in_profile_summary

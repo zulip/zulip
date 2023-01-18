@@ -58,9 +58,8 @@ def get_filtered_commands() -> Dict[str, str]:
     for command, app in all_commands.items():
         if app not in documented_apps:
             continue
-        if app in documented_command_subsets:
-            if command not in documented_command_subsets[app]:
-                continue
+        if app in documented_command_subsets and command not in documented_command_subsets[app]:
+            continue
 
         documented_commands[command] = app
     return documented_commands

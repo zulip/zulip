@@ -267,36 +267,36 @@ def update_realm(
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
-    if notifications_stream_id is not None:
-        if realm.notifications_stream is None or (
-            realm.notifications_stream.id != notifications_stream_id
-        ):
-            new_notifications_stream = None
-            if notifications_stream_id >= 0:
-                (new_notifications_stream, sub) = access_stream_by_id(
-                    user_profile, notifications_stream_id
-                )
-            do_set_realm_notifications_stream(
-                realm, new_notifications_stream, notifications_stream_id, acting_user=user_profile
+    if notifications_stream_id is not None and (
+        realm.notifications_stream is None
+        or (realm.notifications_stream.id != notifications_stream_id)
+    ):
+        new_notifications_stream = None
+        if notifications_stream_id >= 0:
+            (new_notifications_stream, sub) = access_stream_by_id(
+                user_profile, notifications_stream_id
             )
-            data["notifications_stream_id"] = notifications_stream_id
+        do_set_realm_notifications_stream(
+            realm, new_notifications_stream, notifications_stream_id, acting_user=user_profile
+        )
+        data["notifications_stream_id"] = notifications_stream_id
 
-    if signup_notifications_stream_id is not None:
-        if realm.signup_notifications_stream is None or (
-            realm.signup_notifications_stream.id != signup_notifications_stream_id
-        ):
-            new_signup_notifications_stream = None
-            if signup_notifications_stream_id >= 0:
-                (new_signup_notifications_stream, sub) = access_stream_by_id(
-                    user_profile, signup_notifications_stream_id
-                )
-            do_set_realm_signup_notifications_stream(
-                realm,
-                new_signup_notifications_stream,
-                signup_notifications_stream_id,
-                acting_user=user_profile,
+    if signup_notifications_stream_id is not None and (
+        realm.signup_notifications_stream is None
+        or realm.signup_notifications_stream.id != signup_notifications_stream_id
+    ):
+        new_signup_notifications_stream = None
+        if signup_notifications_stream_id >= 0:
+            (new_signup_notifications_stream, sub) = access_stream_by_id(
+                user_profile, signup_notifications_stream_id
             )
-            data["signup_notifications_stream_id"] = signup_notifications_stream_id
+        do_set_realm_signup_notifications_stream(
+            realm,
+            new_signup_notifications_stream,
+            signup_notifications_stream_id,
+            acting_user=user_profile,
+        )
+        data["signup_notifications_stream_id"] = signup_notifications_stream_id
 
     if default_code_block_language is not None:
         # Migrate '', used in the API to encode the default/None behavior of this feature.
