@@ -834,6 +834,43 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         # HTML body is empty, so the plaintext content should be picked, despite prefer-html option.
         self.assertEqual(message.content, "Test message")
 
+    def test_message_with_valid_attachment_missed_message(self) -> None:
+        user_profile = self.example_user("othello")
+        usermessage = most_recent_usermessage(user_profile)
+        mm_address = create_missed_message_address(user_profile, usermessage.message)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test body")
+        with open(
+            os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), "rb"
+        ) as f:
+            image_bytes = f.read()
+
+        incoming_valid_message.add_attachment(
+            image_bytes,
+            maintype="image",
+            subtype="png",
+            filename="image.png",
+        )
+
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = self.example_email("othello")
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.sender, user_profile)
+        self.assertTrue(message.has_attachment)
+
+        attachment = Attachment.objects.last()
+        assert attachment is not None
+        self.assertEqual(attachment.realm, user_profile.realm)
+        self.assertEqual(attachment.owner, user_profile)
+        self.assertEqual(attachment.is_realm_public, True)
+        self.assertEqual(list(attachment.messages.values_list("id", flat=True)), [message.id])
+
 
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self) -> None:
