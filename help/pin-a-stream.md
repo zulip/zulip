@@ -44,7 +44,7 @@ which is especially handy if you are subscribed to a large number of streams.
 
 {end_tabs}
 
-### Alternate method
+## Alternate method to pin or unpin a stream
 
 {start_tabs}
 
@@ -69,3 +69,8 @@ which is especially handy if you are subscribed to a large number of streams.
 {!mobile-stream-settings-menu-tip.md!}
 
 {end_tabs}
+
+## Related articles
+
+* [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
+* [Mute a stream](/help/mute-a-stream)

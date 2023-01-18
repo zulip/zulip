@@ -17,9 +17,11 @@ sorted to the bottom of their section.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!stream-actions.md!}
 
-3. Select **Mute stream**.
+1. Click **Mute stream**.
 
 {end_tabs}
 
@@ -28,9 +30,27 @@ sorted to the bottom of their section.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!stream-actions.md!}
 
-3. Select **Unmute stream**.
+1. Click **Unmute stream**.
+
+{end_tabs}
+
+## Alternate method to mute or unmute a stream
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|stream|subscribed}
+
+1. Select a stream.
+
+{!select-stream-view-personal.md!}
+
+1. Under **Personal settings**, toggle **Mute stream**.
 
 {end_tabs}
 
