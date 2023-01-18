@@ -1148,10 +1148,7 @@ def process_message_update_event(
     # on the `user_id` key not being present in legacy events that
     # would have had rendering_only set. Remove this check when one
     # can no longer directly update from 4.x to main.
-    if "rendering_only" in event_template:
-        rendering_only_update = event_template["rendering_only"]
-    else:
-        rendering_only_update = "user_id" not in event_template
+    rendering_only_update = event_template.get("rendering_only", "user_id" not in event_template)
 
     for user_data in users:
         user_profile_id = user_data["id"]

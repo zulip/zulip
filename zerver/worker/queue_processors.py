@@ -451,10 +451,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         logger.info(
             "Sending invitation for realm %s to %s", referrer.realm.string_id, invitee.email
         )
-        if "email_language" in data:
-            email_language = data["email_language"]
-        else:
-            email_language = referrer.realm.default_language
+        email_language = data.get("email_language", referrer.realm.default_language)
 
         activate_url = do_send_confirmation_email(
             invitee, referrer, email_language, invite_expires_in_minutes
