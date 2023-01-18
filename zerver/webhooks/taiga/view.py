@@ -263,7 +263,7 @@ def parse_change_event(change_type: str, message: WildValue) -> Optional[EventTy
         if not tamed_old:
             event_type = "set_" + change_type
             values["new"] = tamed_new
-        elif not tamed_old == tamed_new:
+        elif tamed_old != tamed_new:
             event_type = change_type
             values.update(old=tamed_old, new=tamed_new)
         else:

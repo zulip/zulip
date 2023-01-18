@@ -63,12 +63,12 @@ def split_for_id_and_class(element: str) -> List[str]:
         if ch == "}":
             outside_braces = True
         if ch == " " and outside_braces:
-            if not s == "":
+            if s != "":
                 lst.append(s)
             s = ""
         else:
             s += ch
-    if not s == "":
+    if s != "":
         lst.append(s)
 
     return lst

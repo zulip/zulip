@@ -154,7 +154,7 @@ def validate_indent_html(fn: str, tokens: List[Token], fix: bool) -> bool:
     with open(fn) as f:
         html = f.read()
     phtml = pretty_print_html(tokens, fn)
-    if not html.split("\n") == phtml.split("\n"):
+    if html.split("\n") != phtml.split("\n"):
         if fix:
             print(GREEN + f"Automatically fixing indentation for {fn}" + ENDC)
             with open(fn, "w") as f:
