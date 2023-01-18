@@ -13,5 +13,10 @@
   },
   "devDependencies": {
     "typescript": "^4.8.2"
-  }
+  },
+  "files": [
+    "icons",
+    "js",
+    "lib"
+  ]
 }
