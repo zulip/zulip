@@ -8,6 +8,7 @@ import time
 import traceback
 import uuid
 from collections import deque
+from contextlib import suppress
 from dataclasses import asdict
 from functools import lru_cache
 from typing import (
@@ -640,10 +641,8 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
         load_event_queues(port)
         autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
-    try:
+    with suppress(OSError):
         os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
-    except OSError:
-        pass
 
     # Set up event queue garbage collection
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)

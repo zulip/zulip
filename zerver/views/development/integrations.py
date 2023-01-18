@@ -1,4 +1,5 @@
 import os
+from contextlib import suppress
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import orjson
@@ -84,10 +85,9 @@ def get_fixtures(request: HttpRequest, integration_name: str = REQ()) -> HttpRes
         fixture_path = os.path.join(fixtures_dir, fixture)
         with open(fixture_path) as f:
             body = f.read()
-        try:
+        # The file extension will be used to determine the type.
+        with suppress(orjson.JSONDecodeError):
             body = orjson.loads(body)
-        except orjson.JSONDecodeError:
-            pass  # The file extension will be used to determine the type.
 
         headers_raw = get_fixture_http_headers(
             valid_integration_name, "".join(fixture.split(".")[:-1])

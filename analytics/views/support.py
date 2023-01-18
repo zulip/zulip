@@ -1,4 +1,5 @@
 import urllib
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
@@ -285,10 +286,8 @@ def support(
                 if parse_result.port:
                     hostname = f"{hostname}:{parse_result.port}"
                 subdomain = get_subdomain_from_hostname(hostname)
-                try:
+                with suppress(Realm.DoesNotExist):
                     realms.add(get_realm(subdomain))
-                except Realm.DoesNotExist:
-                    pass
             except ValidationError:
                 users.update(UserProfile.objects.filter(full_name__iexact=key_word))
 

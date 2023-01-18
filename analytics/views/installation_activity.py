@@ -1,6 +1,7 @@
 import itertools
 import time
 from collections import defaultdict
+from contextlib import suppress
 from datetime import datetime, timedelta
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -241,10 +242,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         hours = minutes / 60.0
         total_hours += hours
         row["hours"] = str(int(hours))
-        try:
+        with suppress(Exception):
             row["hours_per_user"] = "{:.1f}".format(hours / row["dau_count"])
-        except Exception:
-            pass
 
     # formatting
     for row in rows:

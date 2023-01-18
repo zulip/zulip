@@ -1,5 +1,6 @@
 import logging
 import urllib
+from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import urlencode
 
@@ -227,10 +228,8 @@ def accounts_register(
     require_ldap_password = False
 
     if from_confirmation:
-        try:
+        with suppress(KeyError):
             del request.session["authenticated_full_name"]
-        except KeyError:
-            pass
 
         ldap_full_name = None
         if settings.POPULATE_PROFILE_VIA_LDAP:

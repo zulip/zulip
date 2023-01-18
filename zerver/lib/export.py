@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from contextlib import suppress
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
 
@@ -1941,10 +1942,8 @@ def create_soft_link(source: Path, in_progress: bool = True) -> None:
     if in_progress:
         new_target = in_progress_link
     else:
-        try:
+        with suppress(FileNotFoundError):
             os.remove(in_progress_link)
-        except FileNotFoundError:
-            pass
         new_target = done_link
 
     overwrite_symlink(source, new_target)

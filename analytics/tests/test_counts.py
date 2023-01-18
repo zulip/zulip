@@ -1401,27 +1401,23 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
-        try:
+        with self.assertRaises(InvitationError):
             do_invite_users(
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(4)
 
         # Test inviting existing users
-        try:
+        with self.assertRaises(InvitationError):
             do_invite_users(
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit

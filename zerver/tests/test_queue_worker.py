@@ -4,7 +4,7 @@ import os
 import signal
 import time
 from collections import defaultdict
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from inspect import isabstract
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
@@ -620,10 +620,8 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue("unreliable_worker", {"type": msg})
 
         fn = os.path.join(settings.QUEUE_ERROR_DIR, "unreliable_worker.errors")
-        try:
+        with suppress(FileNotFoundError):
             os.remove(fn)
-        except OSError:  # nocoverage # error handling for the directory not existing
-            pass
 
         with simulated_queue_client(fake_client):
             worker = UnreliableWorker()
@@ -657,10 +655,8 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue("unreliable_loopworker", {"type": msg})
 
         fn = os.path.join(settings.QUEUE_ERROR_DIR, "unreliable_loopworker.errors")
-        try:
+        with suppress(FileNotFoundError):
             os.remove(fn)
-        except OSError:  # nocoverage # error handling for the directory not existing
-            pass
 
         with simulated_queue_client(fake_client):
             loopworker = UnreliableLoopWorker()
@@ -700,10 +696,8 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue("timeout_worker", {"type": msg})
 
         fn = os.path.join(settings.QUEUE_ERROR_DIR, "timeout_worker.errors")
-        try:
+        with suppress(FileNotFoundError):
             os.remove(fn)
-        except OSError:  # nocoverage # error handling for the directory not existing
-            pass
 
         with simulated_queue_client(fake_client):
             worker = TimeoutWorker()

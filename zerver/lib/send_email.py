@@ -3,6 +3,7 @@ import hashlib
 import logging
 import os
 import smtplib
+from contextlib import suppress
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
@@ -552,7 +553,7 @@ def send_custom_email(
             "realm_name": user_profile.realm.name,
             "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
-        try:
+        with suppress(EmailNotDeliveredError):
             send_email(
                 email_id,
                 to_user_ids=[user_profile.id],
@@ -564,8 +565,6 @@ def send_custom_email(
                 context=context,
                 dry_run=options["dry_run"],
             )
-        except EmailNotDeliveredError:
-            pass
 
         if options["dry_run"]:
             break
