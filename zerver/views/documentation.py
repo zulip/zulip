@@ -172,7 +172,7 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_article = self.get_path("include/sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip help center"
-        elif self.path_template == f"{settings.POLICIES_DIRECTORY}/%s.md":
+        elif self.policies_view:
             context["page_is_policy_center"] = True
             context["doc_root"] = "/policies/"
             context["doc_root_title"] = "Terms and policies"
@@ -193,7 +193,6 @@ class MarkdownDirectoryView(ApiURLView):
         if os.path.exists(article_absolute_path):
             with open(article_absolute_path) as article_file:
                 first_line = article_file.readlines()[0]
-            # Strip the header and then use the first line to get the article title
             if context["article"] == "/zerver/api/api-doc-template.md":
                 endpoint_name, endpoint_method = (
                     documentation_article.endpoint_path,
@@ -209,6 +208,7 @@ class MarkdownDirectoryView(ApiURLView):
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
             else:
+                # Strip the header and then use the first line to get the article title
                 article_title = first_line.lstrip("#").strip()
                 endpoint_name = endpoint_method = None
             if not_index_page:
