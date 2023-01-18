@@ -155,6 +155,8 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
 def construct_zulip_body(
     message: EmailMessage,
     realm: Realm,
+    *,
+    sender: UserProfile,
     show_sender: bool = False,
     include_quotes: bool = False,
     include_footer: bool = False,
@@ -168,13 +170,13 @@ def construct_zulip_body(
 
     if not body.endswith("\n"):
         body += "\n"
-    body += extract_and_upload_attachments(message, realm)
+    body += extract_and_upload_attachments(message, realm, sender)
     if not body.rstrip():
         body = "(No email body)"
 
     if show_sender:
-        sender = str(message.get("From", ""))
-        body = f"From: {sender}\n{body}"
+        from_address = str(message.get("From", ""))
+        body = f"From: {from_address}\n{body}"
 
     return body
 
@@ -314,9 +316,7 @@ def filter_footer(text: str) -> str:
     return re.split(r"^\s*--\s*$", text, 1, flags=re.MULTILINE)[0].strip()
 
 
-def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
-    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
-
+def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: UserProfile) -> str:
     attachment_links = []
     for part in message.walk():
         content_type = part.get_content_type()
@@ -329,7 +329,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
                     len(attachment),
                     content_type,
                     attachment,
-                    user_profile,
+                    sender,
                     target_realm=realm,
                 )
                 formatted_link = f"[{filename}]({s3_url})"
@@ -414,8 +414,9 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
-    body = construct_zulip_body(message, stream.realm, **options)
-    send_zulip(get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id), stream, subject, body)
+    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+    body = construct_zulip_body(message, stream.realm, sender=user_profile, **options)
+    send_zulip(user_profile, stream, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
         stream.name,
@@ -440,7 +441,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         logger.warning("Sending user is not active. Ignoring this message notification email.")
         return
 
-    body = construct_zulip_body(message, user_profile.realm)
+    body = construct_zulip_body(message, user_profile.realm, sender=user_profile)
 
     assert recipient is not None
     if recipient.type == Recipient.STREAM:
