@@ -1,5 +1,6 @@
 import logging
 import os
+import posixpath
 import random
 import secrets
 import shutil
@@ -8,6 +9,7 @@ import zipfile
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
+from urllib.parse import urlsplit
 
 import orjson
 import requests
@@ -211,11 +213,15 @@ def build_realmemoji(
     emoji_url_map = {}
     emoji_id = 0
     for emoji_name, url in custom_emoji_list.items():
-        if "emoji.slack-edge.com" in url:
+        split_url = urlsplit(url)
+        if split_url.hostname == "emoji.slack-edge.com":
             # Some of the emojis we get from the API have invalid links
             # this is to prevent errors related to them
             realmemoji = RealmEmoji(
-                name=emoji_name, id=emoji_id, file_name=os.path.basename(url), deactivated=False
+                name=emoji_name,
+                id=emoji_id,
+                file_name=posixpath.basename(split_url.path),
+                deactivated=False,
             )
 
             realmemoji_dict = model_to_dict(realmemoji, exclude=["realm", "author"])
@@ -1040,8 +1046,9 @@ def process_message_files(
             continue
 
         url = fileinfo["url_private"]
+        split_url = urlsplit(url)
 
-        if "files.slack.com" in url:
+        if split_url.hostname == "files.slack.com":
             # For attachments with Slack download link
             has_attachment = True
             has_link = True
