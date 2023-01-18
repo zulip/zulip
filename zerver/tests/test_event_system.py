@@ -1,6 +1,7 @@
 import time
 from typing import Any, Callable, Dict, List, Mapping, Optional
 from unittest import mock
+from urllib.parse import urlsplit
 
 import orjson
 from django.conf import settings
@@ -458,7 +459,7 @@ class GetEventsTest(ZulipTestCase):
         message = get_message(apply_markdown=False, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "**hello**")
-        self.assertTrue(message["avatar_url"].startswith("https://secure.gravatar.com"))
+        self.assertEqual(urlsplit(message["avatar_url"]).hostname, "secure.gravatar.com")
 
         message = get_message(apply_markdown=True, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
@@ -693,7 +694,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
         gravatar_users_id = [
             user_dict["user_id"]
             for user_dict in raw_users.values()
-            if "avatar_url" in user_dict and "gravatar.com" in user_dict["avatar_url"]
+            if "avatar_url" in user_dict
+            and urlsplit(user_dict["avatar_url"]).hostname == "secure.gravatar.com"
         ]
 
         # Test again with client_gravatar = True

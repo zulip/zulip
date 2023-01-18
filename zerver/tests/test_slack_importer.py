@@ -1167,7 +1167,7 @@ class SlackImporter(ZulipTestCase):
         )
         files = [
             dict(
-                url_private="files.slack.com/apple.png",
+                url_private="https://files.slack.com/apple.png",
                 title="Apple",
                 name="apple.png",
                 mimetype="image/png",
@@ -1176,7 +1176,7 @@ class SlackImporter(ZulipTestCase):
                 size=3000000,
             ),
             dict(
-                url_private="example.com/banana.zip",
+                url_private="https://example.com/banana.zip",
                 title="banana",
             ),
         ]
@@ -1211,7 +1211,9 @@ class SlackImporter(ZulipTestCase):
         self.assert_length(uploads_list, 1)
 
         image_path = zerver_attachment[0]["path_id"]
-        expected_content = f"[Apple](/user_uploads/{image_path})\n[banana](example.com/banana.zip)"
+        expected_content = (
+            f"[Apple](/user_uploads/{image_path})\n[banana](https://example.com/banana.zip)"
+        )
         self.assertEqual(info["content"], expected_content)
 
         self.assertTrue(info["has_link"])
