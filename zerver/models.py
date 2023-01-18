@@ -1943,12 +1943,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
 
     def can_admin_user(self, target_user: "UserProfile") -> bool:
         """Returns whether this user has permission to modify target_user"""
-        if target_user.bot_owner == self:
-            return True
-        elif self.is_realm_admin and self.realm == target_user.realm:
-            return True
-        else:
-            return False
+        return target_user.bot_owner == self or (
+            self.is_realm_admin and self.realm == target_user.realm
+        )
 
     def __str__(self) -> str:
         return f"<UserProfile: {self.email} {self.realm}>"

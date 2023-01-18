@@ -536,10 +536,7 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
         return Address(addr_spec=email).domain.lower() == settings.LDAP_APPEND_DOMAIN
 
     # If we don't have an LDAP domain, we have to do a lookup for the email.
-    if find_ldap_users_by_email(email):
-        return True
-    else:
-        return False
+    return bool(find_ldap_users_by_email(email))
 
 
 ldap_logger = logging.getLogger("zulip.ldap")
