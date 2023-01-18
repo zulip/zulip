@@ -676,7 +676,7 @@ class RealmTest(ZulipTestCase):
         req = {"video_chat_provider": orjson.dumps(invalid_video_chat_provider_value).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(
-            result, ("Invalid video_chat_provider {}").format(invalid_video_chat_provider_value)
+            result, f"Invalid video_chat_provider {invalid_video_chat_provider_value}"
         )
 
         req = {

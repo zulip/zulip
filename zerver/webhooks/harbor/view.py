@@ -65,7 +65,7 @@ def handle_scanning_completed_event(
     ]["summary"]
     if len(scan_summaries) > 0:
         for severity, count in scan_summaries.items():
-            scan_results += "* {}: **{}**\n".format(severity, count.tame(check_int))
+            scan_results += f"* {severity}: **{count.tame(check_int)}**\n"
     else:
         scan_results += "None\n"
 
