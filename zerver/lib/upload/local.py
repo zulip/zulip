@@ -166,10 +166,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file("avatars", os.path.join(upload_path, resized_file), resized_data)
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        if night:
-            file_name = "night_logo.png"
-        else:
-            file_name = "logo.png"
+        file_name = "night_logo.png" if night else "logo.png"
         return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
 
     def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:

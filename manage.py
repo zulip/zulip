@@ -86,10 +86,7 @@ class FilteredManagementUtility(ManagementUtility):
             ]
             commands_dict = defaultdict(list)
             for name, app in get_filtered_commands().items():
-                if app == "django.core":
-                    app = "django"
-                else:
-                    app = app.rpartition(".")[-1]
+                app = "django" if app == "django.core" else app.rpartition(".")[-1]
                 commands_dict[app].append(name)
             style = color_style()
             for app in sorted(commands_dict):

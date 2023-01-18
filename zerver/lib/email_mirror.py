@@ -474,10 +474,7 @@ def process_message(message: EmailMessage, rcpt_to: Optional[str] = None) -> Non
     to: Optional[str] = None
 
     try:
-        if rcpt_to is not None:
-            to = rcpt_to
-        else:
-            to = find_emailgateway_recipient(message)
+        to = rcpt_to if rcpt_to is not None else find_emailgateway_recipient(message)
 
         if is_missed_message_address(to):
             process_missed_message(to, message)

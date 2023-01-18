@@ -341,10 +341,7 @@ class S3UploadBackend(ZulipUploadBackend):
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
     ) -> None:
         content_type = guess_type(logo_file.name)[0]
-        if night:
-            basename = "night_logo"
-        else:
-            basename = "logo"
+        basename = "night_logo" if night else "logo"
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), basename)
 
         image_data = logo_file.read()
@@ -368,10 +365,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # that users use gravatar.)
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        if not night:
-            file_name = "logo.png"
-        else:
-            file_name = "night_logo.png"
+        file_name = "logo.png" if not night else "night_logo.png"
         public_url = self.get_public_upload_url(f"{realm_id}/realm/{file_name}")
         return public_url + f"?version={version}"
 

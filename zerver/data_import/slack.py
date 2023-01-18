@@ -279,10 +279,7 @@ def users_to_zerver_userprofile(
     for user in users:
         slack_user_id = user["id"]
 
-        if user.get("is_primary_owner", False):
-            user_id = primary_owner_id
-        else:
-            user_id = user_id_count
+        user_id = primary_owner_id if user.get("is_primary_owner", False) else user_id_count
 
         email = get_user_email(user, domain_name)
         # ref: https://zulip.com/help/change-your-profile-picture

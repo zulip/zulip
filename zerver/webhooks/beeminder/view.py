@@ -43,10 +43,7 @@ def api_beeminder_webhook(
     pledge = payload["goal"]["pledge"].tame(check_union([check_int, check_float]))
     time_remain = get_time(payload)  # time in hours
     # To show user's probable reaction by looking at pledge amount
-    if pledge > 0:
-        expression = ":worried:"
-    else:
-        expression = ":relieved:"
+    expression = ":worried:" if pledge > 0 else ":relieved:"
 
     topic = "beekeeper"
     body = MESSAGE_TEMPLATE.format(

@@ -35,10 +35,7 @@ def report(state: str, data: str, last_check: float) -> NoReturn:
 
 with open(RESULTS_FILE) as f:
     data = f.read().strip()
-if data.split("\n")[-1].strip() == "0":
-    state = "OK"
-else:
-    state = "CRITICAL"
+state = "OK" if data.split("\n")[-1].strip() == "0" else "CRITICAL"
 
 last_check = os.stat(RESULTS_FILE).st_mtime
 time_since_last_check = time.time() - last_check

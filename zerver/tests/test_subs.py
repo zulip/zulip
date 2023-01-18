@@ -2187,10 +2187,7 @@ class StreamAdminTest(ZulipTestCase):
     ) -> "TestHttpResponse":
 
         # Set up the main user, who is in most cases an admin.
-        if is_realm_admin:
-            user_profile = self.example_user("iago")
-        else:
-            user_profile = self.example_user("hamlet")
+        user_profile = self.example_user("iago") if is_realm_admin else self.example_user("hamlet")
 
         self.login_user(user_profile)
 

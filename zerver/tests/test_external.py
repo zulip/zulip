@@ -172,10 +172,7 @@ class RateLimitTests(ZulipTestCase):
             self.assertNotEqual(result.headers["Content-Type"], "application/json")
             self.assert_in_response("Rate limit exceeded.", result)
 
-        if is_json:
-            assert_func = api_assert_func
-        else:
-            assert_func = user_facing_assert_func
+        assert_func = api_assert_func if is_json else user_facing_assert_func
 
         start_time = time.time()
         for i in range(6):

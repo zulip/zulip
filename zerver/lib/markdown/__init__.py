@@ -2536,10 +2536,7 @@ def do_convert(
     # * message_realm is passed -> use that realm for Markdown purposes
     if message is not None and message_realm is None:
         message_realm = message.get_realm()
-    if message_realm is None:
-        linkifiers_key = DEFAULT_MARKDOWN_KEY
-    else:
-        linkifiers_key = message_realm.id
+    linkifiers_key = DEFAULT_MARKDOWN_KEY if message_realm is None else message_realm.id
 
     if message and hasattr(message, "id") and message.id:
         logging_message_id = "id# " + str(message.id)

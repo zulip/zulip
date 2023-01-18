@@ -29,10 +29,7 @@ class StatsDWrapper:
         """Set a gauge value."""
         from django_statsd.clients import statsd
 
-        if delta:
-            value_str = f"{value:+g}|g"
-        else:
-            value_str = f"{value:g}|g"
+        value_str = f"{value:+g}|g" if delta else f"{value:g}|g"
         statsd._send(stat, value_str, rate)
 
     def __getattr__(self, name: str) -> Any:

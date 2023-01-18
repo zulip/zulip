@@ -155,10 +155,7 @@ def api_newrelic_webhook(
             )
 
         policy_names_list = payload.get("alertPolicyNames", []).tame(check_list(check_string))
-        if policy_names_list:
-            policy_names_str = ",".join(policy_names_list)
-        else:
-            policy_names_str = "Unknown Policy"
+        policy_names_str = ",".join(policy_names_list) if policy_names_list else "Unknown Policy"
         topic_info = {
             "policy_name": policy_names_str,
             "incident_id": payload.get("id", "Unknown ID").tame(

@@ -348,14 +348,7 @@ def main() -> None:
 
     full_suite = len(args) == 0
 
-    if full_suite:
-        suites = [
-            "zerver.tests",
-            "analytics.tests",
-            "corporate.tests",
-        ]
-    else:
-        suites = args
+    suites = ["zerver.tests", "analytics.tests", "corporate.tests"] if full_suite else args
 
     if full_suite and include_webhooks:
         suites.append("zerver.webhooks")

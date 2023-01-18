@@ -20,10 +20,7 @@ def api_homeassistant_webhook(
     body = payload["message"].tame(check_string)
 
     # set the topic to the topic parameter, if given
-    if "topic" in payload:
-        topic = payload["topic"].tame(check_string)
-    else:
-        topic = "homeassistant"
+    topic = payload["topic"].tame(check_string) if "topic" in payload else "homeassistant"
 
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)

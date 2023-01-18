@@ -245,10 +245,7 @@ class QueueProcessingWorker(ABC):
     def update_statistics(self) -> None:
         total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
         total_events = sum(events_number for events_number, _ in self.recent_consume_times)
-        if total_events == 0:
-            recent_average_consume_time = None
-        else:
-            recent_average_consume_time = total_seconds / total_events
+        recent_average_consume_time = None if total_events == 0 else total_seconds / total_events
         stats_dict = dict(
             update_time=time.time(),
             recent_average_consume_time=recent_average_consume_time,

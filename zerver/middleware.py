@@ -257,10 +257,7 @@ def write_log_line(
             statsd.incr(f"{statsd_path}.dbq", len(queries))
             statsd.timing(f"{statsd_path}.total", timedelta_ms(time_delta))
 
-    if "extra" in log_data:
-        extra_request_data = " {}".format(log_data["extra"])
-    else:
-        extra_request_data = ""
+    extra_request_data = " {}".format(log_data["extra"]) if "extra" in log_data else ""
     if client_version is None:
         logger_client = f"({requestor_for_logs} via {client_name})"
     else:

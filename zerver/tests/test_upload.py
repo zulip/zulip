@@ -1694,10 +1694,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
         is_night_str = str(self.night).lower()
 
-        if self.night:
-            file_name = "night_logo.png"
-        else:
-            file_name = "logo.png"
+        file_name = "night_logo.png" if self.night else "logo.png"
         self.assertEqual(
             redirect_url,
             f"/user_avatars/{realm.id}/realm/{file_name}?version=2&night={is_night_str}",
@@ -1775,10 +1772,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_logo_version(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        if self.night:
-            version = realm.night_logo_version
-        else:
-            version = realm.logo_version
+        version = realm.night_logo_version if self.night else realm.logo_version
         self.assertEqual(version, 1)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             self.client_post(

@@ -59,10 +59,7 @@ Example:
             self.print_help("./manage.py", "send_to_email_mirror")
             raise CommandError
 
-        if options["stream"] is None:
-            stream = "Denmark"
-        else:
-            stream = options["stream"]
+        stream = "Denmark" if options["stream"] is None else options["stream"]
 
         realm = self.get_realm(options)
         if realm is None:

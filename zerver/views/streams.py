@@ -272,15 +272,9 @@ def update_stream_backend(
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
 
     # Validate that the proposed state for permissions settings is permitted.
-    if is_private is not None:
-        proposed_is_private = is_private
-    else:
-        proposed_is_private = stream.invite_only
+    proposed_is_private = is_private if is_private is not None else stream.invite_only
 
-    if is_web_public is not None:
-        proposed_is_web_public = is_web_public
-    else:
-        proposed_is_web_public = stream.is_web_public
+    proposed_is_web_public = is_web_public if is_web_public is not None else stream.is_web_public
 
     if stream.realm.is_zephyr_mirror_realm:
         # In the Zephyr mirroring model, history is unconditionally

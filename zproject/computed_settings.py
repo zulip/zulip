@@ -697,10 +697,7 @@ SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 ZULIP_WORKER_TEST_FILE = "/tmp/zulip-worker-test-file"
 
 
-if IS_WORKER:
-    FILE_LOG_PATH = WORKER_LOG_PATH
-else:
-    FILE_LOG_PATH = SERVER_LOG_PATH
+FILE_LOG_PATH = WORKER_LOG_PATH if IS_WORKER else SERVER_LOG_PATH
 
 # This is disabled in a few tests.
 LOGGING_ENABLED = True

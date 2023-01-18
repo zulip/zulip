@@ -267,10 +267,7 @@ def get_update_name_body(payload: WildValue, action: WildValue, entity: str) -> 
 
 def get_update_archived_body(payload: WildValue, action: WildValue, entity: str) -> str:
     archived = action["changes"]["archived"]
-    if archived["new"]:
-        operation = "archived"
-    else:
-        operation = "unarchived"
+    operation = "archived" if archived["new"] else "unarchived"
 
     kwargs = {
         "entity": entity,

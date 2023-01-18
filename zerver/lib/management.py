@@ -177,20 +177,14 @@ server via `ps -ef` or reading bash history. Prefer
         """
         Parses parameters for user creation defined in add_create_user_args.
         """
-        if options["email"] is None:
-            email = input("Email: ")
-        else:
-            email = options["email"]
+        email = input("Email: ") if options["email"] is None else options["email"]
 
         try:
             validators.validate_email(email)
         except ValidationError:
             raise CommandError("Invalid email address.")
 
-        if options["full_name"] is None:
-            full_name = input("Full name: ")
-        else:
-            full_name = options["full_name"]
+        full_name = input("Full name: ") if options["full_name"] is None else options["full_name"]
 
         if options["password_file"] is not None:
             with open(options["password_file"]) as f:

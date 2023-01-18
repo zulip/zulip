@@ -209,10 +209,7 @@ def main() -> None:
 
 
 def parse_logfile_names(args: argparse.Namespace) -> List[str]:
-    if args.nginx:
-        base_path = "/var/log/nginx/access.log"
-    else:
-        base_path = "/var/log/zulip/server.log"
+    base_path = "/var/log/nginx/access.log" if args.nginx else "/var/log/zulip/server.log"
 
     logfile_names = [base_path]
     if args.all_logs:

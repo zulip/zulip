@@ -232,10 +232,7 @@ Value without title
         )
 
     def get_body(self, fixture_name: str) -> str:
-        if "urlencoded" in fixture_name:
-            file_type = "txt"
-        else:
-            file_type = "json"
+        file_type = "txt" if "urlencoded" in fixture_name else "json"
         return self.webhook_fixture_data("slack_incoming", fixture_name, file_type=file_type)
 
     def test_attachment_pieces_title_null(self) -> None:

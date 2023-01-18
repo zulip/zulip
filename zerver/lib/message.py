@@ -1269,10 +1269,7 @@ def apply_unread_message_event(
         message_type = "stream"
     elif message["type"] == "private":
         others = [recip for recip in message["display_recipient"] if recip["id"] != user_profile.id]
-        if len(others) <= 1:
-            message_type = "private"
-        else:
-            message_type = "huddle"
+        message_type = "private" if len(others) <= 1 else "huddle"
     else:
         raise AssertionError("Invalid message type {}".format(message["type"]))
 
@@ -1292,10 +1289,7 @@ def apply_unread_message_event(
             state["unmuted_stream_msgs"].add(message_id)
 
     elif message_type == "private":
-        if len(others) == 1:
-            other_user_id = others[0]["id"]
-        else:
-            other_user_id = user_profile.id
+        other_user_id = others[0]["id"] if len(others) == 1 else user_profile.id
 
         state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
             other_user_id=other_user_id,
@@ -1335,10 +1329,7 @@ def format_unread_message_details(
 
     for message_id, private_message_details in raw_unread_data["pm_dict"].items():
         other_user_id = private_message_details["other_user_id"]
-        if other_user_id == my_user_id:
-            user_ids = []
-        else:
-            user_ids = [other_user_id]
+        user_ids = [] if other_user_id == my_user_id else [other_user_id]
 
         # Note that user_ids excludes ourself, even for the case we send messages
         # to ourself.

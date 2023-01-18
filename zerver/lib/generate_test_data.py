@@ -41,10 +41,7 @@ def generate_topics(num_topics: int) -> List[str]:
     # many topics in a few streams. Note that these don't have the
     # "Marked as resolved" messages, so don't match the normal user
     # experience perfectly.
-    if random.random() < 0.15:
-        resolved_topic_probability = 0.5
-    else:
-        resolved_topic_probability = 0.05
+    resolved_topic_probability = 0.5 if random.random() < 0.15 else 0.05
 
     final_topics = []
     for topic in topics:

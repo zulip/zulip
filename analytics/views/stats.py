@@ -361,10 +361,7 @@ def get_chart_data(
         # Otherwise, we can use tables on the current server to
         # determine a nice range, and some additional validation.
         if start is None:
-            if for_installation:
-                start = installation_epoch()
-            else:
-                start = realm.date_created
+            start = installation_epoch() if for_installation else realm.date_created
         if end is None:
             end = max(
                 stat.last_successful_fill() or datetime.min.replace(tzinfo=timezone.utc)

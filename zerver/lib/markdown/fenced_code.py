@@ -441,10 +441,7 @@ class FencedBlockPreprocessor(Preprocessor):
         return output
 
     def format_code(self, lang: Optional[str], text: str) -> str:
-        if lang:
-            langclass = LANG_TAG.format(lang)
-        else:
-            langclass = ""
+        langclass = LANG_TAG.format(lang) if lang else ""
 
         # Check for code hilite extension
         if not self.checked_for_codehilite:

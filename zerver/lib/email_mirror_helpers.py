@@ -68,10 +68,7 @@ def encode_email_address_helper(name: str, email_token: str, show_sender: bool =
     encoded_name = slug_name if len(slug_name) == len(name) else ""
 
     # If encoded_name ends up empty, we just skip this part of the address:
-    if encoded_name:
-        encoded_token = f"{encoded_name}.{email_token}"
-    else:
-        encoded_token = email_token
+    encoded_token = f"{encoded_name}.{email_token}" if encoded_name else email_token
 
     if show_sender:
         encoded_token += ".show-sender"
@@ -105,9 +102,6 @@ def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
 
     # There should be one or two parts left:
     # [stream_name, email_token] or just [email_token]
-    if len(remaining_parts) == 1:
-        token = remaining_parts[0]
-    else:
-        token = remaining_parts[1]
+    token = remaining_parts[0] if len(remaining_parts) == 1 else remaining_parts[1]
 
     return token, options

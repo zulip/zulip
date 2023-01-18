@@ -116,10 +116,7 @@ def format_issue_comment_event(payload: WildValue, include_title: bool = False) 
     comment = payload["comment"]
     issue = payload["issue"]
 
-    if action == "created":
-        action = "[commented]"
-    else:
-        action = f"{action} a [comment]"
+    action = "[commented]" if action == "created" else f"{action} a [comment]"
     action += "({}) on".format(comment["html_url"].tame(check_string))
 
     return get_issue_event_message(

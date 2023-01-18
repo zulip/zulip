@@ -427,10 +427,7 @@ def do_update_message(
         )
 
         if target_message.is_stream_message():
-            if topic_name is not None:
-                new_topic_name = topic_name
-            else:
-                new_topic_name = target_message.topic_name()
+            new_topic_name = topic_name if topic_name is not None else target_message.topic_name()
 
             stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
                 stream_id=stream_id,
