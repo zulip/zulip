@@ -2030,7 +2030,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         allowed_bot_types = []
         if (
             self.is_realm_admin
-            or not self.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+            or self.realm.bot_creation_policy != Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
         ):
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [
@@ -3070,7 +3070,7 @@ class Draft(models.Model):
                 to = []
                 for r in get_display_recipient(self.recipient):
                     assert not isinstance(r, str)  # It will only be a string for streams
-                    if not r["id"] == self.user_profile_id:
+                    if r["id"] != self.user_profile_id:
                         to.append(r["id"])
         return {
             "id": self.id,
