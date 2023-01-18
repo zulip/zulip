@@ -1052,7 +1052,7 @@ def process_message_files(
             # For attachments with Slack download link
             has_attachment = True
             has_link = True
-            has_image = True if "image" in fileinfo["mimetype"] else False
+            has_image = "image" in fileinfo["mimetype"]
 
             file_user = [
                 iterate_user for iterate_user in users if message["user"] == iterate_user["id"]

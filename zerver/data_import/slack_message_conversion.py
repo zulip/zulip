@@ -110,10 +110,7 @@ def convert_to_zulip_markdown(
     # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
     text, has_mailto_link = convert_mailto_format(text)
 
-    if has_link is True or has_mailto_link is True:
-        message_has_link = True
-    else:
-        message_has_link = False
+    message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
 

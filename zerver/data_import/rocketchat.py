@@ -669,7 +669,7 @@ def process_messages(
             content=content,
             date_sent=int(message["ts"].timestamp()),
             reactions=reactions,
-            has_link=True if message.get("urls") else False,
+            has_link=bool(message.get("urls")),
         )
 
         # Add recipient_id to message_dict
