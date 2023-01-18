@@ -1292,10 +1292,11 @@ def fetch_team_icons(
     )
 
     resized_icon_output_path = os.path.join(output_dir, str(realm_id), "icon.png")
-    with open(resized_icon_output_path, "wb") as output_file:
-        with open(original_icon_output_path, "rb") as original_file:
-            resized_data = resize_logo(original_file.read())
-            output_file.write(resized_data)
+    with open(resized_icon_output_path, "wb") as output_file, open(
+        original_icon_output_path, "rb"
+    ) as original_file:
+        resized_data = resize_logo(original_file.read())
+        output_file.write(resized_data)
     records.append(
         {
             "realm_id": realm_id,

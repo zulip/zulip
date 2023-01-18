@@ -2212,15 +2212,14 @@ class StreamAdminTest(ZulipTestCase):
         for user in other_sub_users:
             self.subscribe(user, stream_name)
 
-        with self.assert_database_query_count(query_count):
-            with cache_tries_captured() as cache_tries:
-                result = self.client_delete(
-                    "/json/users/me/subscriptions",
-                    {
-                        "subscriptions": orjson.dumps([stream_name]).decode(),
-                        "principals": orjson.dumps(principals).decode(),
-                    },
-                )
+        with self.assert_database_query_count(query_count), cache_tries_captured() as cache_tries:
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream_name]).decode(),
+                    "principals": orjson.dumps(principals).decode(),
+                },
+            )
         if cache_count is not None:
             self.assert_length(cache_tries, cache_count)
 
@@ -4224,13 +4223,14 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         events: List[Mapping[str, Any]] = []
         flush_per_request_caches()
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
-            with self.assert_database_query_count(36):
-                self.common_subscribe_to_streams(
-                    self.test_user,
-                    streams_to_sub,
-                    dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
-                )
+        with self.tornado_redirected_to_list(
+            events, expected_num_events=5
+        ), self.assert_database_query_count(36):
+            self.common_subscribe_to_streams(
+                self.test_user,
+                streams_to_sub,
+                dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
+            )
 
         for ev in [x for x in events if x["event"]["type"] not in ("message", "stream")]:
             if ev["event"]["op"] == "add":
@@ -4248,13 +4248,14 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(num_subscribers_for_stream_id(stream.id), 2)
 
         # Now add ourselves
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
-            with self.assert_database_query_count(12):
-                self.common_subscribe_to_streams(
-                    self.test_user,
-                    streams_to_sub,
-                    dict(principals=orjson.dumps([self.test_user.id]).decode()),
-                )
+        with self.tornado_redirected_to_list(
+            events, expected_num_events=2
+        ), self.assert_database_query_count(12):
+            self.common_subscribe_to_streams(
+                self.test_user,
+                streams_to_sub,
+                dict(principals=orjson.dumps([self.test_user.id]).decode()),
+            )
 
         add_event, add_peer_event = events
         self.assertEqual(add_event["event"]["type"], "subscription")
@@ -4515,15 +4516,15 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Sends 3 peer-remove events and 2 unsubscribe events.
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
-            with self.assert_database_query_count(16):
-                with cache_tries_captured() as cache_count:
-                    bulk_remove_subscriptions(
-                        realm,
-                        [user1, user2],
-                        [stream1, stream2, stream3, private],
-                        acting_user=None,
-                    )
+        with self.tornado_redirected_to_list(
+            events, expected_num_events=5
+        ), self.assert_database_query_count(16), cache_tries_captured() as cache_count:
+            bulk_remove_subscriptions(
+                realm,
+                [user1, user2],
+                [stream1, stream2, stream3, private],
+                acting_user=None,
+            )
 
         self.assert_length(cache_count, 3)
 
@@ -4573,15 +4574,16 @@ class SubscriptionAPITest(ZulipTestCase):
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
-            with self.assert_database_query_count(4):
-                self.common_subscribe_to_streams(
-                    mit_user,
-                    stream_names,
-                    dict(principals=orjson.dumps([mit_user.id]).decode()),
-                    subdomain="zephyr",
-                    allow_fail=True,
-                )
+        with self.tornado_redirected_to_list(
+            events, expected_num_events=0
+        ), self.assert_database_query_count(4):
+            self.common_subscribe_to_streams(
+                mit_user,
+                stream_names,
+                dict(principals=orjson.dumps([mit_user.id]).decode()),
+                subdomain="zephyr",
+                allow_fail=True,
+            )
 
         with self.tornado_redirected_to_list(events, expected_num_events=0):
             bulk_remove_subscriptions(
@@ -4623,14 +4625,16 @@ class SubscriptionAPITest(ZulipTestCase):
 
         test_user_ids = [user.id for user in test_users]
 
-        with self.assert_database_query_count(19):
-            with cache_tries_captured() as cache_tries:
-                with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
-                    self.common_subscribe_to_streams(
-                        desdemona,
-                        streams,
-                        dict(principals=orjson.dumps(test_user_ids).decode()),
-                    )
+        with self.assert_database_query_count(
+            19
+        ), cache_tries_captured() as cache_tries, mock.patch(
+            "zerver.views.streams.send_messages_for_new_subscribers"
+        ):
+            self.common_subscribe_to_streams(
+                desdemona,
+                streams,
+                dict(principals=orjson.dumps(test_user_ids).decode()),
+            )
 
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users.

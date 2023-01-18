@@ -76,15 +76,14 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         with patch(
             "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message",
             side_effect=EmbeddedBotQuitError("I'm quitting!"),
-        ):
-            with self.assertLogs(level="WARNING") as m:
-                self.send_stream_message(
-                    self.user_profile,
-                    "Denmark",
-                    content=f"@**{self.bot_profile.full_name}** foo",
-                    topic_name="bar",
-                )
-                self.assertEqual(m.output, ["WARNING:root:I'm quitting!"])
+        ), self.assertLogs(level="WARNING") as m:
+            self.send_stream_message(
+                self.user_profile,
+                "Denmark",
+                content=f"@**{self.bot_profile.full_name}** foo",
+                topic_name="bar",
+            )
+            self.assertEqual(m.output, ["WARNING:root:I'm quitting!"])
 
 
 class TestEmbeddedBotFailures(ZulipTestCase):

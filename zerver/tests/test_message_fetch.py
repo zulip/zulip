@@ -3313,9 +3313,8 @@ class GetOldMessagesTest(ZulipTestCase):
         request = HostRequestMock(query_params, user_profile)
 
         first_visible_message_id = first_unread_message_id + 2
-        with first_visible_id_as(first_visible_message_id):
-            with queries_captured() as all_queries:
-                get_messages_backend(request, user_profile)
+        with first_visible_id_as(first_visible_message_id), queries_captured() as all_queries:
+            get_messages_backend(request, user_profile)
 
         queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
         self.assert_length(queries, 1)

@@ -157,12 +157,11 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("stack_trace", report)
 
         # Test that `add_request_metadata` throwing an exception is fine
-        with patch("zerver.logging_handlers.traceback.print_exc"):
-            with patch(
-                "zerver.logging_handlers.add_request_metadata",
-                side_effect=Exception("Unexpected exception!"),
-            ):
-                report = self.run_handler(record)
+        with patch("zerver.logging_handlers.traceback.print_exc"), patch(
+            "zerver.logging_handlers.add_request_metadata",
+            side_effect=Exception("Unexpected exception!"),
+        ):
+            report = self.run_handler(record)
         self.assertNotIn("user", report)
         self.assertIn("message", report)
         self.assertEqual(report["stack_trace"], "See /var/log/zulip/errors.log")
@@ -215,18 +214,18 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             self.handler.emit(record)
         with mock_queue_publish(
             "zerver.logging_handlers.queue_json_publish", side_effect=Exception("queue error")
-        ) as m:
-            with patch("logging.warning") as log_mock:
-                self.handler.emit(record)
-                m.assert_called_once()
-                log_mock.assert_called_once_with(
-                    "Reporting an exception triggered an exception!", exc_info=True
-                )
-        with mock_queue_publish("zerver.logging_handlers.queue_json_publish") as m:
-            with patch("logging.warning") as log_mock:
-                self.handler.emit(record)
-                m.assert_called_once()
-                log_mock.assert_not_called()
+        ) as m, patch("logging.warning") as log_mock:
+            self.handler.emit(record)
+            m.assert_called_once()
+            log_mock.assert_called_once_with(
+                "Reporting an exception triggered an exception!", exc_info=True
+            )
+        with mock_queue_publish("zerver.logging_handlers.queue_json_publish") as m, patch(
+            "logging.warning"
+        ) as log_mock:
+            self.handler.emit(record)
+            m.assert_called_once()
+            log_mock.assert_not_called()
 
         # Test no exc_info
         record.exc_info = None

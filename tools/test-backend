@@ -163,11 +163,12 @@ def get_failed_tests() -> List[str]:
 def block_internet() -> Iterator[None]:
     # Monkey-patching - responses library raises requests.ConnectionError when access to an unregistered URL
     # is attempted. We want to replace that with our own exception, so that it propagates all the way:
-    with mock.patch.object(responses, "ConnectionError", new=ZulipInternetBlockedError):
-        # We'll run all tests in this context manager. It'll cause an error to be raised (see above comment),
-        # if any code attempts to access the internet.
-        with responses.RequestsMock():
-            yield
+    # We'll run all tests in this context manager. It'll cause an error to be raised (see above comment),
+    # if any code attempts to access the internet.
+    with mock.patch.object(
+        responses, "ConnectionError", new=ZulipInternetBlockedError
+    ), responses.RequestsMock():
+        yield
 
 
 class ZulipInternetBlockedError(Exception):

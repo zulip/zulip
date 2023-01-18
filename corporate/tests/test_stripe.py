@@ -1456,11 +1456,10 @@ class StripeTest(StripeTestCase):
         self.login_user(hamlet)
         new_seat_count = 23
         # Change the seat count while the user is going through the upgrade flow
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count):
-            with patch(
-                "corporate.views.upgrade.get_latest_seat_count", return_value=self.seat_count
-            ):
-                self.upgrade()
+        with patch(
+            "corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count
+        ), patch("corporate.views.upgrade.get_latest_seat_count", return_value=self.seat_count):
+            self.upgrade()
         customer = Customer.objects.first()
         assert customer is not None
         stripe_customer_id: str = assert_is_not_none(customer.stripe_customer_id)
@@ -1724,9 +1723,10 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/upgrade/", response["Location"])
 
         # Try again, with a valid card, after they added a few users
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=23):
-            with patch("corporate.views.upgrade.get_latest_seat_count", return_value=23):
-                response = self.upgrade()
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=23), patch(
+            "corporate.views.upgrade.get_latest_seat_count", return_value=23
+        ):
+            response = self.upgrade()
         [second_payment_intent, _] = PaymentIntent.objects.all().order_by("-id")
         assert second_payment_intent.stripe_payment_intent_id is not None
         response_dict = self.assert_json_success(response)
@@ -1896,9 +1896,10 @@ class StripeTest(StripeTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
-        with self.assertLogs("corporate.stripe", "WARNING") as m:
-            with self.assertRaises(BillingError) as context:
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+        with self.assertLogs("corporate.stripe", "WARNING") as m, self.assertRaises(
+            BillingError
+        ) as context:
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         self.assertEqual(
             "subscribing with existing subscription", context.exception.error_description
         )
@@ -2695,17 +2696,18 @@ class StripeTest(StripeTestCase):
         assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
-        with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-                response = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
-                )
-                stripe_customer_id = Customer.objects.get(realm=user.realm).id
-                new_plan = get_current_plan_by_realm(user.realm)
-                assert new_plan is not None
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
-                self.assertEqual(m.output[0], expected_log)
-                self.assert_json_success(response)
+        with self.assertLogs("corporate.stripe", "INFO") as m, patch(
+            "corporate.views.billing_page.timezone_now", return_value=self.now
+        ):
+            response = self.client_patch(
+                "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+            )
+            stripe_customer_id = Customer.objects.get(realm=user.realm).id
+            new_plan = get_current_plan_by_realm(user.realm)
+            assert new_plan is not None
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
+            self.assert_json_success(response)
         plan.refresh_from_db()
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), None)
@@ -2810,15 +2812,16 @@ class StripeTest(StripeTestCase):
         new_plan = get_current_plan_by_realm(user.realm)
         assert new_plan is not None
 
-        with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-                response = self.client_patch(
-                    "/json/billing/plan",
-                    {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
-                )
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}"
-                self.assertEqual(m.output[0], expected_log)
-                self.assert_json_success(response)
+        with self.assertLogs("corporate.stripe", "INFO") as m, patch(
+            "corporate.views.billing_page.timezone_now", return_value=self.now
+        ):
+            response = self.client_patch(
+                "/json/billing/plan",
+                {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
+            )
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
+            self.assert_json_success(response)
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.status, CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE)
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
@@ -2837,9 +2840,10 @@ class StripeTest(StripeTestCase):
             (20, 20),
         )
 
-        with patch("corporate.lib.stripe.timezone_now", return_value=self.next_month):
-            with patch("corporate.lib.stripe.get_latest_seat_count", return_value=25):
-                update_license_ledger_if_needed(user.realm, self.next_month)
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.next_month), patch(
+            "corporate.lib.stripe.get_latest_seat_count", return_value=25
+        ):
+            update_license_ledger_if_needed(user.realm, self.next_month)
         self.assertEqual(LicenseLedger.objects.filter(plan=monthly_plan).count(), 2)
         customer = get_customer_by_realm(user.realm)
         assert customer is not None
@@ -2997,17 +3001,18 @@ class StripeTest(StripeTestCase):
         stripe_customer_id = Customer.objects.get(realm=user.realm).id
         new_plan = get_current_plan_by_realm(user.realm)
         assert new_plan is not None
-        with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-                response = self.client_patch(
-                    "/json/billing/plan",
-                    {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
-                )
-                self.assertEqual(
-                    m.output[0],
-                    f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}",
-                )
-                self.assert_json_success(response)
+        with self.assertLogs("corporate.stripe", "INFO") as m, patch(
+            "corporate.views.billing_page.timezone_now", return_value=self.now
+        ):
+            response = self.client_patch(
+                "/json/billing/plan",
+                {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
+            )
+            self.assertEqual(
+                m.output[0],
+                f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}",
+            )
+            self.assert_json_success(response)
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.status, CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE)
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
@@ -3098,26 +3103,28 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
-        with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-                response = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
-                )
-                stripe_customer_id = Customer.objects.get(realm=user.realm).id
-                new_plan = get_current_plan_by_realm(user.realm)
-                assert new_plan is not None
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
-                self.assertEqual(m.output[0], expected_log)
-                self.assert_json_success(response)
+        with self.assertLogs("corporate.stripe", "INFO") as m, patch(
+            "corporate.views.billing_page.timezone_now", return_value=self.now
+        ):
+            response = self.client_patch(
+                "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+            )
+            stripe_customer_id = Customer.objects.get(realm=user.realm).id
+            new_plan = get_current_plan_by_realm(user.realm)
+            assert new_plan is not None
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+            self.assertEqual(m.output[0], expected_log)
+            self.assert_json_success(response)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
-        with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-                response = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
-                self.assertEqual(m.output[0], expected_log)
-                self.assert_json_success(response)
+        with self.assertLogs("corporate.stripe", "INFO") as m, patch(
+            "corporate.views.billing_page.timezone_now", return_value=self.now
+        ):
+            response = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
+            expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
+            self.assertEqual(m.output[0], expected_log)
+            self.assert_json_success(response)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.status, CustomerPlan.ACTIVE)
@@ -3225,9 +3232,8 @@ class StripeTest(StripeTestCase):
 
         with self.assertRaises(BillingError) as context, self.assertLogs(
             "corporate.stripe", "WARNING"
-        ) as m:
-            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
+        ) as m, patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         self.assertEqual(
             m.output[0],
             "WARNING:corporate.stripe:Upgrade of zulip failed because of existing active plan.",
@@ -3421,16 +3427,17 @@ class StripeTest(StripeTestCase):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         self.login_user(self.example_user("hamlet"))
-        with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-                result = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
-                )
-                self.assert_json_success(result)
-                self.assertRegex(
-                    m.output[0],
-                    r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 2",
-                )
+        with self.assertLogs("corporate.stripe", "INFO") as m, patch(
+            "corporate.views.billing_page.timezone_now", return_value=self.now
+        ):
+            result = self.client_patch(
+                "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
+            )
+            self.assert_json_success(result)
+            self.assertRegex(
+                m.output[0],
+                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 2",
+            )
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.next_year):
             result = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
@@ -3443,16 +3450,17 @@ class StripeTest(StripeTestCase):
             self.local_upgrade(self.seat_count, True, CustomerPlan.MONTHLY, True, False)
 
         self.login_user(self.example_user("hamlet"))
-        with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-                result = self.client_patch(
-                    "/json/billing/plan", {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}
-                )
-                self.assert_json_success(result)
-                self.assertRegex(
-                    m.output[0],
-                    r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 4",
-                )
+        with self.assertLogs("corporate.stripe", "INFO") as m, patch(
+            "corporate.views.billing_page.timezone_now", return_value=self.now
+        ):
+            result = self.client_patch(
+                "/json/billing/plan", {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}
+            )
+            self.assert_json_success(result)
+            self.assertRegex(
+                m.output[0],
+                r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 4",
+            )
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.next_month):
             result = self.client_patch("/json/billing/plan", {})
@@ -4628,9 +4636,10 @@ class LicenseLedgerTest(StripeTestCase):
             self.assertEqual(plan.licenses(), self.seat_count + 3)
             self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count + 3)
 
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
-            with self.assertRaises(AssertionError):
-                update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count)
+        with patch(
+            "corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count
+        ), self.assertRaises(AssertionError):
+            update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count)
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
             update_license_ledger_for_manual_plan(
@@ -4639,11 +4648,12 @@ class LicenseLedgerTest(StripeTestCase):
             self.assertEqual(plan.licenses(), self.seat_count + 3)
             self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
 
-        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
-            with self.assertRaises(AssertionError):
-                update_license_ledger_for_manual_plan(
-                    plan, self.now, licenses_at_next_renewal=self.seat_count - 1
-                )
+        with patch(
+            "corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count
+        ), self.assertRaises(AssertionError):
+            update_license_ledger_for_manual_plan(
+                plan, self.now, licenses_at_next_renewal=self.seat_count - 1
+            )
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count):
             update_license_ledger_for_manual_plan(plan, self.now, licenses=self.seat_count + 10)

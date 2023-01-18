@@ -86,9 +86,10 @@ class MockLDAP(fakeldap.MockLDAP):
 def stub_event_queue_user_events(
     event_queue_return: Any, user_events_return: Any
 ) -> Iterator[None]:
-    with mock.patch("zerver.lib.events.request_event_queue", return_value=event_queue_return):
-        with mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return):
-            yield
+    with mock.patch(
+        "zerver.lib.events.request_event_queue", return_value=event_queue_return
+    ), mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return):
+        yield
 
 
 @contextmanager

@@ -132,15 +132,16 @@ class TestSendEmail(ZulipTestCase):
 
         for message, side_effect in errors.items():
             with mock.patch.object(EmailBackend, "send_messages", side_effect=side_effect):
-                with self.assertLogs(logger=logger) as info_log:
-                    with self.assertRaises(EmailNotDeliveredError):
-                        send_email(
-                            "zerver/emails/password_reset",
-                            to_emails=[hamlet.email],
-                            from_name=from_name,
-                            from_address=FromAddress.NOREPLY,
-                            language="en",
-                        )
+                with self.assertLogs(logger=logger) as info_log, self.assertRaises(
+                    EmailNotDeliveredError
+                ):
+                    send_email(
+                        "zerver/emails/password_reset",
+                        to_emails=[hamlet.email],
+                        from_name=from_name,
+                        from_address=FromAddress.NOREPLY,
+                        language="en",
+                    )
                 self.assert_length(info_log.records, 2)
                 self.assertEqual(
                     info_log.output[0],
@@ -151,15 +152,16 @@ class TestSendEmail(ZulipTestCase):
     def test_send_email_config_error_logging(self) -> None:
         hamlet = self.example_user("hamlet")
 
-        with self.settings(EMAIL_HOST_USER="test", EMAIL_HOST_PASSWORD=None):
-            with self.assertLogs(logger=logger, level="ERROR") as error_log:
-                send_email(
-                    "zerver/emails/password_reset",
-                    to_emails=[hamlet.email],
-                    from_name="From Name",
-                    from_address=FromAddress.NOREPLY,
-                    language="en",
-                )
+        with self.settings(EMAIL_HOST_USER="test", EMAIL_HOST_PASSWORD=None), self.assertLogs(
+            logger=logger, level="ERROR"
+        ) as error_log:
+            send_email(
+                "zerver/emails/password_reset",
+                to_emails=[hamlet.email],
+                from_name="From Name",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+            )
 
         self.assertEqual(
             error_log.output,

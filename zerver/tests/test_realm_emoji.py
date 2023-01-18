@@ -304,9 +304,8 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_emoji_upload_file_size_error(self) -> None:
         self.login("iago")
-        with get_test_image_file("img.png") as fp:
-            with self.settings(MAX_EMOJI_FILE_SIZE_MIB=0):
-                result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        with get_test_image_file("img.png") as fp, self.settings(MAX_EMOJI_FILE_SIZE_MIB=0):
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
     def test_upload_already_existed_emoji(self) -> None:
@@ -340,10 +339,9 @@ class RealmEmojiTest(ZulipTestCase):
         self.login("iago")
         with mock.patch(
             "zerver.lib.upload.local.write_local_file", side_effect=BadImageError(msg="Broken")
-        ):
-            with get_test_image_file("img.png") as fp1:
-                emoji_data = {"f1": fp1}
-                result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
+        ), get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
         self.assert_json_error(result, "Broken")
 
     def test_check_admin_realm_emoji(self) -> None:

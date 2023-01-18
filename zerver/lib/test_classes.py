@@ -1660,14 +1660,13 @@ Output:
         # So explicitly change parameter name to 'notice' to work around this problem
         with mock.patch(
             "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
-        ):
+        ), self.captureOnCommitCallbacks(execute=True):
             # Some `send_event` calls need to be executed only after the current transaction
             # commits (using `on_commit` hooks). Because the transaction in Django tests never
             # commits (rather, gets rolled back after the test completes), such events would
             # never be sent in tests, and we would be unable to verify them. Hence, we use
-            # this helper to make sure the `send_event` calls actually run.
-            with self.captureOnCommitCallbacks(execute=True):
-                yield
+            # captureOnCommitCallbacks to make sure the `send_event` calls actually run.
+            yield
 
         self.assert_length(lst, expected_num_events)
 

@@ -387,9 +387,8 @@ class QueueProcessingWorker(ABC):
         fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
         line = f"{time.asctime()}\t{orjson.dumps(events).decode()}\n"
         lock_fn = fn + ".lock"
-        with lockfile(lock_fn):
-            with open(fn, "a") as f:
-                f.write(line)
+        with lockfile(lock_fn), open(fn, "a") as f:
+            f.write(line)
         check_and_send_restart_signal()
 
     def setup(self) -> None:

@@ -532,12 +532,13 @@ def send_custom_email(
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
 
     # And then extend it with our standard email headers.
-    with open(html_source_template_path, "w") as f:
-        with open(markdown_email_base_template_path) as base_template:
-            # Note that we're doing a hacky non-Jinja2 substitution here;
-            # we do this because the normal render_markdown_path ordering
-            # doesn't commute properly with inline_email_css.
-            f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
+    with open(html_source_template_path, "w") as f, open(
+        markdown_email_base_template_path
+    ) as base_template:
+        # Note that we're doing a hacky non-Jinja2 substitution here;
+        # we do this because the normal render_markdown_path ordering
+        # doesn't commute properly with inline_email_css.
+        f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
         f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))

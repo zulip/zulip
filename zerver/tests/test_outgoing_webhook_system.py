@@ -627,11 +627,10 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         )
         with mock.patch(
             "zerver.lib.outgoing_webhook.fail_with_message", side_effect=wrapped
-        ) as fail:
-            with self.assertLogs(level="INFO") as logs:
-                self.send_stream_message(
-                    bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
-                )
+        ) as fail, self.assertLogs(level="INFO") as logs:
+            self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
 
         self.assert_length(logs.output, 5)
         fail.assert_called_once()

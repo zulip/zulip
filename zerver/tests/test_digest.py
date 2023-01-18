@@ -209,9 +209,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
             digest_user_ids = [user.id for user in digest_users]
 
-            with self.assert_database_query_count(12):
-                with cache_tries_captured() as cache_tries:
-                    bulk_handle_digest_email(digest_user_ids, cutoff)
+            with self.assert_database_query_count(12), cache_tries_captured() as cache_tries:
+                bulk_handle_digest_email(digest_user_ids, cutoff)
 
             self.assert_length(cache_tries, 0)
 
@@ -403,9 +402,10 @@ class TestDigestEmailMessages(ZulipTestCase):
         tuesday = self.tuesday()
         cutoff = tuesday - datetime.timedelta(days=5)
 
-        with mock.patch("zerver.lib.digest.timezone_now", return_value=tuesday):
-            with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
-                enqueue_emails(cutoff)
+        with mock.patch("zerver.lib.digest.timezone_now", return_value=tuesday), mock.patch(
+            "zerver.lib.digest.queue_digest_user_ids"
+        ) as queue_mock:
+            enqueue_emails(cutoff)
         queue_mock.assert_not_called()
 
     @override_settings(SEND_DIGEST_EMAILS=True)
@@ -415,9 +415,10 @@ class TestDigestEmailMessages(ZulipTestCase):
         not_tuesday = datetime.datetime(year=2016, month=1, day=6, tzinfo=datetime.timezone.utc)
         cutoff = not_tuesday - datetime.timedelta(days=5)
 
-        with mock.patch("zerver.lib.digest.timezone_now", return_value=not_tuesday):
-            with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
-                enqueue_emails(cutoff)
+        with mock.patch("zerver.lib.digest.timezone_now", return_value=not_tuesday), mock.patch(
+            "zerver.lib.digest.queue_digest_user_ids"
+        ) as queue_mock:
+            enqueue_emails(cutoff)
         queue_mock.assert_not_called()
 
     @override_settings(SEND_DIGEST_EMAILS=True)

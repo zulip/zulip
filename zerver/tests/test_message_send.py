@@ -1877,9 +1877,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(cordelia, "test_stream")
         do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10, acting_user=None)
         content = "@**all** test wildcard mention"
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16):
-            with self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
-                self.send_stream_message(cordelia, "test_stream", content)
+        with mock.patch(
+            "zerver.lib.message.num_subscribers_for_stream_id", return_value=16
+        ), self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
+            self.send_stream_message(cordelia, "test_stream", content)
 
     def test_stream_message_mirroring(self) -> None:
         user = self.mit_user("starnine")

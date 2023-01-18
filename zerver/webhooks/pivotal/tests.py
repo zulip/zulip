@@ -202,11 +202,10 @@ Try again next time
 
     def test_bad_payload(self) -> None:
         bad = ("foo", None, "bar")
-        with self.assertRaisesRegex(AssertionError, "Unable to handle Pivotal payload"):
-            with mock.patch(
-                "zerver.webhooks.pivotal.view.api_pivotal_webhook_v3", return_value=bad
-            ):
-                self.check_webhook("accepted", expect_topic="foo")
+        with self.assertRaisesRegex(AssertionError, "Unable to handle Pivotal payload"), mock.patch(
+            "zerver.webhooks.pivotal.view.api_pivotal_webhook_v3", return_value=bad
+        ):
+            self.check_webhook("accepted", expect_topic="foo")
 
     def test_bad_request(self) -> None:
         request = mock.MagicMock()
@@ -218,9 +217,10 @@ Try again next time
             self.assertEqual(result[0], "#0: ")
 
         bad = orjson.loads(self.get_body("bad_kind"))
-        with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, "'unknown_kind'.* supported"):
-            with mock.patch("zerver.webhooks.pivotal.view.orjson.loads", return_value=bad):
-                api_pivotal_webhook_v5(request, hamlet)
+        with self.assertRaisesRegex(
+            UnsupportedWebhookEventTypeError, "'unknown_kind'.* supported"
+        ), mock.patch("zerver.webhooks.pivotal.view.orjson.loads", return_value=bad):
+            api_pivotal_webhook_v5(request, hamlet)
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("pivotal", f"v5_{fixture_name}", file_type="json")
