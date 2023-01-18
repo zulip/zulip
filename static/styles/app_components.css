@@ -740,7 +740,8 @@ div.overlay {
     }
 }
 
-.save-button-controls {
+#stream_settings .save-button-controls,
+#settings_page .save-button-controls {
     display: inline;
     margin-left: 15px;
 
@@ -761,12 +762,10 @@ div.overlay {
 
         &:hover,
         &:focus {
-            background-color: hsl(0, 0%, 100%);
             border: 1px solid hsl(0, 0%, 61%);
-            color: hsl(0, 0%, 18%);
 
-            .save-discard-widget-button-icon {
-                color: hsl(0, 0%, 47%);
+            .discard-button.save-discard-widget-button-text {
+                color: hsl(0, 0%, 18%);
             }
         }
 

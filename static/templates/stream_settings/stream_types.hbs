@@ -42,12 +42,13 @@
 
 {{#if (or is_owner is_stream_edit)}}
 <div>
-    {{> ../settings/upgrade_tip_widget}}
-
     <div class="input-group inline-block message-retention-setting-group">
         <label class="dropdown-title">{{t "Message retention period" }}
             {{> ../help_link_widget link="/help/message-retention-policy" }}
         </label>
+
+        {{> ../settings/upgrade_tip_widget}}
+
         <select name="stream_message_retention_setting"
           class="stream_message_retention_setting prop-element"
           id="id_message_retention_days"

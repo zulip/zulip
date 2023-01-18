@@ -316,20 +316,37 @@ export function show_new_stream_modal() {
 
     // Select the first visible and enabled choice for stream privacy.
     $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
-    // Make the options default to the same each time:
-    // "announce stream" on.
-    $("#stream_creation_form .stream-message-retention-days-input").hide();
-    $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
+    // Make the options default to the same each time
 
-    // Add listener to .show stream-message-retention-days-input that we've hidden above
-    $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
-        if (e.target.value === "custom_period") {
-            $("#stream_creation_form .stream-message-retention-days-input").show();
-        } else {
-            $("#stream_creation_form .stream-message-retention-days-input").hide();
+    // The message retention setting is visible to owners only. The below block
+    // sets the default state of setting if it is visible.
+    if (page_params.is_owner) {
+        $("#stream_creation_form .stream-message-retention-days-input").hide();
+        $("#stream_creation_form select[name=stream_message_retention_setting]").val(
+            "realm_default",
+        );
+
+        // The user is not allowed to set the setting to amy value other than
+        // "realm_default" for realms on limited plans, so we disable the setting.
+        $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
+            "disabled",
+            !page_params.zulip_plan_is_not_limited,
+        );
+
+        // This listener is only needed if the dropdown setting is enabled.
+        if (page_params.zulip_plan_is_not_limited) {
+            // Add listener to .show stream-message-retention-days-input that we've hidden above
+            $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+                if (e.target.value === "custom_period") {
+                    $("#stream_creation_form .stream-message-retention-days-input").show();
+                } else {
+                    $("#stream_creation_form .stream-message-retention-days-input").hide();
+                }
+            });
         }
-    });
+    }
 
+    // set default state for "announce stream" option.
     update_announce_stream_state();
     clear_error_display();
 }

@@ -26,41 +26,20 @@ import * as user_profile from "./user_profile";
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
 
-export function hide_errors() {
-    $("#bot_table_error").hide();
-    $(".bot_error").hide();
-}
-
 const focus_tab = {
     active_bots_tab() {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .active-bots-tab").addClass("active");
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
-        hide_errors();
     },
     inactive_bots_tab() {
         $("#bots_lists_navbar .active").removeClass("active");
         $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
-        hide_errors();
     },
 };
-
-export function get_bot_info_div(bot_id) {
-    const sel = `.bot_info[data-user-id="${CSS.escape(bot_id)}"]`;
-    return $(sel).expectOne();
-}
-
-export function bot_error(bot_id, xhr) {
-    const $bot_info = get_bot_info_div(bot_id);
-    const $bot_error_div = $bot_info.find(".bot_error");
-    $bot_error_div.text(JSON.parse(xhr.responseText).msg);
-    $bot_error_div.show();
-    const $bot_box = $bot_info.closest(".bot-information-box");
-    $bot_box.scrollTop($bot_box[0].scrollHeight - $bot_box[0].clientHeight);
-}
 
 function add_bot_row(info) {
     const $row = $(render_bot_avatar_row(info));
@@ -205,7 +184,6 @@ function update_add_bot_button() {
 
 export function update_bot_permissions_ui() {
     update_bot_settings_tip();
-    hide_errors();
     update_add_bot_button();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 }
@@ -258,7 +236,6 @@ export function add_a_new_bot() {
             processData: false,
             contentType: false,
             success() {
-                hide_errors();
                 create_avatar_widget.clear();
                 dialog_widget.close_modal();
             },

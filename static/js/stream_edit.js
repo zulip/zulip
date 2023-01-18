@@ -211,6 +211,8 @@ export function show_settings_for(node) {
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo:
             page_params.upgrade_text_for_wide_organization_logo,
+        is_business_type_org:
+            page_params.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: page_params.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
     });
