@@ -66,19 +66,20 @@ if __name__ == "__main__":
             migration_number = file[0:4]
             counter = file_index.count(migration_number)
 
-            if counter > 1 and file[0:4] not in stack:
+            if (
+                counter > 1
+                and file[0:4] not in stack
                 # When we need to backport migrations to a previous
                 # release, we sometimes end up with multiple having
                 # the same ID number (which isn't a problem; the
                 # migrations graph structure, not the IDs, is what
                 # matters).
-                if migration_number not in MIGRATIONS_TO_SKIP:
-                    conflicts += [
-                        file_name
-                        for file_name in files_list
-                        if file_name.startswith(migration_number)
-                    ]
-                    stack.append(migration_number)
+                and migration_number not in MIGRATIONS_TO_SKIP
+            ):
+                conflicts += [
+                    file_name for file_name in files_list if file_name.startswith(migration_number)
+                ]
+                stack.append(migration_number)
 
         if len(conflicts) > 0:
             resolve_conflicts(conflicts, files_list)

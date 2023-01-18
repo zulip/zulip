@@ -305,12 +305,14 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
     else:
         DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
-elif get_config("postgresql", "database_user", "zulip") != "zulip":
-    if get_secret("postgres_password") is not None:
-        DATABASES["default"].update(
-            PASSWORD=get_secret("postgres_password"),
-            HOST="localhost",
-        )
+elif (
+    get_config("postgresql", "database_user", "zulip") != "zulip"
+    and get_secret("postgres_password") is not None
+):
+    DATABASES["default"].update(
+        PASSWORD=get_secret("postgres_password"),
+        HOST="localhost",
+    )
 POSTGRESQL_MISSING_DICTIONARIES = bool(get_config("postgresql", "missing_dictionaries", None))
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

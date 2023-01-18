@@ -465,16 +465,14 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
         tag = token.tag
 
         if not state.foreign:
-            if kind == "html_start":
-                if tag in HTML_VOID_TAGS:
-                    raise TemplateParserError(
-                        f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                    )
-            elif kind == "html_singleton":
-                if tag not in HTML_VOID_TAGS:
-                    raise TemplateParserError(
-                        f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                    )
+            if kind == "html_start" and tag in HTML_VOID_TAGS:
+                raise TemplateParserError(
+                    f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                )
+            elif kind == "html_singleton" and tag not in HTML_VOID_TAGS:
+                raise TemplateParserError(
+                    f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                )
 
         flavor = tag_flavor(token)
         if flavor == "start":
@@ -511,9 +509,8 @@ def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) 
             if end_line > start_line + 1:
                 if is_inline_tag:
                     end_row_text = lines[end_line - 1]
-                    if end_row_text.lstrip().startswith(end_token.s):
-                        if end_col != start_col:
-                            return True
+                    if end_row_text.lstrip().startswith(end_token.s) and end_col != start_col:
+                        return True
                 else:
                     if end_col != start_col:
                         return True

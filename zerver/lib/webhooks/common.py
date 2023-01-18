@@ -84,7 +84,7 @@ def check_send_webhook_message(
     ),
     unquote_url_parameters: bool = False,
 ) -> None:
-    if complete_event_type is not None:
+    if complete_event_type is not None and (
         # Here, we implement Zulip's generic support for filtering
         # events sent by the third-party service.
         #
@@ -95,14 +95,16 @@ def check_send_webhook_message(
         #
         # We match items in only_events and exclude_events using Unix
         # shell-style wildcards.
-        if (
+        (
             only_events is not None
             and all(not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events)
-        ) or (
+        )
+        or (
             exclude_events is not None
             and any(fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events)
-        ):
-            return
+        )
+    ):
+        return
 
     client = RequestNotes.get_notes(request).client
     assert client is not None
@@ -150,9 +152,11 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
     for raw_header in input_headers:
         polished_header = raw_header.upper().replace("-", "_")
-        if polished_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
-            if not polished_header.startswith("HTTP_"):
-                polished_header = "HTTP_" + polished_header
+        if polished_header not in [
+            "CONTENT_TYPE",
+            "CONTENT_LENGTH",
+        ] and not polished_header.startswith("HTTP_"):
+            polished_header = "HTTP_" + polished_header
         canonical_headers[polished_header] = str(input_headers[raw_header])
 
     return canonical_headers

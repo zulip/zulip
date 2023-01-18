@@ -217,13 +217,16 @@ def get_pull_request_event_message(
         main_message = f"{main_message} {branch_info}"
 
     punctuation = ":" if message else "."
-    if assignees or assignee or (target_branch and base_branch) or (title is None):
-        main_message = f"{main_message}{punctuation}"
-    elif title is not None:
+    if (
+        assignees
+        or assignee
+        or (target_branch and base_branch)
+        or title is None
         # Once we get here, we know that the message ends with a title
         # which could already have punctuation at the end
-        if title[-1] not in string.punctuation:
-            main_message = f"{main_message}{punctuation}"
+        or title[-1] not in string.punctuation
+    ):
+        main_message = f"{main_message}{punctuation}"
 
     if message:
         main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message)

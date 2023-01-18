@@ -1011,11 +1011,10 @@ def json_fetch_api_key(
     realm = get_realm_from_request(request)
     if realm is None:
         raise JsonableError(_("Invalid subdomain"))
-    if password_auth_enabled(user_profile.realm):
-        if not authenticate(
-            request=request, username=user_profile.delivery_email, password=password, realm=realm
-        ):
-            raise JsonableError(_("Password is incorrect."))
+    if password_auth_enabled(user_profile.realm) and not authenticate(
+        request=request, username=user_profile.delivery_email, password=password, realm=realm
+    ):
+        raise JsonableError(_("Password is incorrect."))
 
     api_key = get_api_key(user_profile)
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})

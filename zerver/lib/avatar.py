@@ -79,9 +79,8 @@ def get_avatar_field(
         will return None and let the client compute the gravatar
         url.
         """
-        if settings.ENABLE_GRAVATAR:
-            if avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
-                return None
+        if settings.ENABLE_GRAVATAR and avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+            return None
 
     """
     If we get this far, we'll compute an avatar URL that may be
@@ -139,10 +138,9 @@ def absolute_avatar_url(user_profile: UserProfile) -> str:
 def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
     new_avatar_hash = user_avatar_content_hash(ldap_avatar)
 
-    if user_profile.avatar_hash:
-        if user_profile.avatar_hash == new_avatar_hash:
-            # If an avatar exists and is the same as the new avatar,
-            # then, no need to change the avatar.
-            return False
+    if user_profile.avatar_hash and user_profile.avatar_hash == new_avatar_hash:
+        # If an avatar exists and is the same as the new avatar,
+        # then, no need to change the avatar.
+        return False
 
     return True

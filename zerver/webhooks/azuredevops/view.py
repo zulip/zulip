@@ -133,11 +133,10 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
 
 def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
     event_name = payload["eventType"].tame(check_string)
-    if event_name == "git.push":
-        if branches is not None:
-            branch = get_code_push_branch_name(payload)
-            if branches.find(branch) == -1:
-                return None
+    if event_name == "git.push" and branches is not None:
+        branch = get_code_push_branch_name(payload)
+        if branches.find(branch) == -1:
+            return None
     if event_name == "git.pullrequest.merged":
         status = payload["resource"]["status"].tame(check_string)
         merge_status = payload["resource"]["mergeStatus"].tame(check_string)

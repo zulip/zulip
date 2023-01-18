@@ -1019,10 +1019,13 @@ Output:
             body=content,
             realm=recipient_realm,
         )
-        if not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists():
-            if not sender.is_bot and not allow_unsubscribed_sender:
-                raise AssertionError(
-                    f"""
+        if (
+            not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists()
+            and not sender.is_bot
+            and not allow_unsubscribed_sender
+        ):
+            raise AssertionError(
+                f"""
     It appears that the sender did not get a UserMessage row, which is
     almost certainly an artificial symptom that in your test setup you
     have decided to send a message to a stream without the sender being
@@ -1034,7 +1037,7 @@ Output:
 
 {self.subscribed_stream_name_list(sender)}
         """
-                )
+            )
 
         return message_id
 

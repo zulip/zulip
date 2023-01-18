@@ -508,11 +508,10 @@ def get_event(request: HttpRequest, payload: WildValue, branches: Optional[str])
     elif event in ["Confidential Note Hook", "Note Hook"]:
         action = payload["object_attributes"]["noteable_type"].tame(check_string)
         event = f"{event} {action}"
-    elif event == "Push Hook":
-        if branches is not None:
-            branch = get_branch_name(payload)
-            if branches.find(branch) == -1:
-                return None
+    elif event == "Push Hook" and branches is not None:
+        branch = get_branch_name(payload)
+        if branches.find(branch) == -1:
+            return None
 
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
         return event

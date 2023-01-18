@@ -28,9 +28,8 @@ def clean_up_pattern(s: str) -> str:
             paren_level += 1
         if c == "<" and prior_char == "P":
             in_braces = True
-        if in_braces or (paren_level == 0):
-            if c != "?":
-                result += c
+        if (in_braces or paren_level == 0) and c != "?":
+            result += c
         if c == ")":
             paren_level -= 1
         if c == ">":

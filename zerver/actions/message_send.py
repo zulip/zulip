@@ -1479,11 +1479,14 @@ def check_message(
         limit_unread_user_ids=limit_unread_user_ids,
     )
 
-    if stream is not None and message_send_dict.rendering_result.mentions_wildcard:
-        if not wildcard_mention_allowed(sender, stream):
-            raise JsonableError(
-                _("You do not have permission to use wildcard mentions in this stream.")
-            )
+    if (
+        stream is not None
+        and message_send_dict.rendering_result.mentions_wildcard
+        and not wildcard_mention_allowed(sender, stream)
+    ):
+        raise JsonableError(
+            _("You do not have permission to use wildcard mentions in this stream.")
+        )
     return message_send_dict
 
 

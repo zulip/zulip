@@ -36,14 +36,11 @@ realms used for testing; consider using deactivate_realm instead."""
             from corporate.models import CustomerPlan, get_customer_by_realm
 
             customer = get_customer_by_realm(realm)
-            if customer:
-                if (
-                    customer.stripe_customer_id
-                    or CustomerPlan.objects.filter(customer=customer).count() > 0
-                ):
-                    raise CommandError(
-                        "This realm has had a billing relationship associated with it!"
-                    )
+            if customer and (
+                customer.stripe_customer_id
+                or CustomerPlan.objects.filter(customer=customer).count() > 0
+            ):
+                raise CommandError("This realm has had a billing relationship associated with it!")
 
         print(
             "This command will \033[91mPERMANENTLY DELETE\033[0m all data for this realm.  "

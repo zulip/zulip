@@ -203,9 +203,8 @@ def repo_push_handler(
         event_target_type = change["ref"]["type"].tame(check_string)
         if event_target_type == "BRANCH":
             branch = change["ref"]["displayId"].tame(check_string)
-            if branches:
-                if branch not in branches:
-                    continue
+            if branches and branch not in branches:
+                continue
             data.append(repo_push_branch_data(payload, change))
         elif event_target_type == "TAG":
             data.append(repo_push_tag_data(payload, change))

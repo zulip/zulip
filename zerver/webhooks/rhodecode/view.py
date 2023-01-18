@@ -48,11 +48,10 @@ def get_push_branch_name(payload: WildValue) -> str:
 
 def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
     event_name = payload["event"]["name"].tame(check_string)
-    if event_name == "repo-push":
-        if branches is not None:
-            branch = get_push_branch_name(payload)
-            if branches.find(branch) == -1:
-                return None
+    if event_name == "repo-push" and branches is not None:
+        branch = get_push_branch_name(payload)
+        if branches.find(branch) == -1:
+            return None
     if event_name in EVENT_FUNCTION_MAPPER:
         return event_name
     raise UnsupportedWebhookEventTypeError(event_name)
