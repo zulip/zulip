@@ -288,7 +288,7 @@ export function hide_loading_indicator() {
         abs_positioned: false,
     });
     // Show empty table text if there are no messages fetched.
-    $("#recent_topics_table tbody").addClass("required-text");
+    $("#recent_topics_table tbody").addClass("required-empty-text");
 }
 
 export function process_messages(messages) {
@@ -844,6 +844,15 @@ export function complete_rerender() {
             // filtering for us, which is called using click_handlers.
             predicate(topic_data) {
                 return !filters_should_hide_topic(topic_data);
+            },
+            onupdate() {
+                const $recent_topics_search = $("#recent_topics_search").val();
+
+                if (topics_widget.get_current_list().length === 0 && $recent_topics_search !== "") {
+                    $container.attr("data-empty", "No topics match your current filters.");
+                } else {
+                    $container.attr("data-empty", "No topics found.");
+                }
             },
         },
         sort_fields: {
