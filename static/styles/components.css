@@ -136,3 +136,33 @@ input::-ms-reveal {
         }
     }
 }
+
+/* Removed Password Strength Check From Bootstrap  */
+.progress {
+    height: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background-color: hsl(0, 0%, 97%);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 2px hsl(227, 8%, 21%);
+}
+
+.progress .bar {
+    width: 0%;
+    height: 100%;
+    color: hsl(0, 0%, 100%);
+    float: left;
+    font-size: 12px;
+    text-align: center;
+    background-color: hsl(2, 68%, 58%);
+    box-sizing: border-box;
+    transition: width 0.6s ease;
+}
+
+.progress .Password-Weak {
+    background-color: hsl(2, 68%, 58%);
+}
+
+.progress .Password-Strong {
+    background-color: hsl(120, 39%, 55%);
+}
