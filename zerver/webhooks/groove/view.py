@@ -70,9 +70,9 @@ def ticket_assigned_body(payload: WildValue) -> Optional[str]:
                 assignee=assignee, assigned_group=assigned_group
             )
         elif assignee:
-            kwargs["assignee_info"] = "{assignee}".format(assignee=assignee)
+            kwargs["assignee_info"] = f"{assignee}"
         elif assigned_group:
-            kwargs["assignee_info"] = "{assigned_group}".format(assigned_group=assigned_group)
+            kwargs["assignee_info"] = f"{assigned_group}"
 
         return TICKET_ASSIGNED_TEMPLATE.format(**kwargs)
     else:

@@ -63,7 +63,7 @@ def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bo
     except UnicodeEncodeError:
         # If it contains non-ASCII characters, we URI-escape it and
         # provide a filename*=encoding'language'value
-        file_expr = "filename*=utf-8''{}".format(quote(filename))
+        file_expr = f"filename*=utf-8''{quote(filename)}"
 
     response.headers["Content-Disposition"] = f"{disposition}; {file_expr}"
 
