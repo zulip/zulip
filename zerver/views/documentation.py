@@ -148,6 +148,8 @@ class MarkdownDirectoryView(ApiURLView):
 
         documentation_article = self.get_path(article)
         context["article"] = documentation_article.article_path
+        not_index_page = not context["article"].endswith("/index.md")
+
         if documentation_article.article_path.startswith("/") and os.path.exists(
             documentation_article.article_path
         ):
@@ -163,8 +165,6 @@ class MarkdownDirectoryView(ApiURLView):
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
 
-        # For disabling the "Back to home" on the homepage
-        context["not_index_page"] = not context["article"].endswith("/index.md")
         if self.path_template == "/zerver/help/%s.md":
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
@@ -211,7 +211,7 @@ class MarkdownDirectoryView(ApiURLView):
             else:
                 article_title = first_line.lstrip("#").strip()
                 endpoint_name = endpoint_method = None
-            if context["not_index_page"]:
+            if not_index_page:
                 context["PAGE_TITLE"] = f"{article_title} | {title_base}"
             else:
                 context["PAGE_TITLE"] = title_base
