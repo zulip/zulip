@@ -1,20 +1,24 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# André Koot <meneer@tken.net>, 2017,2021
-# kolkmvd <marco.git@vdkolk.nl>, 2018
-# Steven Uzeel <stevenuzeel@gmail.com>, 2021
-# Tim Abbott <tabbott@kandralabs.com>, 2021
+# Tim Abbott <tabbott@kandralabs.com>, 2022
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# Steven Uzeel <stevenuzeel@gmail.com>, 2022
+# kolkmvd <marco.git@vdkolk.nl>, 2022
+# André Koot <meneer@tken.net>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: André Koot <meneer@tken.net>, 2017,2021\n"
-"Language-Team: Dutch (http://www.transifex.com/zulip/zulip/language/nl/)\n"
+"PO-Revision-Date: 2022-11-17 23:30+0000\n"
+"Last-Translator: André Koot <meneer@tken.net>, 2022\n"
+"Language-Team: Dutch (https://www.transifex.com/zulip/teams/53893/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -127,7 +131,9 @@ msgstr "Je moet factureren voor minimaal {} gebruikers."
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr "Facturen met meer dan {} licenties kunnen vanaf deze pagina niet worden verwerkt. Neem contact op met {} om de upgrade te voltooien."
+msgstr ""
+"Facturen met meer dan {} licenties kunnen vanaf deze pagina niet worden "
+"verwerkt. Neem contact op met {} om de upgrade te voltooien."
 
 #: corporate/lib/stripe.py:220
 #, python-brace-format
@@ -140,7 +146,9 @@ msgstr "Er is iets mis gegaan. Herlaad de pagina, alsjeblieft."
 
 #: corporate/lib/stripe.py:295
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Er is iets mis gegaan. Wacht alsjeblieft een paar seconden en probeer het opnieuw."
+msgstr ""
+"Er is iets mis gegaan. Wacht alsjeblieft een paar seconden en probeer het "
+"opnieuw."
 
 #: corporate/lib/stripe.py:1010
 #, python-brace-format
@@ -161,7 +169,8 @@ msgstr "{brand} eindigt over {last4}"
 #: corporate/views/billing_page.py:56
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr "Dit is een onbekende betaalmethode. Neem alsjeblieft contact op met {email}."
+msgstr ""
+"Dit is een onbekende betaalmethode. Neem alsjeblieft contact op met {email}."
 
 #: corporate/views/billing_page.py:180
 msgid ""
@@ -311,7 +320,9 @@ msgstr ""
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr "Analysegegevens zijn volledig toegankelijk na de eerste 24 uur van de creatie van de organisatie."
+msgstr ""
+"Analysegegevens zijn volledig toegankelijk na de eerste 24 uur van de "
+"creatie van de organisatie."
 
 #: templates/analytics/stats.html:23
 #, python-format
@@ -436,7 +447,9 @@ msgstr "Laatste update"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "Een volledige update van de grafieken gebeurt eens per dag. De “verstuurde berichten” grafiek wordt elk uur bijgewerkt."
+msgstr ""
+"Een volledige update van de grafieken gebeurt eens per dag. De “verstuurde "
+"berichten” grafiek wordt elk uur bijgewerkt."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -453,7 +466,10 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\nDit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd\nvan %(old_email_html_tag)s naar %(new_email_html_tag)s"
+msgstr ""
+"\n"
+"Dit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd\n"
+"van %(old_email_html_tag)s naar %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -508,7 +524,7 @@ msgstr "Facturering"
 
 #: templates/corporate/billing.html:232
 msgid "Close"
-msgstr "Sluiten"
+msgstr "Dichtbij"
 
 #: templates/corporate/communities.html:28 templates/zerver/footer.html:64
 msgid "Open communities directory"
@@ -862,7 +878,9 @@ msgstr "Controleer je e-mail, zodat we kunnen beginnen."
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Nog geen e-mail? We kunnen het <a href=\"#\" id=\"resend_email_link\">opnieuw versturen</a>."
+msgstr ""
+"Nog geen e-mail? We kunnen het <a href=\"#\" "
+"id=\"resend_email_link\">opnieuw versturen</a>."
 
 #: templates/zerver/accounts_send_confirm.html:26
 msgid "Just in case, take a look at your Spam folder."
@@ -961,7 +979,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                            Geen account gevonden voor %(email)s.\n                            "
+msgstr ""
+"\n"
+"                            Geen account gevonden voor %(email)s.\n"
+"                            "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -1450,7 +1471,10 @@ msgstr "Hoi,"
 msgid ""
 "I wanted to share one last thing with you: a few tips about topics, since "
 "mastering topics is a key part of being a Zulip power user."
-msgstr "Ik wil nog iets met jullie delen: een paar tips over onderwerpen, aangezien het beheersen van onderwerpen een belangrijk onderdeel is van krachtig Zulip gebruik."
+msgstr ""
+"Ik wil nog iets met jullie delen: een paar tips over onderwerpen, aangezien "
+"het beheersen van onderwerpen een belangrijk onderdeel is van krachtig Zulip"
+" gebruik."
 
 #: templates/zerver/emails/followup_day2.source.html:12
 msgid "Examples of short topics"
@@ -1473,7 +1497,9 @@ msgstr "Goede onderwerpen: design mock-up, Bug 345, acme burgers"
 msgid ""
 "Not recommended: \"What do people think of this new design mockup?\", \"I'm "
 "looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr "Dit is echt minder: \"Wat vinden mensen van dit nieuwe design mock-up?\", \"Ik kijk naar Bug 345\", \"Is Acme Burgers open voor lunch?\""
+msgstr ""
+"Dit is echt minder: \"Wat vinden mensen van dit nieuwe design mock-up?\", "
+"\"Ik kijk naar Bug 345\", \"Is Acme Burgers open voor lunch?\""
 
 #: templates/zerver/emails/followup_day2.source.html:21
 msgid "Example of a topic that is too long"
@@ -1769,7 +1795,9 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organisatie: %(organization_url)s Tijd: %(login_time)s E-mail: %(user_email)s"
+msgstr ""
+"Organisatie: %(organization_url)s Tijd: %(login_time)s E-mail: "
+"%(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -2336,7 +2364,8 @@ msgstr ""
 #: templates/zerver/login.html:69
 msgid ""
 "You've already registered with this email address. Please log in below."
-msgstr "Je bent al geregistreerd met dit e-mailadres. Hieronder inloggen graag."
+msgstr ""
+"Je bent al geregistreerd met dit e-mailadres. Hieronder inloggen graag."
 
 #: templates/zerver/login.html:98
 msgid "Email or username"
@@ -2546,7 +2575,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Dit wordt gebruikt voor mobiele apps en andere tools die een wachtwoord nodig hebben."
+msgstr ""
+"Dit wordt gebruikt voor mobiele apps en andere tools die een wachtwoord "
+"nodig hebben."
 
 #: templates/zerver/register.html:197
 msgid "Password strength"
@@ -2618,7 +2649,10 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n        <h1 class=\"get-started\">Selecteer account</h1>\n        "
+msgstr ""
+"\n"
+"        <h1 class=\"get-started\">Selecteer account</h1>\n"
+"        "
 
 #: templates/zerver/social_auth_select_email.html:67
 msgid ""
@@ -2693,7 +2727,10 @@ msgid ""
 "\n"
 "                        %(browser_name)s is not supported by Zulip.\n"
 "                        "
-msgstr "\n                        %(browser_name)s wordt niet ondersteund door Zulip.\n                        "
+msgstr ""
+"\n"
+"                        %(browser_name)s wordt niet ondersteund door Zulip.\n"
+"                        "
 
 #: templates/zerver/unsupported_browser.html:22
 msgid ""
@@ -2802,7 +2839,9 @@ msgstr ""
 
 #: zerver/actions/invites.py:199
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Sommige e-mails zijn niet gevalideerd, dus we hebben geen uitnodigingen gestuurd."
+msgstr ""
+"Sommige e-mails zijn niet gevalideerd, dus we hebben geen uitnodigingen "
+"gestuurd."
 
 #: zerver/actions/invites.py:207
 msgid "We weren't able to invite anyone."
@@ -2812,7 +2851,9 @@ msgstr "We konden niemand uitnodigen."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Sommige van die adressen gebruiken al Zulip, dus we hebben ze geen uitnodiging gestuurd. We hebben alle anderen wel uitnodigingen gestuurd!"
+msgstr ""
+"Sommige van die adressen gebruiken al Zulip, dus we hebben ze geen "
+"uitnodiging gestuurd. We hebben alle anderen wel uitnodigingen gestuurd!"
 
 #: zerver/actions/message_edit.py:85
 msgid "Nothing to change"
@@ -3143,7 +3184,8 @@ msgstr "Subdomein niet beschikbaar. Kies een ander."
 #: zerver/forms.py:184
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "De organisatie waar je bij wilt aansluiten met {email} bestaat hier niet."
+msgstr ""
+"De organisatie waar je bij wilt aansluiten met {email} bestaat hier niet."
 
 #: zerver/forms.py:192
 #, python-brace-format
@@ -3156,7 +3198,9 @@ msgstr "Vraag een uitnodiging voor {email} aan bij de organisatiebeheerder."
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Je e-mailadres, {email}, bevindt zich niet in een van de domeinen die zich mogen registreren voor accounts in deze organisatie."
+msgstr ""
+"Je e-mailadres, {email}, bevindt zich niet in een van de domeinen die zich "
+"mogen registreren voor accounts in deze organisatie."
 
 #: zerver/forms.py:208 zerver/forms.py:247 zerver/forms.py:250
 #: zerver/lib/email_validation.py:108
@@ -3530,7 +3574,7 @@ msgstr ""
 
 #: zerver/lib/hotspots.py:28
 msgid "Settings"
-msgstr "Instellingen"
+msgstr "instellingen"
 
 #: zerver/lib/hotspots.py:30
 msgid "Go to Settings to configure your notifications and display settings."
@@ -4501,7 +4545,8 @@ msgstr "Je moet minimaal één e-mailadres opgeven."
 
 #: zerver/views/invite.py:72
 msgid "You must specify at least one stream for invitees to join."
-msgstr "Je moet ten minste één kanaal opgeven voordat genodigden kunnen deelnemen."
+msgstr ""
+"Je moet ten minste één kanaal opgeven voordat genodigden kunnen deelnemen."
 
 #: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
@@ -4523,7 +4568,8 @@ msgstr ""
 
 #: zerver/views/message_edit.py:98
 msgid "Message edit history is disabled in this organization"
-msgstr "Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
+msgstr ""
+"Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
 
 #: zerver/views/message_edit.py:154 zerver/views/message_edit.py:157
 msgid "You don't have permission to delete this message"
@@ -4721,7 +4767,9 @@ msgstr ""
 #: zerver/views/streams.py:118
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "Gebruiker niet geautoriseerd om zoekopdrachten uit te voeren namens '{principal}'"
+msgstr ""
+"Gebruiker niet geautoriseerd om zoekopdrachten uit te voeren namens "
+"'{principal}'"
 
 #: zerver/views/streams.py:160
 msgid "Private streams cannot be made default."

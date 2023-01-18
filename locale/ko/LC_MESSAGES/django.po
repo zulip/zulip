@@ -1,29 +1,35 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# cozyplanes <laonsonic@gmail.com>, 2018
-# EUNJEUNG <rislove418@gmail.com>, 2018
-# Greg Price <gnprice@gmail.com>, 2017
-# Jeong, Yong-ick <yongick.jeong@gmail.com>, 2018
-# Jihoon Lee <ulla4571@gmail.com>, 2018
-# 최진호 <jinho.choi.999@gmail.com>, 2018
-# Ki Heo <reo119@marunet.co.kr>, 2017-2018
-# Kwoun younggil <zelord.kwoun@gmail.com>, 2018
-# Leonardo YongUk Kim <dalinaum@gmail.com>, 2021
-# sung yong kim <hikimsy@gmail.com>, 2021
-# Wonha Ryu <wonha.ryu@gmail.com>, 2015
-# Yeonjeong Noh <nyj2800@hanmail.net>, 2018
-# Youngduck Kim <kfiekeofo@hanmail.net>, 2018
+# Kwoun younggil <zelord.kwoun@gmail.com>, 2022
+# Jeong, Yong-ick <yongick.jeong@gmail.com>, 2022
+# EUNJEUNG <rislove418@gmail.com>, 2022
+# F4D3C0D3 0x, 2022
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# Wonha Ryu <wonha.ryu@gmail.com>, 2022
+# Harold Kim <root@stypr.com>, 2022
+# Leonardo YongUk Kim <dalinaum@gmail.com>, 2022
+# Yeonjeong Noh <nyj2800@hanmail.net>, 2022
+# sung yong kim <hikimsy@gmail.com>, 2022
+# Youngduck Kim <kfiekeofo@hanmail.net>, 2022
+# cozyplanes, 2022
+# 최진호 <jinho.choi.999@gmail.com>, 2022
+# 김진우, 2022
+# Ki Heo <reo119@marunet.co.kr>, 2022
+# Jihoon Lee <ulla4571@gmail.com>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: sung yong kim <hikimsy@gmail.com>, 2021\n"
-"Language-Team: Korean (http://www.transifex.com/zulip/zulip/language/ko/)\n"
+"PO-Revision-Date: 2022-11-17 23:30+0000\n"
+"Last-Translator: Jihoon Lee <ulla4571@gmail.com>, 2022\n"
+"Language-Team: Korean (https://www.transifex.com/zulip/teams/53893/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -136,7 +142,8 @@ msgstr "최소 {} 유저 이상에 대한 청구서여야 합니다."
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr "현재 페이지에서 {} licenses 이상의 인보이스에 대해서는 처리할수 없습니다. 업그레이드를 완료 하시려면, {} 로 연락 주세요."
+msgstr ""
+"현재 페이지에서 {} licenses 이상의 인보이스에 대해서는 처리할수 없습니다. 업그레이드를 완료 하시려면, {} 로 연락 주세요."
 
 #: corporate/lib/stripe.py:220
 #, python-brace-format
@@ -445,7 +452,8 @@ msgstr "최근 업데이트"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "모든 그래프의 전체 업데이트는 하루에 한 번 합니다.  \"메세지가 보내진지 시간 경과된\" 그래프는 한 시간에 한 번 업데이트 됩니다."
+msgstr ""
+"모든 그래프의 전체 업데이트는 하루에 한 번 합니다.  \"메세지가 보내진지 시간 경과된\" 그래프는 한 시간에 한 번 업데이트 됩니다."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -462,7 +470,10 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\n이것은 너의 Zulip 계정에 있는 이메일 주소가 변경되었는지  확인한다.\nfrom 전 이메일%(old_email_html_tag)s to 현재 새로운 이메일%(new_email_html_tag)s "
+msgstr ""
+"\n"
+"이것은 너의 Zulip 계정에 있는 이메일 주소가 변경되었는지  확인한다.\n"
+"from 전 이메일%(old_email_html_tag)s to 현재 새로운 이메일%(new_email_html_tag)s "
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -483,7 +494,9 @@ msgid ""
 "\n"
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
-msgstr "\n어떠한 방식으로든, 너는 우리에게 어떠한 얘기라도 보내라 %(support_email_html_tag)s으로 그러면 우리는 이것을 즉시 해결 할 것이다."
+msgstr ""
+"\n"
+"어떠한 방식으로든, 너는 우리에게 어떠한 얘기라도 보내라 %(support_email_html_tag)s으로 그러면 우리는 이것을 즉시 해결 할 것이다."
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
@@ -495,7 +508,7 @@ msgstr "오류. 확인 링크가 만료되었거나 비활성화 되었습니다
 
 #: templates/confirmation/link_expired.html:15
 msgid "Please contact your organization administrator for a new link."
-msgstr "너의 조직 관리자에게 새로운 링크로 연락해라"
+msgstr "조직 관리자에게 새로운 링크로 연락해라"
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
@@ -509,7 +522,8 @@ msgstr "오류. 이 확인 링크는 형식화되지 않았습니다."
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
-msgstr "너의 브라우저에 올바른 링크를 복사하는 것을 확실히 해주십시오.  이 페이지가 계속 생성될 경우, 아마도 오류가 생겼습니다. 죄송합니다."
+msgstr ""
+"너의 브라우저에 올바른 링크를 복사하는 것을 확실히 해주십시오.  이 페이지가 계속 생성될 경우, 아마도 오류가 생겼습니다. 죄송합니다."
 
 #: templates/corporate/billing.html:5 templates/corporate/billing.html:24
 msgid "Billing"
@@ -970,7 +984,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                        %(email)s에 대한 계정이 없습니다.\n         "
+msgstr ""
+"\n"
+"                        %(email)s에 대한 계정이 없습니다.\n"
+"         "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -2172,7 +2189,7 @@ msgstr "팀"
 
 #: templates/zerver/footer.html:150
 msgid "History"
-msgstr "기록"
+msgstr "히스토리"
 
 #: templates/zerver/footer.html:151
 msgid "Values"
@@ -2545,7 +2562,7 @@ msgstr "이름"
 
 #: templates/zerver/register.html:155
 msgid "Full name"
-msgstr "이름"
+msgstr "이름 전체"
 
 #: templates/zerver/register.html:175
 msgid "Enter your LDAP/Active Directory password."
@@ -2807,7 +2824,8 @@ msgstr ""
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "당신의 계정이 이 조직에 초대를 보내기에는 너무 최근에 만들어졌습니다. 조직 관리자에게 문의하거나, 더 경험있는 사용자에게 물어보세요."
+msgstr ""
+"당신의 계정이 이 조직에 초대를 보내기에는 너무 최근에 만들어졌습니다. 조직 관리자에게 문의하거나, 더 경험있는 사용자에게 물어보세요."
 
 #: zerver/actions/invites.py:199
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -2821,7 +2839,8 @@ msgstr "우리는 누구도 초대할 수 없었습니다."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "그 중 일부 주소는 이미 Zulip을 사용하고 있으므로 초대장을 보내지 않았습니다. 우리는 다른 모든 사람들에게 초대장을 보냈습니다!"
+msgstr ""
+"그 중 일부 주소는 이미 Zulip을 사용하고 있으므로 초대장을 보내지 않았습니다. 우리는 다른 모든 사람들에게 초대장을 보냈습니다!"
 
 #: zerver/actions/message_edit.py:85
 msgid "Nothing to change"
