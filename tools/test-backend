@@ -314,12 +314,13 @@ def main() -> None:
                     if not file_name[0].isalnum() or not file_name.endswith(".py"):
                         continue
                     filepath = os.path.join(root, file_name)
-                    for line in open(filepath):
-                        if search_key not in line:
-                            continue
-                        new_suite = filepath.replace(".py", ".") + suite
-                        args[i] = new_suite
-                        return
+                    with open(filepath) as f:
+                        for line in f:
+                            if search_key not in line:
+                                continue
+                            new_suite = filepath.replace(".py", ".") + suite
+                            args[i] = new_suite
+                            return
 
         for suite in args:
             if suite[0].isupper() and "test_" in suite:
