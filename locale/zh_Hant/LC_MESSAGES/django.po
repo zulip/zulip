@@ -1,19 +1,23 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Ivan Lau <ivan.lau@ahsay.com>, 2020
-# Ken Li Hsieh <ozakiyuyu@gmail.com>, 2017
-# Kir <note351@hotmail.com>, 2017
+# Ken Li Hsieh <ozakiyuyu@gmail.com>, 2022
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# Kir <note351@hotmail.com>, 2022
+# Ivan Lau <ivan.lau@ahsay.com>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Ivan Lau <ivan.lau@ahsay.com>, 2020\n"
-"Language-Team: Chinese Traditional (http://www.transifex.com/zulip/zulip/language/zh-Hant/)\n"
+"PO-Revision-Date: 2022-11-17 23:30+0000\n"
+"Last-Translator: Ivan Lau <ivan.lau@ahsay.com>, 2022\n"
+"Language-Team: Chinese Traditional (https://www.transifex.com/zulip/teams/53893/zh-Hant/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -817,7 +821,9 @@ msgstr "信箱"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "我同意<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">服務條款</a>。"
+msgstr ""
+"我同意<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">服務條款</a>。"
 
 #: templates/zerver/accounts_accept_terms.html:61
 msgid "Accept"
@@ -960,7 +966,9 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n 沒有找到帳戶%(email)s"
+msgstr ""
+"\n"
+" 沒有找到帳戶%(email)s"
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"

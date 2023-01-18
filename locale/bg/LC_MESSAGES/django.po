@@ -1,18 +1,23 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Boris Yankov <borisyankov@gmail.com>, 2017
-# Veselin Georgiev <vvgeorgievv@gmail.com>, 2018
+# Andrey Tsarev <andrey@tsarev.co.uk>, 2022
+# Boris Yankov <borisyankov@gmail.com>, 2022
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# Veselin Georgiev <vvgeorgievv@gmail.com>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Veselin Georgiev <vvgeorgievv@gmail.com>, 2018\n"
-"Language-Team: Bulgarian (http://www.transifex.com/zulip/zulip/language/bg/)\n"
+"PO-Revision-Date: 2022-11-17 23:30+0000\n"
+"Last-Translator: Veselin Georgiev <vvgeorgievv@gmail.com>, 2022\n"
+"Language-Team: Bulgarian (https://www.transifex.com/zulip/teams/53893/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -54,7 +59,9 @@ msgstr ""
 
 #: analytics/views/stats.py:335 analytics/views/stats.py:370
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Няма налични данни за анализ. Моля свържете се с вашия администратор на сървъра."
+msgstr ""
+"Няма налични данни за анализ. Моля свържете се с вашия администратор на "
+"сървъра."
 
 #: analytics/views/support.py:181 zerver/views/streams.py:300
 #: zerver/views/streams.py:304 zerver/views/streams.py:312
@@ -506,7 +513,7 @@ msgstr ""
 
 #: templates/corporate/billing.html:232
 msgid "Close"
-msgstr "Затвори"
+msgstr "Близо"
 
 #: templates/corporate/communities.html:28 templates/zerver/footer.html:64
 msgid "Open communities directory"
@@ -860,7 +867,9 @@ msgstr "Проверете вашата Е-поща за да започнем."
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Не сте получили писмо? Ние ще ви го <a href=\"#\" id=\"resend_email_link\">пратим отново</a>."
+msgstr ""
+"Не сте получили писмо? Ние ще ви го <a href=\"#\" "
+"id=\"resend_email_link\">пратим отново</a>."
 
 #: templates/zerver/accounts_send_confirm.html:26
 msgid "Just in case, take a look at your Spam folder."
@@ -1981,7 +1990,7 @@ msgstr "Е-поща адрес"
 
 #: templates/zerver/find_account.html:47 templates/zerver/footer.html:73
 msgid "Find accounts"
-msgstr "Намери акаунти"
+msgstr "Намерете профили"
 
 #: templates/zerver/footer.html:4
 msgid "Product"
@@ -2509,7 +2518,7 @@ msgstr ""
 
 #: templates/zerver/register.html:72
 msgid "Organization URL"
-msgstr "Уеб адрес на Организация"
+msgstr "URL адрес на организацията"
 
 #: templates/zerver/register.html:79
 #, python-format
@@ -2544,7 +2553,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Това се използва за мобилни приложения и други инструменти които изискват парола."
+msgstr ""
+"Това се използва за мобилни приложения и други инструменти които изискват "
+"парола."
 
 #: templates/zerver/register.html:197
 msgid "Password strength"
@@ -2580,7 +2591,8 @@ msgstr "Потвърдете паролата"
 
 #: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Съжаляваме, връзката която предоставихте е невалидна или вече е използвана."
+msgstr ""
+"Съжаляваме, връзката която предоставихте е невалидна или вече е използвана."
 
 #: templates/zerver/reset_done.html:4
 msgid "Password successfully reset"

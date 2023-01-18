@@ -1,19 +1,24 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Gonçal Garcés, 2020-2021
-# Marc Hernández <noviluni@gmail.com>, 2018
-# Joan <sacoo2@hotmail.com>, 2020
+# Jordi Divins <j.divins@iskra.cat>, 2022
+# Joan <sacoo2@hotmail.com>, 2022
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# Marc Hernández <noviluni@gmail.com>, 2022
+# Gonçal Garcés, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Gonçal Garcés, 2020-2021\n"
-"Language-Team: Catalan (http://www.transifex.com/zulip/zulip/language/ca/)\n"
+"PO-Revision-Date: 2022-11-17 23:30+0000\n"
+"Last-Translator: Gonçal Garcés, 2022\n"
+"Language-Team: Catalan (https://www.transifex.com/zulip/teams/53893/ca/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -817,7 +822,9 @@ msgstr "Correu electrònic"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Accepte les <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">condicions del servei</a>."
+msgstr ""
+"Accepte les <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">condicions del servei</a>."
 
 #: templates/zerver/accounts_accept_terms.html:61
 msgid "Accept"
@@ -1768,7 +1775,9 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organització: %(organization_url)s Hora: %(login_time)s E-mail: %(user_email)s"
+msgstr ""
+"Organització: %(organization_url)s Hora: %(login_time)s E-mail: "
+"%(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -3241,7 +3250,8 @@ msgstr "Fitxer adjunt no vàlid"
 #: zerver/lib/attachments.py:33
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
+msgstr ""
+"S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
 
 #: zerver/lib/bot_lib.py:105
 msgid "Message must have recipients!"
@@ -4522,7 +4532,8 @@ msgstr ""
 
 #: zerver/views/message_edit.py:98
 msgid "Message edit history is disabled in this organization"
-msgstr "L'historial d'edicions de missatge està desactivat en aquesta organització"
+msgstr ""
+"L'historial d'edicions de missatge està desactivat en aquesta organització"
 
 #: zerver/views/message_edit.py:154 zerver/views/message_edit.py:157
 msgid "You don't have permission to delete this message"
