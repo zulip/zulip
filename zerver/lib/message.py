@@ -1351,10 +1351,7 @@ def format_unread_message_details(
         unread_data[str(message_id)] = message_details
 
     for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
-        if message_id in raw_unread_data["unmuted_stream_msgs"]:
-            unmuted_stream_msg = True
-        else:
-            unmuted_stream_msg = False
+        unmuted_stream_msg = message_id in raw_unread_data["unmuted_stream_msgs"]
 
         message_details = MessageDetailsDict(
             type="stream",
