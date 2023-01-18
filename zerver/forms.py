@@ -353,11 +353,10 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 # The view will handle the RateLimit exception and render an appropriate page
                 raise
 
-        user: Optional[UserProfile] = None
         try:
             user = get_user_by_delivery_email(email, realm)
         except UserProfile.DoesNotExist:
-            pass
+            user = None
 
         context = {
             "email": email,

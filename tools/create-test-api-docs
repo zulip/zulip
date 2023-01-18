@@ -4,6 +4,7 @@ import html
 import os
 import sys
 from collections import defaultdict
+from contextlib import suppress
 from typing import Any, Dict, List, Set
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -72,10 +73,8 @@ def create_user_docs() -> None:
     fn = "var/url_coverage.txt"  # TODO: make path more robust, maybe use json suffix
 
     out_dir = "var/api_docs"
-    try:
+    with suppress(OSError):
         os.mkdir(out_dir)
-    except OSError:
-        pass
 
     main_page = out_dir + "/index.html"
 

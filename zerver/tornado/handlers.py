@@ -1,5 +1,6 @@
 import logging
 import urllib
+from contextlib import suppress
 from typing import Any, Dict, List, Optional
 
 import tornado.web
@@ -147,12 +148,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         self.write(response.content)
 
         # Close the connection.
-        try:
+        # While writing the response, we might realize that the
+        # user already closed the connection; that is fine.
+        with suppress(StreamClosedError):
             await self.finish()
-        except StreamClosedError:
-            # While writing the response, we might realize that the
-            # user already closed the connection; that is fine.
-            pass
 
     async def get(self, *args: Any, **kwargs: Any) -> None:
         request = await self.convert_tornado_request_to_django_request()

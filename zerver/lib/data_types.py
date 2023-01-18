@@ -9,6 +9,7 @@ the level of detail we desire or do comparison with OpenAPI types
 easily with the native Python type system.
 """
 
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
@@ -206,10 +207,8 @@ class UnionType:
 
     def check_data(self, var_name: str, val: Any) -> None:
         for sub_type in self.sub_types:
-            try:
+            with suppress(AssertionError):
                 check_data(sub_type, var_name, val)
-            except AssertionError:
-                pass
 
             # We matched on one of our sub_types, so return
             return

@@ -1,4 +1,5 @@
 import logging
+from contextlib import suppress
 from typing import Any, Callable, Dict, Union
 
 import stripe
@@ -86,14 +87,12 @@ def handle_checkout_session_completed_event(
         session.payment_intent.status = PaymentIntent.PROCESSING
         session.payment_intent.last_payment_error = ()
         session.payment_intent.save(update_fields=["status", "last_payment_error"])
-        try:
+        with suppress(stripe.error.CardError):
             stripe.PaymentIntent.confirm(
                 session.payment_intent.stripe_payment_intent_id,
                 payment_method=payment_method,
                 off_session=True,
             )
-        except stripe.error.CardError:
-            pass
     elif session.type in [
         Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE,
         Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE,

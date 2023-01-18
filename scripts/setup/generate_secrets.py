@@ -2,6 +2,7 @@
 # This tools generates /etc/zulip/zulip-secrets.conf
 import os
 import sys
+from contextlib import suppress
 from typing import Dict, List
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -166,10 +167,8 @@ def generate_secrets(development: bool = False) -> None:
                             )
                         break
 
-                try:
+                with suppress(redis.exceptions.ConnectionError):
                     get_redis_client().config_set("requirepass", redis_password)
-                except redis.exceptions.ConnectionError:
-                    pass
 
                 add_secret("redis_password", redis_password)
 

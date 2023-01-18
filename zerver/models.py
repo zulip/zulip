@@ -2,6 +2,7 @@ import datetime
 import re
 import secrets
 import time
+from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
@@ -1364,10 +1365,8 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
 def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
     realm_id = instance.realm_id
     cache_delete(get_linkifiers_cache_key(realm_id))
-    try:
+    with suppress(KeyError):
         per_request_linkifiers_cache.pop(realm_id)
-    except KeyError:
-        pass
 
 
 post_save.connect(flush_linkifiers, sender=RealmFilter)

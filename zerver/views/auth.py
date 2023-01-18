@@ -708,10 +708,8 @@ def redirect_to_deactivation_notice() -> HttpResponse:
 
 def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
     for key in ("email", "already_registered"):
-        try:
+        if key in request.GET:
             context[key] = request.GET[key]
-        except KeyError:
-            pass
 
     deactivated_email = request.GET.get("is_deactivated")
     if deactivated_email is None:

@@ -1,6 +1,7 @@
 import os
 import subprocess
 import urllib
+from contextlib import suppress
 from typing import Optional
 
 import orjson
@@ -44,10 +45,8 @@ def email_page(
 
 
 def clear_emails(request: HttpRequest) -> HttpResponse:
-    try:
+    with suppress(FileNotFoundError):
         os.remove(settings.EMAIL_CONTENT_LOG_PATH)
-    except FileNotFoundError:  # nocoverage
-        pass
     return redirect(email_page)
 
 

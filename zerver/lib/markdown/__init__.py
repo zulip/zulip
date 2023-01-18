@@ -1378,7 +1378,6 @@ class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         time_input_string = match.group("time")
-        timestamp = None
         try:
             timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
         except ValueError:
@@ -1387,7 +1386,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
                     float(time_input_string), tz=datetime.timezone.utc
                 )
             except ValueError:
-                pass
+                timestamp = None
 
         if not timestamp:
             error_element = Element("span")
