@@ -203,6 +203,9 @@ export function clear_compose_box() {
 
 export function send_message_success(local_id, message_id, locally_echoed) {
     if (!locally_echoed) {
+        if ($("#compose-textarea").data("draft-id")) {
+            drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
+        }
         clear_compose_box();
     }
 
