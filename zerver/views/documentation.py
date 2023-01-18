@@ -154,14 +154,14 @@ class MarkdownDirectoryView(ApiURLView):
             documentation_article.article_path
         ):
             # Absolute path case
-            article_path = documentation_article.article_path
+            article_absolute_path = documentation_article.article_path
         elif documentation_article.article_path.startswith("/"):
             # Hack: `context["article"] has a leading `/`, so we use + to add directories.
-            article_path = (
+            article_absolute_path = (
                 os.path.join(settings.DEPLOY_ROOT, "templates") + documentation_article.article_path
             )
         else:
-            article_path = os.path.join(
+            article_absolute_path = os.path.join(
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
 
@@ -190,8 +190,8 @@ class MarkdownDirectoryView(ApiURLView):
         # The following is a somewhat hacky approach to extract titles from articles.
         endpoint_name = None
         endpoint_method = None
-        if os.path.exists(article_path):
-            with open(article_path) as article_file:
+        if os.path.exists(article_absolute_path):
+            with open(article_absolute_path) as article_file:
                 first_line = article_file.readlines()[0]
             # Strip the header and then use the first line to get the article title
             if context["article"] == "/zerver/api/api-doc-template.md":
