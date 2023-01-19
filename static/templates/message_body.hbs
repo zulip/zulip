@@ -40,7 +40,9 @@
         {{/if}}
     </div>
     {{else}}
-    {{> message_hidden_dialog}}
+    <div class="message_content rendered_markdown">
+        {{> message_hidden_dialog}}
+    </div>
     {{/unless}}
 {{/unless}}
 
