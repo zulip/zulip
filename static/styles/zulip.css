@@ -1078,6 +1078,7 @@ td.pointer {
 
         .rotating {
             display: inline-block;
+            outline: none;
 
             animation: rotate 1s infinite linear;
         }
