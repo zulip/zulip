@@ -18,7 +18,7 @@ page can be easily identified in it's respective JavaScript file -->
             </div>
 
             <div class="white-box">
-                <p>{{ _("Check your email so we can get started.") }}</p>
+                <p>{% trans %}Check your email (<span class="semi-bold">{{ email }}</span>) so we can get started.{% endtrans %}</p>
 
                 {% include 'zerver/dev_env_email_access_details.html' %}
 
