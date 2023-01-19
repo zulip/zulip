@@ -2879,7 +2879,7 @@ textarea.invitee_emails {
         width: 30px;
     }
 
-    #top_navbar.rightside-userlist #navbar-buttons {
+    #top_navbar #navbar-buttons {
         margin-right: 41px;
     }
 
@@ -2904,18 +2904,6 @@ textarea.invitee_emails {
 
     .search_closed .fa-search {
         right: 115px;
-    }
-
-    #top_navbar:not(.rightside-userlist) {
-        .search_closed .fa-search {
-            right: 72px;
-        }
-
-        .top-navbar-border,
-        #searchbox_legacy .navbar-search.expanded,
-        #searchbox .navbar-search.expanded {
-            width: calc(100% - 50px);
-        }
     }
 }
 
@@ -2995,17 +2983,6 @@ textarea.invitee_emails {
 
     .search_closed .fa-search {
         right: 115px;
-    }
-
-    #top_navbar:not(.rightside-userlist) {
-        .top-navbar-border {
-            width: calc(100% - 75px);
-        }
-
-        #searchbox_legacy .navbar-search.expanded,
-        #searchbox .navbar-search.expanded {
-            width: calc(100% - 90px);
-        }
     }
 }
 
