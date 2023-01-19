@@ -41,7 +41,7 @@ trying to send a message to a group of people, you'll want to either
 
 1. Find the group.
 
-1. Click on the trash (<i class="fa fa-trash-o"></i>) icon in the top
+1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon in the top
    right corner of the user group.
 
 1. Approve by clicking **Confirm**.
