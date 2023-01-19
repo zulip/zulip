@@ -5,17 +5,17 @@
 {% endblock %}
 
 {% block portico_content %}
-<div class="app portico-page">
-    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
-        <div class="inline-block">
 
-            <div class="get-started">
+<div class="app portico-page new-style full-page split-view flex">
+    <div class="app-main portico-page-container account-creation white-box">
+        <div class="left-side">
+            <div class="login__header">
                 <h1>{{ _("We've reset your password!") }}</h1>
+                <p>{{ _("Check your email so we can get started.") }}</p>
             </div>
-
-            <div class="white-box">
-                <p>{% trans login_url=url('login') %}Please <a href="{{ login_url }}">log in</a> with your new password.{% endtrans %}</p>
-            </div>
+        </div>
+        <div class="right-side">
+            <p>{% trans login_url=url('login') %}Please <a href="{{ login_url }}">log in</a> with your new password.{% endtrans %}</p>
         </div>
     </div>
 </div>

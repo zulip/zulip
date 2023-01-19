@@ -6,13 +6,14 @@
 
 {% block portico_content %}
 
-<div class="app find-account-page flex full-page">
-    <div class="inline-block new-style">
-        <div class="lead">
-            <h1 class="get-started">{{ _('Organization does not exist') }}…</h1>
+<div class="app find-account-page split-view flex full-page new-style">
+    <div class="app-main white-box">
+        <div class="left-side">
+            <div class="login__header">
+                <h1 class="get-started">{{ _('Organization does not exist') }}…</h1>
+            </div>
         </div>
-
-        <div class="app-main white-box">
+        <div class="right-side">
             {{ _('Hi there! Thank you for your interest in Zulip.') }}
             <br />
             {% trans %}There is no Zulip organization hosted at this subdomain.{% endtrans %}

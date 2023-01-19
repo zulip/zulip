@@ -8,34 +8,29 @@
 {# This is where we pitch the app and solicit signups. #}
 
 {% block portico_content %}
-<div class="app register-page">
-    <div class="app-main register-page-container new-style flex full-page center">
-
-        <div class="register-form left">
-            <div class="lead">
+<div class="app register-page split-view new-style flex full-page">
+    <div class="app-main register-page-container white-box">
+        <div class="register-form left-side">
+            <div class="login__header">
+                <img class="logo" src="/static/images/logo/white-zulip-logo-without-text.svg" alt="">
                 <h1 class="get-started">{{ _("Create a new Zulip organization") }}</h1>
             </div>
-            <div class="white-box">
-                <form class="form-inline" id="send_confirm" name="email_form"
-                  action="{{ current_url() }}" method="post">
-                    {{ csrf_input }}
-                    <div class="input-box horizontal">
-                        <div class="inline-block relative">
-                            <input type="text" class="email required" placeholder="{{ _("Enter your email address") }}"
-                              id="email" name="email" autofocus required />
-                            <label for="email">{{ _('Email') }}</label>
-                        </div>
-
-                        <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
-                    </div>
-                </form>
-            </div>
-            <div class="alert alert-error email-frontend-error"></div>
-            {% if form.email.errors %}
+        </div>
+        <div class="right-side">
+            <form class="form-inline" id="send_confirm" name="email_form" action="{{ current_url() }}" method="post">
+                {{ csrf_input }}
+                <div class="input-box">
+                    <input type="text" class="email required" placeholder="{{ _(" Enter your email address") }}" id="email" name="email" autofocus required />
+                    <label for="email">{{ _('Email') }}</label>
+                </div>
+                <div class="alert alert-error email-frontend-error"></div>
+                {% if form.email.errors %}
                 {% for error in form.email.errors %}
                 <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
-            {% endif %}
+                {% endif %}
+                <button type="submit" class="full-width">{{ _("Create organization") }}</button>
+            </form>
             <div class="bottom-text">
                 Or import
                 from <a href="/help/import-from-slack">Slack</a>, <a href="/help/import-from-mattermost">Mattermost</a>,
