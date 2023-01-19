@@ -15,7 +15,7 @@
     </div>
     {{/unless}}
 
-    <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
+    <div class="message_failed {{#unless msg.failed_request}}hide{{/unless}}">
         <div class="message_control_button failed_message_action" data-tippy-content="{{t 'Retry' }}">
             <i class="fa fa-refresh refresh-failed-message" aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
         </div>
