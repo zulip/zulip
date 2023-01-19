@@ -988,8 +988,13 @@ export function initialize() {
         }
 
         if (compose_state.composing()) {
+            const $closest_links = $(e.target).closest("a");
+            const nearby_link_exists = $closest_links.length > 0;
+            // Links that are actually dropdown widget don't count.
+            const inside_dropdown_widget =
+                nearby_link_exists && $closest_links[0].role === "menuitem";
             if (
-                $(e.target).closest("a").length > 0 ||
+                (nearby_link_exists && !inside_dropdown_widget) ||
                 $(e.target).closest(".copy_codeblock").length > 0
             ) {
                 // Refocus compose message text box if one clicks an external
