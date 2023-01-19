@@ -5,9 +5,9 @@
 SCIM (System for Cross-domain Identity Management) is a standard
 protocol used by Single Sign-On (SSO) services and identity providers
 to provision/deprovision user accounts and groups. Zulip supports SCIM
-integration, both in Zulip Cloud and for
-[self-hosted](/help/self-hosting) Zulip servers.  This page describes
-how to configure SCIM provisioning for Zulip.
+integration, both in Zulip Cloud and for [self-hosted](/self-hosting/)
+Zulip servers.  This page describes how to configure SCIM provisioning
+for Zulip.
 
 Zulip's SCIM integration has the following limitations:
 
