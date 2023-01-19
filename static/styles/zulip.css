@@ -1068,13 +1068,16 @@ td.pointer {
     }
 
     .message_failed {
-        opacity: 1 !important;
         display: inline-flex;
         justify-content: space-between;
         cursor: pointer;
         position: relative;
         vertical-align: middle;
         padding-left: 2px;
+
+        &.hide {
+            display: none;
+        }
 
         .rotating {
             display: inline-block;

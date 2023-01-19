@@ -89,7 +89,7 @@ export function show_message_failed(message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     update_message_in_all_views(message_id, ($row) => {
         const $failed_div = $row.find(".message_failed");
-        $failed_div.toggleClass("notvisible", false);
+        $failed_div.toggleClass("hide", false);
         $failed_div.find(".failed_text").attr("title", failed_msg);
     });
 }
@@ -97,7 +97,7 @@ export function show_message_failed(message_id, failed_msg) {
 export function show_failed_message_success(message_id) {
     // Previously failed message succeeded
     update_message_in_all_views(message_id, ($row) => {
-        $row.find(".message_failed").toggleClass("notvisible", true);
+        $row.find(".message_failed").toggleClass("hide", true);
     });
 }
 
