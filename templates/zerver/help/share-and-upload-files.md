@@ -6,7 +6,7 @@ First, [open the compose box](/help/open-the-compose-box). Then
 
 * **Drag and drop** files into the compose box.
 * **Copy and paste** files into the compose box.
-* **Click the paperclip** (<i class="fa fa-paperclip"></i>) icon at
+* Click the **paperclip** (<i class="fa fa-paperclip"></i>) icon at
   the bottom of the compose box to find files on your computer.
 
 Zulip will insert a link to the file, in Markdown format:

@@ -39,7 +39,7 @@ To learn more about pinning a stream, see [here](/help/pin-a-stream).
  If you don't have a stream pinned, you can search for it instead of scrolling
  through the alphabetically ordered list.
 
-1. On the left sidebar in the **Streams** section, click on the search
+1. On the left sidebar in the **Streams** section, click the **search**
  (<i class="fa fa-search" aria-hidden="true"></i>) icon in the top
  right-hand corner.
 
