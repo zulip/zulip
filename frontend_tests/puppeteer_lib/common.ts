@@ -186,6 +186,20 @@ export async function check_form_contents(
     }
 }
 
+export async function check_compose_state(
+    page: Page,
+    params: Record<string, string>,
+): Promise<void> {
+    const form_params: Record<string, string> = {content: params.content};
+    if (params.stream) {
+        form_params.stream_message_recipient_stream = params.stream;
+    }
+    if (params.topic) {
+        form_params.stream_message_recipient_topic = params.topic;
+    }
+    await check_form_contents(page, "form#send_message_form", form_params);
+}
+
 export function has_class_x(class_name: string): string {
     return `contains(concat(" ", @class, " "), " ${class_name} ")`;
 }

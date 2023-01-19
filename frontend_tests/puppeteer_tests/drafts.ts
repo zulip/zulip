@@ -116,9 +116,9 @@ async function test_restore_message_draft_via_draft_overlay(page: Page): Promise
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#stream-message", {visible: true});
     await page.waitForSelector("#preview_message_area", {hidden: true});
-    await common.check_form_contents(page, "form#send_message_form", {
-        stream_message_recipient_stream: "Denmark",
-        stream_message_recipient_topic: "tests",
+    await common.check_compose_state(page, {
+        stream: "Denmark",
+        topic: "tests",
         content: "Test stream message.",
     });
     assert.strictEqual(
@@ -170,7 +170,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     await page.click(".message_row.private-message .restore-draft");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#private-message", {visible: true});
-    await common.check_form_contents(page, "form#send_message_form", {
+    await common.check_compose_state(page, {
         content: "Test private message.",
     });
     const cordelia_internal_email = await common.get_internal_email_from_name(page, "cordelia");

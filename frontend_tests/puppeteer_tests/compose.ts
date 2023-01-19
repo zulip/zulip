@@ -5,9 +5,9 @@ import type {Page} from "puppeteer";
 import * as common from "../puppeteer_lib/common";
 
 async function check_compose_form_empty(page: Page): Promise<void> {
-    await common.check_form_contents(page, "#send_message_form", {
-        stream_message_recipient_stream: "",
-        stream_message_recipient_topic: "",
+    await common.check_compose_state(page, {
+        stream: "",
+        topic: "",
         content: "",
     });
 }
@@ -57,9 +57,9 @@ async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): 
     assert.ok(stream_message !== null);
     // we chose only the last element make sure we don't click on any duplicates.
     await stream_message.click();
-    await common.check_form_contents(page, "#send_message_form", {
-        stream_message_recipient_stream: "Verona",
-        stream_message_recipient_topic: "Reply test",
+    await common.check_compose_state(page, {
+        stream: "Verona",
+        topic: "Reply test",
         content: "",
     });
     await close_compose_box(page);
@@ -86,9 +86,9 @@ async function test_reply_with_r_shortcut(page: Page): Promise<void> {
     // Now we go up and open compose box with r key.
     await page.keyboard.press("KeyK");
     await page.keyboard.press("KeyR");
-    await common.check_form_contents(page, "#send_message_form", {
-        stream_message_recipient_stream: "Verona",
-        stream_message_recipient_topic: "Reply test",
+    await common.check_compose_state(page, {
+        stream: "Verona",
+        topic: "Reply test",
         content: "",
     });
 }
