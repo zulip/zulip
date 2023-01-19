@@ -15,9 +15,7 @@
     the emoji code matches.  For example, we'll show the
     emoji with code 1f44d at the top of your suggestions
     whether you type "+" as a prefix for "+1"
-    or "th" as a prefix for "thumbs up".  The caveat is
-    that other factors still may matter more, such as
-    prefix matches trumping "popularity".
+    or "th" as a prefix for "thumbs up".
 */
 export const popular_emojis = [
     "1f44d", // +1
