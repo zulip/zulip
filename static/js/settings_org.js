@@ -34,6 +34,8 @@ export function reset() {
     meta.loaded = false;
 }
 
+const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
+
 export function maybe_disable_widgets() {
     if (page_params.is_owner) {
         return;
@@ -960,22 +962,40 @@ export function init_dropdown_widgets() {
     default_code_language_widget.setup();
 }
 
+function check_maximum_valid_value($custom_input_elem, property_name) {
+    let setting_value = Number.parseInt($custom_input_elem.val(), 10);
+    if (
+        property_name === "realm_message_content_edit_limit_seconds" ||
+        property_name === "realm_message_content_delete_limit_seconds" ||
+        property_name === "email_notifications_batching_period_seconds"
+    ) {
+        setting_value = parse_time_limit($custom_input_elem);
+    }
+    return setting_value <= MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE;
+}
+
 function enable_or_disable_save_button($subsection_elem) {
     const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
-        const dropdown_elem_val = $(setting_elem).find("select").val();
+        const $dropdown_elem = $(setting_elem).find("select");
         const $custom_input_elem = $(setting_elem).find(".time-limit-custom-input");
         const custom_input_elem_val = Number.parseInt(Number($custom_input_elem.val()), 10);
 
+        const for_realm_default_settings =
+            $dropdown_elem.closest(".settings-section.show").attr("id") ===
+            "realm-user-default-settings";
+        const property_name = extract_property_name($dropdown_elem, for_realm_default_settings);
+
         disable_save_btn =
-            dropdown_elem_val === "custom_period" &&
-            (custom_input_elem_val <= 0 || Number.isNaN(custom_input_elem_val));
+            $dropdown_elem.val() === "custom_period" &&
+            (custom_input_elem_val <= 0 ||
+                Number.isNaN(custom_input_elem_val) ||
+                !check_maximum_valid_value($custom_input_elem, property_name));
 
         if (
             $custom_input_elem.val() === "0" &&
-            extract_property_name($(setting_elem).find("select")) ===
-                "realm_waiting_period_threshold"
+            property_name === "realm_waiting_period_threshold"
         ) {
             // 0 is a valid value for realm_waiting_period_threshold setting. We specifically
             // check for $custom_input_elem.val() to be "0" and not custom_input_elem_val
