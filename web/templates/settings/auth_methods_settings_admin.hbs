@@ -2,6 +2,9 @@
     {{#unless is_owner}}
     <div class='tip'>{{t "Only organization owners can edit these settings."}}</div>
     {{/unless}}
+    {{#unless user_has_email_set}}
+    <div class='tip'>{{t "You must configure your email to access this feature."}}</div>
+    {{/unless}}
     <form class="admin-realm-form org-authentications-form">
         <div id="org-auth_settings" class="admin-table-wrapper settings-subsection-parent">
             <div class ="subsection-header">

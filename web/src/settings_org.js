@@ -19,6 +19,7 @@ import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
@@ -533,6 +534,16 @@ function sort_object_by_key(obj) {
     return new_obj;
 }
 
+function can_configure_auth_methods() {
+    if (settings_data.user_email_not_configured()) {
+        return false;
+    }
+    if (page_params.is_owner) {
+        return true;
+    }
+    return false;
+}
+
 export function populate_auth_methods(auth_methods) {
     if (!meta.loaded) {
         return;
@@ -544,7 +555,7 @@ export function populate_auth_methods(auth_methods) {
         rendered_auth_method_rows += render_settings_admin_auth_methods_list({
             method: auth_method,
             enabled: value,
-            is_owner: page_params.is_owner,
+            disable_configure_auth_method: !can_configure_auth_methods(),
             // The negated character class regexp serves as an allowlist - the replace() will
             // remove *all* symbols *but* digits (\d) and lowecase letters (a-z),
             // so that we can make assumptions on this string elsewhere in the code.
