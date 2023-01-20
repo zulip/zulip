@@ -396,11 +396,6 @@ td .button {
     }
 }
 
-.dependent-inline-block {
-    display: inline-block;
-    margin: 0 0 0 10px !important;
-}
-
 .no-margin {
     margin: 0;
 }
