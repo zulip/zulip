@@ -112,7 +112,7 @@ export function last_seen_status_from_date(
         return $t({defaultMessage: "Just now"});
     }
     if (minutes < 60) {
-        return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
+        return $t({defaultMessage: "{minutes}m ago"}, {minutes});
     }
 
     const days_old = differenceInCalendarDays(current_date, last_active_date);
@@ -120,9 +120,9 @@ export function last_seen_status_from_date(
 
     if (hours < 24) {
         if (hours === 1) {
-            return $t({defaultMessage: "An hour ago"});
+            return $t({defaultMessage: "1h ago"});
         }
-        return $t({defaultMessage: "{hours} hours ago"}, {hours});
+        return $t({defaultMessage: "{hours}h ago"}, {hours});
     }
 
     if (days_old === 1) {
@@ -130,7 +130,7 @@ export function last_seen_status_from_date(
     }
 
     if (days_old < 90) {
-        return $t({defaultMessage: "{days_old} days ago"}, {days_old});
+        return $t({defaultMessage: "{days_old}d ago"}, {days_old});
     } else if (
         days_old > 90 &&
         days_old < 365 &&

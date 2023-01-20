@@ -93,11 +93,11 @@ $.fn.popover = Object.assign(function (...args) {
 
 function copy_email_handler(e) {
     const $email_el = $(e.trigger.parentElement);
-    const $copy_icon = $email_el.find("i");
+    const $copy_icon = $email_el.find("a");
 
     // only change the parent element's text back to email
     // and not overwrite the tooltip.
-    const email_textnode = $email_el[0].childNodes[2];
+    const email_textnode = $email_el[0].childNodes[1];
 
     $email_el.addClass("email_copied");
     email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
@@ -110,27 +110,19 @@ function copy_email_handler(e) {
 }
 
 function init_email_clipboard() {
-    /*
-        This shows (and enables) the copy-text icon for folks
-        who have names that would overflow past the right
-        edge of our user mention popup.
-    */
     $(".user_popover_email").each(function () {
-        if (this.clientWidth < this.scrollWidth) {
-            const $email_el = $(this);
-            const $copy_email_icon = $email_el.find("i");
+        const $email_el = $(this);
+        const $copy_email_icon = $email_el.find("a");
 
-            /*
-                For deactivated users, the copy-email icon will
-                not even be present in the HTML, so we don't do
-                anything.  We don't reveal emails for deactivated
-                users.
-            */
-            if ($copy_email_icon[0]) {
-                $copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
-                copy_email_clipboard.on("success", copy_email_handler);
-            }
+        /*
+            For deactivated users, the copy-email icon will
+            not even be present in the HTML, so we don't do
+            anything.  We don't reveal emails for deactivated
+            users.
+        */
+        if ($copy_email_icon[0]) {
+            const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
+            copy_email_clipboard.on("success", copy_email_handler);
         }
     });
 }
@@ -142,10 +134,10 @@ function init_email_tooltip(user) {
         edge of our user mention popup.
     */
 
-    $(".user_popover_email").each(function () {
+    $(".user_popover_email .nowrap").each(function () {
         if (this.clientWidth < this.scrollWidth) {
             tippy(this, {
-                placement: "bottom",
+                placement: "top",
                 content: people.get_visible_email(user),
                 interactive: true,
             });
@@ -227,22 +219,22 @@ function render_user_info_popover(
     popover_placement,
 ) {
     const is_me = people.is_my_user_id(user.user_id);
+    const spectator_view = page_params.is_spectator;
 
     let invisible_mode = false;
-
     if (is_me) {
         invisible_mode = !user_settings.presence_enabled;
     }
 
-    const muting_allowed = !is_me && !user.is_bot;
     const is_active = people.is_active_user_for_popover(user.user_id);
     const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
-    const spectator_view = page_params.is_spectator;
 
     // TODO: The show_manage_menu calculation can get a lot simpler
     // if/when we allow muting bot users.
+    const is_muted = muted_users.is_user_muted(user.user_id);
+    const muting_allowed = !is_me && !user.is_bot;
     const can_manage_user = page_params.is_admin && !is_me && !is_system_bot;
     const show_manage_menu = !spectator_view && (muting_allowed || can_manage_user);
 
@@ -258,7 +250,30 @@ function render_user_info_popover(
         .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types, dateFormat))
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
-    const args = {
+    const custom_user_field = display_profile_fields.length >= 1;
+
+    let bot_owner = false;
+    if (user.is_bot) {
+        const bot_owner_id = user.bot_owner_id;
+        if (!is_system_bot && bot_owner_id) {
+            bot_owner = people.get_by_user_id(bot_owner_id);
+        }
+    }
+
+    const popover_args = {
+        // See the load_medium_avatar comment for important background.
+        user_is_guest: user.is_guest,
+        user_avatar: people.small_avatar_url_for_person(user),
+        is_active,
+        is_bot: user.is_bot,
+        is_system_bot,
+        bot_owner,
+        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+        user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
+        user_full_name: user.full_name,
+        user_type: people.get_user_type(user.user_id),
+        is_me,
+        spectator_view,
         invisible_mode,
         can_send_private_message:
             is_active &&
@@ -266,42 +281,30 @@ function render_user_info_popover(
             page_params.realm_private_message_policy !==
                 settings_config.private_message_policy_values.disabled.code,
         display_profile_fields,
+        custom_user_field,
         has_message_context,
-        is_active,
-        is_bot: user.is_bot,
-        is_me,
         is_sender_popover,
         pm_with_url: hash_util.pm_with_url(user.email),
-        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_url(user.email),
         show_email: settings_data.show_email(),
         show_manage_menu,
         user_email: people.get_visible_email(user),
-        user_full_name: user.full_name,
         user_id: user.user_id,
-        user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
-        user_type: people.get_user_type(user.user_id),
         status_content_available: Boolean(status_text || status_emoji_info),
         status_text,
         status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
-        spectator_view,
+        can_manage_user,
+        muting_allowed,
+        can_mute: muting_allowed && !is_muted,
+        can_unmute: muting_allowed && is_muted,
     };
 
-    if (user.is_bot) {
-        const bot_owner_id = user.bot_owner_id;
-        if (is_system_bot) {
-            args.is_system_bot = is_system_bot;
-        } else if (bot_owner_id) {
-            const bot_owner = people.get_by_user_id(bot_owner_id);
-            args.bot_owner = bot_owner;
-        }
-    }
-
-    const $popover_content = $(render_user_info_popover_content(args));
+    const $popover_title = $(render_user_info_popover_title(popover_args));
+    const $popover_content = $(render_user_info_popover_content(popover_args));
     popover_element.popover({
         content: $popover_content.get(0),
         // TODO: Determine whether `fixed` should be applied
@@ -310,11 +313,7 @@ function render_user_info_popover(
         fixed: template_class === "user_popover",
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
-        title: render_user_info_popover_title({
-            // See the load_medium_avatar comment for important background.
-            user_avatar: people.small_avatar_url_for_person(user),
-            user_is_guest: user.is_guest,
-        }),
+        title: $popover_title,
         html: true,
         trigger: "manual",
         top_offset: $("#userlist-title").offset().top + 15,
@@ -324,13 +323,13 @@ function render_user_info_popover(
 
     init_email_clipboard();
     init_email_tooltip(user);
-    const $user_name_element = $popover_content.find(".user_full_name");
-    const $bot_owner_element = $popover_content.find(".bot_owner");
+    const $user_name_element = $popover_title.find(".user-info-popover-header__full-name");
+    const $bot_owner_element = $popover_title.find(".bot_owner");
     if ($user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")) {
         $user_name_element.addClass("tippy-zulip-tooltip");
     }
     if (
-        args.bot_owner &&
+        bot_owner &&
         $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
     ) {
         $bot_owner_element.addClass("tippy-zulip-tooltip");
@@ -813,7 +812,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
         if (overlays.settings_open()) {
@@ -825,7 +824,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
         if (overlays.settings_open()) {
@@ -840,7 +839,7 @@ export function register_click_handlers() {
         if (!compose_state.composing()) {
             compose_actions.start("stream", {trigger: "sidebar user actions"});
         }
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
@@ -854,7 +853,7 @@ export function register_click_handlers() {
         if (!compose_state.composing()) {
             compose_actions.respond_to_message({trigger: "user sidebar popover"});
         }
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
@@ -863,18 +862,20 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".info_popover_actions .clear_status", (e) => {
+    $("body").on("click", ".info_popover_actions .mute_user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("section"));
+        hide_all_user_info_popovers();
+        e.stopPropagation();
         e.preventDefault();
-        const me = elem_to_user_id($(e.target).parents("ul"));
-        user_status.server_update_status({
-            user_id: me,
-            status_text: "",
-            emoji_name: "",
-            emoji_code: "",
-            success() {
-                $(".info_popover_actions #status_message").empty();
-            },
-        });
+        muted_users_ui.confirm_mute_user(user_id);
+    });
+
+    $("body").on("click", ".info_popover_actions .unmute_user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("section"));
+        hide_all_user_info_popovers();
+        muted_users_ui.unmute_user(user_id);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".view_user_profile", (e) => {
@@ -888,20 +889,6 @@ export function register_click_handlers() {
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
-
-    $("body").on("click", ".invisible_mode_turn_on", (e) => {
-        hide_all();
-        user_status.server_invisible_mode_on();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".invisible_mode_turn_off", (e) => {
-        hide_all();
-        user_status.server_invisible_mode_off();
-        e.stopPropagation();
-        e.preventDefault();
-    });
 
     function open_user_status_modal(e) {
         hide_all();
@@ -922,7 +909,7 @@ export function register_click_handlers() {
     );
 
     $("body").on("click", ".sidebar-popover-mute-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         hide_all_user_info_popovers();
         e.stopPropagation();
         e.preventDefault();
@@ -930,7 +917,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         hide_all_user_info_popovers();
         muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
@@ -938,7 +925,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .sidebar-popover-reactivate-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         hide_all();
         e.stopPropagation();
         e.preventDefault();
@@ -1048,7 +1035,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const email = people.get_by_user_id(user_id).email;
         compose_actions.start("private", {
             trigger: "popover send private",
@@ -1095,7 +1082,7 @@ export function register_click_handlers() {
 
     $("body").on("click", ".sidebar-popover-manage-user", (e) => {
         hide_all();
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const user = people.get_by_user_id(user_id);
         if (user.is_bot) {
             settings_bots.show_edit_bot_info_modal(user_id, true);
@@ -1107,9 +1094,19 @@ export function register_click_handlers() {
     $("body").on("click", ".user_info_popover_manage_menu_btn", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("section"));
         const user = people.get_by_user_id(user_id);
         show_user_info_popover_manage_menu(e.target, user);
+    });
+
+    $("body").on("click", ".popover-lists__text-item", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $("body").on("click", ".user-info-popover-header", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
     });
 }
 

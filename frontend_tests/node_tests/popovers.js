@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -158,53 +157,111 @@ test_ui("sender_hover", ({override, mock_template}) => {
         return "popover-html";
     });
 
+    const $popover_title = $.create("title-html");
     mock_template("user_info_popover_title.hbs", false, (opts) => {
         assert.deepEqual(opts, {
+            bot_owner: false,
+            can_manage_user: false,
+            can_mute: true,
+            can_send_private_message: true,
+            can_unmute: false,
+            custom_user_field: false,
+            date_joined: undefined,
+            display_profile_fields: [],
+            has_message_context: true,
+            invisible_mode: false,
+            is_active: true,
+            is_bot: undefined,
+            is_me: false,
+            is_sender_popover: true,
+            is_system_bot: undefined,
+            muting_allowed: true,
+            pm_with_url: "#narrow/pm-with/42-Alice-Smith",
+            private_message_class: "respond_personal_button",
+            sent_by_uri: "#narrow/sender/42-Alice-Smith",
+            show_email: false,
+            show_manage_menu: true,
+            spectator_view: false,
+            status_content_available: true,
+            status_emoji_info: {
+                emoji_alt_code: false,
+                emoji_code: "1f697",
+                emoji_name: "car",
+                reaction_type: "unicode_emoji",
+            },
+            status_text: "on the beach",
             user_avatar: "http://zulip.zulipdev.com/avatar/42?s=50",
+            user_circle_class: "user_circle_empty",
+            user_email: "alice@example.com",
+            user_full_name: "Alice Smith",
+            user_id: 42,
             user_is_guest: false,
+            user_last_seen_time_status: "translated: Active 2w+ ago",
+            user_mention_syntax: "@**Alice Smith**",
+            user_time: undefined,
+            user_type: "translated: Member",
         });
-        return "title-html";
+        return $popover_title;
     });
+
     const $popover_content = $.create("content-html");
     mock_template("user_info_popover_content.hbs", false, (opts) => {
         assert.deepEqual(opts, {
-            invisible_mode: false,
+            bot_owner: false,
+            can_manage_user: false,
+            can_mute: true,
             can_send_private_message: true,
+            can_unmute: false,
+            custom_user_field: false,
+            date_joined: undefined,
             display_profile_fields: [],
-            user_full_name: "Alice Smith",
-            user_email: "alice@example.com",
-            user_id: 42,
-            user_time: undefined,
-            user_type: $t({defaultMessage: "Member"}),
-            user_circle_class: "user_circle_empty",
-            user_last_seen_time_status:
-                "translated: Last active: translated: More than 2 weeks ago",
-            pm_with_url: "#narrow/pm-with/42-Alice-Smith",
-            sent_by_uri: "#narrow/sender/42-Alice-Smith",
-            private_message_class: "respond_personal_button",
-            show_email: false,
-            show_manage_menu: true,
-            is_me: false,
+            has_message_context: true,
+            invisible_mode: false,
             is_active: true,
             is_bot: undefined,
+            is_me: false,
             is_sender_popover: true,
-            has_message_context: true,
+            is_system_bot: undefined,
+            muting_allowed: true,
+            pm_with_url: "#narrow/pm-with/42-Alice-Smith",
+            private_message_class: "respond_personal_button",
+            sent_by_uri: "#narrow/sender/42-Alice-Smith",
+            show_email: false,
+            show_manage_menu: true,
             status_content_available: true,
+            status_emoji_info: {
+                emoji_alt_code: false,
+                emoji_code: "1f697",
+                emoji_name: "car",
+                reaction_type: "unicode_emoji",
+            },
             status_text: "on the beach",
-            status_emoji_info,
+            user_avatar: "http://zulip.zulipdev.com/avatar/42?s=50",
+            user_circle_class: "user_circle_empty",
+            user_email: "alice@example.com",
+            user_full_name: "Alice Smith",
+            user_id: 42,
+            user_is_guest: false,
+            user_last_seen_time_status: "translated: Active 2w+ ago",
             user_mention_syntax: "@**Alice Smith**",
-            date_joined: undefined,
+            user_time: undefined,
+            user_type: "translated: Member",
             spectator_view: false,
         });
         return $popover_content;
     });
 
     $.create(".user_popover_email", {children: []});
+    $.create(".user_popover_email .nowrap", {children: []});
+
+    $popover_title.get = () => {};
     $popover_content.get = () => {};
+
     const $user_name_element = $.create("user_full_name");
     const $bot_owner_element = $.create("bot_owner");
-    $popover_content.set_find_results(".user_full_name", $user_name_element);
-    $popover_content.set_find_results(".bot_owner", $bot_owner_element);
+
+    $popover_title.set_find_results(".user-info-popover-header__full-name", $user_name_element);
+    $popover_title.set_find_results(".bot_owner", $bot_owner_element);
 
     const image_stubber = make_image_stubber();
     handler.call($target, e);

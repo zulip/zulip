@@ -8,6 +8,10 @@
 
     color-scheme: dark;
 
+    --color-link-blue: hsla(217, 100%, 65%, 1);
+    --color-icon-purple: hsla(240, 35%, 60%, 1);
+    --bg-popover-white: hsla(0, 0%, 17%, 1);
+
     body {
         color: hsl(236, 33%, 90%);
     }
@@ -96,6 +100,8 @@
        our dark theme colors in Zulip's dark theme.
      */
     .tippy-box[data-theme~="light-border"] {
+        background-color: var(--bg-popover-white) !important;
+
         .tippy-content a {
             color: hsl(236, 33%, 90%);
 
@@ -152,6 +158,46 @@
     #streams_header,
     .private_messages_container {
         background-color: hsl(212, 28%, 18%);
+    }
+
+    .user-info-popover-header {
+        &__full-name {
+            color: hsl(0, 0%, 100%);
+        }
+
+        &__status {
+            border-color: hsla(0, 0%, 0%, 1);
+        }
+    }
+
+    #gear-menu {
+        .org-info {
+            color: hsla(0, 0%, 50%, 1);
+        }
+
+        .org-name {
+            color: hsla(0, 0%, 100%, 1);
+        }
+    }
+
+    .popover-lists {
+        &__list {
+            border-color: hsla(0, 0%, 0%, 0.4);
+        }
+
+        &__text-item {
+            color: hsla(0, 0%, 50%, 1);
+        }
+
+        &__link-item {
+            a {
+                color: hsla(0, 0%, 100%, 0.8);
+
+                &:hover {
+                    background: hsla(0, 0%, 100%, 0.1);
+                }
+            }
+        }
     }
 
     #scroll-to-bottom-button-container {
@@ -270,9 +316,8 @@
         }
     }
 
-    /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
-        color: inherit;
+        color: hsla(0, 0%, 100%, 0.8);
     }
 
     .dark_background a,
@@ -552,19 +597,6 @@
         box-shadow: 0 0 30px hsl(212, 32%, 7%);
     }
 
-    .tippy-box[data-theme~="light-border"],
-    .dropdown-menu ul,
-    .dropdown .dropdown-menu,
-    .popover,
-    .popover-title,
-    .popover-content {
-        background-color: hsl(212, 32%, 14%);
-    }
-
-    .dropdown-menu a {
-        color: inherit;
-    }
-
     .dropdown .dropdown-menu li.divider,
     .popover hr,
     hr {
@@ -577,37 +609,6 @@
             filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
                 brightness(99%) contrast(89%);
         }
-    }
-
-    #gear-menu {
-        .dark-theme {
-            display: none;
-        }
-
-        .light-theme {
-            display: block;
-        }
-
-        .dropdown-menu a:hover {
-            color: hsl(0, 0%, 100%);
-        }
-    }
-
-    .nav .dropdown-menu::after,
-    .popover.bottom .arrow {
-        border-bottom-color: hsl(235, 18%, 7%);
-    }
-
-    .popover.left .arrow {
-        border-left-color: hsl(235, 18%, 7%);
-    }
-
-    .popover.top .arrow {
-        border-top-color: hsl(235, 18%, 7%);
-    }
-
-    .popover.right .arrow {
-        border-right-color: hsl(235, 18%, 7%);
     }
 
     .narrow_to_compose_recipients,

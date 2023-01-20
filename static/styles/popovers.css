@@ -1,6 +1,9 @@
 .popover {
     width: auto;
     max-width: 100%;
+    border: solid 1px hsla(0, 0%, 0%, 0.4);
+    border-radius: 5px;
+    background-color: var(--bg-popover-white);
 
     hr {
         margin-top: 5px;
@@ -16,14 +19,15 @@
 }
 
 .popover-content {
-    padding: 5px 0;
+    padding: 0;
 }
 
 .popover-title {
     overflow-x: hidden;
     text-overflow: ellipsis;
     text-align: center;
-
+    background: none;
+    border: none;
     font-size: inherit;
     line-height: inherit;
 
@@ -60,36 +64,6 @@
     .zulip-icon {
         /* Overriding CSS margin */
         margin-right: 0;
-    }
-}
-
-.info_popover_actions .custom_user_field {
-    display: flex;
-    align-items: center;
-
-    .value {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    /* Overriding CSS from rendered_markdown.css */
-    .rendered_markdown p {
-        margin: 0;
-    }
-
-    /* Overriding CSS from bootstrap > nav-list. */
-    .custom_profile_fields_link {
-        padding-top: 0;
-        padding-bottom: 0;
-
-        &:hover {
-            background-color: transparent;
-        }
-
-        &:focus {
-            background-color: transparent;
-        }
     }
 }
 
@@ -318,7 +292,7 @@ ul {
 
     &:hover {
         cursor: pointer;
-        color: hsl(200, 100%, 40%);
+        color: var(--color-link-blue);
     }
 }
 
@@ -562,7 +536,6 @@ ul {
 }
 
 @media (width < $md_min) {
-    .message-info-popover,
     .user-info-popover {
         display: flex !important;
         justify-content: center;
@@ -676,10 +649,6 @@ ul {
             }
         }
     }
-}
-
-.popover.top .arrow::after {
-    left: -1px;
 }
 
 #giphy_grid_in_popover {
@@ -831,5 +800,278 @@ ul {
 
     @media (width < $sm_min) {
         column-count: 1;
+    }
+}
+
+/* redesign of user information popover */
+.message-info-popover {
+    border: solid 1px hsla(0, 0%, 0%, 0.4);
+
+    box-shadow: 0 41px 80px hsla(0, 0%, 0%, 0.13),
+        0 19px 35px hsla(0, 0%, 0%, 0.094), 0 12px 21.5px hsla(0, 0%, 0%, 0.086),
+        0 8px 13px hsla(0, 0%, 0%, 0.081), 0 5.5px 8.5px hsla(0, 0%, 0%, 0.075),
+        0 3px 4px hsla(0, 0%, 0%, 0.061);
+}
+
+.user-info-popover-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+
+    text-align: left;
+    padding: 4px;
+
+    &__avatar {
+        position: relative;
+        flex-shrink: 0;
+        width: 64px;
+        height: 64px;
+    }
+
+    &__avatar-image {
+        flex-shrink: 0;
+        width: 64px;
+        height: 64px;
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    &__status-circle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        top: unset;
+        left: unset;
+        right: -1px;
+        bottom: -1px;
+        border: solid 1px hsl(0, 0%, 100%);
+        border-radius: 50%;
+
+        &.zulip-icon-bot {
+            width: 16px;
+            height: 16px;
+            padding: 0 !important;
+            font-size: 11px;
+            background-color: hsl(0, 0%, 100%);
+            border-radius: 16px;
+            line-height: 16px;
+            text-align: center;
+            color: hsl(0, 0%, 60%) !important;
+            border-color: hsl(0, 0%, 60%);
+        }
+    }
+
+    &__text-area {
+        flex-grow: 1;
+
+        p {
+            margin: 0 0 4px;
+        }
+    }
+
+    &__full-name {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 20px;
+        color: hsl(0, 0%, 15%);
+    }
+
+    &__status {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        color: hsl(0, 0%, 40%);
+
+        .status_emoji {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+
+    &__user-type {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 16px;
+        color: hsl(0, 0%, 40%);
+    }
+}
+
+.popover-lists {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 4px;
+
+    &:last-child {
+        padding-bottom: 4px;
+    }
+
+    &__list {
+        margin: 0;
+        padding: 4px 0 0;
+        list-style: none;
+        border-top: solid 1px hsla(0, 0%, 0%, 0.1);
+
+        &:first-child {
+            border-top: none;
+        }
+
+        &:last-child {
+            padding-bottom: 4px;
+        }
+    }
+
+    &__text-item,
+    &__link-item a {
+        display: flex;
+        flex-flow: row nowrap;
+        gap: 5px;
+    }
+
+    &__text-item {
+        color: hsl(0, 0%, 40%);
+        padding: 5px 10px;
+        font-size: 15px;
+        line-height: 16px;
+        margin-bottom: 0;
+
+        /* Overriding CSS from rendered_markdown.css */
+        &.rendered_markdown p {
+            margin: 0;
+        }
+    }
+
+    &__link-item {
+        margin: 0;
+        padding: 0;
+        font-size: 15px;
+        line-height: 16px;
+
+        a {
+            flex-grow: 1;
+            color: hsla(0, 0%, 15%, 1);
+            padding: 5px 10px;
+            text-decoration: none;
+            transition: background-color 0.2s ease 0s;
+
+            &:hover {
+                background: hsla(0, 0%, 0%, 0.05);
+            }
+
+            &:active {
+                background: hsla(0, 0%, 0%, 0.1);
+            }
+
+            .zulip-icon {
+                color: var(--color-icon-purple);
+            }
+        }
+    }
+
+    &__time-row {
+        display: flex;
+
+        .popover-lists__text-item {
+            flex-grow: 1;
+
+            &:last-child {
+                justify-content: flex-end;
+            }
+        }
+    }
+
+    .nowrap {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+}
+
+@media (width < $md_min) {
+    .message-info-popover {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        /* these are to override JS embedded inline styles. */
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        width: 100%;
+        height: 100%;
+
+        background-color: hsla(0, 0%, 80%, 0.2);
+        backdrop-filter: blur(18px);
+        border-radius: 0;
+        border: none;
+        pointer-events: none;
+
+        .popover-inner {
+            width: 80%;
+            max-width: 260px;
+            padding: 8px 6px;
+            border-radius: 6px;
+            background-color: hsl(0, 0%, 100%);
+            pointer-events: all;
+        }
+
+        .popover-lists__link-item {
+            border-radius: 3px;
+            overflow: hidden;
+        }
+    }
+}
+
+.arrow {
+    position: absolute;
+    left: 50%;
+    top: -7.6px;
+    width: 16px !important;
+    height: 8px !important;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 -1.25px 0 hsla(0, 0%, 0%, 0.4));
+
+    border: none !important;
+    border-width: 0 !important;
+    margin: 0 !important;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        mask-image: url("../images/popover-arrow.svg");
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        background-color: var(--bg-popover-white);
+
+        margin: 0 !important;
+        border: none !important;
+    }
+}
+
+.right {
+    .arrow {
+        top: 50%;
+        transform: translateY(-50%) rotate(270deg);
+    }
+}
+
+.left {
+    .arrow {
+        top: 50%;
+        right: 0;
+        left: unset;
+        transform: translateY(-50%) rotate(90deg);
+    }
+}
+
+.bottom {
+    .arrow {
+        top: unset !important;
+        bottom: 0;
+        transform: translate(-50%, 100%) rotate(180deg);
     }
 }

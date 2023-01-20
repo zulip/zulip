@@ -51,6 +51,13 @@ body,
 
 :root {
     color-scheme: light;
+
+    --color-link-blue: hsla(217, 100%, 50%, 1);
+    --color-icon-purple: hsla(240, 20%, 50%, 1);
+    --bg-popover-white: hsla(0, 0%, 100%, 1);
+    --color-success-green: hsla(153, 100%, 20%, 1);
+    --color-success-light-green: hsla(151, 28%, 63%, 1);
+    --bg-success-white-green: hsla(149, 51%, 91%, 1);
 }
 
 input,
@@ -314,6 +321,46 @@ p.n-margin {
     height: $header_height;
     padding-bottom: $header_padding_bottom;
     background-color: inherit;
+
+    &__login-buttons {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        gap: 5px;
+        margin-right: 10px;
+        height: 100%;
+
+        .login_button,
+        .signup_button {
+            display: inline-block;
+            padding: 4px 13px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .login_button {
+            color: hsl(0, 0%, 100%);
+            background: var(--color-link-blue);
+            padding-left: 9px;
+
+            &:hover {
+                color: hsl(0, 0%, 100%) !important;
+            }
+
+            .zulip-icon {
+                margin-right: 3px;
+            }
+        }
+
+        .signup_button {
+            color: var(--color-link-blue);
+            border: solid 1px var(--color-link-blue);
+
+            &:hover {
+                color: var(--color-link-blue) !important;
+            }
+        }
+    }
 }
 
 #top_navbar {
@@ -370,10 +417,74 @@ p.n-margin {
     }
 }
 
+.header-button {
+    width: $header_height;
+    height: $header_height;
+    display: grid;
+    place-items: center;
+    transition: background 0.2s;
+
+    .zulip-icon {
+        font-size: 18px;
+        color: var(--color-icon-purple);
+    }
+
+    &__avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        background-size: contain;
+    }
+
+    &:hover {
+        background: hsla(0, 0%, 0%, 0.05);
+        text-decoration: none;
+    }
+
+    &:focus {
+        outline: none !important;
+        background: hsla(0, 0%, 0%, 0.05);
+        text-decoration: none;
+    }
+}
+
 #gear-menu .dropdown-menu {
+    padding: 0;
+    left: auto;
+    right: -37px;
+    top: 50px;
+    background-color: var(--bg-popover-white);
+    border: solid 1px hsla(0, 0%, 0%, 0.4);
+
+    /* Match the width of the right sidebar so that we don't have
+        the presence dots distracting you when looking at this. */
+    min-width: 230px;
+
+    .spectator-view & {
+        right: 3px;
+
+        .arrow {
+            right: 2px;
+        }
+    }
+
+    ul {
+        background: unset;
+    }
+
+    .arrow {
+        left: unset;
+        right: 42px;
+    }
+
+    &__inner {
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
     .org-name,
     .org-url {
-        padding: 0 20px;
+        line-height: 125%;
     }
 
     .org-info {
@@ -385,41 +496,86 @@ p.n-margin {
     }
 
     .org-name {
-        font-size: large;
+        font-size: 17px;
         font-weight: bold;
+        margin: 0 0 1px;
+        color: hsla(0, 0%, 15%, 1);
+    }
+
+    .organization-info-wrap {
+        padding: 6px 5% 10px;
+        border-bottom: solid 1px hsla(0, 0%, 0%, 0.1);
     }
 
     .org-url {
-        line-height: 100%;
-        color: hsl(0, 0%, 52%);
+        font-size: 14px;
+        color: hsla(0, 0%, 40%, 1);
+        margin-bottom: 7px;
     }
 
     .org-version {
-        padding-top: 3px;
-        white-space: normal;
-    }
-
-    .org-upgrade {
-        color: hsl(226, 82%, 60%);
+        font-size: 15px;
+        line-height: 125%;
+        margin: 0;
 
         a {
-            padding: 0;
+            color: var(--color-link-blue);
+            line-height: 125%;
         }
     }
 
-    .org-plan,
     .org-upgrade {
-        a {
-            line-height: 16px;
-        }
-    }
-
-    .plan-separator {
-        line-height: 8px;
-    }
-
-    .small-font-size {
+        margin: 5px 0 0;
+        line-height: 125%;
         font-size: 12px;
+
+        a {
+            display: inline-block;
+            padding: 6px 12px;
+            line-height: 125%;
+            border-radius: 15px;
+            text-decoration: none;
+            background: hsla(0, 0%, 0%, 0.08);
+            transition: background 0.2s;
+
+            &:hover {
+                background: hsla(0, 0%, 0%, 0.12);
+            }
+        }
+    }
+}
+
+#personal-menu {
+    .dropdown-menu {
+        padding: 0;
+        left: auto;
+        right: 3px;
+        top: 50px;
+        border: solid 1px hsla(0, 0%, 0%, 0.4);
+        background-color: var(--bg-popover-white);
+
+        /* Match the width of the right sidebar so that we don't have
+            the presence dots distracting you when looking at this. */
+        min-width: 230px;
+
+        .arrow {
+            left: unset;
+            right: 2px;
+        }
+
+        &__inner {
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .clear_status {
+            margin-left: auto;
+            color: hsla(0, 0%, 40%, 1);
+
+            &:hover {
+                text-decoration: none;
+            }
+        }
     }
 }
 
@@ -443,6 +599,11 @@ p.n-margin {
     padding: 0;
     position: relative;
     background-color: hsl(0, 0%, 100%);
+
+    .column-right {
+        display: flex;
+        justify-content: flex-end;
+    }
 }
 
 .fixed-app {
@@ -861,14 +1022,6 @@ li.actual-dropdown-menu > a:focus {
     background-image: none;
     filter: none;
     outline: 0;
-}
-
-li.actual-dropdown-menu i {
-    /* In gear menu, make icons the same width so labels line up. */
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
 }
 
 #gear_menu_about_zulip {
@@ -2098,49 +2251,6 @@ div.focused_table {
     z-index: 99;
 }
 
-#navbar-buttons {
-    white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
-    display: inline-block;
-    float: right;
-
-    ul.nav {
-        margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
-
-        li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-    }
-}
-
 #streamlist-toggle {
     display: none;
     position: absolute;
@@ -2186,36 +2296,6 @@ div.focused_table {
     z-index: 15;
     font-weight: normal;
     color: hsl(0, 0%, 100%);
-}
-
-.nav .dropdown-menu {
-    left: auto;
-    right: 0;
-    top: 30px;
-    /* Match the width of the right sidebar so that we don't have
-       the presence dots distracting you when looking at this. */
-    min-width: 240px;
-    box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
-
-    &::after {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: -7px;
-        right: 19px;
-        display: inline-block;
-        border-right: 7px solid transparent;
-        border-bottom: 7px solid hsl(0, 0%, 67%);
-        border-left: 7px solid transparent;
-        content: "";
-        z-index: 10;
-    }
-}
-
-#gear-menu .zulip-icon-language {
-    position: relative;
-    top: 2.5px;
-    left: -0.5px;
 }
 
 .nav .dropdown-menu a,
@@ -2756,27 +2836,44 @@ textarea.invitee_emails {
 }
 
 .user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
+    position: relative;
+
+    a {
+        color: hsl(0, 0%, 40%) !important;
+    }
+
+    .nowrap {
+        flex-grow: 1;
+    }
 
     i {
-        cursor: pointer;
+        display: none;
+        color: hsl(0, 0%, 40%) !important;
+    }
 
-        &.hide_copy_icon {
-            display: none;
+    &:hover {
+        i {
+            display: inline;
         }
     }
 }
 
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170, 48%, 54%);
-}
+.success_copy_text {
+    display: none;
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--color-success-green);
+    background: var(--bg-success-white-green);
+    font-size: 0.9em;
+    padding: 3px 6px;
+    border-radius: 5px;
+    border: solid 1px var(--color-success-light-green);
 
-.email_copied i {
-    display: none !important;
+    .email_copied & {
+        display: block;
+    }
 }
 
 .hotkey-hint {
@@ -2858,47 +2955,31 @@ textarea.invitee_emails {
         min-width: 750px;
     }
 
-    .column-right {
-        display: none;
+    .app-main {
+        .column-right {
+            display: none;
 
-        &.expanded {
-            display: block;
-            position: absolute;
-            float: none;
-            right: 15px;
-            top: 0;
+            &.expanded {
+                display: block;
+                position: absolute;
+                float: none;
+                right: 15px;
+                top: 0;
 
-            .right-sidebar {
-                background-color: hsla(0, 0%, 100%, 1);
-                box-shadow: 0 -2px 3px 0 hsla(0, 0%, 0%, 0.1);
-                border-left: 1px solid hsl(0, 0%, 87%);
+                .right-sidebar {
+                    background-color: hsla(0, 0%, 100%, 1);
+                    box-shadow: 0 -2px 3px 0 hsla(0, 0%, 0%, 0.1);
+                    border-left: 1px solid hsl(0, 0%, 87%);
 
-                /* We use both margin and padding to
-                   hide little artifacts from showing up in
-                   the gutter below the navbar. */
-                margin-top: $header_height;
-                padding: $header_padding_bottom 15px 0 15px;
-                height: 100%;
-                right: 0;
+                    /* We use both margin and padding to
+                       hide little artifacts from showing up in
+                       the gutter below the navbar. */
+                    margin-top: $header_height;
+                    padding: $header_padding_bottom 15px 0 15px;
+                    height: 100%;
+                    right: 0;
+                }
             }
-        }
-    }
-
-    .header-main .column-right {
-        display: inline-block;
-        width: 30px;
-    }
-
-    #top_navbar #navbar-buttons {
-        margin-right: 41px;
-    }
-
-    .nav .dropdown-menu {
-        min-width: 180px;
-        box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
-
-        &::after {
-            right: 21px;
         }
     }
 
@@ -2909,7 +2990,7 @@ textarea.invitee_emails {
     .top-navbar-container,
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 84px);
+        width: calc(100% - $header_height * 5);
     }
 
     .search_closed .fa-search {
@@ -2967,6 +3048,11 @@ textarea.invitee_emails {
         margin-left: 0;
     }
 
+    .header-main .column-right {
+        display: flex;
+        width: fit-content;
+    }
+
     .column-middle-inner {
         margin-left: 0;
         margin-right: 15px;
@@ -2980,26 +3066,31 @@ textarea.invitee_emails {
         display: block;
     }
 
-    .top-navbar-border {
-        margin-left: 40px;
-        width: calc(100% - 108px);
-    }
-    /* todo: Figure out why this has to be different
-       from above at this width and resolve it */
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
+    #personal-menu .dropdown-menu {
+        right: 3px;
+        top: 40px;
+
+        .arrow {
+            right: -2px;
+        }
     }
 
-    .search_closed .fa-search {
-        right: 115px;
+    #top_navbar:not(.rightside-userlist) {
+        .top-navbar-border {
+            width: calc(100% - 75px);
+        }
+
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
+            width: calc(100% - 90px);
+        }
     }
 }
 
 @media (width < $sm_min) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: 31px !important;
     }
 
     .column-left.expanded {
@@ -3029,6 +3120,22 @@ textarea.invitee_emails {
     .header {
         line-height: 30px;
         height: 30px;
+    }
+
+    .header {
+        &__login-buttons {
+            .login_button,
+            .signup_button {
+                padding: 4px 8px;
+                font-size: 0.75rem;
+                line-height: 100%;
+                border-radius: 4px;
+
+                .zulip-icon {
+                    display: none;
+                }
+            }
+        }
     }
 
     .spectator_narrow_login_button {
@@ -3084,6 +3191,27 @@ textarea.invitee_emails {
 
     .message_content {
         padding-right: 50px;
+    }
+
+    .top-navbar-border {
+        margin-left: 40px;
+        width: calc(100% - $header_height * 3);
+    }
+
+    /* todo: Figure out why this has to be different
+       from above at this width and resolve it */
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
+        width: calc(100% - $header_height * 3);
+    }
+
+    .header-button {
+        width: 30px;
+        height: 30px;
+
+        .zulip-icon {
+            font-size: 16px;
+        }
     }
 }
 
@@ -3207,5 +3335,12 @@ textarea.invitee_emails {
         .date_row {
             background-color: hsl(192, 20%, 95%);
         }
+    }
+}
+
+.settings-dropdown {
+    &__icon {
+        width: 16px;
+        height: 16px;
     }
 }

@@ -374,21 +374,21 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({minutes: -2}, $t({defaultMessage: "Just now"}));
 
-    assert_same({minutes: -30}, $t({defaultMessage: "30 minutes ago"}));
+    assert_same({minutes: -30}, $t({defaultMessage: "30m ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "1h ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
+    assert_same({hours: -2}, $t({defaultMessage: "2h ago"}));
 
-    assert_same({hours: -20}, $t({defaultMessage: "20 hours ago"}));
+    assert_same({hours: -20}, $t({defaultMessage: "20h ago"}));
 
     assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
 
-    assert_same({hours: -48}, $t({defaultMessage: "2 days ago"}));
+    assert_same({hours: -48}, $t({defaultMessage: "2d ago"}));
 
-    assert_same({days: -2}, $t({defaultMessage: "2 days ago"}));
+    assert_same({days: -2}, $t({defaultMessage: "2d ago"}));
 
-    assert_same({days: -61}, $t({defaultMessage: "61 days ago"}));
+    assert_same({days: -61}, $t({defaultMessage: "61d ago"}));
 
     assert_same({days: -300}, $t({defaultMessage: "May 06,\u00A02015"}));
 
@@ -404,11 +404,11 @@ run_test("last_seen_status_from_date", () => {
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);
 
-    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "1h ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
+    assert_same({hours: -2}, $t({defaultMessage: "2h ago"}));
 
-    assert_same({hours: -12}, $t({defaultMessage: "12 hours ago"}));
+    assert_same({hours: -12}, $t({defaultMessage: "12h ago"}));
 
     assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
 });
