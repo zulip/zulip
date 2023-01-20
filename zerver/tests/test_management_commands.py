@@ -1,5 +1,6 @@
 import os
 import re
+import urllib
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 from unittest import mock, skipUnless
@@ -318,9 +319,11 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
         result = self.client_post(generated_link, {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(re.search(f"/accounts/new/send_confirm/{email}$", result["Location"]))
+        self.assertEqual(
+            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}", result["Location"]
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started", result)
+        self.assert_in_response("Check your email", result)
 
         # Original link is now dead
         result = self.client_get(generated_link)

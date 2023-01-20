@@ -655,7 +655,10 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
 
             if key_record is not None:
                 key_record.delete()
-            return HttpResponseRedirect(reverse("new_realm_send_confirm", kwargs={"email": email}))
+            new_realm_send_confirm_url = reverse("new_realm_send_confirm")
+            query = urlencode({"email": email})
+            url = append_url_query_string(new_realm_send_confirm_url, query)
+            return HttpResponseRedirect(url)
     else:
         form = RealmCreationForm()
     return TemplateResponse(
@@ -665,8 +668,18 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     )
 
 
+@has_request_variables
+def signup_send_confirm(request: HttpRequest, email: str = REQ("email")) -> HttpResponse:
+    return TemplateResponse(
+        request,
+        "zerver/accounts_send_confirm.html",
+        context={"email": email},
+    )
+
+
 @add_google_analytics
-def new_realm_send_confirm(request: HttpRequest, email: str) -> HttpResponse:
+@has_request_variables
+def new_realm_send_confirm(request: HttpRequest, email: str = REQ("email")) -> HttpResponse:
     return TemplateResponse(
         request,
         "zerver/accounts_send_confirm.html",
@@ -739,8 +752,10 @@ def accounts_home(
             except EmailNotDeliveredError:
                 logging.error("Error in accounts_home")
                 return HttpResponseRedirect("/config-error/smtp")
-
-            return HttpResponseRedirect(reverse("signup_send_confirm", kwargs={"email": email}))
+            signup_send_confirm_url = reverse("signup_send_confirm")
+            query = urlencode({"email": email})
+            url = append_url_query_string(signup_send_confirm_url, query)
+            return HttpResponseRedirect(url)
 
     else:
         form = HomepageForm(realm=realm)

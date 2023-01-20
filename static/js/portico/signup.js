@@ -99,7 +99,7 @@ $(() => {
         }
     });
 
-    // Code in this block will be executed when the /accounts/send_confirm
+    // Code in this block will be executed when the /accounts/send_confirm/
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
         $("#resend_email_link").on("click", () => {

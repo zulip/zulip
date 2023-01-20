@@ -15,6 +15,10 @@ html {
     margin: 10px;
 }
 
+.semi-bold {
+    font-weight: 600;
+}
+
 .white-box {
     position: relative;
     padding: 30px;

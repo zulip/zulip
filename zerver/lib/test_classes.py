@@ -733,7 +733,9 @@ Output:
     def register(self, email: str, password: str, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
         response = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], f"/accounts/send_confirm/{email}")
+        self.assertEqual(
+            response["Location"], f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+        )
         response = self.submit_reg_form_for_user(email, password, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], f"http://{Realm.host_for_subdomain(subdomain)}/")
