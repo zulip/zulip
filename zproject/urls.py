@@ -13,7 +13,7 @@ from django.contrib.auth.views import (
 from django.urls import path, re_path
 from django.urls.resolvers import URLPattern, URLResolver
 from django.utils.module_loading import import_string
-from django.views.generic import RedirectView, TemplateView
+from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
@@ -126,6 +126,7 @@ from zerver.views.registration import (
     get_prereg_key_and_redirect,
     new_realm_send_confirm,
     realm_redirect,
+    signup_send_confirm,
 )
 from zerver.views.report import (
     report_csp_violations,
@@ -565,12 +566,12 @@ i18n_urls = [
     # Registration views, require a confirmation ID.
     path("accounts/home/", accounts_home),
     path(
-        "accounts/send_confirm/<email>",
-        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
+        "accounts/send_confirm/",
+        signup_send_confirm,
         name="signup_send_confirm",
     ),
     path(
-        "accounts/new/send_confirm/<email>",
+        "accounts/new/send_confirm/",
         new_realm_send_confirm,
         name="new_realm_send_confirm",
     ),
