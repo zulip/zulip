@@ -265,7 +265,7 @@ export function set_up() {
                 });
 
                 confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Override built-in emoji?"}),
+                    html_heading: $t_html({defaultMessage: "Override default emoji?"}),
                     html_body,
                     on_click: submit_custom_emoji_request,
                 });
