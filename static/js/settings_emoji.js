@@ -70,7 +70,9 @@ function sort_author_full_name(a, b) {
 }
 
 function is_default_emoji(emoji_name) {
-    return emoji_codes.names.includes(emoji_name);
+    // Spaces are replaced with `_` to match how the emoji name will
+    // actually be stored in the backend.
+    return emoji_codes.names.includes(emoji_name.replace(/ /g, "_"));
 }
 
 function is_custom_emoji(emoji_name) {
