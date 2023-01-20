@@ -73,6 +73,13 @@ function get_parsed_date_of_joining() {
     );
 }
 
+function user_can_change_password() {
+    if (settings_data.user_email_not_configured()) {
+        return false;
+    }
+    return page_params.realm_email_auth_enabled;
+}
+
 export function build_page() {
     setup_settings_label();
 
@@ -119,6 +126,7 @@ export function build_page() {
         user_is_only_organization_owner: people.is_current_user_only_owner(),
         email_address_visibility_values: settings_config.email_address_visibility_values,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
+        user_can_change_password: user_can_change_password(),
     });
 
     settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);
