@@ -213,11 +213,6 @@ h3,
     text-transform: capitalize;
 }
 
-select.setting_email_notifications_batching_period_seconds {
-    /* Override undesired Bootstrap default. */
-    margin-bottom: 0;
-}
-
 .table {
     tbody {
         border-bottom: 1px solid hsl(0, 0%, 87%);
@@ -468,15 +463,9 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-#organization-profile,
-#organization-settings,
-#organization-permissions,
-#profile-settings {
-    select,
-    input {
-        /* Override undesired Bootstrap default. */
-        margin-bottom: 0;
-    }
+#organization-profile input {
+    /* Override undesired Bootstrap default. */
+    margin-bottom: 0;
 }
 
 #id_org_profile_preview {
@@ -879,10 +868,6 @@ input[type="checkbox"] {
 
     #bot-role-select:disabled {
         opacity: 1;
-    }
-
-    select {
-        margin-bottom: 0;
     }
 }
 
@@ -1878,13 +1863,6 @@ $option_title_width: 180px;
     }
 }
 
-#edit-user-form,
-#create-bot-form {
-    select {
-        margin-bottom: 0;
-    }
-}
-
 .settings_panel_list_header {
     position: relative;
 
@@ -1905,9 +1883,5 @@ $option_title_width: 180px;
     .disabled_label {
         cursor: default;
         opacity: 0.7;
-    }
-
-    select {
-        margin-bottom: 0;
     }
 }

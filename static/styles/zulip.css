@@ -2479,12 +2479,6 @@ textarea.invitee_emails {
     .invite-stream-controls {
         margin-top: 5px;
     }
-
-    /* Override undesired Bootstrap defaults. */
-    select,
-    input {
-        margin-bottom: 0;
-    }
 }
 
 select.invite-expires-in,
