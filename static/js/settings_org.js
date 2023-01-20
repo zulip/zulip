@@ -379,7 +379,7 @@ function get_message_retention_setting_value($input_elem, for_api_data = true) {
     if ($custom_input.val().length === 0) {
         return settings_config.retain_message_forever;
     }
-    return Number.parseInt($custom_input.val(), 10);
+    return Number.parseInt(Number($custom_input.val()), 10);
 }
 
 function get_dropdown_value_for_message_retention_setting(setting_value) {
