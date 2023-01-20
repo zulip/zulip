@@ -613,6 +613,11 @@ export function initialize() {
         browser_history.go_to_location(target);
     });
 
+    $("body").on("click", "#compose-clear-topic-button", () => {
+        compose_actions.clear_topic_box();
+        compose_actions.display_topic_clear_button();
+    });
+
     function handle_compose_click(e) {
         const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js

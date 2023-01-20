@@ -507,6 +507,7 @@ test_ui("update_fade", ({override}) => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
     let update_narrow_to_recipient_visibility_called = false;
+    let should_display_topic_clear_button = false;
 
     override(compose_fade, "set_focused_recipient", (msg_type) => {
         assert.equal(msg_type, "private");
@@ -521,19 +522,32 @@ test_ui("update_fade", ({override}) => {
         update_narrow_to_recipient_visibility_called = true;
     });
 
+    override(compose_actions, "display_topic_clear_button", () => {
+        if ($("#stream_message_recipient_topic").val()) {
+            should_display_topic_clear_button = true;
+        } else if ($("#stream_message_recipient_topic").val() === "") {
+            should_display_topic_clear_button = false;
+        }
+    });
+
     compose_state.set_message_type(false);
+    $("#stream_message_recipient_topic").val("Has topic input");
+
     keyup_handler_func();
     assert.ok(!set_focused_recipient_checked);
     assert.ok(!update_all_called);
     assert.ok(update_narrow_to_recipient_visibility_called);
+    assert.ok(should_display_topic_clear_button);
 
     update_narrow_to_recipient_visibility_called = false;
-
+    $("#stream_message_recipient_topic").val("");
     compose_state.set_message_type("private");
+
     keyup_handler_func();
     assert.ok(set_focused_recipient_checked);
     assert.ok(update_all_called);
     assert.ok(update_narrow_to_recipient_visibility_called);
+    assert.ok(!should_display_topic_clear_button);
 });
 
 test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {

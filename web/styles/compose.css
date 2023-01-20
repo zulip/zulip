@@ -537,6 +537,12 @@ input.recipient_box {
        the left sidebar with a single digit unread count without being
        cut off. */
     width: 175px;
+    padding-right: 19px;
+    text-overflow: ellipsis;
+}
+
+#compose-clear-topic-button {
+    padding: 4px;
 }
 
 #private_message_recipient.recipient_box {

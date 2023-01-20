@@ -428,7 +428,10 @@ export function initialize() {
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("keyup", update_on_recipient_change);
+    ).on("keyup", () => {
+        update_on_recipient_change();
+        compose_actions.display_topic_clear_button();
+    });
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
     ).on("change", () => {

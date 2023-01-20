@@ -127,5 +127,6 @@ export function initialize() {
 
     $("body").on("click", ".compose_reply_button", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
+        compose_actions.display_topic_clear_button();
     });
 }

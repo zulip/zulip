@@ -103,6 +103,19 @@ export function clear_textarea() {
     $("#compose").find("input[type=text], textarea").val("");
 }
 
+export function clear_topic_box() {
+    $("#stream_message_recipient_topic").val("");
+    $("#stream_message_recipient_topic").trigger("focus");
+}
+
+export function display_topic_clear_button() {
+    if ($("#stream_message_recipient_topic").val()) {
+        $("#compose-clear-topic-button").show();
+    } else {
+        $("#compose-clear-topic-button").hide();
+    }
+}
+
 function clear_box() {
     compose.clear_invites();
 
