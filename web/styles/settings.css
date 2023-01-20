@@ -173,7 +173,8 @@ h3,
 
 #change_email_button,
 #user_deactivate_account_button,
-.deactivate_realm_button {
+.deactivate_realm_button,
+#api_key_button {
     &:disabled {
         pointer-events: none;
     }
