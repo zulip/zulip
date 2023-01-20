@@ -260,6 +260,17 @@ export function set_up() {
             }
 
             if (is_default_emoji(emoji.name)) {
+                if (!page_params.is_admin) {
+                    ui_report.client_error(
+                        $t_html({
+                            defaultMessage:
+                                "Failed: There is a default emoji with this name. Only administrators can override default emoji.",
+                        }),
+                        $emoji_status,
+                    );
+                    return;
+                }
+
                 const html_body = emoji_settings_warning_modal({
                     emoji_name: emoji.name,
                 });
