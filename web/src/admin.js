@@ -203,6 +203,7 @@ export function build_page() {
         allow_sorting_deactivated_users_list_by_email:
             settings_users.allow_sorting_deactivated_users_list_by_email(),
         has_bots: bot_data.get_all_bots_for_current_user().length > 0,
+        user_has_email_set: !settings_data.user_email_not_configured(),
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
