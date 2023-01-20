@@ -110,7 +110,11 @@
                     the Zulip API, unless the task requires access to your account.
                     {{/tr}}
                 </p>
-                <button class="button rounded" id="api_key_button">{{t "Show/change your API key" }}</button>
+                <div id="api_key_button_container" class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
+                    <button class="button rounded" id="api_key_button" {{#unless user_has_email_set}}disabled="disabled"{{/unless}}>
+                        {{t "Show/change your API key" }}
+                    </button>
+                </div>
             </div>
         </div>
         <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked

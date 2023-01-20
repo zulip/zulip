@@ -127,6 +127,7 @@ export function build_page() {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         user_can_change_password: user_can_change_password(),
+        user_has_email_set: !settings_data.user_email_not_configured(),
     });
 
     settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);

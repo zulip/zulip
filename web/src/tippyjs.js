@@ -360,6 +360,17 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ["#api_key_button_container.disabled_setting_tooltip"],
+        content: $t({
+            defaultMessage: "You must configure your email to access this feature.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: "#pm_tooltip_container",
         onShow(instance) {
             if ($(".private_messages_container").hasClass("zoom-in")) {
