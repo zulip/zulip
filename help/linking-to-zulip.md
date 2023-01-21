@@ -24,3 +24,4 @@ HTML
 ## Related articles
 
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
+* [Linking to the Zulip website](/help/linking-to-zulip-website)
