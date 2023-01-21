@@ -51,6 +51,8 @@ service.
 
 * [Create your organization profile](/help/create-your-organization-profile)
 * [Public access option](/help/public-access-option)
+* [Linking to the Zulip website](/help/linking-to-zulip-website)
+* [Support the Zulip project](/help/support-zulip-project)
 * [Restrict account creation](/help/restrict-account-creation)
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Organization type](/help/organization-type)
