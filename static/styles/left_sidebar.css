@@ -471,7 +471,6 @@ li.top_left_recent_topics {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding-right: 2px;
 }
 
 .topic-name {
