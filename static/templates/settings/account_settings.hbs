@@ -42,6 +42,13 @@
                             {{t 'Deactivate account' }}
                         </button>
                     </div>
+                    {{#if owner_is_only_user_organization}}
+                        <div id="deactivate_realm_personal_setting_container">
+                            <button type="submit" class="button rounded btn-danger" id="deactivate_realm_personal_button">
+                                {{t 'Deactivate organization' }}
+                            </button>
+                        </div>
+                    {{/if}}
                 </div>
             </div>
         </div>

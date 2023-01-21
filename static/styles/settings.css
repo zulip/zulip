@@ -167,6 +167,20 @@ h3,
     cursor: not-allowed;
 }
 
+#deactivate_realm_personal_setting_container {
+    display: inline-block;
+    @media (max-width: 380px) {
+        margin-top: 18px;
+    }
+}
+
+#deactivate_account_container {
+    &.only_organization_owner_tooltip {
+        cursor: not-allowed;
+    }
+    margin-right: 18px;
+}
+
 #change_email_button,
 #user_deactivate_account_button,
 #deactivate_realm_button {

@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
+import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
@@ -870,5 +871,32 @@ export function set_up() {
             data,
             $("#account-settings .privacy-setting-status").expectOne(),
         );
+    });
+
+    $("#deactivate_realm_personal_button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        function do_deactivate_realm() {
+            channel.post({
+                url: "/json/realm/deactivate",
+                error(xhr) {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        $("#admin-realm-deactivation-status").expectOne(),
+                    );
+                },
+            });
+        }
+
+        const html_body = render_settings_deactivate_realm_modal();
+
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Deactivate organization"}),
+            help_link: "/help/deactivate-your-organization",
+            html_body,
+            on_click: do_deactivate_realm,
+        });
     });
 }
