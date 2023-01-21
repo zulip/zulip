@@ -816,8 +816,8 @@ export function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
-        if (overlays.settings_open()) {
-            overlays.close_overlay("settings");
+        if (overlays.is_active()) {
+            overlays.close_active();
         }
         narrow.by("pm-with", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
@@ -828,8 +828,8 @@ export function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
-        if (overlays.settings_open()) {
-            overlays.close_overlay("settings");
+        if (overlays.is_active()) {
+            overlays.close_active();
         }
         narrow.by("sender", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
@@ -1055,8 +1055,8 @@ export function register_click_handlers() {
             private_message_recipient: email,
         });
         hide_all();
-        if (overlays.settings_open()) {
-            overlays.close_overlay("settings");
+        if (overlays.is_active()) {
+            overlays.close_active();
         }
         e.stopPropagation();
         e.preventDefault();
