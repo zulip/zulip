@@ -53,7 +53,11 @@ from zerver.lib.message import (
     wildcard_mention_allowed,
 )
 from zerver.lib.muted_users import get_muting_users
-from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
+from zerver.lib.notification_data import (
+    UserMessageNotificationsData,
+    get_user_group_mentions_data,
+    user_allows_notifications_in_StreamTopic,
+)
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.stream_subscription import (
@@ -237,31 +241,20 @@ def get_recipient_info(
 
         message_to_user_ids = [row["user_profile_id"] for row in subscription_rows]
 
-        def should_send(setting: str, row: Dict[str, Any]) -> bool:
-            # This implements the structure that the UserProfile stream notification settings
-            # are defaults, which can be overridden by the stream-level settings (if those
-            # values are not null).
-            if row["is_muted"]:
-                return False
-            if row["user_profile_id"] in user_ids_muting_topic:
-                return False
-            if row[setting] is not None:
-                return row[setting]
-            return row["user_profile_" + setting]
+        def notification_recipients(setting: str) -> Set[int]:
+            return {
+                row["user_profile_id"]
+                for row in subscription_rows
+                if user_allows_notifications_in_StreamTopic(
+                    row["is_muted"],
+                    row["user_profile_id"] in user_ids_muting_topic,
+                    row[setting],
+                    row["user_profile_" + setting],
+                )
+            }
 
-        stream_push_user_ids = {
-            row["user_profile_id"]
-            for row in subscription_rows
-            # Note: muting a stream overrides stream_push_notify
-            if should_send("push_notifications", row)
-        }
-
-        stream_email_user_ids = {
-            row["user_profile_id"]
-            for row in subscription_rows
-            # Note: muting a stream overrides stream_email_notify
-            if should_send("email_notifications", row)
-        }
+        stream_push_user_ids = notification_recipients("push_notifications")
+        stream_email_user_ids = notification_recipients("email_notifications")
 
         if possible_wildcard_mention:
             # We calculate `wildcard_mention_user_ids` only if there's a possible
@@ -269,11 +262,7 @@ def get_recipient_info(
             # unnecessarily sending huge user ID lists with thousands of elements
             # to the event queue (which can happen because this setting is `True`
             # by default for new users.)
-            wildcard_mention_user_ids = {
-                row["user_profile_id"]
-                for row in subscription_rows
-                if should_send("wildcard_mentions_notify", row)
-            }
+            wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
