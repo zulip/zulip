@@ -639,10 +639,6 @@
         }
     }
 
-    .spectator_narrow_login_button .login_button i {
-        color: hsl(236, 33%, 90%);
-    }
-
     #user_presences li .user-list-sidebar-menu-icon:hover,
     .all-messages-sidebar-menu-icon:hover,
     .starred-messages-sidebar-menu-icon:hover,

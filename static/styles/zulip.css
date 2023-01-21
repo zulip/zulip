@@ -324,7 +324,75 @@ p.n-margin {
 }
 
 #top_navbar {
+    display: grid;
+    grid-template-columns:
+        calc($left_sidebar_width + $left_sidebar_collapse_widget_gutter)
+        minmax(0, 1fr) $right_sidebar_width;
+    grid-template-rows: 1fr;
     border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+
+    .column-left {
+        position: static;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .column-middle {
+        width: 100%;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .column-right {
+        position: static;
+    }
+
+    .column-middle-inner {
+        display: flex;
+    }
+}
+
+.top-navbar-container {
+    position: relative;
+}
+
+.top-navbar-container,
+#searchbox_legacy .navbar-search.expanded,
+#searchbox .navbar-search.expanded {
+    width: 100%;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.header-button {
+    width: $header_height;
+    height: $header_height;
+    display: grid;
+    place-items: center;
+    transition: background 0.2s;
+
+    i {
+        font-size: 18px;
+        color: var(--color-icon-purple);
+    }
+
+    &__avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        background-size: contain;
+    }
+
+    &:hover {
+        background: hsla(0, 0%, 0%, 0.05);
+        text-decoration: none;
+    }
+
+    &:focus {
+        outline: none !important;
+        background: hsla(0, 0%, 0%, 0.05);
+        text-decoration: none;
+    }
 }
 
 #navbar_alerts_wrapper {
@@ -378,6 +446,39 @@ p.n-margin {
 }
 
 #gear-menu .dropdown-menu {
+    padding: 0;
+    left: auto;
+    right: -37px;
+    top: 50px;
+    background-color: var(--bg-popover-white);
+    border: solid 1px hsla(0, 0%, 0%, 0.4);
+
+    /* Match the width of the right sidebar so that we don't have
+        the presence dots distracting you when looking at this. */
+    min-width: 230px;
+
+    .spectator-view & {
+        right: 3px;
+
+        .arrow {
+            right: 2px;
+        }
+    }
+
+    ul {
+        background: unset;
+    }
+
+    .arrow {
+        left: unset;
+        right: 42px;
+    }
+
+    &__inner {
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
     .org-info {
         padding: 6px 5% 10px;
         border-bottom: solid 1px hsla(0, 0%, 0%, 0.1);
@@ -436,6 +537,37 @@ p.n-margin {
     }
 }
 
+#personal-menu {
+    .dropdown-menu {
+        padding: 0;
+        left: auto;
+        right: 3px;
+        top: 50px;
+        border: solid 1px hsla(0, 0%, 0%, 0.4);
+        background-color: var(--bg-popover-white);
+        min-width: 230px;
+
+        .arrow {
+            left: unset;
+            right: 2px;
+        }
+
+        &__inner {
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .clear_status {
+            margin-left: auto;
+            color: hsla(0, 0%, 40%, 1);
+
+            &:hover {
+                text-decoration: none;
+            }
+        }
+    }
+}
+
 .app {
     width: 100%;
     height: 100%;
@@ -456,6 +588,11 @@ p.n-margin {
     padding: 0;
     position: relative;
     background-color: hsl(0, 0%, 100%);
+
+    .column-right {
+        display: flex;
+        justify-content: flex-end;
+    }
 }
 
 .fixed-app {
@@ -466,19 +603,17 @@ p.n-margin {
 }
 
 .column-right {
-    width: $right_sidebar_width;
-    max-width: $right_sidebar_width;
     position: absolute;
     right: 0;
     top: 0;
 
     .spectator_login_buttons {
         display: flex;
+        align-items: center;
         justify-content: space-evenly;
-        position: absolute;
-        top: 10px;
-        /* width of right column - width of gear icon(250px - 45px) */
-        width: 205px;
+        gap: 8px;
+        padding-right: 10px;
+        height: 100%;
 
         a {
             font-size: calc(16em / 14);
@@ -503,30 +638,15 @@ p.n-margin {
     }
 
     .spectator_narrow_login_button {
-        position: absolute;
-        top: 0;
-        right: 0;
-        /* Height of navbar in tablet sizes */
-        height: 40px;
-        /* Width of userlist-toggle button. */
-        width: 45px;
-        border-left: 1px solid hsl(0, 0%, 88%);
-
         .login_button {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100%;
-            opacity: 0.5;
+            margin: 0 !important;
 
             &:hover {
                 opacity: 1;
                 text-decoration: none;
-            }
-
-            i {
-                color: hsl(0, 0%, 20%);
-                font-size: 1.6em;
             }
         }
     }
@@ -882,10 +1002,6 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
-}
-
-.settings-dropdown-cog {
-    padding: 6px 12px;
 }
 
 .message_area_padder {
@@ -1883,7 +1999,7 @@ div.focused_table {
            class and a flex of 1, so the value here *is* the ratio, and
            is chosen such that the narrow description shrinks to close
            before the stream name must begin to shrink */
-        flex-shrink: 100;
+        flex-shrink: 10;
         white-space: nowrap;
         margin: 0;
         padding: 12px 0;
@@ -1942,7 +2058,6 @@ div.focused_table {
         overflow: hidden;
         margin-top: 0;
         margin-bottom: 0;
-        width: calc(100% - 2px);
         position: absolute;
 
         .search_button {
@@ -2088,54 +2203,8 @@ div.focused_table {
     z-index: 99;
 }
 
-#navbar-buttons {
-    white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
-    display: inline-block;
-    float: right;
-
-    ul.nav {
-        margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
-
-        li.dropdown li.divider {
-            margin-left: 15px;
-            margin-right: 15px;
-        }
-    }
-}
-
 #streamlist-toggle {
     display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
     text-align: center;
     vertical-align: middle;
     /* border-right: 2px solid hsl(204, 20%, 74%); */
@@ -2192,7 +2261,7 @@ div.focused_table {
         width: 0;
         height: 0;
         top: -7px;
-        right: 19px;
+        right: 50px;
         display: inline-block;
         border-right: 7px solid transparent;
         border-bottom: 7px solid hsl(0, 0%, 67%);
@@ -2824,58 +2893,46 @@ textarea.invitee_emails {
         min-width: 750px;
     }
 
-    .column-right {
-        display: none;
+    #top_navbar {
+        grid-template-columns:
+            calc($left_sidebar_width + $left_sidebar_collapse_widget_gutter)
+            minmax(0, 1fr) calc($header_height * 3);
 
-        &.expanded {
-            display: block;
-            position: absolute;
-            float: none;
-            right: 15px;
-            top: 0;
-
-            .right-sidebar {
-                background-color: hsla(0, 0%, 100%, 1);
-                box-shadow: 0 -2px 3px 0 hsla(0, 0%, 0%, 0.1);
-                border-left: 1px solid hsl(0, 0%, 87%);
-
-                /* We use both margin and padding to
-                   hide little artifacts from showing up in
-                   the gutter below the navbar. */
-                margin-top: $header_height;
-                padding: $header_padding_bottom 15px 0 15px;
-                height: 100%;
-                right: 0;
-            }
+        .column-middle {
+            padding-right: 15px;
         }
     }
 
-    .header-main .column-right {
-        display: inline-block;
-        width: 30px;
-    }
+    .app-main {
+        .column-right {
+            display: none;
 
-    #top_navbar #navbar-buttons {
-        margin-right: 41px;
-    }
+            &.expanded {
+                display: block;
+                position: absolute;
+                float: none;
+                right: 15px;
+                top: 0;
 
-    .nav .dropdown-menu {
-        min-width: 180px;
-        box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
+                .right-sidebar {
+                    background-color: hsla(0, 0%, 100%, 1);
+                    box-shadow: 0 -2px 3px 0 hsla(0, 0%, 0%, 0.1);
+                    border-left: 1px solid hsl(0, 0%, 87%);
 
-        &::after {
-            right: 21px;
+                    /* We use both margin and padding to
+                       hide little artifacts from showing up in
+                       the gutter below the navbar. */
+                    margin-top: $header_height;
+                    padding: $header_padding_bottom 15px 0 15px;
+                    height: 100%;
+                    right: 0;
+                }
+            }
         }
     }
 
     .column-middle {
         margin-right: 7px;
-    }
-
-    .top-navbar-container,
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
-        width: calc(100% - 84px);
     }
 
     .search_closed .fa-search {
@@ -2886,6 +2943,10 @@ textarea.invitee_emails {
 @media (width < $md_min) {
     body {
         padding: 0;
+    }
+
+    #top_navbar {
+        grid-template-columns: minmax(0, 1fr) calc($header_height * 3);
     }
 
     .column-left {
@@ -2933,9 +2994,8 @@ textarea.invitee_emails {
         margin-left: 0;
     }
 
-    .column-middle-inner {
-        margin-left: 0;
-        margin-right: 15px;
+    .header-main .column-right {
+        display: flex;
     }
 
     .app-main .column-middle .column-middle-inner {
@@ -2946,26 +3006,20 @@ textarea.invitee_emails {
         display: block;
     }
 
-    .top-navbar-border {
-        margin-left: 40px;
-        width: calc(100% - 108px);
-    }
-    /* todo: Figure out why this has to be different
-       from above at this width and resolve it */
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
-    }
+    #personal-menu .dropdown-menu {
+        right: 3px;
+        top: 40px;
 
-    .search_closed .fa-search {
-        right: 115px;
+        .arrow {
+            right: -2px;
+        }
     }
 }
 
 @media (width < $sm_min) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: 31px !important;
     }
 
     .column-left.expanded {
@@ -2984,6 +3038,10 @@ textarea.invitee_emails {
 
     .search_closed .fa-search {
         top: 5px;
+    }
+
+    #top_navbar {
+        grid-template-columns: minmax(0, 1fr) calc(30px * 3);
     }
 
     #streamlist-toggle,
@@ -3036,6 +3094,15 @@ textarea.invitee_emails {
 
     .messagebox-content {
         padding-right: 15px;
+    }
+
+    .header-button {
+        width: 30px;
+        height: 30px;
+
+        .zulip-icon {
+            font-size: 16px;
+        }
     }
 
     .include-sender .message_controls {
