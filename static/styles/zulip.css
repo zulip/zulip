@@ -2255,20 +2255,6 @@ div.focused_table {
        the presence dots distracting you when looking at this. */
     min-width: 240px;
     box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
-
-    &::after {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: -7px;
-        right: 50px;
-        display: inline-block;
-        border-right: 7px solid transparent;
-        border-bottom: 7px solid hsl(0, 0%, 67%);
-        border-left: 7px solid transparent;
-        content: "";
-        z-index: 10;
-    }
 }
 
 #gear-menu .zulip-icon-language {

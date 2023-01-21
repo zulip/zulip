@@ -586,23 +586,6 @@
         }
     }
 
-    .nav .dropdown-menu::after,
-    .popover.bottom .arrow {
-        border-bottom-color: hsl(235, 18%, 7%);
-    }
-
-    .popover.left .arrow {
-        border-left-color: hsl(235, 18%, 7%);
-    }
-
-    .popover.top .arrow {
-        border-top-color: hsl(235, 18%, 7%);
-    }
-
-    .popover.right .arrow {
-        border-right-color: hsl(235, 18%, 7%);
-    }
-
     .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,

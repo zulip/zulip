@@ -652,10 +652,6 @@ ul {
     }
 }
 
-.popover.top .arrow::after {
-    left: -1px;
-}
-
 #giphy_grid_in_popover {
     /* 300px of GIPHY grid + 5px is the extra gutter space
      * between gif columns. */
@@ -1025,10 +1021,66 @@ ul {
     }
 }
 
+.dropdown,
+.popover {
+    .arrow {
+        position: absolute;
+        left: 50%;
+        top: -7.5px;
+        width: 16px;
+        height: 8px;
+        transform: translateX(-50%);
+        filter: drop-shadow(0 -1.25px 0 hsla(0, 0%, 0%, 0.4));
+
+        border: none;
+        border-width: 0;
+        margin: 0 !important;
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            mask-image: url("../images/popover-arrow.svg");
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            background-color: var(--bg-popover-white);
+
+            margin: 0;
+            border: none;
+        }
+    }
+
+    &.right .arrow {
+        top: calc(50% - 1px);
+        left: -11px;
+        transform: translateY(-52%) rotate(270deg);
+    }
+
+    &.left .arrow {
+        top: calc(50% - 1px);
+        right: -11px;
+        left: unset;
+        transform: translateY(-52%) rotate(90deg);
+    }
+
+    &.bottom .arrow {
+        top: unset;
+        bottom: 0;
+        transform: translate(-50%, 100%) rotate(180deg);
+    }
+}
+
 :root.dark-theme {
     .user-info-popover-header {
         &__full-name {
             color: hsl(0, 0%, 100%);
+        }
+
+        &__user-type {
+            color: hsl(0, 0%, 50%);
         }
 
         &__status {
