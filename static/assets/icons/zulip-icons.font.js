@@ -8,6 +8,8 @@ module.exports = {
         "../../shared/icons/*.svg", // For icons to be shared with the mobile app.
 
         "../../shared/icons/feather/*.svg",
+        "../../shared/icons/google/*.svg",
+        "../../shared/icons/fontawesome/*.svg",
     ],
     fontName: "zulip-icons",
     classPrefix: "zulip-icon-",
