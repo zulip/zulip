@@ -100,6 +100,8 @@
        our dark theme colors in Zulip's dark theme.
      */
     .tippy-box[data-theme~="light-border"] {
+        background-color: hsl(212, 32%, 14%);
+
         .tippy-content a {
             color: hsl(236, 33%, 90%);
 
@@ -554,12 +556,6 @@
     #settings_page,
     .informational-overlays .overlay-content {
         box-shadow: 0 0 30px hsl(212, 32%, 7%);
-    }
-
-    .tippy-box[data-theme~="light-border"],
-    .dropdown-menu ul,
-    .dropdown .dropdown-menu {
-        background-color: hsl(212, 32%, 14%);
     }
 
     .dropdown-menu a {

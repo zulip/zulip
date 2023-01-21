@@ -58,6 +58,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as personal_menu from "./personal_menu";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
@@ -203,7 +204,7 @@ function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
         search_pills_enabled: page_params.search_pills_enabled,
-        user_avatar: page_params.avatar_url_medium
+        user_avatar: page_params.avatar_url_medium,
     });
 
     $("#navbar-container").html(rendered_navbar);
@@ -661,6 +662,7 @@ export function initialize_everything() {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    personal_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
     settings_display.initialize();

@@ -31,6 +31,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as personal_menu from "./personal_menu";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
@@ -699,6 +700,7 @@ export function initialize() {
     }
 
     popovers.register_click_handlers();
+    personal_menu.register_click_handlers();
     user_profile.register_click_handlers();
     emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();

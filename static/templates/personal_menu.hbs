@@ -1,0 +1,157 @@
+﻿
+<div class="dropdown-menu">
+    <nav class="dropdown-menu__inner">
+        <header class="user-info-popover-header">
+            <div class="user-info-popover-header__avatar">
+                <div class="user-info-popover-header__avatar-image{{#if user_is_guest}} guest-avatar{{/if}}" style="background-image: url('{{user_avatar}}');"></div>
+
+                {{#if is_active }}
+                <span class="user-info-popover-header__status-circle {{user_circle_class}} user_circle tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                {{/if}}
+
+            </div>
+            <div class="user-info-popover-header__text-area">
+                <p class="user-info-popover-header__full-name">{{user_full_name}}</p>
+                <p class="user-info-popover-header__user-type">{{user_type}}</p>
+            </div>
+        </header>
+        <section class="popover-menu info_popover_actions" data-user-id="{{user_id}}">
+            <ul class="popover-menu__list">
+                {{#if status_content_available}}
+                <li class="popover-menu__text-item">
+                    <span>
+                        {{#if status_emoji_info}}
+                        {{#if status_emoji_info.emoji_alt_code}}
+                        <span class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</span>
+                        {{else if status_emoji_info.url}}
+                        <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                        {{else}}
+                        <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
+                        {{/if}}
+                        {{/if}}
+                        <span class="status_text">
+                            {{status_text}}
+                        </span>
+                    </span>
+                    <a href="" class="clear_status" aria-label="{{t 'Clear status'}}">
+                        <i class="zulip-icon zulip-icon-x-circle"></i>
+                    </a>
+                </li>
+                <li class="popover-menu__link-item hidden-for-spectators">
+                    <a href="" class="update_status_text">
+                        <i class="zulip-icon zulip-icon-smile"></i>
+                        {{#tr}}Edit status{{/tr}}
+                    </a>
+                </li>
+                {{else}}
+                <li class="popover-menu__link-item hidden-for-spectators">
+                    <a href="" class="update_status_text">
+                        <i class="zulip-icon zulip-icon-smile"></i>
+                        {{#tr}}Set status{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+
+                {{#if invisible_mode}}
+                <li class="popover-menu__link-item hidden-for-spectators">
+                    <a href="" class="invisible_mode_turn_off">
+                        <i class="zulip-icon zulip-icon-play-circle"></i>
+                        {{#tr}}Turn off invisible mode{{/tr}}
+                    </a>
+                </li>
+                {{else}}
+                <li class="popover-menu__link-item hidden-for-spectators">
+                    <a href="" class="invisible_mode_turn_on">
+                        <i class="zulip-icon zulip-icon-stop-circle"></i>
+                        {{#tr}}Go invisible{{/tr}}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+
+            <ul class="popover-menu__list">
+                <li class="popover-menu__text-item hidden-for-spectators">
+                    <i class="zulip-icon zulip-icon-clock"></i>
+                    {{#tr}}{user_time} local time{{/tr}}
+                </li>
+                <li class="popover-menu__link-item">
+                    <a tabindex="0" class="view_full_user_profile">
+                        <i class="zulip-icon zulip-icon-account"></i>
+                        {{#tr}}View your profile{{/tr}}
+                    </a>
+                </li>
+                <li class="popover-menu__link-item">
+                    <a tabindex="0" href="#settings/profile">
+                        <i class="zulip-icon zulip-icon-tool"></i>
+                        {{#tr}}Personal settings{{/tr}}
+                    </a>
+                </li>
+            </ul>
+            <ul class="popover-menu__list">
+                <li class="popover-menu__link-item">
+                    <a href="{{ my_user_id }}" class="narrow_to_messages_sent">
+                        <i class="zulip-icon zulip-icon-message-square"></i>
+                        {{#tr}}View messages sent{{/tr}}
+                    </a>
+                </li>
+                <li class="popover-menu__link-item">
+                    <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
+                        <i class="zulip-icon zulip-icon-mail"></i>
+                        {{#tr}}View messages with yourself{{/tr}}
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="popover-menu__list">
+                <li class="popover-menu__link-item" role="presentation">
+                    <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
+                        <i class="zulip-icon zulip-icon-help"></i>
+                        {{t 'Help center' }}
+                    </a>
+                </li>
+                <li class="popover-menu__link-item" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
+                        <i class="zulip-icon zulip-icon-keyboard"></i>
+                        {{t 'Keyboard shortcuts' }}
+                    </a>
+                </li>
+                <li class="popover-menu__link-item hidden-for-spectators" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
+                        <i class="zulip-icon zulip-icon-edit"></i>
+                        {{t 'Message formatting' }}
+                    </a>
+                </li>
+                <li class="popover-menu__link-item" role="presentation">
+                    <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
+                        <i class="zulip-icon zulip-icon-manage-search"></i>
+                        {{t 'Search filters' }}
+                    </a>
+                </li>
+                <li class="popover-menu__link-item" role="presentation">
+                    <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
+                        <i class="zulip-icon zulip-icon-life-buoy"></i>
+                        {{t 'Contact support' }}
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="popover-menu__list">
+                {{#if spectator_view}}
+                <li class="popover-menu__link-item" role="presentation">
+                    <a href="{{login_link}}" role="menuitem">
+                        <i class="zulip-icon zulip-icon-power" aria-hidden="true"></i>
+                        {{t 'Log in' }}
+                    </a>
+                </li>
+                {{else}}
+                <li class="popover-menu__link-item" role="presentation">
+                    <a href="#logout" class="logout_button hidden-for-spectators" role="menuitem">
+                        <i class="zulip-icon zulip-icon-power" aria-hidden="true"></i>
+                        {{t 'Log out' }}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+        </section>
+    </nav>
+</div>

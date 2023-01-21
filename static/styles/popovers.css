@@ -911,6 +911,7 @@ ul {
         padding: 4px 0;
         list-style: none;
         border-bottom: solid 1px hsla(0, 0%, 0%, 0.1);
+        background: none !important;
 
         &:last-child {
             border-bottom: none;
