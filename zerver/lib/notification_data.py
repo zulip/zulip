@@ -174,6 +174,25 @@ class UserMessageNotificationsData:
             return None
 
 
+def user_allows_notifications_in_StreamTopic(
+    stream_is_muted: bool,
+    topic_is_muted: bool,
+    stream_specific_setting: Optional[bool],
+    global_setting: bool,
+) -> bool:
+    """
+    Captures the hierarchy of notification settings, where muting is considered first, followed
+    by stream-specific settings, and the global-setting in the UserProfile is the fallback.
+    """
+    if stream_is_muted or topic_is_muted:
+        return False
+
+    if stream_specific_setting is not None:
+        return stream_specific_setting
+
+    return global_setting
+
+
 def get_user_group_mentions_data(
     mentioned_user_ids: Set[int], mentioned_user_group_ids: List[int], mention_data: MentionData
 ) -> Dict[int, int]:
