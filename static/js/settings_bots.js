@@ -407,12 +407,33 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
 
     function edit_bot_post_render() {
         const owner_id = bot_data.get(user_id).owner_id;
-
+        const fullNameInput = document.getElementById("edit_bot_full_name");
+        const submitButton = document.getElementsByClassName("dialog_submit_button")[0];
+        submitButton.disabled = true;        
         const user_ids = people.get_active_human_ids();
         const users_list = user_ids.map((user_id) => ({
             name: people.get_full_name(user_id),
             value: user_id.toString(),
         }));
+        let initialFullName;
+
+        // Store the initial value of the field
+        fullNameInput.addEventListener("focus", () => {
+            initialFullName = fullNameInput.value;
+        });
+        
+        // Check for changes in the field
+        fullNameInput.addEventListener("input", () => {
+            checkForChanges();
+        });
+        
+        function checkForChanges() {
+            if (fullNameInput.value !== initialFullName) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
 
         const opts = {
             widget_name: "edit_bot_owner",
