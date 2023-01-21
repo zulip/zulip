@@ -655,6 +655,16 @@
     }
 
     #gear-menu {
+        .dropdown-menu {
+            border-color: hsl(0, 0%, 0%);
+            box-shadow: 0 2.7798px 4.1129px 0 hsla(0, 0%, 0%, 0.1),
+                0 5.5113px 8.5783px 0 hsla(0, 0%, 0%, 0.09),
+                0 8.4377px 13.9271px 0 hsla(0, 0%, 0%, 0.11),
+                0 12.177px 21.4737px 0 hsla(0, 0%, 0%, 0.11),
+                0 18.7257px 35.4802px 0 hsla(0, 0%, 0%, 0.15),
+                0 41px 80px 0 hsla(0, 0%, 0%, 0.2);
+        }
+
         .dark-theme {
             display: none;
         }
@@ -663,8 +673,13 @@
             display: block;
         }
 
-        .dropdown-menu a:hover {
-            color: hsl(0deg 0% 100%);
+        .org-info {
+            color: hsla(0, 0%, 60%, 1);
+            border-color: hsla(0, 0%, 0%, 0.4);
+        }
+
+        .org-name {
+            color: hsla(0, 0%, 100%, 1);
         }
     }
 

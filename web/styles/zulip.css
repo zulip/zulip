@@ -30,6 +30,8 @@ body,
 
     --color-default-text: hsl(0deg 0% 15%);
     --color-date: hsl(0deg 0% 15% / 75%);
+    --color-link-blue: hsla(217, 100%, 50%, 1);
+    --color-icon-purple: hsla(240, 20%, 50%, 1);
 
     /*
     This is the header, aka the navbar.
@@ -65,6 +67,8 @@ body,
 
 :root.dark-theme {
     @extend %dark-theme;
+    --color-link-blue: hsla(217, 100%, 65%, 1);
+    --color-icon-purple: hsla(240, 35%, 60%, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -333,13 +337,16 @@ p.n-margin {
 }
 
 #gear-menu .dropdown-menu {
-    .org-name,
-    .org-url {
-        padding: 0 20px;
+    .org-info {
+        padding: 6px 5% 10px;
+        border-bottom: solid 1px hsla(0, 0%, 0%, 0.1);
+        text-align: center;
+        white-space: normal;
     }
 
-    .org-info {
-        text-align: center;
+    .org-name,
+    .org-url {
+        line-height: 125%;
 
         & a {
             white-space: normal;
@@ -347,25 +354,32 @@ p.n-margin {
     }
 
     .org-name {
-        font-size: large;
+        font-size: 17px;
         font-weight: bold;
+        margin: 0 0 1px;
+        color: hsla(0, 0%, 15%, 1);
     }
 
     .org-url {
-        line-height: 100%;
-        color: hsl(0deg 0% 52%);
+        font-size: 14px;
+        color: hsla(0, 0%, 40%, 1);
+        margin-bottom: 7px;
     }
 
     .org-version {
-        padding-top: 3px;
-        white-space: normal;
+        font-size: 15px;
+        line-height: 125%;
+        margin: 0;
+
+        a {
+            color: var(--color-link-blue);
+        }
     }
 
     .org-upgrade {
-        color: hsl(226deg 82% 60%);
-
-        & a {
-            padding: 0;
+        a {
+            color: var(--color-link-blue);
+            line-height: 125%;
         }
     }
 
@@ -820,29 +834,6 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
-}
-
-#gear_menu_about_zulip {
-    .white_zulip_icon_without_text {
-        position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
-    }
-
-    .about_zulip_text {
-        position: relative;
-        top: 1.4px;
-    }
-
-    :hover {
-        .white_zulip_icon_without_text {
-            filter: none;
-        }
-    }
 }
 
 .settings-dropdown-cog {
@@ -1932,8 +1923,10 @@ div.focused_table {
         }
 
         .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
+        li.active .dropdown-toggle:hover,
+        .dropdown-toggle:focus {
             opacity: 1;
+            outline: none;
         }
 
         & li.dropdown.open .dropdown-toggle {
