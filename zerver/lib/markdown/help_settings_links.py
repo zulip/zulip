@@ -115,6 +115,15 @@ settings_markdown = """
 """
 
 
+def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) -> str:
+    if relative_settings_links:
+        return f"1. Go to [{setting_name}]({setting_link})."
+    return settings_markdown.format(
+        setting_type_name=setting_type_name,
+        setting_reference=f"**{setting_name}**",
+    )
+
+
 class SettingHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """Add SettingHelpExtension to the Markdown instance."""
@@ -156,15 +165,7 @@ class Setting(Preprocessor):
 
     def handleMatch(self, match: Match[str]) -> str:
         setting_identifier = match.group("setting_identifier")
-        setting_type_name = link_mapping[setting_identifier][0]
-        setting_name = link_mapping[setting_identifier][1]
-        setting_link = link_mapping[setting_identifier][2]
-        if relative_settings_links:
-            return f"1. Go to [{setting_name}]({setting_link})."
-        return settings_markdown.format(
-            setting_type_name=setting_type_name,
-            setting_reference=f"**{setting_name}**",
-        )
+        return getMarkdown(*link_mapping[setting_identifier])
 
 
 def makeExtension(*args: Any, **kwargs: Any) -> SettingHelpExtension:
