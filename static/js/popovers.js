@@ -813,7 +813,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
         if (overlays.settings_open()) {
@@ -825,7 +825,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
         if (overlays.settings_open()) {
@@ -840,7 +840,7 @@ export function register_click_handlers() {
         if (!compose_state.composing()) {
             compose_actions.start("stream", {trigger: "sidebar user actions"});
         }
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
@@ -854,7 +854,7 @@ export function register_click_handlers() {
         if (!compose_state.composing()) {
             compose_actions.respond_to_message({trigger: "user sidebar popover"});
         }
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
@@ -865,7 +865,7 @@ export function register_click_handlers() {
 
     $("body").on("click", ".info_popover_actions .clear_status", (e) => {
         e.preventDefault();
-        const me = elem_to_user_id($(e.target).parents("ul"));
+        const me = elem_to_user_id($(e.target).parents("[data-user-id]"));
         user_status.server_update_status({
             user_id: me,
             status_text: "",
@@ -922,7 +922,7 @@ export function register_click_handlers() {
     );
 
     $("body").on("click", ".sidebar-popover-mute-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         hide_all_user_info_popovers();
         e.stopPropagation();
         e.preventDefault();
@@ -930,7 +930,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         hide_all_user_info_popovers();
         muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
@@ -938,7 +938,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .sidebar-popover-reactivate-user", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         hide_all();
         e.stopPropagation();
         e.preventDefault();
@@ -1048,7 +1048,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         const email = people.get_by_user_id(user_id).email;
         compose_actions.start("private", {
             trigger: "popover send private",
@@ -1095,7 +1095,7 @@ export function register_click_handlers() {
 
     $("body").on("click", ".sidebar-popover-manage-user", (e) => {
         hide_all();
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         const user = people.get_by_user_id(user_id);
         if (user.is_bot) {
             settings_bots.show_edit_bot_info_modal(user_id, true);
@@ -1107,7 +1107,7 @@ export function register_click_handlers() {
     $("body").on("click", ".user_info_popover_manage_menu_btn", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
         const user = people.get_by_user_id(user_id);
         show_user_info_popover_manage_menu(e.target, user);
     });
