@@ -290,7 +290,7 @@ function render_user_info_popover(
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
-            ...popover_args
+            ...popover_args,
         }),
         html: true,
         trigger: "manual",

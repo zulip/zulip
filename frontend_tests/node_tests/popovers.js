@@ -107,7 +107,7 @@ function test_ui(label, f) {
     });
 }
 
-test_ui("sender_hover", ({ override, mock_template }) => {
+test_ui("sender_hover", ({override, mock_template}) => {
     page_params.is_spectator = false;
     override($.fn, "popover", noop);
 
@@ -130,7 +130,7 @@ test_ui("sender_hover", ({ override, mock_template }) => {
         reaction_type: "unicode_emoji",
         emoji_alt_code: false,
     };
-    user_status.set_status_emoji({ user_id: alice.user_id, ...status_emoji_info });
+    user_status.set_status_emoji({user_id: alice.user_id, ...status_emoji_info});
 
     rows.id = () => message.id;
 
@@ -194,11 +194,11 @@ test_ui("sender_hover", ({ override, mock_template }) => {
         user_full_name: "Alice Smith",
         user_id: 42,
         user_is_guest: false,
-        user_last_seen_time_status: 'translated: Last active: translated: More than 2 weeks ago',
+        user_last_seen_time_status: "translated: Last active: translated: More than 2 weeks ago",
         user_mention_syntax: "@**Alice Smith**",
         user_time: undefined,
         user_type: "translated: Member",
-    }
+    };
 
     mock_template("user_info_popover_title.hbs", false, (opts) => {
         assert.deepEqual(opts, popover_arg);

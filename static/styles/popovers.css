@@ -1040,7 +1040,8 @@ ul {
             border-color: hsla(0, 0%, 0%, 0.4);
         }
 
-        &__text-item, .user_popover_email a{
+        &__text-item,
+        .user_popover_email a {
             color: hsla(0, 0%, 50%, 1);
         }
 
