@@ -68,36 +68,6 @@
     }
 }
 
-.info_popover_actions .custom_user_field {
-    display: flex;
-    align-items: center;
-
-    .value {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    /* Overriding CSS from rendered_markdown.css */
-    .rendered_markdown p {
-        margin: 0;
-    }
-
-    /* Overriding CSS from bootstrap > nav-list. */
-    .custom_profile_fields_link {
-        padding-top: 0;
-        padding-bottom: 0;
-
-        &:hover {
-            background-color: transparent;
-        }
-
-        &:focus {
-            background-color: transparent;
-        }
-    }
-}
-
 .info_popover_actions .user_info_popover_manage_menu_btn {
     /* Create a larger click target around the icon. */
     padding: 0 6px;

@@ -1,25 +1,28 @@
 {{! Contents of the "message info" popup }}
-<section class="popover-menu nav nav-list info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
+<nav class="popover-menu info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
+    <ul class="popover-menu__list">
     {{#if is_active }}
         {{#if show_email}}
         {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
         <div>
-            <li class="user_popover_email">
+            <li class="popover-menu__text-item user_popover_email">
                 <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
                 {{ user_email }}
             </li>
         </div>
         {{/if}}
     {{else}}
-        <li class="user_popover_email half-opacity italic">{{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}</li>
+        <li class="popover-menu__text-item user_popover_email half-opacity italic">{{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}</li>
     {{/if}}
 
     {{!-- Display selected custom profile fields in this popover. --}}
     {{#each display_profile_fields}}
-        <li data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
             {{#if this.is_link}}
+            <li data-type="{{this.type}}" class="popover-menu__link-item field-section custom_user_field" data-field-id="{{this.id}}">
                 <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</a>
+            </li>
             {{else if this.is_external_account}}
+            <li data-type="{{this.type}}" class="popover-menu__link-item field-section custom_user_field" data-field-id="{{this.id}}">
                 <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">
                     {{#if (eq this.subtype "github") }}
                     <i class="fa fa-github" aria-hidden="true"></i>
@@ -28,28 +31,28 @@
                     {{/if}}
                     {{this.value}}
                 </a>
+            </li>
             {{else}}
+            <li data-type="{{this.type}}" class="popover-menu__text-item field-section custom_user_field" data-field-id="{{this.id}}">
                 {{#if this.rendered_value}}
                 <span class="value rendered_markdown tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>
                 {{else}}
                 <span class="value tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</span>
                 {{/if}}
+            </li>
             {{/if}}
-        </li>
     {{/each}}
 
+        <li class="popover-menu__text-item only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
+        {{#if (and user_time is_active)}}
+            <li class="popover-menu__text-item hidden-for-spectators local_time">{{#tr}}{user_time} local time{{/tr}}</li>
+        {{/if}}
 
-    <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
-
-    {{#if (or (and user_time is_active) is_me status_content_available) }}
-        <hr />
-    {{/if}}
-    {{#if (and user_time is_active)}}
-        <li class="hidden-for-spectators local_time">{{#tr}}{user_time} local time{{/tr}}</li>
-    {{/if}}
+    </ul>
 
     {{#if is_me}}
-        <li>
+        <ul class="popover-menu__list">
+        <li class="popover-menu__link-item">
             <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
                 {{#if status_text}}
@@ -60,24 +63,25 @@
             </a>
         </li>
         {{#if invisible_mode}}
-        <li>
+        <li class="popover-menu__link-item">
             <a tabindex="0" class="invisible_mode_turn_off">
                 <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Turn off invisible mode{{/tr}}
             </a>
         </li>
         {{else}}
-        <li>
+        <li class="popover-menu__link-item">
             <a tabindex="0" class="invisible_mode_turn_on">
                 <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Go invisible{{/tr}}
             </a>
         </li>
         {{/if}}
+        </ul>
     {{/if}}
 
 
     {{#unless spectator_view}}
-        <hr />
-        <li>
+        <ul class="popover-menu__list">
+        <li class="popover-menu__link-item">
             <a tabindex="0" class="view_full_user_profile">
                 {{#if is_me}}
                     <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View your profile{{/tr}}
@@ -87,14 +91,14 @@
             </a>
         </li>
         {{#if can_send_private_message}}
-            <li>
+            <li class="popover-menu__link-item">
                 <a tabindex="0" class="{{ private_message_class }}">
                     <i class="fa fa-comment" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
                 </a>
             </li>
         {{/if}}
         {{#unless is_me}}
-        <li>
+        <li class="popover-menu__link-item">
             {{#if has_message_context}}
             <a tabindex="0" class="mention_user">
                 <i class="fa fa-at" aria-hidden="true"></i>
@@ -111,14 +115,15 @@
         </li>
         {{/unless}}
         {{#if is_me}}
-        <li>
+        <li class="popover-menu__link-item">
             <a href="/#settings/profile">
                 <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Edit your profile{{/tr}}
             </a>
         </li>
         {{/if}}
-        <hr />
-        <li>
+        </ul>
+        <ul class="popover-menu__list">
+        <li class="popover-menu__link-item">
             <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
                 <i class="fa fa-envelope" aria-hidden="true"></i>
                 {{#if is_me}}
@@ -128,21 +133,24 @@
                 {{/if}}
             </a>
         </li>
-        <li>
+        <li class="popover-menu__link-item">
             <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
                 <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr}}View messages sent{{/tr}}
             </a>
         </li>
+        </ul>
     {{/unless}}
+    {{#if show_manage_menu}}
+    <ul class="popover-menu__list">
     {{#if can_mute }}
-    <li>
+    <li class="popover-menu__link-item">
         <a tabindex="0" class="sidebar-popover-mute-user">
             <i class="fa fa-eye-slash" aria-hidden="true"></i> {{#tr}}Mute this user{{/tr}}
         </a>
     </li>
     {{/if}}
     {{#if can_unmute}}
-    <li>
+    <li class="popover-menu__link-item">
         <a tabindex="0" class="sidebar-popover-unmute-user">
             <i class="fa fa-eye" aria-hidden="true"></i> {{#tr}}Unmute this user{{/tr}}
         </a>
@@ -150,17 +158,19 @@
     {{/if}}
     {{#if can_manage_user}}
         {{#if is_active}}
-        <li>
+        <li class="popover-menu__link-item">
             <a tabindex="0" class="sidebar-popover-manage-user">
                 <i class="fa fa-edit" aria-hidden="true"></i> {{#if is_bot}}{{#tr}}Manage this bot{{/tr}}{{else}}{{#tr}}Manage this user{{/tr}}{{/if}}
             </a>
         </li>
         {{else}}
-        <li>
+        <li class="popover-menu__link-item">
             <a tabindex="0" class="sidebar-popover-reactivate-user">
                 <i class="fa fa-user-plus" aria-hidden="true"></i> {{#if is_bot}}{{#tr}}Reactivate this bot{{/tr}}{{else}}{{#tr}}Reactivate this user{{/tr}}{{/if}}
             </a>
         </li>
         {{/if}}
     {{/if}}
-</section>
+    </ul>
+    {{/if}}
+</nav>
