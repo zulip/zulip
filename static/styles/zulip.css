@@ -54,6 +54,7 @@ body,
 
     --color-link-blue: hsla(217, 100%, 50%, 1);
     --color-icon-purple: hsla(240, 20%, 50%, 1);
+    --bg-popover-white: hsla(0, 0%, 100%, 1);
 }
 
 input,

@@ -243,6 +243,7 @@ function render_user_info_popover(
 
     // TODO: The show_manage_menu calculation can get a lot simpler
     // if/when we allow muting bot users.
+    const is_muted = muted_users.is_user_muted(user.user_id);
     const can_manage_user = page_params.is_admin && !is_me && !is_system_bot;
     const show_manage_menu = !spectator_view && (muting_allowed || can_manage_user);
 
@@ -258,7 +259,23 @@ function render_user_info_popover(
         .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types, dateFormat))
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
-    const args = {
+    const custom_user_field = display_profile_fields.length >= 1;
+
+    let bot_owner = false;
+    if (user.is_bot) {
+        const bot_owner_id = user.bot_owner_id;
+        if (!is_system_bot && bot_owner_id) {
+            bot_owner = people.get_by_user_id(bot_owner_id);
+        }
+    }
+
+    const popover_args = {
+        // See the load_medium_avatar comment for important background.
+        user_is_guest: user.is_guest,
+        user_avatar: people.small_avatar_url_for_person(user),
+        is_system_bot,
+        bot_owner,
+        custom_user_field,
         invisible_mode,
         can_send_private_message:
             is_active &&
@@ -289,19 +306,23 @@ function render_user_info_popover(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
+        can_manage_user,
+        muting_allowed,
+        can_mute: muting_allowed && !is_muted,
+        can_unmute: muting_allowed && is_muted,
     };
 
     if (user.is_bot) {
         const bot_owner_id = user.bot_owner_id;
         if (is_system_bot) {
-            args.is_system_bot = is_system_bot;
+            popover_args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
             const bot_owner = people.get_by_user_id(bot_owner_id);
-            args.bot_owner = bot_owner;
+            popover_args.bot_owner = bot_owner;
         }
     }
 
-    const $popover_content = $(render_user_info_popover_content(args));
+    const $popover_content = $(render_user_info_popover_content(popover_args));
     popover_element.popover({
         content: $popover_content.get(0),
         // TODO: Determine whether `fixed` should be applied
@@ -311,9 +332,7 @@ function render_user_info_popover(
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
-            // See the load_medium_avatar comment for important background.
-            user_avatar: people.small_avatar_url_for_person(user),
-            user_is_guest: user.is_guest,
+            ...popover_args
         }),
         html: true,
         trigger: "manual",
@@ -324,13 +343,13 @@ function render_user_info_popover(
 
     init_email_clipboard();
     init_email_tooltip(user);
-    const $user_name_element = $popover_content.find(".user_full_name");
+    const $user_name_element = $popover_content.find(".user-info-popover-header__full-name");
     const $bot_owner_element = $popover_content.find(".bot_owner");
     if ($user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")) {
         $user_name_element.addClass("tippy-zulip-tooltip");
     }
     if (
-        args.bot_owner &&
+        popover_args.bot_owner &&
         $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
     ) {
         $bot_owner_element.addClass("tippy-zulip-tooltip");
