@@ -8,6 +8,9 @@
 
     color-scheme: dark;
 
+    --color-link-blue: hsla(217, 100%, 65%, 1);
+    --color-icon-purple: hsla(240, 35%, 60%, 1);
+
     body {
         color: hsl(236, 33%, 90%);
     }
@@ -580,16 +583,12 @@
     }
 
     #gear-menu {
-        .dark-theme {
-            display: none;
+        .org-info {
+            color: hsla(0, 0%, 50%, 1);
         }
 
-        .light-theme {
-            display: block;
-        }
-
-        .dropdown-menu a:hover {
-            color: hsl(0, 0%, 100%);
+        .org-name {
+            color: hsla(0, 0%, 100%, 1);
         }
     }
 

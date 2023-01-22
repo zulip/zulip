@@ -901,3 +901,35 @@ ul {
         }
     }
 }
+
+:root.dark-theme {
+    .popover-menu {
+        &__list {
+            border-color: hsla(0, 0%, 0%, 0.4);
+        }
+
+        &__text-item {
+            color: hsla(0, 0%, 50%, 1);
+        }
+
+        &__link-item {
+            a {
+                color: hsla(0, 0%, 100%, 0.8);
+
+                &:hover {
+                    background: hsla(0, 0%, 100%, 0.05);
+                }
+
+                &:active {
+                    background: hsla(0, 0%, 100%, 0.1);
+                }
+            }
+        }
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic {
+        @extend :root.dark-theme;
+    }
+}
