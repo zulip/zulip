@@ -47,18 +47,31 @@ function update_historical_message_color(stream_name, color) {
     }
 }
 
-const stream_color_palette = [
-    ["a47462", "c2726a", "e4523d", "e7664d", "ee7e4a", "f4ae55"],
-    ["76ce90", "53a063", "94c849", "bfd56f", "fae589", "f5ce6e"],
-    ["a6dcbf", "addfe5", "a6c7e5", "4f8de4", "95a5fd", "b0a5fd"],
-    ["c2c2c2", "c8bebf", "c6a8ad", "e79ab5", "bd86e5", "9987e1"],
-];
+const STREAM_HUE_LIST = [5, 45, 95, 160, 205, 280, 325];
+
+const stream_color_palette = [];
+
+for (let index = 0; index < 5; index += 1) {
+    const lightness = 80 - 10 * index;
+    const saturation = 75 - 13 * index;
+    for (const hue of STREAM_HUE_LIST) {
+        const hsl = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        stream_color_palette.push(hsl);
+    }
+    const hsl_bw = `hsl(0, 0%, ${lightness}%)`;
+    stream_color_palette.push(hsl_bw);
+}
 
 const subscriptions_table_colorpicker_options = {
     clickoutFiresChange: true,
     showPalette: true,
     showInput: true,
     palette: stream_color_palette,
+    showPaletteOnly: true,
+    togglePaletteOnly: true,
+    preferredFormat: "hex",
+    togglePaletteMoreText: "Custom color",
+    togglePaletteLessText: "Close picker",
 };
 
 export function set_colorpicker_color(colorpicker, color) {
@@ -108,6 +121,11 @@ export const sidebar_popover_colorpicker_options_full = {
     chooseText: $t({defaultMessage: "Confirm"}),
     palette: stream_color_palette,
     change: picker_do_change_color,
+    showPaletteOnly: true,
+    togglePaletteOnly: true,
+    preferredFormat: "hex",
+    togglePaletteMoreText: "Custom color",
+    togglePaletteLessText: "Close picker",
 };
 
 function picker_do_change_color(color) {

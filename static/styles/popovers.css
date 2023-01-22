@@ -120,37 +120,8 @@
         margin-right: 10px;
 
         .sp-container {
-            background-color: hsl(0, 0%, 100%);
-            cursor: pointer;
-            border: none;
-
-            .sp-palette-container {
-                border-right: none;
-            }
-
-            input {
-                box-sizing: inherit; /* IE */
-                box-sizing: initial;
-
-                width: calc(100% - 13px);
-            }
-
-            button {
-                background-color: hsl(0, 0%, 100%);
-                background-image: none;
-                border: 1px solid hsl(0, 0%, 80%);
-                border-radius: 4px;
-                color: hsl(0, 0%, 25%);
-                font-size: 12px;
-                padding: 6px;
-                text-transform: capitalize;
-                text-align: center;
-                text-shadow: none;
-            }
-
-            .sp-picker-container {
-                border-left: solid 1px hsl(0, 0%, 88%);
-            }
+            padding: 20px 0 0;
+            box-shadow: none;
         }
     }
 

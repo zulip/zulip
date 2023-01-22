@@ -35,6 +35,7 @@ import "../../styles/zulip.css";
 import "../../styles/message_row.css";
 import "../../styles/modal.css";
 import "../../styles/settings.css";
+import "../../styles/color_picker.css";
 import "../../styles/image_upload_widget.css";
 import "../../styles/subscriptions.css";
 import "../../styles/drafts.css";

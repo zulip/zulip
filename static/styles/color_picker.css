@@ -1,0 +1,314 @@
+.sp-replacer {
+    margin-top: 0.5rem;
+    padding: 6px 6px 6px 8px;
+    border-radius: 3px;
+    border: solid 1px hsla(0, 0%, 0%, 0.15) !important;
+
+    .sp-preview {
+        box-shadow: none;
+        border-radius: 50%;
+        overflow: hidden;
+        border: solid 1px hsl(0, 0%, 100%);
+        box-sizing: border-box;
+        background: none;
+        width: 23px;
+        height: 23px;
+    }
+
+    .sp-dd {
+        font-size: 15px;
+        color: hsla(0, 0%, 0%, 0.5);
+        padding: 4px 0 0 3px;
+    }
+}
+
+.sp-container {
+    display: flex;
+    flex-flow: row nowrap;
+    border: none;
+    background: hsl(0, 0%, 100%);
+    border-radius: 6px;
+    box-shadow: 3px 5px 20px hsla(0, 0%, 0%, 0.15);
+    padding: 20px;
+    gap: 20px;
+
+    .sp-choose {
+        appearance: none;
+        border: none;
+        text-shadow: none;
+        color: hsl(0, 0%, 100%);
+        background: hsla(217, 100%, 50%, 1);
+        font-size: 12px;
+        padding: 8px 12px;
+        border-radius: 15px;
+
+        &:hover {
+            border: none;
+            text-shadow: none;
+            color: hsl(0, 0%, 100%);
+            background: hsla(217, 100%, 50%, 1);
+            font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 15px;
+        }
+
+        &:active {
+            box-shadow: none;
+        }
+    }
+
+    .sp-cancel {
+        color: hsla(0, 0%, 40%, 1) !important;
+        font-size: 13px;
+        text-decoration: none;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+
+    .sp-input {
+        box-shadow: none;
+        border: solid 1px hsla(0, 0%, 0%, 0);
+        background: hsl(0, 0%, 95%);
+        max-width: 100%;
+        padding: 5px 6px;
+        line-height: 150%;
+
+        &:focus {
+            box-shadow: none;
+            border-color: hsla(0, 0%, 0%, 0.2);
+        }
+    }
+}
+
+@media (width < $lg_min) {
+    .sp-container {
+        flex-flow: column nowrap;
+    }
+}
+
+.sp-fill {
+    display: none;
+}
+
+.sp-top {
+    margin-bottom: 7px;
+    height: fit-content;
+
+    .sp-top-inner {
+        width: 100%;
+        padding-right: 6px;
+        display: grid;
+        grid-template-columns: 136px 1fr;
+        grid-template-rows: 136px;
+        justify-items: end;
+
+        position: relative;
+        top: unset;
+        right: unset;
+        bottom: unset;
+        left: unset;
+    }
+}
+
+.sp-picker-container {
+    width: 160px;
+    margin: 0;
+    padding: 0;
+    border: none;
+
+    .hide-picker & &:last-child {
+        display: none;
+    }
+}
+
+.sp-palette-container {
+    float: unset;
+    margin: 0;
+    padding: 0;
+    border: none;
+
+    .sp-palette {
+        display: flex;
+        flex-flow: column nowrap;
+    }
+
+    .sp-palette-row {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 3px 5px;
+
+        &::before,
+        &::after {
+            content: none;
+        }
+    }
+
+    .sp-palette-row-selection {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: solid 1px hsl(0, 0%, 90%);
+    }
+
+    .sp-thumb-el {
+        position: relative;
+        margin: 0;
+        width: 20px;
+        height: 20px;
+        border: none;
+        border-radius: 50%;
+        overflow: hidden;
+        background: none;
+
+        &::after {
+            position: absolute;
+            content: "";
+            width: 16px;
+            height: 16px;
+            top: calc(50% - 8px);
+            left: calc(50% - 8px);
+            border: solid 2px hsl(0, 0%, 100%);
+            border-radius: 50%;
+            box-sizing: border-box;
+            opacity: 0;
+
+            transition: opacity 0.15s;
+        }
+
+        &:hover::after {
+            opacity: 0.4;
+        }
+    }
+
+    .sp-thumb-inner {
+        background-image: none !important;
+    }
+
+    .sp-thumb-active::after {
+        opacity: 1 !important;
+    }
+}
+
+.sp-color {
+    position: relative;
+    width: 137px;
+    height: 137px;
+    border: none;
+    border-radius: 3px;
+}
+
+.sp-sat,
+.sp-val {
+    border-radius: 3px;
+}
+
+.sp-hue {
+    position: relative;
+    top: unset;
+    right: unset;
+    bottom: unset;
+    left: unset;
+    margin-left: 3px;
+    border: none;
+    border-radius: 3px;
+    width: 15px;
+
+    .sp-slider {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        border: none;
+        border: solid 2px hsla(0, 0%, 100%, 0.95);
+        background: hsla(0, 0%, 100%, 0.1);
+        left: calc(50% - 8.5px);
+        right: unset;
+        box-shadow: 0 0 6px hsla(0, 0%, 0%, 0.15);
+        backdrop-filter: blur(10px);
+        opacity: 1 !important;
+    }
+}
+
+.sp-dragger {
+    width: 12px;
+    height: 12px;
+    border-radius: 12px;
+    border: solid 2px hsla(0, 0%, 100%, 0.95);
+    background: hsla(0, 0%, 100%, 0.1);
+    box-shadow: 0 0 6px hsla(0, 0%, 0%, 0.15);
+    backdrop-filter: blur(10px);
+    opacity: 1;
+}
+
+.sp-palette-button-container {
+    float: unset;
+    padding-top: 0.75rem;
+    max-width: 220px;
+
+    .sp-palette-toggle {
+        background: unset;
+        border-radius: 30px;
+        width: 100%;
+        font-size: 0.8rem;
+        line-height: 100%;
+        padding: 7px 0;
+        vertical-align: middle;
+        color: hsla(0, 0%, 40%, 1);
+        border: solid 1.5px hsla(0, 0%, 85%, 1) !important;
+        text-shadow: none;
+        box-shadow: none;
+
+        &:hover {
+            background: hsla(0, 0%, 0%, 0.05);
+            text-shadow: none;
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        &:active {
+            box-shadow: none;
+        }
+    }
+}
+
+:root.dark-theme {
+    .sp-replacer {
+        background: hsla(0, 0%, 0%, 0.2);
+
+        .sp-dd {
+            color: hsla(0, 0%, 100%, 0.3);
+        }
+    }
+
+    .sp-container {
+        background: hsl(212, 32%, 14%);
+        box-shadow: 3px 5px 20px hsla(0, 0%, 0%, 0.35);
+
+        .sp-cancel {
+            color: hsla(0, 0%, 100%, 0.65) !important;
+        }
+    }
+
+    .sp-palette-container {
+        .sp-thumb-el::after {
+            border-color: hsl(212, 28%, 18%);
+        }
+
+        .sp-palette-row-selection {
+            border-color: hsla(0, 0%, 100%, 0.15);
+        }
+    }
+
+    .sp-palette-toggle {
+        color: hsla(0, 0%, 100%, 0.85);
+        border-color: hsla(0, 0%, 100%, 0.5) !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic {
+        @extend body.dark-theme;
+    }
+}

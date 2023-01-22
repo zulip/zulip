@@ -256,20 +256,6 @@
         border-color: hsla(0, 0%, 100%, 0.4);
     }
 
-    .streams_popover .sp-container {
-        background-color: transparent;
-
-        button {
-            background-color: hsl(208, 35%, 11%);
-            border: 1px solid hsl(210, 36%, 4%);
-            color: hsl(236, 31%, 90%);
-        }
-
-        .sp-picker-container {
-            border-left: solid 1px hsl(210, 36%, 4%);
-        }
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
