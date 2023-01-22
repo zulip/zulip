@@ -1,16 +1,5 @@
 {{! Contents of the "message info" popup }}
 <section class="popover-menu nav nav-list info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
-    <li class="popover_user_name_row">
-        {{#if show_manage_menu }}
-        <span class="user_info_popover_action_buttons">
-            <a class="user_info_popover_manage_menu_btn" role="button" tabindex="0" aria-haspopup="true">
-                <i class="popover_action_icon zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i>
-            </a>
-        </span>
-        {{/if}}
-    </li>
-
-
     {{#if is_active }}
         {{#if show_email}}
         {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
@@ -145,4 +134,33 @@
             </a>
         </li>
     {{/unless}}
+    {{#if can_mute }}
+    <li>
+        <a tabindex="0" class="sidebar-popover-mute-user">
+            <i class="fa fa-eye-slash" aria-hidden="true"></i> {{#tr}}Mute this user{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+    {{#if can_unmute}}
+    <li>
+        <a tabindex="0" class="sidebar-popover-unmute-user">
+            <i class="fa fa-eye" aria-hidden="true"></i> {{#tr}}Unmute this user{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+    {{#if can_manage_user}}
+        {{#if is_active}}
+        <li>
+            <a tabindex="0" class="sidebar-popover-manage-user">
+                <i class="fa fa-edit" aria-hidden="true"></i> {{#if is_bot}}{{#tr}}Manage this bot{{/tr}}{{else}}{{#tr}}Manage this user{{/tr}}{{/if}}
+            </a>
+        </li>
+        {{else}}
+        <li>
+            <a tabindex="0" class="sidebar-popover-reactivate-user">
+                <i class="fa fa-user-plus" aria-hidden="true"></i> {{#if is_bot}}{{#tr}}Reactivate this bot{{/tr}}{{else}}{{#tr}}Reactivate this user{{/tr}}{{/if}}
+            </a>
+        </li>
+        {{/if}}
+    {{/if}}
 </section>

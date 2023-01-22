@@ -8,7 +8,6 @@ import render_playground_links_popover_content from "../templates/playground_lin
 import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
 import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
 import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
-import render_user_info_popover_manage_menu from "../templates/user_info_popover_manage_menu.hbs";
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
 
 import * as blueslip from "./blueslip";
@@ -182,39 +181,6 @@ export function hide_user_info_popover_manage_menu() {
         $current_user_info_popover_manage_menu.popover("destroy");
         $current_user_info_popover_manage_menu = undefined;
     }
-}
-
-function show_user_info_popover_manage_menu(element, user) {
-    const $last_popover_elem = $current_user_info_popover_manage_menu;
-    hide_user_info_popover_manage_menu();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        return;
-    }
-
-    const is_me = people.is_my_user_id(user.user_id);
-    const is_muted = muted_users.is_user_muted(user.user_id);
-    const is_system_bot = user.is_system_bot;
-    const muting_allowed = !is_me && !user.is_bot;
-
-    const args = {
-        can_mute: muting_allowed && !is_muted,
-        can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
-        can_unmute: muting_allowed && is_muted,
-        is_active: people.is_active_user_for_popover(user.user_id),
-        is_bot: user.is_bot,
-        user_id: user.user_id,
-    };
-
-    const $popover_elt = $(element);
-    $popover_elt.popover({
-        content: render_user_info_popover_manage_menu(args),
-        placement: "bottom",
-        html: true,
-        trigger: "manual",
-    });
-
-    $popover_elt.popover("show");
-    $current_user_info_popover_manage_menu = $popover_elt;
 }
 
 function render_user_info_popover(
@@ -1121,14 +1087,6 @@ export function register_click_handlers() {
         } else {
             settings_users.show_edit_user_info_modal(user_id, true);
         }
-    });
-
-    $("body").on("click", ".user_info_popover_manage_menu_btn", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const user_id = elem_to_user_id($(e.target).parents("[data-user-id]"));
-        const user = people.get_by_user_id(user_id);
-        show_user_info_popover_manage_menu(e.target, user);
     });
 }
 
