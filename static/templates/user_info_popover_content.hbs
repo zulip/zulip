@@ -5,9 +5,12 @@
         {{#if show_email}}
         {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
         <div>
-            <li class="popover-menu__text-item user_popover_email">
-                <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-                {{ user_email }}
+            <li class="popover-menu__link-item user_popover_email">
+                <a data-clipboard-text="{{ user_email }}">
+                    <span class="user_popover_email__text">{{ user_email }}</span>
+                    <i class="zulip-icon zulip-icon-copy hide_copy_icon"></i>
+                    <span class="user_popover_email__success">{{#tr}}Copied{{/tr}}</span>
+                </a>
             </li>
         </div>
         {{/if}}

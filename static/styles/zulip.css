@@ -55,6 +55,9 @@ body,
     --color-link-blue: hsla(217, 100%, 50%, 1);
     --color-icon-purple: hsla(240, 20%, 50%, 1);
     --bg-popover-white: hsla(0, 0%, 100%, 1);
+    --color-success-green: hsla(153, 100%, 20%, 1);
+    --color-success-light-green: hsla(151, 28%, 63%, 1);
+    --bg-success-white-green: hsla(149, 51%, 91%, 1);
 }
 
 input,
@@ -2740,30 +2743,6 @@ textarea.invitee_emails {
 .no-drag {
     -webkit-user-drag: none;
     user-select: none;
-}
-
-.user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
-
-    i {
-        cursor: pointer;
-
-        &.hide_copy_icon {
-            display: none;
-        }
-    }
-}
-
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170, 48%, 54%);
-}
-
-.email_copied i {
-    display: none !important;
 }
 
 .hotkey-hint {

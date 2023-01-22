@@ -211,6 +211,7 @@ test_ui("sender_hover", ({ override, mock_template }) => {
     });
 
     $.create(".user_popover_email", {children: []});
+    $.create(".user_popover_email__text", {children: []});
     $popover_content.get = () => {};
     const $user_name_element = $.create("user_full_name");
     const $bot_owner_element = $.create("bot_owner");

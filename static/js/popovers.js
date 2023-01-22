@@ -92,11 +92,11 @@ $.fn.popover = Object.assign(function (...args) {
 
 function copy_email_handler(e) {
     const $email_el = $(e.trigger.parentElement);
-    const $copy_icon = $email_el.find("i");
+    const $copy_icon = $email_el.find("a");
 
     // only change the parent element's text back to email
     // and not overwrite the tooltip.
-    const email_textnode = $email_el[0].childNodes[2];
+    const email_textnode = $email_el[0].childNodes[1];
 
     $email_el.addClass("email_copied");
     email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
@@ -109,27 +109,19 @@ function copy_email_handler(e) {
 }
 
 function init_email_clipboard() {
-    /*
-        This shows (and enables) the copy-text icon for folks
-        who have names that would overflow past the right
-        edge of our user mention popup.
-    */
     $(".user_popover_email").each(function () {
-        if (this.clientWidth < this.scrollWidth) {
-            const $email_el = $(this);
-            const $copy_email_icon = $email_el.find("i");
+        const $email_el = $(this);
+        const $copy_email_icon = $email_el.find("a");
 
-            /*
-                For deactivated users, the copy-email icon will
-                not even be present in the HTML, so we don't do
-                anything.  We don't reveal emails for deactivated
-                users.
-            */
-            if ($copy_email_icon[0]) {
-                $copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
-                copy_email_clipboard.on("success", copy_email_handler);
-            }
+        /*
+            For deactivated users, the copy-email icon will
+            not even be present in the HTML, so we don't do
+            anything.  We don't reveal emails for deactivated
+            users.
+        */
+        if ($copy_email_icon[0]) {
+            const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
+            copy_email_clipboard.on("success", copy_email_handler);
         }
     });
 }
@@ -141,10 +133,10 @@ function init_email_tooltip(user) {
         edge of our user mention popup.
     */
 
-    $(".user_popover_email").each(function () {
+    $(".user_popover_email__text").each(function () {
         if (this.clientWidth < this.scrollWidth) {
             tippy(this, {
-                placement: "bottom",
+                placement: "top",
                 content: people.get_visible_email(user),
                 interactive: true,
             });
