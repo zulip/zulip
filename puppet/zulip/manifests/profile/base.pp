@@ -107,6 +107,12 @@ class zulip::profile::base {
     source => 'puppet:///modules/zulip/limits.conf',
   }
 
+  service { 'puppet':
+    ensure  => 'stopped',
+    enable  => 'false',
+    require => Package['puppet'],
+  }
+
   # This directory is written to by cron jobs for reading by Nagios
   file { '/var/lib/nagios_state/':
     ensure => directory,
