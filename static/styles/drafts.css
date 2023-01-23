@@ -18,9 +18,8 @@
     }
 
     .drafts-header {
-        padding-top: 4px;
-        padding-bottom: 8px;
-        text-align: center;
+        padding: 4px 25px 8px;
+        text-align: left;
         border-bottom: 1px solid hsl(0, 0%, 87%);
 
         h1 {
@@ -46,6 +45,13 @@
                 font-weight: 600;
                 cursor: pointer;
             }
+        }
+
+        .header-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+
         }
     }
 
