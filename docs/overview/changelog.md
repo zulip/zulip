@@ -26,7 +26,8 @@ log][commit-log] for an up-to-date list of all changes.
 
 ### 6.1 -- 2023-01-23
 
-- Fixed loading the web app on Safari 13 and lower.
+- Fixed a bug that caused the web app to not load on Safari 13 and lower;
+  affected users would only see a blank page.
 - Recent conversations now displays the “Participants” column for private
   messages too.
 - Fixed minor bugs in “Recent conversations” focus and re-rendering.
