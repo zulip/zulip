@@ -38,12 +38,12 @@ up-to-date list of all changes.
 - Updated the Intercom integration to return success on `HEAD`
   requests, which it uses to verify its configuration.
 - Documented how each
-  [rate limit](../production/security-model.html#rate-limiting)
+  [rate limit](../production/security-model.md#rate-limiting)
   category is used.
 - Documented the `reset_authentication_attempt_count` command for when users
   lock themselves out.
 - Documented the
-  [full S3 bucket policy](../production/upload-backends.html#s3-bucket-policy)
+  [full S3 bucket policy](../production/upload-backends.md#s3-bucket-policy)
   for avatar and uploads buckets.
 - Clarified what the `--email` value passed to the installer will be used for.
 - Hid harmless "non-existent database" warnings during initial installation.
