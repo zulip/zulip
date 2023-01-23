@@ -27,6 +27,9 @@ import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
 
+let list_of_unsubscribed_streams = [];
+let is_unsubscribed = false;
+
 function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
 }
@@ -184,7 +187,10 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
         .filter((f) => f.name !== undefined);
-    const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
+    const user_streams_all = stream_data.get_subscribed_streams_for_user(user.user_id);
+    const user_streams = user_streams_all.filter(
+        (item) => !list_of_unsubscribed_streams.includes(item),
+    );
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
         user_id: user.user_id,
@@ -253,6 +259,16 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const $elem = components.toggle(opts).get();
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
+
+    const $alert_box = $("#user-profile-streams-tab .stream_list_info");
+    if (is_unsubscribed) {
+        ui_report.success(
+            $t_html({defaultMessage: "Unsubscribed successfully!"}),
+            $alert_box,
+            1200,
+        );
+        is_unsubscribed = false;
+    }
 }
 
 function handle_remove_stream_subscription(target_user_id, sub, success, failure) {
@@ -271,6 +287,7 @@ function handle_remove_stream_subscription(target_user_id, sub, success, failure
 
 export function register_click_handlers() {
     $("body").on("click", ".info_popover_actions .view_full_user_profile", (e) => {
+        list_of_unsubscribed_streams = [];
         const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
         show_user_profile(user);
@@ -287,6 +304,7 @@ export function register_click_handlers() {
             $stream_row.closest("#user-profile-modal").attr("data-user-id"),
             10,
         );
+        const user = people.get_by_user_id(target_user_id);
         const $alert_box = $("#user-profile-streams-tab .stream_list_info");
 
         function removal_success(data) {
@@ -296,7 +314,11 @@ export function register_click_handlers() {
                 // However, the user profile component has not yet
                 // implemented live update, so we do update its
                 // UI manually here by removing the stream from this list.
-                $stream_row.remove();
+                // $stream_row.remove();
+
+                list_of_unsubscribed_streams.push(sub);
+                is_unsubscribed = true;
+                show_user_profile(user, "user-profile-streams-tab");
 
                 ui_report.success(
                     $t_html({defaultMessage: "Unsubscribed successfully!"}),
