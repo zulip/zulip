@@ -467,13 +467,9 @@ export function initialize() {
     delegate("body", {
         target: "#show_all_private_messages",
         placement: "bottom",
-        onShow(instance) {
-            instance.setContent(
-                $t({
-                    defaultMessage: "All private messages (P)",
-                }),
-            );
-        },
+        content: $t({
+            defaultMessage: "All private messages (P)",
+        }),
         appendTo: () => document.body,
     });
 }
