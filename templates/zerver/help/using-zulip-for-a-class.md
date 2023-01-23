@@ -8,11 +8,11 @@ Zulip](/help/getting-started-with-zulip) to get oriented.
 Zulip works great as the communication hub for your class, providing a
 single place for:
 
-* Posting announcements and lecture notes
-* Answering students’ questions
+* [Posting lecture notes and announcements](#posting-lecture-notes-and-announcements)
+* [Answering students’ questions](#answering-students-questions)
 * Collecting feedback from students
-* Coordination among teaching staff
-* Virtual office hours
+* [Coordination among teaching staff](#coordination-among-teaching-staff)
+* [Virtual office hours](#virtual-office-hours)
 
 ## Posting lecture notes and announcements
 
