@@ -472,4 +472,13 @@ export function initialize() {
         }),
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: ".view_user_card_tooltip",
+        content: $t({
+            defaultMessage: "View user card (u)",
+        }),
+        delay: [500, 20],
+        appendTo: () => document.body,
+    });
 }
