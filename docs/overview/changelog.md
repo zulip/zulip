@@ -24,6 +24,60 @@ log][commit-log] for an up-to-date list of all changes.
 
 ## Zulip 6.x series
 
+### 6.1 -- 2023-01-23
+
+- Fixed loading the web app on Safari 13 and lower.
+- Recent conversations now displays the “Participants” column for private
+  messages too.
+- Fixed minor bugs in “Recent conversations” focus and re-rendering.
+- Fixed bugs that caused some unicode emoji to be incorrectly unavailable.
+- Fixed subtle display bugs rendering the left sidebar.
+- Fixed a bug causing the message feed to briefly show a “no matching messages”
+  notice while loading.
+- Fixed a double escaping display bug when displaying user names in an error
+  notice.
+- Fixed an unhandled exception when displaying user cards if the current user
+  has an invalid timezone configured.
+- Fixed a subtle interaction bug with the compose box preview widget.
+- Added a workaround for a bug in Chromium affecting older versions of the Zulip
+  desktop app that would cause horizontal lines to appear between messages.
+- Stopped clipping the tops of tall characters in stream and topic names.
+- Use internationalized form of “at” in message timestamps.
+- Updated translations.
+- Fixed the “custom” value for the
+  “[delay before sending message notification emails](https://zulip.com/help/email-notifications#delay-before-sending-emails)”
+  setting.
+- Fixed an error which prevented users from changing
+  [stream-specific notification settings](https://zulip.com/help/stream-notifications#set-notifications-for-a-single-stream).
+- Fixed the redirect from `/apps` to https://zulip.com/apps/.
+- Started preserving timezone information in
+  [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).
+- Updated the Intercom integration to return success on `HEAD`
+  requests, which it uses to verify its configuration.
+- Documented how each
+  [rate limit](../production/security-model.html#rate-limiting)
+  category is used.
+- Documented the `reset_authentication_attempt_count` command for when users
+  lock themselves out.
+- Documented the
+  [full S3 bucket policy](../production/upload-backends.html#s3-bucket-policy)
+  for avatar and uploads buckets.
+- Clarified what the `--email` value passed to the installer will be used for.
+- Hid harmless "non-existent database" warnings during initial installation.
+- Forced a known locale when upgrading PostgreSQL, which avoids errors when
+  using some terminal applications.
+- Verified that PostgreSQL was running after upgrading it, in case a previous
+  try at an upgrade left it stopped.
+- Updated custom emoji migration 0376 to be a single SQL statement, and no
+  longer crash when no active owners were found.
+- Replaced `transifex-client` internationalization library with new
+  `transifex-cli`.
+- Began respecting proxy settings when installing `shellcheck` and `shfmt`
+  tools.
+- Fixed the invitation code to signal a user data validation error, and not a
+  server error, if an invalid “invite as” value was given.
+- Renamed internal exceptions to end with `Error`.
+
 ### 6.0 -- 2022-11-17
 
 #### Highlights
