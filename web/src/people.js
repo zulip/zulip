@@ -509,7 +509,7 @@ export function group_pm_with_user_ids(message) {
             return user_ids;
         }
     }
-    return false;
+    return undefined;
 }
 
 export function pm_perma_link(message) {
