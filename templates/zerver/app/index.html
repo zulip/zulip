@@ -29,11 +29,6 @@
     transform: translate(-50%, -50%);
     padding: 10px;
     }
-    #app-loading-logo {
-    width: 96px;
-    height: 96px;
-    margin: 0 auto 24px;
-    }
     #app-loading-middle-content h3 {
     text-align: center;
     }
@@ -59,6 +54,34 @@
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
     }
+
+    .app-loading-spinner-container {
+    position: relative;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    }
+    .app-loading-logo {
+    height: 64px;
+    padding: 10px;
+    }
+    @keyframes zspinner {
+    to {transform: rotate(360deg);}
+    }
+    .app-loading-spinner:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 4px solid hsl(0,0%,94%);
+    border-top-color: hsl(0,0%,52%);
+    animation: zspinner 1s linear infinite;
+    }
+    .app-loading-text {
+    font-weight: normal;
+    }
 </style>
 {% endblock %}
 
@@ -68,10 +91,11 @@
 
 <div id="app-loading">
     <div id="app-loading-middle-content">
-        <div id="app-loading-logo">
-            <img src="/static/images/logo/zulip-icon-circle.svg" />
+        <div class="app-loading-spinner-container">
+            <div class="app-loading-spinner"></div>
+            <img class="app-loading-logo" src="https://chat.zulip.org/static/images/logo/zulip-icon-circle.svg"/>
         </div>
-        <h3>{{ _('Loading...') }}</h3>
+        <h3 class="app-loading-text">{{ _('Loading...') }}</h3>
     </div>
     <div id="app-loading-bottom-content">
         <p>{% trans %}If this message does not go away, try <a id="reload-lnk">reloading</a> the page.{% endtrans %}</p>
