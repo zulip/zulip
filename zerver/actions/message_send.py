@@ -1495,6 +1495,7 @@ def _internal_prep_message(
     sender: UserProfile,
     addressee: Addressee,
     content: str,
+    *,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
@@ -1546,6 +1547,7 @@ def internal_prep_stream_message(
     stream: Stream,
     topic: str,
     content: str,
+    *,
     email_gateway: bool = False,
     limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[SendMessageRequest]:
@@ -1589,6 +1591,7 @@ def internal_prep_private_message(
     sender: UserProfile,
     recipient_user: UserProfile,
     content: str,
+    *,
     mention_backend: Optional[MentionBackend] = None,
 ) -> Optional[SendMessageRequest]:
     """
@@ -1624,12 +1627,18 @@ def internal_send_stream_message(
     stream: Stream,
     topic: str,
     content: str,
+    *,
     email_gateway: bool = False,
     limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[int]:
 
     message = internal_prep_stream_message(
-        sender, stream, topic, content, email_gateway, limit_unread_user_ids=limit_unread_user_ids
+        sender,
+        stream,
+        topic,
+        content,
+        email_gateway=email_gateway,
+        limit_unread_user_ids=limit_unread_user_ids,
     )
 
     if message is None:
