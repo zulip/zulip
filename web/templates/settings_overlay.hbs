@@ -127,7 +127,7 @@
                     <li tabindex="0" data-section="bot-list-admin">
                         <i class="icon zulip-icon zulip-icon-smart-toy" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
-                        {{#unless is_admin}}
+                        {{#unless can_create_new_bots}}
                         <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
                         {{/unless}}
                     </li>

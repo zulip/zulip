@@ -175,6 +175,7 @@ export function initialize() {
         show_uploaded_files_section: page_params.max_file_upload_size_mib > 0,
         show_emoji_settings_lock:
             !page_params.is_admin && page_params.realm_add_emoji_by_admins_only,
+        can_create_new_bots: settings_bots.can_create_new_bots(),
     });
     $("#settings_overlay_container").append(rendered_settings_overlay);
 }
