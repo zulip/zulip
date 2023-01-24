@@ -31,6 +31,8 @@ IGNORED_PHRASES = [
     r"Pivotal",
     r"PM",
     r"PMs",
+    r"DM",
+    r"DMs",
     r"Slack",
     r"Google",
     r"Terms of Service",
