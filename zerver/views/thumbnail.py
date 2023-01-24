@@ -41,6 +41,9 @@ def backend_serve_thumbnail(
 
     if not validate_thumbnail_request(realm, maybe_user_profile, url):
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
+    
+    if validate_thumbnail_request(realm, maybe_user_profile, url) is None:
+        return redirect("zerver/views/no-image@2x.png")
 
     thumbnail_url = generate_thumbnail_url(url)
     return redirect(thumbnail_url)
