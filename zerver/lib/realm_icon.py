@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.upload import upload_backend
@@ -15,5 +16,7 @@ def get_realm_icon_url(realm: Realm) -> str:
     elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(realm.string_id)
         return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon"
+    elif settings.DEFAULT_AVATAR_URI is not None:
+        return settings.DEFAULT_AVATAR_URI
     else:
-        return settings.DEFAULT_AVATAR_URI + "?version=0"
+        return staticfiles_storage.url("images/default-avatar.png") + "?version=0"

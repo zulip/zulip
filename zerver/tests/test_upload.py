@@ -1123,6 +1123,18 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
 
+    def test_get_settings_avatar(self) -> None:
+        self.login("hamlet")
+        cordelia = self.example_user("cordelia")
+        cordelia.email = cordelia.delivery_email
+        cordelia.save()
+        with self.settings(
+            ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/avatar.svg"
+        ):
+            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertEqual(redirect_url, "http://other.server/avatar.svg?version=1&foo=bar")
+
     def test_get_user_avatar(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -1530,7 +1542,16 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + "&foo=bar"))
 
-    def test_get_realm_icon(self) -> None:
+    def test_get_settings_realm_icon(self) -> None:
+        self.login("hamlet")
+        with self.settings(
+            ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/icon.svg"
+        ):
+            response = self.client_get("/json/realm/icon", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertEqual(redirect_url, "http://other.server/icon.svg?foo=bar")
+
+    def test_get_uploaded_realm_icon(self) -> None:
         self.login("hamlet")
 
         realm = get_realm("zulip")
@@ -1675,8 +1696,21 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response["Location"]
         is_night_str = str(self.night).lower()
         self.assertEqual(
-            redirect_url, f"/static/images/logo/zulip-org-logo.svg?version=0&night={is_night_str}"
+            redirect_url,
+            f"http://testserver/static/images/logo/zulip-org-logo.svg?version=0&night={is_night_str}",
         )
+
+    def test_get_settings_logo(self) -> None:
+        self.login("hamlet")
+        with self.settings(DEFAULT_LOGO_URI="http://other.server/logo.svg"):
+            response = self.client_get(
+                "/json/realm/logo", {"night": orjson.dumps(self.night).decode()}
+            )
+            redirect_url = response["Location"]
+            self.assertEqual(
+                redirect_url,
+                f"http://other.server/logo.svg?night={str(self.night).lower()}",
+            )
 
     def test_get_realm_logo(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1710,7 +1744,8 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/json/realm/logo", {"night": orjson.dumps(self.night).decode()})
         redirect_url = response["Location"]
         self.assertEqual(
-            redirect_url, f"/static/images/logo/zulip-org-logo.svg?version=0&night={is_night_str}"
+            redirect_url,
+            f"http://testserver/static/images/logo/zulip-org-logo.svg?version=0&night={is_night_str}",
         )
 
     def test_valid_logos(self) -> None:
