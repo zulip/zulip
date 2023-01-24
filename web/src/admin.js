@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
+import * as bot_data from "./bot_data";
 import {$t, get_language_name, language_list} from "./i18n";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
@@ -201,6 +202,7 @@ export function build_page() {
         realm_enable_read_receipts: page_params.realm_enable_read_receipts,
         allow_sorting_deactivated_users_list_by_email:
             settings_users.allow_sorting_deactivated_users_list_by_email(),
+        has_bots: bot_data.get_all_bots_for_current_user().length > 0,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
