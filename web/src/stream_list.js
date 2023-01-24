@@ -633,9 +633,13 @@ export function set_event_handlers() {
         }
     }
 
+    const $stream_scroll_container = $("#left_sidebar_scroll_container");
     // check for user scrolls on streams list for first time
-    ui.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
+    ui.get_scroll_element($stream_scroll_container).on("wheel", () => {
         has_scrolled = true;
+    });
+
+    ui.get_scroll_element($stream_scroll_container).on("scroll", () => {
         toggle_pm_header_icon();
     });
 
