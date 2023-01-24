@@ -28,8 +28,8 @@
                         <p class="description"></p>
                         <p class="download-instructions">For download instructions, go to the <a class="silver bold" href="/help/desktop-app-install-guide" target="_blank" rel="noopener noreferrer">desktop app install guide</a>.</p>
                         <a class="desktop-download-link no-action" hidden href=""><span class="button green">Download Zulip for <span class="platform"></span></span></a>
-                        <a class="download-from-google-play-store" hidden href=""><img src='/static/images/store-badges/google-play-badge.png' alt=""/></a>
-                        <a class="download-from-apple-app-store" hidden href=""><img src='/static/images/store-badges/app-store-badge.svg' alt=""/></a>
+                        <a class="download-from-google-play-store" hidden href=""><img src="{{ static('images/store-badges/google-play-badge.png') }}" alt=""/></a>
+                        <a class="download-from-apple-app-store" hidden href=""><img src="{{ static('images/store-badges/app-store-badge.svg') }}" alt=""/></a>
                         <span><a id="download-android-apk" hidden href="https://github.com/zulip/zulip-mobile/releases/latest">or manually download APK</a></span>
                         <span><a id="download-mac-arm64" hidden href="">or download Apple silicon native build</a></span>
                     </div>
@@ -37,7 +37,7 @@
             </div>
             <div class="image">
                 <div class="flex">
-                    <img src="/static/images/loading/loader-white.svg" alt="" />
+                    <img src="{{ static('images/loading/loader-white.svg') }}" alt="" />
                 </div>
             </div>
         </div>
