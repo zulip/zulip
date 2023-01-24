@@ -68,7 +68,7 @@ run_test("all_notifications", () => {
             ],
         },
         {
-            label: "translated: PMs, mentions, and alerts",
+            label: "translated: DMs, mentions, and alerts",
             notification_settings: [
                 {
                     is_checked: false,

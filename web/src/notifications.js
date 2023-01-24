@@ -253,7 +253,7 @@ export function process_notification(notification) {
             user_settings.pm_content_in_desktop_notifications !== undefined &&
             !user_settings.pm_content_in_desktop_notifications
         ) {
-            content = "New private message from " + message.sender_full_name;
+            content = "New direct message from " + message.sender_full_name;
         }
         key = message.display_reply_to;
         // Remove the sender from the list of other recipients
@@ -535,15 +535,15 @@ function get_message_header(message) {
     }
     if (message.display_recipient.length > 2) {
         return $t(
-            {defaultMessage: "group private messages with {recipient}"},
+            {defaultMessage: "group direct messages with {recipient}"},
             {recipient: message.display_reply_to},
         );
     }
     if (people.is_current_user(message.reply_to)) {
-        return $t({defaultMessage: "private messages with yourself"});
+        return $t({defaultMessage: "direct messages with yourself"});
     }
     return $t(
-        {defaultMessage: "private messages with {recipient}"},
+        {defaultMessage: "direct messages with {recipient}"},
         {recipient: message.display_reply_to},
     );
 }

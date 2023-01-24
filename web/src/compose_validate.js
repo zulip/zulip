@@ -501,7 +501,7 @@ function validate_private_message() {
     ) {
         // Unless we're composing to a bot
         compose_banner.show_error_message(
-            $t({defaultMessage: "Private messages are disabled in this organization."}),
+            $t({defaultMessage: "Direct messages are disabled in this organization."}),
             compose_banner.CLASSNAMES.private_messages_disabled,
             $("#private_message_recipient"),
         );

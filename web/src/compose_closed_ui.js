@@ -65,7 +65,7 @@ function update_conversation_button(btn_text, title) {
 
 function update_buttons(text_stream) {
     const title_stream = text_stream + " (c)";
-    const text_conversation = $t({defaultMessage: "New private message"});
+    const text_conversation = $t({defaultMessage: "New direct message"});
     const title_conversation = text_conversation + " (x)";
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);

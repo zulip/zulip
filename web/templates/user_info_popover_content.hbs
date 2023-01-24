@@ -124,7 +124,7 @@
         {{#if can_send_private_message}}
             <li>
                 <a tabindex="0" class="{{ private_message_class }}">
-                    <i class="fa fa-comment" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+                    <i class="fa fa-comment" aria-hidden="true"></i> {{#tr}}Send direct message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
                 </a>
             </li>
         {{/if}}
@@ -159,7 +159,7 @@
                 {{#if is_me}}
                     {{#tr}}View messages with yourself{{/tr}}
                 {{else}}
-                    {{#tr}}View private messages{{/tr}}
+                    {{#tr}}View direct messages{{/tr}}
                 {{/if}}
             </a>
         </li>

@@ -136,7 +136,7 @@ run_test("initialize", ({mock_template}) => {
                     [
                         "group-pm-with:zo",
                         {
-                            description_html: "group private messages including",
+                            description_html: "group direct messages including",
                             is_person: true,
                             search_string: "group-pm-with:user7@zulipdev.com",
                             user_pill_context: {
@@ -151,7 +151,7 @@ run_test("initialize", ({mock_template}) => {
                     [
                         "pm-with:zo",
                         {
-                            description_html: "private messages with",
+                            description_html: "direct messages with",
                             is_person: true,
                             search_string: "pm-with:user7@zulipdev.com",
                             user_pill_context: {
@@ -202,10 +202,10 @@ run_test("initialize", ({mock_template}) => {
             expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>private messages with</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    <span>group private messages including</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[3]), expected_value);
 
             /* Test sorter */

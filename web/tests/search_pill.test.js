@@ -16,7 +16,7 @@ const is_starred_item = {
 
 const is_private_item = {
     display_value: "is:private",
-    description_html: "private messages",
+    description_html: "direct messages",
 };
 
 run_test("create_item", () => {

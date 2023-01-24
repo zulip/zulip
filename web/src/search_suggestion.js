@@ -506,7 +506,7 @@ function get_is_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "is:private",
-            description_html: "private messages",
+            description_html: "direct messages",
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},

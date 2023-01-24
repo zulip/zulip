@@ -29,8 +29,6 @@ IGNORED_PHRASES = [
     r"Markdown",
     r"OTP",
     r"Pivotal",
-    r"PM",
-    r"PMs",
     r"DM",
     r"DMs",
     r"Slack",
@@ -98,9 +96,9 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-    r"group private messages with \{recipient\}",
-    r"private messages with \{recipient\}",
-    r"private messages with yourself",
+    r"group direct messages with \{recipient\}",
+    r"direct messages with \{recipient\}",
+    r"direct messages with yourself",
     r"GIF",
     # Emoji name placeholder
     r"leafy green vegetable",
