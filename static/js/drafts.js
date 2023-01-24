@@ -601,6 +601,7 @@ export function launch() {
             });
         }
         update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
+        update_bulk_delete_ui();
     }
 
     function setup_event_handlers() {
@@ -620,6 +621,35 @@ export function launch() {
             const $draft_row = $(this).closest(".draft-row");
 
             remove_draft($draft_row);
+
+            update_bulk_delete_ui();
+        });
+
+        $(".draft_controls .mark-draft").on("change", () => {
+            update_bulk_delete_ui();
+        });
+
+        $(".select-drafts-button").on("click", () => {
+            const $unchecked_checkboxes = $(".mark-draft").filter(function () {
+                return !this.checked;
+            });
+            const check_boxes = $unchecked_checkboxes.length > 0;
+            $(".drafts-list")
+                .find(".draft-row")
+                .each(function () {
+                    $(this).find(".mark-draft").prop("checked", check_boxes);
+                });
+            update_bulk_delete_ui();
+        });
+
+        $(".delete-drafts-button").on("click", () => {
+            $(".drafts-list")
+                .find(".mark-draft:checked")
+                .closest(".draft-row")
+                .each(function () {
+                    remove_draft($(this));
+                });
+            update_bulk_delete_ui();
         });
     }
 
@@ -641,6 +671,46 @@ export function launch() {
     open_overlay();
     set_initial_element(formatted_narrow_drafts.concat(formatted_other_drafts));
     setup_event_handlers();
+}
+
+function update_bulk_delete_ui() {
+    if ($(".drafts-list")[0].scrollHeight > $(".drafts-list")[0].clientHeight) {
+        $(".select-drafts-button").css("right", "35px");
+        $(".delete-drafts-button").css("right", "190px");
+    } else {
+        $(".select-drafts-button").css("right", "23px");
+        $(".delete-drafts-button").css("right", "178px");
+    }
+
+    const $unchecked_checkboxes = $(".mark-draft").filter(function () {
+        return !this.checked;
+    });
+    const $checked_checkboxes = $(".mark-draft").filter(function () {
+        return this.checked;
+    });
+    if ($checked_checkboxes.length > 0) {
+        if ($unchecked_checkboxes.length === 0) {
+            $(".delete-drafts-button").prop("disabled", false);
+            $(".select-drafts-button .select-state-indicator")
+                .addClass("fa-check-square")
+                .removeClass("fa-square-o");
+        } else {
+            $(".delete-drafts-button").prop("disabled", false);
+            $(".select-drafts-button .select-state-indicator")
+                .addClass("fa-square-o")
+                .removeClass("fa-check-square");
+        }
+    } else {
+        if ($unchecked_checkboxes.length > 0) {
+            $(".delete-drafts-button").prop("disabled", true);
+            $(".select-drafts-button .select-state-indicator")
+                .addClass("fa-square-o")
+                .removeClass("fa-check-square");
+        } else {
+            $(".delete-drafts-button").hide();
+            $(".select-drafts-button").hide();
+        }
+    }
 }
 
 function activate_element(elem) {

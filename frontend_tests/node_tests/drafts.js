@@ -556,6 +556,14 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     ];
 
     $("#drafts_table").append = noop;
+    $(".removed-drafts").width = noop;
+    $(".drafts-header").width = noop;
+    $(".drafts-header").height = noop;
+    $(".delete-drafts-button").width = noop;
+    $(".drafts-header").css = noop;
+    $(".select-drafts-button").css = noop;
+    $(".delete-drafts-button").css = noop;
+    $(".drafts-list")[0] = noop;
 
     const draft_model = drafts.draft_model;
     const ls = localstorage();
@@ -587,11 +595,24 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     override_rewire(drafts, "set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
+    let checkbox = $.create(".mark-draft");
+    checkbox.filter = () => [];
     drafts.launch();
 
     $.clear_all_elements();
     $.create("#drafts_table .draft-row", {children: []});
+    checkbox = $.create(".mark-draft");
+    checkbox.filter = () => [];
     $("#draft_overlay").css = () => {};
+    $("#drafts_table").append = noop;
+    $(".removed-drafts").width = noop;
+    $(".drafts-header").width = noop;
+    $(".drafts-header").height = noop;
+    $(".delete-drafts-button").width = noop;
+    $(".drafts-header").css = noop;
+    $(".select-drafts-button").css = noop;
+    $(".delete-drafts-button").css = noop;
+    $(".drafts-list")[0] = noop;
 
     sub_store.get = function (stream_id) {
         assert.equal(stream_id, 30);
@@ -700,6 +721,9 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     ];
 
     $("#drafts_table").append = noop;
+    $(".drafts-list")[0] = noop;
+    $(".select-drafts-button").css = noop;
+    $(".delete-drafts-button").css = noop;
 
     const draft_model = drafts.draft_model;
     const ls = localstorage();
@@ -738,5 +762,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     compose_state.private_message_recipient(aaron.email);
 
     $.create("#drafts_table .draft-row", {children: []});
+    const checkbox = $.create(".mark-draft");
+    checkbox.filter = () => [];
     drafts.launch();
 });

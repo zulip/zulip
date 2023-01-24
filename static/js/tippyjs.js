@@ -158,6 +158,37 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".mark-draft-tooltip",
+        delay: [400, 20],
+        appendTo: () => document.body,
+        onShow(instance) {
+            let content = "Select draft";
+            const $elem = $(instance.reference);
+            if ($($elem).parent().find(".mark-draft").is(":checked")) {
+                content = "Deselect draft";
+            }
+
+            instance.setContent(content);
+            return true;
+        },
+    });
+
+    delegate("body", {
+        target: ".delete-drafts-tooltip-wrapper",
+        appendTo: () => document.body,
+        onShow(instance) {
+            let content = "Delete all selected drafts";
+            const $elem = $(instance.reference);
+            if ($($elem).find(".delete-drafts-button").is(":disabled")) {
+                content = "No drafts selected";
+            }
+
+            instance.setContent(content);
+            return true;
+        },
+    });
+
+    delegate("body", {
         target: ".message_control_button",
         // This ensures that the tooltip doesn't
         // hide by the selected message blue border.

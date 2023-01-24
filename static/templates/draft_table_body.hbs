@@ -12,8 +12,16 @@
                         <br />
                         {{#tr}}Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.{{/tr}}
                         <br />
-                        {{t "Pro tip: You can use 'd' to open your drafts."}}
                     </div>
+                    <div class="delete-drafts-tooltip-wrapper">
+                        <button class="button small rounded delete-drafts-button" type="button" name="button">
+                            <div class="fa fa-trash-o fa-lg" aria-hidden="true"></div>
+                        </button>
+                    </div>
+                    <button class="button small rounded select-drafts-button" type="button" name="button">
+                        <span class="button-text">Select all drafts</span>
+                        <div class="fa fa-square-o select-state-indicator" aria-hidden="true"></div>
+                    </button>
                 </div>
             </div>
             <div class="drafts-list">

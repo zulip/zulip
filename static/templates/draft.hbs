@@ -35,6 +35,10 @@
                         <div class="draft_controls">
                             <i class="fa fa-pencil fa-lg restore-draft tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Restore draft' }} (Enter)"></i>
                             <i class="fa fa-trash-o fa-lg delete-draft tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Delete draft' }} (Backspace)"></i>
+                            <label class="checkbox">
+                                <input type="checkbox" class="mark-draft" aria-hidden="true"/>
+                                <span class="mark-draft-tooltip"></span>
+                            </label>
                         </div>
                     </div>
                     <div class="message_content rendered_markdown restore-draft" title="{{t 'Restore draft' }}">{{rendered_markdown content}}</div>

@@ -813,6 +813,12 @@
     .modal-bg .modal-header {
         border-color: hsla(0, 0%, 0%, 0.2);
         background-color: hsla(0, 0%, 0%, 0.2);
+
+        .delete-drafts-button {
+            background-color: hsl(357, 32%, 14%);
+            border-color: hsl(357, 52%, 57%);
+            color: hsl(357, 52%, 57%);
+        }
     }
 
     .table-striped tbody tr:nth-child(odd) td {
@@ -848,6 +854,12 @@
     .draft-row .message_header_private_message .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
+    }
+
+    .draft-row .draft-info-box label.checkbox {
+        input[type="checkbox"]:not(:checked) ~ span {
+            opacity: 1;
+        }
     }
 
     .nav-list > li > a,

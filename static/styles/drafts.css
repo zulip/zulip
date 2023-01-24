@@ -52,6 +52,56 @@
             justify-content: space-between;
             align-items: flex-end;
 
+            .select-drafts-button {
+                flex-basis: auto;
+                flex-shrink: 0;
+                width: 153px;
+                height: 38px;
+                margin-left: 5px;
+
+                .fa-check-square {
+                    position: relative;
+                    font-size: 20px;
+                    top: 3px;
+                    left: 6px;
+                }
+
+                .fa-square-o {
+                    position: relative;
+                    font-size: 20px;
+                    top: 3px;
+                    left: 6px;
+                }
+
+                .button-text {
+                    font-size: 14px;
+                    padding-left: 8px;
+                    padding-top: 2.5px;
+                    float: left;
+                }
+
+                .select-state-indicator {
+                    padding-left: 5px;
+                    padding-right: 8px;
+                }
+            }
+
+            .delete-drafts-tooltip-wrapper {
+                margin-left: auto;
+            }
+
+            .delete-drafts-button {
+                height: 38px;
+                padding-top: 9px;
+                color: hsl(357, 52%, 57%);
+                border-color: hsl(357, 52%, 57%);
+                background-color: hsl(357, 52%, 90%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
         }
     }
 
@@ -128,6 +178,9 @@
 
         .draft_controls {
             display: inline-block;
+            padding-top: 10px;
+            padding-right: 10px;
+            float: right;
             font-size: 0.9em;
 
             [data-tippy-root] {
@@ -150,6 +203,19 @@
                 cursor: pointer;
                 margin-left: 5px;
                 color: hsl(357, 52%, 57%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+
+        label.checkbox {
+            top: 2px;
+            left: 10px;
+
+            input[type="checkbox"]:not(:checked) ~ span {
                 opacity: 0.7;
 
                 &:hover {
