@@ -12,6 +12,10 @@
         color: hsl(236, 33%, 90%);
     }
 
+    ::selection {
+        background: hsla(213, 85%, 70%, 0.25);
+    }
+
     .placeholder {
         color: hsl(0, 0%, 55%);
         opacity: 1;

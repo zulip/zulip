@@ -53,6 +53,10 @@ body,
     color-scheme: light;
 }
 
+::selection {
+    background: hsla(213, 95%, 65%, 0.18);
+}
+
 input,
 button,
 select,
