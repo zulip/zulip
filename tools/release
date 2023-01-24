@@ -63,6 +63,10 @@ fi
 # Check lint passes for the changelog
 ./tools/lint --skip gitlint docs/overview/changelog.md \
     || fail "Changelog does not pass lint"
+./tools/test-documentation --skip-external-links \
+    || fail "Changelog links do not validate"
+./tools/run-codespell docs/overview/changelog.md \
+    || fail "Changelog does not pass spellcheck"
 
 # Check the date is correct for the release
 release_line=$(grep -x -E -m 1 -o "### $version -- ([0-9-]+)" docs/overview/changelog.md) \
