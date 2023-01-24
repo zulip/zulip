@@ -1,6 +1,6 @@
 {% if show_message_content %}
-    {% if group_pm %} {% trans %}Group PMs with {{ huddle_display_name }}{% endtrans %}
-    {% elif private_message %} {% trans %}PMs with {{ sender_str }}{% endtrans %}
+    {% if group_pm %} {% trans %}Group DMs with {{ huddle_display_name }}{% endtrans %}
+    {% elif private_message %} {% trans %}DMs with {{ sender_str }}{% endtrans %}
     {% elif stream_email_notify or mention %}
         {#
         Some email clients, like Gmail Web (as of 2022), will auto-thread
