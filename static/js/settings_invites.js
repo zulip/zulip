@@ -13,6 +13,7 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -232,4 +233,56 @@ export function on_load_success(invites_data, initialize_event_handlers) {
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
     });
+}
+
+export function update_invite_users_setting_tip() {
+    if (settings_data.user_can_invite_others_to_realm() && !page_params.is_admin) {
+        $(".invite-user-settings-tip").hide();
+        return;
+    }
+    const permission_type = settings_config.invite_to_realm_policy_values;
+    const current_permission = page_params.realm_invite_to_realm_policy;
+    let tip_text;
+    switch (current_permission) {
+        case permission_type.by_admins_only.code: {
+            tip_text = $t({
+                defaultMessage:
+                    "This organization is configured so that admins can invite users to this organization.",
+            });
+
+            break;
+        }
+        case permission_type.by_moderators_only.code: {
+            tip_text = $t({
+                defaultMessage:
+                    "This organization is configured so that admins and moderators can invite users to this organization.",
+            });
+
+            break;
+        }
+        case permission_type.by_members.code: {
+            tip_text = $t({
+                defaultMessage:
+                    "This organization is configured so that admins, moderators and members can invite users to this organization.",
+            });
+
+            break;
+        }
+        case permission_type.by_full_members.code: {
+            tip_text = $t({
+                defaultMessage:
+                    "This organization is configured so that admins, moderators and full members can invite users to this organization.",
+            });
+
+            break;
+        }
+        default: {
+            tip_text = $t({
+                defaultMessage:
+                    "This organization is configured so that nobody can invite users to this organization.",
+            });
+        }
+    }
+    $(".invite-user-settings-tip").show();
+    $(".invite-user-settings-tip").text(tip_text);
 }
