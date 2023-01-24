@@ -143,12 +143,45 @@ export function initialize() {
     // below specify the target directly, elements using those should
     // not have the tippy-zulip-tooltip class.
 
-    $("body").on("blur", ".message_control_button", (e) => {
-        // Remove tooltip when user is trying to tab through all the icons.
-        // If user tabs slowly, tooltips are displayed otherwise they are
-        // destroyed before they can be displayed.
-        e.currentTarget?._tippy?.destroy();
+    delegate("body", {
+        target: ".draft-selection-tooltip",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            let content = $t({defaultMessage: "Select draft"});
+            const $elem = $(instance.reference);
+            if ($($elem).parent().find(".draft-selection-checkbox").hasClass("fa-check-square")) {
+                content = $t({defaultMessage: "Deselect draft"});
+            }
+            instance.setContent(content);
+            return true;
+        },
     });
+
+    delegate("body", {
+        target: ".delete-selected-drafts-button-container",
+        appendTo: () => document.body,
+        onShow(instance) {
+            let content = $t({defaultMessage: "Delete all selected drafts"});
+            const $elem = $(instance.reference);
+            if ($($elem).find(".delete-selected-drafts-button").is(":disabled")) {
+                content = $t({defaultMessage: "No drafts selected"});
+            }
+            instance.setContent(content);
+            return true;
+        },
+    });
+
+    $("body").on(
+        "blur",
+        ".message_control_button, .delete-selected-drafts-button-container",
+        (e) => {
+            // Remove tooltip when user is trying to tab through all the icons.
+            // If user tabs slowly, tooltips are displayed otherwise they are
+            // destroyed before they can be displayed.
+            e.currentTarget?._tippy?.destroy();
+        },
+    );
 
     delegate("body", {
         target: [
