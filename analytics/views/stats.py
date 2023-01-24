@@ -293,8 +293,8 @@ def get_chart_data(
             stats[0]: {
                 "public_stream": _("Public streams"),
                 "private_stream": _("Private streams"),
-                "private_message": _("Private messages"),
-                "huddle_message": _("Group private messages"),
+                "private_message": _("Direct messages"),
+                "huddle_message": _("Group direct messages"),
             }
         }
         labels_sort_function = lambda data: sort_by_totals(data["everyone"])

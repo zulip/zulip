@@ -85,9 +85,9 @@ def validate_message_edit_payload(
 
     if not message.is_stream_message():
         if stream_id is not None:
-            raise JsonableError(_("Private messages cannot be moved to streams."))
+            raise JsonableError(_("Direct messages cannot be moved to streams."))
         if topic_name is not None:
-            raise JsonableError(_("Private messages cannot have topics."))
+            raise JsonableError(_("Direct messages cannot have topics."))
 
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))

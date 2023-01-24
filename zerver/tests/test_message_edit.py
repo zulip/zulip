@@ -152,7 +152,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
             },
         )
 
-        self.assert_json_error(result, "Private messages cannot be moved to streams.")
+        self.assert_json_error(result, "Direct messages cannot be moved to streams.")
 
     def test_private_message_edit_topic(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -167,7 +167,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
             },
         )
 
-        self.assert_json_error(result, "Private messages cannot have topics.")
+        self.assert_json_error(result, "Direct messages cannot have topics.")
 
     def test_propagate_invalid(self) -> None:
         self.login("hamlet")
