@@ -14,12 +14,6 @@ class zulip_ops::prometheus::node {
     tarball_prefix => "node_exporter-${version}.linux-${zulip::common::goarch}",
   }
 
-  # This was moved to an external_dep in 2021/12, and these lines can
-  # be removed once all prod hosts no longer have this file.
-  file { '/usr/local/bin/node_exporter':
-    ensure => absent,
-  }
-
   zulip_ops::firewall_allow { 'node_exporter': port => '9100' }
   file { "${zulip::common::supervisor_conf_dir}/prometheus_node_exporter.conf":
     ensure  => file,

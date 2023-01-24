@@ -144,14 +144,6 @@ class zulip_ops::profile::base {
       source  => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
     }
 
-    file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
-      ensure => absent,
-    }
-
-    file { '/etc/network/if-up.d/zulip-ec2-configure-interfaces_if-up.d.sh':
-      ensure => absent,
-    }
-
     file { '/etc/chrony/chrony.conf':
       ensure  => file,
       mode    => '0644',
