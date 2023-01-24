@@ -21,11 +21,6 @@ class zulip_ops::profile::prometheus_server {
     target  => "${dir}/promtool",
     require => Zulip::External_Dep['prometheus'],
   }
-  # This was moved to an external dep in 2021/12, and the below can be
-  # removed once the prod server has taken the update.
-  file { '/srv/prometheus':
-    ensure => absent,
-  }
 
   file { $data_dir:
     ensure  => directory,
