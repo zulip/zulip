@@ -19,6 +19,8 @@ DEBUG = DEVELOPMENT
 
 EXTERNAL_HOST_WITHOUT_PORT = deport(EXTERNAL_HOST)
 
+STATIC_URL: Optional[str] = None
+
 # These settings are intended for the server admin to set.  We document them in
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.

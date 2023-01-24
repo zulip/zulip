@@ -60,6 +60,7 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_ENABLED_IDPS,
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
+    STATIC_URL,
     STATSD_HOST,
     TORNADO_PORTS,
     USING_PGROONGA,
@@ -537,10 +538,11 @@ CAMO_KEY = get_secret("camo_key") if CAMO_URI != "" else None
 # STATIC CONTENT AND MINIFICATION SETTINGS
 ########################################################################
 
-if PRODUCTION or IS_DEV_DROPLET or os.getenv("EXTERNAL_HOST") is not None:
-    STATIC_URL = urljoin(ROOT_DOMAIN_URI, "/static/")
-else:
-    STATIC_URL = "http://localhost:9991/static/"
+if STATIC_URL is None:
+    if PRODUCTION or IS_DEV_DROPLET or os.getenv("EXTERNAL_HOST") is not None:
+        STATIC_URL = urljoin(ROOT_DOMAIN_URI, "/static/")
+    else:
+        STATIC_URL = "http://localhost:9991/static/"
 
 LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars") if LOCAL_UPLOADS_DIR else None
 LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR else None
