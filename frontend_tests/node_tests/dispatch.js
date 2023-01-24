@@ -337,6 +337,7 @@ run_test("realm settings", ({override}) => {
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
+    override(settings_invites, "update_invite_users_setting_tip", noop);
     override(notifications, "redraw_title", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
