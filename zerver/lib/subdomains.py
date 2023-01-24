@@ -56,6 +56,7 @@ def is_root_domain_available() -> bool:
 
 
 def is_static_or_current_realm_url(url: str, realm: Optional[Realm]) -> bool:
+    assert settings.STATIC_URL is not None
     split_url = urllib.parse.urlsplit(url)
     split_static_url = urllib.parse.urlsplit(settings.STATIC_URL)
 

@@ -116,6 +116,7 @@ else:
         response["Access-Control-Allow-Origin"] = "*"
         return response
 
+    assert settings.STATIC_URL is not None
     urls += static(urlsplit(settings.STATIC_URL).path, view=serve_static)
 
 i18n_urls = [
