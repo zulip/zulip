@@ -21,7 +21,7 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
-from zerver.lib.message import normalize_body, truncate_topic
+from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
@@ -147,7 +147,9 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
         return FromAddress.NOREPLY
 
     mm_address = MissedMessageEmailAddress.objects.create(
-        message=message, user_profile=user_profile, email_token=generate_missed_message_token()
+        message=message,
+        user_profile=user_profile,
+        email_token=generate_missed_message_token(),
     )
     return str(mm_address)
 
@@ -170,15 +172,26 @@ def construct_zulip_body(
 
     if not body.endswith("\n"):
         body += "\n"
-    body += extract_and_upload_attachments(message, realm, sender)
     if not body.rstrip():
         body = "(No email body)"
 
+    preamble = ""
     if show_sender:
         from_address = str(message.get("From", ""))
-        body = f"From: {from_address}\n{body}"
+        preamble = f"From: {from_address}\n"
 
-    return body
+    postamble = extract_and_upload_attachments(message, realm, sender)
+    if postamble != "":
+        postamble = "\n" + postamble
+
+    # Truncate the content ourselves, to ensure that the attachments
+    # all make it into the body-as-posted
+    body = truncate_content(
+        body,
+        settings.MAX_MESSAGE_LENGTH - len(preamble) - len(postamble),
+        "\n[message truncated]",
+    )
+    return preamble + body + postamble
 
 
 ## Sending the Zulip ##
