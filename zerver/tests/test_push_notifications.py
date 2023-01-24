@@ -2070,7 +2070,7 @@ class TestGetGCMPayload(PushNotificationTest):
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New private message from King Hamlet",
+                "alert": "New direct message from King Hamlet",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": message.content,
