@@ -334,7 +334,9 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), "(no topic)")
 
-    def test_receive_stream_email_messages_subject_with_nonprintable_chars(self) -> None:
+    def test_receive_stream_email_messages_subject_with_nonprintable_chars(
+        self,
+    ) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
@@ -600,7 +602,8 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
         with mock.patch(
-            "zerver.lib.email_mirror.upload_message_file", return_value="https://test_url"
+            "zerver.lib.email_mirror.upload_message_file",
+            return_value="https://test_url",
         ) as upload_message_file:
             process_message(incoming_valid_message)
             upload_message_file.assert_called_with(
@@ -613,7 +616,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             )
 
         message = most_recent_message(user_profile)
-        self.assertEqual(message.content, "Test body\n[image.png](https://test_url)")
+        self.assertEqual(message.content, "Test body\n\n[image.png](https://test_url)")
 
     def test_message_with_valid_attachment_model_attributes_set_correctly(self) -> None:
         """
@@ -656,6 +659,48 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         self.assertEqual(attachment.realm, stream.realm)
         self.assertEqual(attachment.is_realm_public, True)
 
+    def test_message_with_attachment_long_body(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("a" * settings.MAX_MESSAGE_LENGTH)
+        with open(
+            os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), "rb"
+        ) as f:
+            image_bytes = f.read()
+
+        incoming_valid_message.add_attachment(
+            image_bytes,
+            maintype="image",
+            subtype="png",
+            filename="image.png",
+        )
+
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+        attachment = Attachment.objects.last()
+        assert attachment is not None
+        self.assertEqual(list(attachment.messages.values_list("id", flat=True)), [message.id])
+        self.assertEqual(
+            message.sender, get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+        )
+        self.assertEqual(attachment.realm, stream.realm)
+        self.assertEqual(attachment.is_realm_public, True)
+
+        assert message.content.endswith(
+            f"aaaaaa\n[message truncated]\n[image.png](/user_uploads/{attachment.path_id})"
+        )
+
     def test_message_with_attachment_utf8_filename(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -684,7 +729,8 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
         with mock.patch(
-            "zerver.lib.email_mirror.upload_message_file", return_value="https://test_url"
+            "zerver.lib.email_mirror.upload_message_file",
+            return_value="https://test_url",
         ) as upload_message_file:
             process_message(incoming_valid_message)
             upload_message_file.assert_called_with(
@@ -697,7 +743,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             )
 
         message = most_recent_message(user_profile)
-        self.assertEqual(message.content, f"Test body\n[{utf8_filename}](https://test_url)")
+        self.assertEqual(message.content, f"Test body\n\n[{utf8_filename}](https://test_url)")
 
     def test_message_with_valid_nested_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -730,7 +776,8 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
         with mock.patch(
-            "zerver.lib.email_mirror.upload_message_file", return_value="https://test_url"
+            "zerver.lib.email_mirror.upload_message_file",
+            return_value="https://test_url",
         ) as upload_message_file:
             process_message(incoming_valid_message)
             upload_message_file.assert_called_with(
@@ -743,7 +790,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             )
 
         message = most_recent_message(user_profile)
-        self.assertEqual(message.content, "Test body\n[image.png](https://test_url)")
+        self.assertEqual(message.content, "Test body\n\n[image.png](https://test_url)")
 
     def test_message_with_invalid_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -894,7 +941,8 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         with self.assertLogs(logger_name, level="INFO") as m:
             process_message(incoming_valid_message)
         self.assertEqual(
-            m.output, [f"INFO:{logger_name}:Email has no nonempty body sections; ignoring."]
+            m.output,
+            [f"INFO:{logger_name}:Email has no nonempty body sections; ignoring."],
         )
 
     def test_receive_stream_email_messages_no_textual_body(self) -> None:
@@ -1134,7 +1182,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             "Error sending message to stream announce via message notification email reply:\nOnly organization administrators can send to this stream.",
         )
         self.assertEqual(
-            message.sender, get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+            message.sender,
+            get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id),
         )
 
     def test_missed_stream_message_email_response_tracks_topic_change(self) -> None:
@@ -1488,7 +1537,8 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             MirrorWorker().consume(event)
 
             self.assertEqual(
-                self.get_last_message().content, "This is a plain-text message for testing Zulip."
+                self.get_last_message().content,
+                "This is a plain-text message for testing Zulip.",
             )
 
         post_data = {
