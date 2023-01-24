@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 from zerver.lib.upload import upload_backend
 from zerver.models import Realm
@@ -23,7 +24,9 @@ def get_realm_logo_url(realm: Realm, night: bool) -> str:
         else:
             logo_version = realm.logo_version
         return upload_backend.get_realm_logo_url(realm.id, logo_version, night)
-    return settings.DEFAULT_LOGO_URI + "?version=0"
+    if settings.DEFAULT_LOGO_URI is not None:
+        return settings.DEFAULT_LOGO_URI
+    return staticfiles_storage.url("images/logo/zulip-org-logo.svg") + "?version=0"
 
 
 def get_realm_logo_data(realm: Realm, night: bool) -> Dict[str, Any]:
