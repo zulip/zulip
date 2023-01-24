@@ -133,8 +133,8 @@ SENTRY_DSN: Optional[str] = None
 
 # File uploads and avatars
 # TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
-DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
-DEFAULT_LOGO_URI = "/static/images/logo/zulip-org-logo.svg"
+DEFAULT_AVATAR_URI: Optional[str] = None
+DEFAULT_LOGO_URI: Optional[str] = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION: Optional[str] = None
