@@ -661,12 +661,12 @@ def get_gcm_alert(
         message.recipient.type == Recipient.HUDDLE
         and trigger == NotificationTriggers.PRIVATE_MESSAGE
     ):
-        return f"New private group message from {sender_str}"
+        return f"New direct group message from {sender_str}"
     elif (
         message.recipient.type == Recipient.PERSONAL
         and trigger == NotificationTriggers.PRIVATE_MESSAGE
     ):
-        return f"New private message from {sender_str}"
+        return f"New direct message from {sender_str}"
     elif message.is_stream_message() and trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is None:
             return f"{sender_str} mentioned you in #{display_recipient}"
