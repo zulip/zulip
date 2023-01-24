@@ -92,10 +92,7 @@ def create_user_profile(
     force_id: Optional[int] = None,
     force_date_joined: Optional[datetime] = None,
 ) -> UserProfile:
-    if force_date_joined is None:
-        date_joined = timezone_now()
-    else:
-        date_joined = force_date_joined
+    date_joined = timezone_now() if force_date_joined is None else force_date_joined
 
     email = UserManager.normalize_email(email)
 

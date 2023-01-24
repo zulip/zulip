@@ -149,10 +149,7 @@ def tokenize(text: str) -> List[Token]:
                 kind = "handlebars_partial_block"
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
-                if s.endswith("/>"):
-                    end_offset = -2
-                else:
-                    end_offset = -1
+                end_offset = -2 if s.endswith("/>") else -1
                 tag_parts = s[1:end_offset].split()
 
                 if not tag_parts:
@@ -222,10 +219,7 @@ def tokenize(text: str) -> List[Token]:
             elif looking_at(" "):
                 s = get_spaces(text, state.i)
                 tag = ""
-                if not tokens or tokens[-1].kind == "newline":
-                    kind = "indent"
-                else:
-                    kind = "whitespace"
+                kind = "indent" if not tokens or tokens[-1].kind == "newline" else "whitespace"
             elif text[state.i] in "{<":
                 snippet = text[state.i :][:15]
                 raise AssertionError(f"tool cannot parse {snippet}")

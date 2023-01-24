@@ -64,9 +64,10 @@ def main() -> None:
     args = parser.parse_args()
 
     sns_topic_arn = get_ses_arn(session, args)
-    with our_sqs_queue(session, sns_topic_arn) as (queue_arn, queue_url):
-        with our_sns_subscription(session, sns_topic_arn, queue_arn):
-            print_messages(session, queue_url)
+    with our_sqs_queue(session, sns_topic_arn) as (queue_arn, queue_url), our_sns_subscription(
+        session, sns_topic_arn, queue_arn
+    ):
+        print_messages(session, queue_url)
 
 
 def get_ses_arn(session: boto3.session.Session, args: argparse.Namespace) -> str:

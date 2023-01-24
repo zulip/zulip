@@ -35,10 +35,7 @@ def get_message_body(payload: WildValue) -> str:
             signed_recipients=get_recipients_text(recipients["signed"]),
         )
 
-        if recipients_text:
-            recipients_text = f"{recipients_text}, and {text}"
-        else:
-            recipients_text = text
+        recipients_text = f"{recipients_text}, and {text}" if recipients_text else text
 
     return BODY.format(contract_title=contract_title, actions=recipients_text).strip()
 

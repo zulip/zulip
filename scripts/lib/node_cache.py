@@ -18,10 +18,7 @@ DEFAULT_PRODUCTION = False
 
 
 def get_yarn_args(production: bool) -> List[str]:
-    if production:
-        yarn_args = ["--prod"]
-    else:
-        yarn_args = []
+    yarn_args = ["--prod"] if production else []
     return yarn_args
 
 

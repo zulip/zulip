@@ -84,10 +84,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     for username in mention_re.findall(content):
         # Try to look up username
         user_profile = guess_zulip_user_from_jira(username, realm)
-        if user_profile:
-            replacement = f"**{user_profile.full_name}**"
-        else:
-            replacement = f"**{username}**"
+        replacement = f"**{user_profile.full_name}**" if user_profile else f"**{username}**"
 
         content = content.replace(f"[~{username}]", replacement)
 
@@ -112,10 +109,7 @@ def get_issue_string(
     if issue_id is None:
         issue_id = get_issue_id(payload)
 
-    if with_title:
-        text = f"{issue_id}: {get_issue_title(payload)}"
-    else:
-        text = issue_id
+    text = f"{issue_id}: {get_issue_title(payload)}" if with_title else issue_id
 
     base_url = re.match(
         r"(.*)\/rest\/api/.*", get_in(payload, ["issue", "self"]).tame(check_string)
@@ -210,10 +204,7 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     )
     assignee_mention = get_assignee_mention(assignee_email, user_profile.realm)
 
-    if assignee_mention != "":
-        assignee_blurb = f" (assigned to {assignee_mention})"
-    else:
-        assignee_blurb = ""
+    assignee_blurb = f" (assigned to {assignee_mention})" if assignee_mention != "" else ""
 
     sub_event = get_sub_event_for_update_issue(payload)
     if "comment" in sub_event:

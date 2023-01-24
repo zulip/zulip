@@ -75,10 +75,7 @@ def ping_handler(
     branches: Optional[str],
     include_title: Optional[str],
 ) -> List[Dict[str, str]]:
-    if include_title:
-        subject = include_title
-    else:
-        subject = "Bitbucket Server Ping"
+    subject = include_title if include_title else "Bitbucket Server Ping"
     body = "Congratulations! The Bitbucket Server webhook was configured successfully!"
     return [{"subject": subject, "body": body}]
 

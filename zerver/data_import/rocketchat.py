@@ -659,10 +659,7 @@ def process_messages(
                 message,
             )
 
-        if message.get("reactions"):
-            reactions = list_reactions(message["reactions"])
-        else:
-            reactions = []
+        reactions = list_reactions(message["reactions"]) if message.get("reactions") else []
 
         message_dict = dict(
             sender_id=sender_id,

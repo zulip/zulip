@@ -697,10 +697,7 @@ SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 ZULIP_WORKER_TEST_FILE = "/tmp/zulip-worker-test-file"
 
 
-if IS_WORKER:
-    FILE_LOG_PATH = WORKER_LOG_PATH
-else:
-    FILE_LOG_PATH = SERVER_LOG_PATH
+FILE_LOG_PATH = WORKER_LOG_PATH if IS_WORKER else SERVER_LOG_PATH
 
 # This is disabled in a few tests.
 LOGGING_ENABLED = True
@@ -1136,10 +1133,7 @@ for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if "x509cert" in idp_dict:
         continue
 
-    if "x509cert_path" in idp_dict:
-        path = idp_dict["x509cert_path"]
-    else:
-        path = f"/etc/zulip/saml/idps/{idp_name}.crt"
+    path = idp_dict.get("x509cert_path", f"/etc/zulip/saml/idps/{idp_name}.crt")
     idp_dict["x509cert"] = get_from_file_if_exists(path)
 
 SOCIAL_AUTH_PIPELINE = [

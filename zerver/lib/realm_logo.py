@@ -18,10 +18,7 @@ def get_realm_logo_url(realm: Realm, night: bool) -> str:
     logo_source = get_realm_logo_source(realm, night)
 
     if logo_source == Realm.LOGO_UPLOADED:
-        if night:
-            logo_version = realm.night_logo_version
-        else:
-            logo_version = realm.logo_version
+        logo_version = realm.night_logo_version if night else realm.logo_version
         return upload_backend.get_realm_logo_url(realm.id, logo_version, night)
     return settings.DEFAULT_LOGO_URI + "?version=0"
 

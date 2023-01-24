@@ -52,10 +52,7 @@ def get_body(payload: WildValue) -> str:
     if friendly_name == "Job":
         hosts_data = []
         for host, host_data in payload["hosts"].items():
-            if host_data["failed"].tame(check_bool):
-                hoststatus = "Failed"
-            else:
-                hoststatus = "Success"
+            hoststatus = "Failed" if host_data["failed"].tame(check_bool) else "Success"
             hosts_data.append(
                 {
                     "hostname": host,
@@ -63,10 +60,7 @@ def get_body(payload: WildValue) -> str:
                 }
             )
 
-        if payload["status"] == "successful":
-            status = "was successful"
-        else:
-            status = "failed"
+        status = "was successful" if payload["status"] == "successful" else "failed"
 
         return ANSIBLETOWER_JOB_MESSAGE_TEMPLATE.format(
             name=payload["name"].tame(check_string),

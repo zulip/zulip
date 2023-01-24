@@ -147,9 +147,10 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with self.assert_database_query_count(4):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with self.assert_database_query_count(4), self.tornado_redirected_to_list(
+            events, expected_num_events=1
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -183,9 +184,10 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             op="start",
         )
 
-        with self.assert_database_query_count(5):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with self.assert_database_query_count(5), self.tornado_redirected_to_list(
+            events, expected_num_events=1
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
@@ -363,9 +365,10 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with self.assert_database_query_count(5):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with self.assert_database_query_count(5), self.tornado_redirected_to_list(
+            events, expected_num_events=1
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
@@ -398,9 +401,10 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with self.assert_database_query_count(5):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
-                result = self.api_post(sender, "/api/v1/typing", params)
+        with self.assert_database_query_count(5), self.tornado_redirected_to_list(
+            events, expected_num_events=1
+        ):
+            result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 

@@ -20,14 +20,13 @@ CACHE_FILE = os.path.join(CACHE_DIR, "requirements_hashes")
 
 
 def print_diff(path_file1: str, path_file2: str) -> None:
-    with open(path_file1) as file1:
-        with open(path_file2) as file2:
-            diff = difflib.unified_diff(
-                file1.readlines(),
-                file2.readlines(),
-                fromfile=path_file1,
-                tofile=path_file2,
-            )
+    with open(path_file1) as file1, open(path_file2) as file2:
+        diff = difflib.unified_diff(
+            file1.readlines(),
+            file2.readlines(),
+            fromfile=path_file1,
+            tofile=path_file2,
+        )
     sys.stdout.writelines(diff)
 
 

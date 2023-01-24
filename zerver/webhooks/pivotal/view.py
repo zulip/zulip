@@ -39,10 +39,11 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
     # description in quotes as the first quoted string
     name_re = re.compile(r'[^"]+"([^"]+)".*')
     match = name_re.match(description)
-    if match and len(match.groups()):
-        name = match.group(1)
-    else:
-        name = "Story changed"  # Failed for an unknown reason, show something
+    name = (
+        match.group(1)
+        if match and len(match.groups())
+        else "Story changed"  # Failed for an unknown reason, show something
+    )
     more_info = f" [(view)]({url})."
 
     if event_type == "story_update":
@@ -127,10 +128,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
                 )
             if "estimate" in old_values and "estimate" in new_values:
                 old_estimate = old_values.get("estimate", None)
-                if old_estimate is None:
-                    estimate = "is now"
-                else:
-                    estimate = f"changed from {old_estimate} to"
+                estimate = "is now" if old_estimate is None else f"changed from {old_estimate} to"
                 new_estimate = new_values["estimate"] if new_values["estimate"] is not None else "0"
                 content += f"* estimate {estimate} **{new_estimate} points**\n"
             if "story_type" in old_values and "story_type" in new_values:

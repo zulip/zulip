@@ -3365,9 +3365,10 @@ class DeleteMessageTest(ZulipTestCase):
         self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
 
-        with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.actions.message_edit.send_event") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits."
-                )
-                do_delete_messages(hamlet.realm, [message])
+        with self.tornado_redirected_to_list([], expected_num_events=1), mock.patch(
+            "zerver.actions.message_edit.send_event"
+        ) as m:
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits."
+            )
+            do_delete_messages(hamlet.realm, [message])

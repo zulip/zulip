@@ -438,10 +438,7 @@ def do_send_missedmessage_events_reply_in_zulip(
     from zerver.lib.email_mirror import create_missed_message_address
 
     reply_to_address = create_missed_message_address(user_profile, missed_messages[0]["message"])
-    if reply_to_address == FromAddress.NOREPLY:
-        reply_to_name = ""
-    else:
-        reply_to_name = "Zulip"
+    reply_to_name = "" if reply_to_address == FromAddress.NOREPLY else "Zulip"
 
     narrow_url = get_narrow_url(user_profile, missed_messages[0]["message"])
     context.update(

@@ -154,10 +154,7 @@ def cache_with_key(
             if cache_name == "database":
                 extra = ".dbcache"
 
-            if with_statsd_key is not None:
-                metric_key = with_statsd_key
-            else:
-                metric_key = statsd_key(key)
+            metric_key = with_statsd_key if with_statsd_key is not None else statsd_key(key)
 
             status = "hit" if val is not None else "miss"
             statsd.incr(f"cache{extra}.{metric_key}.{status}")
@@ -389,10 +386,7 @@ def generic_bulk_cached_fetch(
     ]
 
     # Only call query_function if there are some ids to fetch from the database:
-    if len(needed_ids) > 0:
-        db_objects = query_function(needed_ids)
-    else:
-        db_objects = []
+    db_objects = query_function(needed_ids) if len(needed_ids) > 0 else []
 
     items_for_remote_cache: Dict[str, Tuple[CompressedItemT]] = {}
     for obj in db_objects:

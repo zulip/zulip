@@ -451,10 +451,7 @@ def remote_user_sso(
     # login_or_register_remote_user if appropriate.
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
-    if realm is None:
-        user_profile = None
-    else:
-        user_profile = authenticate(remote_user=remote_user, realm=realm)
+    user_profile = None if realm is None else authenticate(remote_user=remote_user, realm=realm)
     if user_profile is not None:
         assert isinstance(user_profile, UserProfile)
 

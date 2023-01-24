@@ -63,10 +63,7 @@ def write_updated_configs() -> None:
             else:
                 ports = [int(port) for port in key.split("_")]
                 for shard in shards.split():
-                    if "." in shard:
-                        host = shard
-                    else:
-                        host = f"{shard}.{external_host}"
+                    host = shard if "." in shard else f"{shard}.{external_host}"
                     assert host not in shard_map, f"host {host} duplicated"
                     shard_map[host] = ports[0] if len(ports) == 1 else ports
                     nginx_sharding_conf_f.write(

@@ -653,20 +653,17 @@ class TestSupportEndpoint(ZulipTestCase):
 
         with mock.patch(
             "analytics.views.support.downgrade_now_without_creating_additional_invoices"
-        ) as m1:
-            with mock.patch("analytics.views.support.void_all_open_invoices", return_value=1) as m2:
-                result = self.client_post(
-                    "/activity/support",
-                    {
-                        "realm_id": f"{iago.realm_id}",
-                        "downgrade_method": "downgrade_now_void_open_invoices",
-                    },
-                )
-                m1.assert_called_once_with(get_realm("zulip"))
-                m2.assert_called_once_with(get_realm("zulip"))
-                self.assert_in_success_response(
-                    ["zulip downgraded and voided 1 open invoices"], result
-                )
+        ) as m1, mock.patch("analytics.views.support.void_all_open_invoices", return_value=1) as m2:
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{iago.realm_id}",
+                    "downgrade_method": "downgrade_now_void_open_invoices",
+                },
+            )
+            m1.assert_called_once_with(get_realm("zulip"))
+            m2.assert_called_once_with(get_realm("zulip"))
+            self.assert_in_success_response(["zulip downgraded and voided 1 open invoices"], result)
 
     def test_scrub_realm(self) -> None:
         cordelia = self.example_user("cordelia")

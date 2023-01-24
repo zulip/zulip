@@ -17,10 +17,7 @@ def api_flock_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     text = payload["text"].tame(check_string)
-    if len(text) != 0:
-        message_body = text
-    else:
-        message_body = payload["notification"].tame(check_string)
+    message_body = text if len(text) != 0 else payload["notification"].tame(check_string)
 
     topic = "Flock notifications"
     body = f"{message_body}"

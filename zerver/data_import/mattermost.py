@@ -568,10 +568,7 @@ def process_posts(
             content = re.sub("[a-z]", "x", content)
             content = re.sub("[A-Z]", "X", content)
 
-        if "reactions" in post_dict:
-            reactions = post_dict["reactions"] or []
-        else:
-            reactions = []
+        reactions = post_dict["reactions"] or [] if "reactions" in post_dict else []
 
         message_dict = dict(
             sender_id=sender_id,

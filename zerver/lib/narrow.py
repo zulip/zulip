@@ -283,10 +283,7 @@ class NarrowBuilder:
         if method is None:
             raise BadNarrowOperatorError("unknown operator " + operator)
 
-        if negated:
-            maybe_negate = not_
-        else:
-            maybe_negate = lambda cond: cond
+        maybe_negate = not_ if negated else lambda cond: cond
 
         return method(query, operand, maybe_negate)
 

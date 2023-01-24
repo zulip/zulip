@@ -1130,10 +1130,7 @@ def apply_event(
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
-        if slim_presence:
-            user_key = str(event["user_id"])
-        else:
-            user_key = event["email"]
+        user_key = str(event["user_id"]) if slim_presence else event["email"]
         state["presences"][user_key] = get_presence_for_user(event["user_id"], slim_presence)[
             user_key
         ]
@@ -1155,10 +1152,7 @@ def apply_event(
                 if message_id in stream_dict:
                     stream_dict[message_id]["topic"] = topic
     elif event["type"] == "delete_message":
-        if "message_id" in event:
-            message_ids = [event["message_id"]]
-        else:
-            message_ids = event["message_ids"]  # nocoverage
+        message_ids = [event["message_id"]] if "message_id" in event else event["message_ids"]
         max_message = (
             Message.objects.filter(usermessage__user_profile=user_profile).order_by("-id").first()
         )

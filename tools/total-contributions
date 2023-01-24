@@ -106,10 +106,7 @@ if len(args.version) > 2:
     parser.error("Expects 0 to 2 version number(s)")
 
 lower_zulip_version = args.version[0]
-if len(args.version) == 1:
-    upper_zulip_version = "main"
-else:
-    upper_zulip_version = args.version[1]
+upper_zulip_version = "main" if len(args.version) == 1 else args.version[1]
 
 subprocess.check_call(["git", "fetch"], cwd=find_path("zulip"))
 

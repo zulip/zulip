@@ -66,10 +66,7 @@ def render_body_with_branch(payload: WildValue) -> str:
     project_name = payload["project"]["name"].tame(check_string)
     project_url = payload["project"]["url"].tame(check_string)
     quality_gate_status = payload["qualityGate"]["status"].tame(check_string).lower()
-    if quality_gate_status == "ok":
-        quality_gate_status = "success"
-    else:
-        quality_gate_status = "error"
+    quality_gate_status = "success" if quality_gate_status == "ok" else "error"
     branch = payload["branch"]["name"].tame(check_string)
 
     conditions = parse_conditions(payload["qualityGate"]["conditions"])
@@ -90,10 +87,7 @@ def render_body_without_branch(payload: WildValue) -> str:
     project_name = payload["project"]["name"].tame(check_string)
     project_url = payload["project"]["url"].tame(check_string)
     quality_gate_status = payload["qualityGate"]["status"].tame(check_string).lower()
-    if quality_gate_status == "ok":
-        quality_gate_status = "success"
-    else:
-        quality_gate_status = "error"
+    quality_gate_status = "success" if quality_gate_status == "ok" else "error"
     conditions = parse_conditions(payload["qualityGate"]["conditions"])
 
     if not conditions:

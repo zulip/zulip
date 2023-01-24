@@ -245,10 +245,11 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         flush_per_request_caches()
-        with self.assert_database_query_count(47):
-            with patch("zerver.lib.cache.cache_set") as cache_mock:
-                result = self._get_home_page(stream="Denmark")
-                self.check_rendered_logged_in_app(result)
+        with self.assert_database_query_count(47), patch(
+            "zerver.lib.cache.cache_set"
+        ) as cache_mock:
+            result = self._get_home_page(stream="Denmark")
+            self.check_rendered_logged_in_app(result)
         self.assertEqual(
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
@@ -301,10 +302,9 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         flush_per_request_caches()
-        with queries_captured():
-            with patch("zerver.lib.cache.cache_set"):
-                result = self._get_home_page(stream="Denmark")
-                self.check_rendered_logged_in_app(result)
+        with queries_captured(), patch("zerver.lib.cache.cache_set"):
+            result = self._get_home_page(stream="Denmark")
+            self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
         actual_keys = sorted(str(k) for k in page_params)
@@ -391,11 +391,12 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         flush_per_request_caches()
-        with self.assert_database_query_count(44):
-            with patch("zerver.lib.cache.cache_set") as cache_mock:
-                result = self._get_home_page()
-                self.check_rendered_logged_in_app(result)
-                self.assert_length(cache_mock.call_args_list, 6)
+        with self.assert_database_query_count(44), patch(
+            "zerver.lib.cache.cache_set"
+        ) as cache_mock:
+            result = self._get_home_page()
+            self.check_rendered_logged_in_app(result)
+            self.assert_length(cache_mock.call_args_list, 6)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")

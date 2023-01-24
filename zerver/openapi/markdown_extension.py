@@ -133,10 +133,7 @@ def render_python_code_example(
     method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
 
-    if admin_config:
-        config_string = PYTHON_CLIENT_ADMIN_CONFIG
-    else:
-        config_string = PYTHON_CLIENT_CONFIG
+    config_string = PYTHON_CLIENT_ADMIN_CONFIG if admin_config else PYTHON_CLIENT_CONFIG
 
     endpoint, endpoint_method = function.split(":")
     extra_imports = check_additional_imports(endpoint, endpoint_method)
@@ -177,10 +174,7 @@ def render_javascript_code_example(
 
     snippets = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
 
-    if admin_config:
-        config = JS_CLIENT_ADMIN_CONFIG.splitlines()
-    else:
-        config = JS_CLIENT_CONFIG.splitlines()
+    config = JS_CLIENT_ADMIN_CONFIG.splitlines() if admin_config else JS_CLIENT_CONFIG.splitlines()
 
     code_example = [
         "{tab|js}\n",

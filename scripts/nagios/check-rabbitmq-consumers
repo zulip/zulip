@@ -61,10 +61,7 @@ for queue_name in consumers:
     if queue_name == "notify_tornado":
         target_count = TORNADO_PROCESSES
 
-    if consumers[queue_name] < target_count:
-        status = 2
-    else:
-        status = 0
+    status = 2 if consumers[queue_name] < target_count else 0
     with open(state_file_tmp, "w") as f:
         f.write(
             f"{now}|{status}|{states[status]}|queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}\n"

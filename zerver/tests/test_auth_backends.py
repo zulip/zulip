@@ -3071,14 +3071,15 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
     def test_id_token_verification_failure(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with self.assertLogs(self.logger_string, level="INFO") as m:
-            with mock.patch("jwt.decode", side_effect=PyJWTError):
-                result = self.social_auth_test(
-                    account_data_dict,
-                    expect_choose_email_screen=True,
-                    subdomain="zulip",
-                    is_signup=True,
-                )
+        with self.assertLogs(self.logger_string, level="INFO") as m, mock.patch(
+            "jwt.decode", side_effect=PyJWTError
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain="zulip",
+                is_signup=True,
+            )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
         self.assertEqual(
@@ -4194,9 +4195,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
                 "redirect_to": next,
             }
             user_profile = self.example_user("hamlet")
-            with mock.patch("zerver.views.auth.authenticate", return_value=user_profile):
-                with mock.patch("zerver.views.auth.do_login"):
-                    result = self.get_log_into_subdomain(data)
+            with mock.patch(
+                "zerver.views.auth.authenticate", return_value=user_profile
+            ), mock.patch("zerver.views.auth.do_login"):
+                result = self.get_log_into_subdomain(data)
             return result
 
         res = test_redirect_to_next_url()
@@ -5195,36 +5197,37 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
-            with mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
-                result = self.client_get(
-                    "http://testserver:9080/accounts/login/sso/", REMOTE_USER=email
-                )
-                self.assertEqual(result.status_code, 200)
-                self.assert_logged_in_user_id(None)
-                self.assert_in_response("You need an invitation to join this organization.", result)
+        with self.settings(
+            AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
+        ), mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
+            result = self.client_get(
+                "http://testserver:9080/accounts/login/sso/", REMOTE_USER=email
+            )
+            self.assertEqual(result.status_code, 200)
+            self.assert_logged_in_user_id(None)
+            self.assert_in_response("You need an invitation to join this organization.", result)
 
     def test_login_failure_due_to_empty_subdomain(self) -> None:
         email = self.example_email("hamlet")
-        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)):
-            with mock.patch("zerver.views.auth.get_subdomain", return_value=""):
-                result = self.client_get(
-                    "http://testserver:9080/accounts/login/sso/", REMOTE_USER=email
-                )
-                self.assertEqual(result.status_code, 200)
-                self.assert_logged_in_user_id(None)
-                self.assert_in_response("You need an invitation to join this organization.", result)
+        with self.settings(
+            AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
+        ), mock.patch("zerver.views.auth.get_subdomain", return_value=""):
+            result = self.client_get(
+                "http://testserver:9080/accounts/login/sso/", REMOTE_USER=email
+            )
+            self.assertEqual(result.status_code, 200)
+            self.assert_logged_in_user_id(None)
+            self.assert_in_response("You need an invitation to join this organization.", result)
 
     def test_login_success_under_subdomains(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        with mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"):
-            with self.settings(
-                AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
-            ):
-                result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
-                self.assertEqual(result.status_code, 302)
-                self.assert_logged_in_user_id(user_profile.id)
+        with mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"), self.settings(
+            AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",)
+        ):
+            result = self.client_get("/accounts/login/sso/", REMOTE_USER=email)
+            self.assertEqual(result.status_code, 302)
+            self.assert_logged_in_user_id(user_profile.id)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",))
@@ -5486,43 +5489,46 @@ class TestJWTLogin(ZulipTestCase):
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         payload = {"user": "hamlet", "realm": "zulip.com"}
-        with self.settings(JWT_AUTH_KEYS={"acme": {"key": "key", "algorithms": ["HS256"]}}):
-            with mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
-                key = settings.JWT_AUTH_KEYS["acme"]["key"]
-                [algorithm] = settings.JWT_AUTH_KEYS["acme"]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm)
+        with self.settings(
+            JWT_AUTH_KEYS={"acme": {"key": "key", "algorithms": ["HS256"]}}
+        ), mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
+            key = settings.JWT_AUTH_KEYS["acme"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["acme"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
 
-                data = {"json_web_token": web_token}
-                result = self.client_post("/accounts/login/jwt/", data)
-                self.assert_json_error_contains(result, "Wrong subdomain", 400)
-                self.assert_logged_in_user_id(None)
+            data = {"json_web_token": web_token}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assert_json_error_contains(result, "Wrong subdomain", 400)
+            self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_empty_subdomain(self) -> None:
         payload = {"user": "hamlet", "realm": "zulip.com"}
-        with self.settings(JWT_AUTH_KEYS={"": {"key": "key", "algorithms": ["HS256"]}}):
-            with mock.patch("zerver.views.auth.get_subdomain", return_value=""):
-                key = settings.JWT_AUTH_KEYS[""]["key"]
-                [algorithm] = settings.JWT_AUTH_KEYS[""]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm)
+        with self.settings(JWT_AUTH_KEYS={"": {"key": "key", "algorithms": ["HS256"]}}), mock.patch(
+            "zerver.views.auth.get_subdomain", return_value=""
+        ):
+            key = settings.JWT_AUTH_KEYS[""]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS[""]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
 
-                data = {"json_web_token": web_token}
-                result = self.client_post("/accounts/login/jwt/", data)
-                self.assert_json_error_contains(result, "Wrong subdomain", 400)
-                self.assert_logged_in_user_id(None)
+            data = {"json_web_token": web_token}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assert_json_error_contains(result, "Wrong subdomain", 400)
+            self.assert_logged_in_user_id(None)
 
     def test_login_success_under_subdomains(self) -> None:
         payload = {"user": "hamlet", "realm": "zulip.com"}
-        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
-            with mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"):
-                key = settings.JWT_AUTH_KEYS["zulip"]["key"]
-                [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm)
+        with self.settings(
+            JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}
+        ), mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
 
-                data = {"json_web_token": web_token}
-                result = self.client_post("/accounts/login/jwt/", data)
-                self.assertEqual(result.status_code, 302)
-                user_profile = self.example_user("hamlet")
-                self.assert_logged_in_user_id(user_profile.id)
+            data = {"json_web_token": web_token}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assertEqual(result.status_code, 302)
+            user_profile = self.example_user("hamlet")
+            self.assert_logged_in_user_id(user_profile.id)
 
 
 class DjangoToLDAPUsernameTests(ZulipTestCase):
@@ -5569,9 +5575,8 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             self.backend.django_to_ldap_username("aaron@zulip.com"), self.ldap_username("aaron")
         )
 
-        with self.assertLogs(level="WARNING") as m:
-            with self.assertRaises(NoMatchingLDAPUserError):
-                self.backend.django_to_ldap_username("shared_email@zulip.com")
+        with self.assertLogs(level="WARNING") as m, self.assertRaises(NoMatchingLDAPUserError):
+            self.backend.django_to_ldap_username("shared_email@zulip.com")
         self.assertEqual(
             m.output,
             [
@@ -6128,9 +6133,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
     @override_settings(LDAP_EMAIL_ATTR="mail")
     def test_populate_user_returns_none(self) -> None:
-        with mock.patch.object(ZulipLDAPUser, "populate_user", return_value=None):
-            with self.assertRaises(PopulateUserLDAPError):
-                sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
+        with mock.patch.object(
+            ZulipLDAPUser, "populate_user", return_value=None
+        ), self.assertRaises(PopulateUserLDAPError):
+            sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
 
     def test_update_full_name(self) -> None:
         self.change_ldap_user_attr("hamlet", "cn", "New Name")
@@ -6282,17 +6288,18 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
         self.change_ldap_user_attr("hamlet", "cn", "Second Hamlet")
         expected_call_args = [hamlet2, "Second Hamlet", None]
-        with self.settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}):
-            with mock.patch("zerver.actions.user_settings.do_change_full_name") as f:
-                self.perform_ldap_sync(hamlet2)
-                f.assert_called_once_with(*expected_call_args)
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}), mock.patch(
+            "zerver.actions.user_settings.do_change_full_name"
+        ) as f:
+            self.perform_ldap_sync(hamlet2)
+            f.assert_called_once_with(*expected_call_args)
 
-                # Get the updated model and make sure the full name is changed correctly:
-                hamlet2 = get_user_by_delivery_email(email, test_realm)
-                self.assertEqual(hamlet2.full_name, "Second Hamlet")
-                # Now get the original hamlet and make he still has his name unchanged:
-                hamlet = self.example_user("hamlet")
-                self.assertEqual(hamlet.full_name, "King Hamlet")
+            # Get the updated model and make sure the full name is changed correctly:
+            hamlet2 = get_user_by_delivery_email(email, test_realm)
+            self.assertEqual(hamlet2.full_name, "Second Hamlet")
+            # Now get the original hamlet and make he still has his name unchanged:
+            hamlet = self.example_user("hamlet")
+            self.assertEqual(hamlet.full_name, "King Hamlet")
 
     def test_user_not_found_in_ldap(self) -> None:
         with self.settings(
@@ -6497,10 +6504,9 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 "custom_profile_field__birthday": "birthDate",
                 "custom_profile_field__phone_number": "homePhone",
             }
-        ):
-            with mock.patch("zproject.backends.do_update_user_custom_profile_data_if_changed") as f:
-                self.perform_ldap_sync(self.example_user("hamlet"))
-                f.assert_called_once_with(*expected_call_args)
+        ), mock.patch("zproject.backends.do_update_user_custom_profile_data_if_changed") as f:
+            self.perform_ldap_sync(self.example_user("hamlet"))
+            f.assert_called_once_with(*expected_call_args)
 
     def test_update_custom_profile_field_not_present_in_ldap(self) -> None:
         hamlet = self.example_user("hamlet")

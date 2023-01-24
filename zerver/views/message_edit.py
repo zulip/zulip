@@ -204,10 +204,7 @@ def json_fetch_raw_message(
     if not maybe_user_profile.is_authenticated:
         allow_edit_history = realm.allow_edit_history
     else:
-        if user_message:
-            flags = user_message.flags_list()
-        else:
-            flags = ["read", "historical"]
+        flags = user_message.flags_list() if user_message else ["read", "historical"]
         allow_edit_history = maybe_user_profile.realm.allow_edit_history
 
     # Security note: It's important that we call this only with a

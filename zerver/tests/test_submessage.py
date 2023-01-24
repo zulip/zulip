@@ -195,9 +195,10 @@ class TestBasics(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         message_id = self.send_stream_message(hamlet, "Denmark")
 
-        with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.actions.submessage.send_event") as m:
-                m.side_effect = AssertionError(
-                    "Events should be sent only after the transaction commits."
-                )
-                do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")
+        with self.tornado_redirected_to_list([], expected_num_events=1), mock.patch(
+            "zerver.actions.submessage.send_event"
+        ) as m:
+            m.side_effect = AssertionError(
+                "Events should be sent only after the transaction commits."
+            )
+            do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")

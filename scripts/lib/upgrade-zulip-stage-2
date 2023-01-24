@@ -115,10 +115,7 @@ if args.skip_restart and args.skip_tornado:
     logging.warning("Ignored --skip-tornado; all upgrades with --skip-restart skip all restarts.")
     args.skip_tornado = False
 if minimal_change:
-    if args.skip_restart:
-        flagname = "--skip-restart"
-    else:
-        flagname = "--skip-tornado"
+    flagname = "--skip-restart" if args.skip_restart else "--skip-tornado"
     if args.less_graceful:
         logging.warning("Ignored --less-graceful; %s is always graceful.", flagname)
         args.less_graceful = False

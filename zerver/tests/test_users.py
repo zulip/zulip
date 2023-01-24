@@ -804,17 +804,19 @@ class QueryCountTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
 
-        with self.assert_database_query_count(91):
-            with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events, expected_num_events=11):
-                    fred = do_create_user(
-                        email="fred@zulip.com",
-                        password="password",
-                        realm=realm,
-                        full_name="Fred Flintstone",
-                        prereg_user=prereg_user,
-                        acting_user=None,
-                    )
+        with self.assert_database_query_count(
+            91
+        ), cache_tries_captured() as cache_tries, self.tornado_redirected_to_list(
+            events, expected_num_events=11
+        ):
+            fred = do_create_user(
+                email="fred@zulip.com",
+                password="password",
+                realm=realm,
+                full_name="Fred Flintstone",
+                prereg_user=prereg_user,
+                acting_user=None,
+            )
 
         self.assert_length(cache_tries, 28)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
@@ -2027,9 +2029,8 @@ class GetProfileTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         email = self.example_user("hamlet").email
-        with self.assert_database_query_count(1):
-            with simulated_empty_cache() as cache_queries:
-                user_profile = get_user(email, realm)
+        with self.assert_database_query_count(1), simulated_empty_cache() as cache_queries:
+            user_profile = get_user(email, realm)
 
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, email)

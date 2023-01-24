@@ -245,10 +245,7 @@ class QueueProcessingWorker(ABC):
     def update_statistics(self) -> None:
         total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
         total_events = sum(events_number for events_number, _ in self.recent_consume_times)
-        if total_events == 0:
-            recent_average_consume_time = None
-        else:
-            recent_average_consume_time = total_seconds / total_events
+        recent_average_consume_time = None if total_events == 0 else total_seconds / total_events
         stats_dict = dict(
             update_time=time.time(),
             recent_average_consume_time=recent_average_consume_time,
@@ -390,9 +387,8 @@ class QueueProcessingWorker(ABC):
         fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
         line = f"{time.asctime()}\t{orjson.dumps(events).decode()}\n"
         lock_fn = fn + ".lock"
-        with lockfile(lock_fn):
-            with open(fn, "a") as f:
-                f.write(line)
+        with lockfile(lock_fn), open(fn, "a") as f:
+            f.write(line)
         check_and_send_restart_signal()
 
     def setup(self) -> None:
@@ -455,10 +451,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         logger.info(
             "Sending invitation for realm %s to %s", referrer.realm.string_id, invitee.email
         )
-        if "email_language" in data:
-            email_language = data["email_language"]
-        else:
-            email_language = referrer.realm.default_language
+        email_language = data.get("email_language", referrer.realm.default_language)
 
         activate_url = do_send_confirmation_email(
             invitee, referrer, email_language, invite_expires_in_minutes

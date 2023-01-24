@@ -958,9 +958,10 @@ class LoginTest(ZulipTestCase):
         ContentType.objects.clear_cache()
 
         # Ensure the number of queries we make is not O(streams)
-        with self.assert_database_query_count(96), cache_tries_captured() as cache_tries:
-            with self.captureOnCommitCallbacks(execute=True):
-                self.register(self.nonreg_email("test"), "test")
+        with self.assert_database_query_count(
+            96
+        ), cache_tries_captured() as cache_tries, self.captureOnCommitCallbacks(execute=True):
+            self.register(self.nonreg_email("test"), "test")
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -1246,9 +1247,8 @@ class InviteUserTest(InviteUserBase):
         realm.date_created = timezone_now() - datetime.timedelta(days=8)
         realm.save()
 
-        with queries_captured() as queries:
-            with cache_tries_captured() as cache_tries:
-                result = try_invite()
+        with queries_captured() as queries, cache_tries_captured() as cache_tries:
+            result = try_invite()
 
         self.assert_json_success(result)
 
@@ -3095,9 +3095,10 @@ class MultiuseInviteTest(ZulipTestCase):
         email = self.nonreg_email("newuser")
         invite_link = "/join/invalid_key/"
 
-        with patch("zerver.views.registration.get_realm_from_request", return_value=self.realm):
-            with patch("zerver.views.registration.get_realm", return_value=self.realm):
-                self.check_user_able_to_register(email, invite_link)
+        with patch(
+            "zerver.views.registration.get_realm_from_request", return_value=self.realm
+        ), patch("zerver.views.registration.get_realm", return_value=self.realm):
+            self.check_user_able_to_register(email, invite_link)
 
     def test_multiuse_link_with_specified_streams(self) -> None:
         name1 = "newuser"
@@ -4639,21 +4640,22 @@ class UserSignUpTest(InviteUserBase):
             return_data = kwargs.get("return_data", {})
             return_data["invalid_subdomain"] = True
 
-        with patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain):
-            with self.assertLogs(level="ERROR") as m:
-                result = self.client_post(
-                    "/accounts/register/",
-                    {
-                        "password": password,
-                        "full_name": "New User",
-                        "key": find_key_by_email(email),
-                        "terms": True,
-                    },
-                )
-                self.assertEqual(
-                    m.output,
-                    ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
-                )
+        with patch(
+            "zerver.views.registration.authenticate", side_effect=invalid_subdomain
+        ), self.assertLogs(level="ERROR") as m:
+            result = self.client_post(
+                "/accounts/register/",
+                {
+                    "password": password,
+                    "full_name": "New User",
+                    "key": find_key_by_email(email),
+                    "terms": True,
+                },
+            )
+            self.assertEqual(
+                m.output,
+                ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
+            )
         self.assertEqual(result.status_code, 302)
 
     def test_signup_using_invalid_subdomain_preserves_state_of_form(self) -> None:

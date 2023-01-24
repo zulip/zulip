@@ -286,9 +286,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         ).count()
         self.assertEqual(0, received_count)
 
-        with self.settings(AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS=False):
-            with self.assertLogs(logger_string, level="INFO") as m:
-                users_deactivated = do_auto_soft_deactivate_users(-1, realm)
+        with self.settings(AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS=False), self.assertLogs(
+            logger_string, level="INFO"
+        ) as m:
+            users_deactivated = do_auto_soft_deactivate_users(-1, realm)
         self.assertEqual(
             m.output,
             [
