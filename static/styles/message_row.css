@@ -222,10 +222,13 @@ $time_column_min_width: 50px; /* + padding */
                        be in any language and `line-height: 1` doesn't work to accommodate text
                        from start and end vertically in all languages. */
                     line-height: normal;
-                    /* Add padding to align user name with the content */
-                    padding-left: $avatar_column_width;
                     outline: none;
                     margin-top: $sender_name_distance_below_flex_center;
+
+                    .sender_name_padding {
+                        /* Add padding to align user name with the content */
+                        padding-left: $avatar_column_width;
+                    }
                 }
             }
 
