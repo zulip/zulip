@@ -703,7 +703,7 @@ export class Filter {
                 case "is-mentioned":
                     return $t({defaultMessage: "Mentions"});
                 case "is-private":
-                    return $t({defaultMessage: "Private messages"});
+                    return $t({defaultMessage: "Direct messages"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
                 // These cases return false for is_common_narrow, and therefore are not
@@ -981,7 +981,7 @@ export class Filter {
                 return verb + "sent by";
 
             case "pm-with":
-                return verb + "private messages with";
+                return verb + "direct messages with";
 
             case "in":
                 return verb + "messages in";
@@ -991,7 +991,7 @@ export class Filter {
                 return verb + "messages that are";
 
             case "group-pm-with":
-                return verb + "group private messages including";
+                return verb + "group direct messages including";
         }
         return "";
     }
@@ -999,11 +999,13 @@ export class Filter {
     static describe_is_operator(operator) {
         const verb = operator.negated ? "exclude " : "";
         const operand = operator.operand;
-        const operand_list = ["private", "starred", "alerted", "unread"];
+        const operand_list = ["starred", "alerted", "unread"];
         if (operand_list.includes(operand)) {
             return verb + operand + " messages";
         } else if (operand === "mentioned") {
             return verb + "@-mentions";
+        } else if (operand === "private") {
+            return verb + "direct messages";
         }
         return "invalid " + operand + " operand for is operator";
     }

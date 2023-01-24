@@ -201,7 +201,7 @@ export const private_message_policy_values = {
     disabled: {
         order: 2,
         code: 2,
-        description: $t({defaultMessage: "Private messages disabled"}),
+        description: $t({defaultMessage: "Direct messages disabled"}),
     },
 };
 
@@ -526,7 +526,7 @@ export const notification_settings_labels = {
         defaultMessage: "Send mobile notifications even if I'm online",
     }),
     pm_content_in_desktop_notifications: $t({
-        defaultMessage: "Include content of private messages in desktop notifications",
+        defaultMessage: "Include content of direct messages in desktop notifications",
     }),
     desktop_icon_count_display: $t({
         defaultMessage: "Unread count badge (appears in desktop sidebar and browser tab)",
@@ -768,7 +768,7 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
             ),
         },
         {
-            label: $t({defaultMessage: "PMs, mentions, and alerts"}),
+            label: $t({defaultMessage: "DMs, mentions, and alerts"}),
             notification_settings: get_notifications_table_row_data(
                 pm_mention_notification_settings,
                 settings_object,
@@ -794,7 +794,7 @@ export const desktop_icon_count_display_values = {
     },
     notifiable: {
         code: 2,
-        description: $t({defaultMessage: "Private messages and mentions"}),
+        description: $t({defaultMessage: "Direct messages and mentions"}),
     },
     none: {
         code: 3,

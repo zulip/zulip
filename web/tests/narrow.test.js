@@ -317,7 +317,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You are not allowed to send private messages in this organization.",
+            "translated: You are not allowed to send direct messages in this organization.",
         ),
     );
 
@@ -330,7 +330,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages yet!",
+            "translated: You have no direct messages yet!",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -379,7 +379,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You are not allowed to send private messages in this organization.",
+            "translated: You are not allowed to send direct messages in this organization.",
         ),
     );
 
@@ -392,7 +392,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages with Example Bot yet.",
+            "translated: You have no direct messages with Example Bot yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -405,7 +405,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You are not allowed to send private messages in this organization.",
+            "translated: You are not allowed to send direct messages in this organization.",
         ),
     );
 
@@ -418,7 +418,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages with Alice Smith yet.",
+            "translated: You have no direct messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -431,7 +431,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have not sent any private messages to yourself yet!",
+            "translated: You have not sent any direct messages to yourself yet!",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start a conversation with yourself</a>?',
         ),
     );
@@ -442,7 +442,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no private messages with these users yet.",
+            "translated: You have no direct messages with these users yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -466,7 +466,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You are not allowed to send group private messages in this organization.",
+            "translated: You are not allowed to send group direct messages in this organization.",
         ),
     );
 
@@ -478,7 +478,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You are not allowed to send group private messages in this organization.",
+            "translated: You are not allowed to send group direct messages in this organization.",
         ),
     );
 
@@ -491,7 +491,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have no group private messages with Alice Smith yet.",
+            "translated: You have no group direct messages with Alice Smith yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );

@@ -52,7 +52,7 @@ function setup_settings_label() {
             defaultMessage: "Let subscribers see when I'm typing messages in streams",
         }),
         send_private_typing_notifications: $t({
-            defaultMessage: "Let recipients see when I'm typing private messages",
+            defaultMessage: "Let recipients see when I'm typing direct messages",
         }),
         send_read_receipts: $t({
             defaultMessage: "Let others see when I've read messages",

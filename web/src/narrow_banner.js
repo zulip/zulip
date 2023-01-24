@@ -194,12 +194,12 @@ function pick_empty_narrow_banner() {
                         return {
                             title: $t({
                                 defaultMessage:
-                                    "You are not allowed to send private messages in this organization.",
+                                    "You are not allowed to send direct messages in this organization.",
                             }),
                         };
                     }
                     return {
-                        title: $t({defaultMessage: "You have no private messages yet!"}),
+                        title: $t({defaultMessage: "You have no direct messages yet!"}),
                         html: $t_html(
                             {
                                 defaultMessage: "Why not <z-link>start the conversation</z-link>?",
@@ -301,7 +301,7 @@ function pick_empty_narrow_banner() {
                 return {
                     title: $t({
                         defaultMessage:
-                            "You are not allowed to send private messages in this organization.",
+                            "You are not allowed to send direct messages in this organization.",
                     }),
                 };
             }
@@ -311,7 +311,7 @@ function pick_empty_narrow_banner() {
                     return {
                         title: $t({
                             defaultMessage:
-                                "You have not sent any private messages to yourself yet!",
+                                "You have not sent any direct messages to yourself yet!",
                         }),
                         html: $t_html(
                             {
@@ -330,7 +330,7 @@ function pick_empty_narrow_banner() {
                 return {
                     title: $t(
                         {
-                            defaultMessage: "You have no private messages with {person} yet.",
+                            defaultMessage: "You have no direct messages with {person} yet.",
                         },
                         {person: people.get_by_user_id(user_ids[0]).full_name},
                     ),
@@ -348,7 +348,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             return {
-                title: $t({defaultMessage: "You have no private messages with these users yet."}),
+                title: $t({defaultMessage: "You have no direct messages with these users yet."}),
                 html: $t_html(
                     {
                         defaultMessage: "Why not <z-link>start the conversation</z-link>?",
@@ -393,14 +393,14 @@ function pick_empty_narrow_banner() {
                 return {
                     title: $t({
                         defaultMessage:
-                            "You are not allowed to send group private messages in this organization.",
+                            "You are not allowed to send group direct messages in this organization.",
                     }),
                 };
             }
             return {
                 title: $t(
                     {
-                        defaultMessage: "You have no group private messages with {person} yet.",
+                        defaultMessage: "You have no group direct messages with {person} yet.",
                     },
                     {person: person_in_group_pm.full_name},
                 ),

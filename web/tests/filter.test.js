@@ -1138,7 +1138,7 @@ test("describe", () => {
         {operator: "is", operand: "private"},
         {operator: "search", operand: "lunch"},
     ];
-    string = "private messages, search for lunch";
+    string = "direct messages, search for lunch";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [{operator: "id", operand: 99}];
@@ -1177,7 +1177,7 @@ test("describe", () => {
         {operator: "is", operand: "private"},
         {operator: "search", operand: "lunch", negated: true},
     ];
-    string = "private messages, exclude lunch";
+    string = "direct messages, exclude lunch";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
@@ -1517,7 +1517,7 @@ test("navbar_helpers", () => {
             operator: is_private,
             is_common_narrow: true,
             icon: "envelope",
-            title: "translated: Private messages",
+            title: "translated: Direct messages",
             redirect_url_with_search: "/#narrow/is/private",
         },
         {

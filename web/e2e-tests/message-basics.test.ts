@@ -118,7 +118,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     return; // TODO: rest of this test seems nondeterministically broken
     console.log("Narrowing by clicking group personal header");
     await page.click(
-        `#zhome [title="Narrow to your private messages with Cordelia, Lear's daughter, King Hamlet"]`,
+        `#zhome [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
     await expect_huddle(page);
 
@@ -126,7 +126,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await expect_home(page);
 
     await page.click(
-        `#zhome [title="Narrow to your private messages with Cordelia, Lear's daughter, King Hamlet"]`,
+        `#zhome [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
     await un_narrow_by_clicking_org_icon(page);
     await expect_recent_topics(page);
@@ -199,7 +199,7 @@ async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Cordelia",
-        "Private",
+        "Direct",
         expect_cordelia_private_narrow,
         "Cordelia, Lear's daughter - Zulip Dev - Zulip",
     );
@@ -269,7 +269,7 @@ async function expect_all_pm(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
         "New stream message",
     );
-    assert.strictEqual(await page.title(), "Private messages - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "Direct messages - Zulip Dev - Zulip");
 }
 
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {

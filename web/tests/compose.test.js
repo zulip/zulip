@@ -771,7 +771,7 @@ test_ui("narrow_button_titles", () => {
     );
     assert.equal(
         $("#left_bar_compose_private_button_big").text(),
-        $t({defaultMessage: "New private message"}),
+        $t({defaultMessage: "New direct message"}),
     );
 
     compose_closed_ui.update_buttons_for_stream();
@@ -781,7 +781,7 @@ test_ui("narrow_button_titles", () => {
     );
     assert.equal(
         $("#left_bar_compose_private_button_big").text(),
-        $t({defaultMessage: "New private message"}),
+        $t({defaultMessage: "New direct message"}),
     );
 });
 
