@@ -617,6 +617,7 @@ export function launch() {
             });
         }
         update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
+        update_bulk_delete_ui();
     }
 
     function setup_event_handlers() {
@@ -638,8 +639,37 @@ export function launch() {
                 const $draft_row = $(this).closest(".overlay-message-row");
 
                 remove_draft($draft_row);
+                update_bulk_delete_ui();
             },
         );
+
+        $("#drafts_table .overlay_message_controls .draft-selection-checkbox").on("click", (e) => {
+            const is_checked = is_checkbox_icon_checked($(e.target));
+            toggle_checkbox_icon_state($(e.target), !is_checked);
+            update_bulk_delete_ui();
+        });
+
+        $(".select-drafts-button").on("click", (e) => {
+            e.preventDefault();
+            const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+                return !is_checkbox_icon_checked($(this));
+            });
+            const check_boxes = $unchecked_checkboxes.length > 0;
+            $(".draft-selection-checkbox").each(function () {
+                toggle_checkbox_icon_state($(this), check_boxes);
+            });
+            update_bulk_delete_ui();
+        });
+
+        $(".delete-selected-drafts-button").on("click", () => {
+            $(".drafts-list")
+                .find(".draft-selection-checkbox.fa-check-square")
+                .closest(".overlay-message-row")
+                .each(function () {
+                    remove_draft($(this));
+                });
+            update_bulk_delete_ui();
+        });
     }
 
     const drafts = draft_model.get();
@@ -663,6 +693,35 @@ export function launch() {
     setup_event_handlers();
 }
 
+function update_bulk_delete_ui() {
+    const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+        return !is_checkbox_icon_checked($(this));
+    });
+    const $checked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+        return is_checkbox_icon_checked($(this));
+    });
+    const $select_drafts_button = $(".select-drafts-button");
+    const $select_state_indicator = $(".select-drafts-button .select-state-indicator");
+    const $delete_selected_drafts_button = $(".delete-selected-drafts-button");
+
+    if ($checked_checkboxes.length > 0) {
+        $delete_selected_drafts_button.prop("disabled", false);
+        if ($unchecked_checkboxes.length === 0) {
+            toggle_checkbox_icon_state($select_state_indicator, true);
+        } else {
+            toggle_checkbox_icon_state($select_state_indicator, false);
+        }
+    } else {
+        if ($unchecked_checkboxes.length > 0) {
+            toggle_checkbox_icon_state($select_state_indicator, false);
+            $delete_selected_drafts_button.prop("disabled", true);
+        } else {
+            $select_drafts_button.hide();
+            $delete_selected_drafts_button.hide();
+        }
+    }
+}
+
 function open_overlay() {
     sync_count();
     overlays.open_overlay({
@@ -673,6 +732,19 @@ function open_overlay() {
             sync_count();
         },
     });
+}
+
+function is_checkbox_icon_checked($checkbox) {
+    return $checkbox.hasClass("fa-check-square");
+}
+
+function toggle_checkbox_icon_state($checkbox, checked) {
+    $checkbox.parent().attr("aria-checked", checked);
+    if (checked) {
+        $checkbox.removeClass("fa-square-o").addClass("fa-check-square");
+    } else {
+        $checkbox.removeClass("fa-check-square").addClass("fa-square-o");
+    }
 }
 
 export function initialize() {

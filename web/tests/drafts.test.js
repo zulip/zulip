@@ -610,6 +610,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     $.create("#drafts_table .overlay-message-row", {children: []});
+    $(".draft-selection-checkbox").filter = () => [];
     drafts.launch();
 
     $.clear_all_elements();
@@ -625,6 +626,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    $(".draft-selection-checkbox").filter = () => [];
     drafts.launch();
 });
 
@@ -770,5 +772,6 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     compose_state.private_message_recipient(aaron.email);
 
     $.create("#drafts_table .overlay-message-row", {children: []});
+    $(".draft-selection-checkbox").filter = () => [];
     drafts.launch();
 });
