@@ -74,7 +74,7 @@ def validate_recipient_user_profiles(
             realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
-        raise ValidationError(_("You can't send private messages outside of your organization."))
+        raise ValidationError(_("You can't send direct messages outside of your organization."))
 
     return list(recipient_profiles_map.values())
 

@@ -2351,7 +2351,7 @@ class InternalPrepTest(ZulipTestCase):
             m.output[0].split("\n")[0],
             "ERROR:root:Error queueing internal message by {}: {}".format(
                 "cordelia@zulip.com",
-                "You can't send private messages outside of your organization.",
+                "You can't send direct messages outside of your organization.",
             ),
         )
 

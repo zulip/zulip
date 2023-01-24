@@ -49,7 +49,7 @@ def send_notification_backend(
         do_send_stream_typing_notification(user_profile, operator, stream, topic)
     else:
         if not user_profile.send_private_typing_notifications:
-            raise JsonableError(_("User has disabled typing notifications for private messages"))
+            raise JsonableError(_("User has disabled typing notifications for direct messages"))
 
         user_ids = notification_to
         check_send_typing_notification(user_profile, user_ids, operator)

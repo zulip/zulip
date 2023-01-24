@@ -70,7 +70,7 @@ def send_initial_pms(user: UserProfile) -> None:
         content = "".join(
             [
                 welcome_msg + " ",
-                _("This is a private message from me, Welcome Bot.") + "\n\n",
+                _("This is a direct message from me, Welcome Bot.") + "\n\n",
                 _(
                     "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
                 ),
@@ -160,7 +160,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
                 + "\n\n",
                 _(
                     "Check out [Recent conversations](#recent) to see what's happening! "
-                    'You can return to this conversation by clicking "Private messages" in the upper left.'
+                    'You can return to this conversation by clicking "Direct messages" in the upper left.'
                 ),
             ]
         )

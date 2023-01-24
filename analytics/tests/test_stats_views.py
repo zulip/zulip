@@ -179,20 +179,20 @@ class TestGetChartData(ZulipTestCase):
                 "everyone": {
                     "Public streams": self.data(100),
                     "Private streams": self.data(0),
-                    "Private messages": self.data(101),
-                    "Group private messages": self.data(0),
+                    "Direct messages": self.data(101),
+                    "Group direct messages": self.data(0),
                 },
                 "user": {
                     "Public streams": self.data(200),
                     "Private streams": self.data(201),
-                    "Private messages": self.data(0),
-                    "Group private messages": self.data(0),
+                    "Direct messages": self.data(0),
+                    "Group direct messages": self.data(0),
                 },
                 "display_order": [
-                    "Private messages",
+                    "Direct messages",
                     "Public streams",
                     "Private streams",
-                    "Group private messages",
+                    "Group direct messages",
                 ],
                 "result": "success",
             },
@@ -287,8 +287,8 @@ class TestGetChartData(ZulipTestCase):
             {
                 "Public streams": [0],
                 "Private streams": [0],
-                "Private messages": [0],
-                "Group private messages": [0],
+                "Direct messages": [0],
+                "Group direct messages": [0],
             },
         )
         self.assertEqual(
@@ -296,8 +296,8 @@ class TestGetChartData(ZulipTestCase):
             {
                 "Public streams": [0],
                 "Private streams": [0],
-                "Private messages": [0],
-                "Group private messages": [0],
+                "Direct messages": [0],
+                "Group direct messages": [0],
             },
         )
 

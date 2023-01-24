@@ -448,9 +448,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         with self.tornado_redirected_to_list(events, expected_num_events=0):
             result = self.api_post(sender, "/api/v1/typing", params)
 
-        self.assert_json_error(
-            result, "User has disabled typing notifications for private messages"
-        )
+        self.assert_json_error(result, "User has disabled typing notifications for direct messages")
         self.assertEqual(events, [])
 
     def test_send_stream_typing_notifications_setting(self) -> None:
