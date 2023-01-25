@@ -399,7 +399,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: [".name-input.name_changes_disabled_tooltip"],
+        target: ["#full_name_input_container.name_changes_disabled_tooltip"],
         content: $t({
             defaultMessage:
                 "Name changes are disabled in this organization. Contact an administrator to change your name.",
