@@ -1,5 +1,6 @@
 import $ from "jquery";
 import Cookies from "js-cookie"; // eslint-disable-line import/no-unresolved
+import tippy from "tippy.js";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 
@@ -145,6 +146,19 @@ export function launch_default_language_setting_modal() {
         single_footer_button: true,
         post_render: default_language_modal_post_render,
         on_click() {},
+    });
+
+    for (const element of document.querySelectorAll("#language_selection_modal .language_percent_bar span")) {
+        const percent = element.dataset.translatedPercent;
+        element.style.width = `${percent}%`;
+    }
+
+    $("#language_selection_modal .language_percent").each(function () {
+        tippy(this, {
+            placement: "right",
+            content: this.attributes.dataTippyContent,
+            interactive: true,
+        });
     });
 }
 

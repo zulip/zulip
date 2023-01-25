@@ -82,6 +82,8 @@ export function initialize(language_params: {language_list: typeof language_list
 type Language = {
     code: string;
     name: string;
+    translated_percent: string;
+    translated_percent_available: boolean;
     name_with_percent: string;
     selected: boolean;
 };
@@ -90,7 +92,11 @@ export function get_language_list_columns(default_language: string): Language[] 
     const formatted_list: Language[] = [];
     for (const language of language_list) {
         let name_with_percent = language.name;
+        let translated_percent_available = false;
+        let translated_percent = "";
         if (language.percent_translated !== undefined) {
+            translated_percent = `${language.percent_translated}`;
+            translated_percent_available = true;
             name_with_percent = `${language.name} (${language.percent_translated}%)`;
         }
 
@@ -98,6 +104,8 @@ export function get_language_list_columns(default_language: string): Language[] 
         formatted_list.push({
             code: language.code,
             name: language.name,
+            translated_percent,
+            translated_percent_available,
             name_with_percent,
             selected,
         });

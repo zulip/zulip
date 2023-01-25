@@ -819,11 +819,62 @@ ul {
 }
 
 #language_selection_modal {
-    width: min(750px, 70vw);
+    width: 80vw;
+    max-width: 850px;
+
+    .language_block {
+        margin-bottom: 0.25rem;
+    }
+
+    .language {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+
+        padding: 4px 0.5rem;
+        line-height: 125%;
+        color: hsl(0, 0%, 25%);
+        border-radius: 6px;
+        transition: background 0.1s;
+
+        &.active {
+            background: hsla(0, 0%, 0%, 0.035);
+            color: hsla(217, 100%, 50%, 1);
+        }
+
+        &:hover {
+            background: hsla(0, 0%, 0%, 0.05);
+            text-decoration: none;
+        }
+    }
+
+    .language_percent {
+        margin-left: auto;
+        min-width: 4rem;
+    }
+
+    .language_percent_bar {
+        display: grid;
+        overflow: hidden;
+        grid-template: 1fr / 1fr;
+        width: 100%;
+        height: 0.5rem;
+        border-radius: 10px;
+        background: hsla(0, 0%, 0%, 0.15);
+
+        span {
+            grid-area: 1 / 1 / 2 / 2;
+            background: hsl(225, 86%, 70%);
+            border-radius: 10px;
+        }
+    }
 }
 
 .default_language_modal_table {
     column-count: 3;
+    gap: 1.5rem;
+
+    margin-top: 1.5rem;
 
     @media (width < $md_min) {
         column-count: 2;

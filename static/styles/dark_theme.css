@@ -284,6 +284,26 @@
         color: inherit !important;
     }
 
+    #language_selection_modal .language {
+        color: hsla(236, 33%, 90%, 0.85);
+
+        &.active {
+            color: hsla(217, 100%, 65%, 1);
+        }
+
+        &:hover {
+            background: hsla(236, 33%, 90%, 0.085);
+        }
+
+        .language_percent_bar {
+            background: hsla(236, 33%, 90%, 0.15);
+
+            span {
+                background: hsl(225, 100%, 84%);
+            }
+        }
+    }
+
     /* It's a little annoying that we need to specify the different
        background colors for these, but this alert feature can't use a
        transparent background without creating other problems */

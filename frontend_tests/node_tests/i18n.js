@@ -149,18 +149,24 @@ run_test("language_list", () => {
             code: "en",
             name_with_percent: "English",
             selected: true,
+            translated_percent: "",
+            translated_percent_available: false,
         },
         {
             name: "British English",
             code: "en-gb",
             name_with_percent: "British English (99%)",
             selected: false,
+            translated_percent: "99",
+            translated_percent_available: true,
         },
         {
             name: "Bahasa Indonesia",
             code: "id",
             name_with_percent: "Bahasa Indonesia (32%)",
             selected: false,
+            translated_percent: "32",
+            translated_percent_available: true,
         },
     ];
 
@@ -174,5 +180,13 @@ run_test("language_list", () => {
             successful_formatted_list[element].name_with_percent,
         );
         assert.equal(formatted_list[element].selected, successful_formatted_list[element].selected);
+        assert.equal(
+            formatted_list[element].translated_percent,
+            successful_formatted_list[element].translated_percent,
+        );
+        assert.equal(
+            formatted_list[element].translated_percent_available,
+            successful_formatted_list[element].translated_percent_available,
+        );
     }
 });

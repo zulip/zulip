@@ -15,11 +15,14 @@
 <div class="default_language_modal_table">
     {{#each language_list}}
         <div class="language_block">
-            <a class="language" data-code="{{this.code}}" data-name="{{this.name}}">
-                {{#if this.selected}}
-                <b>{{this.name_with_percent}}</b>
-                {{else}}
-                {{this.name_with_percent}}
+            <a class="language {{#if this.selected}}active{{/if}}" data-code="{{this.code}}" data-name="{{this.name}}">
+                <span class="language_name">{{this.name}}</span>
+                {{#if translated_percent_available}}
+                <div class="language_percent"  data-tippy-content="{{this.translated_percent }}{{t '% Translated'}}">
+                    <div class="language_percent_bar">
+                        <span data-translated-percent="{{this.translated_percent}}"></span>
+                    </div>
+                </div>
                 {{/if}}
             </a>
         </div>
