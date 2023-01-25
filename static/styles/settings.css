@@ -158,12 +158,6 @@ h3,
     }
 }
 
-#change_email_button {
-    &:disabled {
-        pointer-events: none;
-    }
-}
-
 #change_password_modal,
 #change_email_modal {
     max-width: 480px;
@@ -187,6 +181,7 @@ h3,
     }
 }
 
+#change_email_button,
 #user_deactivate_account_button,
 #deactivate_realm_button {
     &:disabled {
