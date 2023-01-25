@@ -18,9 +18,8 @@ from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedUser,
     RateLimiterLockingError,
-    add_ratelimit_rule,
     get_tor_ips,
-    remove_ratelimit_rule,
+    rate_limit_rule,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.zephyr import compute_mit_user_fullname
@@ -74,18 +73,6 @@ class MITNameTest(ZulipTestCase):
     def test_notmailinglist(self) -> None:
         with mock.patch("DNS.dnslookup", return_value=[["POP IMAP.EXCHANGE.MIT.EDU starnine"]]):
             email_is_not_mit_mailing_list("sipbexch@mit.edu")
-
-
-@contextmanager
-def rate_limit_rule(range_seconds: int, num_requests: int, domain: str) -> Iterator[None]:
-    RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
-    add_ratelimit_rule(range_seconds, num_requests, domain=domain)
-    try:
-        yield
-    finally:
-        # We need this in a finally block to ensure the test cleans up after itself
-        # even in case of failure, to avoid polluting the rules state.
-        remove_ratelimit_rule(range_seconds, num_requests, domain=domain)
 
 
 class RateLimitTests(ZulipTestCase):

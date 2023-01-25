@@ -12,6 +12,7 @@ from zerver.lib.rate_limiter import (
     RedisRateLimiterBackend,
     TornadoInMemoryRateLimiterBackend,
     add_ratelimit_rule,
+    rate_limit_rule,
     remove_ratelimit_rule,
 )
 from zerver.lib.test_classes import ZulipTestCase
@@ -250,6 +251,16 @@ class RateLimitedObjectsTest(ZulipTestCase):
 
     def test_empty_rules_edge_case(self) -> None:
         obj = RateLimitedTestObject("test", rules=[], backend=RedisRateLimiterBackend)
+        self.assertEqual(obj.get_rules(), [(1, 9999)])
+
+    def test_rate_limit_rule(self) -> None:
+        user_profile = self.example_user("hamlet")
+        obj = RateLimitedUser(user_profile, domain="test_decorator")
+
+        with rate_limit_rule(3, 3, domain="test_decorator"):
+            self.assertEqual(obj.get_rules(), [(3, 3)])
+
+        # Reverts back to the empty rules edge case
         self.assertEqual(obj.get_rules(), [(1, 9999)])
 
 

@@ -2,7 +2,8 @@ import logging
 import os
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Set, Tuple, Type, cast
+from contextlib import contextmanager
+from typing import Dict, Iterator, List, Optional, Set, Tuple, Type, cast
 
 import orjson
 import redis
@@ -623,3 +624,20 @@ def should_rate_limit(request: HttpRequest) -> bool:
         return False
 
     return True
+
+
+@contextmanager
+def rate_limit_rule(range_seconds: int, num_requests: int, domain: str) -> Iterator[None]:
+    """
+    Override a given rate limiting domain's rules for the lifetime of this context. Useful for overriding
+    default rate limits in unit tests or development endpoints.
+    """
+
+    RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
+    add_ratelimit_rule(range_seconds, num_requests, domain=domain)
+    try:
+        yield
+    finally:
+        # We need this in a finally block to ensure the test cleans up after itself
+        # even in case of failure, to avoid polluting the rules state.
+        remove_ratelimit_rule(range_seconds, num_requests, domain=domain)
