@@ -51,6 +51,13 @@ body,
 
 :root {
     color-scheme: light;
+
+    --color-link-blue: hsla(217, 100%, 50%, 1);
+    --color-icon-purple: hsla(240, 20%, 50%, 1);
+    --bg-popover-white: hsla(0, 0%, 100%, 1);
+    --color-success-green: hsla(153, 100%, 20%, 1);
+    --color-success-light-green: hsla(151, 28%, 63%, 1);
+    --bg-success-white-green: hsla(149, 51%, 91%, 1);
 }
 
 input,
@@ -371,39 +378,45 @@ p.n-margin {
 }
 
 #gear-menu .dropdown-menu {
-    .org-name,
-    .org-url {
-        padding: 0 20px;
-    }
-
     .org-info {
+        padding: 6px 5% 10px;
+        border-bottom: solid 1px hsla(0, 0%, 0%, 0.1);
         text-align: center;
-
-        a {
-            white-space: normal;
-        }
-    }
-
-    .org-name {
-        font-size: large;
-        font-weight: bold;
-    }
-
-    .org-url {
-        line-height: 100%;
-        color: hsl(0, 0%, 52%);
-    }
-
-    .org-version {
-        padding-top: 3px;
         white-space: normal;
     }
 
-    .org-upgrade {
-        color: hsl(226, 82%, 60%);
+    .org-name,
+    .org-url {
+        line-height: 125%;
+    }
+
+    .org-name {
+        font-size: 17px;
+        font-weight: bold;
+        margin: 0 0 1px;
+        color: hsla(0, 0%, 15%, 1);
+    }
+
+    .org-url {
+        font-size: 14px;
+        color: hsla(0, 0%, 40%, 1);
+        margin-bottom: 7px;
+    }
+
+    .org-version {
+        font-size: 15px;
+        line-height: 125%;
+        margin: 0;
 
         a {
-            padding: 0;
+            color: var(--color-link-blue);
+        }
+    }
+
+    .org-upgrade {
+        a {
+            color: var(--color-link-blue);
+            line-height: 125%;
         }
     }
 
@@ -869,29 +882,6 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
-}
-
-#gear_menu_about_zulip {
-    .white_zulip_icon_without_text {
-        position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
-    }
-
-    .about_zulip_text {
-        position: relative;
-        top: 1.4px;
-    }
-
-    :hover {
-        .white_zulip_icon_without_text {
-            filter: none;
-        }
-    }
 }
 
 .settings-dropdown-cog {
@@ -2753,30 +2743,6 @@ textarea.invitee_emails {
 .no-drag {
     -webkit-user-drag: none;
     user-select: none;
-}
-
-.user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
-
-    i {
-        cursor: pointer;
-
-        &.hide_copy_icon {
-            display: none;
-        }
-    }
-}
-
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170, 48%, 54%);
-}
-
-.email_copied i {
-    display: none !important;
 }
 
 .hotkey-hint {
