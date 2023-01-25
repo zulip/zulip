@@ -627,13 +627,30 @@ def should_rate_limit(request: HttpRequest) -> bool:
 
 
 @contextmanager
-def rate_limit_rule(range_seconds: int, num_requests: int, domain: str) -> Iterator[None]:
+def rate_limit_rule(
+    range_seconds: int, num_requests: int, domain: str, *, exclusive: bool = False
+) -> Iterator[None]:
     """
     Override a given rate limiting domain's rules for the lifetime of this context. Useful for overriding
     default rate limits in unit tests or development endpoints.
+
+    If `exclusive` is `True`, all other rules associated with this domain will be temporarily removed,
+    enabling temporary glass-breaking. This feature should be used with extreme care, and only if the workflow
+    in question needs accessed by some remote address not accounted for in `is_local_addr`.
     """
 
+    stashed_rules: Optional[List[Tuple[int, int]]] = None
+
     RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
+
+    if domain not in rules:
+        rules[domain] = []
+
+    if exclusive:
+        stashed_rules = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
+        for (stash_seconds, stash_requests) in stashed_rules:
+            remove_ratelimit_rule(stash_seconds, stash_requests, domain=domain)
+
     add_ratelimit_rule(range_seconds, num_requests, domain=domain)
     try:
         yield
@@ -641,3 +658,7 @@ def rate_limit_rule(range_seconds: int, num_requests: int, domain: str) -> Itera
         # We need this in a finally block to ensure the test cleans up after itself
         # even in case of failure, to avoid polluting the rules state.
         remove_ratelimit_rule(range_seconds, num_requests, domain=domain)
+
+        if exclusive and stashed_rules is not None:
+            for (stash_seconds, stash_requests) in stashed_rules:
+                add_ratelimit_rule(stash_seconds, stash_requests, domain=domain)

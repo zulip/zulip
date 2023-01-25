@@ -263,6 +263,16 @@ class RateLimitedObjectsTest(ZulipTestCase):
         # Reverts back to the empty rules edge case
         self.assertEqual(obj.get_rules(), [(1, 9999)])
 
+    def test_rate_limit_rule_exclusive(self) -> None:
+        user_profile = self.example_user("hamlet")
+        obj = RateLimitedUser(user_profile, domain="test_decorator_exclusive")
+
+        add_ratelimit_rule(4, 5, domain="test_decorator_exclusive")
+        with rate_limit_rule(3, 3, domain="test_decorator_exclusive", exclusive=True):
+            self.assertEqual(obj.get_rules(), [(3, 3)])
+
+        self.assertEqual(obj.get_rules(), [(4, 5)])
+
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
 del RateLimiterBackendBase
