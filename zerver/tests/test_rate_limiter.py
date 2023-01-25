@@ -273,6 +273,21 @@ class RateLimitedObjectsTest(ZulipTestCase):
 
         self.assertEqual(obj.get_rules(), [(4, 5)])
 
+    def test_rate_limit_rule_preserves_redundancies(self) -> None:
+        user_profile = self.example_user("hamlet")
+        obj = RateLimitedUser(user_profile, domain="test_decorator_redundancies")
+
+        add_ratelimit_rule(4, 5, domain="test_decorator_redundancies")
+        with rate_limit_rule(4, 5, domain="test_decorator_redundancies", exclusive=False):
+            self.assertEqual(obj.get_rules(), [(4, 5)])
+
+        self.assertEqual(obj.get_rules(), [(4, 5)])
+
+        with rate_limit_rule(4, 5, domain="test_decorator_redundancies", exclusive=True):
+            self.assertEqual(obj.get_rules(), [(4, 5)])
+
+        self.assertEqual(obj.get_rules(), [(4, 5)])
+
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
 del RateLimiterBackendBase

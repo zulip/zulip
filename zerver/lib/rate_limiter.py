@@ -637,6 +637,10 @@ def rate_limit_rule(
     If `exclusive` is `True`, all other rules associated with this domain will be temporarily removed,
     enabling temporary glass-breaking. This feature should be used with extreme care, and only if the workflow
     in question needs accessed by some remote address not accounted for in `is_local_addr`.
+
+    If an identical rule already exists for this domain, it will not be duplicated or removed, making a call
+    to this function with a rule that is already provided in Django settings harmlessly redundant. It is not,
+    however, a no-op, in the case of `exclusive` being `True`.
     """
 
     stashed_rules: Optional[List[Tuple[int, int]]] = None
@@ -651,13 +655,18 @@ def rate_limit_rule(
         for (stash_seconds, stash_requests) in stashed_rules:
             remove_ratelimit_rule(stash_seconds, stash_requests, domain=domain)
 
-    add_ratelimit_rule(range_seconds, num_requests, domain=domain)
+    rule_existed = any(x[0] == range_seconds and x[1] == num_requests for x in rules[domain])
+
+    if not rule_existed:
+        add_ratelimit_rule(range_seconds, num_requests, domain=domain)
+
     try:
         yield
     finally:
         # We need this in a finally block to ensure the test cleans up after itself
         # even in case of failure, to avoid polluting the rules state.
-        remove_ratelimit_rule(range_seconds, num_requests, domain=domain)
+        if not rule_existed:
+            remove_ratelimit_rule(range_seconds, num_requests, domain=domain)
 
         if exclusive and stashed_rules is not None:
             for (stash_seconds, stash_requests) in stashed_rules:
