@@ -1,6 +1,6 @@
 # Upgrade Zulip
 
-This page explains how to upgrade Zulip, including:
+This page explains how to upgrade a Zulip server, including:
 
 - [Upgrading to a release](#upgrading-to-a-release)
 - [Upgrading from a Git repository](#upgrading-from-a-git-repository)
