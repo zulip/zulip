@@ -98,7 +98,7 @@ html_safelisted_schemes = (
     "wtai",
     "xmpp",
 )
-allowed_schemes = ("http", "https", "ftp", "file") + html_safelisted_schemes
+allowed_schemes = ("http", "https", "ftp", "file", *html_safelisted_schemes)
 
 
 def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
