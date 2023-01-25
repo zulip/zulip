@@ -265,9 +265,8 @@ v1_api_and_json_patterns = [
     rest_path(
         "realm/emoji/<path:emoji_name>",
         POST=upload_emoji,
-        DELETE=(delete_emoji, {"intentionally_undocumented"}),
+        DELETE=delete_emoji,
     ),
-    # this endpoint throws a status code 400 JsonableError when it should be a 404.
     # realm/icon -> zerver.views.realm_icon
     rest_path("realm/icon", POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
     # realm/logo -> zerver.views.realm_logo

@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 190**
+
+* [`DELETE /realm/emoji/{emoji_name}`](/api/deactivate-custom-emoji): This endpoint
+  now returns an HTTP status code of 404 when an emoji does not exist, instead of 400.
+
 **Feature level 189**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

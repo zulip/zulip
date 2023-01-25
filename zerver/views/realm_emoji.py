@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.decorator import require_member_or_admin
 from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, name_to_codepoint
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import RealmEmoji, UserProfile
@@ -56,7 +56,7 @@ def delete_emoji(request: HttpRequest, user_profile: UserProfile, emoji_name: st
     if not RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).exists():
-        raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
+        raise ResourceNotFoundError(_("Emoji '{}' does not exist").format(emoji_name))
     check_remove_custom_emoji(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name, acting_user=user_profile)
     return json_success(request)
