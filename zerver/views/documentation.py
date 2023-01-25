@@ -68,6 +68,7 @@ class ApiURLView(TemplateView):
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
     policies_view = False
+    help_view = False
 
     def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
@@ -86,10 +87,8 @@ class MarkdownDirectoryView(ApiURLView):
         endpoint_name = None
         endpoint_method = None
 
-        if self.policies_view and self.path_template.startswith("/"):
-            # This block is required because neither the Django
-            # template loader nor the article_path logic below support
-            # settings.POLICIES_DIRECTORY being an absolute path.
+        # Absolute path cases
+        if (self.policies_view or self.help_view) and self.path_template.startswith("/"):
             if not os.path.exists(path):
                 article = "missing"
                 http_status = 404
@@ -165,7 +164,7 @@ class MarkdownDirectoryView(ApiURLView):
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
 
-        if self.path_template == "/zerver/help/%s.md":
+        if self.help_view:
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
             context["doc_root_title"] = "Help center"

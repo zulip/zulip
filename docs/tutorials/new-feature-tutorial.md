@@ -68,7 +68,7 @@ organization in Zulip). The following files are involved in the process:
 
 - `zerver/openapi/zulip.yaml`: OpenAPI definitions for the Zulip REST API.
 - `templates/zerver/api/changelog.md`: documentation listing all changes to the Zulip Server API.
-- `templates/zerver/help/...`: end user facing documentation (Help Center) for the application.
+- `help/...`: end user facing documentation (Help Center) for the application.
 
 ### Adding a field to the database
 
@@ -157,10 +157,10 @@ For detailed information on the kinds of documentation Zulip has, see
 [Documentation](../documentation/overview.md).
 
 **Help center documentation:** You will likely need to at least update,
-extend and link to `/help/` articles that are related to your new
-feature. [Writing help center articles](../documentation/helpcenter.md)
+extend and link to articles in the `help/` directory that are related
+to your new feature. [Writing help center articles](../documentation/helpcenter.md)
 provides more detailed information about writing and editing feature
-`/help/` articles.
+`help/` directory articles.
 
 **API documentation:** A new feature will probably impact the REST API
 documentation as well, which will mean updating `zerver/openapi/zulip.yaml`
@@ -696,10 +696,10 @@ this feature would be to update and/or augment Zulip's existing
 changes and additions.
 
 At the very least, this will involve modifying (or adding) a Markdown
-file documenting the feature to `templates/zerver/help/` in the main
-Zulip server repository, where the source for Zulip's end user
-documentation is stored. Details about writing, editing and testing
-these Markdown files can be found in:
+file documenting the feature in the `help/` directory of the main Zulip
+server repository, where the source for Zulip's end user documentation
+is stored. Details about writing, editing and testing these Markdown
+files can be found in:
 [Writing help center articles](../documentation/helpcenter.md).
 
 Also, new features will often impact Zulip's REST API documentation,
