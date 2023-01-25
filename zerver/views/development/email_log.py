@@ -15,6 +15,7 @@ from zerver.actions.realm_settings import do_send_realm_reactivation_email
 from zerver.actions.user_settings import do_change_user_delivery_email
 from zerver.actions.users import change_user_is_active
 from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.rate_limiter import rate_limit_rule
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
@@ -51,6 +52,11 @@ def clear_emails(request: HttpRequest) -> HttpResponse:
 
 
 @require_safe
+@rate_limit_rule(1, 1, domain="email_change_by_user", exclusive=True)
+@rate_limit_rule(1, 4, domain="password_reset_form_by_email", exclusive=True)
+@rate_limit_rule(1, 15, domain="sends_email_by_ip", exclusive=True)
+# The above should match number of potential passwords generated or emails sent, mismatches here surface as
+# AssertionError at the glass where status code 429 != 302
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
     if not settings.TEST_SUITE:  # nocoverage
         # It's really convenient to automatically inline the email CSS
