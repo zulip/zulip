@@ -152,12 +152,6 @@ h3,
     }
 }
 
-#change_email_button_container {
-    &.email_changes_disabled_tooltip {
-        cursor: not-allowed;
-    }
-}
-
 #change_password_modal,
 #change_email_modal {
     max-width: 480px;
@@ -169,16 +163,8 @@ h3,
     }
 }
 
-#deactivate_realm_button_container {
-    &.realm_deactivation_tooltip {
-        cursor: not-allowed;
-    }
-}
-
-#deactivate_account_container {
-    &.only_organization_owner_tooltip {
-        cursor: not-allowed;
-    }
+.disabled_setting_tooltip {
+    cursor: not-allowed;
 }
 
 #change_email_button,

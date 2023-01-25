@@ -8,7 +8,7 @@
                 <form class="grid">
                     <div class="input-group">
                         <label class="inline-block title">{{t "Email" }}</label>
-                        <div id="change_email_button_container" class="inline-block {{#unless user_can_change_email}}email_changes_disabled_tooltip{{/unless}}">
+                        <div id="change_email_button_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
                             <button id="change_email_button" type="button" class="button btn-link small rounded inline-block" {{#unless user_can_change_email}}disabled="disabled"{{/unless}}>
                                 {{page_params.delivery_email}}
                                 <i class="fa fa-pencil"></i>
@@ -36,7 +36,7 @@
                 </form>
 
                 <div class="input-group">
-                    <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}only_organization_owner_tooltip{{/if}}">
+                    <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
                         <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button"
                           {{#if user_is_only_organization_owner}}disabled="disabled"{{/if}}>
                             {{t 'Deactivate account' }}

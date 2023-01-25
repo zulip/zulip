@@ -57,10 +57,10 @@ export function update_name_change_display() {
 
     if (!settings_data.user_can_change_name()) {
         $("#full_name").prop("disabled", true);
-        $("#full_name_input_container").addClass("name_changes_disabled_tooltip");
+        $("#full_name_input_container").addClass("disabled_setting_tooltip");
     } else {
         $("#full_name").prop("disabled", false);
-        $("#full_name_input_container").removeClass("name_changes_disabled_tooltip");
+        $("#full_name_input_container").removeClass("disabled_setting_tooltip");
     }
 }
 
@@ -71,10 +71,10 @@ export function update_email_change_display() {
 
     if (!settings_data.user_can_change_email()) {
         $("#change_email_button").prop("disabled", true);
-        $("#change_email_button_container").addClass("email_changes_disabled_tooltip");
+        $("#change_email_button_container").addClass("disabled_setting_tooltip");
     } else {
         $("#change_email_button").prop("disabled", false);
-        $("#change_email_button_container").removeClass("email_changes_disabled_tooltip");
+        $("#change_email_button_container").removeClass("disabled_setting_tooltip");
     }
 }
 
@@ -160,10 +160,10 @@ export function maybe_update_deactivate_account_button() {
     if ($deactivate_account_container) {
         if (people.is_current_user_only_owner()) {
             $("#user_deactivate_account_button").prop("disabled", true);
-            $deactivate_account_container.addClass("only_organization_owner_tooltip");
+            $deactivate_account_container.addClass("disabled_setting_tooltip");
         } else {
             $("#user_deactivate_account_button").prop("disabled", false);
-            $deactivate_account_container.removeClass("only_organization_owner_tooltip");
+            $deactivate_account_container.removeClass("disabled_setting_tooltip");
         }
     }
 }
