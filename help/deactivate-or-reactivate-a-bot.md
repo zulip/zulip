@@ -1,7 +1,5 @@
 # Deactivate or reactivate a bot
 
-{!admin-only.md!}
-
 By default, users can deactivate and reactivate the bots that they
 add. Organization admins can prevent users from reactivating bots by
 [restricting bot creation](/help/restrict-bot-creation).
@@ -28,6 +26,8 @@ bot, regardless of who owns them.
     scroll down to the bottom, and click **Deactivate bot**.
 
 {tab|via-organization-settings}
+
+{!admin-only.md!}
 
 {settings_tab|bot-list-admin}
 
@@ -58,6 +58,8 @@ bot, regardless of who owns them.
 1. Approve by clicking **Confirm**.
 
 {tab|via-organization-settings}
+
+{!admin-only.md!}
 
 {settings_tab|bot-list-admin}
 
