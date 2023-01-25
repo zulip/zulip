@@ -109,7 +109,7 @@ if aux_services:
 if (
     action == "restart"
     and len(
-        list_supervisor_processes(workers + ["zulip-django", "zulip-tornado:*"], only_running=True)
+        list_supervisor_processes([*workers, "zulip-django", "zulip-tornado:*"], only_running=True)
     )
     == 0
 ):

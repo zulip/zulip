@@ -261,7 +261,7 @@ def event_dict_type(
     assert "type" in rkeys
     assert "id" not in keys
     return DictType(
-        required_keys=list(required_keys) + [("id", int)],
+        required_keys=[*required_keys, ("id", int)],
         optional_keys=optional_keys,
     )
 

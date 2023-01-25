@@ -361,7 +361,7 @@ if __name__ == "__main__":
         my_token=api_token,
         template_id=template_id,
         name=droplet_domain_name,
-        tags=args.tags + ["dev"],
+        tags=[*args.tags, "dev"],
         user_data=user_data,
         region=args.region,
     )

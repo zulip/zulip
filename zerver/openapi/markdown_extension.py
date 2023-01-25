@@ -141,7 +141,7 @@ def render_python_code_example(
     endpoint, endpoint_method = function.split(":")
     extra_imports = check_additional_imports(endpoint, endpoint_method)
     if extra_imports:
-        extra_imports = sorted(extra_imports + ["zulip"])
+        extra_imports = sorted([*extra_imports, "zulip"])
         extra_imports = [f"import {each_import}" for each_import in extra_imports]
         config_string = config_string.replace("import zulip", "\n".join(extra_imports))
 

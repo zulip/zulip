@@ -867,7 +867,7 @@ def do_send_messages(
         # this results in the sender receiving the message first if
         # there are thousands of recipients, decreasing perceived latency.
         if sender_id in user_ids:
-            user_list = [sender_id] + list(user_ids - {sender_id})
+            user_list = [sender_id, *user_ids - {sender_id}]
         else:
             user_list = list(user_ids)
 

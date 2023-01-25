@@ -308,8 +308,9 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
         actual_keys = sorted(str(k) for k in page_params)
-        expected_keys = self.expected_page_params_keys + [
-            "demo_organization_scheduled_deletion_date"
+        expected_keys = [
+            *self.expected_page_params_keys,
+            "demo_organization_scheduled_deletion_date",
         ]
 
         self.assertEqual(set(actual_keys), set(expected_keys))
