@@ -38,7 +38,7 @@ def upload_emoji(
     if len(request.FILES) != 1:
         raise JsonableError(_("You must upload exactly one file."))
     if emoji_name in valid_built_in_emoji and not user_profile.is_realm_admin:
-        raise JsonableError(_("Only administrators can override built-in emoji."))
+        raise JsonableError(_("Only administrators can override default emoji."))
     emoji_file = list(request.FILES.values())[0]
     assert isinstance(emoji_file, UploadedFile)
     assert emoji_file.size is not None

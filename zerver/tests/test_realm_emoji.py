@@ -90,7 +90,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/laughing", info=emoji_data)
         self.assert_json_error(
             result,
-            "Only administrators can override built-in emoji.",
+            "Only administrators can override default emoji.",
         )
 
         user = self.example_user("iago")
