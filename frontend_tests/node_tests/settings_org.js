@@ -752,25 +752,25 @@ test("misc", ({override_rewire}) => {
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
-    assert.ok(!$("#full_name_input_container").hasClass("name_changes_disabled_tooltip"));
+    assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("name_changes_disabled_tooltip"));
+    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("name_changes_disabled_tooltip"));
+    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("name_changes_disabled_tooltip"));
+    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
@@ -801,7 +801,7 @@ test("misc", ({override_rewire}) => {
     page_params.is_admin = true;
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
-    assert.ok(!$("#full_name_input_container").hasClass("name_changes_disabled_tooltip"));
+    assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     settings_account.update_email_change_display();
     assert.ok(!$("#change_email_button").prop("disabled"));

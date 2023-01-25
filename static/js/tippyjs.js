@@ -399,7 +399,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#full_name_input_container.name_changes_disabled_tooltip"],
+        target: ["#full_name_input_container.disabled_setting_tooltip"],
         content: $t({
             defaultMessage:
                 "Name changes are disabled in this organization. Contact an administrator to change your name.",
@@ -411,7 +411,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#change_email_button_container.email_changes_disabled_tooltip"],
+        target: ["#change_email_button_container.disabled_setting_tooltip"],
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -420,7 +420,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#deactivate_account_container.only_organization_owner_tooltip"],
+        target: ["#deactivate_account_container.disabled_setting_tooltip"],
         content: $t({
             defaultMessage:
                 "Because you are the only organization owner, you cannot deactivate your account.",
@@ -432,7 +432,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#deactivate_realm_button_container.realm_deactivation_tooltip"],
+        target: ["#deactivate_realm_button_container.disabled_setting_tooltip"],
         content: $t({
             defaultMessage: "Only organization owners may deactivate an organization.",
         }),
