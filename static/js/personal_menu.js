@@ -5,6 +5,7 @@ import render_personal_menu from "../templates/personal_menu.hbs";
 import * as buddy_data from "./buddy_data";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import tippy from "tippy.js";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
@@ -46,7 +47,19 @@ export function initialize() {
         document
             .querySelector("#personal-menu")
             .insertAdjacentHTML("beforeend", rendered_personal_menu);
+
+        tippyInitialize();
     }
+}
+
+function tippyInitialize() {
+    $("#personal-menu .clear_status").each(function () {
+        tippy(this, {
+            placement: "top",
+            content: this.attributes.dataTippyContent,
+            interactive: true,
+        });
+    });
 }
 
 export function close() {
