@@ -9174,6 +9174,48 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+    delete:
+      operationId: deactivate-custom-emoji
+      summary: Deactivate custom emoji
+      tags: ["server_and_organizations"]
+      description: |
+        [Deactivate a custom emoji](/help/custom-emoji#deactivate-custom-emoji) from
+        the user's organization.
+
+        Users can only deactivate custom emoji that they added themselves except for
+        organization administrators, who can deactivate any custom emoji.
+
+        Note that deactivated emoji will still be visible in old messages, reactions,
+        user statuses and stream descriptions.
+
+        **Changes**: Before Zulip 8.0 (feature level 190), this endpoint returned an
+        HTTP status code of 400 when the emoji did not exist, instead of 404.
+      parameters:
+        - name: emoji_name
+          required: true
+          in: path
+          description: |
+            The name of the custom emoji to deactivate.
+          schema:
+            type: string
+          example: green_tick
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - description: |
+                      JSON response for when no emoji exists with the provided name.
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Emoji 'green_tick' does not exist",
+                      }
 
   /realm/emoji:
     get:

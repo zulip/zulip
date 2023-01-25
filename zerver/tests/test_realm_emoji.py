@@ -282,7 +282,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_delete_exception(self) -> None:
         self.login("iago")
         result = self.client_delete("/json/realm/emoji/invalid_emoji")
-        self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")
+        self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist", status_code=404)
 
     def test_multiple_upload(self) -> None:
         self.login("iago")
