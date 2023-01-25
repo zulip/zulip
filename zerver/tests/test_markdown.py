@@ -674,7 +674,7 @@ class MarkdownTest(ZulipTestCase):
         image_links.append("> http://cdn.wallpapersafari.com/spoiler/dont_count.jpeg\n")
         # Using INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1 because of the one link in a spoiler added already
         for x in range(InlineInterestingLinkProcessor.INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1):
-            image_links.append("http://cdn.wallpapersafari.com/{}/6/16eVjx.jpeg".format(x))
+            image_links.append(f"http://cdn.wallpapersafari.com/{x}/6/16eVjx.jpeg")
         within_limit_content = "\n".join(image_links)
         above_limit_content = (
             within_limit_content + "\nhttp://cdn.wallpapersafari.com/above/0/6/16eVjx.jpeg"
