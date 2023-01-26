@@ -64,7 +64,7 @@ class zulip_ops::profile::base {
     require => User['zulip'],
     owner   => 'zulip',
     group   => 'zulip',
-    mode    => '0600',
+    mode    => '0700',
   }
 
   # Clear /etc/update-motd.d, to fix load problems with Nagios
@@ -170,14 +170,14 @@ class zulip_ops::profile::base {
     require => User['nagios'],
     owner   => 'nagios',
     group   => 'nagios',
-    mode    => '0600',
+    mode    => '0700',
   }
   file { '/var/lib/nagios/.ssh':
     ensure  => directory,
     require => File['/var/lib/nagios/'],
     owner   => 'nagios',
     group   => 'nagios',
-    mode    => '0600',
+    mode    => '0700',
   }
   file { '/home/nagios':
     ensure  => absent,

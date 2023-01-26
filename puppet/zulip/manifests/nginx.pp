@@ -73,7 +73,7 @@ class zulip::nginx {
     ensure => directory,
     owner  => 'zulip',
     group  => 'adm',
-    mode   => '0650',
+    mode   => '0750',
   }
   file { '/etc/logrotate.d/nginx':
     ensure  => file,
@@ -90,7 +90,7 @@ class zulip::nginx {
     ensure => directory,
     owner  => 'zulip',
     group  => 'adm',
-    mode   => '0660',
+    mode   => '0770',
   }
 
   service { 'nginx':

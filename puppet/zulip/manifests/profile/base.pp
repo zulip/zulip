@@ -79,7 +79,7 @@ class zulip::profile::base {
 
   file { '/etc/zulip':
     ensure => directory,
-    mode   => '0644',
+    mode   => '0755',
     owner  => 'zulip',
     group  => 'zulip',
     links  => follow,
@@ -117,14 +117,14 @@ class zulip::profile::base {
   file { '/var/lib/nagios_state/':
     ensure => directory,
     group  => 'zulip',
-    mode   => '0774',
+    mode   => '0775',
   }
 
   file { '/var/log/zulip':
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
-    mode   => '0640',
+    mode   => '0750',
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_base":
