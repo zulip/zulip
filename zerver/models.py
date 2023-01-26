@@ -115,6 +115,8 @@ from zerver.lib.validator import (
 MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
+SECONDS_PER_DAY = 86400
+
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 
 if TYPE_CHECKING:
@@ -378,6 +380,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
 
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
+
+    DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
+
+    move_messages_within_stream_limit_seconds = models.PositiveIntegerField(
+        default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
+    )
 
     # Who in the organization is allowed to add custom emojis.
     add_custom_emoji_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
@@ -728,6 +736,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=(int, type(None)),
         message_content_delete_limit_seconds=(int, type(None)),
+        move_messages_within_stream_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
         move_messages_between_streams_policy=int,
         name=str,

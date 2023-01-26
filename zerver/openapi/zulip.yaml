@@ -4032,6 +4032,20 @@ paths:
 
                                         **Changes**: No limit was represented using the
                                         special value `0` before Zulip 6.0 (feature level 138).
+                                    move_messages_within_stream_limit_seconds:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        Messages sent more than this many seconds ago cannot be moved within a
+                                        stream by members with this organization's [message move
+                                        policy](/help/configure-who-can-edit-topics). This setting does not
+                                        affect moderators and administrators.
+
+                                        Will not be 0. A 'null' value means no limit: messages can be moved
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
+                                        limit was always 72 hours.
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -12202,6 +12216,22 @@ paths:
 
                           **Changes**: No limit was represented using the
                           special value `0` before Zulip 6.0 (feature level 138).
+                      realm_move_messages_within_stream_limit_seconds:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Messages sent more than this many seconds ago cannot be moved within a
+                          stream by members with this organization's [message move
+                          policy](/help/configure-who-can-edit-topics). This setting does not
+                          affect moderators and administrators.
+
+                          Will not be 0. A 'null' value means no limit: messages can be moved
+                          regardless of how long ago they were sent.
+
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
+                          limit was always 72 hours.
                       realm_community_topic_editing_limit_seconds:
                         type: integer
                         description: |
