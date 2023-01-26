@@ -3,7 +3,7 @@ want it to be.
 
 {start_tabs}
 
-{relative|gear|manage-organization}
+{relative|gear|organization-settings}
 
 1. Click on the **Organization settings** and **Organization
    permissions** tabs, as well as any others that are of interest.
