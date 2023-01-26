@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 162**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Added new `move_messages_within_stream_limit_seconds` setting.
+
 **Feature level 161**
 
 * [`PATCH /streams/{stream_id}`](/api/update-stream): Added
