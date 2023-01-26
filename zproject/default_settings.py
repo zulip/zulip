@@ -1,6 +1,6 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
@@ -112,6 +112,9 @@ CUSTOM_HOME_NOT_LOGGED_IN: Optional[str] = None
 
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
+VIDEO_ZOOM_TESTING_REALMS: Set[str] = set()
+VIDEO_ZOOM_TESTING_CLIENT_ID = get_secret("video_zoom_testing_client_id", development_only=True)
+VIDEO_ZOOM_TESTING_CLIENT_SECRET = get_secret("video_zoom_testing_client_secret")
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""

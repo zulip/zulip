@@ -53,6 +53,12 @@ def get_zoom_session(user: UserProfile) -> OAuth2Session:
 
     client_id = settings.VIDEO_ZOOM_CLIENT_ID
     client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+    if user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
+        if settings.VIDEO_ZOOM_TESTING_CLIENT_ID is None:
+            raise ValueError("Zoom testing realm detected, but no ZOOM_TESTING_CLIENT_ID set")
+
+        client_id = settings.VIDEO_ZOOM_TESTING_CLIENT_ID
+        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
 
     return OAuth2Session(
         client_id,
@@ -127,6 +133,8 @@ def complete_zoom_user_in_realm(
         raise JsonableError(_("Invalid Zoom session identifier"))
 
     client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+    if request.user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
+        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
 
     oauth = get_zoom_session(request.user)
     try:
