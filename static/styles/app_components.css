@@ -523,10 +523,11 @@ div.overlay {
 
 .upgrade-tip,
 .upgrade-or-sponsorship-tip {
-    width: max-content;
+    width: fit-content;
 
     &::before {
         content: "\f135";
+        margin-right: 6px;
     }
 }
 
@@ -554,7 +555,6 @@ div.overlay {
 
     &::before {
         display: inline;
-        margin-right: 8px;
 
         font-family: FontAwesome;
         font-weight: 600;
@@ -563,6 +563,7 @@ div.overlay {
 
 .tip::before {
     content: "\f0a2";
+    margin-right: 8px;
 }
 
 /* We are mostly consistent in how we style
