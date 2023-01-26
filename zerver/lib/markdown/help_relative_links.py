@@ -20,7 +20,7 @@ gear_info = {
     # link is used for relative links: `Select [name](link).`
     "manage-streams": ["Manage streams", "/#streams/subscribed"],
     "settings": ["Personal Settings", "/#settings/profile"],
-    "manage-organization": ["Manage organization", "/#organization/organization-profile"],
+    "organization-settings": ["Organization settings", "/#organization/organization-profile"],
     "integrations": ["Integrations", "/integrations"],
     "stats": ["Usage statistics", "/stats"],
     "plans": ["Plans and pricing", "/plans"],

@@ -12,7 +12,7 @@ generally only organization administrators can interact with them.
 
 {start_tabs}
 
-{relative|gear|manage-organization}
+{relative|gear|organization-settings}
 
 1. Click on each tab on the left.
 
