@@ -179,53 +179,24 @@ class zulip::app_frontend_base {
     onlyif      => 'touch /proc/sys/net/core/somaxconn',
   }
 
-  file { '/home/zulip/tornado':
+  file { [
+    '/home/zulip/tornado',
+    '/home/zulip/logs',
+    '/home/zulip/prod-static',
+    '/home/zulip/deployments',
+    '/srv/zulip-npm-cache',
+    '/srv/zulip-emoji-cache',
+    '/srv/zulip-uploaded-files-cache',
+  ]:
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0755',
   }
-  file { '/home/zulip/logs':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
-  file { '/home/zulip/prod-static':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
-  file { '/home/zulip/deployments':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
-  file { '/srv/zulip-npm-cache':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0755',
-  }
-  file { '/srv/zulip-emoji-cache':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0755',
-  }
-  file { '/srv/zulip-uploaded-files-cache':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0755',
-  }
-  file { '/var/log/zulip/queue_error':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0640',
-  }
-
-  file { '/var/log/zulip/queue_stats':
+  file { [
+    '/var/log/zulip/queue_error',
+    '/var/log/zulip/queue_stats',
+  ]:
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
