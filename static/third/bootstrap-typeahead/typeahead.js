@@ -475,6 +475,11 @@ import {get_string_diff} from "../../js/util";
           }
           break
 
+        // to stop typeahead from showing up momentarily
+        // when shift + tabbing to a field with typeahead
+        case 16: // shift
+          break
+
         default:
           var hideOnEmpty = false
           if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
