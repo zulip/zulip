@@ -146,6 +146,11 @@ def update_realm(
         json_validator=check_bool, default=None
     ),
     enable_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    move_messages_within_stream_limit_seconds_raw: Optional[Union[int, str]] = REQ(
+        "move_messages_within_stream_limit_seconds",
+        json_validator=check_string_or_int,
+        default=None,
+    ),
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -224,6 +229,23 @@ def update_realm(
 
         if setting_value_changed:
             data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
+
+    move_messages_within_stream_limit_seconds: Optional[int] = None
+    if move_messages_within_stream_limit_seconds_raw is not None:
+        (
+            move_messages_within_stream_limit_seconds,
+            setting_value_changed,
+        ) = parse_and_set_setting_value_if_required(
+            realm,
+            "move_messages_within_stream_limit_seconds",
+            move_messages_within_stream_limit_seconds_raw,
+            acting_user=user_profile,
+        )
+
+        if setting_value_changed:
+            data[
+                "move_messages_within_stream_limit_seconds"
+            ] = move_messages_within_stream_limit_seconds
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
