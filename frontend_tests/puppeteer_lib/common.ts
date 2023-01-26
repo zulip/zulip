@@ -516,7 +516,7 @@ export async function manage_organization(page: Page): Promise<void> {
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
     const url = await page_url_with_fragment(page);
-    assert.match(url, /^http:\/\/[^/]+\/#organization/, "Unexpected manage organization URL");
+    assert.match(url, /^http:\/\/[^/]+\/#organization/, "Unexpected organization settings URL");
 
     const organization_settings_data_section = "li[data-section='organization-settings']";
     await page.click(organization_settings_data_section);

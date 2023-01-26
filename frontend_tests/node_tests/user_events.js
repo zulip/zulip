@@ -20,9 +20,6 @@ mock_esm("../../static/js/activity", {
 mock_esm("../../static/js/compose", {
     update_email() {},
 });
-mock_esm("../../static/js/gear_menu", {
-    update_org_settings_menu_item() {},
-});
 mock_esm("../../static/js/narrow_state", {
     update_email() {},
 });

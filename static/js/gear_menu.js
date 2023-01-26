@@ -79,15 +79,6 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
-export function update_org_settings_menu_item() {
-    const $item = $(".admin-menu-item").expectOne();
-    if (page_params.is_admin) {
-        $item.find("span").text($t({defaultMessage: "Manage organization"}));
-    } else {
-        $item.find("span").text($t({defaultMessage: "Organization settings"}));
-    }
-}
-
 export function version_display_string() {
     const version = page_params.zulip_version;
     const is_fork = page_params.zulip_merge_base && page_params.zulip_merge_base !== version;
@@ -145,7 +136,6 @@ export function initialize() {
         show_webathena: page_params.show_webathena,
     });
     $("#navbar-buttons").html(rendered_gear_menu);
-    update_org_settings_menu_item();
 }
 
 export function open() {
