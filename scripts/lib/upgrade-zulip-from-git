@@ -50,7 +50,6 @@ if args.remote_url:
     remote_url = args.remote_url
 
 os.makedirs(DEPLOYMENTS_DIR, exist_ok=True)
-os.makedirs("/home/zulip/logs", exist_ok=True)
 
 error_rerun_script = f"{DEPLOYMENTS_DIR}/current/scripts/upgrade-zulip-from-git {refname}"
 get_deployment_lock(error_rerun_script)

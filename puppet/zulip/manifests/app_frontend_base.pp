@@ -181,7 +181,6 @@ class zulip::app_frontend_base {
 
   file { [
     '/home/zulip/tornado',
-    '/home/zulip/logs',
     '/home/zulip/prod-static',
     '/home/zulip/deployments',
     '/srv/zulip-npm-cache',
