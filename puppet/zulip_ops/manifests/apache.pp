@@ -19,7 +19,7 @@ class zulip_ops::apache {
     require => Package['apache2'],
     owner   => 'root',
     group   => 'root',
-    mode    => '0644',
+    mode    => '0755',
   }
 
   file { '/etc/apache2/ports.conf':
@@ -37,6 +37,6 @@ class zulip_ops::apache {
     require => Package[apache2],
     owner   => 'root',
     group   => 'root',
-    mode    => '0640',
+    mode    => '0750',
   }
 }

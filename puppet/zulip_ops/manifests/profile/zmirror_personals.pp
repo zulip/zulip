@@ -30,7 +30,7 @@ class zulip_ops::profile::zmirror_personals {
   file { ['/home/zulip/api-keys', '/home/zulip/zephyr_sessions', '/home/zulip/ccache',
           '/home/zulip/mirror_status']:
     ensure => directory,
-    mode   => '0644',
+    mode   => '0755',
     owner  => 'zulip',
     group  => 'zulip',
   }

@@ -199,7 +199,7 @@ class zulip::app_frontend_base {
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
-    mode   => '0640',
+    mode   => '0750',
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
