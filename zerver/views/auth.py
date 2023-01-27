@@ -1,9 +1,8 @@
 import logging
 import secrets
 import urllib
-from email.headerregistry import Address
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, cast
 from urllib.parse import urlencode
 
 import jwt
@@ -473,15 +472,18 @@ def remote_user_sso(
     return login_or_register_remote_user(request, result)
 
 
-@csrf_exempt
-@log_view_func
-def remote_user_jwt(request: HttpRequest) -> HttpResponse:
-    subdomain = get_subdomain(request)
+def get_email_and_realm_from_jwt_authentication_request(
+    request: HttpRequest,
+) -> Tuple[str, Realm]:
+    realm = get_realm_from_request(request)
+    if realm is None:
+        raise InvalidSubdomainError()
+
     try:
-        key = settings.JWT_AUTH_KEYS[subdomain]["key"]
-        algorithms = settings.JWT_AUTH_KEYS[subdomain]["algorithms"]
+        key = settings.JWT_AUTH_KEYS[realm.subdomain]["key"]
+        algorithms = settings.JWT_AUTH_KEYS[realm.subdomain]["algorithms"]
     except KeyError:
-        raise JsonableError(_("Auth key for this subdomain not found."))
+        raise JsonableError(_("Auth key for this subdomain not found"))
 
     try:
         json_web_token = request.POST["json_web_token"]
@@ -492,24 +494,22 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     except jwt.InvalidTokenError:
         raise JsonableError(_("Bad JSON web token"))
 
-    remote_user = payload.get("user", None)
-    if remote_user is None:
-        raise JsonableError(_("No user specified in JSON web token claims"))
-    email_domain = payload.get("realm", None)
-    if email_domain is None:
-        raise JsonableError(_("No organization specified in JSON web token claims"))
+    remote_email = payload.get("email", None)
+    if remote_email is None:
+        raise JsonableError(_("No email specified in JSON web token claims"))
 
-    email = Address(username=remote_user, domain=email_domain).addr_spec
+    return remote_email, realm
 
-    try:
-        realm = get_realm(subdomain)
-    except Realm.DoesNotExist:
-        raise JsonableError(_("Wrong subdomain"))
+
+@csrf_exempt
+@log_view_func
+def remote_user_jwt(request: HttpRequest) -> HttpResponse:
+    email, realm = get_email_and_realm_from_jwt_authentication_request(request)
 
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
         result = ExternalAuthResult(
-            data_dict={"email": email, "full_name": remote_user, "subdomain": realm.subdomain}
+            data_dict={"email": email, "full_name": "", "subdomain": realm.subdomain}
         )
     else:
         assert isinstance(user_profile, UserProfile)
