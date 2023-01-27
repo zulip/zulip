@@ -42,3 +42,4 @@ explicitly set a notification preference.
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
 * [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [Do not disturb](/help/do-not-disturb)
