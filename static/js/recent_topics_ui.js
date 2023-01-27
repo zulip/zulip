@@ -104,15 +104,6 @@ export function save_filters() {
     ls.set(ls_key, Array.from(filters));
 }
 
-export function load_filters() {
-    if (!page_params.is_spectator) {
-        // A user may have a stored filter and can log out
-        // to see web public view. This ensures no filters are
-        // selected for spectators.
-        filters = new Set(ls.get(ls_key));
-    }
-}
-
 export function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
@@ -792,8 +783,6 @@ export function complete_rerender() {
         return;
     }
 
-    // Update header
-    load_filters();
     show_selected_filters();
 
     // Show topics list
@@ -1224,4 +1213,14 @@ export function change_focused_element($elt, input_key) {
     }
 
     return false;
+}
+
+export function initialize() {
+    // load filters from local storage.
+    if (!page_params.is_spectator) {
+        // A user may have a stored filter and can log out
+        // to see web public view. This ensures no filters are
+        // selected for spectators.
+        filters = new Set(ls.get(ls_key));
+    }
 }
