@@ -783,8 +783,6 @@ export function complete_rerender() {
         return;
     }
 
-    show_selected_filters();
-
     // Show topics list
     const mapped_topic_values = Array.from(get().values()).map((value) => value);
 
@@ -802,6 +800,13 @@ export function complete_rerender() {
         is_spectator: page_params.is_spectator,
     });
     $("#recent_topics_table").html(rendered_body);
+
+    // `show_selected_filters` needs to be called after the Recent
+    // Conversations view has been added to the DOM, to ensure that filters
+    // have the correct classes (checked or not) if Recent Conversations
+    // was not the first view loaded in the app.
+    show_selected_filters();
+
     const $container = $("#recent_topics_table table tbody");
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
