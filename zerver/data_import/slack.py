@@ -1330,6 +1330,14 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
             os.makedirs(slack_data_dir)
 
         with zipfile.ZipFile(original_path) as zipObj:
+            # Slack's export doesn't set the UTF-8 flag on each
+            # filename entry, despite encoding them as such, so
+            # zipfile mojibake's the output.  Explicitly re-interpret
+            # it as UTF-8 mis-decoded as cp437, the default.
+            for fileinfo in zipObj.infolist():
+                fileinfo.flag_bits |= 0x800
+                fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")
+                zipObj.NameToInfo[fileinfo.filename] = fileinfo
             zipObj.extractall(slack_data_dir)
     elif os.path.isdir(original_path):
         slack_data_dir = original_path
