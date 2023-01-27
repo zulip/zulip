@@ -224,18 +224,51 @@ function populate_group_from_message_container(group, message_container) {
 }
 
 export class MessageListView {
+    // MessageListView is the module responsible for rendering a
+    // MessageList into the DOM, and maintaining it over time.
+    //
+    // Logic to compute context, render templates, insert them into
+    // the DOM, and generally
+
     constructor(list, table_name, collapse_messages) {
+        // The MessageList that this MessageListView is responsible for rendering.
         this.list = list;
+
+        // TODO: Access this via .list.data.
         this.collapse_messages = collapse_messages;
+
+        // These three data structures keep track of groups of messages in the DOM.
+        //
+        // The message_groups are blocks of messages rendered into the
+        // DOM that will share a common recipent bar heading.
+        //
+        // A message_container an object containing a Message object
+        // plus additional computed metadata needed for rendering it
+        // in the DOM.
+        //
+        // _rows contains jQuery objects for the `message_row`
+        // elements rendered by single_message.hbs.
+        //
+        // TODO: Consider renaming _message_groups to something like _recipient_groups.
+        // TODO: Consider renaming _rows to something like $rows.
         this._rows = new Map();
         this.message_containers = new Map();
+        this._message_groups = [];
+
+        // TODO: Should this be just accessing .list.table_name?
         this.table_name = table_name;
         if (this.table_name) {
             this.clear_table();
         }
-        this._message_groups = [];
 
-        // Half-open interval of the indices that define the current render window
+        // For performance reasons, this module renders at most
+        // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
+        // will transparently adjust which messages are rendered
+        // whenever the user scrolls within _RENDER_THRESHOLD of the
+        // edge of the rendered window.
+        //
+        // These two values are a half-open interval keeping track of
+        // what range of messages is currently rendered in the dOM.
         this._render_win_start = 0;
         this._render_win_end = 0;
     }
