@@ -77,3 +77,4 @@ the alert word is included in a message. Alert words are case-insensitive.
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Stream notifications](/help/stream-notifications)
 * [View your mentions](/help/view-your-mentions)
+* [Do not disturb](/help/do-not-disturb)

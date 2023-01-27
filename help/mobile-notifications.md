@@ -36,7 +36,9 @@ notifications while you are actively using one of the Zulip apps.
 {end_tabs}
 
 ## Related articles
+
 * [Stream notifications](/help/stream-notifications)
 * [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)
+* [Do not disturb](/help/do-not-disturb)

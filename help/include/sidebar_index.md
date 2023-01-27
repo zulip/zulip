@@ -125,6 +125,7 @@
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)
 * [Mobile notifications](/help/mobile-notifications)
+* [Do not disturb](/help/do-not-disturb)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
