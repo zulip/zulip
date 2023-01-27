@@ -776,7 +776,7 @@ def login_page(
     next: str = REQ(default="/"),
     **kwargs: Any,
 ) -> HttpResponse:
-    if settings.SOCIAL_AUTH_SUBDOMAIN == get_subdomain(request):
+    if get_subdomain(request) == settings.SOCIAL_AUTH_SUBDOMAIN:
         return social_auth_subdomain_login_page(request)
 
     # To support previewing the Zulip login pages, we have a special option
