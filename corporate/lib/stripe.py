@@ -1007,8 +1007,10 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             plan_name = "Zulip Cloud Standard"
             emoji = ":tada:"
             message = _(
-                f"Your organization's request for sponsored hosting has been approved! {emoji}.\n"
-                f"You have been upgraded to {plan_name}, free of charge."
+                "Your organization's request for sponsored hosting has been approved! "
+                f"You have been upgraded to {plan_name}, free of charge. {emoji}\n\n"
+                "If you could [list Zulip as a sponsor on your website](/help/linking-to-zulip-website), "
+                "we would really appreciate it!"
             )
             internal_send_private_message(notification_bot, user, message)
 
