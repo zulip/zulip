@@ -65,6 +65,7 @@ import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
@@ -613,6 +614,7 @@ export function initialize_everything() {
 
     realm_logo.initialize();
     message_lists.initialize();
+    recent_topics_ui.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
     scroll_bar.initialize();
