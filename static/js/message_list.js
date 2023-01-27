@@ -10,7 +10,24 @@ import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 
 export class MessageList {
+    // A MessageList is the main interface for a message feed that is
+    // rendered in the DOM. Code outside the message feed rendering
+    // internals will directly call this module in order to manipulate
+    // a message feed.
+    //
+    // Each MessageList has an associated MessageListData, which
+    // manages the messages, and a MessageListView, which manages the
+    // the templates/HTML rendering as well as invisible pagination.
+    //
+    // TODO: The abstraction boundary between this and MessageListView
+    // is not particularly well-defined; it could be nice to figure
+    // out a good rule.
     constructor(opts) {
+        // The MessageListData keeps track of the actual sequence of
+        // messages displayed by this MessageList. Most
+        // configuration/logic questions in this module will be
+        // answered by calling a function from the MessageListData,
+        // its Filter, or its FetchStatus object.
         if (opts.data) {
             this.data = opts.data;
         } else {
@@ -22,12 +39,39 @@ export class MessageList {
             });
         }
 
-        const collapse_messages = this.data.filter.supports_collapsing_recipients();
+        // The table_name is the outer HTML element for this message
+        // list in the DOM.
         const table_name = opts.table_name;
-        this.view = new MessageListView(this, table_name, collapse_messages);
         this.table_name = table_name;
+
+        // TODO: This property should likely just be inlined into
+        // having the MessageListView code that needs to access it
+        // query .data.filter directly.
+        const collapse_messages = this.data.filter.supports_collapsing_recipients();
+
+        // The MessageListView object that is responsible for
+        // maintaining this message feed's HTML representation in the
+        // DOM.
+        this.view = new MessageListView(this, table_name, collapse_messages);
+
+        // Whether this is a narrowed message list. The only message
+        // list that is not is the home_msg_list global.
+        //
+        // TODO: It would probably be more readable to replace this
+        // with another property with an inverted meaning, since
+        // home_msg_list is the message list that is special/unique.
         this.narrowed = this.table_name === "zfilt";
+
+        // TODO: This appears to be unused and can be deleted.
         this.num_appends = 0;
+
+        // Keeps track of whether the user has done a UI interaction,
+        // such as "Mark as unread", that should disable marking
+        // messages as read until prevent_reading is called again.
+        //
+        // Distinct from filter.can_mark_messages_read(), which is a
+        // property of the type of narrow, regardless of actions by
+        // the user. Possibly this can be unified in some nice way.
         this.reading_prevented = false;
 
         return this;
