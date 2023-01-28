@@ -1,3 +1,4 @@
+import os
 from typing import TYPE_CHECKING, Optional
 
 import sentry_sdk
@@ -9,6 +10,7 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.utils import capture_internal_exceptions
 
 from version import ZULIP_VERSION
+from zproject.config import DEPLOY_ROOT
 
 if TYPE_CHECKING:
     from sentry_sdk._types import Event, Hint
@@ -58,10 +60,15 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
 def setup_sentry(dsn: Optional[str], environment: str) -> None:
     if not dsn:
         return
+
+    sentry_release = ZULIP_VERSION
+    if os.path.exists(os.path.join(DEPLOY_ROOT, "sentry-release")):
+        with open(os.path.join(DEPLOY_ROOT, "sentry-release")) as sentry_release_file:
+            sentry_release = sentry_release_file.readline().strip()
     sentry_sdk.init(
         dsn=dsn,
         environment=environment,
-        release=ZULIP_VERSION,
+        release=sentry_release,
         integrations=[
             DjangoIntegration(),
             RedisIntegration(),

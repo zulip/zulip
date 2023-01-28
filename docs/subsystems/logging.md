@@ -61,8 +61,12 @@ You can enable it by:
     /home/zulip/deployments/current/scripts/restart-server
     ```
 
+You may also want to enable Zulip's [Sentry deploy
+hook][sentry-deploy-hook].
+
 [sentry-project]: https://docs.sentry.io/product/projects/
 [sentry-dsn]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
+[sentry-relase-hook]: ../production/deployment.md#sentry-deploy-hook
 
 ### Backend logging
 

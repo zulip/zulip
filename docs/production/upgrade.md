@@ -223,6 +223,9 @@ is called, sorted in alphabetical order, from the working directory of
 the new version, with arguments of the old and new Zulip versions. If
 they exit with non-0 exit code, the upgrade will abort.
 
+See the [deploy documentation](deployment.md#deployment-hooks) for
+hooks included with Zulip.
+
 ## Preserving local changes to service configuration files
 
 :::{warning}
