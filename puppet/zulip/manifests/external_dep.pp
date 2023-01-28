@@ -22,11 +22,10 @@ define zulip::external_dep(
   $dir = "/srv/zulip-${title}-${version}"
 
   zulip::sha256_tarball_to { $title:
-    url     => $url,
-    sha256  => $sha256_filled,
-    install => {
-      $tarball_prefix => $dir,
-    },
+    url          => $url,
+    sha256       => $sha256_filled,
+    install_from => $tarball_prefix,
+    install_to   => $dir,
   }
 
   file { $dir:
