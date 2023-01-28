@@ -85,6 +85,15 @@ class zulip::common {
 
     ### zulip_ops packages
 
+    # https://release-registry.services.sentry.io/apps/sentry-cli/latest
+    'sentry-cli' => {
+      'version' => '2.11.0',
+      'sha256'  => {
+        'amd64'   => 'bc8f5f223fa688b3ad963c60a729f02aa8f5b17525de66fb3abf86800977ff6e',
+        'aarch64' => 'c62c5c1259307611e78af4f24a4c30162cff8adb0f021d363b307c42cded5c70',
+      },
+    },
+
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
       'version' => '9.3.4',
