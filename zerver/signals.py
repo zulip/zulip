@@ -1,17 +1,20 @@
 import sys
-from typing import Any, Optional
+from typing import Any, FrozenSet, Optional
 
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
+from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from confirmation.models import one_click_unsubscribe_link
+from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
-from zerver.models import UserProfile
+from zerver.models import UserProfile, get_system_bot
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo
@@ -116,3 +119,65 @@ def clear_zoom_token_on_logout(
 
     if user is not None and user.zoom_token is not None:
         do_set_zoom_token(user, None)
+
+
+@receiver(pre_save, sender=UserProfile)
+def send_profile_change_notif(
+    sender: object, instance: UserProfile, update_fields: FrozenSet[str], **kwargs: object
+) -> None:
+
+    if not update_fields:
+        return
+
+    # when an object is created for the first time, the id is None at this stage(pre_save)
+    if not instance.id:
+        return
+
+    if not instance.is_active:
+        return
+
+    # from the test-case AppleAuthBackendNativeFlowTest.test_social_auth_desktop_registration
+    # because it sends triggers signal multiple times and bulk_create() is prohibited due to unsaved related object "recipient"
+    # within the test case, signal will be triggered again after recipient is set, so it is skipped before that step
+    if not instance.recipient:
+        return
+
+    if instance.is_bot:
+        return
+
+    profile_as_in_db = UserProfile.objects.get(id=instance.id)
+    notif_sender = get_system_bot(settings.NOTIFICATION_BOT, instance.realm_id)
+
+    message_fields_to_show = {
+        "email",
+        "full_name",
+        "role",
+        "default_language",
+        "notification_sound",
+        "emojiset",
+    }
+
+    update_fields_set = (set(update_fields)).intersection(message_fields_to_show)
+
+    if not update_fields_set:
+        return
+
+    with override_language(instance.default_language):
+        message_text = _("The following updates have been made to your account.") + "\n\n"
+        for field in update_fields_set:
+            message_text += "old " + field + ":\n"
+            message_text += str(getattr(profile_as_in_db, field))
+            message_text += "\n"
+            message_text += "new " + field + ":\n"
+            message_text += str(getattr(instance, field))
+
+    notifications = []
+    notifications.append(
+        internal_prep_private_message(
+            sender=notif_sender,
+            recipient_user=instance,
+            content=message_text,
+        )
+    )
+
+    do_send_messages(notifications)
