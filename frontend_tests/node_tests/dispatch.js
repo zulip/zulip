@@ -530,7 +530,6 @@ run_test("realm_bot remove", ({override}) => {
     assert.equal(admin_stub.num_calls, 1);
     const args = bot_stub.get_args("user_id");
     assert_same(args.user_id, event.bot.user_id);
-    admin_stub.get_args("update_user_id", "update_bot_data");
 });
 
 run_test("realm_bot delete", ({override}) => {
