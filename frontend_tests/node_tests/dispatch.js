@@ -505,14 +505,11 @@ run_test("realm settings", ({override}) => {
 run_test("realm_bot add", ({override}) => {
     const event = event_fixtures.realm_bot__add;
     const bot_stub = make_stub();
-    const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
     override(settings_bots, "render_bots", () => {});
-    override(settings_users, "redraw_bots_list", admin_stub.f);
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
-    assert.equal(admin_stub.num_calls, 1);
     const args = bot_stub.get_args("bot");
     assert_same(args.bot, event.bot);
 });
@@ -520,14 +517,11 @@ run_test("realm_bot add", ({override}) => {
 run_test("realm_bot remove", ({override}) => {
     const event = event_fixtures.realm_bot__remove;
     const bot_stub = make_stub();
-    const admin_stub = make_stub();
     override(bot_data, "deactivate", bot_stub.f);
     override(settings_bots, "render_bots", () => {});
-    override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
-    assert.equal(admin_stub.num_calls, 1);
     const args = bot_stub.get_args("user_id");
     assert_same(args.user_id, event.bot.user_id);
 });
@@ -535,37 +529,27 @@ run_test("realm_bot remove", ({override}) => {
 run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
-    const admin_stub = make_stub();
     override(bot_data, "del", bot_stub.f);
     override(settings_bots, "render_bots", () => {});
-    override(settings_users, "redraw_bots_list", admin_stub.f);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
     const args = bot_stub.get_args("user_id");
     assert_same(args.user_id, event.bot.user_id);
-
-    assert.equal(admin_stub.num_calls, 1);
 });
 
 run_test("realm_bot update", ({override}) => {
     const event = event_fixtures.realm_bot__update;
     const bot_stub = make_stub();
-    const admin_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
     override(settings_bots, "render_bots", () => {});
-    override(settings_users, "update_bot_data", admin_stub.f);
 
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
-    assert.equal(admin_stub.num_calls, 1);
-    let args = bot_stub.get_args("user_id", "bot");
+    const args = bot_stub.get_args("user_id", "bot");
     assert_same(args.user_id, event.bot.user_id);
     assert_same(args.bot, event.bot);
-
-    args = admin_stub.get_args("update_user_id", "update_bot_data");
-    assert_same(args.update_user_id, event.bot.user_id);
 });
 
 run_test("realm_emoji", ({override}) => {
@@ -643,11 +627,14 @@ run_test("realm_domains", ({override}) => {
 run_test("realm_user", ({override}) => {
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     let event = event_fixtures.realm_user__add;
+    const add_admin_stub = make_stub();
+    override(settings_users, "redraw_bots_list", add_admin_stub.f);
     dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);
     // sanity check a few individual fields
     assert.equal(added_person.full_name, "Test User");
     assert.equal(added_person.timezone, "America/New_York");
+    assert.equal(add_admin_stub.num_calls, 1);
 
     // ...but really the whole struct gets copied without any
     // manipulation
@@ -655,23 +642,31 @@ run_test("realm_user", ({override}) => {
 
     assert.ok(people.is_active_user_for_popover(event.person.user_id));
 
+    const remove_admin_stub = make_stub();
     event = event_fixtures.realm_user__remove;
     override(stream_events, "remove_deactivated_user_from_all_streams", noop);
     override(settings_users, "update_view_on_deactivate", noop);
+    override(settings_users, "update_bot_data", remove_admin_stub.f);
     dispatch(event);
 
     // We don't actually remove the person, we just deactivate them.
     const removed_person = people.get_by_user_id(event.person.user_id);
     assert.equal(removed_person.full_name, "Test User");
     assert.ok(!people.is_active_user_for_popover(event.person.user_id));
+    assert.equal(remove_admin_stub.num_calls, 1);
 
     event = event_fixtures.realm_user__update;
     const stub = make_stub();
+    const update_admin_stub = make_stub();
     override(user_events, "update_person", stub.f);
+    override(settings_users, "update_bot_data", update_admin_stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("person");
+    assert.equal(update_admin_stub.num_calls, 1);
+    let args = stub.get_args("person");
     assert_same(args.person, event.person);
+    args = update_admin_stub.get_args("update_user_id", "update_bot_data");
+    assert_same(args.update_user_id, event.person.user_id);
 });
 
 run_test("restart", ({override}) => {

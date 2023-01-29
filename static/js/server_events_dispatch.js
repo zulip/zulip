@@ -324,23 +324,19 @@ export function dispatch_normal_event(event) {
                 case "add":
                     bot_data.add(event.bot);
                     settings_bots.render_bots();
-                    settings_users.redraw_bots_list();
                     break;
                 case "remove":
                     bot_data.deactivate(event.bot.user_id);
                     event.bot.is_active = false;
                     settings_bots.render_bots();
-                    settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.render_bots();
-                    settings_users.redraw_bots_list();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
                     settings_bots.render_bots();
-                    settings_users.update_bot_data(event.bot.user_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);
@@ -430,6 +426,7 @@ export function dispatch_normal_event(event) {
                 case "add":
                     people.add_active_user(event.person);
                     settings_account.maybe_update_deactivate_account_button();
+                    settings_users.redraw_bots_list();
                     break;
                 case "remove":
                     people.deactivate(event.person);
@@ -437,10 +434,12 @@ export function dispatch_normal_event(event) {
                     settings_users.update_view_on_deactivate(event.person.user_id);
                     buddy_list.maybe_remove_key({key: event.person.user_id});
                     settings_account.maybe_update_deactivate_account_button();
+                    settings_users.update_bot_data(event.person.user_id);
                     break;
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
+                    settings_users.update_bot_data(event.person.user_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);
