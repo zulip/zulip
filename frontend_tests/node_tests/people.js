@@ -304,6 +304,9 @@ test_people("basics", () => {
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
 
+    let bot_user_ids = people.get_bot_ids();
+    assert.equal(bot_user_ids.length, 0);
+
     // Now deactivate isaac
     people.deactivate(isaac);
     assert.equal(people.get_non_active_human_ids().length, 1);
@@ -313,6 +316,8 @@ test_people("basics", () => {
 
     people.add_active_user(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+    bot_user_ids = people.get_bot_ids();
+    assert.deepEqual(bot_user_ids, [bot_botson.user_id]);
 
     assert.equal(people.get_bot_owner_user(bot_botson).full_name, "Isaac Newton");
 
@@ -335,6 +340,10 @@ test_people("basics", () => {
             .sort(),
         [me.user_id, bot_botson.user_id],
     );
+
+    // get_bot_ids() includes all bot users.
+    bot_user_ids = people.get_bot_ids();
+    assert.deepEqual(bot_user_ids, [bot_botson.user_id, welcome_bot.user_id]);
 
     // The bot doesn't add to our human count.
     assert.equal(people.get_active_human_count(), 1);

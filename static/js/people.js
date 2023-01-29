@@ -891,6 +891,18 @@ export function get_non_active_human_ids() {
     return human_ids;
 }
 
+export function get_bot_ids() {
+    const bot_ids = [];
+
+    for (const user of people_by_user_id_dict.values()) {
+        if (user.is_bot) {
+            bot_ids.push(user.user_id);
+        }
+    }
+
+    return bot_ids;
+}
+
 export function get_active_human_count() {
     let count = 0;
     for (const person of active_user_dict.values()) {
