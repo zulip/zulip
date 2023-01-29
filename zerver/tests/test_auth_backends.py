@@ -5445,7 +5445,9 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"acme": {"key": "key", "algorithms": ["HS256"]}}):
             data = {"json_web_token": "not relevant"}
             result = self.client_post("/accounts/login/jwt/", data)
-            self.assert_json_error_contains(result, "Auth key for this subdomain not found", 400)
+            self.assert_json_error_contains(
+                result, "JWT authentication is not enabled for this organization", 400
+            )
 
     def test_login_failure_when_key_is_missing(self) -> None:
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
