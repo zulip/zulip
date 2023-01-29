@@ -70,7 +70,7 @@ const bob = {
     full_name: "Bob Roberts",
 };
 
-run_test("add users with event", () => {
+run_test("add users with event", ({override}) => {
     people.init();
 
     const event = {
@@ -81,6 +81,9 @@ run_test("add users with event", () => {
 
     assert.ok(!people.is_known_user_id(bob.user_id));
 
+    // We need to override a stub here before dispatching the event.
+    // Keep reading to see how overriding works!
+    override(settings_users, "redraw_bots_list", () => {});
     // Let's simulate dispatching our event!
     server_events_dispatch.dispatch_normal_event(event);
 
@@ -91,13 +94,13 @@ run_test("add users with event", () => {
 /*
 
    It's actually a little surprising that adding a user does
-   not have side effects beyond the people object.  I guess
-   we don't immediately update the buddy list, but that's
+   not have side effects beyond the people object and the bots list.
+   I guess we don't immediately update the buddy list, but that's
    because the buddy list gets updated on the next server
    fetch.
 
    Let's try an update next.  To make this work, we will want
-   to override some of our stubs.
+   to override some more of our stubs.
 
    This is where we see a little extra benefit from the
    run_test wrapper.  It passes us in an object that we
@@ -131,6 +134,7 @@ run_test("update user with event", ({override}) => {
     override(message_live_update, "update_user_full_name", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(settings_users, "update_user_data", () => {});
+    override(settings_users, "update_bot_data", () => {});
 
     // Dispatch the realm_user/update event, which will update
     // data structures and have other side effects that are
