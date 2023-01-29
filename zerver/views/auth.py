@@ -504,6 +504,7 @@ def get_email_and_realm_from_jwt_authentication_request(
 
 
 @csrf_exempt
+@require_post
 @log_view_func
 def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     email, realm = get_email_and_realm_from_jwt_authentication_request(request)
