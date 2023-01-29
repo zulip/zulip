@@ -1,8 +1,11 @@
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
+from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
@@ -15,6 +18,7 @@ from zerver.actions.user_groups import (
 )
 from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
@@ -29,7 +33,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.lib.validator import check_bool, check_int, check_list
-from zerver.models import UserProfile
+from zerver.models import UserGroup, UserProfile, get_system_bot
 from zerver.views.streams import compose_views
 
 
@@ -115,6 +119,55 @@ def update_user_group_backend(
     return json_success(request, data)
 
 
+def notify_for_user_group_subscription_changes(
+    acting_user: UserProfile,
+    recipient_users: List[UserProfile],
+    user_group: UserGroup,
+    *,
+    send_subscription_message: bool = False,
+    send_unsubscription_message: bool = False,
+) -> None:
+    realm = acting_user.realm
+    mention_backend = MentionBackend(realm.id)
+
+    notifications = []
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    for recipient_user in recipient_users:
+        if recipient_user.id == acting_user.id:
+            # Don't send notification message if you subscribed/unsubscribed yourself.
+            continue
+        if recipient_user.is_bot:
+            # Don't send notification message to bots.
+            continue
+        if not recipient_user.is_active:
+            # Don't send notification message to deactivated users.
+            continue
+
+        with override_language(recipient_user.default_language):
+            if send_subscription_message:
+                message = _("{user_full_name} added you to the group {group_name}.").format(
+                    user_full_name=silent_mention_syntax_for_user(acting_user),
+                    group_name=f"@_*{user_group.name}*",
+                )
+            if send_unsubscription_message:
+                message = _("{user_full_name} removed you from the group {group_name}.").format(
+                    user_full_name=silent_mention_syntax_for_user(acting_user),
+                    group_name=f"@_*{user_group.name}*",
+                )
+
+        notifications.append(
+            internal_prep_private_message(
+                sender=notification_bot,
+                recipient_user=recipient_user,
+                content=message,
+                mention_backend=mention_backend,
+            )
+        )
+
+    if len(notifications) > 0:
+        do_send_messages(notifications)
+
+
 def add_members_to_group_backend(
     request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
@@ -135,6 +188,12 @@ def add_members_to_group_backend(
 
     member_user_ids = [member_user.id for member_user in member_users]
     bulk_add_members_to_user_group(user_group, member_user_ids, acting_user=user_profile)
+    notify_for_user_group_subscription_changes(
+        acting_user=user_profile,
+        recipient_users=member_users,
+        user_group=user_group,
+        send_subscription_message=True,
+    )
     return json_success(request)
 
 
@@ -153,6 +212,12 @@ def remove_members_from_group_backend(
 
     user_profile_ids = [user.id for user in user_profiles]
     remove_members_from_user_group(user_group, user_profile_ids, acting_user=user_profile)
+    notify_for_user_group_subscription_changes(
+        acting_user=user_profile,
+        recipient_users=user_profiles,
+        user_group=user_group,
+        send_unsubscription_message=True,
+    )
     return json_success(request)
 
 
