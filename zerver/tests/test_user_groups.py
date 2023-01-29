@@ -7,6 +7,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_groups import check_add_user_group, promote_new_full_members
+from zerver.actions.users import do_deactivate_user
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
@@ -361,13 +363,26 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
 
         othello = self.example_user("othello")
-        add = [othello.id]
-        params = {"add": orjson.dumps(add).decode()}
+        # A bot
+        webhook_bot = self.example_user("webhook_bot")
+        # A deactivated user
+        iago = self.example_user("iago")
+        do_deactivate_user(iago, acting_user=None)
+
+        params = {"add": orjson.dumps([othello.id]).decode()}
+        initial_last_message = self.get_last_message()
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
         self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 2)
         members = get_direct_memberships_of_users(user_group, [hamlet, othello])
         self.assert_length(members, 2)
+
+        # A notification message is sent for adding to user group.
+        self.assertNotEqual(self.get_last_message(), initial_last_message)
+        expected_notification = (
+            f"{silent_mention_syntax_for_user(hamlet)} added you to the group @_*support*."
+        )
+        self.assertEqual(self.get_last_message().content, expected_notification)
 
         # Test adding a member already there.
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
@@ -376,6 +391,24 @@ class UserGroupAPITestCase(UserGroupTestCase):
         members = get_direct_memberships_of_users(user_group, [hamlet, othello])
         self.assert_length(members, 2)
 
+        # Test user adding itself,bot and deactivated user to user group.
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+
+        params = {"add": orjson.dumps([desdemona.id, iago.id, webhook_bot.id]).decode()}
+        initial_last_message = self.get_last_message()
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_success(result)
+
+        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 5)
+        members = get_direct_memberships_of_users(
+            user_group, [hamlet, othello, desdemona, iago, webhook_bot]
+        )
+        self.assert_length(members, 5)
+
+        # No notification message is sent for adding to user group.
+        self.assertEqual(self.get_last_message(), initial_last_message)
+
         aaron = self.example_user("aaron")
 
         # For normal testing we again log in with hamlet
@@ -383,19 +416,43 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.login_user(hamlet)
         # Test remove members
         params = {"delete": orjson.dumps([othello.id]).decode()}
+        initial_last_message = self.get_last_message()
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
-        members = get_direct_memberships_of_users(user_group, [hamlet, othello, aaron])
-        self.assert_length(members, 1)
+
+        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 4)
+        members = get_direct_memberships_of_users(
+            user_group, [hamlet, othello, aaron, desdemona, webhook_bot, iago]
+        )
+        self.assert_length(members, 4)
+
+        # A notification message is sent for removing from user group.
+        self.assertNotEqual(self.get_last_message(), initial_last_message)
+        expected_notification = (
+            f"{silent_mention_syntax_for_user(hamlet)} removed you from the group @_*support*."
+        )
+        self.assertEqual(self.get_last_message().content, expected_notification)
 
         # Test remove a member that's already removed
         params = {"delete": orjson.dumps([othello.id]).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"There is no member '{othello.id}' in this user group")
+
+        # Test user remove itself,bot and deactivated user from user group.
+        desdemona = self.example_user("desdemona")
+        self.login_user(desdemona)
+
+        params = {"delete": orjson.dumps([desdemona.id, iago.id, webhook_bot.id]).decode()}
+        initial_last_message = self.get_last_message()
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_success(result)
+
         self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
-        members = get_direct_memberships_of_users(user_group, [hamlet, othello, aaron])
+        members = get_direct_memberships_of_users(user_group, [hamlet, othello, desdemona])
         self.assert_length(members, 1)
+
+        # No notification message is sent for removing from user group.
+        self.assertEqual(self.get_last_message(), initial_last_message)
 
         # Test when nothing is provided
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info={})
