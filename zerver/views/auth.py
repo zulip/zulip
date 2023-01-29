@@ -472,8 +472,10 @@ def remote_user_sso(
     return login_or_register_remote_user(request, result)
 
 
+@has_request_variables
 def get_email_and_realm_from_jwt_authentication_request(
     request: HttpRequest,
+    json_web_token: str = REQ("token", default=""),
 ) -> Tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
@@ -485,12 +487,12 @@ def get_email_and_realm_from_jwt_authentication_request(
     except KeyError:
         raise JsonableError(_("JWT authentication is not enabled for this organization"))
 
+    if not json_web_token:
+        raise JsonableError(_("No JSON web token passed in request"))
+
     try:
-        json_web_token = request.POST["json_web_token"]
         options = {"verify_signature": True}
         payload = jwt.decode(json_web_token, key, algorithms=algorithms, options=options)
-    except KeyError:
-        raise JsonableError(_("No JSON web token passed in request"))
     except jwt.InvalidTokenError:
         raise JsonableError(_("Bad JSON web token"))
 
