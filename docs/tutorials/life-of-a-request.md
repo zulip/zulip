@@ -25,7 +25,7 @@ are in your Git checkout under `static`, and are served unminified.
 Static files include JavaScript, css, static assets (like emoji, avatars),
 and user uploads (if stored locally and not on S3).
 
-File not found errors (404) are served using a Django URL, so that we
+This file does not exist or has been deleted errors (404) are served using a Django URL, so that we
 can use configuration variables (like whether the user is logged in)
 in the 404 error page.
 

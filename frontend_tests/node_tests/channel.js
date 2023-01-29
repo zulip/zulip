@@ -339,10 +339,10 @@ test("xhr_error_message", () => {
 
     xhr = {
         status: "404",
-        responseText: '{"msg": "file not found"}',
+        responseText: '{"msg": "This file does not exist or has been deleted"}',
     };
     msg = "some message";
-    assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");
+    assert.equal(channel.xhr_error_message(msg, xhr), "some message: This file does not exist or has been deleted");
 });
 
 test("while_reloading", () => {
