@@ -183,7 +183,7 @@ class JsonTranslationTestCase(ZulipTestCase):
         mock_gettext.return_value = dummy_value
 
         self.login("hamlet")
-        result = self.client_get("/de/accounts/login/jwt/")
+        result = self.client_post("/de/accounts/login/jwt/")
 
         self.assert_json_error_contains(result, dummy_value, status_code=400)
 
