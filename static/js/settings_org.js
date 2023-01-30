@@ -363,7 +363,15 @@ function enable_or_disable_related_message_move_time_limit_setting(setting_name,
 
 function set_msg_move_limit_setting(property_name) {
     set_time_limit_setting(property_name);
-    const disable_setting = message_move_limit_setting_enabled("realm_edit_topic_policy");
+
+    let disable_setting;
+    if (property_name === "realm_move_messages_within_stream_limit_seconds") {
+        disable_setting = message_move_limit_setting_enabled("realm_edit_topic_policy");
+    } else {
+        disable_setting = message_move_limit_setting_enabled(
+            "realm_move_messages_between_streams_policy",
+        );
+    }
     enable_or_disable_related_message_move_time_limit_setting(property_name, disable_setting);
 }
 
@@ -673,6 +681,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             set_time_limit_setting(property_name);
             break;
         case "realm_move_messages_within_stream_limit_seconds":
+        case "realm_move_messages_between_streams_limit_seconds":
             set_msg_move_limit_setting(property_name);
             break;
         case "realm_message_retention_days":
@@ -928,6 +937,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
             break;
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
+        case "realm_move_messages_between_streams_limit_seconds":
         case "realm_move_messages_within_stream_limit_seconds":
         case "realm_waiting_period_threshold":
             proposed_val = get_time_limit_setting_value($elem, false);
@@ -1225,6 +1235,7 @@ export function build_page() {
     set_giphy_rating_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
+    set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");
     set_msg_delete_limit_dropdown();
     set_delete_own_message_policy_dropdown(page_params.realm_delete_own_message_policy);
     set_message_retention_setting_dropdown();
@@ -1248,6 +1259,10 @@ export function build_page() {
 
     $("#id_realm_message_content_edit_limit_seconds").on("change", () => {
         update_custom_value_input("realm_message_content_edit_limit_seconds");
+    });
+
+    $("#id_realm_move_messages_between_streams_limit_seconds").on("change", () => {
+        update_custom_value_input("realm_move_messages_between_streams_limit_seconds");
     });
 
     $("#id_realm_move_messages_within_stream_limit_seconds").on("change", () => {
@@ -1304,7 +1319,13 @@ export function build_page() {
         const $policy_dropdown_elem = $(e.target);
         const property_name = extract_property_name($policy_dropdown_elem);
         const disable_time_limit_setting = message_move_limit_setting_enabled(property_name);
-        const time_limit_setting_name = "realm_move_messages_within_stream_limit_seconds";
+
+        let time_limit_setting_name;
+        if (property_name === "realm_edit_topic_policy") {
+            time_limit_setting_name = "realm_move_messages_within_stream_limit_seconds";
+        } else {
+            time_limit_setting_name = "realm_move_messages_between_streams_limit_seconds";
+        }
 
         enable_or_disable_related_message_move_time_limit_setting(
             time_limit_setting_name,
