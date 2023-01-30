@@ -30,7 +30,7 @@ export function autosize_textarea($textarea) {
     }
 }
 
-export function smart_insert($textarea, syntax) {
+export function smart_insert_inline($textarea, syntax) {
     function is_space(c) {
         return c === " " || c === "\t" || c === "\n";
     }
@@ -68,11 +68,69 @@ export function smart_insert($textarea, syntax) {
     autosize_textarea($textarea);
 }
 
-export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea")) {
+export function smart_insert_block($textarea, syntax) {
+    const pos = $textarea.caret();
+    const before_str = $textarea.val().slice(0, pos);
+    const after_str = $textarea.val().slice(pos);
+
+    if (pos > 0) {
+        // Insert newline/s before the content block if there is
+        // already some content in the compose box and the content
+        // block is not being inserted at the beginning, such
+        // that there are at least 2 new lines between the content
+        // and start of the content block.
+        let new_lines_before_count = 0;
+        let current_pos = pos - 1;
+        while (
+            current_pos >= 0 &&
+            before_str.charAt(current_pos) === "\n" &&
+            new_lines_before_count < 2
+        ) {
+            // count up to 2 new lines before cursor
+            current_pos -= 1;
+            new_lines_before_count += 1;
+        }
+        const new_lines_needed_before_count = 2 - new_lines_before_count;
+        syntax = "\n".repeat(new_lines_needed_before_count) + syntax;
+    }
+
+    let new_lines_after_count = 0;
+    let current_pos = 0;
+    while (
+        current_pos < after_str.length &&
+        after_str.charAt(current_pos) === "\n" &&
+        new_lines_after_count < 2
+    ) {
+        // count up to 2 new lines after cursor
+        current_pos += 1;
+        new_lines_after_count += 1;
+    }
+    // Insert newline/s after the content block, such that there
+    // are at least 2 new lines between the content block and
+    // the content after the cursor, if any.
+    const new_lines_needed_after_count = 2 - new_lines_after_count;
+    syntax = syntax + "\n".repeat(new_lines_needed_after_count);
+
+    // text-field-edit ensures `$textarea` is focused before inserting
+    // the new syntax.
+    insert($textarea[0], syntax);
+
+    autosize_textarea($textarea);
+}
+
+export function insert_syntax_and_focus(
+    syntax,
+    $textarea = $("#compose-textarea"),
+    mode = "inline",
+) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
-    // wrapper around smart_insert.
-    smart_insert($textarea, syntax);
+    // wrapper around smart_insert_inline and smart_inline_block.
+    if (mode === "inline") {
+        smart_insert_inline($textarea, syntax);
+    } else if (mode === "block") {
+        smart_insert_block($textarea, syntax);
+    }
 }
 
 export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {
