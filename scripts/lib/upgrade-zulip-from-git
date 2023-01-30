@@ -168,7 +168,6 @@ try:
                 stderr=subprocess.DEVNULL,
             ).strip()
     refname = fullref
-    logging.info("Upgrading to %s, in %s", commit_hash, deploy_path)
     subprocess.check_call(
         ["git", "worktree", "add", "--detach", deploy_path, refname],
         stdout=subprocess.DEVNULL,
