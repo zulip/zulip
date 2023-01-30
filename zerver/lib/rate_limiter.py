@@ -569,8 +569,21 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
-    client = RequestNotes.get_notes(request).client
-    return (client is not None and client.name.lower() == "internal") and (
+    notes = RequestNotes.get_notes(request)
+
+    # TODO: Logically, client_name should always equal client.name,
+    # but we appear to have some cases where only one of these is set.
+    #
+    # Take client_name before the Client object's name to ensure edge
+    # cases like overriding client=internal in request bodies work as
+    # expected.
+    client_name = ""
+    if notes.client_name is not None:
+        client_name = notes.client_name
+    if notes.client is not None and client_name == "":
+        client_name = notes.client.name
+
+    return client_name.lower() == "internal" and (
         is_local_addr(request.META["REMOTE_ADDR"]) or settings.DEBUG_RATE_LIMITING
     )
 
