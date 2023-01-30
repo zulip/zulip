@@ -535,6 +535,9 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_move_messages_within_stream_limit_minutes").set_parent(
         $.create("<stub move within stream custom input parent>"),
     );
+    $("#id_realm_move_messages_between_streams_limit_minutes").set_parent(
+        $.create("<stub move between streams custom input parent>"),
+    );
     $("#id_realm_message_content_delete_limit_minutes").set_parent(
         $.create("<stub delete limit custom input parent>"),
     );
@@ -548,6 +551,13 @@ test("set_up", ({override, override_rewire}) => {
     const $stub_move_within_stream_limit_parent = $.create("<stub move_within_stream_limit parent");
     $("#id_realm_move_messages_within_stream_limit_seconds").set_parent(
         $stub_move_within_stream_limit_parent,
+    );
+
+    const $stub_move_between_streams_limit_parent = $.create(
+        "<stub move_between_streams_limit parent",
+    );
+    $("#id_realm_move_messages_between_streams_limit_seconds").set_parent(
+        $stub_move_between_streams_limit_parent,
     );
 
     const $stub_message_content_delete_limit_parent = $.create(
@@ -574,6 +584,18 @@ test("set_up", ({override, override_rewire}) => {
     $custom_move_within_stream_limit_input.attr(
         "id",
         "id_realm_move_messages_within_stream_limit_minutes",
+    );
+
+    const $custom_move_between_streams_limit_input = $(
+        "#id_realm_move_messages_between_streams_limit_minutes",
+    );
+    $stub_move_between_streams_limit_parent.set_find_results(
+        ".time-limit-custom-input",
+        $custom_move_between_streams_limit_input,
+    );
+    $custom_move_between_streams_limit_input.attr(
+        "id",
+        "id_realm_move_messages_between_streams_limit_minutes",
     );
 
     const $custom_delete_limit_input = $("#id_realm_message_content_delete_limit_minutes");
