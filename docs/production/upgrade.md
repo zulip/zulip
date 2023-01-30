@@ -211,6 +211,18 @@ earlier previous version by running
 `restart-server` script stops any running Zulip server, and starts
 the version corresponding to the `restart-server` path you call.
 
+## Deployment hooks
+
+Zulip's upgrades have a hook system which allows for arbitrary
+user-configured actions to run before and after an upgrade.
+
+Files in the `/etc/zulip/pre-deploy.d` and `/etc/zulip/post-deploy.d`
+directories are inspected for files ending with `.hook`, just before
+and after the critical period when the server is restarted. Each file
+is called, sorted in alphabetical order, from the working directory of
+the new version, with arguments of the old and new Zulip versions. If
+they exit with non-0 exit code, the upgrade will abort.
+
 ## Preserving local changes to service configuration files
 
 :::{warning}

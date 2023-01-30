@@ -85,6 +85,12 @@ running on the server; though installing alongside other applications
 is not recommended, we do have [some notes on the
 process](install-existing-server.md).
 
+## Deployment hooks
+
+Zulip's upgrades have a hook system which allows for arbitrary
+user-configured actions to run before and after an upgrade; see the
+[upgrading documentation](upgrade.md#deployment-hooks) for details.
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
