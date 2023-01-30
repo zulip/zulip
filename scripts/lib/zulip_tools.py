@@ -108,11 +108,14 @@ def get_deploy_root() -> str:
 
 
 def parse_version_from(deploy_path: str) -> str:
-    with open(os.path.join(deploy_path, "version.py")) as f:
-        result = re.search('ZULIP_VERSION = "(.*)"', f.read())
-        if result:
-            return result.groups()[0]
-    return "0.0.0"
+    try:
+        return subprocess.check_output(
+            [sys.executable, "-c", "from version import ZULIP_VERSION; print(ZULIP_VERSION)"],
+            cwd=deploy_path,
+            text=True,
+        ).strip()
+    except subprocess.CalledProcessError:
+        return "0.0.0"
 
 
 def get_deployment_version(extract_path: str) -> str:
