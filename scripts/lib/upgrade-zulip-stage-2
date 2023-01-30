@@ -25,11 +25,13 @@ os.environ["LANGUAGE"] = "C.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
     assert_running_as_root,
     get_config,
     get_config_file,
     listening_publicly,
     parse_os_release,
+    parse_version_from,
     run_psql_as_postgres,
     start_arg_parser,
     su_to_zulip,
@@ -142,6 +144,15 @@ os.chdir(deploy_path)
 config_file = get_config_file()
 
 IS_SERVER_UP = True
+
+if args.from_git:
+    logging.info("Caching Zulip Git version...")
+    subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
+
+from version import ZULIP_VERSION as NEW_ZULIP_VERSION
+
+old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
+logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)
 
 
 # Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
@@ -349,8 +360,6 @@ elif args.from_git:
             logging.error("Try stopping the Zulip server (scripts/stop-server) and trying again.")
         sys.exit(1)
 
-    logging.info("Caching Zulip Git version...")
-    subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:
     # Since this doesn't do any actual work, it's likely safe to have
     # this run before we apply Puppet changes (saving a bit of downtime).
