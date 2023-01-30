@@ -107,7 +107,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         self, base_url: str, event: Dict[str, Any], realm: Realm
     ) -> Optional[Response]:
         if event["message"]["type"] == "private":
-            failure_message = "Slack outgoing webhooks don't support private messages."
+            failure_message = "Slack outgoing webhooks don't support direct messages."
             fail_with_message(event, failure_message)
             return None
 
