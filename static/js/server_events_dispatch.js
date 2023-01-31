@@ -18,6 +18,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
 import * as linkifiers from "./linkifiers";
+import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -212,7 +213,7 @@ export function dispatch_normal_event(event) {
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
                 move_messages_between_streams_limit_seconds: noop,
-                move_messages_within_stream_limit_seconds: noop,
+                move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
                 move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,
@@ -266,6 +267,10 @@ export function dispatch_normal_event(event) {
                                 page_params["realm_" + key] = value;
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
+                                }
+
+                                if (key === "edit_topic_policy") {
+                                    message_live_update.rerender_messages_view();
                                 }
                             }
                             if (event.data.authentication_methods !== undefined) {

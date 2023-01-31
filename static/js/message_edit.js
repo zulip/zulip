@@ -21,6 +21,7 @@ import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
+import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
@@ -303,6 +304,15 @@ export function end_if_focused_on_message_row_edit() {
         const $row = $focused_elem.closest(".message_row");
         end_message_row_edit($row);
     }
+}
+
+export function update_inline_topic_edit_ui() {
+    // This function is called when
+    // "realm_move_messages_within_stream_limit_seconds" setting is
+    // changed. This is a rare event, so it's OK to be lazy and just
+    // do a full rerender, even though the only thing we need to
+    // change is the inline topic edit icons in recipient bars.
+    message_live_update.rerender_messages_view();
 }
 
 function handle_message_row_edit_keydown(e) {
