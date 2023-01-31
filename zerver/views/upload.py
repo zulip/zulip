@@ -99,7 +99,14 @@ def serve_s3(request: HttpRequest, path_id: str, download: bool = False) -> Http
         # this is acceptable in development.
         return redirect(url)
 
-    response = internal_nginx_redirect("/internal/s3/" + url[len("https://") :])
+    # We over-escape the path, to work around it being impossible to
+    # get the _unescaped_ new internal request URI in nginx.
+    parsed_url = urlparse(url)
+    assert parsed_url.hostname is not None
+    assert parsed_url.path is not None
+    assert parsed_url.query is not None
+    escaped_path_parts = parsed_url.hostname + quote(parsed_url.path) + "?" + parsed_url.query
+    response = internal_nginx_redirect("/internal/s3/" + escaped_path_parts)
     patch_disposition_header(response, path_id, download)
     patch_cache_control(response, private=True, immutable=True)
     return response
