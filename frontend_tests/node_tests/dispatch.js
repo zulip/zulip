@@ -508,10 +508,12 @@ run_test("realm settings", ({override}) => {
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
     page_params.realm_message_content_edit_limit_seconds = 0;
+    page_params.realm_edit_topic_policy = 3;
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(page_params.realm_allow_message_editing, true);
     assert_same(page_params.realm_message_content_edit_limit_seconds, 5);
+    assert_same(page_params.realm_edit_topic_policy, 4);
     assert_same(page_params.realm_authentication_methods, {Google: true});
 
     event = event_fixtures.realm__update_dict__icon;
