@@ -1,5 +1,4 @@
 import json
-import os
 import re
 from typing import Any, Dict, List, Mapping, Sequence
 
@@ -50,16 +49,6 @@ OBJECT_CODE_TEMPLATE = "<code>{value}</code>".strip()
 
 
 class MarkdownArgumentsTableGenerator(Extension):
-    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
-        self.config = {
-            "base_path": [
-                ".",
-                "Default location from which to evaluate relative paths for the JSON files.",
-            ],
-        }
-        for key, value in configs.items():
-            self.setConfig(key, value)
-
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             APIArgumentsTablePreprocessor(md, self.getConfigs()),
@@ -71,7 +60,6 @@ class MarkdownArgumentsTableGenerator(Extension):
 class APIArgumentsTablePreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
         super().__init__(md)
-        self.base_path = config["base_path"]
 
     def run(self, lines: List[str]) -> List[str]:
         done = False
@@ -83,38 +71,24 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 if not match:
                     continue
 
-                filename = match.group(1)
                 doc_name = match.group(2)
-                filename = os.path.expanduser(filename)
+                endpoint, method = doc_name.rsplit(":", 1)
+                arguments: List[Dict[str, Any]] = []
 
-                is_openapi_format = filename.endswith(".yaml")
-
-                if not os.path.isabs(filename):
-                    parent_dir = self.base_path
-                    filename = os.path.normpath(os.path.join(parent_dir, filename))
-
-                if is_openapi_format:
-                    endpoint, method = doc_name.rsplit(":", 1)
-                    arguments: List[Dict[str, Any]] = []
-
-                    try:
-                        arguments = get_openapi_parameters(endpoint, method)
-                    except KeyError as e:
-                        # Don't raise an exception if the "parameters"
-                        # field is missing; we assume that's because the
-                        # endpoint doesn't accept any parameters
-                        if e.args != ("parameters",):
-                            raise e
-                else:
-                    with open(filename) as fp:
-                        json_obj = json.load(fp)
-                        arguments = json_obj[doc_name]
+                try:
+                    arguments = get_openapi_parameters(endpoint, method)
+                except KeyError as e:
+                    # Don't raise an exception if the "parameters"
+                    # field is missing; we assume that's because the
+                    # endpoint doesn't accept any parameters
+                    if e.args != ("parameters",):
+                        raise e
 
                 if arguments:
                     text = self.render_parameters(arguments)
                 # We want to show this message only if the parameters
                 # description doesn't say anything else.
-                elif is_openapi_format and get_parameters_description(endpoint, method) == "":
+                elif get_parameters_description(endpoint, method) == "":
                     text = ["This endpoint does not accept any parameters."]
                 else:
                     text = []
@@ -289,7 +263,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownArgumentsTableGenerator:
-    return MarkdownArgumentsTableGenerator(kwargs)
+    return MarkdownArgumentsTableGenerator(*args, **kwargs)
 
 
 def generate_data_type(schema: Mapping[str, Any]) -> str:
