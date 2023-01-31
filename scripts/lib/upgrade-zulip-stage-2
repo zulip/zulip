@@ -416,6 +416,9 @@ if not args.skip_puppet and IS_SERVER_UP:
             logging.info("No puppet changes found, skipping!")
         args.skip_puppet = True
         has_puppet_changes = False
+    elif try_puppet.returncode == 2:
+        logging.error("Puppet error -- aborting!")
+        sys.exit(1)
     elif minimal_change:
         logging.error("Would need to apply puppet changes -- aborting!")
         sys.exit(1)
