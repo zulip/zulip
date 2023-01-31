@@ -67,7 +67,7 @@ organization in Zulip). The following files are involved in the process:
 **Documentation**
 
 - `zerver/openapi/zulip.yaml`: OpenAPI definitions for the Zulip REST API.
-- `templates/zerver/api/changelog.md`: documentation listing all changes to the Zulip Server API.
+- `api_docs/changelog.md`: documentation listing all changes to the Zulip Server API.
 - `help/...`: end user facing documentation (Help Center) for the application.
 
 ### Adding a field to the database
@@ -164,7 +164,7 @@ provides more detailed information about writing and editing feature
 
 **API documentation:** A new feature will probably impact the REST API
 documentation as well, which will mean updating `zerver/openapi/zulip.yaml`
-and modifying `templates/zerver/api/changelog.md` for a new feature
+and modifying `api_docs/changelog.md` for a new feature
 level. [Documenting REST API endpoints](../documentation/api.md)
 explains Zulip's API documentation system and provides a step by step
 guide to adding or updating documentation for an API endpoint.
@@ -714,7 +714,7 @@ documentation is to read more about Zulip's
 and [OpenAPI configuration](../documentation/openapi.md).
 
 In particular, if there is an API change, **make sure** you document
-your new feature in `templates/zerver/api/changelog.md` and bump the
+your new feature in `api_docs/changelog.md` and bump the
 `API_FEATURE_LEVEL` in `version.py`. The API feature level allows the
 developers of mobile clients and other tools using the Zulip API to
 programmatically determine whether the Zulip server they are

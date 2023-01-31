@@ -98,8 +98,8 @@ if [ -z "$is_prerelease" ]; then
         changed_api_level=$(git diff-tree -G API_FEATURE_LEVEL HEAD -- version.py)
         [ -n "$changed_api_level" ] || fail "$version did not adjust API_FEATURE_LEVEL in version.py"
         feature_level="$(extract_version "API_FEATURE_LEVEL")"
-        grep -q -F -x "**Feature level $feature_level**" templates/zerver/api/changelog.md \
-            || fail "Feature level $feature_level is not documented in templates/zerver/api/changelog.md"
+        grep -q -F -x "**Feature level $feature_level**" api_docs/changelog.md \
+            || fail "Feature level $feature_level is not documented in api_docs/changelog.md"
     fi
 fi
 

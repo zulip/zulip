@@ -151,7 +151,7 @@ def render_markdown_path(
         md_macro_extension = zerver.lib.markdown.include.makeExtension(base_path="help/include/")
     else:
         md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path="templates/zerver/api/include/"
+            base_path="api_docs/include/"
         )
     if not any(doc in markdown_file_path for doc in docs_without_macros):
         extensions = [md_macro_extension, *extensions]
