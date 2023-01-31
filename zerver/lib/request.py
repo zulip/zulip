@@ -23,7 +23,7 @@ from typing import (
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, QueryDict
 from django.utils.translation import gettext as _
 from typing_extensions import Concatenate, ParamSpec
 
@@ -407,6 +407,10 @@ def has_request_variables(
                 post_var_names += param.aliases
                 post_var_name = None
 
+                patch_body: Optional[QueryDict] = None
+                if request.method == "PATCH":
+                    patch_body = QueryDict(request.body)
+
                 for req_var in post_var_names:
                     assert req_var is not None
                     if req_var in request.POST:
@@ -415,6 +419,20 @@ def has_request_variables(
                     elif req_var in request.GET:
                         val = request.GET[req_var]
                         request_notes.processed_parameters.add(req_var)
+                    elif (
+                        request.method == "PATCH"
+                        and patch_body is not None
+                        and req_var in patch_body
+                    ):
+                        in_body = patch_body.get(req_var)
+                        if in_body is None:
+                            # No coverage testing here because this branch can't trigger at all, but mypy
+                            # complains that the type of patch_body[req_var] is Union[str, List[object]],
+                            # where .get() instead returns Optional[str].
+                            continue  # nocoverage
+                        else:
+                            val = in_body
+                            request_notes.processed_parameters.add(req_var)
                     else:
                         # This is covered by test_REQ_aliases, but coverage.py
                         # fails to recognize this for some reason.
