@@ -786,7 +786,9 @@ help_documentation_view = MarkdownDirectoryView.as_view(
     help_view=True,
 )
 api_documentation_view = MarkdownDirectoryView.as_view(
-    template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
+    template_name="zerver/documentation_main.html",
+    path_template=f"{settings.DEPLOY_ROOT}/api_docs/%s.md",
+    api_doc_view=True,
 )
 policy_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html",

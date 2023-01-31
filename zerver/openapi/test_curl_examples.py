@@ -38,9 +38,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     # on "add" tests coming before "remove" tests in some cases.  We
     # should try to either avoid ordering dependencies or make them
     # very explicit.
-    rest_endpoints_path = os.path.join(
-        settings.DEPLOY_ROOT, "templates/zerver/api/include/rest-endpoints.md"
-    )
+    rest_endpoints_path = os.path.join(settings.DEPLOY_ROOT, "api_docs/include/rest-endpoints.md")
     with open(rest_endpoints_path) as f:
         rest_endpoints_raw = f.read()
     ENDPOINT_REGEXP = re.compile(r"/api/\s*(.*?)\)")
@@ -48,7 +46,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
 
     for endpoint in endpoint_list:
         article_name = endpoint + ".md"
-        file_name = os.path.join(settings.DEPLOY_ROOT, "templates/zerver/api/", article_name)
+        file_name = os.path.join(settings.DEPLOY_ROOT, "api_docs/", article_name)
         curl_commands_to_test = []
 
         if os.path.exists(file_name):

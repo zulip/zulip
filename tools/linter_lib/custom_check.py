@@ -826,6 +826,7 @@ markdown_rules = RuleList(
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
             "exclude": {
+                "api_docs/",
                 "docs/contributing/contributing.md",
                 "docs/overview/readme.md",
                 "docs/README.md",
@@ -857,7 +858,6 @@ markdown_rules = RuleList(
             "description": "Don't link directly to line numbers",
         },
     ],
-    exclude_files_in="help/",
 )
 
 help_markdown_rules = RuleList(

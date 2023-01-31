@@ -20,7 +20,7 @@
             {% elif page_is_help_center %}
             {{ render_markdown_path(sidebar_index, pure_markdown=True) }}
             {% else %}
-            {{ render_markdown_path(sidebar_index, api_uri_context) }}
+            {{ render_markdown_path(sidebar_index, context=api_uri_context, pure_markdown=True) }}
             {% endif %}
 
             {% if not page_is_policy_center %}
@@ -40,7 +40,7 @@
             {% elif page_is_help_center %}
             {{ render_markdown_path(article, context=api_uri_context, help_center=True, pure_markdown=True) }}
             {% else %}
-            {{ render_markdown_path(article, api_uri_context) }}
+            {{ render_markdown_path(article, context=api_uri_context, pure_markdown=True) }}
             {% endif %}
 
             <div id="footer" class="documentation-footer">
