@@ -45,6 +45,7 @@ def make_set(files: List[str]) -> Set[str]:
 EXEMPT_FILES = make_set(
     [
         "frontend_tests/zjsunit/mdiff.js",
+        "frontend_tests/zjsunit/zjquery_element.js",
         "static/js/about_zulip.js",
         "static/js/add_subscribers_pill.js",
         "static/js/admin.js",
@@ -205,6 +206,7 @@ EXEMPT_FILES = make_set(
         "static/js/unread.js",
         "static/js/unread_ops.js",
         "static/js/unread_ui.js",
+        "static/js/upload.js",
         "static/js/upload_widget.ts",
         "static/js/user_group_create.js",
         "static/js/user_group_create_members.js",
