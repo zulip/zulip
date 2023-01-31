@@ -16,9 +16,6 @@ REGEXP = re.compile(r"\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}"
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
-    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
-        self.config: Dict[str, Any] = {}
-
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             APIReturnValuesTablePreprocessor(md, self.getConfigs()),
@@ -225,4 +222,4 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
 
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownReturnValuesTableGenerator:
-    return MarkdownReturnValuesTableGenerator(kwargs)
+    return MarkdownReturnValuesTableGenerator(*args, **kwargs)
