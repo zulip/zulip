@@ -625,6 +625,14 @@ you will need to add **`zulip::apache_sso`** to the list.
 Set to true if enabling the [multi-language PGroonga search
 extension](../subsystems/full-text-search.md#multi-language-full-text-search).
 
+#### `timesync`
+
+What time synchronization daemon to use; defaults to `chrony`, but also supports
+`ntpd` and `none`. Installations should not adjust this unless they are aligning
+with a fleet-wide standard of `ntpd`. `none` is only reasonable in containers
+like LXC which do not allow adjustment of the clock; a Zulip server will not
+function correctly without an accurate clock.
+
 ### `[deployment]`
 
 #### `deploy_options`
