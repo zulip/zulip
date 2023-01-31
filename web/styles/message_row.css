@@ -3,10 +3,24 @@ $distance_of_text_elements_from_message_box_top: 8.5px;
 $distance_of_non_text_elements_from_message_box_top: 6px;
 $sender_name_distance_below_flex_center: 3px;
 
+/* The time column usually just needs enough space to display the
+   timestamp. The minimum width here is enough for "22:22 PM", which
+   is roughly the widest this will be in English; this is nice as the
+   timestamps and message controls will be vertically aligned.
+
+   But in some locales, the time encoding is wider, (especially where
+   the "PM" abbreviation is longer), so we allow the column to be
+   wider for individual messages if required, to prevent ugly
+   line-wrapping. In practice, it's unlikely we'll see anything wider
+   than 60px; so the precise value of $time_column_max_width should be
+   unimportant. */
+$time_column_min_width: 50px; /* + padding */
+$time_column_max_width: 150px;
+
 .message_row {
     .messagebox .messagebox-content {
         /* Total 868px
-        1    56px   2                                        697px                                                      3     55px     4     60px    5
+        1    56px   2                                        697px                                                      3     55px     4  60px(min)  5
       1 |‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾|
         |           :   TEXT                                                                                             :   +  ⋮  ☆    :  10:00 AM  |
         |           :   TEXT                                                                                             :              :            |
@@ -26,10 +40,14 @@ $sender_name_distance_below_flex_center: 3px;
         padding-left: 10px;
         grid-template-rows: repeat(4, auto);
 
-        grid-template-columns: $avatar_column_width auto 55px 60px;
+        grid-template-columns: $avatar_column_width auto 55px fit-content(
+                $time_column_max_width
+            );
 
         @media (width < $sm_min) {
-            grid-template-columns: $avatar_column_width auto max-content 60px;
+            grid-template-columns: $avatar_column_width auto max-content fit-content(
+                    $time_column_max_width
+                );
         }
 
         .message_controls {
@@ -64,6 +82,8 @@ $sender_name_distance_below_flex_center: 3px;
             line-height: 1;
             justify-self: end;
             padding-right: 10px;
+            min-width: $time_column_min_width;
+            text-align: end;
             grid-row-start: 1;
             grid-column-start: 4;
             position: relative;
