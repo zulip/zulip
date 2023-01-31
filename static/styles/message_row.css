@@ -2,12 +2,11 @@ $avatar_column_width: 46px;
 $distance_of_text_elements_from_message_box_top: 8.5px;
 $distance_of_non_text_elements_from_message_box_top: 6px;
 $sender_name_distance_below_flex_center: 3px;
-$time_column_min_width: 50px; /* + padding */
 
 .message_row {
     .messagebox .messagebox-content {
         /* Total 868px
-        1    56px   2                                        697px                                                      3     55px     4  60px(min)  5
+        1    56px   2                                        697px                                                      3     55px     4     60px    5
       1 |‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾‾‾:‾‾‾‾‾‾‾‾‾‾‾‾|
         |           :   TEXT                                                                                             :   +  ⋮  ☆    :  10:00 AM  |
         |           :   TEXT                                                                                             :              :            |
@@ -27,10 +26,10 @@ $time_column_min_width: 50px; /* + padding */
         padding-left: 10px;
         grid-template-rows: repeat(4, auto);
 
-        grid-template-columns: $avatar_column_width auto 55px auto;
+        grid-template-columns: $avatar_column_width auto 55px 60px;
 
         @media (width < $sm_min) {
-            grid-template-columns: $avatar_column_width auto max-content auto;
+            grid-template-columns: $avatar_column_width auto max-content 60px;
         }
 
         .message_controls {
@@ -65,8 +64,6 @@ $time_column_min_width: 50px; /* + padding */
             line-height: 1;
             justify-self: end;
             padding-right: 10px;
-            min-width: $time_column_min_width;
-            text-align: end;
             grid-row-start: 1;
             grid-column-start: 4;
             position: relative;
