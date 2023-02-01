@@ -17,7 +17,7 @@ from django.core.validators import validate_email
 from django.forms import Form
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import redirect, render
-from django.template.response import SimpleTemplateResponse
+from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.urls import reverse
 from django.utils.html import escape
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -365,7 +365,7 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: st
         "browser_url": reverse("login_page", kwargs={"template_name": "zerver/login.html"}),
         "realm_icon_url": realm_icon_url(user_profile.realm),
     }
-    return render(request, "zerver/desktop_redirect.html", context=context)
+    return TemplateResponse(request, "zerver/desktop_redirect.html", context=context)
 
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
