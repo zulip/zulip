@@ -89,6 +89,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Narrow to all private messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
+* **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
+
 * **Cycle between stream narrows**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 

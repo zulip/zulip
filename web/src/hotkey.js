@@ -162,6 +162,7 @@ const keypress_mappings = {
     118: {name: "show_lightbox", message_view_only: true}, // 'v'
     119: {name: "query_users", message_view_only: true}, // 'w'
     120: {name: "compose_private_message", message_view_only: true}, // 'x'
+    122: {name: "zoom_to_message_near", message_view_only: true}, // 'z'
 };
 
 export function get_keydown_hotkey(e) {
@@ -990,6 +991,32 @@ export function process_hotkey(e, hotkey) {
 
             stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, msg);
             return true;
+        }
+        case "zoom_to_message_near": {
+            // The following code is essentially equivalent to
+            // `window.location = hashutil.by_conversation_and_time_url(msg)`
+            // but we use `narrow.activate` to pass in the `trigger` parameter
+            switch (msg.type) {
+                case "private":
+                    narrow.activate(
+                        [
+                            {operator: "pm-with", operand: msg.reply_to},
+                            {operator: "near", operand: msg.id},
+                        ],
+                        {trigger: "hotkey"},
+                    );
+                    return true;
+                case "stream":
+                    narrow.activate(
+                        [
+                            {operator: "stream", operand: msg.stream},
+                            {operator: "topic", operand: msg.topic},
+                            {operator: "near", operand: msg.id},
+                        ],
+                        {trigger: "hotkey"},
+                    );
+                    return true;
+            }
         }
     }
 
