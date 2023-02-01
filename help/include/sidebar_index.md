@@ -55,17 +55,9 @@
 * [Enable full width display](/help/enable-full-width-display)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 
-## Sending messages
-* [Open the compose box](/help/open-the-compose-box)
-* [Mastering the compose box](/help/mastering-the-compose-box)
-* [Resize the compose box](/help/resize-the-compose-box)
+## Writing messages
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Mention a user or group](/help/mention-a-user-or-group)
-* [Typing notifications](/help/typing-notifications)
-* [Preview messages before sending](/help/preview-your-message-before-sending)
-* [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
-* [Edit or delete a message](/help/edit-or-delete-a-message)
-* [Message drafts](/help/view-and-edit-your-message-drafts)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Start a video call](/help/start-a-call)
 * [Share and upload files](/help/share-and-upload-files)
@@ -73,6 +65,16 @@
 * [Code blocks](/help/code-blocks)
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
 * [Create a poll](/help/create-a-poll)
+
+## Sending messages
+* [Open the compose box](/help/open-the-compose-box)
+* [Mastering the compose box](/help/mastering-the-compose-box)
+* [Resize the compose box](/help/resize-the-compose-box)
+* [Typing notifications](/help/typing-notifications)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
+* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Message drafts](/help/view-and-edit-your-message-drafts)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Reading messages
