@@ -73,8 +73,8 @@
             {{t "Notification sound" }}
         </label>
 
-        <div class="input-group bootstrap-focus-style {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
-            <select name="notification_sound" class="setting_notification_sound prop-element" id="{{prefix}}notification_sound" data-setting-widget-type="string"
+        <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
+            <select name="notification_sound" class="setting_notification_sound prop-element bootstrap-focus-style" id="{{prefix}}notification_sound" data-setting-widget-type="string"
               {{#unless enable_sound_select}}
               disabled
               {{/unless}}>
