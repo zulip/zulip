@@ -71,6 +71,14 @@ export const message_content = get_or_set("compose-textarea", true);
 const untrimmed_message_content = get_or_set("compose-textarea", true, true);
 
 export function cursor_at_start_of_whitespace_in_compose() {
+    // First check if the compose box is focused.  TODO: Maybe we
+    // should make `consider_start_of_whitespace_message_empty` a
+    // parameter to `focus_in_empty_compose` instead.
+    const focused_element_id = document.activeElement.id;
+    if (focused_element_id !== "compose-textarea") {
+        return false;
+    }
+
     const cursor_position = $("#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
 }
