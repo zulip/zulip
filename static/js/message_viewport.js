@@ -373,6 +373,12 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
     }
 }
 
+export function is_message_below_viewport($message_row) {
+    const info = message_viewport_info();
+    const offset = $message_row.offset();
+    return offset.top >= info.visible_bottom;
+}
+
 export function keep_pointer_in_view() {
     // See message_viewport.recenter_view() for related logic to keep the pointer onscreen.
     // This function mostly comes into place for mouse scrollers, and it
