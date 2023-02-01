@@ -9,6 +9,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
+import * as notifications from "./notifications";
 import * as recent_topics_util from "./recent_topics_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -192,6 +193,15 @@ export function scroll_finished() {
 
     if (recent_topics_util.is_visible()) {
         return;
+    }
+
+    if (notifications.scroll_to_message_banner_message_id !== null) {
+        const $message_row = message_lists.current.get_row(
+            notifications.scroll_to_message_banner_message_id,
+        );
+        if ($message_row.length > 0 && !message_viewport.is_message_below_viewport($message_row)) {
+            notifications.clear_compose_notifications();
+        }
     }
 
     if (update_selection_on_next_scroll) {
