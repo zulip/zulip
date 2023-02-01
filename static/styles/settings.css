@@ -451,11 +451,6 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-#organization-profile input {
-    /* Override undesired Bootstrap default. */
-    margin-bottom: 0;
-}
-
 #id_org_profile_preview {
     margin-bottom: 20px;
     display: inline-flex;
@@ -1425,6 +1420,12 @@ $option_title_width: 180px;
     #show_my_user_profile_modal i {
         padding-left: 2px;
         vertical-align: middle;
+    }
+
+    input,
+    input[type="url"] {
+        /* Override undesired Bootstrap default. */
+        margin-bottom: 0;
     }
 }
 
