@@ -892,19 +892,8 @@ def start_two_factor_auth(
 
 
 def process_api_key_fetch_authenticate_result(
-    request: HttpRequest, user_profile: Optional[UserProfile], return_data: Dict[str, bool]
+    request: HttpRequest, user_profile: UserProfile, return_data: Dict[str, bool]
 ) -> str:
-    if return_data.get("inactive_user"):
-        raise UserDeactivatedError()
-    if return_data.get("inactive_realm"):
-        raise RealmDeactivatedError()
-    if return_data.get("password_auth_disabled"):
-        raise PasswordAuthDisabledError()
-    if return_data.get("password_reset_needed"):
-        raise PasswordResetRequiredError()
-    if user_profile is None:
-        raise AuthenticationFailedError()
-
     assert user_profile.is_authenticated
 
     # Maybe sending 'user_logged_in' signal is the better approach:
@@ -921,6 +910,19 @@ def process_api_key_fetch_authenticate_result(
 
     api_key = get_api_key(user_profile)
     return api_key
+
+
+def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> JsonableError:
+    if return_data.get("inactive_user"):
+        return UserDeactivatedError()
+    if return_data.get("inactive_realm"):
+        return RealmDeactivatedError()
+    if return_data.get("password_auth_disabled"):
+        return PasswordAuthDisabledError()
+    if return_data.get("password_reset_needed"):
+        return PasswordResetRequiredError()
+
+    return AuthenticationFailedError()
 
 
 @csrf_exempt
@@ -942,11 +944,12 @@ def api_fetch_api_key(
     user_profile = authenticate(
         request=request, username=username, password=password, realm=realm, return_data=return_data
     )
-    if user_profile is not None:
-        assert isinstance(user_profile, UserProfile)
+    if user_profile is None:
+        raise get_api_key_fetch_authenticate_failure(return_data)
+
+    assert isinstance(user_profile, UserProfile)
 
     api_key = process_api_key_fetch_authenticate_result(request, user_profile, return_data)
-    assert user_profile is not None
 
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
