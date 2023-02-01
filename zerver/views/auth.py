@@ -891,25 +891,9 @@ def start_two_factor_auth(
     return two_fa_view(request, **kwargs)
 
 
-@csrf_exempt
-@require_post
-@has_request_variables
-def api_fetch_api_key(
-    request: HttpRequest, username: str = REQ(), password: str = REQ()
-) -> HttpResponse:
-    return_data: Dict[str, bool] = {}
-
-    realm = get_realm_from_request(request)
-    if realm is None:
-        raise InvalidSubdomainError()
-
-    if not ldap_auth_enabled(realm=realm):
-        # In case we don't authenticate against LDAP, check for a valid
-        # email. LDAP backend can authenticate against a non-email.
-        validate_login_email(username)
-    user_profile = authenticate(
-        request=request, username=username, password=password, realm=realm, return_data=return_data
-    )
+def process_api_key_fetch_authenticate_result(
+    request: HttpRequest, user_profile: Optional[UserProfile], return_data: Dict[str, bool]
+) -> str:
     if return_data.get("inactive_user"):
         raise UserDeactivatedError()
     if return_data.get("inactive_realm"):
@@ -936,6 +920,34 @@ def api_fetch_api_key(
     RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
+    return api_key
+
+
+@csrf_exempt
+@require_post
+@has_request_variables
+def api_fetch_api_key(
+    request: HttpRequest, username: str = REQ(), password: str = REQ()
+) -> HttpResponse:
+    return_data: Dict[str, bool] = {}
+
+    realm = get_realm_from_request(request)
+    if realm is None:
+        raise InvalidSubdomainError()
+
+    if not ldap_auth_enabled(realm=realm):
+        # In case we don't authenticate against LDAP, check for a valid
+        # email. LDAP backend can authenticate against a non-email.
+        validate_login_email(username)
+    user_profile = authenticate(
+        request=request, username=username, password=password, realm=realm, return_data=return_data
+    )
+    if user_profile is not None:
+        assert isinstance(user_profile, UserProfile)
+
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile, return_data)
+    assert user_profile is not None
+
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
