@@ -133,7 +133,7 @@ function update_announce_stream_state() {
     const $announce_stream_checkbox = $("#announce-new-stream input");
     const $announce_stream_label = $("#announce-new-stream");
     let disable_it = false;
-    const privacy_type = $("input:radio[name=privacy]:checked").val();
+    const privacy_type = $("#stream_creation_form input:radio[name=privacy]:checked").val();
     const is_invite_only =
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
     $announce_stream_label.removeClass("control-label-disabled");
