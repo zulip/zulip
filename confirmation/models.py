@@ -13,7 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import CASCADE
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
@@ -43,10 +43,10 @@ def render_confirmation_key_error(
     request: HttpRequest, exception: ConfirmationKeyError
 ) -> HttpResponse:
     if exception.error_type == ConfirmationKeyError.WRONG_LENGTH:
-        return render(request, "confirmation/link_malformed.html", status=404)
+        return TemplateResponse(request, "confirmation/link_malformed.html", status=404)
     if exception.error_type == ConfirmationKeyError.EXPIRED:
-        return render(request, "confirmation/link_expired.html", status=404)
-    return render(request, "confirmation/link_does_not_exist.html", status=404)
+        return TemplateResponse(request, "confirmation/link_expired.html", status=404)
+    return TemplateResponse(request, "confirmation/link_does_not_exist.html", status=404)
 
 
 def generate_key() -> str:
