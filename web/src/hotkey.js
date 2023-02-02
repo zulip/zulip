@@ -123,6 +123,7 @@ const keydown_either_mappings = {
 const keypress_mappings = {
     42: {name: "star_deprecated", message_view_only: true}, // '*'
     43: {name: "thumbs_up_emoji", message_view_only: true}, // '+'
+    61: {name: "upvote_first_emoji", message_view_only: true}, // '='
     45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
     47: {name: "search", message_view_only: false}, // '/'
     58: {name: "toggle_reactions_popover", message_view_only: true}, // ':'
@@ -965,6 +966,23 @@ export function process_hotkey(e, hotkey) {
             const thumbs_up_emoji_code = "1f44d";
             const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
             reactions.toggle_emoji_reaction(msg.id, canonical_name);
+            return true;
+        }
+        case "upvote_first_emoji": {
+            // '=': If the current message has at least one emoji
+            // reaction, toggle out vote on the first one.
+            const message_reactions = reactions.get_message_reactions(msg);
+            if (message_reactions.length === 0) {
+                return true;
+            }
+
+            const first_reaction = message_reactions[0];
+            if (!first_reaction) {
+                // If the message has no emoji reactions, do nothing.
+                return true;
+            }
+
+            reactions.toggle_emoji_reaction(msg.id, first_reaction.emoji_name);
             return true;
         }
         case "toggle_topic_mute":
