@@ -5,6 +5,14 @@ import * as compose_pm_pill from "./compose_pm_pill";
 let message_type = false; // 'stream', 'private', or false-y
 let recipient_edited_manually = false;
 
+// We use this variable to keep track of whether user has viewed the topic resolved
+// banner for the current compose session, for a narrow. This prevents the banner
+// from popping up for every keystroke while composing.
+// The variable is reset on sending a message, closing the compose box and changing
+// the narrow and the user should still be able to see the banner once after
+// performing these actions
+let recipient_viewed_topic_resolved_banner = false;
+
 export function set_recipient_edited_manually(flag) {
     recipient_edited_manually = flag;
 }
@@ -19,6 +27,14 @@ export function set_message_type(msg_type) {
 
 export function get_message_type() {
     return message_type;
+}
+
+export function set_recipient_viewed_topic_resolved_banner(flag) {
+    recipient_viewed_topic_resolved_banner = flag;
+}
+
+export function has_recipient_viewed_topic_resolved_banner() {
+    return recipient_viewed_topic_resolved_banner;
 }
 
 export function recipient_has_topics() {

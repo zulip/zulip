@@ -497,6 +497,7 @@ test_ui("initialize", ({override}) => {
 });
 
 test_ui("update_fade", ({override}) => {
+    mock_banners();
     initialize_handlers({override});
 
     const selector =

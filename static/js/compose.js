@@ -96,6 +96,11 @@ function update_fade() {
     }
 
     const msg_type = compose_state.get_message_type();
+
+    // It's possible that the new topic is not a resolved topic
+    // so we clear the older warning.
+    compose_validate.clear_topic_resolved_warning();
+
     compose_validate.warn_if_topic_resolved();
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_all();
