@@ -2025,14 +2025,7 @@ nav {
     max-width: 600px;
 }
 
-.portico-landing.apps
-    .hero
-    .image
-    img[src="/static/images/app-screenshots/zulip-android.png"],
-.portico-landing.apps
-    .hero
-    .image
-    img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
+.portico-landing.apps .hero .image img.app-screenshot-mobile {
     height: 85%;
 }
 
