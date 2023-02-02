@@ -116,7 +116,9 @@ def serve_local(request: HttpRequest, path_id: str, download: bool = False) -> H
         # In development, we do not have the nginx server to offload
         # the response to; serve it directly ourselves.
         # FileResponse handles setting Content-Disposition, etc.
-        response: HttpResponseBase = FileResponse(open(local_path, "rb"), as_attachment=download)
+        response: HttpResponseBase = FileResponse(
+            open(local_path, "rb"), as_attachment=download  # noqa: SIM115
+        )
         patch_cache_control(response, private=True, immutable=True)
         return response
 
@@ -243,7 +245,7 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
         return HttpResponseNotFound("<p>File not found</p>")
 
     if settings.DEVELOPMENT:
-        response: HttpResponseBase = FileResponse(open(local_path, "rb"))
+        response: HttpResponseBase = FileResponse(open(local_path, "rb"))  # noqa: SIM115
     else:
         response = internal_nginx_redirect(quote(f"/internal/local/user_avatars/{path}"))
 
