@@ -61,6 +61,7 @@ EXEMPT_FILES = make_set(
         "static/js/click_handlers.js",
         "static/js/compose.js",
         "static/js/compose_actions.js",
+        "static/js/compose_banner.ts",
         "static/js/compose_closed_ui.js",
         "static/js/compose_fade.js",
         "static/js/compose_state.js",
