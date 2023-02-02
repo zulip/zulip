@@ -19,7 +19,6 @@ import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reminder from "./reminder";
@@ -308,7 +307,7 @@ export function finish() {
     clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
 
     const message_content = compose_state.message_content();
 

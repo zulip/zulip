@@ -19,7 +19,6 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -292,7 +291,7 @@ export function start(msg_type, opts) {
     if (reload_state.is_in_progress()) {
         return;
     }
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
     expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
@@ -384,7 +383,7 @@ export function cancel() {
     hide_box();
     $("#compose_close").hide();
     clear_box();
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
     compose.abort_xhr();
     compose.abort_video_callbacks(undefined);
     compose_state.set_message_type(false);
