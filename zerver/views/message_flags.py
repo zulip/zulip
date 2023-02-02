@@ -64,6 +64,7 @@ def update_message_flags(
 
 MAX_MESSAGES_PER_UPDATE = 5000
 
+
 # NOTE: If this function name is changed, add the new name to the
 # query in get_latest_update_message_flag_activity
 @has_request_variables

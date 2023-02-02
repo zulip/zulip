@@ -20,7 +20,7 @@ from zerver.tornado.django_api import send_event
 @transaction.atomic(durable=True)
 def do_add_realm_domain(
     realm: Realm, domain: str, allow_subdomains: bool, *, acting_user: Optional[UserProfile]
-) -> (RealmDomain):
+) -> RealmDomain:
     realm_domain = RealmDomain.objects.create(
         realm=realm, domain=domain, allow_subdomains=allow_subdomains
     )

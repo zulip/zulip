@@ -29,7 +29,6 @@ class IdentityArgsDict(TypedDict, total=False):
 
 
 def main() -> None:
-
     session = boto3.session.Session()
 
     from_address = settings.NOREPLY_EMAIL_ADDRESS

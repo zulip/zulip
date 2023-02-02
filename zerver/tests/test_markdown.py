@@ -1807,7 +1807,7 @@ class MarkdownTest(ZulipTestCase):
             "aaron": ["hey"],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1841,7 +1841,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": ["last"],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1879,7 +1879,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": ["last"],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1911,7 +1911,7 @@ class MarkdownTest(ZulipTestCase):
             "aaron": [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1945,7 +1945,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1964,7 +1964,6 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
-
         alert_words_for_users: Dict[str, List[str]] = {
             "hamlet": ["issue124"],
             "cordelia": self.get_mock_alert_words(500, 10),
@@ -1972,7 +1971,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": self.get_mock_alert_words(500, 10),
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -3107,7 +3106,6 @@ class MarkdownErrorTests(ZulipTestCase):
                 markdown_convert_wrapper("")
 
     def test_send_message_errors(self) -> None:
-
         message = "whatever"
         with self.simulated_markdown_failure():
             # We don't use assertRaisesRegex because it seems to not

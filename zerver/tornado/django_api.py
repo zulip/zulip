@@ -84,7 +84,6 @@ def request_event_queue(
     user_settings_object: bool = False,
     pronouns_field_type_supported: bool = True,
 ) -> Optional[str]:
-
     if not settings.USING_TORNADO:
         return None
 

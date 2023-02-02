@@ -28,6 +28,7 @@ from typing import Any, Dict, List, Optional
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 # Some DER encoding stuff. Bleh. This is because the ccache contains a
 # DER-encoded krb5 Ticket structure, whereas Webathena deserializes
 # into the various fields. Re-encoding in the client would be easy as

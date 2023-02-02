@@ -432,7 +432,6 @@ class AuthBackendTest(ZulipTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.GoogleAuthBackend",))
     def test_any_backend_enabled(self) -> None:
-
         # testing to avoid false error messages.
         result = self.client_get("/login/")
         self.assert_not_in_success_response(["No authentication backends are enabled"], result)
@@ -3092,7 +3091,6 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
     def test_validate_state(self) -> None:
         with self.assertLogs(self.logger_string, level="INFO") as m:
-
             # (1) check if auth fails if no state value is sent.
             result = self.client_post("/complete/apple/")
             self.assertEqual(result.status_code, 302)

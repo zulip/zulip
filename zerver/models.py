@@ -2400,7 +2400,6 @@ class AbstractPushDeviceToken(models.Model):
 
 
 class PushDeviceToken(AbstractPushDeviceToken):
-
     # The user whose device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
 
@@ -2777,7 +2776,6 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
 
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
-
     # The caller should ensure that user_profile_ids includes
     # the sender.  Note that get_huddle hits the cache, and then
     # we hit another cache to get the recipient.  We may want to
@@ -4610,6 +4608,7 @@ class CustomProfileFieldValue(models.Model):
 # and parsing the response.
 GENERIC_INTERFACE = "GenericService"
 SLACK_INTERFACE = "SlackOutgoingWebhookService"
+
 
 # A Service corresponds to either an outgoing webhook bot or an embedded bot.
 # The type of Service is determined by the bot_type field of the referenced

@@ -23,7 +23,6 @@ def reverse_change_emojiset(apps: StateApps, schema_editor: BaseDatabaseSchemaEd
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0129_remove_userprofile_autoscroll_forever"),
     ]

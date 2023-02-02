@@ -615,7 +615,6 @@ class RealmTest(ZulipTestCase):
         self.assertFalse(realm.deactivated)
 
     def test_invalid_integer_attribute_values(self) -> None:
-
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
 
         invalid_values = dict(
@@ -653,7 +652,6 @@ class RealmTest(ZulipTestCase):
             self.do_test_invalid_integer_attribute_value(name, invalid_value)
 
     def do_test_invalid_integer_attribute_value(self, val_name: str, invalid_val: int) -> None:
-
         possible_messages = {
             f"Invalid {val_name}",
             f"Bad value for '{val_name}'",

@@ -240,10 +240,10 @@ def do_clear_mobile_push_notifications_for_ids(
         .values_list("user_profile_id", "message_id")
     )
 
-    for (user_id, message_id) in notifications_to_update:
+    for user_id, message_id in notifications_to_update:
         messages_by_user[user_id].append(message_id)
 
-    for (user_profile_id, event_message_ids) in messages_by_user.items():
+    for user_profile_id, event_message_ids in messages_by_user.items():
         queue_json_publish(
             "missedmessage_mobile_notifications",
             {

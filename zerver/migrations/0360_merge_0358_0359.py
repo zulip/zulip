@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0358_split_create_stream_policy"),
         ("zerver", "0359_re2_linkifiers"),

@@ -10,6 +10,7 @@ from django.db.models import Min
 BATCH_SIZE = 10000
 STREAM = 2
 
+
 # Legacy TypedDict has "prev_topic" field for any edit_history entries that
 # were saved to the database after the legacy "prev_subject" field stopped
 # being written to the database in the pre-migration commit.

@@ -14,7 +14,6 @@ def fix_unreads(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> Non
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0103_remove_userprofile_muted_topics"),
     ]

@@ -69,7 +69,7 @@ def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
         [BATCH_SIZE],
     )
     ids = []
-    for (id, message_id) in cursor.fetchall():
+    for id, message_id in cursor.fetchall():
         if USING_PGROONGA:
             cursor.execute(
                 "UPDATE zerver_message SET "

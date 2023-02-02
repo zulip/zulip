@@ -349,7 +349,7 @@ def has_request_variables(
 
     view_func_full_name = ".".join([req_func.__module__, req_func.__name__])
 
-    for (name, value) in zip(default_param_names, default_param_values):
+    for name, value in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):
             value.func_var_name = name
             if value.post_var_name is None:

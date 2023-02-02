@@ -252,7 +252,6 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         return incoming_valid_message
 
     def test_receive_stream_email_messages_success(self) -> None:
-
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         user_profile = self.example_user("hamlet")
@@ -1004,7 +1003,6 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self) -> None:
-
         # build dummy messages for message notification email reply
         # have Hamlet send Othello a PM. Othello will reply via email
         # Hamlet will receive the message.
@@ -1047,7 +1045,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
     def test_receive_missed_huddle_message_email_messages(self) -> None:
-
         # build dummy messages for message notification email reply
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
         # Iago and Othello will receive the message.
@@ -1376,7 +1373,6 @@ class TestReplyExtraction(ZulipTestCase):
         self.assertFalse(is_forwarded("RE: FWD: hi"))
 
     def test_reply_is_extracted_from_plain(self) -> None:
-
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet")
@@ -1414,7 +1410,6 @@ class TestReplyExtraction(ZulipTestCase):
         self.assertEqual(message.content, text)
 
     def test_reply_is_extracted_from_html(self) -> None:
-
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet")

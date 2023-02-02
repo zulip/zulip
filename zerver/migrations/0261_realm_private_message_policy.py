@@ -5,7 +5,6 @@ PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0260_missed_message_addresses_from_redis_to_db"),
     ]

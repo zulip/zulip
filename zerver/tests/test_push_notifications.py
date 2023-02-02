@@ -1280,7 +1280,6 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_send_android, mock.patch(
             "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ) as mock_push_notifications:
-
             handle_push_notification(self.user_profile.id, missed_message)
             user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
             mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
@@ -1704,7 +1703,6 @@ class TestAPNs(PushNotificationTest):
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
     def test_apns_badge_count(self, mock_push_notifications: mock.MagicMock) -> None:
-
         user_profile = self.example_user("othello")
         # Test APNs badge count for personal messages.
         message_ids = [

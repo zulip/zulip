@@ -29,7 +29,6 @@ def remove_google_hangouts_provider(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0284_convert_realm_admins_to_realm_owners"),
     ]

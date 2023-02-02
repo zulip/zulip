@@ -241,7 +241,6 @@ def create_log_entry(
     copied_packages: Set[str],
     new_packages: Set[str],
 ) -> None:
-
     venv_path = os.path.dirname(target_log)
     with open(target_log, "a") as writer:
         writer.write(f"{venv_path}\n")
@@ -289,7 +288,6 @@ def setup_virtualenv(
     requirements_file: str,
     patch_activate_script: bool = False,
 ) -> str:
-
     sha1sum = generate_hash(requirements_file)
     # Check if a cached version already exists
     if target_venv_path is None:
@@ -320,7 +318,6 @@ def add_cert_to_pipconf() -> None:
 
 
 def do_setup_virtualenv(venv_path: str, requirements_file: str) -> None:
-
     # Set up Python virtualenv
     new_packages = set(get_package_names(requirements_file))
 

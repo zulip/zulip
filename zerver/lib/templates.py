@@ -75,6 +75,7 @@ docs_without_macros = [
     "incoming-webhooks-walkthrough.md",
 ]
 
+
 # render_markdown_path is passed a context dictionary (unhashable), which
 # results in the calls not being cached. To work around this, we convert the
 # dict to a tuple of dict items to cache the results.

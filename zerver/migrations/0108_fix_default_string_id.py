@@ -20,7 +20,6 @@ def fix_realm_string_ids(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0107_multiuseinvite"),
     ]

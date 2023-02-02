@@ -32,6 +32,7 @@ EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
 # These are skipped but return true as the validator cannot exclude objects
 EXCLUDE_DOCUMENTED_ENDPOINTS: Set[Tuple[str, str]] = set()
 
+
 # Most of our code expects allOf to be preprocessed away because that is what
 # yamole did.  Its algorithm for doing so is not standards compliant, but we
 # replicate it here.

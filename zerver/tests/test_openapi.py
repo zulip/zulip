@@ -613,7 +613,6 @@ so maybe we shouldn't include it in pending_endpoints.
 
 
 class TestCurlExampleGeneration(ZulipTestCase):
-
     spec_mock_without_examples = {
         "security": [{"basicAuth": []}],
         "paths": {

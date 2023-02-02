@@ -273,7 +273,6 @@ def generate_curl_example(
     exclude: Optional[List[str]] = None,
     include: Optional[List[str]] = None,
 ) -> List[str]:
-
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]

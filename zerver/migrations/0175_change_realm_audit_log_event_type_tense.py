@@ -19,7 +19,6 @@ def change_realm_audit_log_event_type_tense(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0174_userprofile_delivery_email"),
     ]

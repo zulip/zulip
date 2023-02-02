@@ -6,7 +6,6 @@ EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0192_customprofilefieldvalue_rendered_value"),
     ]
