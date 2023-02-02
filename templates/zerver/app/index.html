@@ -79,9 +79,6 @@
     border-top-color: hsl(0,0%,52%);
     animation: zspinner 1s linear infinite;
     }
-    .app-loading-text {
-    font-weight: normal;
-    }
 </style>
 {% endblock %}
 
@@ -95,7 +92,6 @@
             <div class="app-loading-spinner"></div>
             <img class="app-loading-logo" src="/static/images/logo/zulip-icon-circle.svg"/>
         </div>
-        <h3 class="app-loading-text">{{ _('Loading...') }}</h3>
     </div>
     <div id="app-loading-bottom-content">
         <p>{% trans %}If this message does not go away, try <a id="reload-lnk">reloading</a> the page.{% endtrans %}</p>
