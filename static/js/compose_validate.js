@@ -167,7 +167,12 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
     }
 }
 
+// Called when clearing the compose box and similar contexts to clear
+// the warning for composing to a resolved topic, if present. Also clears
+// the state for whether this warning has already been shown in the
+// current narrow.
 export function clear_topic_resolved_warning() {
+    compose_state.set_recipient_viewed_topic_resolved_banner(false);
     $(`#compose_banners .${compose_banner.CLASSNAMES.topic_resolved}`).remove();
 }
 
@@ -196,8 +201,8 @@ export function warn_if_topic_resolved(topic_changed) {
     const $compose_banner_area = $("#compose_banners");
 
     if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
-        if ($(`#compose_banners .${compose_banner.CLASSNAMES.topic_resolved}`).length) {
-            // Error is already displayed; no action required.
+        if (compose_state.has_recipient_viewed_topic_resolved_banner()) {
+            // We display the resolved topic banner at most once per narrow.
             return;
         }
 
@@ -219,6 +224,7 @@ export function warn_if_topic_resolved(topic_changed) {
 
         const new_row = render_compose_banner(context);
         $compose_banner_area.append(new_row);
+        compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
         clear_topic_resolved_warning();
     }
