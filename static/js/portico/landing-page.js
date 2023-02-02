@@ -96,6 +96,7 @@ const apps_events = function () {
         $download_from_apple_app_store.attr("href", version_info.app_store_link);
         $download_android_apk.attr("href", version_info.download_link);
         $download_mac_arm64.attr("href", version_info.mac_arm64_link);
+        $(".image img").addClass(`app-screenshot-${version_info.app_type}`);
         $(".image img").attr("src", version_info.image);
         $download_instructions.find("a").attr("href", version_info.install_guide);
 
