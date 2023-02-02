@@ -72,6 +72,9 @@ function build_emoticon_translations({emoticon_conversions}) {
 const zulip_emoji = {
     id: "zulip",
     emoji_name: "zulip",
+    // We don't use a webpack'd URL here, for consistency with the
+    // server-side markdown, which doesn't want to render it into the
+    // message content.
     emoji_url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
     is_realm_emoji: true,
     deactivated: false,

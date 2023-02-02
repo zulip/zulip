@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import whale_image from "../images/hotspots/whale.svg";
 import render_hotspot_icon from "../templates/hotspot_icon.hbs";
 import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
 
@@ -54,9 +55,6 @@ const HOTSPOT_LOCATIONS = new Map([
         },
     ],
 ]);
-
-// popover illustration url(s)
-const WHALE = "/static/images/hotspots/whale.svg";
 
 export function post_hotspot_as_read(hotspot_name) {
     channel.post({
@@ -207,7 +205,7 @@ function insert_hotspot_into_DOM(hotspot) {
         name: hotspot.name,
         title: hotspot.title,
         description: hotspot.description,
-        img: WHALE,
+        img: whale_image,
     });
 
     const hotspot_icon_HTML = render_hotspot_icon({

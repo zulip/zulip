@@ -1,5 +1,11 @@
 import $ from "jquery";
 
+import macbook_image from "../../images/app-screenshots/macbook.png";
+import microsoft_image from "../../images/app-screenshots/microsoft.png";
+import ubuntu_image from "../../images/app-screenshots/ubuntu.png";
+import android_image from "../../images/app-screenshots/zulip-android.png";
+import iphone_image from "../../images/app-screenshots/zulip-iphone-rough.png";
+
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";
 
@@ -14,7 +20,7 @@ const hello_events = function () {
 const apps_events = function () {
     const info = {
         windows: {
-            image: "/static/images/app-screenshots/microsoft.png",
+            image: microsoft_image,
             alt: "Windows",
             description:
                 "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
@@ -24,7 +30,7 @@ const apps_events = function () {
             app_type: "desktop",
         },
         mac: {
-            image: "/static/images/app-screenshots/macbook.png",
+            image: macbook_image,
             alt: "macOS",
             description:
                 "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
@@ -35,7 +41,7 @@ const apps_events = function () {
             app_type: "desktop",
         },
         android: {
-            image: "/static/images/app-screenshots/zulip-android.png",
+            image: android_image,
             alt: "Android",
             description: "Zulip's native Android app makes it easy to keep up while on the go.",
             show_instructions: false,
@@ -44,7 +50,7 @@ const apps_events = function () {
             app_type: "mobile",
         },
         ios: {
-            image: "/static/images/app-screenshots/zulip-iphone-rough.png",
+            image: iphone_image,
             alt: "iOS",
             description: "Zulip's native iOS app makes it easy to keep up while on the go.",
             show_instructions: false,
@@ -52,7 +58,7 @@ const apps_events = function () {
             app_type: "mobile",
         },
         linux: {
-            image: "/static/images/app-screenshots/ubuntu.png",
+            image: ubuntu_image,
             alt: "Linux",
             description:
                 "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
