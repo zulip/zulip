@@ -209,7 +209,7 @@ def reset_emails_in_zulip_realm() -> None:
 
 def get_test_image_file(filename: str) -> IO[bytes]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
-    return open(os.path.join(test_avatar_dir, filename), "rb")
+    return open(os.path.join(test_avatar_dir, filename), "rb")  # noqa: SIM115
 
 
 def read_test_image_file(filename: str) -> bytes:
