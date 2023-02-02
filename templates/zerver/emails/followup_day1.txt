@@ -2,7 +2,7 @@
 
 {% if realm_creation %}
     {% if is_demo_org %}
-        {% trans %}Congratulations, you have created a new Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations here: https://zulip.com/help/demo-organizations{% endtrans %}
+        {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %} Congratulations, you have created a new demo Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations here: {{ demo_organizations_help_link }}!{% endtrans %}
     {% else %}
         {% trans %}Congratulations, you have created a new Zulip organization: {{ realm_name }}.{% endtrans %}
     {% endif %}
