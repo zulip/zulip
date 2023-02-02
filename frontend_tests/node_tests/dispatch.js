@@ -78,6 +78,8 @@ const ui = mock_esm("../../static/js/ui");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
+const overlays = mock_esm("../../static/js/overlays");
+const user_groups_settings_ui = mock_esm("../../static/js/user_groups_settings_ui");
 mock_esm("../../static/js/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
@@ -162,10 +164,20 @@ run_test("user groups", ({override}) => {
     override(settings_user_groups_legacy, "reload", noop);
     {
         const stub = make_stub();
+        const user_group_settings_ui_stub = make_stub();
+
         override(user_groups, "add", stub.f);
+        override(overlays, "groups_open", () => true);
+        override(user_groups_settings_ui, "add_group_to_table", user_group_settings_ui_stub.f);
+
         dispatch(event);
+
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("group");
+        assert.equal(user_group_settings_ui_stub.num_calls, 1);
+
+        let args = stub.get_args("group");
+        assert_same(args.group, event.group);
+        args = user_group_settings_ui_stub.get_args("group");
         assert_same(args.group, event.group);
     }
 

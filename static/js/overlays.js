@@ -39,6 +39,10 @@ export function streams_open() {
     return open_overlay_name === "subscriptions";
 }
 
+export function groups_open() {
+    return (open_overlay_name = "groups");
+}
+
 export function lightbox_open() {
     return open_overlay_name === "lightbox";
 }
