@@ -10,6 +10,20 @@ import * as user_group_create_members_data from "./user_group_create_members_dat
 import * as user_groups from "./user_groups";
 import * as user_group_settings_ui from "./user_groups_settings_ui";
 
+let created_group_name;
+
+export function reset_name() {
+    created_group_name = undefined;
+}
+
+export function set_name(group_name) {
+    created_group_name = group_name;
+}
+
+export function get_name() {
+    return created_group_name;
+}
+
 class UserGroupMembershipError {
     report_no_members_to_user_group() {
         $("#user_group_membership_error").text(
@@ -101,6 +115,7 @@ function create_user_group() {
     const data = {};
     const group_name = $("#create_user_group_name").val().trim();
     const description = $("#create_user_group_description").val().trim();
+    set_name(group_name);
 
     // Even though we already check to make sure that while typing the user cannot enter
     // newline characters (by pressing the Enter key) it would still be possible to copy
@@ -142,6 +157,7 @@ function create_user_group() {
                 xhr,
                 $(".user_group_create_info"),
             );
+            reset_name();
             loading.destroy_indicator($("#user_group_creating_indicator"));
         },
     });

@@ -272,8 +272,8 @@ function create_stream() {
         error(xhr) {
             const msg = JSON.parse(xhr.responseText).msg;
             if (msg.includes("access")) {
-                // If we can't access the stream, we can safely assume it's
-                // a duplicate stream that we are not invited to.
+                // If we can't access the stream, we can safely
+                // assume it's a duplicate stream that we are not invited to.
                 //
                 // BUG: This check should be using error codes, not
                 // parsing the error string, so it works correctly

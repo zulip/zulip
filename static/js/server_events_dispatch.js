@@ -68,6 +68,7 @@ import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as user_events from "./user_events";
 import * as user_groups from "./user_groups";
+import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
@@ -754,6 +755,9 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     user_groups.add(event.group);
+                    if (overlays.groups_open()) {
+                        user_groups_settings_ui.add_group_to_table(event.group);
+                    }
                     break;
                 case "remove":
                     user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
