@@ -125,7 +125,7 @@ class MessageDictTest(ZulipTestCase):
 
         msg_id = test_message_id()
 
-        for (apply_markdown, client_gravatar) in flag_setups:
+        for apply_markdown, client_gravatar in flag_setups:
             send_message_payload = get_send_message_payload(
                 msg_id,
                 apply_markdown=apply_markdown,

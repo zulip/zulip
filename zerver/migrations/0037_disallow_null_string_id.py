@@ -26,7 +26,6 @@ def set_string_id_using_domain(apps: StateApps, schema_editor: BaseDatabaseSchem
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0036_rename_subdomain_to_string_id"),
     ]

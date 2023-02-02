@@ -27,7 +27,6 @@ if settings.BILLING_ENABLED:
 def make_table(
     title: str, cols: Sequence[str], rows: Sequence[Any], has_row_class: bool = False
 ) -> str:
-
     if not has_row_class:
 
         def fix_row(row: Any) -> Dict[str, Any]:

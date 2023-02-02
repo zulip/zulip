@@ -18,7 +18,6 @@ def emoji_to_lowercase(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0080_realm_description_length"),
     ]

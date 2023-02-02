@@ -28,7 +28,7 @@ def convert_muted_topics(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
     with connection.cursor() as cursor:
         cursor.execute(stream_query)
         rows = cursor.fetchall()
-        for (stream_name, realm_id, stream_id, recipient_id) in rows:
+        for stream_name, realm_id, stream_id, recipient_id in rows:
             stream_name = stream_name.lower()
             stream_dict[(stream_name, realm_id)] = (stream_id, recipient_id)
 
@@ -49,7 +49,7 @@ def convert_muted_topics(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
         muted_topics = row["muted_topics"]
 
         tups = orjson.loads(muted_topics)
-        for (stream_name, topic_name) in tups:
+        for stream_name, topic_name in tups:
             stream_name = stream_name.lower()
             val = stream_dict.get((stream_name, realm_id))
             if val is not None:
@@ -69,7 +69,6 @@ def convert_muted_topics(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0101_muted_topic"),
     ]

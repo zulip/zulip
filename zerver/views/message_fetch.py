@@ -246,7 +246,6 @@ def messages_in_narrow_backend(
     msg_ids: List[int] = REQ(json_validator=check_list(check_int)),
     narrow: OptionalNarrowListT = REQ(converter=narrow_parameter),
 ) -> HttpResponse:
-
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they

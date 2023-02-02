@@ -122,7 +122,6 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self,
         import_module_mock: MagicMock,
     ) -> None:
-
         fake_module = SimpleNamespace()
         import_module_mock.return_value = fake_module
 

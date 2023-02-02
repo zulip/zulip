@@ -3,7 +3,6 @@ from django.db.models import Q
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0082_index_starred_user_messages"),
     ]

@@ -8,7 +8,6 @@ class DiffError(Exception):
 
 
 def diff_strings(output: str, expected_output: str) -> str:
-
     mdiff_path = "frontend_tests/zjsunit/mdiff.js"
     if not os.path.isfile(mdiff_path):  # nocoverage
         msg = "Cannot find mdiff for Markdown diff rendering"

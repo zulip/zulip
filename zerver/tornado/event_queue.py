@@ -539,7 +539,7 @@ def gc_event_queues(port: int) -> None:
     to_remove: Set[str] = set()
     affected_users: Set[int] = set()
     affected_realms: Set[int] = set()
-    for (id, client) in clients.items():
+    for id, client in clients.items():
         if client.expired(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
@@ -1168,7 +1168,6 @@ def process_message_update_event(
         # Therefore, we know only events where `rendering_only_update`
         # is False possibly send notifications.
         if not rendering_only_update:
-
             # The user we'll get here will be the sender if the message's
             # content was edited, and the editor for topic edits. That's
             # the correct "acting_user" for both cases.

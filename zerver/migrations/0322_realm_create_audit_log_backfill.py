@@ -32,7 +32,6 @@ def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0321_userprofile_enable_marketing_emails"),
     ]

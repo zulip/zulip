@@ -53,7 +53,6 @@ def create_mirrored_message_users(
     sender: str,
     message_type: str,
 ) -> UserProfile:
-
     sender_email = sender.strip().lower()
     referenced_users = {sender_email}
     if message_type == "private":
@@ -207,7 +206,6 @@ def send_message_backend(
     tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
     time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
 ) -> HttpResponse:
-
     # If req_to is None, then we default to an
     # empty list of recipients.
     message_to: Union[Sequence[int], Sequence[str]] = []

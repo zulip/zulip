@@ -3,7 +3,6 @@ from django.db.models import Q
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0094_realm_filter_url_validator"),
     ]

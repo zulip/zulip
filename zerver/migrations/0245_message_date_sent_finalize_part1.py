@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0244_message_copy_pub_date_to_date_sent"),
     ]

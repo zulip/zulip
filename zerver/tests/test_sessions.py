@@ -94,7 +94,6 @@ class TestSessions(ZulipTestCase):
         )
 
     def test_delete_all_deactivated_user_sessions(self) -> None:
-
         # Test that no exception is thrown with a logged-out session
         self.login("othello")
         self.assertIn("_auth_user_id", self.client.session)

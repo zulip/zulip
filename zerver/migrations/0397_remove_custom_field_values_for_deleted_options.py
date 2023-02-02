@@ -22,7 +22,6 @@ def remove_custom_field_values_for_deleted_options(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0396_remove_subscription_role"),
     ]

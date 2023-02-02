@@ -31,7 +31,6 @@ def verify_medium_avatar_image(apps: StateApps, schema_editor: BaseDatabaseSchem
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0031_remove_system_avatar_source"),
     ]

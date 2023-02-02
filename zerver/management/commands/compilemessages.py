@@ -138,7 +138,6 @@ class Command(compilemessages.Command):
             writer.write("\n")
 
     def get_translation_percentage(self, locale_path: str, locale: str) -> int:
-
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))
         not_translated = len(po.untranslated_entries())

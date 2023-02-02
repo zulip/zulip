@@ -3234,7 +3234,6 @@ class MultiuseInviteTest(ZulipTestCase):
 
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self) -> None:
-
         # An invalid unsubscribe token "test123" produces an error.
         result = self.client_get("/accounts/unsubscribe/missed_messages/test123")
         self.assert_in_response("Unknown email unsubscribe request", result)
@@ -6173,7 +6172,6 @@ class TwoFactorAuthTest(ZulipTestCase):
             TWO_FACTOR_SMS_GATEWAY="two_factor.gateways.fake.Fake",
             TWO_FACTOR_AUTHENTICATION_ENABLED=True,
         ):
-
             first_step_data = {
                 "username": email,
                 "password": password,

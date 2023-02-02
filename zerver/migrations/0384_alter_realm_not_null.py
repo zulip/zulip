@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0383_revoke_invitations_from_deactivated_users"),
     ]

@@ -34,7 +34,6 @@ def reverse_migrate_to_add_custom_emoji_policy(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0337_realm_add_custom_emoji_policy"),
     ]

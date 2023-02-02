@@ -75,7 +75,6 @@ def fix_dummy_users(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) ->
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0372_realmemoji_unique_realm_emoji_when_false_deactivated"),
     ]

@@ -374,7 +374,6 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 
 
 def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
-
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 

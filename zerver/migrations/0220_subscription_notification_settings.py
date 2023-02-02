@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0219_toggle_realm_digest_emails_enabled_default"),
     ]

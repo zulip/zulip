@@ -19,7 +19,6 @@ def populate_is_zephyr(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0109_mark_tutorial_status_finished"),
     ]

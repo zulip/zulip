@@ -32,7 +32,6 @@ def reverse_migrate_to_edit_topic_policy(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0327_realm_edit_topic_policy"),
     ]

@@ -79,7 +79,6 @@ def fix_messages(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0272_realm_default_code_block_language"),
     ]

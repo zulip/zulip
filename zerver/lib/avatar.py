@@ -16,7 +16,6 @@ from zerver.models import UserProfile
 def avatar_url(
     user_profile: UserProfile, medium: bool = False, client_gravatar: bool = False
 ) -> Optional[str]:
-
     return get_avatar_field(
         user_id=user_profile.id,
         realm_id=user_profile.realm_id,

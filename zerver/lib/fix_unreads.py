@@ -70,7 +70,6 @@ def get_timing(message: str, f: Callable[[], None]) -> None:
 
 
 def fix_unsubscribed(cursor: CursorWrapper, user_profile: UserProfile) -> None:
-
     recipient_ids = []
 
     def find_recipients() -> None:

@@ -37,7 +37,6 @@ def api_beeminder_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     goal_name = payload["goal"]["slug"].tame(check_string)
     limsum = payload["goal"]["limsum"].tame(check_string)
     pledge = payload["goal"]["pledge"].tame(check_union([check_int, check_float]))

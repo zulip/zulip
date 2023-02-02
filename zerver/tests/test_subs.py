@@ -2185,7 +2185,6 @@ class StreamAdminTest(ZulipTestCase):
         using_legacy_emails: bool = False,
         other_sub_users: Sequence[UserProfile] = [],
     ) -> "TestHttpResponse":
-
         # Set up the main user, who is in most cases an admin.
         if is_realm_admin:
             user_profile = self.example_user("iago")
@@ -4590,7 +4589,6 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
     def test_bulk_subscribe_many(self) -> None:
-
         # Create a whole bunch of streams
         streams = [f"stream_{i}" for i in range(30)]
         for stream_name in streams:

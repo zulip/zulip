@@ -14,7 +14,6 @@ def disable_realm_digest_emails_enabled(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0218_remove_create_stream_by_admins_only"),
     ]

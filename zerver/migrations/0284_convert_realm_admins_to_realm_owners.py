@@ -71,7 +71,6 @@ def set_realm_admins_as_realm_owners(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0283_apple_auth"),
     ]

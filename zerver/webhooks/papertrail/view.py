@@ -25,7 +25,6 @@ def api_papertrail_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(converter=to_wild_value),
 ) -> HttpResponse:
-
     if "events" not in payload:
         raise JsonableError(_("Events key is missing from payload"))
 

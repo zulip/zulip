@@ -18,7 +18,6 @@ def set_default_for_enable_read_receipts(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0404_realm_enable_read_receipts"),
     ]

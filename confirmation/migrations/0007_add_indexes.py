@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("confirmation", "0006_realmcreationkey_presume_email_valid"),
     ]

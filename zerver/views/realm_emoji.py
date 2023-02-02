@@ -13,7 +13,6 @@ from zerver.models import RealmEmoji, UserProfile
 
 
 def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-
     # We don't do any checks here because the list of realm
     # emoji is public.
     return json_success(request, data={"emoji": user_profile.realm.get_emoji()})

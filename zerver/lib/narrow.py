@@ -655,7 +655,6 @@ class NarrowBuilder:
 
 
 def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
-
     data = orjson.loads(json)
     if not isinstance(data, list):
         raise ValueError("argument is not a list")
@@ -664,7 +663,6 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
         return None
 
     def convert_term(elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
-
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
             if len(elem) != 2 or any(not isinstance(x, str) for x in elem):

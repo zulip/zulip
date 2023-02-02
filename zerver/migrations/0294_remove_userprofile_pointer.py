@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0293_update_invite_as_dict_values"),
     ]

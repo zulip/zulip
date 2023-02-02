@@ -17,7 +17,6 @@ def set_users_for_existing_scheduledemails(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0210_stream_first_message_id"),
     ]

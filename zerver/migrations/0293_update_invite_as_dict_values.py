@@ -50,7 +50,6 @@ def update_invite_as_dict_values(apps: StateApps, schema_editor: BaseDatabaseSch
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0292_update_default_value_of_invited_as"),
     ]

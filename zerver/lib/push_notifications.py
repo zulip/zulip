@@ -50,6 +50,7 @@ if settings.ZILENCER_ENABLED:
 
 DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
+
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
     return base64.b64decode(data).hex()

@@ -16,6 +16,7 @@ from zerver.views.registration import accounts_register
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
 
+
 # This is used only by the Puppeteer test in realm-creation.ts.
 def confirmation_key(request: HttpRequest) -> HttpResponse:
     return json_success(request, data=request.session["confirmation_key"])

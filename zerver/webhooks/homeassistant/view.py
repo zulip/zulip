@@ -15,7 +15,6 @@ def api_homeassistant_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # construct the body of the message
     body = payload["message"].tame(check_string)
 

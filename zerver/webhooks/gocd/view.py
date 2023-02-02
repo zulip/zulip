@@ -25,7 +25,6 @@ def api_gocd_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     modifications = payload["build_cause"]["material_revisions"][0]["modifications"][0]
     result = payload["stages"][0]["result"].tame(check_string)
     material = payload["build_cause"]["material_revisions"][0]["material"]

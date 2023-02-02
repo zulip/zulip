@@ -12,7 +12,6 @@ def migrate_set_order_value(apps: StateApps, schema_editor: BaseDatabaseSchemaEd
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0166_add_url_to_profile_field"),
     ]

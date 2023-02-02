@@ -46,7 +46,6 @@ class TestDigestEmailMessages(ZulipTestCase):
     def test_multiple_stream_senders(
         self, mock_send_future_email: mock.MagicMock, mock_enough_traffic: mock.MagicMock
     ) -> None:
-
         othello = self.example_user("othello")
         self.subscribe(othello, "Verona")
 

@@ -19,7 +19,6 @@ def create_realm_user_default_table(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0345_alter_realm_name"),
     ]

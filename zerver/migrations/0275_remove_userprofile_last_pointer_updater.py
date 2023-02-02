@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0274_nullbooleanfield_to_booleanfield"),
     ]

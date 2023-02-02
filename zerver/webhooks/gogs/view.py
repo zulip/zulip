@@ -61,7 +61,6 @@ def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[st
 
 
 def format_new_branch_event(payload: WildValue) -> str:
-
     branch_name = payload["ref"].tame(check_string)
     url = "{}/src/{}".format(payload["repository"]["html_url"].tame(check_string), branch_name)
 

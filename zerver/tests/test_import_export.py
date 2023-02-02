@@ -702,7 +702,6 @@ class RealmImportExportTest(ExportFile):
     """
 
     def test_import_realm(self) -> None:
-
         original_realm = Realm.objects.get(string_id="zulip")
 
         hamlet = self.example_user("hamlet")

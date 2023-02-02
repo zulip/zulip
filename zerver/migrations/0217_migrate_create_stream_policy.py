@@ -22,7 +22,6 @@ def upgrade_create_stream_policy(apps: StateApps, schema_editor: BaseDatabaseSch
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0216_add_create_stream_policy"),
     ]

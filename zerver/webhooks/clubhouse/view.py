@@ -773,7 +773,6 @@ def api_clubhouse_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # Clubhouse has a tendency to send empty POST requests to
     # third-party endpoints. It is unclear as to which event type
     # such requests correspond to. So, it is best to ignore such

@@ -35,14 +35,13 @@ def move_back_to_user_profile(apps: StateApps, schema_editor: BaseDatabaseSchema
         user_ids_with_words.setdefault(id_and_word["user_profile_id"], [])
         user_ids_with_words[id_and_word["user_profile_id"]].append(id_and_word["word"])
 
-    for (user_id, words) in user_ids_with_words.items():
+    for user_id, words in user_ids_with_words.items():
         user_profile = UserProfile.objects.get(id=user_id)
         user_profile.alert_words = orjson.dumps(words).decode()
         user_profile.save(update_fields=["alert_words"])
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0276_alertword"),
     ]

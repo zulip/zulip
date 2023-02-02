@@ -12,7 +12,6 @@ def get_recipient_from_user_profiles(
     forwarder_user_profile: Optional[UserProfile],
     sender: UserProfile,
 ) -> Recipient:
-
     # Avoid mutating the passed in list of recipient_profiles.
     recipient_profiles_map = {user_profile.id: user_profile for user_profile in recipient_profiles}
 
@@ -87,7 +86,6 @@ def recipient_for_user_profiles(
     sender: UserProfile,
     allow_deactivated: bool = False,
 ) -> Recipient:
-
     recipient_profiles = validate_recipient_user_profiles(
         user_profiles, sender, allow_deactivated=allow_deactivated
     )

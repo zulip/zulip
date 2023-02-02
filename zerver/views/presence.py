@@ -78,7 +78,6 @@ def update_user_status_backend(
     # that the reactions endpoint would prefer such a change.
     emoji_type: Optional[str] = REQ("reaction_type", default=None),
 ) -> HttpResponse:
-
     if status_text is not None:
         status_text = status_text.strip()
 

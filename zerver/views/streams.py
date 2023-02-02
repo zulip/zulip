@@ -459,7 +459,6 @@ def remove_subscriptions_backend(
         json_validator=check_principals, default=None
     ),
 ) -> HttpResponse:
-
     realm = user_profile.realm
 
     streams_as_dict: List[StreamDict] = []
@@ -488,9 +487,9 @@ def remove_subscriptions_backend(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
 
-    for (subscriber, removed_stream) in removed:
+    for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
-    for (subscriber, not_subscribed_stream) in not_subscribed:
+    for subscriber, not_subscribed_stream in not_subscribed:
         result["not_removed"].append(not_subscribed_stream.name)
 
     return json_success(request, data=result)
@@ -789,7 +788,6 @@ def get_streams_backend(
     include_default: bool = REQ(json_validator=check_bool, default=False),
     include_owner_subscribed: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
-
     streams = do_get_streams(
         user_profile,
         include_public=include_public,
@@ -818,7 +816,6 @@ def get_topics_backend(
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     stream_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
-
     if not maybe_user_profile.is_authenticated:
         is_web_public_query = True
         user_profile: Optional[UserProfile] = None

@@ -23,7 +23,6 @@ def api_appveyor_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
 

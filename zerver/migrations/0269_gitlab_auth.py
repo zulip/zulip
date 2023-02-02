@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0268_add_userpresence_realm_timestamp_index"),
     ]

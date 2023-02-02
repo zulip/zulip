@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zilencer", "0022_remotezulipserver_create_audit_log_backfill"),
     ]

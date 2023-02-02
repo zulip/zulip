@@ -167,7 +167,6 @@ class ParserTest(unittest.TestCase):
         self._assert_validate_error("Tag name missing", text=my_html)
 
     def test_code_blocks(self) -> None:
-
         # This is fine.
         my_html = """
             <code>
@@ -188,7 +187,6 @@ class ParserTest(unittest.TestCase):
         self._assert_validate_error("Code tag is split across two lines.", text=my_html)
 
     def test_anchor_blocks(self) -> None:
-
         # This is allowed, although strange.
         my_html = """
             <a href="/some/url">
