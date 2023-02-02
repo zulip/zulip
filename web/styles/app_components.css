@@ -561,7 +561,7 @@ div.overlay {
     }
 }
 
-.tip::before {
+.tip:not(.no-bell-icon)::before {
     content: "\f0a2";
     margin-right: 8px;
 }

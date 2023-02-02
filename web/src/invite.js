@@ -237,6 +237,21 @@ function set_custom_time_inputs_visibility() {
     }
 }
 
+function generate_invite_tips(has_invite_streams) {
+    const {realm_description, realm_icon_source, custom_profile_fields} = page_params;
+
+    const invite_tips = {
+        description:
+            !realm_description.trim() ||
+            /^Organization imported from [A-Za-z]+[!.]$/.test(realm_description),
+        profile_pic: realm_icon_source === "G",
+        custom_profile: custom_profile_fields.length < 1,
+        streams: !has_invite_streams,
+    };
+
+    return invite_tips;
+}
+
 function open_invite_user_modal(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -244,6 +259,9 @@ function open_invite_user_modal(e) {
     gear_menu.close();
 
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
+    const invite_streams = get_invite_streams();
+    const invite_tips = generate_invite_tips(invite_streams.length > 0);
+
     const html_body = render_invite_user_modal({
         is_admin: page_params.is_admin,
         is_owner: page_params.is_owner,
@@ -251,8 +269,9 @@ function open_invite_user_modal(e) {
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: time_unit_choices,
-        streams: get_invite_streams(),
+        streams: invite_streams,
         notifications_stream: stream_data.get_notifications_stream(),
+        invite_tips,
     });
 
     function invite_user_modal_post_render() {
@@ -262,6 +281,10 @@ function open_invite_user_modal(e) {
 
         set_custom_time_inputs_visibility();
         set_expires_on_text();
+
+        $("#invite-user-modal").on("click", ".invite-tips-container a", () => {
+            dialog_widget.close_modal();
+        });
 
         function toggle_invite_submit_button() {
             $("#invite-user-modal .dialog_submit_button").prop(

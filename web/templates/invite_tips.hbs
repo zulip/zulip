@@ -1,0 +1,22 @@
+{{#if invite_tips.description}}
+    <div class="tip no-bell-icon">
+        {{#tr}}
+            You may want to <z-link>configure</z-link> your organization's login page prior to inviting users.
+            {{#*inline "z-link"}}<a href="#organization/organization-profile">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
+{{else if invite_tips.profile_pic}}
+    <div class="tip no-bell-icon">
+        {{#tr}}
+            You may want to <z-link>upload a profile picture</z-link> for your organization prior to inviting users.
+            {{#*inline "z-link"}}<a href="#organization/organization-profile">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
+{{else if invite_tips.custom_profile}}
+    <div class="tip no-bell-icon">
+        {{#tr}}
+            You may want to <z-link>configure custom profile fields</z-link> prior to inviting users.
+            {{#*inline "z-link"}}<a href="#organization/profile-field-settings">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
+{{/if}}

@@ -1,4 +1,7 @@
 <form id="invite-user-form">
+    <div class="invite-tips-container {{#unless (or is_admin is_owner)}}hide{{/unless}}">
+        {{> invite_tips}}
+    </div>
     {{#if development_environment}}
     <div class="alert" id="dev_env_msg"></div>
     {{/if}}
@@ -54,6 +57,11 @@
         </select>
     </div>
     <div>
+        {{#if (and invite_tips.streams (or is_admin is_owner))}}
+            <div class="tip">
+                {{t "You may want to create streams prior to inviting users."}}
+            </div>
+        {{/if}}
         <label>{{t "Streams they should join" }}</label>
         <div id="streams_to_add">
             <div class="invite-stream-controls">
