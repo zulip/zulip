@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import static_favicon_image from "../images/favicon.svg";
 import render_favicon_svg from "../templates/favicon.svg.hbs";
 
 import * as blueslip from "./blueslip";
@@ -39,7 +40,7 @@ export function update_favicon(new_message_count, pm_count) {
         }
 
         if (new_message_count === 0 && pm_count === 0) {
-            $("#favicon").attr("href", "/static/images/favicon.svg?v=4");
+            $("#favicon").attr("href", static_favicon_image);
             return;
         }
 
