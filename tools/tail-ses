@@ -29,7 +29,7 @@ class IdentityArgsDict(TypedDict, total=False):
 
 
 def main() -> None:
-    session = boto3.session.Session()
+    session = boto3.session.Session(region_name=settings.S3_REGION)
 
     from_address = settings.NOREPLY_EMAIL_ADDRESS
     from_host = Address(addr_spec=from_address).domain
