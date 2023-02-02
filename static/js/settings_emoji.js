@@ -188,7 +188,6 @@ export function add_custom_emoji_post_render() {
         $preview_image.hide();
         $placeholder_icon.show();
         $preview_text.show();
-        $preview_image.attr("src", "/static/images/default-avatar.png");
     });
 }
 
