@@ -892,7 +892,7 @@ def start_two_factor_auth(
 
 
 def process_api_key_fetch_authenticate_result(
-    request: HttpRequest, user_profile: UserProfile, return_data: Dict[str, bool]
+    request: HttpRequest, user_profile: UserProfile
 ) -> str:
     assert user_profile.is_authenticated
 
@@ -949,7 +949,7 @@ def api_fetch_api_key(
 
     assert isinstance(user_profile, UserProfile)
 
-    api_key = process_api_key_fetch_authenticate_result(request, user_profile, return_data)
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
 
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
