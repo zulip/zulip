@@ -43,7 +43,6 @@ def check_and_create_attachments(apps: StateApps, schema_editor: BaseDatabaseSch
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0040_realm_authentication_methods"),
     ]

@@ -22,7 +22,7 @@ def is_integer_string(val: str) -> bool:
 
 
 def check_config() -> None:
-    for (setting_name, default) in settings.REQUIRED_SETTINGS:
+    for setting_name, default in settings.REQUIRED_SETTINGS:
         # if required setting is the same as default OR is not found in settings,
         # throw error to add/set that setting in config
         try:
@@ -42,7 +42,6 @@ class CreateUserParameters:
 
 
 class ZulipBaseCommand(BaseCommand):
-
     # Fix support for multi-line usage
     def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
         parser = super().create_parser(prog_name, subcommand, **kwargs)
@@ -143,7 +142,6 @@ server via `ps -ef` or reading bash history. Prefer
         return [self.get_user(email, realm) for email in emails]
 
     def get_user(self, email: str, realm: Optional[Realm]) -> UserProfile:
-
         # If a realm is specified, try to find the user there, and
         # throw an error if they don't exist.
         if realm is not None:

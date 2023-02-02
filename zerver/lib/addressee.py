@@ -102,7 +102,6 @@ class Addressee:
         topic_name: Optional[str],
         realm: Optional[Realm] = None,
     ) -> "Addressee":
-
         # For legacy reason message_to used to be either a list of
         # emails or a list of streams.  We haven't fixed all of our
         # callers yet.

@@ -55,7 +55,6 @@ def clear_duplicate_counts(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0014_remove_fillstate_last_modified"),
     ]

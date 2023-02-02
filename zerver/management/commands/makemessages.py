@@ -75,7 +75,6 @@ def strip_whitespaces(src: str) -> str:
 
 
 class Command(makemessages.Command):
-
     xgettext_options = makemessages.Command.xgettext_options
     for func, tag in tags:
         xgettext_options += [f'--keyword={func}:1,"{tag}"']

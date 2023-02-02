@@ -22,7 +22,6 @@ def set_default_value_for_can_remove_subscribers_group(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0408_stream_can_remove_subscribers_group"),
     ]

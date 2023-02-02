@@ -1254,7 +1254,6 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(429, response.status_code)
 
     def test_non_valid_user_avatar(self) -> None:
-
         # It's debatable whether we should generate avatars for non-users,
         # but this test just validates the current code's behavior.
         self.login("hamlet")

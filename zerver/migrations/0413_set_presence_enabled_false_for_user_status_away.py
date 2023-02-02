@@ -6,6 +6,7 @@ from django.db.migrations.state import StateApps
 
 AWAY = 1
 
+
 # Set presence_enabled to False for all users with a UserStatus.status of AWAY.
 def set_presence_enabled_false_if_user_status_away(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
@@ -23,7 +24,6 @@ def set_userstatus_away_if_presence_enabled_false(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0412_customprofilefield_display_in_profile_summary"),
     ]

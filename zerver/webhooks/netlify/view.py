@@ -32,7 +32,6 @@ def api_netlify_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     message_template, event = get_template(request, payload)
 
     body = message_template.format(
@@ -50,7 +49,6 @@ def api_netlify_webhook(
 
 
 def get_template(request: HttpRequest, payload: WildValue) -> Tuple[str, str]:
-
     message_template = "The build [{build_name}]({build_url}) on branch {branch_name} "
     event = validate_extract_webhook_http_header(request, "X-Netlify-Event", "Netlify")
 

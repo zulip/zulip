@@ -3009,7 +3009,6 @@ class GetOldMessagesTest(ZulipTestCase):
     def exercise_bad_narrow_operand_using_dict_api(
         self, operator: str, operands: Sequence[Any], error_msg: str
     ) -> None:
-
         for operand in operands:
             narrow = [dict(operator=operator, operand=operand)]
             params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())

@@ -31,6 +31,7 @@ from zerver.models import UserProfile
 
 js_source_map: Optional[SourceMap] = None
 
+
 # Read the source map information for decoding JavaScript backtraces.
 def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map

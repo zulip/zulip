@@ -1058,7 +1058,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
-    for (table, model, related_table) in realm_tables:
+    for table, model, related_table in realm_tables:
         re_map_foreign_keys(data, table, "realm", related_table="realm")
         update_model_ids(model, data, related_table)
         bulk_import_model(data, model)
@@ -1511,7 +1511,6 @@ def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir:
 
 
 def import_attachments(data: TableData) -> None:
-
     # Clean up the data in zerver_attachment that is not
     # relevant to our many-to-many import.
     fix_datetime_fields(data, "zerver_attachment")

@@ -758,7 +758,7 @@ def apply_event(
                 if "profile_data" not in user_dict:
                     continue
                 profile_data = user_dict["profile_data"]
-                for (field_id, field_data) in list(profile_data.items()):
+                for field_id, field_data in list(profile_data.items()):
                     if int(field_id) not in custom_profile_field_ids:
                         del profile_data[field_id]
     elif event["type"] == "realm_user":

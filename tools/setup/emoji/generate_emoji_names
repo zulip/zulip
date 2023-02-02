@@ -165,7 +165,7 @@ def main() -> None:
             all_canonical_names.add(canonical_name)
 
     # STEP 2: We don't support having aliases that collide with canonical names for emoji, so remove them.
-    for (emoji_code, emoji_names) in all_emojis.items():
+    for emoji_code, emoji_names in all_emojis.items():
         # Copy the list to not iterate while elements are being deleted.
         aliases = emoji_names["aliases"][:]
         for alias in aliases:
@@ -187,7 +187,7 @@ def main() -> None:
 
     # STEP 4: We keep non-ascii (non-"English") characters in some emoji names if that's the correct
     # way to spell that word, but always add an alias for an ascii-only version of the word.
-    for (emoji_code, emoji_names) in all_emojis.items():
+    for emoji_code, emoji_names in all_emojis.items():
         for name in [emoji_names["canonical_name"]] + emoji_names["aliases"]:
             # These are known names where we don't have an ascii-only version and there are ascii aliases
             # that a user can still enter instead to get the same emoji.
@@ -208,7 +208,7 @@ def main() -> None:
             "# Generated with `generate_emoji_names`.\n\n"
             "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {\n"
         )
-        for (key, emoji_names) in all_emojis.items():
+        for key, emoji_names in all_emojis.items():
             f.write(f"    {key!r}: {emoji_names!r},\n")
         f.write("}\n")
 

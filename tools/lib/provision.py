@@ -232,7 +232,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 
 def install_system_deps() -> None:
-
     # By doing list -> set -> list conversion, we remove duplicates.
     deps_to_install = sorted(set(SYSTEM_DEPENDENCIES))
 
@@ -347,7 +346,6 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
 
 
 def main(options: argparse.Namespace) -> NoReturn:
-
     # yarn and management commands expect to be run from the root of the
     # project.
     os.chdir(ZULIP_PATH)

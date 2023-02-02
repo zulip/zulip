@@ -308,7 +308,6 @@ def access_user_by_email(
     allow_bots: bool = False,
     for_admin: bool,
 ) -> UserProfile:
-
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:

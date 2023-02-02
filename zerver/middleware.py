@@ -532,7 +532,6 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
-
         # This is the same as the default LocaleMiddleware, minus the
         # logic that redirects 404's that lack a prefixed language in
         # the path into having a language.  See

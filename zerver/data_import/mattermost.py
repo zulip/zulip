@@ -119,7 +119,6 @@ def convert_user_data(
     realm_id: int,
     team_name: str,
 ) -> None:
-
     user_data_list = []
     for username in user_data_map:
         user = user_data_map[username]
@@ -239,7 +238,6 @@ def convert_huddle_data(
     realm_id: int,
     team_name: str,
 ) -> List[ZerverFieldsT]:
-
     zerver_huddle = []
     for huddle in huddle_data:
         if len(huddle["members"]) > 2:
@@ -545,7 +543,6 @@ def process_posts(
     zerver_attachment: List[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
-
     post_data_list = []
     for post in post_data:
         if "team" not in post:

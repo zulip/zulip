@@ -51,7 +51,6 @@ def api_grafana_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # Grafana alerting system.
     if "alerts" in payload:
         status = payload["status"].tame(check_string_in(["firing", "resolved"]))

@@ -37,7 +37,6 @@ def write_updated_configs() -> None:
     with open("/etc/zulip/nginx_sharding_map.conf.tmp", "w") as nginx_sharding_conf_f, open(
         "/etc/zulip/sharding.json.tmp", "w"
     ) as sharding_json_f:
-
         if len(ports) == 1:
             nginx_sharding_conf_f.write('map "" $tornado_server {\n')
             nginx_sharding_conf_f.write("    default http://tornado;\n")

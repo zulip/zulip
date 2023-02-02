@@ -24,7 +24,6 @@ def api_insping_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     data = payload["webhook_event_data"]
 
     state_name = data["check_state_name"].tame(check_string)

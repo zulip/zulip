@@ -30,7 +30,6 @@ def api_slack_incoming_webhook(
     user_profile: UserProfile,
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
-
     # Slack accepts webhook payloads as payload="encoded json" as
     # application/x-www-form-urlencoded, as well as in the body as
     # application/json.

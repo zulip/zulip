@@ -195,7 +195,6 @@ def generate_secrets(development: bool = False) -> None:
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(

@@ -45,7 +45,6 @@ class SlowQueryTest(ZulipTestCase):
         ) as slow_query_logger, self.assertLogs(
             "zulip.requests", level="INFO"
         ) as middleware_normal_logger:
-
             write_log_line(
                 self.log_data,
                 path="/some/endpoint/",

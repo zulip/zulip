@@ -55,7 +55,6 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_events_register_endpoint(self) -> None:
-
         # This test is intended to get minimal coverage on the
         # events_register code paths
         user = self.example_user("hamlet")
@@ -214,7 +213,6 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_tornado_endpoint(self) -> None:
-
         # This test is mostly intended to get minimal coverage on
         # the /notify_tornado endpoint, so we can have 100% URL coverage,
         # but it does exercise a little bit of the codepath.

@@ -110,6 +110,7 @@ from zproject.settings_types import OIDCIdPConfigDict
 
 redis_client = get_redis_client()
 
+
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
 # In each case, we both needs to check at the server level (via

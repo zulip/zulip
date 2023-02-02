@@ -454,7 +454,6 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
         raise ValidationError("extra_data is not a dict")
 
     if widget_type == "zform":
-
         if "type" not in extra_data:
             raise ValidationError("zform is missing type field")
 

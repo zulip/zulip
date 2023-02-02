@@ -13,7 +13,6 @@ def remove_default_status_of_default_private_streams(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0303_realm_wildcard_mention_policy"),
     ]

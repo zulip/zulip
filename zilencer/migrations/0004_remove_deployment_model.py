@@ -3,7 +3,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zilencer", "0003_add_default_for_remotezulipserver_last_updated_field"),
     ]

@@ -164,7 +164,6 @@ def get_service_interface_class(interface: str) -> Any:
 
 
 def get_outgoing_webhook_service_handler(service: Service) -> Any:
-
     service_interface_class = get_service_interface_class(service.interface_name())
     service_interface = service_interface_class(
         token=service.token, user_profile=service.user_profile, service_name=service.name

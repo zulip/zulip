@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("corporate", "0013_alter_zulipsponsorshiprequest_org_website"),
     ]

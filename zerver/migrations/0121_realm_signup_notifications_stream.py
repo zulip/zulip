@@ -17,7 +17,6 @@ def set_initial_value_for_signup_notifications_stream(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0120_botuserconfigdata"),
     ]

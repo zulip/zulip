@@ -7,7 +7,6 @@ from zerver.models import Message, Stream, get_realm, get_user
 
 
 class TestIntegrationsDevPanel(ZulipTestCase):
-
     zulip_realm = get_realm("zulip")
 
     def test_check_send_webhook_fixture_message_for_error(self) -> None:

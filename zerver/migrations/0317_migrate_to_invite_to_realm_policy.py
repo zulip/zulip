@@ -20,7 +20,6 @@ def migrate_to_invite_to_realm_policy(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0316_realm_invite_to_realm_policy"),
     ]

@@ -1094,7 +1094,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         root: Element,
         found_url: ResultWithFamily[Tuple[str, Optional[str]]],
     ) -> LinkInfo:
-
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
         ahref_element = found_url.family.child
@@ -1665,7 +1664,6 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     """
 
     def __init__(self, parser: BlockParser) -> None:
-
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
@@ -1999,7 +1997,6 @@ def possible_linked_stream_names(content: str) -> Set[str]:
 
 
 class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
-
     allowed_before_punctuation = {" ", "\n", "(", '"', ".", ",", "'", ";", "[", "*", "`", ">"}
     allowed_after_punctuation = {
         " ",
@@ -2539,7 +2536,6 @@ def do_convert(
 
     # Pre-fetch data from the DB that is used in the Markdown thread
     if message_realm is not None:
-
         # Here we fetch the data structures needed to render
         # mentions/stream mentions from the database, but only
         # if there is syntax in the message that might use them, since

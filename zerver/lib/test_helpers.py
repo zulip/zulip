@@ -453,7 +453,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             return url
 
         def find_pattern(pattern: Any, prefixes: List[str]) -> None:
-
             if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 

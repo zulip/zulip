@@ -107,7 +107,6 @@ def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0148_max_invites_forget_default"),
     ]

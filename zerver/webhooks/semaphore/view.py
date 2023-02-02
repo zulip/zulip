@@ -98,7 +98,6 @@ def api_semaphore_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     content, project_name, branch_name, event = (
         semaphore_classic(payload) if "event" in payload else semaphore_2(payload)
     )

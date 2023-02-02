@@ -357,7 +357,6 @@ def api_jira_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     event = get_event_type(payload)
     if event in IGNORED_EVENTS:
         return json_success(request)

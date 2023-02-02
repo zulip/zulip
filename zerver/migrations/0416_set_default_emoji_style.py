@@ -20,7 +20,6 @@ def update_deprecated_emoji_style(apps: StateApps, schema_editor: BaseDatabaseSc
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0415_delete_scimclient"),
     ]

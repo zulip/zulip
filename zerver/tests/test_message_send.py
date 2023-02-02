@@ -2118,7 +2118,6 @@ class ExtractTest(ZulipTestCase):
             extract_stream_indicator('[1,2,"general"]')
 
     def test_extract_private_recipients_emails(self) -> None:
-
         # JSON list w/dups, empties, and trailing whitespace
         s = orjson.dumps([" alice@zulip.com ", " bob@zulip.com ", "   ", "bob@zulip.com"]).decode()
         # sorted() gets confused by extract_private_recipients' return type

@@ -38,7 +38,7 @@ def bulk_create_users(
 
     # Now create user_profiles
     profiles_to_create: List[UserProfile] = []
-    for (email, full_name, active) in users:
+    for email, full_name, active in users:
         profile = create_user_profile(
             realm,
             email,

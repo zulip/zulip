@@ -874,7 +874,6 @@ class BulkCreateUserTest(ZulipTestCase):
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:
-
         # This test should give us complete coverage on
         # create_user_backend.  It mostly exercises error
         # conditions, and it also does a basic test of the success

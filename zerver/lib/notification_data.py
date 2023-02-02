@@ -45,7 +45,6 @@ class UserMessageNotificationsData:
         muted_sender_user_ids: Set[int],
         all_bot_user_ids: Set[int],
     ) -> "UserMessageNotificationsData":
-
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
             return cls(

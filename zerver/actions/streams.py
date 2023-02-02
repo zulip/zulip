@@ -311,7 +311,6 @@ def bulk_add_subs_to_db_with_logging(
     subs_to_add: List[SubInfo],
     subs_to_activate: List[SubInfo],
 ) -> None:
-
     Subscription.objects.bulk_create(info.sub for info in subs_to_add)
     sub_ids = [info.sub.id for info in subs_to_activate]
     Subscription.objects.filter(id__in=sub_ids).update(active=True)
@@ -610,7 +609,6 @@ def send_peer_remove_events(
 def notify_subscriptions_removed(
     realm: Realm, user_profile: UserProfile, streams: Iterable[Stream]
 ) -> None:
-
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove", subscriptions=payload)
     send_event(realm, event, [user_profile.id])
@@ -627,7 +625,7 @@ def send_subscription_remove_events(
 ) -> None:
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
-    for (user, stream) in removed_subs:
+    for user, stream in removed_subs:
         streams_by_user[user.id].append(stream)
         altered_user_dict[stream.id].add(user.id)
 
@@ -659,7 +657,6 @@ def bulk_remove_subscriptions(
     *,
     acting_user: Optional[UserProfile],
 ) -> SubAndRemovedT:
-
     users = list(users)
     streams = list(streams)
 

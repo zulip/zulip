@@ -3,7 +3,6 @@ from django.db.models.functions import Upper
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0111_botuserstatedata"),
     ]

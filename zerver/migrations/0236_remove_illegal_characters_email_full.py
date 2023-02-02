@@ -21,7 +21,6 @@ def remove_name_illegal_chars(apps: StateApps, schema_editor: BaseDatabaseSchema
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0235_userprofile_desktop_icon_count_display"),
     ]

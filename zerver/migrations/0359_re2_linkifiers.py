@@ -25,7 +25,6 @@ def delete_re2_invalid(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0325_alter_realmplayground_unique_together"),
     ]

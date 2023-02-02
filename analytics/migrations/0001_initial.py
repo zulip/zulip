@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0030_realm_org_type"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

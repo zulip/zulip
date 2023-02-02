@@ -205,7 +205,6 @@ def messages_for_ids(
     client_gravatar: bool,
     allow_edit_history: bool,
 ) -> List[Dict[str, Any]]:
-
     cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row["id"]
 
@@ -521,7 +520,6 @@ class MessageDict:
         reactions: List[RawReactionRow],
         submessages: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-
         obj = dict(
             id=message_id,
             sender_id=sender_id,
@@ -588,7 +586,6 @@ class MessageDict:
 
     @staticmethod
     def bulk_hydrate_sender_info(objs: List[Dict[str, Any]]) -> None:
-
         sender_ids = list({obj["sender_id"] for obj in objs})
 
         if not sender_ids:
@@ -1055,7 +1052,6 @@ def get_raw_unread_data(
 def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
-
     pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
@@ -1234,7 +1230,6 @@ def aggregate_huddles(*, input_dict: Dict[int, RawUnreadHuddleDict]) -> List[Unr
 
 
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
-
     pm_dict = raw_data["pm_dict"]
     stream_dict = raw_data["stream_dict"]
     unmuted_stream_msgs = raw_data["unmuted_stream_msgs"]
@@ -1576,7 +1571,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         )
 
     # Now we need to map all the recipient_id objects to lists of user IDs
-    for (recipient_id, user_profile_id) in (
+    for recipient_id, user_profile_id in (
         Subscription.objects.filter(recipient_id__in=recipient_map.keys())
         .exclude(user_profile_id=user_profile.id)
         .values_list("recipient_id", "user_profile_id")

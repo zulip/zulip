@@ -222,7 +222,6 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
         object_values = schema.get("properties", {})
         for value in object_values:
-
             description = ""
             if "description" in object_values[value]:
                 description = object_values[value]["description"]

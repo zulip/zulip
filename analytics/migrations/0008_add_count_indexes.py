@@ -3,7 +3,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0050_userprofile_avatar_version"),
         ("analytics", "0007_remove_interval"),

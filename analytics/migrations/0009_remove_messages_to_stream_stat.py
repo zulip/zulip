@@ -21,7 +21,6 @@ def delete_messages_sent_to_stream_stat(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0008_add_count_indexes"),
     ]
