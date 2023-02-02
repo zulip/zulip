@@ -2,6 +2,7 @@
 import os
 import sys
 from email.headerregistry import Address
+from email.utils import parseaddr
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
@@ -31,7 +32,8 @@ class IdentityArgsDict(TypedDict, total=False):
 def main() -> None:
     session = boto3.session.Session(region_name=settings.S3_REGION)
 
-    from_address = settings.NOREPLY_EMAIL_ADDRESS
+    # Strip off the realname, if present, and extract just the domain name
+    _, from_address = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)
     from_host = Address(addr_spec=from_address).domain
 
     ses: SESClient = session.client("ses")
