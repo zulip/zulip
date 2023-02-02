@@ -113,10 +113,14 @@ def build_email(
         # except having just a domain instead of an email address.
         extra_headers["List-Id"] = formataddr((realm.name, realm.host))
 
+    assert settings.STATIC_URL is not None
     context = {
         **context,
         "support_email": FromAddress.SUPPORT,
-        "email_images_base_uri": settings.ROOT_DOMAIN_URI + "/static/images/emails",
+        # Emails use unhashed image URLs so that those continue to
+        # work over time, even if the prod-static directory is cleaned
+        # out; as such, they just use a STATIC_URL prefix.
+        "email_images_base_uri": settings.STATIC_URL + "images/emails",
         "physical_address": settings.PHYSICAL_ADDRESS,
     }
 
