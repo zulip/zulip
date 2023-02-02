@@ -4,6 +4,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
@@ -417,7 +418,7 @@ export function activate(raw_operators, opts) {
 
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
 
     // Open tooltips are only interesting for current narrow,
     // so hide them when activating a new one.

@@ -164,8 +164,6 @@ export function is_window_focused() {
     return window_focused;
 }
 
-export let scroll_to_message_banner_message_id = null;
-
 export function notify_above_composebox(
     banner_text,
     classname,
@@ -182,7 +180,7 @@ export function notify_above_composebox(
             link_text,
         }),
     );
-    clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
     $("#compose_banners").append($notification);
 }
 
@@ -626,7 +624,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
                     link_msg_id,
                     link_text,
                 );
-                scroll_to_message_banner_message_id = link_msg_id;
+                compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
             }
 
             // This is the HAPPY PATH--for most messages we do nothing
@@ -684,11 +682,6 @@ export function notify_messages_outside_current_search(messages) {
     }
 }
 
-export function clear_compose_notifications() {
-    compose_banner.clear_message_sent_banners();
-    scroll_to_message_banner_message_id = null;
-}
-
 export function reify_message_id(opts) {
     const old_id = opts.old_id;
     const new_id = opts.new_id;
@@ -701,7 +694,7 @@ export function reify_message_id(opts) {
 
         if (message_id === old_id) {
             $elem.data("message-id", new_id);
-            scroll_to_message_banner_message_id = new_id;
+            compose_banner.set_scroll_to_message_banner_message_id(new_id);
         }
     }
 }
@@ -724,7 +717,7 @@ export function register_click_handlers() {
             const message_id = $(e.currentTarget).data("message-id");
             message_lists.current.select_id(message_id);
             navigate.scroll_to_selected();
-            clear_compose_notifications();
+            compose_banner.clear_message_sent_banners();
             e.stopPropagation();
             e.preventDefault();
         },

@@ -43,7 +43,7 @@ const transmit = mock_esm("../../static/js/transmit");
 const upload = mock_esm("../../static/js/upload");
 
 const compose_ui = zrequire("compose_ui");
-const notifications = zrequire("notifications");
+const compose_banner = zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
@@ -293,7 +293,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
-    override_rewire(notifications, "clear_compose_notifications", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
@@ -342,7 +342,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
 test_ui("finish", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    override_rewire(notifications, "clear_compose_notifications", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
