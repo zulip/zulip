@@ -104,16 +104,14 @@ select = [
     "C4", # comprehensions
     "DTZ", # naive datetime
     "E", # style errors
+    "EXE", # shebang
     "F", # flakes
     "I", # import sorting
     "ISC", # string concatenation
     "N", # naming
     "PGH", # pygrep-hooks
     "PIE", # miscellaneous
-    "PLC", # pylint convention
-    "PLE", # pylint error
-    "PLR", # pylint refactor
-    "PLW", # pylint warning
+    "PL", # pylint
     "Q", # quotes
     "RUF", # Ruff
     "S", # security
@@ -137,6 +135,9 @@ ignore = [
     "E731", # Do not assign a lambda expression, use a def
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
+    "PLR0913", # Too many arguments to function call
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used in comparison
     "RUF001", # String contains ambiguous unicode character
     "RUF002", # Docstring contains ambiguous unicode character
     "RUF003", # Comment contains ambiguous unicode character
@@ -144,6 +145,13 @@ ignore = [
     "S105", # Possible hardcoded password
     "S106", # Possible hardcoded password
     "S107", # Possible hardcoded password
+    "S110", # `try`-`except`-`pass` detected, consider logging the exception
+    "S113", # Probable use of requests call without timeout
+    "S324", # Probable use of insecure hash functions in `hashlib`
+    "SIM103", # Return the condition directly
+    "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
+    "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
+    "SIM401", # Use `d.get(key, default)` instead of an `if` block
 ]
 line-length = 100
 src = [".", "tools"]

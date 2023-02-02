@@ -456,7 +456,7 @@ def get_tzdata_zi() -> IO[str]:
     for path in zoneinfo.TZPATH:
         filename = os.path.join(path, "tzdata.zi")
         if os.path.exists(filename):
-            return open(filename)
+            return open(filename)  # noqa: SIM115
     raise RuntimeError("Missing time zone data (tzdata.zi)")
 
 
