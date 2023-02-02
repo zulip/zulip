@@ -702,7 +702,6 @@ class SlackImporter(ZulipTestCase):
     def test_slack_workspace_to_realm(
         self, mock_channels_to_zerver_stream: mock.Mock, mock_users_to_zerver_userprofile: mock.Mock
     ) -> None:
-
         realm_id = 1
         user_list: List[Dict[str, Any]] = []
         (
@@ -795,7 +794,6 @@ class SlackImporter(ZulipTestCase):
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message(self, mock_build_usermessage: mock.Mock) -> None:
-
         user_data = [
             {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
             {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},

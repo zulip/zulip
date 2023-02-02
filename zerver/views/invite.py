@@ -54,7 +54,6 @@ def invite_users_backend(
     ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
-
     if not user_profile.can_invite_others_to_realm():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
@@ -140,7 +139,6 @@ def revoke_user_invite(
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, invite_id: int
 ) -> HttpResponse:
-
     try:
         invite = MultiuseInvite.objects.get(id=invite_id)
     except MultiuseInvite.DoesNotExist:

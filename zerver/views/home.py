@@ -119,7 +119,6 @@ def home(request: HttpRequest) -> HttpResponse:
         and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
         and settings.CORPORATE_ENABLED
     ):
-
         from corporate.views.portico import hello_view
 
         return hello_view(request)

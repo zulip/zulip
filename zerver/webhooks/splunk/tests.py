@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class SplunkHookTests(WebhookTestCase):
-
     STREAM_NAME = "splunk"
     URL_TEMPLATE = "/api/v1/external/splunk?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "splunk"
@@ -29,7 +28,6 @@ Splunk alert from saved search:
         )
 
     def test_splunk_short_search_name(self) -> None:
-
         # don't provide a topic so the search name is used instead
         expected_topic = "This search's name isn't that long"
         expected_message = """
@@ -48,7 +46,6 @@ Splunk alert from saved search:
         )
 
     def test_splunk_long_search_name(self) -> None:
-
         # don't provide a topic so the search name is used instead
         expected_topic = "this-search's-got-47-words-37-sentences-58-words-we-wanna..."
         expected_message = """
@@ -67,7 +64,6 @@ Splunk alert from saved search:
         )
 
     def test_splunk_missing_results_link(self) -> None:
-
         self.url = self.build_webhook_url(topic="New Search Alert")
 
         expected_topic = "New Search Alert"
@@ -87,7 +83,6 @@ Splunk alert from saved search:
         )
 
     def test_splunk_missing_search_name(self) -> None:
-
         self.url = self.build_webhook_url(topic="New Search Alert")
 
         expected_topic = "New Search Alert"
@@ -107,7 +102,6 @@ Splunk alert from saved search:
         )
 
     def test_splunk_missing_host(self) -> None:
-
         self.url = self.build_webhook_url(topic="New Search Alert")
 
         expected_topic = "New Search Alert"
@@ -127,7 +121,6 @@ Splunk alert from saved search:
         )
 
     def test_splunk_missing_source(self) -> None:
-
         self.url = self.build_webhook_url(topic="New Search Alert")
 
         expected_topic = "New Search Alert"
@@ -147,7 +140,6 @@ Splunk alert from saved search:
         )
 
     def test_splunk_missing_raw(self) -> None:
-
         self.url = self.build_webhook_url(topic="New Search Alert")
 
         expected_topic = "New Search Alert"

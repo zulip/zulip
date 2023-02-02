@@ -38,7 +38,6 @@ def reupload_realm_emoji(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0386_fix_attachment_caches"),
     ]

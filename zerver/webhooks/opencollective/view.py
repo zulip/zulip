@@ -18,7 +18,6 @@ def api_opencollective_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     name = get_name(payload)
     amount = get_amount(payload)
 

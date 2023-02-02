@@ -73,7 +73,6 @@ def update_muted_topic(
     topic: str = REQ(),
     op: str = REQ(str_validator=check_string_in(["add", "remove"])),
 ) -> HttpResponse:
-
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 
     if op == "add":

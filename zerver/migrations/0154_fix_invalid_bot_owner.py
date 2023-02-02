@@ -14,7 +14,6 @@ def migrate_fix_invalid_bot_owner_values(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0153_remove_int_float_custom_fields"),
     ]

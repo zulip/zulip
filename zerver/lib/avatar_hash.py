@@ -17,7 +17,6 @@ def gravatar_hash(email: str) -> str:
 
 
 def user_avatar_hash(uid: str) -> str:
-
     # WARNING: If this method is changed, you may need to do a migration
     # similar to zerver/migrations/0060_move_avatars_to_be_uid_based.py .
 
@@ -29,7 +28,6 @@ def user_avatar_hash(uid: str) -> str:
 
 
 def user_avatar_path(user_profile: UserProfile) -> str:
-
     # WARNING: If this method is changed, you may need to do a migration
     # similar to zerver/migrations/0060_move_avatars_to_be_uid_based.py .
     return user_avatar_path_from_ids(user_profile.id, user_profile.realm_id)

@@ -59,7 +59,6 @@ def api_statuspage_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     if "incident" in payload:
         event = "incident"
         topic = get_incident_topic(payload)

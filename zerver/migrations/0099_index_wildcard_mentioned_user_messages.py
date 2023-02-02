@@ -3,7 +3,6 @@ from django.db.models import Q
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0098_index_has_alert_word_user_messages"),
     ]

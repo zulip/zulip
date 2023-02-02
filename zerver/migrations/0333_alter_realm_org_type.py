@@ -12,7 +12,6 @@ def reset_realm_org_type(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0332_realmuserdefault"),
     ]

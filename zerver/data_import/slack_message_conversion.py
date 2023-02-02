@@ -93,7 +93,6 @@ def convert_to_zulip_markdown(
 
     tokens = text.split(" ")
     for iterator in range(len(tokens)):
-
         # Check user mentions and change mention format from
         # '<@slack_id|short_name>' to '@**full_name**'
         if re.findall(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE):

@@ -9,7 +9,6 @@ def change_emojiset_choice(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0180_usermessage_add_active_mobile_push_notification"),
     ]

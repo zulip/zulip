@@ -31,7 +31,6 @@ def populate_new_fields(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0096_add_password_required"),
     ]

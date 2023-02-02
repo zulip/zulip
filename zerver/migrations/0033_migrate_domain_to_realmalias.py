@@ -16,7 +16,6 @@ def add_domain_to_realm_alias_if_needed(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0032_verify_all_medium_avatar_images"),
     ]

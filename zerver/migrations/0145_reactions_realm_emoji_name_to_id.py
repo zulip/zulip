@@ -41,7 +41,6 @@ def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0144_remove_realm_create_generic_bot_by_admins_only"),
     ]

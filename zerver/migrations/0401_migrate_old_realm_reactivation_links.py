@@ -69,7 +69,6 @@ def fix_old_realm_reactivation_confirmations(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0400_realmreactivationstatus"),
     ]

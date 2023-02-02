@@ -57,7 +57,6 @@ def api_newrelic_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # Handle old format
     # Once old is EOLed, delete if block and keep else block
     if not payload.get("id").tame(check_none_or(check_int)):

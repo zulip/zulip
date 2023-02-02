@@ -24,7 +24,6 @@ from zerver.models import UserProfile, get_active_user
 
 
 def get_bot_handler(service_name: str) -> Any:
-
     # Check that this service is present in EMBEDDED_BOTS, add exception handling.
     configured_service = ""
     for embedded_bot_service in EMBEDDED_BOTS:

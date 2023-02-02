@@ -5,7 +5,6 @@ from zerver.models import filter_format_validator
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0093_subscription_event_log_backfill"),
     ]

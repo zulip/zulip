@@ -243,7 +243,6 @@ def event_dict_type(
     required_keys: Sequence[Tuple[str, Any]],
     optional_keys: Sequence[Tuple[str, Any]] = [],
 ) -> DictType:
-
     """
     This is just a tiny wrapper on DictType, but it provides
     some minor benefits:

@@ -13,7 +13,6 @@ def fix_stream_history_public_to_subscribers(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0389_userprofile_display_emoji_reaction_users"),
     ]

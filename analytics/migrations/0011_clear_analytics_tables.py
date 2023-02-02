@@ -18,7 +18,6 @@ def clear_analytics_tables(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0010_clear_messages_sent_values"),
     ]

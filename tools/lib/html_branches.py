@@ -74,7 +74,7 @@ def split_for_id_and_class(element: str) -> List[str]:
     return lst
 
 
-def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
+def build_id_dict(templates: List[str]) -> Dict[str, List[str]]:
     template_id_dict: (Dict[str, List[str]]) = defaultdict(list)
 
     for fn in templates:

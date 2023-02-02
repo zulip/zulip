@@ -1556,7 +1556,6 @@ Output:
     def check_has_permission_policies(
         self, policy: str, validation_func: Callable[[UserProfile], bool]
     ) -> None:
-
         realm = get_realm("zulip")
         owner_user = self.example_user("desdemona")
         admin_user = self.example_user("iago")

@@ -407,7 +407,6 @@ def get_service_bot_events(
     active_user_ids: Set[int],
     recipient_type: int,
 ) -> Dict[str, List[Dict[str, Any]]]:
-
     event_dict: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
     # Avoid infinite loops by preventing messages sent by bots from generating
@@ -1157,7 +1156,6 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
 ) -> int:
-
     addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
     try:
         message = check_message(
@@ -1658,7 +1656,6 @@ def internal_send_stream_message(
     email_gateway: bool = False,
     limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[int]:
-
     message = internal_prep_stream_message(
         sender,
         stream,

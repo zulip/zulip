@@ -16,7 +16,6 @@ from zerver.models import UserProfile
 
 @require_realm_admin
 def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-
     if len(request.FILES) != 1:
         raise JsonableError(_("You must upload exactly one icon."))
 
