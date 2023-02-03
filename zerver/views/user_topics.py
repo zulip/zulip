@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -60,7 +60,9 @@ def unmute_topic(
         assert stream_id is not None
         stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
 
-    do_unmute_topic(user_profile, stream, topic_name)
+    do_set_user_topic_visibility_policy(
+        user_profile, stream, topic_name, visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT
+    )
 
 
 @has_request_variables

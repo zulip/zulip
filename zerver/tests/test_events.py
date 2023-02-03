@@ -107,7 +107,7 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.user_status import do_update_user_status
-from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
@@ -1437,7 +1437,13 @@ class NormalActionsTest(BaseAction):
         check_user_topic("events[1]", events[1])
 
         events = self.verify_action(
-            lambda: do_unmute_topic(self.user_profile, stream, "topic"), num_events=2
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+            ),
+            num_events=2,
         )
         check_muted_topics("events[0]", events[0])
         check_user_topic("events[1]", events[1])

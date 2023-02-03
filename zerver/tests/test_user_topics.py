@@ -4,7 +4,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import (
@@ -102,10 +102,11 @@ class MutedTopicsTests(ZulipTestCase):
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
             self.assertTrue(topic_is_muted(user, stream.id, "verona3"))
 
-            do_unmute_topic(
+            do_set_user_topic_visibility_policy(
                 user,
                 stream,
                 "Verona3",
+                visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
             )
 
         assert stream.recipient is not None
