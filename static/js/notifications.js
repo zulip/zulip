@@ -612,7 +612,6 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         let reason = get_local_notify_mix_reason(message);
 
-        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
         const link_msg_id = message.id;
 
         if (!reason) {
@@ -622,7 +621,8 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
                 notify_above_composebox(
                     reason,
                     "compose_notification_scroll_to_message",
-                    above_composebox_narrow_url,
+                    // Don't display a URL on hover for the "Scroll to bottom" link.
+                    null,
                     link_msg_id,
                     link_text,
                 );
@@ -634,6 +634,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
             continue;
         }
 
+        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
         const link_class = "compose_notification_narrow_by_topic";
         const link_text = $t(
             {defaultMessage: "Narrow to {message_recipient}"},
