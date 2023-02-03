@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -18,7 +18,7 @@ from zerver.lib.streams import (
     check_for_exactly_one_stream_arg,
 )
 from zerver.lib.validator import check_int, check_string_in
-from zerver.models import UserProfile
+from zerver.models import UserProfile, UserTopic
 
 
 def mute_topic(
@@ -35,7 +35,13 @@ def mute_topic(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     try:
-        do_mute_topic(user_profile, stream, topic_name, date_muted)
+        do_set_user_topic_visibility_policy(
+            user_profile,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.MUTED,
+            last_updated=date_muted,
+        )
     except IntegrityError:
         raise JsonableError(_("Topic already muted"))
 

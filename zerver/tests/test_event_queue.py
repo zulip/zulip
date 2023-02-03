@@ -9,12 +9,12 @@ from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.streams import do_change_subscription_property
 from zerver.actions.user_settings import do_change_user_setting
-from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.cache import cache_delete, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
 from zerver.lib.user_groups import create_user_group
-from zerver.models import Recipient, Subscription, UserProfile, get_stream
+from zerver.models import Recipient, Subscription, UserProfile, UserTopic, get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
     access_client_descriptor,
@@ -334,8 +334,11 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_wildcard_mention_in_muted_topic(self) -> None:
         # Wildcard mentions in muted streams don't notify.
-        do_mute_topic(
-            self.user_profile, get_stream("Denmark", self.user_profile.realm), "mutingtest"
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "mutingtest",
+            visibility_policy=UserTopic.MUTED,
         )
         msg_id = self.send_stream_message(
             self.iago, "Denmark", topic_name="mutingtest", content="@**all** what's up?"
@@ -532,8 +535,11 @@ class MissedMessageHookTest(ZulipTestCase):
         do_change_user_setting(
             self.user_profile, "enable_stream_email_notifications", True, acting_user=None
         )
-        do_mute_topic(
-            self.user_profile, get_stream("Denmark", self.user_profile.realm), "mutingtest"
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "mutingtest",
+            visibility_policy=UserTopic.MUTED,
         )
         msg_id = self.send_stream_message(
             self.iago, "Denmark", topic_name="mutingtest", content="what's up everyone?"
@@ -587,8 +593,11 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_stream_push_notify_stream_specific_setting_with_muted_topic(self) -> None:
         # Push notification should not be sent
         self.change_subscription_properties({"push_notifications": True})
-        do_mute_topic(
-            self.user_profile, get_stream("Denmark", self.user_profile.realm), "mutingtest"
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "mutingtest",
+            visibility_policy=UserTopic.MUTED,
         )
         msg_id = self.send_stream_message(
             self.iago,

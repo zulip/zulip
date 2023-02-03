@@ -18,7 +18,7 @@ from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
-from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
@@ -63,6 +63,7 @@ from zerver.models import (
     UserGroupMembership,
     UserHotspot,
     UserProfile,
+    UserTopic,
     check_valid_user_ids,
     filter_to_valid_prereg_users,
     get_client,
@@ -1841,10 +1842,11 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info.stream_push_user_ids, {hamlet.id})
 
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
-        do_mute_topic(
+        do_set_user_topic_visibility_policy(
             hamlet,
             stream,
             topic_name,
+            visibility_policy=UserTopic.MUTED,
         )
 
         info = get_recipient_info(

@@ -19,7 +19,7 @@ from zerver.actions.message_send import (
     render_incoming_message,
 )
 from zerver.actions.uploads import check_attachment_reference_change
-from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -60,6 +60,7 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_stream_by_id_in_realm,
     get_system_bot,
 )
@@ -790,16 +791,18 @@ def do_update_message(
                     muting_user,
                     stream_being_edited,
                     orig_topic_name,
-                    # do_mute_topic will send an updated muted topic
+                    # do_set_user_topic_visibility_policy with visibility_policy
+                    # set to UserTopic.MUTED will send an updated muted topic
                     # event, which contains the full set of muted
                     # topics, just after this.
                     skip_muted_topics_event=True,
                 )
 
-                do_mute_topic(
+                do_set_user_topic_visibility_policy(
                     muting_user,
                     new_stream if new_stream is not None else stream_being_edited,
                     topic_name if topic_name is not None else orig_topic_name,
+                    visibility_policy=UserTopic.MUTED,
                     ignore_duplicate=True,
                 )
 

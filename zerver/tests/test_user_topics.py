@@ -4,7 +4,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import (
@@ -23,11 +23,12 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        do_mute_topic(
+        do_set_user_topic_visibility_policy(
             user,
             stream,
             "Verona3",
-            date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            visibility_policy=UserTopic.MUTED,
+            last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
         )
 
         stream.deactivated = True
@@ -52,11 +53,12 @@ class MutedTopicsTests(ZulipTestCase):
         self.assertEqual(user_ids, set())
 
         def mute_topic_for_user(user: UserProfile) -> None:
-            do_mute_topic(
+            do_set_user_topic_visibility_policy(
                 user,
                 stream,
                 "test TOPIC",
-                date_muted=timezone_now(),
+                visibility_policy=UserTopic.MUTED,
+                last_updated=timezone_now(),
             )
 
         mute_topic_for_user(hamlet)
@@ -130,11 +132,12 @@ class MutedTopicsTests(ZulipTestCase):
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
         for data in payloads:
-            do_mute_topic(
+            do_set_user_topic_visibility_policy(
                 user,
                 stream,
                 "Verona3",
-                date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
+                visibility_policy=UserTopic.MUTED,
+                last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
 
@@ -150,7 +153,9 @@ class MutedTopicsTests(ZulipTestCase):
         self.login_user(user)
 
         stream = get_stream("Verona", realm)
-        do_mute_topic(user, stream, "Verona3", date_muted=timezone_now())
+        do_set_user_topic_visibility_policy(
+            user, stream, "Verona3", visibility_policy=UserTopic.MUTED, last_updated=timezone_now()
+        )
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
 
