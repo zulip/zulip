@@ -374,10 +374,35 @@ More complex access control rules are possible via the
 2. If `org_membership` is not set or does not allow access,
    `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` will control access.
 
-This contains a map keyed by the organization's subdomain. The
-organization list with multiple maps, that contain a map with an attribute, and a required
-value for that attribute. If for any of the attribute maps, all user's
-LDAP attributes match what is configured, access is granted.
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` is a dictionary keyed by the
+organization's subdomain. The corresponding value is a list of
+`attribute: value` pair sets such that a user is permitted to access
+the organization if and only if the `attribute: value` pairs in at
+least one of these sets match the user's LDAP attributes. If this
+setting is enabled, organizations not explicitly configured in this
+setting will not be accessible via ldap authentication at all.
+
+This is better illustrated with an example:
+
+```
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = {
+    "zulip": [
+        {
+            "department": "main",
+            "employeeType": "staff"
+        },
+        {
+            "office": "Dallas"
+        }
+    ]
+}
+```
+
+This means that the organization `"zulip"` will be accessible via ldap
+authentication only for users whose ldap attributes either contain
+both `department: main` `employeeType: staff` or just `office:
+Dallas`. LDAP authentication will always fail for all other
+organizations in this configuration.
 
 :::{warning}
 Restricting access using these mechanisms only affects authentication via LDAP,
