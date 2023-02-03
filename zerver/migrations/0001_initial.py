@@ -36,7 +36,6 @@ def migrate_existing_attachment_data(
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [

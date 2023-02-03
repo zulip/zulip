@@ -146,6 +146,10 @@ export function sort_emojis(objs, query) {
         return popular_set.has(obj.emoji_code) && decent_match(obj.emoji_name);
     }
 
+    const realm_emoji_names = new Set(
+        objs.filter((obj) => obj.is_realm_emoji).map((obj) => obj.emoji_name),
+    );
+
     const popular_emoji_matches = objs.filter((obj) => is_popular(obj));
     const others = objs.filter((obj) => !is_popular(obj));
 
@@ -164,12 +168,16 @@ export function sort_emojis(objs, query) {
         ...prioritise_realm_emojis(triage_results.rest),
     ];
     // remove unicode emojis with same code but different names
+    // and unicode emojis overridden by realm emojis with same names
     const unicode_emoji_codes = new Set();
     const sorted_unique_results = [];
     for (const emoji of sorted_results_with_possible_duplicates) {
         if (!is_unicode_emoji(emoji)) {
             sorted_unique_results.push(emoji);
-        } else if (!unicode_emoji_codes.has(emoji.emoji_code)) {
+        } else if (
+            !unicode_emoji_codes.has(emoji.emoji_code) &&
+            !realm_emoji_names.has(emoji.emoji_name)
+        ) {
             unicode_emoji_codes.add(emoji.emoji_code);
             sorted_unique_results.push(emoji);
         }

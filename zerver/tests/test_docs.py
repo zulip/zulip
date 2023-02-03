@@ -48,7 +48,6 @@ class DocPageTest(ZulipTestCase):
         doc_html_str: bool = False,
         search_disabled: bool = False,
     ) -> None:
-
         # Test the URL on the "zephyr" subdomain
         result = self.get_doc(url, subdomain="zephyr")
         self.print_msg_if_error(url, result)

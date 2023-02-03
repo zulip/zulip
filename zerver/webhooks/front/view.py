@@ -144,7 +144,6 @@ def api_front_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     event = payload["type"].tame(check_string)
     if event not in EVENT_FUNCTION_MAPPER:
         raise JsonableError(_("Unknown webhook request"))

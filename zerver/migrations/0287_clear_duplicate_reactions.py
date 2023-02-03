@@ -27,7 +27,6 @@ def clear_duplicate_reactions(apps: StateApps, schema_editor: BaseDatabaseSchema
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0286_merge_0260_0285"),
     ]

@@ -13,7 +13,6 @@ from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, que
 def get_presence_dicts_for_rows(
     all_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
 ) -> Dict[str, Dict[str, Any]]:
-
     # Note that datetime values have sub-second granularity, which is
     # mostly important for avoiding test flakes, but it's also technically
     # more precise for real users.
@@ -48,7 +47,6 @@ def get_presence_dicts_for_rows(
 def get_modern_user_presence_info(
     presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
 ) -> Dict[str, Any]:
-
     active_timestamp = None
     for row in reversed(presence_rows):
         if row["status"] == UserPresence.ACTIVE:
@@ -78,7 +76,6 @@ def get_modern_user_presence_info(
 def get_legacy_user_presence_info(
     presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
 ) -> Dict[str, Any]:
-
     # The format of data here is for legacy users of our API,
     # including old versions of the mobile app.
     info_rows = []
@@ -190,7 +187,6 @@ def get_presence_dict_by_realm(
 def get_presences_for_realm(
     realm: Realm, slim_presence: bool
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-
     if realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict)

@@ -33,11 +33,10 @@ Our API documentation is defined by a few sets of files:
   our [help center docs](helpcenter.md), with some special
   extensions for rendering nice code blocks and example
   responses. Most API endpoints share a common template,
-  `templates/zerver/api/api-doc-template.md`, which renders the
+  `api_docs/api-doc-template.md`, which renders the
   OpenAPI description of the API endpoint. A handful of endpoints that
   require special content, as well as pages that document general API
-  details rather than specific endpoints, live at
-  `templates/zerver/api/*.md`.
+  details rather than specific endpoints, live at `api_docs/*.md`.
 - We have an extensive set of tests designed to validate that the data
   in the OpenAPI file matching the implementation. Specifically,
   `zerver/tests/test_openapi.py` compares every endpoint's accepted
@@ -57,8 +56,8 @@ Our API documentation is defined by a few sets of files:
 - The cURL examples are generated and tested using
   `zerver/openapi/curl_param_value_generators.py`.
 - The REST API index
-  (`templates/zerver/api/include/rest-endpoints.md`) in the broader
-  /api left sidebar (`templates/zerver/api/sidebar_index.md`).
+  (`api_docs/include/rest-endpoints.md`) in the broader
+  /api left sidebar (`api_docs/sidebar_index.md`).
 
 This first section is focused on explaining how the API documentation
 system is put together; when actually documenting an endpoint, you'll
@@ -67,7 +66,7 @@ want to also read the [Step by step guide](#step-by-step-guide).
 ## How it works
 
 To understand how this documentation system works, start by reading an
-existing doc file (`templates/zerver/api/render-message.md` is a good
+existing doc file (`api_docs/render-message.md` is a good
 example; accessible live
 [here](https://zulip.com/api/render-message) or in the development
 environment at `http://localhost:9991/api/render-message`).
@@ -180,7 +179,7 @@ wherever that string appears in the API documentation.
 
 We have a separate Markdown extension to document the parameters that
 an API endpoint supports. You'll see this in files like
-`templates/zerver/api/render-message.md` via the following Markdown
+`api_docs/render-message.md` via the following Markdown
 directive (implemented in
 `zerver/lib/markdown/api_arguments_table_generator.py`):
 
@@ -290,13 +289,13 @@ above.
 
 1. Finally, if the API docs page of the endpoint doesn't follow the
    common API docs template in
-   `templates/zerver/api/api-docs-template.md`, then add its custom
-   Markdown file under `templates/zerver/api/`. However, it is a goal
+   `api_docs/api-docs-template.md`, then add its custom
+   Markdown file under `api_docs/`. However, it is a goal
    to minimize the number of files that diverse from the common
    template, so only do this if there's a good reason.
 
 1. Add the endpoint to the index in
-   `templates/zerver/api/include/rest-endpoints.md`. The URL should
+   `api_docs/include/rest-endpoints.md`. The URL should
    match the `operationId` for the endpoint, and the link text should
    match the title of the endpoint from the OpenAPI `summary` field.
 
@@ -307,13 +306,11 @@ above.
    make sure that copy-pasting the code in your examples works, and
    post an example of the output in the pull request.
 
-1. Document the new API in `templates/zerver/api/changelog.md` and
+1. Document the new API in `api_docs/changelog.md` and
    bump the `API_FEATURE_LEVEL` in `version.py`. Also, make sure to
    add a `**Changes**` entry in the description of the new API/event
    in `zerver/openapi/zulip.yaml`, which mentions the API feature level
    at which they were added.
-
-[javascript-examples]: https://github.com/zulip/zulip-js/tree/main/examples
 
 ## Why a custom system?
 

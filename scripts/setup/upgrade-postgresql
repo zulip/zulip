@@ -24,7 +24,7 @@ fi
 set -x
 
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
-apt-get install -y "postgresql-$UPGRADE_TO"
+apt-get install -y "postgresql-$UPGRADE_TO" "postgresql-client-$UPGRADE_TO"
 if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
     pg_dropcluster "$UPGRADE_TO" main --stop
 fi

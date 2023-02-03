@@ -23,7 +23,6 @@ def api_json_webhook(
     user_profile: UserProfile,
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
-
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
 

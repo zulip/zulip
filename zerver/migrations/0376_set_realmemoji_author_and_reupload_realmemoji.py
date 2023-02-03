@@ -33,7 +33,6 @@ def set_emoji_author(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0375_invalid_characters_in_stream_names"),
     ]

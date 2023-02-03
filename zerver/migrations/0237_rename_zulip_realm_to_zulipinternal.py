@@ -36,7 +36,6 @@ def rename_zulip_realm_to_zulipinternal(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0236_remove_illegal_characters_email_full"),
     ]

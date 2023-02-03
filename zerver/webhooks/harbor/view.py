@@ -91,7 +91,6 @@ def api_harbor_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     operator_username = "**{}**".format(payload["operator"].tame(check_string))
 
     if operator_username != "auto":

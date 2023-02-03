@@ -11,6 +11,9 @@ $topic_resolve_width: 13px;
 /* Space between section in the left sidebar. */
 $sections_vertical_gutter: 8px;
 $bottom_scrolling_buffer: 25px;
+/* space PM / stream / topic names from unread counters / @ mention
+indicators by 3px on the right */
+$before_unread_count_padding: 3px;
 
 .hashtag {
     &:empty {
@@ -106,12 +109,8 @@ li.show-more-topics {
     }
 
     li {
-        a {
-            padding: 1px 0;
-
-            &:hover {
-                text-decoration: none;
-            }
+        a:hover {
+            text-decoration: none;
         }
 
         ul {
@@ -141,15 +140,6 @@ li.show-more-topics {
         display: flex;
         align-items: center;
         white-space: nowrap;
-
-        .stream-name {
-            flex: auto;
-            overflow-x: hidden;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-            min-width: 0;
-            padding-right: 2px;
-        }
 
         &.stream-with-count {
             margin-right: 15px;
@@ -447,14 +437,15 @@ li.top_left_recent_topics {
 }
 
 .conversation-partners,
-.topic-name {
+.topic-name,
+.stream-name {
     flex: auto;
     min-width: 0;
     white-space: nowrap;
     overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
-    padding-right: 2px;
+    padding: 1px $before_unread_count_padding 1px 0;
 }
 
 .topic-name {

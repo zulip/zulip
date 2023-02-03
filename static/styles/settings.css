@@ -152,18 +152,6 @@ h3,
     }
 }
 
-#change_email_button_container {
-    &.email_changes_disabled_tooltip {
-        cursor: not-allowed;
-    }
-}
-
-#change_email_button {
-    &:disabled {
-        pointer-events: none;
-    }
-}
-
 #change_password_modal,
 #change_email_modal {
     max-width: 480px;
@@ -175,18 +163,11 @@ h3,
     }
 }
 
-#deactivate_realm_button_container {
-    &.realm_deactivation_tooltip {
-        cursor: not-allowed;
-    }
+.disabled_setting_tooltip {
+    cursor: not-allowed;
 }
 
-#deactivate_account_container {
-    &.only_organization_owner_tooltip {
-        cursor: not-allowed;
-    }
-}
-
+#change_email_button,
 #user_deactivate_account_button,
 #deactivate_realm_button {
     &:disabled {
@@ -470,11 +451,6 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-#organization-profile input {
-    /* Override undesired Bootstrap default. */
-    margin-bottom: 0;
-}
-
 #id_org_profile_preview {
     margin-bottom: 20px;
     display: inline-flex;
@@ -646,17 +622,10 @@ input[type="checkbox"] {
     }
 }
 
-.add-new-emoji-box,
-.add-new-export-box {
-    margin-bottom: 20px;
-}
-
-.add-new-emoji-box .new-emoji-form,
 .add-new-export-box {
     margin: 10px 0;
 }
 
-.add-new-emoji-box,
 .add-new-default-stream-box {
     input[type="text"] {
         padding: 6px;
@@ -664,17 +633,30 @@ input[type="checkbox"] {
     margin-bottom: 15px;
 }
 
-.add-new-emoji-box #emoji-file-name {
-    width: 0;
-    top: -19px;
-    left: 3px;
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
+#add-custom-emoji-modal {
+    form {
+        margin: 0;
+    }
 
-    white-space: nowrap;
-    font-style: italic;
-    color: hsl(0, 0%, 67%);
+    input[type="text"] {
+        padding: 6px;
+    }
+
+    .emoji_name_input {
+        margin-top: 10px;
+    }
+
+    #emoji-file-name {
+        font-size: 14px;
+        white-space: nowrap;
+        height: 1rem;
+        font-style: italic;
+        color: hsl(0, 0%, 67%);
+    }
+
+    #emoji_preview_text {
+        margin-top: 6px;
+    }
 }
 
 #emoji_file_input_error {
@@ -1444,6 +1426,12 @@ $option_title_width: 180px;
     #show_my_user_profile_modal i {
         padding-left: 2px;
         vertical-align: middle;
+    }
+
+    input,
+    input[type="url"] {
+        /* Override undesired Bootstrap default. */
+        margin-bottom: 0;
     }
 }
 

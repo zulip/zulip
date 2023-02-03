@@ -24,7 +24,6 @@ def api_splunk_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # use default values if expected data is not provided
     search_name = payload.get("search_name", "Missing search_name").tame(check_string)
     results_link = payload.get("results_link", "Missing results_link").tame(check_string)

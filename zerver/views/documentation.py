@@ -69,6 +69,7 @@ class MarkdownDirectoryView(ApiURLView):
     path_template = ""
     policies_view = False
     help_view = False
+    api_doc_view = False
 
     def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
@@ -76,6 +77,10 @@ class MarkdownDirectoryView(ApiURLView):
             article = "index"
         elif article == "include/sidebar_index":
             pass
+        elif article == "api-doc-template":
+            # This markdown template shouldn't be accessed directly.
+            article = "missing"
+            http_status = 404
         elif "/" in article:
             article = "missing"
             http_status = 404
@@ -87,36 +92,33 @@ class MarkdownDirectoryView(ApiURLView):
         endpoint_name = None
         endpoint_method = None
 
-        # Absolute path cases
-        if (self.policies_view or self.help_view) and self.path_template.startswith("/"):
-            if not os.path.exists(path):
-                article = "missing"
-                http_status = 404
-                path = self.path_template % (article,)
+        if not self.path_template.startswith("/"):
+            # Relative paths only used for policies documentation
+            # when it is not configured or in the dev environment
+            assert self.policies_view
 
-            return DocumentationArticle(
-                article_path=path,
-                article_http_status=http_status,
-                endpoint_path=None,
-                endpoint_method=None,
-            )
+            try:
+                loader.get_template(path)
+                return DocumentationArticle(
+                    article_path=path,
+                    article_http_status=http_status,
+                    endpoint_path=endpoint_name,
+                    endpoint_method=endpoint_method,
+                )
+            except loader.TemplateDoesNotExist:
+                return DocumentationArticle(
+                    article_path=self.path_template % ("missing",),
+                    article_http_status=404,
+                    endpoint_path=None,
+                    endpoint_method=None,
+                )
 
-        if path == "/zerver/api/api-doc-template.md":
-            # This template shouldn't be accessed directly.
-            return DocumentationArticle(
-                article_path=self.path_template % ("missing",),
-                article_http_status=404,
-                endpoint_path=None,
-                endpoint_method=None,
-            )
-
-        if self.path_template == "/zerver/api/%s.md":
-            # Hack: `self.path_template` has a leading `/`, so we use + to add directories.
-            api_documentation_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
-            if not os.path.exists(api_documentation_path):
+        if not os.path.exists(path):
+            if self.api_doc_view:
                 try:
+                    # API endpoints documented in zerver/openapi/zulip.yaml
                     endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
-                    path = "/zerver/api/api-doc-template.md"
+                    path = self.path_template % ("api-doc-template",)
                 except AssertionError:
                     return DocumentationArticle(
                         article_path=self.path_template % ("missing",),
@@ -124,22 +126,19 @@ class MarkdownDirectoryView(ApiURLView):
                         endpoint_path=None,
                         endpoint_method=None,
                     )
+            elif self.help_view or self.policies_view:
+                article = "missing"
+                http_status = 404
+                path = self.path_template % (article,)
+            else:
+                raise AssertionError("Invalid documentation view type")
 
-        try:
-            loader.get_template(path)
-            return DocumentationArticle(
-                article_path=path,
-                article_http_status=http_status,
-                endpoint_path=endpoint_name,
-                endpoint_method=endpoint_method,
-            )
-        except loader.TemplateDoesNotExist:
-            return DocumentationArticle(
-                article_path=self.path_template % ("missing",),
-                article_http_status=404,
-                endpoint_path=None,
-                endpoint_method=None,
-            )
+        return DocumentationArticle(
+            article_path=path,
+            article_http_status=http_status,
+            endpoint_path=endpoint_name,
+            endpoint_method=endpoint_method,
+        )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
@@ -154,12 +153,8 @@ class MarkdownDirectoryView(ApiURLView):
         ):
             # Absolute path case
             article_absolute_path = documentation_article.article_path
-        elif documentation_article.article_path.startswith("/"):
-            # Hack: `context["article"] has a leading `/`, so we use + to add directories.
-            article_absolute_path = (
-                os.path.join(settings.DEPLOY_ROOT, "templates") + documentation_article.article_path
-            )
         else:
+            # Relative path case
             article_absolute_path = os.path.join(
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
@@ -178,13 +173,15 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip terms and policies"
-        else:
+        elif self.api_doc_view:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
             context["doc_root_title"] = "API documentation"
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
+        else:
+            raise AssertionError("Invalid documentation view type")
 
         # The following is a somewhat hacky approach to extract titles from articles.
         endpoint_name = None
@@ -192,7 +189,7 @@ class MarkdownDirectoryView(ApiURLView):
         if os.path.exists(article_absolute_path):
             with open(article_absolute_path) as article_file:
                 first_line = article_file.readlines()[0]
-            if context["article"] == "/zerver/api/api-doc-template.md":
+            if self.api_doc_view and context["article"].endswith("api-doc-template.md"):
                 endpoint_name, endpoint_method = (
                     documentation_article.endpoint_path,
                     documentation_article.endpoint_method,
@@ -200,9 +197,7 @@ class MarkdownDirectoryView(ApiURLView):
                 assert endpoint_name is not None
                 assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
-            elif (
-                self.path_template == "/zerver/api/%s.md" and "{generate_api_header(" in first_line
-            ):
+            elif self.api_doc_view and "{generate_api_header(" in first_line:
                 api_operation = context["PAGE_METADATA_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)

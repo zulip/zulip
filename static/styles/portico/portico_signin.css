@@ -1283,3 +1283,17 @@ button#register_auth_button_gitlab {
         min-height: calc(100vh - 560px);
     }
 }
+
+.account-creation .white-box .user_email {
+    word-break: break-all;
+}
+
+@media (width >= 600px) {
+    .account-creation .white-box {
+        max-width: min-content;
+
+        .alert-info {
+            min-width: max-content;
+        }
+    }
+}

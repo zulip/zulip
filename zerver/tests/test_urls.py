@@ -64,7 +64,12 @@ class PublicURLTest(ZulipTestCase):
                 "/api/v1/messages",
                 "/api/v1/streams",
             ],
-            404: ["/help/nonexistent", "/help/include/admin", "/help/" + "z" * 1000],
+            404: [
+                "/help/api-doc-template",
+                "/help/nonexistent",
+                "/help/include/admin",
+                "/help/" + "z" * 1000,
+            ],
         }
 
         # Add all files in help documentation directory (except for 'index.md',

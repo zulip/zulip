@@ -13,7 +13,6 @@ def fix_bot_type(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0084_realmemoji_deactivated"),
     ]

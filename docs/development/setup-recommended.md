@@ -450,7 +450,7 @@ automatically whenever you commit).
 
 #### Understanding run-dev.py debugging output
 
-It's good to have the terminal running `run-dev.py` up as you work since error
+It's good to have the terminal running `./tools/run-dev.py` up as you work since error
 messages including tracebacks along with every backend request will be printed
 there.
 

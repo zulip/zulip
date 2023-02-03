@@ -90,7 +90,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/laughing", info=emoji_data)
         self.assert_json_error(
             result,
-            "Only administrators can override built-in emoji.",
+            "Only administrators can override default emoji.",
         )
 
         user = self.example_user("iago")
@@ -120,7 +120,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_em*oji", info=emoji_data)
         self.assert_json_error(
             result,
-            "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
+            "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
         )
 
     def test_forward_slash_exception(self) -> None:
@@ -132,7 +132,7 @@ class RealmEmojiTest(ZulipTestCase):
             )
         self.assert_json_error(
             result,
-            "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
+            "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
         )
 
     def test_upload_uppercase_exception(self) -> None:
@@ -142,7 +142,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_EMoji", info=emoji_data)
         self.assert_json_error(
             result,
-            "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
+            "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
         )
 
     def test_upload_end_character_exception(self) -> None:
@@ -150,7 +150,7 @@ class RealmEmojiTest(ZulipTestCase):
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
             result = self.client_post("/json/realm/emoji/my_emoji_", info=emoji_data)
-        self.assert_json_error(result, "Emoji names must end with either a letter or number.")
+        self.assert_json_error(result, "Emoji names must end with either a letter or digit.")
 
     def test_missing_name_exception(self) -> None:
         self.login("iago")

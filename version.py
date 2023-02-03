@@ -31,8 +31,8 @@ DESKTOP_WARNING_VERSION = "5.4.3"
 # use the new feature/API until the bump.
 #
 # Changes should be accompanied by documentation explaining what the
-# new level means in templates/zerver/api/changelog.md, as well as
-# "**Changes**" entries in the endpoint's documentation in `zulip.yaml`.
+# new level means in api_docs/changelog.md, as well as "**Changes**"
+# entries in the endpoint's documentation in `zulip.yaml`.
 API_FEATURE_LEVEL = 159
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision

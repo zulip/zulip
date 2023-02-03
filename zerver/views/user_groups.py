@@ -86,7 +86,6 @@ def delete_user_group(
     user_profile: UserProfile,
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
-
     check_delete_user_group(user_group_id, user_profile, acting_user=user_profile)
     return json_success(request)
 

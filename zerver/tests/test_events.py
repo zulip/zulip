@@ -682,7 +682,6 @@ class NormalActionsTest(BaseAction):
         check_update_message_flags_remove("events[0]", events[0])
 
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
-
         user_profile = self.example_user("hamlet")
         mention = "@**" + user_profile.full_name + "**"
 
@@ -1673,7 +1672,6 @@ class NormalActionsTest(BaseAction):
                 )
 
     def test_change_realm_notifications_stream(self) -> None:
-
         stream = get_stream("Rome", self.user_profile.realm)
 
         for notifications_stream, notifications_stream_id in ((stream, stream.id), (None, -1)):

@@ -79,13 +79,13 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
         "user_group_id", "user_profile_id"
     )
-    for (user_group_id, user_profile_id) in membership:
+    for user_group_id, user_profile_id in membership:
         group_dicts[user_group_id]["members"].append(user_profile_id)
 
     group_membership = GroupGroupMembership.objects.filter(subgroup__realm=realm).values_list(
         "subgroup_id", "supergroup_id"
     )
-    for (subgroup_id, supergroup_id) in group_membership:
+    for subgroup_id, supergroup_id in group_membership:
         group_dicts[supergroup_id]["direct_subgroup_ids"].append(subgroup_id)
 
     for group_dict in group_dicts.values():

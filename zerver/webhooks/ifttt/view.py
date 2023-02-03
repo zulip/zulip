@@ -18,7 +18,6 @@ def api_iftt_app_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     try:
         topic = payload.get("topic").tame(check_none_or(check_string))
         content = payload.get("content").tame(check_none_or(check_string))

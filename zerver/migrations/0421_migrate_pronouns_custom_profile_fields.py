@@ -28,7 +28,6 @@ def reverse_migrate_pronouns_custom_profile_fields(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0420_alter_archivedmessage_realm_alter_message_realm"),
     ]

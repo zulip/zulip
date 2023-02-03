@@ -3,6 +3,7 @@ import $ from "jquery";
 import emoji_codes from "../generated/emoji/emoji_codes.json";
 import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/confirm_deactivate_custom_emoji.hbs";
 import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_emoji_settings_warning.hbs";
+import render_add_emoji from "../templates/settings/add_emoji.hbs";
 import render_admin_emoji_list from "../templates/settings/admin_emoji_list.hbs";
 import render_settings_emoji_settings_tip from "../templates/settings/emoji_settings_tip.hbs";
 
@@ -47,10 +48,10 @@ export function update_custom_emoji_ui() {
     $("#emoji-settings").find(".emoji-settings-tip-container").html(rendered_tip);
     if (!settings_data.user_can_add_custom_emoji()) {
         $(".add-emoji-text").hide();
-        $(".admin-emoji-form").hide();
+        $("#add-custom-emoji-button").hide();
     } else {
         $(".add-emoji-text").show();
-        $(".admin-emoji-form").show();
+        $("#add-custom-emoji-button").show();
     }
 
     populate_emoji();
@@ -70,7 +71,9 @@ function sort_author_full_name(a, b) {
 }
 
 function is_default_emoji(emoji_name) {
-    return emoji_codes.names.includes(emoji_name);
+    // Spaces are replaced with `_` to match how the emoji name will
+    // actually be stored in the backend.
+    return emoji_codes.names.includes(emoji_name.replace(/ /g, "_"));
 }
 
 function is_custom_emoji(emoji_name) {
@@ -136,7 +139,16 @@ export function populate_emoji() {
     loading.destroy_indicator($("#admin_page_emoji_loading_indicator"));
 }
 
-export function build_emoji_upload_widget() {
+export function add_custom_emoji_post_render() {
+    $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
+
+    $("#add-custom-emoji-form").on("input", "input", () => {
+        $("#add-custom-emoji-modal .dialog_submit_button").prop(
+            "disabled",
+            $("#emoji_name").val() === "" || $("#emoji_file_input").val() === "",
+        );
+    });
+
     const get_file_input = function () {
         return $("#emoji_file_input");
     };
@@ -147,8 +159,11 @@ export function build_emoji_upload_widget() {
     const $upload_button = $("#emoji_upload_button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
+    const $placeholder_icon = $("#emoji_placeholder_icon");
 
-    return upload_widget.build_widget(
+    $preview_image.hide();
+
+    upload_widget.build_widget(
         get_file_input,
         $file_name_field,
         $input_error,
@@ -157,10 +172,129 @@ export function build_emoji_upload_widget() {
         $preview_text,
         $preview_image,
     );
+
+    get_file_input().on("input", () => {
+        $placeholder_icon.hide();
+        $preview_image.show();
+    });
+
+    $preview_text.show();
+    $clear_button.on("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
+
+        $preview_image.hide();
+        $placeholder_icon.show();
+        $preview_text.show();
+        $preview_image.attr("src", "/static/images/default-avatar.png");
+    });
+}
+
+function show_modal() {
+    const html_body = render_add_emoji();
+
+    function add_custom_emoji(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        dialog_widget.show_dialog_spinner();
+
+        const $emoji_status = $("#dialog_error");
+        const emoji = {};
+
+        function submit_custom_emoji_request(formData) {
+            channel.post({
+                url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+                success() {
+                    dialog_widget.close_modal();
+                },
+                error(xhr) {
+                    $("#dialog_error").hide();
+                    dialog_widget.hide_dialog_spinner();
+                    const errors = JSON.parse(xhr.responseText).msg;
+                    xhr.responseText = JSON.stringify({msg: errors});
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $emoji_status);
+                },
+            });
+        }
+
+        for (const obj of $("#add-custom-emoji-form").serializeArray()) {
+            emoji[obj.name] = obj.value;
+        }
+
+        if (emoji.name.trim() === "") {
+            ui_report.client_error(
+                $t_html({defaultMessage: "Failed: Emoji name is required."}),
+                $emoji_status,
+            );
+            dialog_widget.hide_dialog_spinner();
+            return;
+        }
+
+        if (is_custom_emoji(emoji.name)) {
+            ui_report.client_error(
+                $t_html({
+                    defaultMessage: "Failed: A custom emoji with this name already exists.",
+                }),
+                $emoji_status,
+            );
+            dialog_widget.hide_dialog_spinner();
+            return;
+        }
+
+        const formData = new FormData();
+        for (const [i, file] of Array.prototype.entries.call($("#emoji_file_input")[0].files)) {
+            formData.append("file-" + i, file);
+        }
+
+        if (is_default_emoji(emoji.name)) {
+            if (!page_params.is_admin) {
+                ui_report.client_error(
+                    $t_html({
+                        defaultMessage:
+                            "Failed: There is a default emoji with this name. Only administrators can override default emoji.",
+                    }),
+                    $emoji_status,
+                );
+                dialog_widget.hide_dialog_spinner();
+                return;
+            }
+
+            dialog_widget.close_modal(() => {
+                const html_body = emoji_settings_warning_modal({
+                    emoji_name: emoji.name,
+                });
+                confirm_dialog.launch({
+                    html_heading: $t_html({defaultMessage: "Override default emoji?"}),
+                    html_body,
+                    on_click: () => submit_custom_emoji_request(formData),
+                });
+            });
+        } else {
+            submit_custom_emoji_request(formData);
+        }
+    }
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Add a new emoji"}),
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        id: "add-custom-emoji-modal",
+        loading_spinner: true,
+        on_click: add_custom_emoji,
+        post_render: add_custom_emoji_post_render,
+    });
 }
 
 export function set_up() {
     meta.loaded = true;
+
+    $("#add-custom-emoji-button").on("click", show_modal);
 
     loading.make_indicator($("#admin_page_emoji_loading_indicator"));
 
@@ -189,86 +323,4 @@ export function set_up() {
             loading_spinner: true,
         });
     });
-
-    const emoji_widget = build_emoji_upload_widget();
-
-    $(".organization form.admin-emoji-form")
-        .off("submit")
-        .on("submit", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const $emoji_status = $("#admin-emoji-status");
-            const emoji = {};
-
-            function submit_custom_emoji_request() {
-                $("#admin_emoji_submit").prop("disabled", true);
-                const formData = new FormData();
-                for (const [i, file] of Array.prototype.entries.call(
-                    $("#emoji_file_input")[0].files,
-                )) {
-                    formData.append("file-" + i, file);
-                }
-
-                channel.post({
-                    url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
-                    data: formData,
-                    cache: false,
-                    processData: false,
-                    contentType: false,
-                    success() {
-                        $("#admin-emoji-status").hide();
-                        ui_report.success(
-                            $t_html({defaultMessage: "Custom emoji added!"}),
-                            $emoji_status,
-                        );
-                        $("form.admin-emoji-form input[type='text']").val("");
-                        $("#admin_emoji_submit").prop("disabled", false);
-                        emoji_widget.clear();
-                    },
-                    error(xhr) {
-                        $("#admin-emoji-status").hide();
-                        const errors = JSON.parse(xhr.responseText).msg;
-                        xhr.responseText = JSON.stringify({msg: errors});
-                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $emoji_status);
-                        $("#admin_emoji_submit").prop("disabled", false);
-                    },
-                });
-            }
-
-            for (const obj of $(this).serializeArray()) {
-                emoji[obj.name] = obj.value;
-            }
-
-            if (emoji.name.trim() === "") {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Failed: Emoji name is required."}),
-                    $emoji_status,
-                );
-                return;
-            }
-
-            if (is_custom_emoji(emoji.name)) {
-                ui_report.client_error(
-                    $t_html({
-                        defaultMessage: "Failed: A custom emoji with this name already exists.",
-                    }),
-                    $emoji_status,
-                );
-                return;
-            }
-
-            if (is_default_emoji(emoji.name)) {
-                const html_body = emoji_settings_warning_modal({
-                    emoji_name: emoji.name,
-                });
-
-                confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Override built-in emoji?"}),
-                    html_body,
-                    on_click: submit_custom_emoji_request,
-                });
-            } else {
-                submit_custom_emoji_request();
-            }
-        });
 }

@@ -13,7 +13,6 @@ def backfill_last_message_id(apps: StateApps, schema_editor: BaseDatabaseSchemaE
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0138_userprofile_realm_name_in_notifications"),
     ]

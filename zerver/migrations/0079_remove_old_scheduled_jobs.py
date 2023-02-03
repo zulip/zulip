@@ -15,7 +15,6 @@ def delete_old_scheduled_jobs(apps: StateApps, schema_editor: BaseDatabaseSchema
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0078_service"),
     ]

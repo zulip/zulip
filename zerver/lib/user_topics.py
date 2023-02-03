@@ -61,7 +61,6 @@ def get_user_topics(
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
 ) -> List[Tuple[str, str, int]]:
-
     user_topics = get_user_topics(
         user_profile=user_profile,
         include_deactivated=include_deactivated,

@@ -69,6 +69,7 @@ email_unsubscribers = {
     "marketing": ("marketing", do_marketing_unsubscribe),
 }
 
+
 # Login NOT required. These are for one-click unsubscribes.
 @csrf_exempt
 def email_unsubscribe(request: HttpRequest, email_type: str, confirmation_key: str) -> HttpResponse:

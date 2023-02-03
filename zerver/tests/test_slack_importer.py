@@ -702,7 +702,6 @@ class SlackImporter(ZulipTestCase):
     def test_slack_workspace_to_realm(
         self, mock_channels_to_zerver_stream: mock.Mock, mock_users_to_zerver_userprofile: mock.Mock
     ) -> None:
-
         realm_id = 1
         user_list: List[Dict[str, Any]] = []
         (
@@ -795,7 +794,6 @@ class SlackImporter(ZulipTestCase):
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message(self, mock_build_usermessage: mock.Mock) -> None:
-
         user_data = [
             {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
             {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
@@ -1263,3 +1261,51 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(slack_emoji_name_to_codepoint["tophat"], "1f3a9")
         self.assertEqual(slack_emoji_name_to_codepoint["dog2"], "1f415")
         self.assertEqual(slack_emoji_name_to_codepoint["dog"], "1f436")
+
+    @mock.patch("zerver.data_import.slack.requests.get")
+    @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
+    @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
+    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar")
+    @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    def test_slack_import_unicode_filenames(
+        self,
+        mock_get_slack_api_data: mock.Mock,
+        mock_build_avatar_url: mock.Mock,
+        mock_build_avatar: mock.Mock,
+        mock_process_uploads: mock.Mock,
+        mock_attachment: mock.Mock,
+        mock_requests_get: mock.Mock,
+    ) -> None:
+        test_slack_dir = os.path.join(
+            settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "slack_fixtures"
+        )
+        test_slack_zip_file = os.path.join(test_slack_dir, "test_unicode_slack_importer.zip")
+        test_slack_unzipped_file = os.path.join(test_slack_dir, "test_unicode_slack_importer")
+        output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-unicode-slack-importer-data")
+        token = "xoxp-valid-token"
+
+        # If the test fails, the 'output_dir' would not be deleted and hence it would give an
+        # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
+        # hence we remove it before running 'do_convert_data'
+        self.rm_tree(output_dir)
+        # Also the unzipped data file should be removed if the test fails at 'do_convert_data'
+        self.rm_tree(test_slack_unzipped_file)
+
+        user_data_fixture = orjson.loads(
+            self.fixture_data("unicode_user_data.json", type="slack_fixtures")
+        )
+        team_info_fixture = orjson.loads(
+            self.fixture_data("unicode_team_info.json", type="slack_fixtures")
+        )
+        mock_get_slack_api_data.side_effect = [
+            user_data_fixture["members"],
+            {},
+            team_info_fixture["team"],
+        ]
+        mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
+
+        with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
+            # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
+            # uses it to generate email addresses for users without an email specified.
+            do_convert_data(test_slack_zip_file, output_dir, token)

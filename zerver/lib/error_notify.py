@@ -72,7 +72,7 @@ Deployed version: {version}
     more_info = report["more_info"]
     if more_info is not None:
         body += "\nAdditional information:"
-        for (key, value) in more_info.items():
+        for key, value in more_info.items():
             body += f"\n  {key}: {value}"
 
     body += "\n\nLog:\n{log}".format(**report)

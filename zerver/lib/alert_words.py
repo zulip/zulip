@@ -27,7 +27,7 @@ def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:
 def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     user_id_with_words = alert_words_in_realm(realm)
     alert_word_automaton = ahocorasick.Automaton()
-    for (user_id, alert_words) in user_id_with_words.items():
+    for user_id, alert_words in user_id_with_words.items():
         for alert_word in alert_words:
             alert_word_lower = alert_word.lower()
             if alert_word_automaton.exists(alert_word_lower):

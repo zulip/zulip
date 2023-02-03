@@ -177,19 +177,19 @@ function bot_owner_full_name(owner_id) {
 }
 
 function bot_info(bot_user_id) {
-    const bot_user = bot_data.get(bot_user_id);
+    const bot_user = people.get_by_user_id(bot_user_id);
 
     if (!bot_user) {
         return undefined;
     }
 
-    const owner_id = bot_user.owner_id;
+    const owner_id = bot_user.bot_owner_id;
 
     const info = {};
 
     info.is_bot = true;
-    info.role = people.get_by_user_id(bot_user_id).role;
-    info.is_active = bot_user.is_active;
+    info.role = bot_user.role;
+    info.is_active = people.is_person_active(bot_user.user_id);
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
@@ -254,7 +254,7 @@ section.bots.create_table = () => {
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {text: "Loading..."});
     const $bots_table = $("#admin_bots_table");
     $bots_table.hide();
-    const bot_user_ids = bot_data.all_user_ids();
+    const bot_user_ids = people.get_bot_ids();
 
     bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
@@ -378,7 +378,7 @@ export function redraw_bots_list() {
     // In order to properly redraw after a user may have been added,
     // we need to update the bot_list_widget with the new set of bot
     // user IDs to display.
-    const bot_user_ids = bot_data.all_user_ids();
+    const bot_user_ids = people.get_bot_ids();
     bot_list_widget.replace_list_data(bot_user_ids);
     bot_list_widget.hard_redraw();
 }

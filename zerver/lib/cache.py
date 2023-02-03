@@ -346,6 +346,7 @@ CacheItemT = TypeVar("CacheItemT")
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar("CompressedItemT")
 
+
 # Required arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
@@ -382,7 +383,7 @@ def generic_bulk_cached_fetch(
     )
 
     cached_objects: Dict[str, CacheItemT] = {}
-    for (key, val) in cached_objects_compressed.items():
+    for key, val in cached_objects_compressed.items():
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [
         object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects

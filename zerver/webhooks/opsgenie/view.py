@@ -32,7 +32,6 @@ def api_opsgenie_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # construct the body of the message
     info = {
         "additional_info": "",

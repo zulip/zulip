@@ -214,7 +214,10 @@ class TestFollowupEmails(ZulipTestCase):
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
-        self.assertEqual(email_data["context"]["getting_started_link"], "https://zulip.com")
+        self.assertEqual(
+            email_data["context"]["getting_user_started_link"],
+            "http://zulip.testserver/help/getting-started-with-zulip",
+        )
         self.assertNotIn("ldap_username", email_data["context"])
 
         ScheduledEmail.objects.all().delete()
@@ -226,8 +229,12 @@ class TestFollowupEmails(ZulipTestCase):
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
         self.assertEqual(
-            email_data["context"]["getting_started_link"],
+            email_data["context"]["getting_organization_started_link"],
             "http://zulip.testserver/help/getting-your-organization-started-with-zulip",
+        )
+        self.assertEqual(
+            email_data["context"]["getting_user_started_link"],
+            "http://zulip.testserver/help/getting-started-with-zulip",
         )
         self.assertNotIn("ldap_username", email_data["context"])
 
@@ -350,7 +357,7 @@ class TestFollowupEmails(ZulipTestCase):
         self.assert_length(outbox, 1)
 
         message = outbox[0]
-        self.assertIn("You've created the new Zulip organization", message.body)
+        self.assertIn("you have created a new Zulip organization", message.body)
         self.assertNotIn("demo org", message.body)
 
     def test_followup_emails_for_demo_realms(self) -> None:
@@ -372,7 +379,7 @@ class TestFollowupEmails(ZulipTestCase):
         self.assert_length(outbox, 1)
 
         message = outbox[0]
-        self.assertIn("You've created a demo Zulip organization", message.body)
+        self.assertIn("you have created a new demo Zulip organization", message.body)
 
 
 class TestMissedMessages(ZulipTestCase):

@@ -44,7 +44,6 @@ logger_string = "zulip.soft_deactivation"
 
 
 class HomeTest(ZulipTestCase):
-
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "alert_words",

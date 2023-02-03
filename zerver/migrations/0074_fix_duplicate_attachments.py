@@ -43,7 +43,6 @@ def fix_duplicate_attachments(apps: StateApps, schema_editor: BaseDatabaseSchema
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0073_custom_profile_fields"),
     ]

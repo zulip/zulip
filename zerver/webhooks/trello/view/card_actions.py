@@ -177,7 +177,6 @@ def get_updated_card_body(payload: WildValue, action_type: str) -> str:
 
 
 def get_renamed_card_body(payload: WildValue, action_type: str) -> str:
-
     data = {
         "old_name": get_action_data(payload)["old"]["name"].tame(check_string),
         "new_name": get_action_data(payload)["old"]["name"].tame(check_string),

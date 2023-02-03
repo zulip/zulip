@@ -4,7 +4,6 @@ CORPORATE = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0029_realm_subdomain"),
     ]

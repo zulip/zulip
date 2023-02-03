@@ -15,6 +15,7 @@ from zproject.backends import ZulipLDAPError, sync_user_from_ldap
 logger = logging.getLogger("zulip.sync_ldap_user_data")
 log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
+
 # Run this on a cron job to pick up on name changes.
 @transaction.atomic
 def sync_ldap_user_data(

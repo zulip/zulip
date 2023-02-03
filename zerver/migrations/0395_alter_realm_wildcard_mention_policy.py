@@ -17,7 +17,6 @@ def fix_wildcard_mention_policy_stream_admins_value(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0394_alter_realm_want_advertise_in_communities_directory"),
     ]
