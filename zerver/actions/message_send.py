@@ -210,7 +210,6 @@ def get_recipient_info(
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
         assert stream_topic is not None
-        user_ids_muting_topic = stream_topic.user_ids_with_visibility_policy(UserTopic.MUTED)
 
         subscription_rows = (
             get_subscriptions_for_send_message(
@@ -240,6 +239,7 @@ def get_recipient_info(
         )
 
         message_to_user_ids = [row["user_profile_id"] for row in subscription_rows]
+        user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
         def notification_recipients(setting: str) -> Set[int]:
             return {
@@ -247,7 +247,9 @@ def get_recipient_info(
                 for row in subscription_rows
                 if user_allows_notifications_in_StreamTopic(
                     row["is_muted"],
-                    row["user_profile_id"] in user_ids_muting_topic,
+                    user_id_to_visibility_policy.get(
+                        row["user_profile_id"], UserTopic.VISIBILITY_POLICY_INHERIT
+                    ),
                     row[setting],
                     row["user_profile_" + setting],
                 )

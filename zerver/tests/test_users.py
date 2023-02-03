@@ -1841,6 +1841,33 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.stream_push_user_ids, {hamlet.id})
 
+        # Now have Hamlet mute the stream and unmute the topic,
+        # which shouldn't omit him from stream_push_user_ids.
+        sub.is_muted = True
+        sub.save()
+
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.UNMUTED,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
+
+        # Now unmute the stream and remove topic visibility_policy.
+        sub.is_muted = False
+        sub.save()
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, topic_name, visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT
+        )
+
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
         do_set_user_topic_visibility_policy(
             hamlet,
