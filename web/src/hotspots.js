@@ -57,6 +57,10 @@ const HOTSPOT_LOCATIONS = new Map([
     ],
 ]);
 
+const meta = {
+    opened_hotspot_name: null,
+};
+
 export function post_hotspot_as_read(hotspot_name) {
     channel.post({
         url: "/json/users/me/hotspots",
@@ -236,7 +240,7 @@ function insert_hotspot_into_DOM(hotspot) {
 }
 
 export function is_open() {
-    return $(".hotspot.overlay").hasClass("show");
+    return meta.opened_hotspot_name !== null;
 }
 
 export function close_hotspot_icon(elem) {
@@ -296,9 +300,12 @@ export function initialize() {
                         duration: 300,
                     },
                 );
+
+                meta.opened_hotspot_name = null;
             }.bind(this),
         });
 
+        meta.opened_hotspot_name = hotspot_name;
         e.preventDefault();
         e.stopPropagation();
     });
