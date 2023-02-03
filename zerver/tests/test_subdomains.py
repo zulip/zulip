@@ -84,6 +84,9 @@ class SubdomainsTest(ZulipTestCase):
             self.assertTrue(test(f"{settings.STATIC_URL}/x"))
             self.assertFalse(test(evil_url))
             self.assertFalse(test(f"{evil_url}/x"))
+            self.assertTrue(test(f"{realm.uri}"))
+            self.assertTrue(test("/static/images/logo/zulip-org-logo.svg"))
+            self.assertTrue(test("/anything"))
 
     @use_s3_backend
     def test_is_static_or_current_realm_url_with_s3(self) -> None:
