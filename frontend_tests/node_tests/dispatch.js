@@ -78,6 +78,7 @@ const ui = mock_esm("../../static/js/ui");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
+const user_group_edit = mock_esm("../../static/js/user_group_edit");
 const overlays = mock_esm("../../static/js/overlays");
 const user_groups_settings_ui = mock_esm("../../static/js/user_groups_settings_ui");
 mock_esm("../../static/js/giphy");
@@ -186,9 +187,17 @@ run_test("user groups", ({override}) => {
         const stub = make_stub();
         override(user_groups, "get_user_group_from_id", stub.f);
         override(user_groups, "remove", noop);
+        const user_group_edit_stub = make_stub();
+        override(user_group_edit, "handle_deleted_group", user_group_edit_stub.f);
+
         dispatch(event);
+
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("group_id");
+        assert.equal(user_group_edit_stub.num_calls, 1);
+
+        let args = stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
+        args = user_group_edit_stub.get_args("group_id");
         assert_same(args.group_id, event.group_id);
     }
 

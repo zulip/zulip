@@ -67,6 +67,7 @@ import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as user_events from "./user_events";
+import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
@@ -760,6 +761,7 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 case "remove":
+                    user_group_edit.handle_deleted_group(event.group_id);
                     user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
                     break;
                 case "add_members":

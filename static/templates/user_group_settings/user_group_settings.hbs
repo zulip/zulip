@@ -1,5 +1,10 @@
 <div class="group_settings_header" data-group-id="{{group.id}}">
     <div class="tab-container"></div>
+    <div class="button-group">
+        {{#if can_edit}}
+        <button class="button small rounded btn-danger deactivate" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        {{/if}}
+    </div>
 </div>
 <div class="user_group_settings_wrapper hide" data-group-id="{{group.id}}">
     <div class="inner-box">
