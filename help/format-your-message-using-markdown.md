@@ -3,282 +3,130 @@
 [//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
 [//]: # (Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.)
 
-Zulip uses a variant of Markdown to allow you to easily format your
-messages. There is a convenient [**message formatting
-reference**](#message-formatting-reference) in the Zulip app that you
-can use whenever you need a reminder of the formatting syntax below.
+Zulip uses Markdown to allow you to easily format your messages. Even if you've
+never heard of Markdown, you are probably familiar with basic Markdown
+formatting, such as using `*` at the start of a line in a bulleted list, or
+around text to indicate emphasis.
 
-* [Emphasis](#emphasis)
-* [Lists](#lists)
-* [Links and images](#links)
-* [Code blocks](#code)
+This page provides an overview of all the formatting available in Zulip. There
+is a convenient [**message formatting
+reference**](#message-formatting-reference) in the Zulip app that you can use
+whenever you need a reminder of the formatting syntax below.
+
+* [Text emphasis](#text-emphasis)
+* [Bulleted lists](#bulleted-lists)
+* [Numbered lists](#numbered-lists)
+* [Links](#links)
+* [Code blocks](#code-blocks)
 * [LaTeX](#latex)
-* [Quotes](#quotes)
+* [Quote and reply](#quote-and-reply)
 * [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
-* [Mentions](#mentions)
-* [Status messages](#status-messages)
+* [Mention a user or group](#mention-a-user-or-group)
+* [/me action messages](#me-action-messages)
 * [Global times](#global-times)
 * [Tables](#tables)
-* [To-do lists](#to-do-lists)
-* [Paragraphs and lines](#paragraphs-and-lines)
+* [Collaborative to-do lists](#collaborative-to-do-lists)
+* [Paragraph and section formatting](#paragraph-and-section-formatting)
 
-## Emphasis
+## Text emphasis
 
-```
-**bold**, *italic*, and ~~strikethrough~~ text
-***~~All three at once~~***
-```
+{!emphasis.md!}
 
-![Markdown emphasis](/static/images/help/markdown-emphasis.png)
+!!! tip ""
+    You can also use buttons or keyboard shortcuts (<kbd>Ctrl</kbd> +
+    <kbd>B</kbd> or <kbd>Ctrl</kbd> + <kbd>I</kbd>) to make text bold or italic.
+    [Learn more](/help/text-emphasis).
 
-
-## Lists
-
-Bulleted lists
-```
-* bulleted lists
-  * with sub-bullets too
-  * sub-bullets start with 2 spaces
-    * start sub-sub-bullets with 4 spaces
-* multi
-line
-bullet
-- dashes and
-+ pluses are ok too
-```
-
-![Markdown bullets](/static/images/help/markdown-bullets.png)
-
-Numbered lists
-
-```
-1. numbered lists
-1. increment automatically
-1. one more
-```
-
-![Markdown numbered lists](/static/images/help/markdown-numbered-lists.png)
-
+{!lists.md!}
 
 ## Links
 
-Zulip auto-linkifies URLs and [valid stream (and topic) names][link-to-conversation].
-You can also add a [custom linkifier](/help/add-a-custom-linkifier) to link
-patterns like `#1234` to your ticketing system.
+{!links-intro.md!}
 
-[link-to-conversation]: /help/link-to-a-message-or-conversation
+{!links-examples.md!}
 
-```
-Auto-detected URL: zulip.com
-Named link: [Zulip homepage](zulip.com)
-Stream: #**stream name**
-Topic: #**stream name>topic name**
-Custom linkifier: #1234 (links to ticket 1234 in your ticketing system)
-```
+!!! tip ""
+    You can also use a button or a keyboard shortcut (<kbd>Ctrl</kbd> +
+    <kbd>Shift</kbd> + <kbd>L</kbd>) to insert a link.
+    [Learn more](/help/text-emphasis).
 
-![Markdown links](/static/images/help/markdown-links.png)
+## Code blocks
 
-## Images
+{!code-blocks-intro.md!}
 
-See [Share and upload files](/help/share-and-upload-files) to learn more
-about dropping, pasting, and attaching images.
-
-```
-[A whale of a good time](https://your.zulip.domain/user_uploads/1/46/IPvysqXEtiTG1ZdNBrwAZODi/whale-time.png)
-```
-
-![Markdown image](/static/images/help/markdown-image.png)
-
-## Code
-
-~~~
-Inline: `let x = 5`
-
-Code block:
-```
-def f(x):
-   return x+1
-```
-
-Syntax highlighting:
-```python
-def fib(n):
-    # TODO: base case
-    return fib(n-1) + fib(n-2)
-```
-~~~
-
-![Markdown code](/static/images/help/markdown-code.png)
-
-You can also use `~~~` to start code blocks, or just indent the code 4 or more spaces.
-
-See the main [code blocks article](/help/code-blocks) for details on
-[syntax highlighting](/help/code-blocks#language-tagging), [code
-playgrounds](/help/code-blocks#code-playgrounds), and other features.
+{!code-blocks-examples.md!}
 
 ## LaTeX
-~~~
-Inline: $$O(n^2)$$
 
-Displayed:
-``` math
-\int_a^b f(t)\, dt = F(b) - F(a)
-```
-~~~
+{!latex-intro.md!}
 
-![Markdown LaTeX](/static/images/help/markdown-latex.png)
+{!latex-examples.md!}
 
-Zulip's LaTeX rendering is powered by [KaTeX](https://katex.org).
-Their [support table](https://katex.org/docs/support_table.html) is a
-helpful resource for checking what's supported or how to express
-something.
+## Quote and reply
 
-## Quotes
+You can [quote and reply](/help/quote-and-reply) to indicate that a piece of
+text is a quote from a previous message.
 
-~~~
-> a multi-line
-quote on two lines
-
-normal text
-
-```quote
-A multi-paragraph
-
-quote in two paragraphs
-```
-~~~
-
-![Markdown quotes](/static/images/help/markdown-quotes.png)
+{!quotes.md!}
 
 ## Spoilers
 
-You can use spoilers to hide content that you do not want to be visible until
-the user interacts with it.
+You can use [spoilers](/help/spoilers) to hide content that you do not want to
+be visible until the user interacts with it.
 
-
-~~~
-Normal content in message
-
-```spoiler Spoiler header
-Spoiler content. These lines won't be visible until the user expands the spoiler.
-```
-~~~
-
-The spoiler will initially display in a collapsed form:
-
-![Spoiler collapsed](/static/images/help/spoiler-collapsed.png)
-
-Clicking the arrow will expand the spoiler content:
-
-![Spoiler expanded](/static/images/help/spoiler-expanded.png)
+{!spoilers.md!}
 
 ## Emoji and emoticons
 
-To translate emoticons into emoji, you'll need to
-[enable emoticon translations](/help/enable-emoticon-translations).
-You can also [add custom emoji](/help/custom-emoji).
+You can [add emoji](/help/emoji-and-emoticons) to your messages and
+[enable emoticon translations](/help/enable-emoticon-translations) to translate
+emoticons into emoji. You can also [add custom emoji](/help/custom-emoji).
 
-```
-:octopus: :heart: :zulip: :)
-```
+{!emoji-and-emoticons.md!}
 
-![Markdown emoji](/static/images/help/markdown-emoji.png)
+## Mention a user or group
 
-## Mentions
+You can [@-mention](/help/mention-a-user-or-group) users or user groups to draw
+their attention to a particular message or conversation.
 
-Learn more about mentions [here](/help/mention-a-user-or-group).
+{!mentions.md!}
 
-```
-Users: @**Polonius** or @**aaron|26** or @**|26** (two asterisks)
-User group: @*support team* (one asterisk)
-Silent mention: @_**Polonius** or @_**|26** (@_ instead of @)
-```
+## /me action messages
 
-The variants with numbers use user IDs, and are intended for
-disambiguation (if multiple users have the same name) and bots (for
-the variant that only contains the user ID).
+You can use [/me action messages](/help/me-action-messages) to simulate actions
+in conversations where you might want to describe actions taken or things that
+are happening around you.
 
-![Markdown mentions](/static/images/help/markdown-mentions.png)
-
-## Status messages
-
-```
-/me is away
-```
-
-![Markdown status](/static/images/help/markdown-status.png)
+{!me-action-messages.md!}
 
 ## Global times
 
-When collaborating with people in another time zone, you often need to
-express a specific time clearly. Rather than typing out your time zone
-and having everyone translate the time in their heads, in Zulip, you
-can mention a time, and it'll be displayed to each user in their own
-time zone (just like the timestamps on Zulip messages).
+You can use [global times](/help/global-times) to display a specified time
+in the local time zone of each user.
 
-A date picker will appear once you type `<time`.
-
-```
-Our next meeting is scheduled for <time:2020-05-28T13:30:00+05:30>
-```
-
-A person in San Francisco will see:
-
-> Our next meeting is scheduled for *Thu, May 28 2020, 1:00 AM*.
-
-While someone in India will see:
-
-> Our next meeting is scheduled for *Thu, May 28 2020, 1:30 PM*.
-
-You can also use other formats such as UNIX timestamps or human readable
-dates, for example, `<time:May 28 2020, 1:30 PM IST>`.
+{!global-times.md!}
 
 ## Tables
 
-The initial pipes (`|`) are optional if every entry in the first column is non-empty.
-The header separators (`---`) must be at least three dashes long.
+You can create [tables](/help/tables) to organize information in rows and columns.
 
-```
-|| yes | no | maybe
-|---|---|:---:|------:
-| A | left-aligned | centered | right-aligned
-| B |     extra      spaces      |  are |  ok
-| C | **bold** *italic* ~~strikethrough~~  :smile:  ||
-```
+{!tables.md!}
 
-![Markdown table](/static/images/help/markdown-table.png)
+## Collaborative to-do lists
 
-## To-do lists
+You can start [to-do lists](/help/collaborative-to-do-lists) to collaborate with
+other users on shared tasks.
 
-Sending a message with the text `/todo` creates a simple collaborative
-to-do list. Any user who can access the message can add tasks by
-entering the task's title and description and clicking "Add task". Once
-created, task titles and descriptions cannot be edited.
+{!to-do-lists.md!}
 
-Tasks can be marked (and unmarked) as completed by clicking the
-checkboxes on the left.
+## Paragraph and section formatting
 
-![Markdown todo-lists](/static/images/help/markdown-todo.png)
+You can use [paragraphs and section breaks](/help/paragraph-and-section-formatting)
+to control the layout of your text and to visually separate different sections
+of content.
 
-
-## Paragraphs and lines
-
-```
-One blank space for a new paragraph
-New line, same paragraph
-
-New paragraph
-
----, ***, or ___ for a horizontal line
-Over the line
-
----
-
-Under the line
-```
-
-![Markdown paragraph](/static/images/help/markdown-paragraph.png)
+{!paragraph-and-section-formatting.md!}
 
 ## Message formatting reference
 

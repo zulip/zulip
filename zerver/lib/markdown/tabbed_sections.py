@@ -93,6 +93,8 @@ TAB_SECTION_LABELS = {
     "user": "User",
     "bot": "Bot",
     "on-sign-up": "On sign-up",
+    "via-markdown": "Via Markdown",
+    "via-compose-box-buttons": "Via compose box buttons",
 }
 
 

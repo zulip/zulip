@@ -5,6 +5,8 @@ message. Mentions follow the same
 [notification settings](/help/dm-mention-alert-notifications) as direct
 messages and alert words.
 
+{!mentions.md!}
+
 ## Mention a user or group
 
 ### From the compose box
@@ -72,6 +74,7 @@ streams](/help/stream-notifications).
 
 ## Related articles
 
+* [Message formatting](/help/format-your-message-using-markdown)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Quote and reply](/help/quote-and-reply)
 * [View your mentions](/help/view-your-mentions)

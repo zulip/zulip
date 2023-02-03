@@ -1,6 +1,6 @@
 !!! tip ""
 
-    The **organization description** supports [full Markdown syntax][markdown-syntax],
+    The **organization description** supports [full Markdown formatting][markdown-formatting],
     including **bold**/*italic*, links, lists, and more.
 
 !!! tip ""
@@ -21,4 +21,4 @@
 
 {end_tabs}
 
-[markdown-syntax]: /help/format-your-message-using-markdown
+[markdown-formatting]: /help/format-your-message-using-markdown
