@@ -107,7 +107,7 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.user_status import do_update_user_status
-from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
 from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
@@ -219,6 +219,7 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     UserStatus,
+    UserTopic,
     get_client,
     get_stream,
     get_user_by_delivery_email,
@@ -1427,7 +1428,10 @@ class NormalActionsTest(BaseAction):
     def test_muted_topics_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         events = self.verify_action(
-            lambda: do_mute_topic(self.user_profile, stream, "topic"), num_events=2
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile, stream, "topic", visibility_policy=UserTopic.MUTED
+            ),
+            num_events=2,
         )
         check_muted_topics("events[0]", events[0])
         check_user_topic("events[1]", events[1])
@@ -1439,7 +1443,9 @@ class NormalActionsTest(BaseAction):
         check_user_topic("events[1]", events[1])
 
         events = self.verify_action(
-            lambda: do_mute_topic(self.user_profile, stream, "topic"),
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile, stream, "topic", visibility_policy=UserTopic.MUTED
+            ),
             event_types=["muted_topics", "user_topic"],
         )
         check_user_topic("events[0]", events[0])

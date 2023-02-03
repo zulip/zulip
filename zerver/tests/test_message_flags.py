@@ -6,7 +6,7 @@ from django.db import connection, transaction
 
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_permission
-from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,
@@ -31,6 +31,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_realm,
     get_stream,
 )
@@ -471,10 +472,11 @@ class FixUnreadTests(ZulipTestCase):
         def mute_topic(stream_name: str, topic_name: str) -> None:
             stream = get_stream(stream_name, realm)
 
-            do_mute_topic(
+            do_set_user_topic_visibility_policy(
                 user,
                 stream,
                 topic_name,
+                visibility_policy=UserTopic.MUTED,
             )
 
         def force_unsubscribe(stream_name: str) -> None:
@@ -709,10 +711,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
 
-        do_mute_topic(
+        do_set_user_topic_visibility_policy(
             user_profile,
             stream,
             topic_name,
+            visibility_policy=UserTopic.MUTED,
         )
 
     def test_raw_unread_stream(self) -> None:

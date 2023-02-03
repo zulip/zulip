@@ -29,7 +29,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_status import do_update_user_status
-from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
@@ -772,10 +772,11 @@ class RealmImportExportTest(ExportFile):
 
         # data to test import of muted topic
         stream = get_stream("Verona", original_realm)
-        do_mute_topic(
+        do_set_user_topic_visibility_policy(
             sample_user,
             stream,
             "Verona2",
+            visibility_policy=UserTopic.MUTED,
         )
 
         # data to test import of muted users
@@ -1763,8 +1764,12 @@ class SingleUserExportTest(ExportFile):
             rec = records[-1]
             self.assertEqual(rec["status_text"], "on vacation")
 
-        do_mute_topic(cordelia, scotland, "bagpipe music")
-        do_mute_topic(othello, scotland, "nessie")
+        do_set_user_topic_visibility_policy(
+            cordelia, scotland, "bagpipe music", visibility_policy=UserTopic.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            othello, scotland, "nessie", visibility_policy=UserTopic.MUTED
+        )
 
         @checker
         def zerver_usertopic(records: List[Record]) -> None:
