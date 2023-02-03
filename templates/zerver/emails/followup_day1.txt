@@ -2,38 +2,31 @@
 
 {% if realm_creation %}
     {% if is_demo_org %}
-        {% trans %}You've created a demo Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations here: https://zulip.com/help/demo-organizations{% endtrans %}
+        {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %} Congratulations, you have created a new demo Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations here: {{ demo_organizations_help_link }}!{% endtrans %}
     {% else %}
-        {% trans %}You've created the new Zulip organization {{ realm_name }}.{% endtrans %}
+        {% trans %}Congratulations, you have created a new Zulip organization: {{ realm_name }}.{% endtrans %}
     {% endif %}
-{% trans %}You've created the new Zulip organization {{ realm_name }}.{% endtrans %}
 {% else %}
 {% trans %}You've joined the Zulip organization {{ realm_name }}.{% endtrans %}
 {% endif %}
 
 
-{{ _('Your account details:') }}
+{% trans apps_page_link="https://zulip.com/apps" %}You will use the following info to log into the Zulip web, mobile and desktop apps ({{ apps_page_link}}):{% endtrans %}
+
 * {% trans organization_url=realm_uri %}Organization URL: {{ organization_url }}{% endtrans %}
+
 {% if ldap %}
 {% if ldap_username %}
-* {% trans %}Username: {{ ldap_username }}{% endtrans %}
+* {% trans %}Your username: {{ ldap_username }}{% endtrans %}
 {% else %}
 * {{ _('Use your LDAP account to log in') }}
 {% endif %}
 {% else %}
-* {% trans %}Email: {{ email }}{% endtrans %}
+* {% trans %}Your account email: {{ email }}{% endtrans %}
 {% endif %}
-{% trans apps_page_link="https://zulip.com/apps" %}(you'll need these to sign in to the mobile and desktop apps ({{ apps_page_link }})){% endtrans %}
 
 
+{% trans %}If you are new to Zulip, check out our Getting started guide ({{ getting_user_started_link }})!{% endtrans %}
 {% if is_realm_admin %}
-{% trans %}Check out our guide ({{ getting_started_link }}) for admins, become a Zulip pro with a few keyboard shortcuts ({{ keyboard_shortcuts_link }}), or dive right in to {{ realm_uri }}!{% endtrans %}
-{% else %}
-{% trans %}Learn more ({{ getting_started_link }}) about Zulip, become a pro with a few keyboard shortcuts ({{ keyboard_shortcuts_link }}), or dive right in to {{ realm_uri }}!{% endtrans %}
+{% trans %} We also have a guide for Setting up your organization ({{ getting_organization_started_link }}).{% endtrans %}
 {% endif %}
-
-
-{{ _("Cheers,") }}
-{{ _("Team Zulip") }}
-
-{% trans %}PS: Check us out on Twitter (@zulip), star us on GitHub (https://github.com/zulip/zulip), or chat with us live on the Zulip community server (https://zulip.com/development-community/)!{% endtrans %}
