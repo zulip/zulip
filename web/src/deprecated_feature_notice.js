@@ -19,13 +19,19 @@ let shown_deprecation_notices = [];
 export function maybe_show_deprecation_notice(key) {
     let message;
     const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
-    if (key === "C") {
-        message = get_hotkey_deprecation_notice("C", "x");
-    } else if (key === "*") {
-        message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
-    } else {
-        blueslip.error("Unexpected deprecation notice for hotkey:", {key});
-        return;
+    switch (key) {
+        case "C":
+            message = get_hotkey_deprecation_notice("C", "x");
+            break;
+        case "*":
+            message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
+            break;
+        case "Shift + S":
+            message = get_hotkey_deprecation_notice("Shift + S", "S");
+            break;
+        default:
+            blueslip.error("Unexpected deprecation notice for hotkey:", {key});
+            return;
     }
 
     // Here we handle the tracking for showing deprecation notices,

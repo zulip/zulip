@@ -140,7 +140,7 @@ const keypress_mappings = {
     77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
-    83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
+    83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
     85: {name: "mark_unread", message_view_only: true}, // 'U'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
@@ -158,7 +158,7 @@ const keypress_mappings = {
     112: {name: "p_key", message_view_only: false}, // 'p'
     113: {name: "query_streams", message_view_only: true}, // 'q'
     114: {name: "reply_message", message_view_only: true}, // 'r'
-    115: {name: "narrow_by_recipient", message_view_only: true}, // 's'
+    115: {name: "toggle_conversation_view", message_view_only: true}, // 's'
     116: {name: "open_recent_topics", message_view_only: true}, // 't'
     117: {name: "show_sender_info", message_view_only: true}, // 'u'
     118: {name: "show_lightbox", message_view_only: true}, // 'v'
@@ -659,7 +659,7 @@ export function process_hotkey(e, hotkey) {
         if (processing_text()) {
             return false;
         }
-        if (event_name === "narrow_by_topic" && overlays.streams_open()) {
+        if (event_name === "toggle_stream_subscription" && overlays.streams_open()) {
             stream_settings_ui.keyboard_sub();
             return true;
         }
@@ -936,9 +936,7 @@ export function process_hotkey(e, hotkey) {
     if (
         // Allow UI only features for spectators which they can perform.
         page_params.is_spectator &&
-        !["narrow_by_topic", "narrow_by_recipient", "show_lightbox", "show_sender_info"].includes(
-            event_name,
-        )
+        !["toggle_conversation_view", "show_lightbox", "show_sender_info"].includes(event_name)
     ) {
         spectators.login_to_access();
         return true;
@@ -952,10 +950,19 @@ export function process_hotkey(e, hotkey) {
         case "star_message":
             message_flags.toggle_starred_and_update_server(msg);
             return true;
-        case "narrow_by_recipient":
-            return do_narrow_action(narrow.by_recipient);
-        case "narrow_by_topic":
+        case "toggle_conversation_view":
+            if (narrow_state.narrowed_by_topic_reply()) {
+                // narrow to stream if user is in topic view
+                return do_narrow_action(narrow.by_recipient);
+            } else if (narrow_state.narrowed_by_pm_reply()) {
+                // do nothing if user is in DM view
+                return false;
+            }
+            // else narrow to conversation view (topic / DM)
             return do_narrow_action(narrow.by_topic);
+        case "toggle_stream_subscription":
+            deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
+            return true;
         case "respond_to_author": // 'R': respond to author
             compose_actions.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
             return true;
