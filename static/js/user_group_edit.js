@@ -80,6 +80,12 @@ function show_membership_settings(group) {
     });
 }
 
+export function update_settings_pane(group) {
+    const $edit_container = get_edit_container(group);
+    $edit_container.find(".group-name").text(group.name);
+    $edit_container.find(".group-description").text(group.description);
+}
+
 export function show_settings_for(node) {
     const group = get_user_group_for_target(node);
     const html = render_user_group_settings({
