@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Dict, Set
 
 from zerver.models import UserTopic
 
@@ -24,3 +24,16 @@ class StreamTopicTarget:
             "user_profile_id",
         )
         return {row["user_profile_id"] for row in query}
+
+    def user_id_to_visibility_policy_dict(self) -> Dict[int, int]:
+        user_id_to_visibility_policy: Dict[int, int] = {}
+
+        query = UserTopic.objects.filter(
+            stream_id=self.stream_id, topic_name__iexact=self.topic_name
+        ).values(
+            "visibility_policy",
+            "user_profile_id",
+        )
+        for row in query:
+            user_id_to_visibility_policy[row["user_profile_id"]] = row["visibility_policy"]
+        return user_id_to_visibility_policy
