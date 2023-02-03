@@ -158,17 +158,28 @@ export function can_create_new_bots() {
 
 export function update_bot_settings_tip() {
     const permission_type = bot_creation_policy_values;
-    const current_permission = page_params.realm_bot_creation_policy;
     let tip_text;
-    if (current_permission === permission_type.admins_only.code) {
+
+    if (!can_create_new_bots()) {
+        // This policy doesn't currently support restricting by role
+        // beyond just requiring an administrator.
         tip_text = $t({
             defaultMessage: "Only organization administrators can add bots to this organization.",
         });
-    } else if (current_permission === permission_type.restricted.code) {
+    } else if (
+        page_params.realm_bot_creation_policy === permission_type.restricted.code &&
+        !page_params.is_admin
+    ) {
+        // We arguably need a tip for restrictions on bot type even if you can create bots.
+        // Probably it would be better to have two independent permission settings, but
+        // this is the model we have.
         tip_text = $t({defaultMessage: "Only organization administrators can add generic bots."});
     } else {
-        tip_text = $t({defaultMessage: "Anyone in this organization can add bots."});
+        $(".bot-settings-tip").hide();
+        return;
     }
+
+    $(".bot-settings-tip").show();
     $(".bot-settings-tip").text(tip_text);
 }
 
