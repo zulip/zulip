@@ -1,8 +1,9 @@
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django_stubs_ext import StrPromise
 
 
 class ErrorCode(Enum):
@@ -85,9 +86,9 @@ class JsonableError(Exception):
     # like 403 or 404.
     http_status_code: int = 400
 
-    def __init__(self, msg: str) -> None:
+    def __init__(self, msg: Union[str, StrPromise]) -> None:
         # `_msg` is an implementation detail of `JsonableError` itself.
-        self._msg: str = msg
+        self._msg = msg
 
     @staticmethod
     def msg_format() -> str:
