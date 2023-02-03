@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import loading_black_image from "../images/loading/loader-black.svg";
+import loading_white_image from "../images/loading/loader-white.svg";
 import render_loader from "../templates/loader.hbs";
 
 export function make_indicator(
@@ -84,9 +86,9 @@ export function destroy_indicator($container: JQuery): void {
 
 export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): void {
     if (!using_dark_theme) {
-        $elt.attr("src", "/static/images/loading/loader-black.svg");
+        $elt.attr("src", loading_black_image);
     } else {
-        $elt.attr("src", "/static/images/loading/loader-white.svg");
+        $elt.attr("src", loading_white_image);
     }
     $elt.css("display", "inline-block");
 }
