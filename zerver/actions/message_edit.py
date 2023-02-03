@@ -19,7 +19,7 @@ from zerver.actions.message_send import (
     render_incoming_message,
 )
 from zerver.actions.uploads import check_attachment_reference_change
-from zerver.actions.user_topics import do_set_user_topic_visibility_policy, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -782,15 +782,21 @@ def do_update_message(
                 # important for security reasons; we don't want to
                 # give users a UserTopic row in a stream they cannot
                 # access.  Unmute the topic for such users.
-                do_unmute_topic(muting_user, stream_being_edited, orig_topic_name)
+                do_set_user_topic_visibility_policy(
+                    muting_user,
+                    stream_being_edited,
+                    orig_topic_name,
+                    visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+                )
             else:
                 # Otherwise, we move the muted topic record for the
                 # user, but removing the old topic mute and then
                 # creating a new one.
-                do_unmute_topic(
+                do_set_user_topic_visibility_policy(
                     muting_user,
                     stream_being_edited,
                     orig_topic_name,
+                    visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
                     # do_set_user_topic_visibility_policy with visibility_policy
                     # set to UserTopic.MUTED will send an updated muted topic
                     # event, which contains the full set of muted
