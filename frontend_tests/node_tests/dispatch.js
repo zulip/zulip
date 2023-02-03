@@ -239,13 +239,22 @@ run_test("user groups", ({override}) => {
     event = event_fixtures.user_group__update;
     {
         const stub = make_stub();
+        const user_group_settings_ui_stub = make_stub();
+
         override(user_groups, "update", stub.f);
+        override(user_groups_settings_ui, "update_group", user_group_settings_ui_stub.f);
+
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("event");
+        assert.equal(user_group_settings_ui_stub.num_calls, 1);
+
+        let args = stub.get_args("event");
         assert_same(args.event.group_id, event.group_id);
         assert_same(args.event.data.name, event.data.name);
         assert_same(args.event.data.description, event.data.description);
+
+        args = user_group_settings_ui_stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
     }
 });
 
