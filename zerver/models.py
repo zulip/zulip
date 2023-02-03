@@ -2620,7 +2620,9 @@ class UserTopic(models.Model):
     # belongs to a muted stream.
     UNMUTED = 2
 
-    # This topic will behave like `UNMUTED`, plus will also always trigger notifications.
+    # This topic will behave like `UNMUTED`, plus some additional
+    # display and/or notifications priority that is TBD and likely to
+    # be configurable; see #6027. Not yet implemented.
     FOLLOWED = 3
 
     visibility_policy_choices = (
