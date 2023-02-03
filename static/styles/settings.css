@@ -657,6 +657,10 @@ input[type="checkbox"] {
     #emoji_preview_text {
         margin-top: 6px;
     }
+
+    #emoji_preview_image {
+        object-fit: cover;
+    }
 }
 
 #emoji_file_input_error {
