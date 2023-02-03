@@ -212,6 +212,43 @@ corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
 
+#### Synchronizing email addresses
+
+User accounts in Zulip are uniquely identified by their email address,
+and that's [currently](https://github.com/zulip/zulip/pull/16208) the
+only way through which a Zulip account is associated with their LDAP
+user account.
+
+In particular, whenever a user attempts to log in to Zulip using LDAP,
+Zulip will use the LDAP information to authenticate the access, and
+determine the user's email address. It will then log in the user to
+the Zulip account with that email address (or if none exists,
+potentially prompt the user to create one). This model is convenient,
+because it works well with any LDAP provider (and handles migrations
+between LDAP providers transparently).
+
+However, when a user's email address is changed in your LDAP
+directory, manual action needs to be taken to tell Zulip that the
+email address Zulip account with the new email address.
+
+There are two ways to execute email address changes:
+
+- Users changing their email address in LDAP can [change their email
+  address in Zulip](https://zulip.com/help/change-your-email-address)
+  before logging out of Zulip. The user will need to be able to
+  receive email at the new email address in order to complete this
+  flow.
+
+- A server administrator can use the `manage.py change_user_email`
+  [management command][management-commands] to adjust a Zulip
+  account's email address directly.
+
+If a user accidentally creates a duplicate account, the duplicate
+account can be deactivated (and its email address changed) or deleted,
+and then the real account adjusted using the management command above.
+
+[management-commands]: ../production/management-commands.md
+
 #### Automatically deactivating users
 
 Zulip supports synchronizing the
