@@ -83,9 +83,9 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Narrow to next unread direct message**: <kbd>P</kbd>
 
-* **Narrow to stream**: <kbd>S</kbd>
+* **Narrow to topic or DM conversation**: <kbd>S</kbd>
 
-* **Narrow to topic or DM conversation**: <kbd>Shift</kbd> + <kbd>S</kbd>
+* **Narrow to stream from topic view**: <kbd>S</kbd>
 
 * **Narrow to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
