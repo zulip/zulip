@@ -133,6 +133,24 @@ export function add_group_to_table(group) {
     }
 }
 
+export function update_group(group_id) {
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(group_id);
+    const $group_row = row_for_group_id(group_id);
+    // update left side pane
+    $group_row.find(".group-name").text(group.name);
+    $group_row.find(".description").text(group.description);
+
+    if (get_active_data().id === group.id) {
+        // update right side pane
+        user_group_edit.update_settings_pane(group);
+        // update settings title
+        $("#groups_overlay .user-group-info-title").text(group.name);
+    }
+}
+
 export function change_state(section) {
     if (!section) {
         show_user_group_settings_pane.nothing_selected();

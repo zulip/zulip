@@ -776,6 +776,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     user_groups.update(event);
+                    user_groups_settings_ui.update_group(event.group_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);
