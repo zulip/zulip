@@ -22,6 +22,7 @@ import zerver.lib.markdown.help_relative_links
 import zerver.lib.markdown.help_settings_links
 import zerver.lib.markdown.include
 import zerver.lib.markdown.nested_code_blocks
+import zerver.lib.markdown.static
 import zerver.lib.markdown.tabbed_sections
 import zerver.openapi.markdown_extension
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
@@ -127,6 +128,7 @@ def render_markdown_path(
             zerver.lib.markdown.help_settings_links.makeExtension(),
             zerver.lib.markdown.help_relative_links.makeExtension(),
             zerver.lib.markdown.help_emoticon_translations_table.makeExtension(),
+            zerver.lib.markdown.static.makeExtension(),
         ]
     if "api_url" in context:
         # We need to generate the API code examples extension each

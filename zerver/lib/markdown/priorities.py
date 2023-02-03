@@ -17,6 +17,7 @@ PREPROCESSOR_PRIORITES = {
     "tabbed_sections": -500,
     "nested_code_blocks": -500,
     "emoticon_translations": -505,
+    "static_images": -510,
 }
 
 BLOCK_PROCESSOR_PRIORITIES = {
