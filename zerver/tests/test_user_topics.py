@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 from unittest import mock
 
@@ -43,6 +43,7 @@ class MutedTopicsTests(ZulipTestCase):
         realm = hamlet.realm
         stream = get_stream("Verona", realm)
         topic_name = "teST topic"
+        date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc)
 
         stream_topic_target = StreamTopicTarget(
             stream_id=stream.id,
@@ -58,7 +59,7 @@ class MutedTopicsTests(ZulipTestCase):
                 stream,
                 "test TOPIC",
                 visibility_policy=UserTopic.MUTED,
-                last_updated=timezone_now(),
+                last_updated=date_muted,
             )
 
         mute_topic_for_user(hamlet)
@@ -67,7 +68,7 @@ class MutedTopicsTests(ZulipTestCase):
         hamlet_date_muted = UserTopic.objects.filter(
             user_profile=hamlet, visibility_policy=UserTopic.MUTED
         )[0].last_updated
-        self.assertTrue(timezone_now() - hamlet_date_muted <= timedelta(seconds=100))
+        self.assertEqual(hamlet_date_muted, date_muted)
 
         mute_topic_for_user(cordelia)
         user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
@@ -75,7 +76,7 @@ class MutedTopicsTests(ZulipTestCase):
         cordelia_date_muted = UserTopic.objects.filter(
             user_profile=cordelia, visibility_policy=UserTopic.MUTED
         )[0].last_updated
-        self.assertTrue(timezone_now() - cordelia_date_muted <= timedelta(seconds=100))
+        self.assertEqual(cordelia_date_muted, date_muted)
 
     def test_add_muted_topic(self) -> None:
         user = self.example_user("hamlet")
