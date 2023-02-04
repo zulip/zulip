@@ -404,7 +404,7 @@ ul {
         background-position: center;
         border-radius: 5px;
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.2);
-        margin-top: 5px;
+        margin-top: 1px;
 
         &.guest-avatar::after {
             outline: 9px solid hsl(0, 0%, 100%);
