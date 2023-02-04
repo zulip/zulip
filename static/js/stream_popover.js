@@ -504,16 +504,14 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
             current_stream_id,
             old_topic_name,
             (message_id) => {
-                if (old_topic_name) {
-                    message_edit.move_topic_containing_message_to_stream(
-                        message_id,
-                        select_stream_id,
-                        new_topic_name,
-                        send_notification_to_new_thread,
-                        send_notification_to_old_thread,
-                        propagate_mode,
-                    );
-                }
+                message_edit.move_topic_containing_message_to_stream(
+                    message_id,
+                    select_stream_id,
+                    new_topic_name,
+                    send_notification_to_new_thread,
+                    send_notification_to_old_thread,
+                    propagate_mode,
+                );
             },
             (xhr) => {
                 dialog_widget.hide_dialog_spinner();
