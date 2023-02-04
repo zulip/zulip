@@ -181,10 +181,10 @@ def resize_emoji(
 
 class ZulipUploadBackend:
     def get_public_upload_root_url(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def upload_message_file(
         self,
@@ -195,7 +195,7 @@ class ZulipUploadBackend:
         user_profile: UserProfile,
         target_realm: Optional[Realm] = None,
     ) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def upload_avatar_image(
         self,
@@ -204,44 +204,44 @@ class ZulipUploadBackend:
         target_user_profile: UserProfile,
         content_type: Optional[str] = None,
     ) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def delete_avatar_image(self, user: UserProfile) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def delete_message_image(self, path_id: str) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def upload_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
     ) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def upload_emoji_image(
         self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> bool:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def upload_export_tarball(
         self,
@@ -249,13 +249,13 @@ class ZulipUploadBackend:
         tarball_path: str,
         percent_callback: Optional[Callable[[Any], None]] = None,
     ) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def delete_export_tarball(self, export_path: str) -> Optional[str]:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
         return os.path.join(str(realm.id), "realm")

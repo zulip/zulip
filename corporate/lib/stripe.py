@@ -636,7 +636,7 @@ def ensure_realm_does_not_have_active_plan(realm: Realm) -> None:
             "Upgrade of %s failed because of existing active plan.",
             realm.string_id,
         )
-        raise UpgradeWithExistingPlanError()
+        raise UpgradeWithExistingPlanError
 
 
 @transaction.atomic

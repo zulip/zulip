@@ -92,7 +92,7 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
         """
         This depends on the algorithm used in the backend, and should be defined by the test class.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def test_hit_ratelimits(self) -> None:
         obj = self.create_object("test", [(2, 3)])

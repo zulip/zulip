@@ -192,7 +192,7 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
     else:
         # Otherwise, throw an authentication error; our middleware
         # will generate the appropriate HTTP response.
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     if request.method in ["DELETE", "PATCH", "PUT"]:
         # process_as_post needs to be the outer decorator, because

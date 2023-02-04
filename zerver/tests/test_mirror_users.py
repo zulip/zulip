@@ -170,7 +170,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
             kwargs["tos_version"] = None
             kwargs["timezone"] = timezone_now()
             create_user_profile(**kwargs).save()
-            raise IntegrityError()
+            raise IntegrityError
 
         with mock.patch("zerver.actions.message_send.create_user", side_effect=create_user) as m:
             mirror_fred_user = create_mirror_user_if_needed(

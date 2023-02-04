@@ -17,4 +17,4 @@ class BaseParser:
         self._soup = BeautifulSoup(html_source, "lxml", from_encoding=charset)
 
     def extract_data(self) -> UrlEmbedData:
-        raise NotImplementedError()
+        raise NotImplementedError

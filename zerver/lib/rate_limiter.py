@@ -480,7 +480,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                     break
                 except redis.WatchError:  # nocoverage # Ideally we'd have a test for this.
                     if count > 10:
-                        raise RateLimiterLockingError()
+                        raise RateLimiterLockingError
                     count += 1
 
                     continue

@@ -79,7 +79,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     if not user_profile.is_active:
         # TODO: Make this into a user-facing error, not JSON
-        raise UserDeactivatedError()
+        raise UserDeactivatedError
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
         raise JsonableError(_("Email address changes are disabled in this organization."))
