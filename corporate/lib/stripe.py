@@ -656,8 +656,8 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
 def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     if remote_server.deactivated:
         billing_logger.warning(
-            f"Cannot deactivate remote server with ID {remote_server.id}, "
-            "server has already been deactivated."
+            "Cannot deactivate remote server with ID %d, server has already been deactivated.",
+            remote_server.id,
         )
         return
 
