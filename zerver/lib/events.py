@@ -647,7 +647,7 @@ def apply_events(
 ) -> None:
     for event in events:
         if event["type"] == "restart":
-            raise RestartEventError()
+            raise RestartEventError
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,

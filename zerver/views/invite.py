@@ -34,7 +34,7 @@ def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
         invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]
         and not user_profile.is_realm_owner
     ):
-        raise OrganizationOwnerRequiredError()
+        raise OrganizationOwnerRequiredError
 
 
 @require_member_or_admin

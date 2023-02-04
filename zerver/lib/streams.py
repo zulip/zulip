@@ -318,7 +318,7 @@ def check_stream_access_for_delete_or_update(
     if sub is None and stream.invite_only:
         raise JsonableError(error)
 
-    raise OrganizationAdministratorRequiredError()
+    raise OrganizationAdministratorRequiredError
 
 
 def access_stream_for_delete_or_update(
@@ -739,7 +739,7 @@ def list_to_streams(
 
         if message_retention_days_not_none:
             if not user_profile.is_realm_owner:
-                raise OrganizationOwnerRequiredError()
+                raise OrganizationOwnerRequiredError
 
             user_profile.realm.ensure_not_on_limited_plan()
 

@@ -479,7 +479,7 @@ def get_email_and_realm_from_jwt_authentication_request(
 ) -> Tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
 
     try:
         key = settings.JWT_AUTH_KEYS[realm.subdomain]["key"]
@@ -922,7 +922,7 @@ def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> Json
     if return_data.get("password_reset_needed"):
         return PasswordResetRequiredError()
     if return_data.get("invalid_subdomain"):
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
 
     return AuthenticationFailedError()
 
@@ -976,7 +976,7 @@ def api_fetch_api_key(
 
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
 
     if not ldap_auth_enabled(realm=realm):
         # In case we don't authenticate against LDAP, check for a valid

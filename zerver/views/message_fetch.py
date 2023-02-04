@@ -117,12 +117,12 @@ def get_messages_backend(
         # that we are not leaking any secure data (private messages and
         # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
         if not is_web_public_narrow(narrow):
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
         assert narrow is not None
         if not is_spectator_compatible(narrow):
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         # We use None to indicate unauthenticated requests as it's more
         # readable than using AnonymousUser, and the lack of Django

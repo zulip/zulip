@@ -210,7 +210,7 @@ class ZulipBaseHandler:
         """Returns a formatted text.
         Subclasses should override this method.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 def generic_handler(
