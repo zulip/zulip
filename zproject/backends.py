@@ -2299,8 +2299,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             if idps_without_limit_to_subdomains:
                 self.logger.error(
                     "SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following IdPs don't have"
-                    " limit_to_subdomains specified and will be ignored:"
-                    f" {idps_without_limit_to_subdomains}"
+                    " limit_to_subdomains specified and will be ignored: %r",
+                    idps_without_limit_to_subdomains,
                 )
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
