@@ -385,12 +385,6 @@ python_rules = RuleList(
             "description": "Use import os instead of import os.path",
         },
         {
-            "pattern": r"(logging|logger)\.warn\W",
-            "description": "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
-            "good_lines": ["logging.warning('I am a warning.')", "logger.warning('warning')"],
-            "bad_lines": ["logging.warn('I am a warning.')", "logger.warn('warning')"],
-        },
-        {
             "pattern": r"\.pk",
             "exclude_pattern": "[.]_meta[.]pk",
             "description": "Use `id` instead of `pk`.",

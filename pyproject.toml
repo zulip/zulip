@@ -106,6 +106,7 @@ select = [
     "E", # style errors
     "EXE", # shebang
     "F", # flakes
+    "G", # logging format
     "I", # import sorting
     "ISC", # string concatenation
     "N", # naming
