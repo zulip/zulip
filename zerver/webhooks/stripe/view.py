@@ -98,7 +98,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             blacklist
         )
         if not previous_attributes:  # nocoverage
-            raise SuppressedEventError()
+            raise SuppressedEventError
         return "".join(
             "\n* "
             + attribute.replace("_", " ").capitalize()
@@ -119,18 +119,18 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         if resource == "account":
             if event == "updated":
                 if "previous_attributes" not in payload["data"]:
-                    raise SuppressedEventError()
+                    raise SuppressedEventError
                 topic = "account updates"
                 body = update_string()
         else:
             # Part of Stripe Connect
-            raise NotImplementedEventTypeError()
+            raise NotImplementedEventTypeError
     if category == "application_fee":  # nocoverage
         # Part of Stripe Connect
-        raise NotImplementedEventTypeError()
+        raise NotImplementedEventTypeError
     if category == "balance":  # nocoverage
         # Not that interesting to most businesses, I think
-        raise NotImplementedEventTypeError()
+        raise NotImplementedEventTypeError
     if category == "charge":
         if resource == "charge":
             if not topic:  # only in legacy fixtures
@@ -160,10 +160,10 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category == "checkout_beta":  # nocoverage
         # Not sure what this is
-        raise NotImplementedEventTypeError()
+        raise NotImplementedEventTypeError
     if category == "coupon":  # nocoverage
         # Not something that likely happens programmatically
-        raise NotImplementedEventTypeError()
+        raise NotImplementedEventTypeError
     if category == "customer":
         if resource == "customer":
             # Running into the 60 character topic limit.
@@ -260,10 +260,10 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category.startswith("issuing"):  # nocoverage
         # Not implemented
-        raise NotImplementedEventTypeError()
+        raise NotImplementedEventTypeError
     if category.startswith("order"):  # nocoverage
         # Not implemented
-        raise NotImplementedEventTypeError()
+        raise NotImplementedEventTypeError
     if category in [
         "payment_intent",
         "payout",
@@ -282,7 +282,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         # Not implemented. In theory doing something like
         #   body = default_body()
         # may not be hard for some of these
-        raise NotImplementedEventTypeError()
+        raise NotImplementedEventTypeError
 
     if body is None:
         raise UnsupportedWebhookEventTypeError(event_type)

@@ -117,7 +117,7 @@ def deactivate_user_backend(
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
-        raise OrganizationOwnerRequiredError()
+        raise OrganizationOwnerRequiredError
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
@@ -231,9 +231,9 @@ def update_user_backend(
         #
         # Logic replicated in patch_bot_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequiredError()
+            raise OrganizationOwnerRequiredError
         elif not user_profile.is_realm_admin:
-            raise OrganizationAdministratorRequiredError()
+            raise OrganizationAdministratorRequiredError
 
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(target):
             raise JsonableError(
@@ -285,14 +285,14 @@ def avatar(
         # enabled in the organization.
         realm = get_valid_realm_from_request(request)
         if not realm.allow_web_public_streams_access():
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         # We only allow the ID format for accessing a user's avatar
         # for spectators. This is mainly for defense in depth, since
         # email_address_visibility should mean spectators only
         # interact with fake email addresses anyway.
         if is_email:
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         if settings.RATE_LIMITING:
             unique_avatar_key = f"{realm.id}/{email_or_id}/{medium}"
@@ -367,9 +367,9 @@ def patch_bot_backend(
     if role is not None and bot.role != role:
         # Logic duplicated from update_user_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, bot.role] and not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequiredError()
+            raise OrganizationOwnerRequiredError
         elif not user_profile.is_realm_admin:
-            raise OrganizationAdministratorRequiredError()
+            raise OrganizationAdministratorRequiredError
 
         do_change_user_role(bot, role, acting_user=user_profile)
 

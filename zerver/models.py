@@ -3733,7 +3733,7 @@ def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
     user_profile = maybe_get_user_profile_by_api_key(api_key)
     if user_profile is None:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
 
     return user_profile
 
@@ -3790,7 +3790,7 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
     See get_user docstring for important usage notes."""
     user_profile = get_user(email, realm)
     if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
     return user_profile
 
 
@@ -3801,7 +3801,7 @@ def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
     user_profile = get_user_profile_by_id_in_realm(uid, realm)
     if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
     return user_profile
 
 
@@ -3839,7 +3839,7 @@ def get_user_by_id_in_realm_including_cross_realm(
     if is_cross_realm_bot_email(user_profile.delivery_email):
         return user_profile
 
-    raise UserProfile.DoesNotExist()
+    raise UserProfile.DoesNotExist
 
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)

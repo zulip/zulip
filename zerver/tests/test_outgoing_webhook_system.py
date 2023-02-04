@@ -45,7 +45,7 @@ def timeout_error(final_url: Any, **request_kwargs: Any) -> Any:
 
 
 def connection_error(final_url: Any, **request_kwargs: Any) -> Any:
-    raise requests.exceptions.ConnectionError()
+    raise requests.exceptions.ConnectionError
 
 
 class DoRestCallTests(ZulipTestCase):

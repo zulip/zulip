@@ -78,7 +78,7 @@ def validate_remote_server(
         raise InvalidZulipServerKeyError(role)
 
     if remote_server.deactivated:
-        raise RemoteServerDeactivatedError()
+        raise RemoteServerDeactivatedError
 
     if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
         raise JsonableError(_("Invalid subdomain for push notifications bouncer"))

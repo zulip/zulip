@@ -139,7 +139,7 @@ def require_realm_owner(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequiredError()
+            raise OrganizationOwnerRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -157,7 +157,7 @@ def require_realm_admin(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_admin:
-            raise OrganizationAdministratorRequiredError()
+            raise OrganizationAdministratorRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -175,7 +175,7 @@ def require_organization_member(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if user_profile.role > UserProfile.ROLE_MEMBER:
-            raise OrganizationMemberRequiredError()
+            raise OrganizationMemberRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -257,9 +257,9 @@ def validate_api_key(
 
 def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfile) -> None:
     if user_profile.realm.deactivated:
-        raise RealmDeactivatedError()
+        raise RealmDeactivatedError
     if not user_profile.is_active:
-        raise UserDeactivatedError()
+        raise UserDeactivatedError
 
     # Either the subdomain matches, or we're accessing Tornado from
     # and to localhost (aka spoofing a request as the user).
@@ -281,17 +281,17 @@ def access_user_by_api_key(
     request: HttpRequest, api_key: str, email: Optional[str] = None
 ) -> UserProfile:
     if not has_api_key_format(api_key):
-        raise InvalidAPIKeyFormatError()
+        raise InvalidAPIKeyFormatError
 
     try:
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
-        raise InvalidAPIKeyError()
+        raise InvalidAPIKeyError
     if email is not None and email.lower() != user_profile.delivery_email.lower():
         # This covers the case that the API key is correct, but for a
         # different user.  We may end up wanting to relaxing this
         # constraint or give a different error message in the future.
-        raise InvalidAPIKeyError()
+        raise InvalidAPIKeyError
 
     validate_account_and_subdomain(request, user_profile)
 
@@ -866,7 +866,7 @@ def authenticated_json_view(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not request.user.is_authenticated:
-            raise UnauthorizedError()
+            raise UnauthorizedError
 
         user_profile = request.user
         if not skip_rate_limiting:
@@ -913,7 +913,7 @@ def internal_notify_view(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
             if not authenticate_notify(request):
-                raise AccessDeniedError()
+                raise AccessDeniedError
             request_notes = RequestNotes.get_notes(request)
             is_tornado_request = request_notes.tornado_handler_id is not None
             # These next 2 are not security checks; they are internal

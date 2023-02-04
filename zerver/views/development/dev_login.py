@@ -117,20 +117,20 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
     validate_login_email(username)
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username, realm=realm, return_data=return_data)
     if return_data.get("inactive_realm"):
-        raise RealmDeactivatedError()
+        raise RealmDeactivatedError
     if return_data.get("inactive_user"):
-        raise UserDeactivatedError()
+        raise UserDeactivatedError
     if return_data.get("invalid_subdomain"):
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     if user_profile is None:
         # Since we're not actually checking passwords, this condition
         # is when one's attempting to send an email address that
         # doesn't have an account, i.e. it's definitely invalid username.
-        raise AuthenticationFailedError()
+        raise AuthenticationFailedError
     assert isinstance(user_profile, UserProfile)
 
     do_login(request, user_profile)

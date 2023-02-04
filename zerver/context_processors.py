@@ -71,7 +71,7 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
 def get_valid_realm_from_request(request: HttpRequest) -> Realm:
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     return realm
 
 

@@ -2639,7 +2639,7 @@ def do_convert(
             logging_message_id,
         )
 
-        raise MarkdownRenderingError()
+        raise MarkdownRenderingError
     finally:
         # These next three lines are slightly paranoid, since
         # we always set these right before actually using the
