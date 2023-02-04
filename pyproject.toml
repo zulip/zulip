@@ -113,6 +113,7 @@ select = [
     "PIE", # miscellaneous
     "PL", # pylint
     "Q", # quotes
+    "RSE", # raise
     "RUF", # Ruff
     "S", # security
     "SIM", # simplify
