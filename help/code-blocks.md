@@ -1,6 +1,6 @@
 # Code spans and blocks
 
-Zulip supports the standard [Markdown syntax][markdown] for inline
+Zulip supports the standard [Markdown formatting][markdown] for inline
 code spans and code blocks:
 
 {!code-blocks.md!}
@@ -110,5 +110,5 @@ blocks][quote-block] use similar fenced block syntax.
 
 [markdown]: /help/format-your-message-using-markdown
 [math-block]: /help/format-your-message-using-markdown#latex
-[quote-block]: /help/format-your-message-using-markdown#quotes
+[quote-block]: /help/format-your-message-using-markdown#quote-and-reply
 [spoiler-block]: /help/format-your-message-using-markdown#spoilers

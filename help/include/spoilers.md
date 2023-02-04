@@ -1,5 +1,9 @@
-You can use spoilers to hide content that you do not want to be visible until
-the user interacts with it.
+## Spoilers
+
+Here is an example of how you can use spoiler formatting in Zulip to hide some
+or all of the content in your message until the reader chooses to reveal it.
+
+### What you type
 
 ~~~
 Normal content in message
@@ -8,6 +12,8 @@ Normal content in message
 Spoiler content. These lines won't be visible until the user expands the spoiler.
 ```
 ~~~
+
+### What it looks like
 
 The spoiler will initially display in a collapsed form:
 

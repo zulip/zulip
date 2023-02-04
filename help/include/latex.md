@@ -1,3 +1,10 @@
+## KaTeX
+
+Here is an example of how you can use KaTeX formatting in Zulip to render
+mathematical expressions.
+
+### What you type
+
 ~~~
 Inline: $$O(n^2)$$
 
@@ -7,9 +14,6 @@ Displayed:
 ```
 ~~~
 
-![Markdown LaTeX](/static/images/help/markdown-latex.png)
+### What it looks like
 
-Zulip's LaTeX rendering is powered by [KaTeX](https://katex.org).
-Their [support table](https://katex.org/docs/support_table.html) is a
-helpful resource for checking what's supported or how to express
-something.
+![Markdown LaTeX](/static/images/help/markdown-latex.png)

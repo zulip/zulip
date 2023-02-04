@@ -57,14 +57,24 @@
 
 ## Writing messages
 * [Message formatting](/help/format-your-message-using-markdown)
+* [Text emphasis](/help/text-emphasis)
+* [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
+* [Links and images](/help/links-and-images)
+* [LaTeX](/help/latex)
+* [Spoilers](/help/spoilers)
+* [/me action messages](/help/me-action-messages)
+* [Global times](/help/global-times)
+* [Tables](/help/tables)
+* [Collaborative to-do lists](/help/collaborative-to-do-lists)
+* [Paragraph and section formatting](/help/paragraph-and-section-formatting)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
-* [Start a video call](/help/start-a-call)
+* [Video calls](/help/start-a-call)
 * [Share and upload files](/help/share-and-upload-files)
 * [Quote and reply](/help/quote-and-reply)
 * [Code blocks](/help/code-blocks)
-* [Add GIFs in your message](/help/animated-gifs-from-giphy)
-* [Create a poll](/help/create-a-poll)
+* [Animated GIFs](/help/animated-gifs-from-giphy)
+* [Polls](/help/create-a-poll)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)

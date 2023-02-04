@@ -10,7 +10,7 @@ to avoid unnecessarily mentioning someone twice.
 
 !!! tip ""
 
-    You can use [quote blocks](/help/format-your-message-using-markdown#quotes)
+    You can use [quote blocks](/help/format-your-message-using-markdown#quote-and-reply)
     when quoting emails or other non-Zulip content.
 
 ## Quote and reply

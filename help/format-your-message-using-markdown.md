@@ -8,41 +8,48 @@ messages. There is a convenient [**message formatting
 reference**](#message-formatting-reference) in the Zulip app that you
 can use whenever you need a reminder of the formatting syntax below.
 
-* [Emphasis](#emphasis)
-* [Lists](#lists)
-* [Links and images](#links)
-* [Code blocks](#code)
+* [Text emphasis](#text-emphasis)
+* [Bulleted and numbered lists](#bulleted-and-numbered-lists)
+* [Links and images](#links-and-images)
+* [Code blocks](#code-blocks)
 * [LaTeX](#latex)
-* [Quotes](#quotes)
+* [Quote and reply](#quote-and-reply)
 * [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
-* [Mentions](#mentions)
-* [Status messages](#status-messages)
+* [Mention a user or group](#mention-a-user-or-group)
+* [/me action messages](#me-action-messages)
 * [Global times](#global-times)
 * [Tables](#tables)
-* [To-do lists](#to-do-lists)
-* [Paragraphs and lines](#paragraphs-and-lines)
+* [Collaborative to-do lists](#collaborative-to-do-lists)
+* [Paragraph and section formatting](#paragraph-and-section-formatting)
 
-## Emphasis
+## Text emphasis
+
+You can bold, italicize, and strikethrough words to
+[emphasize your text](/help/text-emphasis).
 
 {!emphasis.md!}
 
-## Lists
+## Bulleted and numbered lists
+
+You can [create lists with bullets or numbers](/help/bulleted-and-numbered-lists)
+preceding each line of text. You can create a nested list by using indents to
+specify the hierarchy of list items.
 
 {!lists.md!}
 
-## Links
+## Links and images
+
+You can [insert links or let Zulip auto-linkify](/help/links-and-images#links)
+URLs, stream names, and topic names.  
+You can also [upload](/help/share-and-upload-files) and
+[display images with named links](/help/links-and-images#images).
 
 {!links.md!}
 
-## Images
-
-See [Share and upload files](/help/share-and-upload-files) to learn more
-about dropping, pasting, and attaching images.
-
 {!images.md!}
 
-## Code
+## Code blocks
 
 {!code-blocks.md!}
 
@@ -52,13 +59,18 @@ playgrounds](/help/code-blocks#code-playgrounds), and other features.
 
 ## LaTeX
 
+You can [write LaTeX expressions](/help/latex) in Zulip.
+
 {!latex.md!}
 
-## Quotes
+## Quote and reply
 
 {!quotes.md!}
 
 ## Spoilers
+
+You can use [spoilers](/help/spoilers) to hide content that you do not want to
+be visible until the user interacts with it.
 
 {!spoilers.md!}
 
@@ -66,27 +78,43 @@ playgrounds](/help/code-blocks#code-playgrounds), and other features.
 
 {!emoji-and-emoticons.md!}
 
-## Mentions
+## Mention a user or group
 
 {!mentions.md!}
 
-## Status messages
+## /me action messages
+
+You can use [/me action messages](/help/me-action-messages) to simulate actions
+in conversations where you might want to describe actions taken or things that
+are happening around you.
 
 {!me-action-messages.md!}
 
 ## Global times
 
+You can use [global times](/help/global-times) to display a specified time
+in the local time zone of each user.
+
 {!global-times.md!}
 
 ## Tables
 
+You can create [tables](/help/tables) to organize information in rows and columns.
+
 {!tables.md!}
 
-## To-do lists
+## Collaborative to-do lists
+
+You can start [to-do lists](/help/collaborative-to-do-lists) to collaborate with
+other users on shared tasks.
 
 {!to-do-lists.md!}
 
-## Paragraphs and lines
+## Paragraph and section formatting
+
+You can use [paragraphs and section breaks](/help/paragraph-and-section-formatting)
+to control the layout of your text and to visually separate different sections
+of content.
 
 {!paragraph-and-section-formatting.md!}
 
