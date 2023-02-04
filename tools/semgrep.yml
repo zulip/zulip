@@ -42,32 +42,6 @@ rules:
         - zerver/migrations/0387_reupload_realmemoji_again.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
-  - id: logging-format
-    languages: [python]
-    patterns:
-      - pattern-either:
-          - pattern: $LOGGER.debug($FORMATTED, ...)
-          - pattern: $LOGGER.info($FORMATTED, ...)
-          - pattern: $LOGGER.warning($FORMATTED, ...)
-          - pattern: $LOGGER.error($FORMATTED, ...)
-          - pattern: $LOGGER.critical($FORMATTED, ...)
-          - pattern: $LOGGER.exception($FORMATTED, ...)
-          - pattern: $LOGGER.log($LEVEL, $FORMATTED, ...)
-      - metavariable-pattern:
-          metavariable: $LOGGER
-          patterns:
-            - pattern-either:
-                - pattern: logging
-                - pattern: logger
-      - metavariable-pattern:
-          metavariable: $FORMATTED
-          patterns:
-            - pattern-either:
-                - pattern: ... .format(...)
-                - pattern: f"..."
-    severity: ERROR
-    message: "Pass format arguments to logging (https://docs.python.org/3/howto/logging.html#optimization)"
-
   - id: sql-format
     languages: [python]
     pattern-either:
