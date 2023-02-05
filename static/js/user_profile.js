@@ -55,7 +55,7 @@ function initialize_bot_owner(element_id, bot_id) {
 
 function format_user_stream_list_item(stream, user) {
     const show_unsubscribe_button =
-        people.can_admin_user(user) || settings_data.user_can_unsubscribe_other_users();
+        people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
     return render_user_stream_list_item({

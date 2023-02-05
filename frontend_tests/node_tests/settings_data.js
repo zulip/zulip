@@ -130,14 +130,6 @@ run_test("user_can_change_logo", () => {
     assert.equal(can_change_logo(), false);
 });
 
-run_test("user_can_unsubscribe_other_users", () => {
-    page_params.is_admin = true;
-    assert.equal(settings_data.user_can_unsubscribe_other_users(), true);
-
-    page_params.is_admin = false;
-    assert.equal(settings_data.user_can_unsubscribe_other_users(), false);
-});
-
 function test_policy(label, policy, validation_func) {
     run_test(label, () => {
         page_params.is_admin = true;

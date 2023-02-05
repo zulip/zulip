@@ -197,10 +197,6 @@ export function user_can_subscribe_other_users(): boolean {
     return user_has_permission(page_params.realm_invite_to_stream_policy);
 }
 
-export function user_can_unsubscribe_other_users(): boolean {
-    return page_params.is_admin;
-}
-
 export function user_can_create_private_streams(): boolean {
     return user_has_permission(page_params.realm_create_private_stream_policy);
 }
