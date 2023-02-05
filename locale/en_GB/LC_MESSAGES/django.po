@@ -4818,8 +4818,8 @@ msgid "User has disabled typing notifications for private messages"
 msgstr "User has disabled typing notifications for private messages"
 
 #: zerver/views/upload.py:115
-msgid "<p>File not found.</p>"
-msgstr "<p>File not found.</p>"
+msgid "<p>This file does not exist or has been deleted.</p>"
+msgstr "<p>This file does not exist or has been deleted.</p>"
 
 #: zerver/views/upload.py:127
 msgid "Invalid token"

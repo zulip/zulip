@@ -578,7 +578,7 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zephyr")
         msg = "[foobar](/user_uploads/{realm_id}/50/w2G6ok9kr8AMCQCTNAUOFMln/IMG_0677.JPG)"
         msg = msg.format(realm_id=realm.id)
-        thumbnail_img = '<img data-src-fullsize="/thumbnail?url=user_uploads%2F{realm_id}%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=full" src="/thumbnail?url=user_uploads%2F{realm_id}%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=thumbnail"><'
+        thumbnail_img = '<img data-src-fullsize="/thumbnail?url=user_uploads%2F{realm_id}%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=full" src="/thumbnail?url=user_uploads%2F{realm_id}%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=thumbnail">'
         thumbnail_img = thumbnail_img.format(realm_id=realm.id)
         converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
