@@ -45,6 +45,25 @@ You can set a status emoji, status message, or both.
 
 {end_tabs}
 
+### User list style
+
+You can set the styling of your status.
+
+* **Compact**: Show only status emoji.
+
+* **Show status text**: Show text along with the emoji.
+
+By default **Show status text** is selected but you can change the styling.
+
+{start_tabs}
+
+{relative|gear|settings}
+
+1. Under **User list style** select the desired option.
+
+{end_tabs}
+
+
 ### View a status
 
 Status emoji are shown next to a user's name in the sidebars, message feed,
