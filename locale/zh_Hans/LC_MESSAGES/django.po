@@ -4825,7 +4825,7 @@ msgid "User has disabled typing notifications for private messages"
 msgstr "用户已禁用私聊的输入通知"
 
 #: zerver/views/upload.py:115
-msgid "<p>File not found.</p>"
+msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>文件不存在</p>"
 
 #: zerver/views/upload.py:127

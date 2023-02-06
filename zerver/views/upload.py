@@ -167,7 +167,7 @@ def serve_file(
     is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
 
     if is_authorized is None:
-        return HttpResponseNotFound(_("<p>File not found.</p>"))
+        return HttpResponseNotFound(_("<p>This file does not exist or has been deleted.</p>"))
     if not is_authorized:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if url_only:

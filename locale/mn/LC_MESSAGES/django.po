@@ -4823,7 +4823,7 @@ msgid "User has disabled typing notifications for private messages"
 msgstr "Хэрэглэгч хувийн мессежийн мэдэгдлийг бичихийг идэвхгүй болгосон"
 
 #: zerver/views/upload.py:115
-msgid "<p>File not found.</p>"
+msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Файл олдсонгүй.</p>"
 
 #: zerver/views/upload.py:127

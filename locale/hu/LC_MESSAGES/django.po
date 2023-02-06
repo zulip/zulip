@@ -4824,7 +4824,7 @@ msgid "User has disabled typing notifications for private messages"
 msgstr "A felhasználó letiltotta a gépelés mutatását privát üzenetekben"
 
 #: zerver/views/upload.py:115
-msgid "<p>File not found.</p>"
+msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Nincs ilyen fájl.</p>"
 
 #: zerver/views/upload.py:127

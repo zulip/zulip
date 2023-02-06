@@ -375,7 +375,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.py"
         )
         self.assertEqual(response.status_code, 404)
-        self.assert_in_response("File not found.", response)
+        self.assert_in_response("This file does not exist or has been deleted.", response)
 
     def test_delete_old_unclaimed_attachments(self) -> None:
         # Upload some files and make them older than a week

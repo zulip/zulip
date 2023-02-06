@@ -4824,7 +4824,7 @@ msgid "User has disabled typing notifications for private messages"
 msgstr "L'utente ha disabilitato le notifiche di digitazione per i messaggi privati"
 
 #: zerver/views/upload.py:115
-msgid "<p>File not found.</p>"
+msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>File non trovato.</p>"
 
 #: zerver/views/upload.py:127

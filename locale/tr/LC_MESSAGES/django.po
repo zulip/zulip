@@ -4824,7 +4824,7 @@ msgid "User has disabled typing notifications for private messages"
 msgstr "Kullanıcı, özel mesajlar için yazma bildirimlerini devre dışı bıraktı"
 
 #: zerver/views/upload.py:115
-msgid "<p>File not found.</p>"
+msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Dosya bulunmadı.</p>"
 
 #: zerver/views/upload.py:127
