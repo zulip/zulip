@@ -95,10 +95,6 @@ export function populate_user_groups() {
             $pill_container.addClass("not-editable");
             $pill_container.off("keydown", ".pill");
             $pill_container.off("keydown", ".input");
-            $pill_container.off("click");
-            $pill_container.on("click", (e) => {
-                e.stopPropagation();
-            });
             $pill_container.find(".pill").on("mouseenter", () => {
                 $pill_container.find(".pill").find(".exit").css("opacity", "0.5");
             });

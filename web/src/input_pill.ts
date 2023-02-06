@@ -7,11 +7,14 @@ import render_input_pill from "../templates/input_pill.hbs";
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
+import * as people from "./people";
+import * as popovers from "./popovers";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
 export type InputPillItem<T> = {
+    user_id: number;
     display_value: string;
     type: string;
     img_src?: string;
@@ -49,6 +52,7 @@ type InputPillStore<T> = {
 };
 
 type InputPillRenderingDetails = {
+    user_id: number;
     display_value: string;
     has_image: boolean;
     img_src?: string;
@@ -153,6 +157,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             const has_image = item.img_src !== undefined;
 
             const opts: InputPillRenderingDetails = {
+                user_id: item.user_id,
                 display_value: item.display_value,
                 has_image,
                 deactivated: item.deactivated,
@@ -417,6 +422,9 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             }
         });
 
+        // Remove all click handlers before setting new ones
+        store.$parent.off("click");
+
         // when the "×" is clicked on a pill, it should delete that pill and then
         // select the next pill (or input).
         store.$parent.on("click", ".exit", function (e) {
@@ -426,6 +434,21 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             funcs.removePill($pill[0]);
             $next.trigger("focus");
+        });
+
+        // clicking on an user pill should open up the user's profile
+        store.$parent.on("click", ".pill", function (e) {
+            const user_id = Number.parseInt($(this).attr("data-user-id"), 10);
+            e.stopPropagation();
+
+            // if the pill is not a user pill and does not have a user-id
+            // we don't need to show the user card so we return early
+            if (Number.isNaN(user_id)) {
+                return;
+            }
+
+            const user = people.get_by_user_id(user_id);
+            popovers.show_user_info_popover(this, user);
         });
 
         store.$parent.on("click", function (e) {

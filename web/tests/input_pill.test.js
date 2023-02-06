@@ -7,6 +7,9 @@ const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
+const people = mock_esm("../src/people");
+const popovers = mock_esm("../src/popovers");
+
 set_global("document", {});
 
 const noop = () => {};
@@ -548,6 +551,90 @@ run_test("exit button on pill", ({mock_template}) => {
     assert.ok(next_pill_focused);
 
     assert.deepEqual(widget.items(), [items.red]);
+});
+
+run_test("open user popover on user's pill click", () => {
+    const info = set_up();
+    const config = info.config;
+    const $container = info.$container;
+    input_pill.create(config);
+
+    let is_user_popover_open = false;
+
+    const pill_stub = {
+        to_$: () => ({
+            attr(attribute) {
+                assert.equal(attribute, "data-user-id");
+                return 7;
+            },
+        }),
+    };
+
+    const e = {
+        stopPropagation: noop,
+    };
+
+    people.get_by_user_id = (user_id) => {
+        assert.equal(user_id, 7);
+
+        return {
+            email: "mary@example.com",
+            user_id: 7,
+            full_name: "Mary",
+        };
+    };
+
+    popovers.show_user_info_popover = (_, user) => {
+        assert.equal(user.email, "mary@example.com");
+        assert.equal(user.user_id, 7);
+        assert.equal(user.full_name, "Mary");
+        is_user_popover_open = true;
+    };
+
+    const pill_click_handler = $container.get_on_handler("click", ".pill");
+
+    assert.equal(is_user_popover_open, false);
+    pill_click_handler.call(pill_stub, e);
+    assert.equal(is_user_popover_open, true);
+});
+
+run_test("should not open popover on clicking a non-user pill", () => {
+    const info = set_up();
+    const config = info.config;
+    const $container = info.$container;
+    input_pill.create(config);
+
+    let is_user_popover_open = false;
+
+    const pill_stub = {
+        to_$: () => ({
+            attr(attribute) {
+                assert.equal(attribute, "data-user-id");
+                return null;
+            },
+        }),
+    };
+
+    const e = {
+        stopPropagation: noop,
+    };
+
+    people.get_by_user_id = () => {
+        /* istanbul ignore next */
+        assert.fail("popovers.get_by_user_id should not be called for a non-user pill");
+    };
+
+    /* istanbul ignore next */
+    popovers.show_user_info_popover = () => {
+        is_user_popover_open = true;
+        assert.fail("popovers.show_user_info_popover should not be called for a non-user pill");
+    };
+
+    const pill_click_handler = $container.get_on_handler("click", ".pill");
+
+    assert.equal(is_user_popover_open, false);
+    pill_click_handler.call(pill_stub, e);
+    assert.equal(is_user_popover_open, false);
 });
 
 run_test("misc things", () => {

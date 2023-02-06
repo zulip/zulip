@@ -452,9 +452,7 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
         stopPropagation: noop,
     };
     const pill_mouseenter_handler = $pill_stub.get_on_handler("mouseenter");
-    const pill_click_handler = $pill_container_stub.get_on_handler("click");
     pill_mouseenter_handler(event);
-    pill_click_handler(event);
     assert.equal(delete_handler.call($fake_delete), undefined);
     assert.equal(name_update_handler(), undefined);
     assert.equal(des_update_handler(), undefined);
@@ -469,7 +467,6 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
     assert.equal(pill_container_find_called, 4);
     assert.equal(turned_off["keydown/.pill"], true);
     assert.equal(turned_off["keydown/.input"], true);
-    assert.equal(turned_off["click/whole"], true);
 });
 
 test_ui("reload", ({override_rewire}) => {
