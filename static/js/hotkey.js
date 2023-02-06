@@ -738,8 +738,7 @@ export function process_hotkey(e, hotkey) {
             ((event_name === "down_arrow" || event_name === "page_down" || event_name === "end") &&
                 compose_state.focus_in_empty_compose()) ||
             ((event_name === "up_arrow" || event_name === "page_up" || event_name === "home") &&
-                (compose_state.focus_in_empty_compose() ||
-                    compose_state.cursor_at_start_of_whitespace_in_compose()))
+                compose_state.focus_in_empty_compose(true))
         ) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
