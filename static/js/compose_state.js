@@ -86,24 +86,26 @@ export const message_content = get_or_set("compose-textarea", true);
 
 const untrimmed_message_content = get_or_set("compose-textarea", true, true);
 
-export function cursor_at_start_of_whitespace_in_compose() {
-    // First check if the compose box is focused.  TODO: Maybe we
-    // should make `consider_start_of_whitespace_message_empty` a
-    // parameter to `focus_in_empty_compose` instead.
-    const focused_element_id = document.activeElement.id;
-    if (focused_element_id !== "compose-textarea") {
-        return false;
-    }
-
+function cursor_at_start_of_whitespace_in_compose() {
     const cursor_position = $("#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
 }
 
-export function focus_in_empty_compose() {
+export function focus_in_empty_compose(consider_start_of_whitespace_message_empty = false) {
     // A user trying to press arrow keys in an empty compose is mostly
     // likely trying to navigate messages. This helper function
     // decides whether the compose box is empty for this purpose.
-    if (!composing() || untrimmed_message_content() !== "") {
+    if (!composing()) {
+        return false;
+    }
+
+    // We treat the compose box as empty if it's completely empty, or
+    // if the caller requested, if it contains only whitespace and we're
+    // at the start of te compose box.
+    const treat_compose_as_empty =
+        untrimmed_message_content() === "" ||
+        (consider_start_of_whitespace_message_empty && cursor_at_start_of_whitespace_in_compose());
+    if (!treat_compose_as_empty) {
         return false;
     }
 
