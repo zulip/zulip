@@ -39,10 +39,30 @@ Since 500 errors in any Zulip server are usually a problem the server
 administrator should investigate and/or report upstream, we have this
 email reporting system configured to report errors by default.
 
-Zulip's optional [Sentry][sentry] integration will aggregate errors to
-show which users and realms are affected, any logging which happened
-prior to the exception, local variables in each frame of the
+### Sentry error logging
+
+Zulip's optional backend [Sentry][sentry] integration will aggregate
+errors to show which users and realms are affected, any logging which
+happened prior to the exception, local variables in each frame of the
 exception, and the full request headers which triggered it.
+
+You can enable it by:
+
+1.  Create a [project][sentry-project] in your Sentry organization
+    with a platform of "Django."
+2.  Copy your [Sentry DSN][sentry-dsn] into `/etc/zulip/settings.py`
+    as `SENTRY_DSN`:
+    ```python3
+    ## Controls the DSN used to report errors to Sentry.io
+    SENTRY_DSN = "https://bbb@bbb.ingest.sentry.io/1234"
+    ```
+3.  As the `zulip` user, restart Zulip by running:
+    ```shell
+    /home/zulip/deployments/current/scripts/restart-server
+    ```
+
+[sentry-project]: https://docs.sentry.io/product/projects/
+[sentry-dsn]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
 
 ### Backend logging
 
