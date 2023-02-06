@@ -23,9 +23,7 @@
                     <th>{{t "Name" }}</th>
                     <th>{{t "Email" }}</th>
                     <th>{{t "User ID" }}</th>
-                    {{#if can_edit}}
-                    <th class="actions">{{t "Actions" }}</th>
-                    {{/if}}
+                    <th class="actions" {{#unless can_edit}}style="display:none"{{/unless}}>{{t "Actions" }}</th>
                 </thead>
                 <tbody class="member_table"></tbody>
             </table>
