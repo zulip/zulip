@@ -12,6 +12,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
@@ -81,6 +82,44 @@ function show_membership_settings(group) {
         group,
         $parent_container: $member_container,
     });
+}
+
+function enable_group_edit_settings(group) {
+    if (!hash_util.is_editing_group(group.id)) {
+        return;
+    }
+    const $edit_container = get_edit_container(group);
+    $edit_container.find("#open_group_info_modal").show();
+    $edit_container.find(".member-list .actions").show();
+    user_group_ui_updates.update_add_members_elements(group);
+}
+
+function disable_group_edit_settings(group) {
+    if (!hash_util.is_editing_group(group.id)) {
+        return;
+    }
+    const $edit_container = get_edit_container(group);
+    $edit_container.find("#open_group_info_modal").hide();
+    $edit_container.find(".member-list .actions").hide();
+    user_group_ui_updates.update_add_members_elements(group);
+}
+
+export function handle_member_edit_event(group_id) {
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(group_id);
+
+    // update members list.
+    const members = Array.from(group.members);
+    user_group_edit_members.update_member_list_widget(group_id, members);
+
+    // update_settings buttons.
+    if (can_edit(group_id)) {
+        enable_group_edit_settings(group);
+    } else {
+        disable_group_edit_settings(group);
+    }
 }
 
 export function update_settings_pane(group) {
