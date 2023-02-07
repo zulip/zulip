@@ -63,6 +63,7 @@ from zerver.models import (
     MultiuseInvite,
     PreregistrationUser,
     Realm,
+    RealmUserDefault,
     Stream,
     UserProfile,
     get_default_stream_groups,
@@ -496,6 +497,11 @@ def accounts_register(
         assert isinstance(auth_result, UserProfile)
         return login_and_go_to_home(request, auth_result)
 
+    default_email_address_visibility = None
+    if realm is not None:
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        default_email_address_visibility = realm_user_default.email_address_visibility
+
     return TemplateResponse(
         request,
         "zerver/register.html",
@@ -523,6 +529,11 @@ def accounts_register(
             "sorted_realm_types": sorted(
                 Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
             ),
+            "default_email_address_visibility": default_email_address_visibility,
+            "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
         },
     )
 
