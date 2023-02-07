@@ -186,6 +186,18 @@ export async function check_form_contents(
     }
 }
 
+export async function get_element_text(element: ElementHandle<Element>): Promise<string> {
+    const text = await (await element.getProperty("innerText"))!.jsonValue();
+    assert.ok(typeof text === "string");
+    return text;
+}
+
+export async function get_text_from_selector(page: Page, selector: string): Promise<string> {
+    const elements = await page.$$(selector);
+    const texts = await Promise.all(elements.map(async (element) => get_element_text(element)));
+    return texts.join("").trim();
+}
+
 export async function check_compose_state(
     page: Page,
     params: Record<string, string>,
@@ -202,18 +214,6 @@ export async function check_compose_state(
 
 export function has_class_x(class_name: string): string {
     return `contains(concat(" ", @class, " "), " ${class_name} ")`;
-}
-
-export async function get_element_text(element: ElementHandle<Element>): Promise<string> {
-    const text = await (await element.getProperty("innerText"))!.jsonValue();
-    assert.ok(typeof text === "string");
-    return text;
-}
-
-export async function get_text_from_selector(page: Page, selector: string): Promise<string> {
-    const elements = await page.$$(selector);
-    const texts = await Promise.all(elements.map(async (element) => get_element_text(element)));
-    return texts.join("").trim();
 }
 
 export async function get_stream_id(page: Page, stream_name: string): Promise<number> {
