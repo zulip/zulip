@@ -51,7 +51,7 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # used the hashed paths for these; in that case, though,
             # we should instead be removing the non-hashed paths.
             return name
-        if ext in [".json", ".po", ".mo", ".mp3", ".ogg", ".html"]:
+        if ext in [".json", ".po", ".mo", ".mp3", ".ogg", ".html", ".md"]:
             # And same story for translation files, sound files, etc.
             return name
         return super().hashed_name(name, content, filename)
