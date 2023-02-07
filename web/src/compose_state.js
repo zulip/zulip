@@ -126,8 +126,9 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
         case "private_message_recipient":
             return private_message_recipient().length === 0;
         case "stream_message_recipient_topic":
+            return topic() === "";
         case "stream_message_recipient_stream":
-            return document.activeElement.value === "";
+            return stream_name() === "";
     }
 
     return false;

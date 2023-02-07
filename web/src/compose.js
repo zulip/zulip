@@ -501,7 +501,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
 
-            const stream_name = $("#stream_message_recipient_stream").val();
+            const stream_name = compose_state.stream_name();
             if (stream_name === undefined) {
                 return;
             }
