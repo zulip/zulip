@@ -251,10 +251,12 @@ def build_message_list(
 
     def message_header(message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
+            grouping: Dict[str, Any] = {"user": message.sender_id}
             narrow_link = get_narrow_url(user, message)
             header = f"You and {message.sender.full_name}"
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         elif message.recipient.type == Recipient.HUDDLE:
+            grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
             assert not isinstance(display_recipient, str)
             narrow_link = get_narrow_url(user, message, display_recipient=display_recipient)
@@ -262,6 +264,7 @@ def build_message_list(
             header = "You and {}".format(", ".join(other_recipients))
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
+            grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
             stream_id = message.recipient.type_id
             stream = stream_map.get(stream_id, None)
             if stream is None:
@@ -273,6 +276,7 @@ def build_message_list(
             stream_link = stream_narrow_url(user.realm, stream)
             header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
         return {
+            "grouping": grouping,
             "plain": header,
             "html": header_html,
             "stream_message": message.recipient.type_name() == "stream",
@@ -309,7 +313,10 @@ def build_message_list(
         header = message_header(message)
 
         # If we want to collapse into the previous recipient block
-        if len(messages_to_render) > 0 and messages_to_render[-1]["header"] == header:
+        if (
+            len(messages_to_render) > 0
+            and messages_to_render[-1]["header"]["grouping"] == header["grouping"]
+        ):
             sender = sender_string(message)
             sender_block = messages_to_render[-1]["senders"]
 
@@ -390,7 +397,8 @@ def do_send_missedmessage_events_reply_in_zulip(
     from zerver.context_processors import common_context
 
     recipients = {
-        (msg["message"].recipient_id, msg["message"].topic_name()) for msg in missed_messages
+        (msg["message"].recipient_id, msg["message"].topic_name().lower())
+        for msg in missed_messages
     }
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
 
@@ -600,7 +608,7 @@ def handle_missedmessage_emails(
             # For PM's group using (recipient, sender).
             messages_by_bucket[(msg.recipient_id, msg.sender_id)].append(msg)
         else:
-            messages_by_bucket[(msg.recipient_id, msg.topic_name())].append(msg)
+            messages_by_bucket[(msg.recipient_id, msg.topic_name().lower())].append(msg)
 
     message_count_by_bucket = {
         bucket_tup: len(msgs) for bucket_tup, msgs in messages_by_bucket.items()

@@ -516,7 +516,12 @@ class TestMissedMessages(ZulipTestCase):
         self, send_as_user: bool, show_message_content: bool = True
     ) -> None:
         for i in range(0, 11):
-            self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
+            self.send_stream_message(
+                self.example_user("othello"),
+                "Denmark",
+                content=str(i),
+                topic_name="test" if i % 2 == 0 else "TEST",
+            )
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
         msg_id = self.send_stream_message(
             self.example_user("othello"), "denmark", "@**King Hamlet**"
