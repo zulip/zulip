@@ -635,6 +635,37 @@ html {
     }
 }
 
+#new-user-email-address-visibility {
+    text-align: left;
+    font-size: 0.8em;
+    line-height: normal;
+    margin-left: 2px;
+
+    .change_email_address_visibility {
+        cursor: pointer;
+    }
+}
+
+#change-email-address-visibility-modal {
+    font-weight: 400;
+
+    label {
+        font-size: inherit;
+    }
+
+    h1 {
+        font-weight: 600;
+        font-family: inherit;
+    }
+
+    select {
+        margin-bottom: 10px;
+        width: auto;
+        font-size: 16px;
+        font-family: inherit;
+    }
+}
+
 /* -- /accounts/register/ page -- */
 .portico-page {
     .pitch {

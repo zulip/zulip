@@ -1,7 +1,10 @@
 import $ from "jquery";
+import Micromodal from "micromodal";
 
 import * as common from "../common";
+import {$t} from "../i18n";
 import {password_quality, password_warning} from "../password_quality";
+import * as settings_config from "../settings_config";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -229,5 +232,56 @@ $(() => {
     // GitHub auth
     $("body").on("click", "#choose_email .choose-email-box", function () {
         this.parentNode.submit();
+    });
+
+    $("#new-user-email-address-visibility .change_email_address_visibility").on("click", () => {
+        Micromodal.show("change-email-address-visibility-modal", {
+            disableFocus: true,
+            openClass: "modal--opening",
+        });
+    });
+
+    $("#change-email-address-visibility-modal .dialog_submit_button").on("click", () => {
+        const selected_val = Number.parseInt($("#new_user_email_address_visibility").val(), 10);
+        $("#email_address_visibility").val(selected_val);
+        Micromodal.close("change-email-address-visibility-modal");
+
+        let selected_option_text;
+
+        // These strings should be consistent with those defined for the same element in
+        // 'templates/zerver/register.html'.
+        switch (selected_val) {
+            case settings_config.email_address_visibility_values.admins_only.code: {
+                selected_option_text = $t({
+                    defaultMessage:
+                        "Administrators of this Zulip organization will be able to see this email address.",
+                });
+
+                break;
+            }
+            case settings_config.email_address_visibility_values.moderators.code: {
+                selected_option_text = $t({
+                    defaultMessage:
+                        "Administrators and moderators this Zulip organization will be able to see this email address.",
+                });
+
+                break;
+            }
+            case settings_config.email_address_visibility_values.nobody.code: {
+                selected_option_text = $t({
+                    defaultMessage:
+                        "Nobody in this Zulip organization will be able to see this email address.",
+                });
+
+                break;
+            }
+            default: {
+                selected_option_text = $t({
+                    defaultMessage:
+                        "Other users in this Zulip organization will be able to see this email address.",
+                });
+            }
+        }
+        $("#new-user-email-address-visibility .current-selected-option").text(selected_option_text);
     });
 });
