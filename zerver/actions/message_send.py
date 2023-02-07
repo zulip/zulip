@@ -264,12 +264,11 @@ def get_recipient_info(
         }
 
         if possible_wildcard_mention:
-            # If there's a possible wildcard mention, we need to
-            # determine the set of users who have enabled the
-            # "wildcard_mentions_notify" setting (that is, the set of
-            # users for whom wildcard mentions should be treated like
-            # personal mentions for notifications). This setting
-            # applies to both email and push notifications.
+            # We calculate `wildcard_mention_user_ids` only if there's a possible
+            # wildcard mention in the message. This is important so as to avoid
+            # unnecessarily sending huge user ID lists with thousands of elements
+            # to the event queue (which can happen because this setting is `True`
+            # by default for new users.)
             wildcard_mention_user_ids = {
                 row["user_profile_id"]
                 for row in subscription_rows
