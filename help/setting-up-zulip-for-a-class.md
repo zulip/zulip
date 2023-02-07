@@ -161,7 +161,7 @@ how to assign roles and permissions for a class.
 
 - Set [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations).
   (Recommended: Admins)
-- Set [who can access user email addresses](/help/restrict-visibility-of-email-addresses).
+- Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
 - Set [who can create streams](/help/configure-who-can-create-streams).
   (Recommended: Admins for public streams; Admins, moderators and members for private streams)
@@ -191,7 +191,7 @@ how to assign roles and permissions for a class.
 
 - Set [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations).
   (Recommended: Admins and moderators)
-- Set [who can access user email addresses](/help/restrict-visibility-of-email-addresses).
+- Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
 - Set [who can create streams](/help/configure-who-can-create-streams).
   (Recommended: Admins and moderators for public streams;

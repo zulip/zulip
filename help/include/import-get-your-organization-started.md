@@ -4,7 +4,7 @@ Once the import process is completed, you will need to:
 
 1. [Configure the settings for your organization](/help/customize-organization-settings),
     which are not exported. This includes settings like [email
-    visibility](/help/restrict-visibility-of-email-addresses), [message editing
+    visibility](/help/configure-email-visibility), [message editing
     permissions](/help/restrict-message-editing-and-deletion),
     and [how users can join your organization](/help/restrict-account-creation).
 
