@@ -99,7 +99,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
     fragment.make_links_absolute(base_url)
 
 
-def fix_emojis(fragment: lxml.html.HtmlElement, base_url: str, emojiset: str) -> None:
+def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
     def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get("class")
@@ -111,7 +111,14 @@ def fix_emojis(fragment: lxml.html.HtmlElement, base_url: str, emojiset: str) ->
         emoji_code = match.group("emoji_code")
         emoji_name = emoji_span_elem.get("title")
         alt_code = emoji_span_elem.text
-        image_url = base_url + f"/static/generated/emoji/images-{emojiset}-64/{emoji_code}.png"
+        # We intentionally do not use staticfiles_storage.url here, so
+        # that we don't get any hashed version -- we want a path which
+        # may give us content which changes over time, but one which
+        # is guaranteed to keep working even if the prod-static
+        # directory is cleaned out (or a new server is rotated in
+        # which does not have historical content with old hashed
+        # filenames).
+        image_url = f"{settings.STATIC_URL}generated/emoji/images-{emojiset}-64/{emoji_code}.png"
         img_elem = e.IMG(alt=alt_code, src=image_url, title=emoji_name, style="height: 20px;")
         img_elem.tail = emoji_span_elem.tail
         return img_elem
@@ -238,7 +245,7 @@ def build_message_list(
         assert message.rendered_content is not None
         fragment = lxml.html.fragment_fromstring(message.rendered_content, create_parent=True)
         relative_to_full_url(fragment, user.realm.uri)
-        fix_emojis(fragment, user.realm.uri, user.emojiset)
+        fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
         html = lxml.html.tostring(fragment, encoding="unicode")
         if sender:
