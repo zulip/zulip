@@ -212,6 +212,10 @@ $time_column_max_width: 150px;
                         margin: 0;
                         margin-top: 13px;
 
+                        .sender_info_hover {
+                            outline: none;
+                        }
+
                         .message_edit_notice {
                             position: relative;
                             top: -1px;
