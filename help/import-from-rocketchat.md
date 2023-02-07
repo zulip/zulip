@@ -103,7 +103,7 @@ keep in mind about the import process:
 - Rocket.Chat does not export workspace settings, so you will need to [configure
   the settings for your Zulip organization](/help/customize-organization-settings).
   This includes settings like [email
-  visibility](/help/restrict-visibility-of-email-addresses),
+  visibility](/help/configure-email-visibility),
   [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
 

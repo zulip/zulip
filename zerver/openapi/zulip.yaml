@@ -573,7 +573,7 @@ paths:
                                         due to changes in the user's
                                         [email address visibility][help-email-visibility].
 
-                                        [help-email-visibility]: /help/restrict-visibility-of-email-addresses
+                                        [help-email-visibility]: /help/configure-email-visibility
                                       properties:
                                         user_id:
                                           type: integer
@@ -9336,7 +9336,7 @@ paths:
 
         Note that this endpoint uses Zulip display emails addresses
         for organizations that have configured limited [email address
-        visibility](/help/restrict-visibility-of-email-addresses).
+        visibility](/help/configure-email-visibility).
 
         You can also fetch details on [all users in the organization](/api/get-users) or
         [by user ID](/api/get-user). Fetching by user ID is generally recommended
