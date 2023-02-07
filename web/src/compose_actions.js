@@ -208,7 +208,7 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(opts.stream, $("#compose-stream-recipient .message_header_stream"), true);
+    stream_bar.decorate(opts.stream, $("#compose-stream-recipient .message_header_stream"));
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     update_placeholder_text();
     update_narrow_to_recipient_visibility();
@@ -332,7 +332,7 @@ export function start(msg_type, opts) {
     const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
         ".stream_header_colorblock",
     );
-    stream_bar.decorate(opts.stream, $stream_header_colorblock, false);
+    stream_bar.decorate(opts.stream, $stream_header_colorblock);
 
     // We set the stream/topic/private_message_recipient
     // unconditionally here, which assumes the caller will have passed

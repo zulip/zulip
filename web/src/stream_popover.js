@@ -360,7 +360,7 @@ export function build_move_topic_to_stream_popover(
         $stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
             ".stream_header_colorblock",
         );
-        stream_bar.decorate(current_stream_name, $stream_header_colorblock, false);
+        stream_bar.decorate(current_stream_name, $stream_header_colorblock);
         const streams_list =
             message_edit.get_available_streams_for_moving_messages(current_stream_id);
         const opts = {
@@ -418,7 +418,7 @@ export function register_click_handlers() {
             Number.parseInt(stream_widget.value(), 10),
         );
 
-        stream_bar.decorate(stream_name, $stream_header_colorblock, false);
+        stream_bar.decorate(stream_name, $stream_header_colorblock);
     });
 
     register_stream_handlers();
