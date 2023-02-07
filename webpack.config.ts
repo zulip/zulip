@@ -146,6 +146,10 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                             "tooltip_hotkey_hints",
                         ],
                         preventIndent: true,
+                        // This replaces relative image resources with
+                        // a computed require() path to them, so their
+                        // webpack-hashed URLs are used.
+                        inlineRequires: /^(\.\.\/)+(images|generated\/emoji\/images)\//,
                     },
                 },
                 // load fonts and files
