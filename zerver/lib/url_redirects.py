@@ -26,6 +26,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
         "/help/configure-message-editing-and-deletion",
         "/help/restrict-message-editing-and-deletion",
     ),
+    URLRedirect("/help/restrict-visibility-of-email-addresses", "/help/configure-email-visibility"),
     URLRedirect("/help/change-default-view", "/help/configure-default-view"),
     URLRedirect("/help/recent-topics", "/help/recent-conversations"),
     URLRedirect(
