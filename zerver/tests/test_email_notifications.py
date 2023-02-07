@@ -1204,7 +1204,7 @@ class TestMissedMessages(ZulipTestCase):
             "Extremely personal message with a hamburger :hamburger:!",
         )
         verify_body_include = [
-            '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
+            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
         ]
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(
@@ -1570,11 +1570,11 @@ class TestMissedMessages(ZulipTestCase):
             ' rain">:cloud_with_lightning_and_rain:</span>.</p>'
         )
         fragment = lxml.html.fromstring(test_data)
-        fix_emojis(fragment, "http://example.com", "google")
+        fix_emojis(fragment, "google")
         actual_output = lxml.html.tostring(fragment, encoding="unicode")
         expected_output = (
             '<p>See <img alt=":cloud_with_lightning_and_rain:"'
-            ' src="http://example.com/static/generated/emoji/images-google-64/26c8.png"'
+            ' src="http://testserver/static/generated/emoji/images-google-64/26c8.png"'
             ' title="cloud with lightning and rain" style="height: 20px;">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
