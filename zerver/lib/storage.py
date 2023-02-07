@@ -36,6 +36,11 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # use a no-op hash function for these already-hashed
             # assets.
             return name
+        if name == "generated/emoji/emoji_api.json":
+            # Unlike most .json files, we do want to hash this file;
+            # its hashed URL is returned as part of the API.  See
+            # data_url() in zerver/lib/emoji.py.
+            return super().hashed_name(name, content, filename)
         if ext in [".png", ".gif", ".jpg", ".svg"]:
             # Similarly, don't hash-rename image files; we only serve
             # the original file paths (not the hashed file paths), and
@@ -46,7 +51,7 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # used the hashed paths for these; in that case, though,
             # we should instead be removing the non-hashed paths.
             return name
-        if ext in ["json", "po", "mo", "mp3", "ogg", "html"]:
+        if ext in [".json", ".po", ".mo", ".mp3", ".ogg", ".html"]:
             # And same story for translation files, sound files, etc.
             return name
         return super().hashed_name(name, content, filename)
