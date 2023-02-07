@@ -14,7 +14,7 @@ sent](/help/view-messages-sent-by-a-user).
 - Their avatar.
 - Their name.
 - Their email address, if you [have
-  permission](/help/restrict-visibility-of-email-addresses) to view it.
+  permission](/help/configure-email-visibility) to view it.
 - Their [role](/help/roles-and-permissions) in the organization.
 - The custom profile fields
   [selected](/help/custom-profile-fields#display-custom-fields-on-user-card) by
@@ -28,7 +28,7 @@ sent](/help/view-messages-sent-by-a-user).
 - Its name.
 - Its owner's name.
 - Its email address, if you [have
-permission](/help/restrict-visibility-of-email-addresses) to view it.
+permission](/help/configure-email-visibility) to view it.
 
 {end_tabs}
 

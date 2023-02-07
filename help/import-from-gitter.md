@@ -106,7 +106,7 @@ keep in mind about the import process:
 - [Gitter's export tool](https://github.com/minrk/archive-gitter) does not export
   workspace settings, so you will need to [configure the settings for your Zulip
   organization](/help/customize-organization-settings). This includes settings
-  like [email visibility](/help/restrict-visibility-of-email-addresses),
+  like [email visibility](/help/configure-email-visibility),
   [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
 
@@ -142,7 +142,7 @@ Once the import process is completed, you will need to:
 
 1. [Configure the settings for your organization](/help/customize-organization-settings),
    which are not exported. This includes settings like [email
-   visibility](/help/restrict-visibility-of-email-addresses), [message editing
+   visibility](/help/configure-email-visibility), [message editing
    permissions](/help/restrict-message-editing-and-deletion),
    and [how users can join your organization](/help/restrict-account-creation).
 

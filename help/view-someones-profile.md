@@ -10,7 +10,7 @@ A user's profile displays key information about the user.
 
 - Their name.
 - Their email address, if you [have
-  permission](/help/restrict-visibility-of-email-addresses) to view it.
+  permission](/help/configure-email-visibility) to view it.
 - Their user ID.
 - Their [role](/help/roles-and-permissions) in the organization.
 - The date they joined the organization.
@@ -29,7 +29,7 @@ Additional tabs showing:
 
 - Their name.
 - Their email address, if you [have
-  permission](/help/restrict-visibility-of-email-addresses) to view it.
+  permission](/help/configure-email-visibility) to view it.
 - Their current [local time](/help/change-your-timezone).
 - Their [status and availability](/help/status-and-availability).
 - Any [custom profile fields](/help/custom-profile-fields) they've filled out.

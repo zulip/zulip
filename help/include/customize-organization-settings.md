@@ -26,6 +26,6 @@ you.
 [topic-editing-permissions]: /help/restrict-moving-messages
 [default-code-block-language]: /help/code-blocks#default-code-block-language
 [code-playgrounds]: /help/code-blocks#code-playgrounds
-[email-address-visibility]: /help/restrict-visibility-of-email-addresses
+[email-address-visibility]: /help/configure-email-visibility
 [who-can-invite]: /help/restrict-account-creation#change-who-can-send-invitations
 [who-can-join]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
