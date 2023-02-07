@@ -1505,6 +1505,8 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
         elif name == "zulip":
+            # We explicitly do not use staticfiles to generate the URL
+            # for this, so that it is portable if exported.
             return make_realm_emoji(
                 "/static/generated/emoji/images/emoji/unicode/zulip.png", orig_syntax
             )
