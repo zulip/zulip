@@ -3000,7 +3000,7 @@ class Message(AbstractMessage):
 def get_context_for_message(message: Message) -> QuerySet[Message]:
     return Message.objects.filter(
         recipient_id=message.recipient_id,
-        subject=message.subject,
+        subject__iexact=message.subject,
         id__lt=message.id,
         date_sent__gt=message.date_sent - timedelta(minutes=15),
     ).order_by("-id")[:10]
