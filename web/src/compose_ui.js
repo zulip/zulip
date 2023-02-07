@@ -516,7 +516,7 @@ export function on_compose_select_stream_update(new_value) {
     const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
         ".stream_header_colorblock",
     );
-    stream_bar.decorate(new_value, $stream_header_colorblock, true);
+    stream_bar.decorate(new_value, $stream_header_colorblock);
     compose.update_on_recipient_change();
     $("#stream_message_recipient_topic").trigger("focus").trigger("select");
 }
@@ -529,6 +529,7 @@ export function initialize_compose_stream_dropdown() {
         .map((stream) => ({
             name: stream.name,
             value: stream.name,
+            stream,
         }))
         .sort((a, b) => {
             if (a.name.toLowerCase() < b.name.toLowerCase()) {
