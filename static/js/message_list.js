@@ -306,7 +306,8 @@ export class MessageList {
             just_unsubscribed = true;
         }
 
-        // Adding a stream icon to bookend inline message rendered
+        // Adding a stream icon to bookend inline
+        // message subscribed/unsubscribed rendered
         // after subscribe/unsubscribe
         let stream_icon = sub !== undefined && "hashtag";
         if (sub !== undefined) {
