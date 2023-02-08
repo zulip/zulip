@@ -264,7 +264,7 @@ Output:
         extensive test coverage of corner cases in the API to ensure that we've properly
         documented those corner cases.
         """
-        if not (url.startswith("/json") or url.startswith("/api/v1")):
+        if not url.startswith(("/json", "/api/v1")):
             return
         try:
             content = orjson.loads(result.content)

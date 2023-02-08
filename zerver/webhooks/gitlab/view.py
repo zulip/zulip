@@ -458,7 +458,7 @@ def get_subject_based_on_event(
             if use_merge_request_title
             else "",
         )
-    elif event.startswith("Issue Hook") or event.startswith("Confidential Issue Hook"):
+    elif event.startswith(("Issue Hook", "Confidential Issue Hook")):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="issue",

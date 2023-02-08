@@ -1157,7 +1157,7 @@ def export_usermessages_batch(
     management command).
 
     See write_message_partial_for_query for more context."""
-    assert input_path.endswith(".partial") or input_path.endswith(".locked")
+    assert input_path.endswith((".partial", ".locked"))
     assert output_path.endswith(".json")
 
     with open(input_path, "rb") as input_file:
