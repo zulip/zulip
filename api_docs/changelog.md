@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 200**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_date_created` field to realm data.
+
 **Feature level 199**
 
 * [`POST /register`](/api/register-queue), [`GET /events`][/api/get-events],

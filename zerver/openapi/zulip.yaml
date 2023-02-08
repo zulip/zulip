@@ -11093,6 +11093,11 @@ paths:
                           field values on individual user objects to display users' profiles.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
+                      realm_date_created:
+                        type: integer
+                        description: |
+                          The UNIX timestamp (UTC) when the organization was
+                          created.
                       custom_profile_field_types:
                         type: object
                         description: |

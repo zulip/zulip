@@ -62,21 +62,27 @@ test("allow_notification_alert", ({disallow, override}) => {
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 });
 
-test("profile_incomplete_alert", () => {
+test("profile_incomplete_alert", ({override}) => {
     // Show alert.
     page_params.is_admin = true;
     page_params.realm_description = "Organization imported from Slack!";
-    assert.equal(navbar_alerts.check_profile_incomplete(), true);
+
+    const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
+
+    const delay = addDays(start_time, 15);
+    page_params.realm_date_created = Math.trunc(delay / 1000);
+    override(Date, "now", () => start_time);
+    assert.equal(navbar_alerts.should_display_profile_incomplete_alert(), true);
 
     // Avoid showing if the user is not admin.
     page_params.is_admin = false;
-    assert.equal(navbar_alerts.check_profile_incomplete(), false);
+    assert.equal(navbar_alerts.should_display_profile_incomplete_alert(), false);
 
     // Avoid showing if the realm description is already updated.
     page_params.is_admin = true;
-    assert.equal(navbar_alerts.check_profile_incomplete(), true);
+    assert.equal(navbar_alerts.should_display_profile_incomplete_alert(), true);
     page_params.realm_description = "Organization description already set!";
-    assert.equal(navbar_alerts.check_profile_incomplete(), false);
+    assert.equal(navbar_alerts.should_display_profile_incomplete_alert(), false);
 });
 
 test("server_upgrade_alert hide_duration_expired", ({override}) => {

@@ -92,11 +92,23 @@ export function dismiss_upgrade_nag(ls) {
     }
 }
 
-export function check_profile_incomplete() {
+export function should_display_profile_incomplete_alert() {
+    const now = new Date(Date.now());
+    const realm_date_created = new Date(page_params.realm_date_created * 1000);
+    const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+    const delay = Math.round(Math.abs(realm_date_created - now) / day);
+
     if (!page_params.is_admin) {
         return false;
     }
 
+    if (check_profile_incomplete() && delay >= 15) {
+        return true;
+    }
+    return false;
+}
+
+export function check_profile_incomplete() {
     // Eventually, we might also check page_params.realm_icon_source,
     // but it feels too aggressive to ask users to do change that
     // since their organization might not have a logo yet.
@@ -174,7 +186,7 @@ export function initialize() {
             custom_class: "bankruptcy",
             rendered_alert_content_html: render_bankruptcy_alert_content({unread_msgs_count}),
         });
-    } else if (check_profile_incomplete()) {
+    } else if (should_display_profile_incomplete_alert()) {
         open({
             data_process: "profile-incomplete",
             rendered_alert_content_html: render_profile_incomplete_alert_content(),
