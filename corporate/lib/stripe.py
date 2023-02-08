@@ -1187,6 +1187,10 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     standard_plan.next_invoice_date = plan_switch_time
     standard_plan.save(update_fields=["status", "next_invoice_date"])
 
+    from zerver.actions.realm_settings import do_change_realm_plan_type
+
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
+
     standard_plan_next_renewal_date = start_of_next_billing_cycle(standard_plan, plan_switch_time)
 
     standard_plan_last_renewal_ledger = (
