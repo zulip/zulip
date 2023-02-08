@@ -167,7 +167,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins for public streams; Admins, moderators and members for private streams)
 - Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
   (Recommended: Admins and moderators)
-- Set [who can edit the topic of any message](/help/configure-who-can-invite-to-streams).
+- Set [who can edit the topic of any message](/help/configure-who-can-edit-topics).
   (Recommended: (default) Members for small classes;
   Admins and moderators for large classes)
 - Set [who can move messages between streams][move-between-streams].
@@ -176,7 +176,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 
 [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
-[move-between-streams]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
+[move-between-streams]: /help/configure-who-can-edit-topics#configure-who-can-move-messages-to-another-stream
 
 #### Recommended roles and permissions for a department
 
@@ -198,7 +198,7 @@ how to assign roles and permissions for a class.
    Admins, moderators and members for private streams)
 - Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
   (Recommended: Admins and moderators)
-- Set [who can edit the topic of any message](/help/configure-who-can-invite-to-streams).
+- Set [who can edit the topic of any message](/help/configure-who-can-edit-topics).
   (Recommended: Admins and moderators)
 - Set [who can move messages between streams][move-between-streams].
   (Recommended: Admins and moderators)

@@ -107,7 +107,7 @@ keep in mind about the import process:
   workspace settings, so you will need to [configure the settings for your Zulip
   organization](/help/customize-organization-settings). This includes settings
   like [email visibility](/help/restrict-visibility-of-email-addresses),
-  [message editing permissions](/help/configure-message-editing-and-deletion#configure-message-editing-and-deletion_1),
+  [message editing permissions](/help/configure-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
 
 - Gitter's export tool does not export user settings, so users in your organization
@@ -143,10 +143,10 @@ Once the import process is completed, you will need to:
 1. [Configure the settings for your organization](/help/customize-organization-settings),
    which are not exported. This includes settings like [email
    visibility](/help/restrict-visibility-of-email-addresses), [message editing
-   permissions](/help/configure-message-editing-and-deletion#configure-message-editing-and-deletion_1),
+   permissions](/help/configure-message-editing-and-deletion),
    and [how users can join your organization](/help/restrict-account-creation).
 
-1. [Configure user roles](/help/change-a-users-role). Only organization owners
+2. [Configure user roles](/help/change-a-users-role). Only organization owners
    and administrators can do this.
     * If you [import into Zulip Cloud](#import-your-data-into-zulip), you will
     specify the user whose account will have the owner role when you request the
@@ -155,15 +155,15 @@ Once the import process is completed, you will need to:
     organization owner from the terminal][grant-admin-access] to mark the appropriate
     users as organization owners.
 
-1. All users from your previous workspace will have accounts in your new Zulip
+3. All users from your previous workspace will have accounts in your new Zulip
    organization. However, you will need to let users know about their new
    accounts, and [how they will log in for the first time
    ](#how-users-will-log-in-for-the-first-time).
 
-1. Share the URL for your new Zulip organization, and (recommended) the [Getting
+4. Share the URL for your new Zulip organization, and (recommended) the [Getting
    started with Zulip guide](/help/getting-started-with-zulip).
 
-1. Migrate any [integrations](/integrations).
+5. Migrate any [integrations](/integrations).
 
 {end_tabs}
 

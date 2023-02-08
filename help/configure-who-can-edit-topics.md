@@ -1,27 +1,77 @@
-# Restrict topic editing
+# Restrict moving messages
 
 {!admin-only.md!}
 
-By default, anyone can edit any message topic. This is useful because it allows
-the community to keep conversations organized, even if some members are still
-learning how to use topics effectively. However, you can restrict the ability to
-edit the topic of any message to specific [roles](/help/roles-and-permissions).
+Zulip lets you configure which [roles](/help/roles-and-permissions) can edit
+message topics and move topics between streams. In general, allowing all
+organization members to edit message topics is highly recommended because:
 
-Note that users may still be able to edit the topic of messages with
-**(no topic)**; see the full article on [message and topic
-editing](/help/configure-message-editing-and-deletion) for details.
+- It allows the community to keep conversations organized, even if some members
+  are still learning how to use topics effectively.
+- It lets users [resolve topics](/help/resolve-a-topic).
+- It makes it possible to fix a typo in the topic of a message you just sent.
 
-Also, only administrators and moderators can edit the topics of
-messages that were sent more than 3 days ago, regardless of the value
-of this setting.
+You can let users edit topics without a time limit, or prohibit topic editing on
+older messages to avoid potential abuse. The time limit will never apply to
+administrators and moderators.
 
-### Change who can edit topics
+Permissions for moving messages between streams can be configured separately.
+
+## Configure who can edit topics
+
+!!! tip ""
+    Anyone can add a topic to messages sent without a topic.
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-2. Under **Message and topic editing**, configure **Who can edit the topic of any message**.
+1. Under **Moving messages**, configure **Who can move messages to another
+   topic**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Set a time limit for editing topics
+
+!!! tip ""
+    The time limit you set will not apply to administrators and moderators.
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+1. Under **Moving messages**, configure **Time limit for editing topics**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Configure who can move messages to another stream
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+1. Under **Moving messages**, configure **Who can move messages to another
+   stream**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Set a time limit for moving messages between streams
+
+!!! tip ""
+    The time limit you set will not apply to administrators and moderators.
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+1. Under **Moving messages**, configure **Time limit for  moving messages
+   between streams**.
 
 {!save-changes.md!}
 
@@ -29,7 +79,10 @@ of this setting.
 
 ## Related articles
 
-* [Message and topic editing](/help/configure-message-editing-and-deletion)
 * [Rename a topic](/help/rename-a-topic)
+* [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
+* [Move content to another stream](/help/move-content-to-another-stream)
+* [Restrict message editing and
+  deletion](/help/configure-message-editing-and-deletion)
 * [Roles and permissions](/help/roles-and-permissions)
