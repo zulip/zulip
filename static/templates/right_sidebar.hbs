@@ -13,7 +13,7 @@
             </div>
             <template id="search-people-tooltip-template">
                 {{t 'Search people' }}
-                {{hotkey_hints "W"}}
+                {{tooltip_hotkey_hints "W"}}
             </template>
             <div class="input-append notdisplayed" id="user_search_section">
                 <input class="user-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{t 'Search people' }}" />
@@ -34,7 +34,7 @@
                 <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tooltip-template-id="keyboard-icon-tooltip-template"></i>
                 <template id="keyboard-icon-tooltip-template">
                     {{t 'Keyboard shortcuts' }}
-                    {{hotkey_hints "?"}}
+                    {{tooltip_hotkey_hints "?"}}
                 </template>
             </a>
             <div class="only-visible-for-spectators">

@@ -3,15 +3,15 @@
     <div class="edit_content message_control_button" data-tooltip-template-id="view-source-tooltip-template"></div>
     <template id="edit-content-tooltip-template">
         {{#tr}}Edit message{{/tr}}
-        {{hotkey_hints "E"}}
+        {{tooltip_hotkey_hints "E"}}
     </template>
     <template id="move-message-tooltip-template">
         {{#tr}}Move message{{/tr}}
-        {{hotkey_hints "M"}}
+        {{tooltip_hotkey_hints "M"}}
     </template>
     <template id="view-source-tooltip-template">
         {{#tr}}View message source{{/tr}}
-        {{hotkey_hints "E"}}
+        {{tooltip_hotkey_hints "E"}}
     </template>
     {{/if}}
 
@@ -21,7 +21,7 @@
     </div>
     <template id="add-emoji-tooltip-template">
         {{#tr}}Add emoji reaction{{/tr}}
-        {{hotkey_hints ":"}}
+        {{tooltip_hotkey_hints ":"}}
     </template>
     {{/unless}}
 
@@ -31,7 +31,7 @@
     </div>
     <template id="message-actions-tooltip-template">
         {{#tr}}Message actions{{/tr}}
-        {{hotkey_hints "I"}}
+        {{tooltip_hotkey_hints "I"}}
     </template>
     {{/unless}}
 
@@ -51,11 +51,11 @@
     </div>
     <template id="star-message-tooltip-template">
         <span class="starred-status">{{#tr}}Star this message{{/tr}}</span>
-        {{hotkey_hints "Ctrl" "S"}}
+        {{tooltip_hotkey_hints "Ctrl" "S"}}
     </template>
     <template id="unstar-message-tooltip-template">
         <span class="starred-status">{{#tr}}Unstar this message{{/tr}}</span>
-        {{hotkey_hints "Ctrl" "S"}}
+        {{tooltip_hotkey_hints "Ctrl" "S"}}
     </template>
     {{/unless}}
 

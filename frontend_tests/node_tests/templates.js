@@ -43,13 +43,13 @@ run_test("numberFormat", () => {
     assert.equal(html, "1,000,000\n");
 });
 
-run_test("hotkey_hints", () => {
+run_test("tooltip_hotkey_hints", () => {
     const args = {
         hotkey_one: "Ctrl",
         hotkey_two: "C",
     };
 
-    const html = require("./templates/hotkey_hints.hbs")(args);
-    const expected_html = `<span class="hotkey-hints"><span class="hotkey-hint">${args.hotkey_one}</span><span class="hotkey-hint">${args.hotkey_two}</span></span>\n`;
+    const html = require("./templates/tooltip_hotkey_hints.hbs")(args);
+    const expected_html = `<span class="tooltip-hotkey-hints"><span class="tooltip-hotkey-hint">${args.hotkey_one}</span><span class="tooltip-hotkey-hint">${args.hotkey_two}</span></span>\n`;
     assert.equal(html, expected_html);
 });
