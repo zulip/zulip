@@ -9,6 +9,7 @@ import * as peer_data from "./peer_data";
 import * as recent_topics_util from "./recent_topics_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
+import * as popovers from "./popovers";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -98,9 +99,13 @@ function bind_title_area_handlers() {
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
     });
 
     $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
+        // Hide all popovers when the user clicks on the search bar.
+        popovers.hide_all();
+
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
             return;
@@ -175,6 +180,7 @@ export function initialize() {
         exit_search();
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
     });
 }
 
