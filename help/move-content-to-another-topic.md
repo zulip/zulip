@@ -12,9 +12,7 @@ topics](/help/mute-a-topic) are automatically migrated when an entire
 topic is moved.
 
 Organizations can [configure](/help/configure-who-can-edit-topics) which
-[roles](/help/roles-and-permissions) have permission to modify topics. See the
-[guide to message and topic editing](/help/configure-message-editing-and-deletion)
-for the details on when topic editing is allowed.
+[roles](/help/roles-and-permissions) have permission to modify topics.
 
 ## Move messages to another topic
 
@@ -39,4 +37,4 @@ for the details on when topic editing is allowed.
 
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another stream](/help/move-content-to-another-stream)
-* [Configure message editing and deletion](/help/configure-message-editing-and-deletion)
+* [Restrict moving messages](/help/configure-who-can-edit-topics)
