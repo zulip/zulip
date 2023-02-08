@@ -2558,6 +2558,26 @@ select.invite-as {
     opacity: 0.5;
 }
 
+.zulip-icon.zulip-icon-globe {
+    font-size: 12px;
+    position: relative;
+    top: 1px;
+}
+
+.fa-lock {
+    font-size: 15px;
+    position: relative;
+    top: 1px;
+}
+
+.stream-icon {
+    font-size: 15px;
+    font-weight: 800;
+    position: relative;
+    top: 1px;
+    margin-left: 2px;
+}
+
 .sub-unsub-message span {
     font-size: 1em;
     text-transform: none;

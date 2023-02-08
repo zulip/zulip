@@ -305,6 +305,17 @@ export class MessageList {
         } else if (!subscribed && !this.last_message_historical) {
             just_unsubscribed = true;
         }
+
+        // Adding a stream icon to bookend inline message rendered
+        // after subscribe/unsubscribe
+        let stream_icon = sub !== undefined && "hashtag";
+        if (sub !== undefined) {
+            if (sub.invite_only) {
+                stream_icon = "fa fa-lock";
+            } else if (sub.is_web_public) {
+                stream_icon = "zulip-icon zulip-icon-globe";
+            }
+        }
         this.view.render_trailing_bookend(
             stream_name,
             subscribed,
@@ -312,6 +323,7 @@ export class MessageList {
             just_unsubscribed,
             can_toggle_subscription,
             page_params.is_spectator,
+            stream_icon,
         );
     }
 
