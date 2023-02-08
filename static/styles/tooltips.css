@@ -66,7 +66,7 @@
      */
     text-align: left;
 
-    .hotkey-hints {
+    .tooltip-hotkey-hints {
         box-sizing: inherit;
         display: flex;
         align-self: flex-start;
@@ -74,7 +74,7 @@
         gap: 4px;
     }
 
-    .hotkey-hint {
+    .tooltip-hotkey-hint {
         box-sizing: inherit;
         border: 1px solid hsla(225, 100%, 84%, 1);
         border-radius: 3px;

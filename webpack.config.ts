@@ -143,7 +143,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                             "t",
                             "tr",
                             "rendered_markdown",
-                            "hotkey_hints",
+                            "tooltip_hotkey_hints",
                         ],
                         preventIndent: true,
                     },
