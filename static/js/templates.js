@@ -106,13 +106,13 @@ Handlebars.registerHelper(
 
 Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
 
-Handlebars.registerHelper("hotkey_hints", (...hotkeys) => {
+Handlebars.registerHelper("tooltip_hotkey_hints", (...hotkeys) => {
     hotkeys.pop(); // Handlebars options
     let hotkey_hints = "";
     common.adjust_mac_tooltip_keys(hotkeys);
     for (const hotkey of hotkeys) {
-        hotkey_hints += `<span class="hotkey-hint">${hotkey}</span>`;
+        hotkey_hints += `<span class="tooltip-hotkey-hint">${hotkey}</span>`;
     }
-    const result = `<span class="hotkey-hints">${hotkey_hints}</span>`;
+    const result = `<span class="tooltip-hotkey-hints">${hotkey_hints}</span>`;
     return new Handlebars.SafeString(result);
 });
