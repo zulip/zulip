@@ -17,12 +17,13 @@ A few settings to highlight:
 
 * [Add custom emoji](/help/custom-emoji), including your organization's logo.
 
-For many other settings, e.g. [message and topic editing
-permissions][topic-editing-permissions], you can experience how Zulip
-works for your organization before deciding what settings are best for
+For many other settings, e.g., [message][message-editing-permissions] and
+[topic][topic-editing-permissions] editing permissions, you can experience how
+Zulip works for your organization before deciding what settings are best for
 you.
 
-[topic-editing-permissions]: /help/configure-message-editing-and-deletion
+[message-editing-permissions]: /help/configure-message-editing-and-deletion
+[topic-editing-permissions]: /help/configure-who-can-edit-topics
 [default-code-block-language]: /help/code-blocks#default-code-block-language
 [code-playgrounds]: /help/code-blocks#code-playgrounds
 [email-address-visibility]: /help/restrict-visibility-of-email-addresses

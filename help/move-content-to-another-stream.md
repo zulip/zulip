@@ -1,9 +1,11 @@
 # Move content to another stream
 
-Zulip makes it possible to move messages, or an entire topic, to another
-stream. Organizations can [configure][move-permission-setting] which
-[roles](/help/roles-and-permissions) have permission to move messages
-between streams.
+Zulip makes it possible to move messages, or an entire topic, to another stream.
+Organizations can [configure][configure-moving-permissions] which
+[roles](/help/roles-and-permissions) have permission to move messages between
+streams.
+
+[configure-moving-permissions]: /help/configure-who-can-edit-topics#configure-who-can-move-messages-to-another-stream
 
 To help others find moved content, you can have the [notification
 bot][notification-bot] send automated notices to the source topic, the
@@ -104,7 +106,6 @@ that one does not have permission to access.
 
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Configure message editing and deletion](/help/configure-message-editing-and-deletion)
+* [Restrict moving messages](/help/configure-who-can-edit-topics)
 
-[move-permission-setting]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
 [notification-bot]: /help/configure-notification-bot

@@ -37,10 +37,7 @@ approaches for deciding when to mark a topic as resolved:
 
 Users can resolve and unresolve a topic if they have permission to edit
 topics. Organization administrators can [configure who can edit
-topics](/help/configure-who-can-edit-topics) or turn off message
-editing entirely. See the [guide to message and topic
-editing](/help/configure-message-editing-and-deletion) for details
-on when topic editing is allowed.
+topics](/help/configure-who-can-edit-topics).
 
 ## Mark a topic as resolved
 
@@ -111,5 +108,4 @@ on when topic editing is allowed.
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Restrict topic editing](/help/configure-who-can-edit-topics)
-* [Configure message editing and deletion](/help/configure-message-editing-and-deletion)
 * [API documentation for resolving topics](/api/update-message)
