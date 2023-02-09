@@ -1,5 +1,5 @@
-import google_blob_sheet from "emoji-datasource-google-blob/img/google/sheets-256/64.png";
 import google_sheet from "emoji-datasource-google/img/google/sheets-256/64.png";
+import google_blob_sheet from "emoji-datasource-google-blob/img/google/sheets-256/64.png";
 import twitter_sheet from "emoji-datasource-twitter/img/twitter/sheets-256/64.png";
 
 import octopus_url from "../generated/emoji/images-google-64/1f419.png";
