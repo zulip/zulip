@@ -10,7 +10,7 @@ context](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-messag
 will automatically redirect to the new location of the message. [Muted
 topics](/help/mute-a-topic) are automatically migrated when a topic is renamed.
 
-Organizations can [configure](/help/configure-who-can-edit-topics) which
+Organizations can [configure](/help/restrict-moving-messages) which
 [roles](/help/roles-and-permissions) have permission to rename topics.
 
 ## Rename a topic
@@ -51,5 +51,4 @@ Organizations can [configure](/help/configure-who-can-edit-topics) which
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Move content to another stream](/help/move-content-to-another-stream)
 * [Resolve a topic](/help/resolve-a-topic)
-* [Restrict moving messages](/help/configure-who-can-edit-topics)
-
+* [Restrict moving messages](/help/restrict-moving-messages)

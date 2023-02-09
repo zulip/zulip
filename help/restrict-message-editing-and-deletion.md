@@ -58,4 +58,4 @@ irretrievably) removes the message from Zulip.
 * [Delete a topic](/help/delete-a-topic)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Configure message retention policy](/help/message-retention-policy)
-* [Restrict moving messages](/help/configure-who-can-edit-topics)
+* [Restrict moving messages](/help/restrict-moving-messages)
