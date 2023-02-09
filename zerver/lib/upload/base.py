@@ -62,7 +62,7 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
         im = ImageOps.exif_transpose(im)
-        im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
+        im = ImageOps.fit(im, (size, size), Image.Resampling.LANCZOS)
     except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
@@ -78,7 +78,7 @@ def resize_logo(image_data: bytes) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
         im = ImageOps.exif_transpose(im)
-        im.thumbnail((8 * DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.ANTIALIAS)
+        im.thumbnail((8 * DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.Resampling.LANCZOS)
     except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
@@ -101,7 +101,7 @@ def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
         im.seek(frame_num)
         new_frame = im.copy()
         new_frame.paste(im, (0, 0), im.convert("RGBA"))
-        new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
+        new_frame = ImageOps.pad(new_frame, (size, size), Image.Resampling.LANCZOS)
         frames.append(new_frame)
         if im.info.get("duration") is None:  # nocoverage
             raise BadImageError(_("Corrupt animated image."))
@@ -156,7 +156,7 @@ def resize_emoji(
             still_image = im.copy()
             still_image.seek(0)
             still_image = ImageOps.exif_transpose(still_image)
-            still_image = ImageOps.fit(still_image, (size, size), Image.ANTIALIAS)
+            still_image = ImageOps.fit(still_image, (size, size), Image.Resampling.LANCZOS)
             out = io.BytesIO()
             still_image.save(out, format="PNG")
             still_image_data = out.getvalue()
@@ -169,7 +169,7 @@ def resize_emoji(
             # Note that this is essentially duplicated in the
             # still_image code path, above.
             im = ImageOps.exif_transpose(im)
-            im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
+            im = ImageOps.fit(im, (size, size), Image.Resampling.LANCZOS)
             out = io.BytesIO()
             im.save(out, format=image_format)
             return out.getvalue(), False, None
