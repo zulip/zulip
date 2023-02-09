@@ -56,6 +56,7 @@ const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 
 function reset_jquery() {
@@ -304,10 +305,10 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("#compose-textarea").toggleClass = noop;
+    override_rewire(stream_bar, "decorate", noop);
     mock_stream_header_colorblock();
     compose_actions.open_compose_stream_dropup = noop;
     compose.update_on_recipient_change = noop;
-    compose_ui.on_compose_select_stream_update = noop;
     let stream_value = "";
     compose_ui.compose_stream_widget = {
         value() {
@@ -367,6 +368,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
     mock_stream_header_colorblock();
+    override_rewire(stream_bar, "decorate", noop);
 
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
@@ -764,6 +766,7 @@ test_ui("on_events", ({override}) => {
 
 test_ui("create_message_object", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
+    override_rewire(stream_bar, "decorate", noop);
 
     compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");

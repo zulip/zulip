@@ -5,6 +5,7 @@ import {insert, replace, set, wrapSelection} from "text-field-edit";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t} from "./i18n";
 import * as loading from "./loading";
@@ -557,4 +558,31 @@ export function initialize_compose_stream_dropdown() {
         compose_actions.open_compose_stream_dropup();
         e.stopPropagation();
     });
+}
+
+export function update_stream_dropdown_options() {
+    const streams_list = stream_data
+        .subscribed_subs()
+        .filter((stream) => stream_data.can_post_messages_in_stream(stream))
+        .map((stream) => ({
+            name: stream.name,
+            value: stream.name,
+        }))
+        .sort((a, b) => {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                return -1;
+            }
+            if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                return 1;
+            }
+            return 0;
+        });
+    compose_stream_widget.replace_data(streams_list);
+}
+
+export function possibly_update_dropdown_selection(old_stream_name, new_stream_name) {
+    const selected_stream = compose_state.stream_name();
+    if (selected_stream === old_stream_name) {
+        compose_state.set_stream_name(new_stream_name);
+    }
 }

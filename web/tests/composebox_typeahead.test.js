@@ -38,6 +38,7 @@ const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
+const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -675,7 +676,7 @@ function sorted_names_from(subs) {
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
     compose.update_on_recipient_change = noop;
-    compose_ui.on_compose_select_stream_update = noop;
+    override_rewire(stream_bar, "decorate", noop);
 
     let pill_items = [];
     let cleared = false;
@@ -1722,6 +1723,7 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
             stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
     );
     mock_stream_header_colorblock();
+    override_rewire(stream_bar, "decorate", noop);
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_name("");
