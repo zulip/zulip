@@ -183,10 +183,14 @@
     }
 
     .compose_banner {
+        .above_compose_banner_action_link {
+            color: hsl(200, 100%, 50%);
+        }
+
         &.success {
             background-color: hsl(147, 100%, 8%);
             border-color: hsla(149, 48%, 52%, 0.4);
-            color: hsl(147, 51%, 55%);
+            color: hsl(147, 51%, 80%);
 
             .compose_banner_close_button {
                 color: hsl(147, 51%, 55%, 0.5);
@@ -204,7 +208,7 @@
         &.warning {
             background-color: hsl(53, 100%, 11%);
             border-color: hsla(38, 44%, 60%, 0.4);
-            color: hsl(50, 45%, 61%);
+            color: hsl(50, 45%, 80%);
 
             .compose_banner_close_button {
                 color: hsl(50, 45%, 61%, 0.5);
@@ -220,7 +224,7 @@
 
             .compose_banner_action_button {
                 background-color: hsla(50, 45%, 61%, 0.1);
-                color: inherit;
+                color: hsl(50, 45%, 61%);
 
                 &:hover {
                     background-color: hsla(50, 45%, 61%, 0.15);
@@ -235,7 +239,7 @@
         &.error {
             background-color: hsl(0, 60%, 19%);
             border-color: hsla(3, 73%, 74%, 0.4);
-            color: hsl(3, 73%, 74%);
+            color: hsl(3, 73%, 80%);
 
             .compose_banner_close_button {
                 color: hsla(3, 73%, 74%, 0.5);
@@ -251,7 +255,7 @@
 
             .compose_banner_action_button {
                 background-color: hsla(3, 73%, 74%, 0.1);
-                color: inherit;
+                color: hsl(3, 73%, 74%);
 
                 &:hover {
                     background: hsla(3, 73%, 74%, 0.15);
@@ -267,7 +271,7 @@
             background-color: hsl(204, 100%, 12%);
             border-color: hsla(205, 58%, 69%, 0.4);
             position: relative;
-            color: hsl(205, 58%, 69%);
+            color: hsl(205, 58%, 80%);
 
             .compose_banner_close_button {
                 color: hsla(205, 58%, 69%, 0.5);
