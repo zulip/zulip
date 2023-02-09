@@ -25,7 +25,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from urllib.parse import urlencode, urljoin, urlsplit
+from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -835,28 +835,30 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_id(self, url: str) -> Optional[str]:
         if not self.zmd.image_preview_enabled:
             return None
-        # YouTube video id extraction regular expression from https://pastebin.com/KyKAFv1s
-        # Slightly modified to support URLs of the forms
-        #   - youtu.be/<id>
-        #   - youtube.com/playlist?v=<id>&list=<list-id>
-        #   - youtube.com/watch_videos?video_ids=<id1>,<id2>,<id3>
-        # If it matches, match.group(2) is the video id.
-        schema_re = r"(?:https?://)"
-        host_re = r"(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)"
-        param_re = (
-            r"(?:(?:(?:v|embed)/)"
-            r"|(?:(?:(?:watch|playlist)(?:_popup|_videos)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v(?:ideo_ids)?=))"
-        )
-        id_re = r"([0-9A-Za-z_-]+)"
-        youtube_re = r"^({schema_re}?{host_re}{param_re}?)?{id_re}(?(1).+)?$"
-        youtube_re = youtube_re.format(
-            schema_re=schema_re, host_re=host_re, id_re=id_re, param_re=param_re
-        )
-        match = re.match(youtube_re, url)
-        # URLs of the form youtube.com/playlist?list=<list-id> are incorrectly matched
-        if match is None or match.group(2) == "playlist":
-            return None
-        return match.group(2)
+
+        id = None
+        split_url = urlsplit(url)
+        if split_url.scheme in ("http", "https"):
+            if split_url.hostname in (
+                "m.youtube.com",
+                "www.youtube.com",
+                "www.youtube-nocookie.com",
+                "youtube.com",
+                "youtube-nocookie.com",
+            ):
+                query = parse_qs(split_url.query)
+                if split_url.path in ("/watch", "/watch_popup") and "v" in query:
+                    id = query["v"][0]
+                elif split_url.path == "/watch_videos" and "video_ids" in query:
+                    id = query["video_ids"][0].split(",", 1)[0]
+                elif split_url.path.startswith(("/embed/", "/shorts/", "/v/")):
+                    id = split_url.path.split("/", 3)[2]
+            elif split_url.hostname == "youtu.be" and split_url.path.startswith("/"):
+                id = split_url.path[len("/") :]
+
+        if id is not None and re.fullmatch(r"[0-9A-Za-z_-]+", id):
+            return id
+        return None
 
     def youtube_title(self, extracted_data: UrlEmbedData) -> Optional[str]:
         if extracted_data.title is not None:
