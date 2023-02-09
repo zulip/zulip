@@ -3803,7 +3803,7 @@ paths:
                                     allow_message_editing:
                                       type: boolean
                                       description: |
-                                        Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
+                                        Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
                                         allows editing the content of messages.
                                     authentication_methods:
                                       type: object
@@ -3826,7 +3826,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot have
                                         their topics edited by other users with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
+                                        [message edit policy](/help/restrict-message-editing-and-deletion).
 
                                         **Changes**: New in Zulip 3.0 (feature level 11). Previously this
                                         value was hardcoded to 86400 seconds (1 day).
@@ -4016,7 +4016,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be deleted
                                         with this organization's
-                                        [message deletion policy](/help/configure-message-editing-and-deletion).
+                                        [message deletion policy](/help/restrict-message-editing-and-deletion).
 
                                         Will not be 0. A 'null' value means no limit: messages can be deleted
                                         regardless of how long ago they were sent.
@@ -4029,7 +4029,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be edited
                                         with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
+                                        [message edit policy](/help/restrict-message-editing-and-deletion).
 
                                         **Changes**: No limit was represented using the
                                         special value `0` before Zulip 6.0 (feature level 138).
@@ -6503,7 +6503,7 @@ paths:
         Before Zulip 7.0 (feature level 159), message senders were allowed
         to edit the topic indefinitely.
 
-        [config-message-editing]: /help/configure-message-editing-and-deletion
+        [config-message-editing]: /help/restrict-message-editing-and-deletion
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -12176,7 +12176,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be deleted
                           with this organization's
-                          [message deletion policy](/help/configure-message-editing-and-deletion).
+                          [message deletion policy](/help/restrict-message-editing-and-deletion).
 
                           Will not be 0. A 'null' value means no limit: messages can be deleted
                           regardless of how long ago they were sent.
@@ -12201,7 +12201,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
+                          Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
                           allows editing the content of messages.
                       realm_edit_topic_policy:
                         type: integer
@@ -12231,7 +12231,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be edited
                           with this organization's
-                          [message edit policy](/help/configure-message-editing-and-deletion).
+                          [message edit policy](/help/restrict-message-editing-and-deletion).
 
                           Will not be 0. A 'null' value means no limit: messages can be edited
                           regardless of how long ago they were sent.
@@ -12277,7 +12277,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot have
                           their topics edited by other users with this organization's
-                          [message edit policy](/help/configure-message-editing-and-deletion).
+                          [message edit policy](/help/restrict-message-editing-and-deletion).
 
                           **Changes**: New in Zulip 3.0 (feature level 11). Previously this
                           value was hardcoded to 86400 seconds (1 day).
