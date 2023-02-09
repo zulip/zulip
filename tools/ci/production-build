@@ -45,7 +45,7 @@ cp -a \
 
 # Check that webpack bundles use only ES2019 syntax.
 # Use the yarn binary installed by tools/provision.
-YARN="/srv/zulip-yarn/bin/yarn"
+YARN="/usr/local/bin/yarn"
 tar -C /tmp -xzf /tmp/production-build/zulip-server-test.tar.gz zulip-server-test/prod-static/serve/webpack-bundles
 (
     GLOBIGNORE=/tmp/zulip-server-test/prod-static/serve/webpack-bundles/katex-cli.js

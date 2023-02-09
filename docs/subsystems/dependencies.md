@@ -250,16 +250,15 @@ reasoning here.
 ## Node.js and Yarn
 
 Node.js is installed by `scripts/lib/install-node` to
-`/srv/zulip-node` and symlinked to `/usr/local/bin/node`. Yarn is
-installed by `scripts/lib/install-yarn` to `/srv/zulip-yarn` and
-symlinked to `/usr/bin/yarn`.
+`/srv/zulip-node` and symlinked to `/usr/local/bin/node`. A Yarn
+symlink at `/usr/local/bin/yarn` is managed by
+[Corepack](https://nodejs.org/api/corepack.html).
 
 We don't do anything special to try to manage multiple versions of
-Node.js or Yarn. (Previous versions of Zulip installed multiple
-versions of Node.js using the third-party `nvm` installer, but the
-current version no longer uses `nvm`; if it’s present in
-`/usr/local/nvm` where previous versions installed it, it will now be
-removed.)
+Node.js. (Previous versions of Zulip installed multiple versions of
+Node.js using the third-party `nvm` installer, but the current version
+no longer uses `nvm`; if it’s present in `/usr/local/nvm` where
+previous versions installed it, it will now be removed.)
 
 ## ShellCheck and shfmt
 
