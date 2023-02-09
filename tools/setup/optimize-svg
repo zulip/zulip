@@ -42,7 +42,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
-YARN="/srv/zulip-yarn/bin/yarn"
+YARN="/usr/local/bin/yarn"
 
 if [ -n "$CHECK_UNOPTIMIZED" ]; then
     if [ "$(node_modules/.bin/svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)" -ge 1 ]; then
