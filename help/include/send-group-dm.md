@@ -2,7 +2,7 @@
 
 {tab|desktop-web}
 
-1. Click the **New private message** button at the bottom of the app, or
+1. Click the **New direct message** button at the bottom of the app, or
    use the <kbd>X</kbd> keyboard shortcut.
 
 1. Start typing the name of the person you want to message, and
@@ -14,7 +14,7 @@
 {tab|mobile}
 
 1. Tap the **Private messages**
-   ( <img src="/static/images/help/mobile-pm-tab-icon.svg" alt="private messages" class="mobile-icon"/> )
+   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="private messages" class="mobile-icon"/> )
    tab at the bottom of the app.
 
 2. Tap the **New group PM** button at the top of the app.
