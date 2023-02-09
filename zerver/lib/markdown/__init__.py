@@ -10,6 +10,7 @@ import urllib
 import urllib.parse
 from collections import deque
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import (
     Any,
     Callable,
@@ -101,24 +102,6 @@ html_safelisted_schemes = (
 allowed_schemes = ("http", "https", "ftp", "file", *html_safelisted_schemes)
 
 
-def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
-    """
-    Use this decorator with extreme caution.
-    The function you wrap should have no dependency
-    on any arguments (no args, no kwargs) nor should
-    it depend on any global state.
-    """
-    val = None
-
-    def cache_wrapper() -> ReturnT:
-        nonlocal val
-        if val is None:
-            val = method()
-        return val
-
-    return cache_wrapper
-
-
 class LinkInfo(TypedDict):
     parent: Element
     title: Optional[str]
@@ -174,7 +157,7 @@ STREAM_LINK_REGEX = rf"""
                     """
 
 
-@one_time
+@lru_cache(None)
 def get_compiled_stream_link_regex() -> Pattern[str]:
     # Not using verbose_compile as it adds ^(.*?) and
     # (.*?)$ which cause extra overhead of matching
@@ -197,7 +180,7 @@ STREAM_TOPIC_LINK_REGEX = rf"""
                    """
 
 
-@one_time
+@lru_cache(None)
 def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     # Not using verbose_compile as it adds ^(.*?) and
     # (.*?)$ which cause extra overhead of matching
@@ -210,17 +193,12 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     )
 
 
-LINK_REGEX: Optional[Pattern[str]] = None
-
-
+@lru_cache(None)
 def get_web_link_regex() -> Pattern[str]:
     # We create this one time, but not at startup.  So the
     # first message rendered in any process will have some
     # extra costs.  It's roughly 75ms to run this code, so
-    # caching the value in LINK_REGEX is super important here.
-    global LINK_REGEX
-    if LINK_REGEX is not None:
-        return LINK_REGEX
+    # caching the value is super important here.
 
     tlds = "|".join(list_of_tlds())
 
@@ -269,16 +247,14 @@ def get_web_link_regex() -> Pattern[str]:
             (?:\Z|\s)                  # followed by whitespace or end of string
         )
         """
-    LINK_REGEX = verbose_compile(REGEX)
-    return LINK_REGEX
+    return verbose_compile(REGEX)
 
 
 def clear_state_for_testing() -> None:
     # The link regex never changes in production, but our tests
     # try out both sides of ENABLE_FILE_LINKS, so we need
     # a way to clear it.
-    global LINK_REGEX
-    LINK_REGEX = None
+    get_web_link_regex.cache_clear()
 
 
 markdown_logger = logging.getLogger()
