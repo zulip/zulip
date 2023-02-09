@@ -55,7 +55,7 @@ priority.
   [invite to streams](/help/configure-who-can-invite-to-streams),
   [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
   [add integrations and bots](/help/restrict-bot-creation),
-  [edit or delete messages](/help/configure-message-editing-and-deletion),
+  [edit or delete messages](/help/restrict-message-editing-and-deletion),
   and more.
 
 [waiting_period]: /help/restrict-permissions-of-new-members
@@ -91,8 +91,8 @@ priority.
 
 ## Integrity and auditing
 
-- Zulip owners and administrators can configure users’
-  [ability to edit or delete messages](/help/configure-message-editing-and-deletion),
+- Zulip owners and administrators can restrict users’
+  [ability to edit or delete messages](/help/restrict-message-editing-and-deletion),
   and whether deleted messages are retained in the database or deleted
   permanently. Zulip by default stores the complete history of all message
   content on the platform, including edits and deletions, and all uploaded

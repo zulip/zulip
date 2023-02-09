@@ -22,4 +22,4 @@ also disable viewing of message edit history more generally.
 
 ## Related articles
 
-* [Restrict message editing and deletion](/help/configure-message-editing-and-deletion)
+* [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)

@@ -190,7 +190,7 @@
 * [Restrict private messages](/help/restrict-private-messages)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Restrict moving messages](/help/configure-who-can-edit-topics)
-* [Restrict message editing](/help/configure-message-editing-and-deletion)
+* [Restrict message editing](/help/restrict-message-editing-and-deletion)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
