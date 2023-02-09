@@ -273,7 +273,7 @@ editor](https://prettier.io/docs/en/editors.html).
 
 Combine adjacent on-ready functions, if they are logically related.
 
-The best way to build complicated DOM elements is a Mustache template
+The best way to build complicated DOM elements is a Handlebars template
 like `static/templates/message_reactions.hbs`. For simpler things
 you can use jQuery DOM building APIs like so:
 
