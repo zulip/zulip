@@ -800,6 +800,12 @@ The version of PostgreSQL that is in use. Do not set by hand; use the
 Override the number of megabytes of memory that memcached should be
 configured to consume; defaults to 1/8th of the total server memory.
 
+#### `max_item_size`
+
+Override the maximum size that an item in memcached can store. This defaults to
+1m; adjusting it should only be necessary if your Zulip server has organizations
+which have more than 20k users.
+
 ### `[loadbalancer]`
 
 #### `ips`
