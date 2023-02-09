@@ -29,11 +29,7 @@ VENV_DEPENDENCIES = [
     # Needed by python-xmlsec:
     "libxmlsec1-dev",
     "pkg-config",
-    # This is technically a node dependency, but we add it here
-    # because we don't have another place that we install apt packages
-    # on upgrade of a production server, and it's not worth adding
-    # another call to `apt install` for.
-    "jq",  # Used by scripts/lib/install-yarn to check yarn version
+    "jq",  # No longer used in production (clean me up later)
     "libsasl2-dev",  # For building python-ldap from source
 ]
 
