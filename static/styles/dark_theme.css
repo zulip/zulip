@@ -364,6 +364,10 @@
         color: hsl(212, 28%, 18%);
     }
 
+    .message_header {
+        box-shadow: 0 -1px 0 0 hsl(212, 28%, 18%);
+    }
+
     /* these are converting grey things to "new grey" */
     :disabled,
     input:not([type="radio"]):read-only,

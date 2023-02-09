@@ -1471,6 +1471,8 @@ export class MessageListView {
         const partially_hidden_header_position = visible_top - 1;
 
         function is_sticky(header) {
+            // header has a box-shodow of `1px` at top but since it doesn't impact
+            // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
             // This value is dependent upon margin-bottom applied to recipient row.
             const margin_between_recipient_rows = 10;
