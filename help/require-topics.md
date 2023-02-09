@@ -25,4 +25,4 @@ displayed as **(no topic)**.
 
 Any user can [add a topic](/help/rename-a-topic) to messages without a topic.
 They can do so regardless of whether they can [edit topics in
-general](/help/configure-who-can-edit-topics).
+general](/help/restrict-moving-messages).

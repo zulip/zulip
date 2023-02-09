@@ -23,7 +23,7 @@ Zulip works for your organization before deciding what settings are best for
 you.
 
 [message-editing-permissions]: /help/restrict-message-editing-and-deletion
-[topic-editing-permissions]: /help/configure-who-can-edit-topics
+[topic-editing-permissions]: /help/restrict-moving-messages
 [default-code-block-language]: /help/code-blocks#default-code-block-language
 [code-playgrounds]: /help/code-blocks#code-playgrounds
 [email-address-visibility]: /help/restrict-visibility-of-email-addresses

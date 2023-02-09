@@ -5,7 +5,7 @@ Organizations can [configure][configure-moving-permissions] which
 [roles](/help/roles-and-permissions) have permission to move messages between
 streams.
 
-[configure-moving-permissions]: /help/configure-who-can-edit-topics#configure-who-can-move-messages-to-another-stream
+[configure-moving-permissions]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream
 
 To help others find moved content, you can have the [notification
 bot][notification-bot] send automated notices to the source topic, the
@@ -106,6 +106,6 @@ that one does not have permission to access.
 
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Restrict moving messages](/help/configure-who-can-edit-topics)
+* [Restrict moving messages](/help/restrict-moving-messages)
 
 [notification-bot]: /help/configure-notification-bot
