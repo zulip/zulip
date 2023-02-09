@@ -12,6 +12,7 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose_fade = zrequire("compose_fade");
 const compose_ui = zrequire("compose_ui");
+const stream_bar = zrequire("stream_bar");
 
 const noop = () => {};
 
@@ -37,12 +38,12 @@ run_test("private_message_recipient", ({override}) => {
     assert.equal(compose_state.private_message_recipient(), "fred@fred.org");
 });
 
-run_test("has_full_recipient", ({override}) => {
+run_test("has_full_recipient", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
     $(`#compose_banners .topic_resolved`).remove = noop;
     compose_fade.update_all = noop;
     $(".narrow_to_compose_recipients").toggleClass = noop;
-    compose_ui.on_compose_select_stream_update = noop;
+    override_rewire(stream_bar, "decorate", noop);
 
     let emails;
     override(compose_pm_pill, "set_from_emails", (value) => {
