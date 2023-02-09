@@ -1087,6 +1087,7 @@ td.pointer {
         position: sticky;
         top: $sidebar_top;
         z-index: 3;
+        box-shadow: 0 -1px 0 0 hsl(0, 0%, 100%);
 
         @media (width < $sm_min) {
             top: $sidebar_top_sm;
