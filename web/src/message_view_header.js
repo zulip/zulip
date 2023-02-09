@@ -6,6 +6,7 @@ import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as popovers from "./popovers";
 import * as recent_topics_util from "./recent_topics_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
@@ -89,12 +90,15 @@ function append_and_display_title_area(message_view_header_data) {
 
 function bind_title_area_handlers() {
     $(".search_closed").on("click", (e) => {
+        popovers.hide_all();
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
     });
 
     $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
+        popovers.hide_all();
+
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
             return;
@@ -166,6 +170,7 @@ export function initialize() {
 
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
+        popovers.hide_all();
         exit_search();
         e.preventDefault();
         e.stopPropagation();
