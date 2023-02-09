@@ -84,5 +84,5 @@ Permissions for moving messages between streams can be configured separately.
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Move content to another stream](/help/move-content-to-another-stream)
 * [Restrict message editing and
-  deletion](/help/configure-message-editing-and-deletion)
+  deletion](/help/restrict-message-editing-and-deletion)
 * [Roles and permissions](/help/roles-and-permissions)

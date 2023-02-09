@@ -4039,7 +4039,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved within a
                                         stream by members with this organization's [message move
-                                        policy](/help/configure-who-can-edit-topics). This setting does not
+                                        policy](/help/restrict-moving-messages). This setting does not
                                         affect moderators and administrators.
 
                                         Will not be 0. A 'null' value means no limit: messages can be moved
@@ -4053,7 +4053,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved between
                                         streams by members with this organization's [message move
-                                        policy](/help/configure-who-can-edit-topics). This setting does not
+                                        policy](/help/restrict-moving-messages). This setting does not
                                         affect moderators and administrators.
 
                                         Will not be 0. A 'null' value means no limit: messages can be moved
@@ -12246,7 +12246,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be moved within a
                           stream by members with this organization's [message move
-                          policy](/help/configure-who-can-edit-topics). This setting does not
+                          policy](/help/restrict-moving-messages). This setting does not
                           affect moderators and administrators.
 
                           Will not be 0. A 'null' value means no limit: messages can be moved
@@ -12262,7 +12262,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be moved between
                           streams by members with this organization's [message move
-                          policy](/help/configure-who-can-edit-topics). This setting does not
+                          policy](/help/restrict-moving-messages). This setting does not
                           affect moderators and administrators.
 
                           Will not be 0. A 'null' value means no limit: messages can be moved
