@@ -99,6 +99,13 @@ export class DropdownListWidget {
         });
     }
 
+    get_data = (data) => {
+        if (this.include_current_item) {
+            return data;
+        }
+        return data.filter((x) => x.value !== this.value.toString());
+    };
+
     setup_dropdown_widget(data) {
         const $dropdown_list_body = $(
             `#${CSS.escape(this.container_id)} .dropdown-list-body`,
@@ -106,14 +113,8 @@ export class DropdownListWidget {
         const $search_input = $(
             `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
         );
-        const get_data = () => {
-            if (this.include_current_item) {
-                return data;
-            }
-            return data.filter((x) => x.value !== this.value.toString());
-        };
 
-        ListWidget.create($dropdown_list_body, get_data(data), {
+        ListWidget.create($dropdown_list_body, this.get_data(data), {
             name: `${CSS.escape(this.widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});
