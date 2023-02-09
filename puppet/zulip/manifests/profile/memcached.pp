@@ -18,6 +18,7 @@ class zulip::profile::memcached {
   }
   package { $memcached_packages: ensure => installed }
 
+  $memcached_max_item_size = zulipconf('memcached', 'max_item_size', '1m')
   $memcached_memory = zulipconf('memcached', 'memory', $zulip::common::total_memory_mb / 8)
   file { '/etc/sasl2':
     ensure => directory,
