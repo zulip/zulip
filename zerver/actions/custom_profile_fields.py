@@ -1,6 +1,7 @@
 from typing import Dict, Iterable, List, Optional, Union
 
 import orjson
+import phonenumbers
 from django.db import transaction
 from django.utils.translation import gettext as _
 
@@ -159,6 +160,12 @@ def do_update_user_custom_profile_data_if_changed(
             # in string form to correctly make comparisons and assignments.
             if isinstance(custom_profile_field["value"], str):
                 custom_profile_field_value_string = custom_profile_field["value"]
+                # if field is a phone number field we need to reformat phone number
+                if field_value.field.field_type == 9:
+                    phone_number = phonenumbers.parse(custom_profile_field["value"])
+                    custom_profile_field_value_string = phonenumbers.format_number(
+                        phone_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL
+                    )
             else:
                 custom_profile_field_value_string = orjson.dumps(
                     custom_profile_field["value"]

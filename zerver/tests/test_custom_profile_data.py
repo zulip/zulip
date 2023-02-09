@@ -376,6 +376,16 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
+    def test_create_field_of_type_phone_number(self) -> None:
+        self.login("iago")
+        data = {
+            "name": "Phone",
+            "hint": "Please add +country code in front of number!",
+            "field_type": CustomProfileField.PHONE_NUMBER,
+        }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
     def test_not_realm_admin(self) -> None:
         self.login("hamlet")
         result = self.client_post("/json/realm/profile_fields")
@@ -443,7 +453,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = user_profile.realm
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
         data: List[ProfileDataElementUpdateDict] = [
-            {"id": field.id, "value": "123456"},
+            {"id": field.id, "value": "+1 412-933-9037"},
         ]
         do_update_user_custom_profile_data_if_changed(user_profile, data)
 
@@ -483,7 +493,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         self.assertEqual(field.name, "New phone number")
         self.assertIs(field.hint, "")
-        self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+        self.assertEqual(field.field_type, CustomProfileField.PHONE_NUMBER)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
@@ -527,7 +537,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         self.assertEqual(field.name, "New phone number")
         self.assertEqual(field.hint, "New contact number")
-        self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+        self.assertEqual(field.field_type, CustomProfileField.PHONE_NUMBER)
         self.assertEqual(field.display_in_profile_summary, True)
 
         result = self.client_patch(
@@ -631,7 +641,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(result, "Field id 1234 not found.")
 
     def test_update_invalid_short_text(self) -> None:
-        field_name = "Phone number"
+        field_name = "Favorite food"
         self.assert_error_update_invalid_value(
             field_name, "t" * 201, f"{field_name} is too long (limit: 50 characters)"
         )
@@ -643,6 +653,16 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             field_name, "1909-3-5", f"{field_name} is not a date"
         )
         self.assert_error_update_invalid_value(field_name, [123], f"{field_name} is not a string")
+
+    def test_update_invalid_phone_number(self) -> None:
+        field_name = "Phone number"
+        self.assert_error_update_invalid_value(
+            field_name, "new number", f"{field_name} is not a valid number format"
+        )
+        self.assert_error_update_invalid_value(
+            field_name, "+123344567780", f"{field_name} is not a valid phone number"
+        )
+        self.assert_error_update_invalid_value(field_name, [123], f"Invalid {field_name}")
 
     def test_update_invalid_url(self) -> None:
         field_name = "Favorite website"
@@ -659,7 +679,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login("iago")
         realm = get_realm("zulip")
         fields: List[Tuple[str, Union[str, List[int]]]] = [
-            ("Phone number", "*short* text data"),
+            ("Phone number", "+1 412-933-9037"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
             ("Favorite editor", "0"),

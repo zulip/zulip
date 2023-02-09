@@ -226,6 +226,7 @@ export function append_custom_profile_fields(element_id, user_id) {
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
         [all_field_types.URL.id, "url"],
+        [all_field_types.PHONE_NUMBER.id, "text"],
         [all_field_types.PRONOUNS.id, "text"],
     ]);
 
@@ -258,6 +259,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
             is_url_field: field.type === all_field_types.URL.id,
+            is_phone_number_field: field.type === all_field_types.PHONE_NUMBER.id,
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
             is_select_field,
             field_choices,
@@ -892,4 +894,10 @@ export function set_up() {
             $("#account-settings .privacy-setting-status").expectOne(),
         );
     });
+}
+
+export function update_custom_profile_field_value(id, value) {
+    const $container = $(`div.custom_user_field[data-field-id='${CSS.escape(id)}']`);
+    const $child = $container.find(`input[type="text"]`);
+    $child.val(value);
 }
