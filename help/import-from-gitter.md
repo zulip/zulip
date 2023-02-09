@@ -107,7 +107,7 @@ keep in mind about the import process:
   workspace settings, so you will need to [configure the settings for your Zulip
   organization](/help/customize-organization-settings). This includes settings
   like [email visibility](/help/restrict-visibility-of-email-addresses),
-  [message editing permissions](/help/configure-message-editing-and-deletion),
+  [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
 
 - Gitter's export tool does not export user settings, so users in your organization
@@ -143,7 +143,7 @@ Once the import process is completed, you will need to:
 1. [Configure the settings for your organization](/help/customize-organization-settings),
    which are not exported. This includes settings like [email
    visibility](/help/restrict-visibility-of-email-addresses), [message editing
-   permissions](/help/configure-message-editing-and-deletion),
+   permissions](/help/restrict-message-editing-and-deletion),
    and [how users can join your organization](/help/restrict-account-creation).
 
 2. [Configure user roles](/help/change-a-users-role). Only organization owners

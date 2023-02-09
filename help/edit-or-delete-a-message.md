@@ -7,7 +7,7 @@
 
 By default, Zulip allows you to edit the content of your messages within 10
 minutes of when you send them. Organization administrators can
-[change the time limit](/help/configure-message-editing-and-deletion),
+[change the time limit](/help/restrict-message-editing-and-deletion),
 remove the time limit, or remove the ability to edit messages entirely.
 
 Administrators can delete other users' messages, but can never edit the
@@ -52,7 +52,7 @@ For cases where someone accidentally shared secret information publicly
 message completely.
 
 By default, only administrators can delete messages, though this can be
-[configured](/help/configure-message-editing-and-deletion) by an organization
+[configured](/help/restrict-message-editing-and-deletion) by an organization
 administrator.
 
 {start_tabs}
@@ -97,4 +97,4 @@ permissions to delete that message.
 * [Delete a topic](/help/delete-a-topic)
 * [Archive a stream](/help/archive-a-stream)
 * [Message retention policy](/help/message-retention-policy)
-* [Restrict message editing and deletion](/help/configure-message-editing-and-deletion)
+* [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)

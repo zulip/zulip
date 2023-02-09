@@ -74,8 +74,8 @@ event](/api/get-events#realm_user-add), and the
 ## Permission levels
 
 Many areas of Zulip are customizable by the roles
-above, such as (but not limited to) [configuring message editing and
-deletion](/help/configure-message-editing-and-deletion) and
+above, such as (but not limited to) [restricting message editing and
+deletion](/help/restrict-message-editing-and-deletion) and
 [streams permissions](/help/stream-permissions). The potential
 permission levels are:
 
