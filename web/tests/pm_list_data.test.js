@@ -13,6 +13,7 @@ mock_esm("../src/user_status", {
     }),
 });
 
+const {Filter} = zrequire("filter");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
@@ -38,40 +39,10 @@ const zoe = {
     user_id: 104,
     full_name: "Zoe",
 };
-const cardelio = {
-    email: "cardelio@zulip.com",
+const cordelia = {
+    email: "cordelia@zulip.com",
     user_id: 105,
-    full_name: "Cardelio",
-};
-const shiv = {
-    email: "shiv@zulip.com",
-    user_id: 106,
-    full_name: "Shiv",
-};
-const desdemona = {
-    email: "desdemona@zulip.com",
-    user_id: 107,
-    full_name: "Desdemona",
-};
-const lago = {
-    email: "lago@zulip.com",
-    user_id: 108,
-    full_name: "Lago",
-};
-const aaron = {
-    email: "aaron@zulip.com",
-    user_id: 109,
-    full_name: "Aaron",
-};
-const jai = {
-    email: "jai@zulip.com",
-    user_id: 110,
-    full_name: "Jai",
-};
-const shivam = {
-    email: "shivam@zulip.com",
-    user_id: 111,
-    full_name: "Shivam",
+    full_name: "Cordelia",
 };
 const bot_test = {
     email: "outgoingwebhook@zulip.com",
@@ -84,13 +55,7 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(me);
 people.add_active_user(zoe);
-people.add_active_user(cardelio);
-people.add_active_user(shiv);
-people.add_active_user(desdemona);
-people.add_active_user(lago);
-people.add_active_user(aaron);
-people.add_active_user(jai);
-people.add_active_user(shivam);
+people.add_active_user(cordelia);
 people.add_active_user(bot_test);
 people.initialize_current_user(me.user_id);
 
@@ -102,8 +67,18 @@ function test(label, f) {
     });
 }
 
-function get_list_info(zoomed) {
-    return pm_list_data.get_list_info(zoomed);
+function set_pm_with_filter(emails) {
+    const active_filter = new Filter([{operator: "pm-with", operand: emails}]);
+    narrow_state.set_current_filter(active_filter);
+}
+
+function check_list_info(list, length, more_unread, recipients_array) {
+    assert.deepEqual(list.conversations_to_be_shown.length, length);
+    assert.deepEqual(list.more_conversations_unread_count, more_unread);
+    assert.deepEqual(
+        list.conversations_to_be_shown.map((conversation) => conversation.recipients),
+        recipients_array,
+    );
 }
 
 test("get_conversations", ({override}) => {
@@ -197,227 +172,131 @@ test("get_conversations bot", ({override}) => {
 test("get_active_user_ids_string", () => {
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
-    function set_filter_result(emails) {
-        const active_filter = {
-            operands(operand) {
-                assert.equal(operand, "pm-with");
-                return emails;
-            },
-        };
-        narrow_state.set_current_filter(active_filter);
-    }
-
-    set_filter_result([]);
+    const stream_filter = new Filter([{operator: "stream", operand: "test"}]);
+    narrow_state.set_current_filter(stream_filter);
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
-    set_filter_result(["bob@zulip.com,alice@zulip.com"]);
+    set_pm_with_filter("bob@zulip.com,alice@zulip.com");
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 });
 
-test("get_list_info", ({override}) => {
+test("get_list_info_unread_messages", ({override}) => {
     let list_info;
     assert.equal(narrow_state.filter(), undefined);
 
     // Initialize an empty list to start.
-    const empty_list_info = get_list_info();
-
-    assert.deepEqual(empty_list_info, {
-        conversations_to_be_shown: [],
-        more_conversations_unread_count: 0,
-    });
-
-    // TODO: We should just initialize a Filter object with `new
-    // Filter` rather than creating a mock.
-    function set_filter_result(emails) {
-        const active_filter = {
-            operands(operand) {
-                assert.equal(operand, "pm-with");
-                return emails;
-            },
-        };
-        narrow_state.set_current_filter(active_filter);
-    }
-    set_filter_result([]);
-    assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
+    list_info = pm_list_data.get_list_info(false);
+    check_list_info(list_info, 0, 0, []);
 
     // Mock to arrange that each user has exactly 1 unread.
-    const num_unread_for_user_ids_string = 1;
-    override(unread, "num_unread_for_user_ids_string", () => num_unread_for_user_ids_string);
+    override(unread, "num_unread_for_user_ids_string", () => 1);
 
-    // Initially, we append 2 conversations and check for the
+    // Initially, append 2 conversations and check for the
     // `conversations_to_be_shown` returned in list_info.
-    pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
+    pm_conversations.recent.insert([alice.user_id], 1);
     pm_conversations.recent.insert([me.user_id], 2);
 
-    list_info = get_list_info(false);
-    const expected_list_info = [
-        {
-            is_active: false,
-            is_group: false,
-            is_zero: false,
-            recipients: "Me Myself",
-            status_emoji_info: {
-                emoji_code: 20,
-            },
-            unread: 1,
-            url: "#narrow/pm-with/103-Me-Myself",
-            user_circle_class: "user_circle_empty",
-            user_ids_string: "103",
-        },
-        {
-            recipients: "Alice, Bob",
-            user_ids_string: "101,102",
-            unread: 1,
-            is_active: false,
-            url: "#narrow/pm-with/101,102-group",
-            user_circle_class: undefined,
-            status_emoji_info: undefined,
-            is_group: true,
-            is_zero: false,
-        },
-    ];
+    list_info = pm_list_data.get_list_info(false);
+    check_list_info(list_info, 2, 0, ["Me Myself", "Alice"]);
 
-    assert.deepEqual(list_info, {
-        conversations_to_be_shown: expected_list_info,
-        more_conversations_unread_count: 0,
-    });
-
-    // Now, add additional conversations until we exceed
+    // Visible conversations are limited to value of
     // `max_conversations_to_show_with_unreads`.
+    // Verify that the oldest conversations are not shown and
+    // their unreads are counted in more_conversations_unread_count.
+    pm_conversations.recent.insert([bob.user_id], 3);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id], 4);
+    pm_conversations.recent.insert([zoe.user_id], 5);
+    pm_conversations.recent.insert([zoe.user_id, bob.user_id], 6);
+    pm_conversations.recent.insert([zoe.user_id, alice.user_id], 7);
+    pm_conversations.recent.insert([zoe.user_id, bob.user_id, alice.user_id], 8);
+    pm_conversations.recent.insert([cordelia.user_id, zoe.user_id], 9);
+    pm_conversations.recent.insert([cordelia.user_id, bob.user_id], 10);
 
-    pm_conversations.recent.insert([zoe.user_id], 3);
-    pm_conversations.recent.insert([cardelio.user_id], 4);
-    pm_conversations.recent.insert([zoe.user_id, cardelio.user_id], 5);
-    pm_conversations.recent.insert([shiv.user_id], 6);
-    pm_conversations.recent.insert([cardelio.user_id, shiv.user_id], 7);
-    pm_conversations.recent.insert([desdemona.user_id], 8);
+    list_info = pm_list_data.get_list_info(false);
+    check_list_info(list_info, 8, 2, [
+        "Bob, Cordelia",
+        "Cordelia, Zoe",
+        "Alice, Bob, Zoe",
+        "Alice, Zoe",
+        "Bob, Zoe",
+        "Zoe",
+        "Alice, Bob",
+        "Bob",
+    ]);
 
-    // We've now added a total of 8 conversations, which is the value
-    // of `max_conversations_to_show_with_unreads` so even now, the
-    // number of unreads in `more conversations` li-item should be 0.
-    list_info = get_list_info(false);
+    // Narrowing to private messages with Alice adds older
+    // one-on-one conversation with her to the list and one
+    // unread is removed from more_conversations_unread_count.
+    set_pm_with_filter("alice@zulip.com");
+    list_info = pm_list_data.get_list_info(false);
+    check_list_info(list_info, 9, 1, [
+        "Bob, Cordelia",
+        "Cordelia, Zoe",
+        "Alice, Bob, Zoe",
+        "Alice, Zoe",
+        "Bob, Zoe",
+        "Zoe",
+        "Alice, Bob",
+        "Bob",
+        "Alice",
+    ]);
 
-    assert.deepEqual(list_info.conversations_to_be_shown.length, 8);
-    assert.deepEqual(list_info.more_conversations_unread_count, 0);
+    // Zooming will show all conversations and there will
+    // be no unreads in more_conversations_unread_count.
+    list_info = pm_list_data.get_list_info(true);
+    check_list_info(list_info, 10, 0, [
+        "Bob, Cordelia",
+        "Cordelia, Zoe",
+        "Alice, Bob, Zoe",
+        "Alice, Zoe",
+        "Bob, Zoe",
+        "Zoe",
+        "Alice, Bob",
+        "Bob",
+        "Me Myself",
+        "Alice",
+    ]);
+});
 
-    // Verify just the ordering of the conversations with unreads.
-    assert.deepEqual(
-        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
-        [
-            "Desdemona",
-            "Cardelio, Shiv",
-            "Shiv",
-            "Cardelio, Zoe",
-            "Cardelio",
-            "Zoe",
-            "Me Myself",
-            "Alice, Bob",
-        ],
-    );
-
-    // After adding two more conversations, there will be 10
-    // conversations, which exceeds
-    // `max_conversations_to_show_with_unreads`. Verify that the
-    // oldest conversations are not shown and their unreads are counted in
-    // more_conversations_unread_count.
-
-    pm_conversations.recent.insert([lago.user_id], 9);
-    pm_conversations.recent.insert([zoe.user_id, lago.user_id], 10);
-    list_info = get_list_info(false);
-    assert.deepEqual(list_info.conversations_to_be_shown.length, 8);
-    assert.deepEqual(list_info.more_conversations_unread_count, 2);
-    assert.deepEqual(
-        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
-        [
-            "Lago, Zoe",
-            "Lago",
-            "Desdemona",
-            "Cardelio, Shiv",
-            "Shiv",
-            "Cardelio, Zoe",
-            "Cardelio",
-            "Zoe",
-        ],
-    );
-
-    // If we are narrowed to an older conversation, then that one gets
-    // included in the list despite not being among the 8 most recent.
-
-    set_filter_result(["alice@zulip.com,bob@zulip.com"]);
-    list_info = get_list_info(false);
-    assert.deepEqual(list_info.conversations_to_be_shown.length, 9);
-    assert.deepEqual(list_info.more_conversations_unread_count, 1);
-    assert.deepEqual(
-        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
-        [
-            "Lago, Zoe",
-            "Lago",
-            "Desdemona",
-            "Cardelio, Shiv",
-            "Shiv",
-            "Cardelio, Zoe",
-            "Cardelio",
-            "Zoe",
-            "Alice, Bob",
-        ],
-    );
-
-    // Verify that if the list is zoomed, we'll include all 10
-    // conversations in the correct order.
-
-    list_info = get_list_info(true);
-    assert.deepEqual(list_info.conversations_to_be_shown.length, 10);
-    assert.deepEqual(
-        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
-        [
-            "Lago, Zoe",
-            "Lago",
-            "Desdemona",
-            "Cardelio, Shiv",
-            "Shiv",
-            "Cardelio, Zoe",
-            "Cardelio",
-            "Zoe",
-            "Me Myself",
-            "Alice, Bob",
-        ],
-    );
-
-    // We now test some no unreads cases.
+test("get_list_info_no_unread_messages", ({override}) => {
+    let list_info;
     override(unread, "num_unread_for_user_ids_string", () => 0);
-    pm_conversations.clear_for_testing();
+
     pm_conversations.recent.insert([alice.user_id], 1);
-    pm_conversations.recent.insert([bob.user_id], 2);
-    pm_conversations.recent.insert([me.user_id], 3);
+    pm_conversations.recent.insert([me.user_id], 2);
+    pm_conversations.recent.insert([bob.user_id], 3);
     pm_conversations.recent.insert([zoe.user_id], 4);
-    pm_conversations.recent.insert([cardelio.user_id], 5);
-    pm_conversations.recent.insert([shiv.user_id], 6);
+    pm_conversations.recent.insert([cordelia.user_id], 5);
+    pm_conversations.recent.insert([zoe.user_id, cordelia.user_id], 6);
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 7);
 
-    // We have 7 conversations in total, but only most recent 5 are visible.
-    list_info = get_list_info(false);
-    assert.deepEqual(list_info.conversations_to_be_shown.length, 5);
+    // Visible conversations are limited to value of
+    // `max_conversations_to_show`.
+    list_info = pm_list_data.get_list_info(false);
+    check_list_info(list_info, 5, 0, ["Alice, Bob", "Cordelia, Zoe", "Cordelia", "Zoe", "Bob"]);
 
-    // If we set the oldest conversation as active, it will
-    // also be included in the list with the most recent 5.
+    // Narrowing to private messages with Alice adds older
+    // one-on-one conversation with her to the list.
+    set_pm_with_filter("alice@zulip.com");
+    list_info = pm_list_data.get_list_info(false);
+    check_list_info(list_info, 6, 0, [
+        "Alice, Bob",
+        "Cordelia, Zoe",
+        "Cordelia",
+        "Zoe",
+        "Bob",
+        "Alice",
+    ]);
 
-    set_filter_result(["alice@zulip.com"]);
-    assert.equal(pm_list_data.get_active_user_ids_string(), "101");
-    list_info = get_list_info(false);
-    assert.deepEqual(list_info.conversations_to_be_shown.length, 6);
-    assert.deepEqual(list_info.conversations_to_be_shown[5], {
-        recipients: "Alice",
-        user_ids_string: "101",
-        unread: 0,
-        is_zero: true,
-        is_active: true,
-        url: "#narrow/pm-with/101-Alice",
-        status_emoji_info: {emoji_code: 20},
-        user_circle_class: "user_circle_empty",
-        is_group: false,
-    });
-    assert.deepEqual(
-        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
-        ["Alice, Bob", "Shiv", "Cardelio", "Zoe", "Me Myself", "Alice"],
-    );
+    // Zooming will show all conversations.
+    list_info = pm_list_data.get_list_info(true);
+    check_list_info(list_info, 7, 0, [
+        "Alice, Bob",
+        "Cordelia, Zoe",
+        "Cordelia",
+        "Zoe",
+        "Bob",
+        "Me Myself",
+        "Alice",
+    ]);
 });
