@@ -1,5 +1,5 @@
 The **All messages** view is a feed of all the unmuted messages you have
-received, which combines stream messages and private messages. It's a great way
+received, which combines stream messages and direct messages. It's a great way
 to see new messages as they come in.
 
 You can configure **All messages** to be the [default

@@ -55,7 +55,7 @@ with lots of messages or uploaded files.
 
 1. The end result of that process with be an archive in the same
    format as the exports of public data discussed above, including extra
-   private stream and private message data for users who gave consent.
+   private stream and direct message data for users who gave consent.
 
 1. Import the tarball using [Zulip's logical data import tool][import-only].
 
@@ -63,7 +63,7 @@ with lots of messages or uploaded files.
 
 Note that such an export will include all the messages received by any user
 in the organization that consents to the data export.  In particular, it
-will include all public stream content and any private stream or private
+will include all public stream content and any private stream or direct
 message content where at least one of the participants gives consent.
 
 Users who do not provide consent will have their settings and stream
@@ -81,7 +81,7 @@ To start this export, email support@zulip.com with your zulip.com
 URL, asking for a full export without member consent.
 
 You'll also need to email us evidence that you have authority to read
-members' private messages. Typically, this will be because the zulip.com
+members' direct messages. Typically, this will be because the zulip.com
 URL is administered by a corporation, and you are an official
 representative of that corporation. By requesting and approving this export,
 you will also assume full legal responsibility that the appropriate employment

@@ -49,7 +49,7 @@ organization's policy choices.
 * [Move topics](/help/rename-a-topic), including between streams, when
   users start conversations in the wrong place.
 * [Change users' names](/help/change-a-users-name) (e.g. to "Name (Spammer)")
-  for users who sent spam private messages to many community members.
+  for users who sent spam direct messages to many community members.
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
   [deactivate custom emoji](/help/custom-emoji#deactivate-custom-emoji).
 

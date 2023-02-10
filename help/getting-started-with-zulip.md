@@ -34,7 +34,7 @@ Like your email inbox, Zulip works best if you read it topic-by-topic.
 
 {!reading-topics.md!}
 
-### Reading private messages
+### Reading direct messages
 
 {!reading-dms.md!}
 

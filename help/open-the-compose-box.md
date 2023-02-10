@@ -7,7 +7,7 @@ space for the message feed. There are a number of ways to open the compose box.
 
 * Click on any message.
 
-* Click on **Message...**, **New topic**, or **New private message** at the
+* Click on **Message...**, **New topic**, or **New direct message** at the
   bottom of the app.
 
 ## Using the keyboard
@@ -18,7 +18,7 @@ All replies are to the message in the **blue box**.
 
 * **New topic**: <kbd>C</kbd>
 
-* **New private message**: <kbd>X</kbd>
+* **New direct message**: <kbd>X</kbd>
 
 You can move the blue box around using the **arrow keys**, <kbd>J</kbd>, or
 <kbd>K</kbd>. You can close the compose box using <kbd>Esc</kbd>, or up/down

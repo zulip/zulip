@@ -46,7 +46,7 @@ interested in.
 
 New Zulip messages will now be delivered to your email account. You
 can reply directly to the emails coming from Zulip, and your replies
-will be posted in the appropriate topic or private message
+will be posted in the appropriate topic or direct message
 conversation on Zulip.
 
 ## Related articles
