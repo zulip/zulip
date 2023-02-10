@@ -12,7 +12,7 @@ various organization level events, including:
 * New public stream announcements (private streams are not announced)
 * New user announcements
 
-The notification bot also generates automated private messages to
+The notification bot also generates automated direct messages to
 individual users for some user specific events, such as [being
 subscribed to a stream][add-users-to-stream] by another user.
 
@@ -27,7 +27,7 @@ Organization administrators can configure where (and whether)
 Stream messages sent by the notification bot (including the topic)
 are translated into the language that the organization has configured
 as the [organization language for automated messages and invitation
-emails][org-lang]. Private messages sent by the notification bot to
+emails][org-lang]. Direct messages sent by the notification bot to
 a user will use [their preferred language](/help/change-your-language).
 
 ## Configure notification bot

@@ -1,7 +1,7 @@
 # Typing notifications
 
-Zulip displays typing notifications when viewing a private message or
-group private message conversation to which one of the other
+Zulip displays typing notifications when viewing a direct message or
+group direct message conversation to which one of the other
 participants is currently composing a message.
 
 Typing notifications are only sent while one is actively editing text
@@ -19,7 +19,7 @@ configure Zulip to not send typing notifications.
 {settings_tab|account-and-privacy}
 
 1. Under **Privacy**, toggle **Let recipients see when I'm typing
-   private messages**.
+   direct messages**.
 
 {end_tabs}
 

@@ -18,17 +18,17 @@ have the following effects:
 
 * Muted users are hidden from [**Direct
   messages**](/help/direct-messages) in the left sidebar and the list
-  of users in the right sidebar. Private messages between you and a
+  of users in the right sidebar. Direct messages between you and a
   muted user are excluded from all views, including search, unless you
-  [explicitly search](/help/search-for-messages) for `pm-with:<that
+  [explicitly search](/help/search-for-messages) for `dm-with:<that
   user>`.
 
 * Muted users have their name displayed as "Muted user" for [emoji
   reactions][view-emoji-reactions], [polls](/help/create-a-poll), and
-  when displaying the recipients of group private messages.
+  when displaying the recipients of group direct messages.
 
 * Muted users are excluded from the autocomplete for composing a
-  private message or [mentioning a user](/help/mention-a-user-or-group).
+  direct message or [mentioning a user](/help/mention-a-user-or-group).
 
 * Muted users are excluded from [read receipts](/help/read-receipts)
   for all messages. Zulip never shares whether or not you have read

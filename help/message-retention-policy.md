@@ -12,7 +12,7 @@ before being automatically deleted (the default being forever).
 Zulip's system supports:
 
 * Setting an organization-level retention policy, which applies to
-  all private messages and all streams without a specific policy.
+  all direct messages and all streams without a specific policy.
 * Setting a retention policy for individual streams, which overrides
   the organization-level policy for that stream.  This can be used to
   just delete messages on specific streams, to only retain messages
