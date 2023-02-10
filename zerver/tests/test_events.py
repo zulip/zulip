@@ -189,6 +189,7 @@ from zerver.lib.events import (
 )
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import render_markdown
+from zerver.lib.muted_users import get_mute_object
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -200,7 +201,6 @@ from zerver.lib.test_helpers import (
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import create_user_group
-from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
     Attachment,
     CustomProfileField,

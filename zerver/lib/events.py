@@ -34,6 +34,7 @@ from zerver.lib.message import (
     get_starred_message_ids,
     remove_message_id_from_unread_mgs,
 )
+from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -48,7 +49,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
-from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role

@@ -51,6 +51,7 @@ from zerver.lib.message import (
     truncate_topic,
     wildcard_mention_allowed,
 )
+from zerver.lib.muted_users import get_muting_users
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.recipient_users import recipient_for_user_profiles
@@ -65,7 +66,6 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import filter_by_exact_message_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
-from zerver.lib.user_mutes import get_muting_users
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (

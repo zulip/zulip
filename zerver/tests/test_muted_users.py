@@ -5,9 +5,9 @@ import orjson
 
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
+from zerver.lib.muted_users import get_mute_object, get_muting_users, get_user_mutes
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_mutes import get_mute_object, get_muting_users, get_user_mutes
 from zerver.models import RealmAuditLog, UserMessage, UserProfile
 
 
@@ -21,7 +21,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(muted_users, [])
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
 
-        with mock.patch("zerver.views.user_mutes.timezone_now", return_value=mute_time):
+        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
@@ -80,7 +80,7 @@ class MutedUsersTests(ZulipTestCase):
         # IntegrityError we'll get with a race between two processes
         # trying to mute the user.  To do this, we patch the
         # get_mute_object function to always return None.
-        with mock.patch("zerver.views.user_mutes.get_mute_object", return_value=None):
+        with mock.patch("zerver.views.muted_users.get_mute_object", return_value=None):
             result = self.api_post(hamlet, url)
             self.assert_json_error(result, "User already muted")
 
@@ -93,7 +93,7 @@ class MutedUsersTests(ZulipTestCase):
         if deactivate_user:
             do_deactivate_user(cordelia, acting_user=None)
 
-        with mock.patch("zerver.views.user_mutes.timezone_now", return_value=mute_time):
+        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
@@ -147,7 +147,7 @@ class MutedUsersTests(ZulipTestCase):
         if deactivate_user:
             do_deactivate_user(cordelia, acting_user=None)
 
-        with mock.patch("zerver.views.user_mutes.timezone_now", return_value=mute_time):
+        with mock.patch("zerver.views.muted_users.timezone_now", return_value=mute_time):
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)

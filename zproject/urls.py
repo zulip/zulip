@@ -79,6 +79,7 @@ from zerver.views.message_flags import (
     update_message_flags_for_narrow,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
+from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.presence import (
     get_presence_backend,
     get_statuses_for_realm,
@@ -182,7 +183,6 @@ from zerver.views.user_groups import (
     update_subgroups_of_user_group,
     update_user_group_backend,
 )
-from zerver.views.user_mutes import mute_user, unmute_user
 from zerver.views.user_settings import (
     confirm_email_change,
     delete_avatar_backend,
