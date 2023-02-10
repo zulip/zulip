@@ -43,7 +43,7 @@ from django.core.validators import MinLengthValidator, RegexValidator, URLValida
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import CASCADE, Exists, F, OuterRef, Q, Sum
-from django.db.models.functions import Upper
+from django.db.models.functions import Lower, Upper
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
@@ -2648,7 +2648,14 @@ class UserTopic(models.Model):
     visibility_policy = models.SmallIntegerField(choices=visibility_policy_choices, default=MUTED)
 
     class Meta:
-        unique_together = ("user_profile", "stream", "topic_name")
+        constraints = [
+            models.UniqueConstraint(
+                "user_profile",
+                "stream",
+                Lower("topic_name"),
+                name="usertopic_case_insensitive_topic_uniq",
+            ),
+        ]
 
         indexes = [
             models.Index("stream", Upper("topic_name"), name="zerver_mutedtopic_stream_topic"),
