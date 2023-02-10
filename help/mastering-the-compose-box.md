@@ -2,7 +2,7 @@
 
 When composing a message, Zulip lets you view a different conversation from the
 one you are composing to. For example, you can start a new topic without
-changing your narrow, send a private message about the topic you're viewing, or
+changing your narrow, send a direct message about the topic you're viewing, or
 look up a related discussion.
 
 In this context, the parts of the message view that are outside of the
@@ -23,7 +23,7 @@ composing to.
 
 !!! keyboard_tip ""
 
-    For both stream and private messages, use <kbd>Ctrl</kbd> + <kbd>.</kbd> to
+    For both stream and direct messages, use <kbd>Ctrl</kbd> + <kbd>.</kbd> to
     go to the conversation you are composing to.
 
 {end_tabs}

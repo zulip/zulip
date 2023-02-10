@@ -29,7 +29,7 @@ including yourself.
 {end_tabs}
 
 
-## View private messages with yourself
+## View direct messages with yourself
 
 {start_tabs}
 

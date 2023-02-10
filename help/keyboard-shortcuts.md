@@ -22,7 +22,7 @@ in the Zulip app to add more to your repertoire as needed.
 * **New stream message**: <kbd>C</kbd> — Start a new topic in the current
   stream.
 
-* **New private message**: <kbd>X</kbd>
+* **New direct message**: <kbd>X</kbd>
 
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
   <kbd>[</kbd> — Close the compose box and save the unsent message as a
@@ -38,7 +38,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Next unread topic**: <kbd>N</kbd>
 
-* **Next unread private message**: <kbd>P</kbd>
+* **Next unread direct message**: <kbd>P</kbd>
 
 * **Search messages**: <kbd>/</kbd>
 
@@ -81,13 +81,13 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Narrow to next unread topic**: <kbd>N</kbd>
 
-* **Narrow to next unread private message**: <kbd>P</kbd>
+* **Narrow to next unread direct message**: <kbd>P</kbd>
 
 * **Narrow to stream**: <kbd>S</kbd>
 
-* **Narrow to topic or PM conversation**: <kbd>Shift</kbd> + <kbd>S</kbd>
+* **Narrow to topic or DM conversation**: <kbd>Shift</kbd> + <kbd>S</kbd>
 
-* **Narrow to all private messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
+* **Narrow to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 
@@ -113,7 +113,7 @@ in the Zulip app to add more to your repertoire as needed.
 * **New stream message**: <kbd>C</kbd> — For starting a new topic in a
   stream.
 
-* **New private message**: <kbd>X</kbd>
+* **New direct message**: <kbd>X</kbd>
 
 ### In the compose box
 

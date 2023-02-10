@@ -269,9 +269,9 @@ keep in mind about the import process:
 - Mattermost's export tool does not support exporting user avatars or message
   edit history.
 
-- Private messages will only be imported from Mattermost workspaces containing
+- Direct messages will only be imported from Mattermost workspaces containing
   a single team. This is because Mattermost's data exports do not associate
-  private messages with a specific Mattermost team.
+  direct messages with a specific Mattermost team.
 
 - Messages in threads are imported, but they are not explicitly marked as
   being in a thread.

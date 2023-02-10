@@ -5,7 +5,7 @@ users at once. When you mention a user group, everyone in the group is
 [notified](/help/dm-mention-alert-notifications) as if they were
 individually mentioned.
 
-Note that user groups are not the same as group private messages. If you're
+Note that user groups are not the same as group direct messages. If you're
 trying to send a message to a group of people, you'll want to either
 [create a stream](/help/create-a-stream), or send a
 [group direct message](/help/direct-messages).

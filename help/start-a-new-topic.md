@@ -17,7 +17,7 @@ Don't worry about picking the perfect topic. The first 2-4 words that come
 to mind are great.
 
 Note that topics are not available for [direct messages](/help/direct-messages).
-If you find yourself wanting topics in a PM, we recommend
+If you find yourself wanting topics in a DM, we recommend
 [creating a private stream](/help/create-a-stream).
 
 ## Related articles

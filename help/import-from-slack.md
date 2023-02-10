@@ -37,7 +37,7 @@ confirmed this policy as of August 2022.
 Owners of **Business+** or **Enterprise Grid** workspaces can [request
 special
 access](https://slack.com/help/articles/204897248-Guide-to-Slack-import-and-export-tools#options-by-plan)
-in order to export private message data.
+in order to export direct message data.
 
 {start_tabs}
 

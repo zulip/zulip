@@ -10,7 +10,7 @@ and mentions](/help/dm-mention-alert-notifications), as well as
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Streams** and **PMs, mentions, and alerts**
+1. Toggle the checkboxes for **Streams** and **DMs, mentions, and alerts**
    in the **Email** column of the **Notification triggers** table.
 
 {end_tabs}
