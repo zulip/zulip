@@ -113,23 +113,14 @@ class MutedTopicsTests(ZulipTestCase):
                 topic_name="Verona3",
             )
 
-        # Verify the error handling for the database level
-        # IntegrityError we'll get with a race between two processes
-        # trying to mute the topic.  To do this, we patch the
-        # topic_is_muted function to always return False when trying
-        # to mute a topic that is already muted.
         assert stream.recipient is not None
-        add_topic_mute(
-            user_profile=user,
-            stream_id=stream.id,
-            recipient_id=stream.recipient.id,
-            topic_name="Verona3",
-            date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
-        )
+        result = self.api_patch(user, url, data)
 
-        with mock.patch("zerver.views.user_topics.topic_is_muted", return_value=False):
-            result = self.api_patch(user, url, data)
-            self.assert_json_error(result, "Topic already muted")
+        # Now check that error is raised when attempted to mute an already
+        # muted topic. This should be case-insensitive.
+        data["topic"] = "VERONA3"
+        result = self.api_patch(user, url, data)
+        self.assert_json_error(result, "Topic already muted")
 
     def test_remove_muted_topic(self) -> None:
         user = self.example_user("hamlet")
@@ -180,10 +171,6 @@ class MutedTopicsTests(ZulipTestCase):
         )
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
-
-        data: Dict[str, Any] = {"stream": stream.name, "topic": "Verona3", "op": "add"}
-        result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Topic already muted")
 
         data = {"stream_id": 999999999, "topic": "Verona3", "op": "add"}
         result = self.api_patch(user, url, data)
