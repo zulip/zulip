@@ -272,10 +272,10 @@ export function zoom_in_topics(options) {
         const $elt = $(this);
         const stream_id = options.stream_id;
 
-        if (stream_id_for_elt($elt) === stream_id) {            
+        if (stream_id_for_elt($elt) === stream_id) {
             $elt.show();
-            // Add search box for topics list.            
-            $elt.children("div.bottom_left_row")                
+            // Add search box for topics list.
+            $elt.children("div.bottom_left_row")
                 .append(render_filter_topics())
                 .addClass("new-style") // to use style for tab-swicher
                 .append(topic_list.init_resolved_toggle().get());

@@ -377,23 +377,23 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     stream_list.set_event_handlers();
 
     mock_template("filter_topics", false, () => "filter-topics-stub");
-    topic_list.init_resolved_toggle = () =>({
+    topic_list.init_resolved_toggle = () => ({
         get() {
             console.log("init_resolved_toggle");
             return "resolved_toggle_stub";
-        }
+        },
     });
-    let children_list = new Set();
-    let children = {        
+    const children_list = new Set();
+    const children = {
         addClass(class_name) {
             assert.equal(class_name, "new-style");
             return children;
         },
-        append(html) {            
-            children_list.add(html);            
+        append(html) {
+            children_list.add(html);
             return children;
         },
-    }
+    };
     $stream_li1.children = () => children;
     stream_list.zoom_in_topics({stream_id: 42});
 
@@ -417,7 +417,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     };
     topic_list.remove_resolved_toggle = () => {
         children_list.delete("resolved_toggle_stub");
-    }
+    };
     stream_list.zoom_out_topics({$stream_li: $stream_li1});
 
     assert.ok($label1.visible());

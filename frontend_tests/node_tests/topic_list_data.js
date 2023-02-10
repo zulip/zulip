@@ -125,7 +125,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     list_info = get_list_info(zoomed, "resolved");
     assert.equal(list_info.items.length, 3);
-    assert.equal(list_info.num_possible_topics, 3);    
+    assert.equal(list_info.num_possible_topics, 3);
 
     list_info = get_list_info(zoomed, "unresolved");
     assert.equal(list_info.items.length, 4);
@@ -136,17 +136,17 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     add_topic_message("✔ Catering1", 1010);
     // when topic search is open then we list topics based on search term.
     override(topic_list, "get_topic_search_term", () => "b,c");
-    list_info = get_list_info(zoomed, "all");    
+    list_info = get_list_info(zoomed, "all");
     assert.equal(list_info.items.length, 3);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 3);
 
     // search term + resolved/unresolved
-    list_info = get_list_info(zoomed, "resolved"); 
+    list_info = get_list_info(zoomed, "resolved");
     assert.equal(list_info.items.length, 1);
 
-    list_info = get_list_info(zoomed, "unresolved"); 
+    list_info = get_list_info(zoomed, "unresolved");
     assert.equal(list_info.items.length, 2);
 });
 
