@@ -1,7 +1,7 @@
 # PMs, mentions, and alerts
 
 You can configure desktop, mobile, and email notifications for
-[private messages (PMs)](/help/private-messages),
+[direct messages (DMs)](/help/direct-messages),
 [mentions](/help/mention-a-user-or-group), and [alert
 words](#alert-words).
 

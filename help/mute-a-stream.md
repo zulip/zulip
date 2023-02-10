@@ -3,7 +3,7 @@
 Messages from muted streams do not show up in **All messages** or generate
 notifications, unless you are
 [mentioned](/help/mention-a-user-or-group). Messages from muted streams
-do not generate [alert word](/help/pm-mention-alert-notifications#alert-words) notifications.
+do not generate [alert word](/help/dm-mention-alert-notifications#alert-words) notifications.
 
 Muted streams still appear in the left sidebar, but they are grayed out and
 sorted to the bottom of their section.

@@ -12,7 +12,7 @@
 * [Streams and topics](/help/streams-and-topics)
 * [Finding a topic to read](/help/finding-a-topic-to-read)
 * [Reading topics](/help/reading-topics)
-* [Reading private messages (PMs)](/help/reading-pms)
+* [Reading direct messages (DMs)](/help/reading-dms)
 * [Starting a new topic](/help/starting-a-new-topic)
 * [Starting a new private thread](/help/starting-a-new-private-thread)
 * [Replying to messages](/help/replying-to-messages)
@@ -99,7 +99,7 @@
 * [Status and availability](/help/status-and-availability)
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
-* [Private messages](/help/private-messages)
+* [Direct messages](/help/direct-messages)
 
 ## Streams & topics
 * [Streams and topics](/help/streams-and-topics)
@@ -119,7 +119,7 @@
 
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
-* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
 * [Mute a user](/help/mute-a-user)
@@ -187,7 +187,7 @@
 * [Custom emoji](/help/custom-emoji)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Require topics in stream messages](/help/require-topics)
-* [Restrict private messages](/help/restrict-private-messages)
+* [Restrict direct messages](/help/restrict-direct-messages)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Restrict moving messages](/help/restrict-moving-messages)
 * [Restrict message editing](/help/restrict-message-editing-and-deletion)

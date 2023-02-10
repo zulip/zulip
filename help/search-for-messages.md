@@ -87,7 +87,7 @@ Zulip offers the following filters based on the location of the message.
 ### Search your important messages
 
 * `is:alerted`: Search messages that contain your [alert
-  words](/help/pm-mention-alert-notifications#alert-words).
+  words](/help/dm-mention-alert-notifications#alert-words).
 * `is:mentioned`: Search messages where you were
   [mentioned](/help/mention-a-user-or-group).
 * `is:starred`: Search your [starred messages](/help/star-a-message).
