@@ -1288,12 +1288,8 @@ button#register_auth_button_gitlab {
     word-break: break-all;
 }
 
-@media (width >= 600px) {
+@media (width >= 800px) {
     .account-creation .white-box {
-        max-width: min-content;
-
-        .alert-info {
-            min-width: max-content;
-        }
+        max-width: 800px;
     }
 }
