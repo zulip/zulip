@@ -101,10 +101,18 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_uri = settings.ROOT_DOMAIN_URI
         realm_name = None
         realm_icon = None
+        realm_plan_type = None
+        server_admin_email = None
+
     else:
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
+        realm_plan_type = realm.plan_type
+        if realm.get_human_admin_users():
+            server_admin_email = realm.get_human_admin_users().first().delivery_email
+        else:
+            server_admin_email = None
 
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
@@ -157,6 +165,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "realm_uri": realm_uri,
         "realm_name": realm_name,
         "realm_icon": realm_icon,
+        "realm_plan_type": realm_plan_type,
+        "server_admin_email": server_admin_email,
         "root_domain_uri": settings.ROOT_DOMAIN_URI,
         "apps_page_url": get_apps_page_url(),
         "apps_page_web": apps_page_web,

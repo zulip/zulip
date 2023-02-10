@@ -125,7 +125,6 @@ def clear_zoom_token_on_logout(
 def send_profile_change_notif(
     sender: object, instance: UserProfile, update_fields: FrozenSet[str], **kwargs: object
 ) -> None:
-
     if not update_fields:
         return
 
