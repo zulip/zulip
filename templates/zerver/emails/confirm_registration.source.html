@@ -20,5 +20,11 @@
     {% endif %}
     <a class="button" href="{{ activate_url }}">{{ _('Complete registration') }}</a>
 </p>
-<p>{% trans support_email=macros.email_tag(support_email) %}Contact us any time at {{ support_email }} if you run into trouble, have any feedback, or just want to chat!{% endtrans %}</p>
+<p>
+    {% if realm_plan_type==1 %}
+        {{macros.contact_us_self_hosted(server_admin_email)}}
+    {% else %}
+        {{macros.contact_us_cloud(support_email)}}
+    {% endif %}
+</p>
 {% endblock %}
