@@ -453,9 +453,7 @@ function format_conversation(conversation_data) {
         senders = all_senders.slice(-MAX_AVATAR);
         // Collect extra senders fullname for tooltip.
         extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids
-            .slice(-MAX_EXTRA_SENDERS)
-            .map((sender) => sender.id);
+        displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     }
 
     context.senders = people.sender_info_for_recent_topics_row(senders);
