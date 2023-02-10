@@ -98,6 +98,7 @@ def update_message_flags_for_narrow(
         include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,
+        anchor_date=None,
     )
 
     messages = [row[0] for row in query_info.rows]

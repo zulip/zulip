@@ -172,6 +172,7 @@ run_test("basics", () => {
             cont: opts.cont,
             msg_list: opts.msg_list,
             anchor: 1000,
+            anchor_date: undefined,
         });
     };
 
@@ -219,4 +220,28 @@ run_test("basics", () => {
     helper.clear();
     cont();
     helper.assert_events(["report narrow times"]);
+});
+
+run_test("date", () => {
+    stub_message_list();
+    const date = Date.now()
+    const helper = test_helper();
+    const terms = [{operator: "stream", operand: "Denmark"}];
+    message_lists.current.selected_id = () => -1;
+    let cont;
+    message_fetch.load_messages_for_narrow = (opts) => {
+        // Only validates the anchor and set of fields
+        cont = opts.cont;
+        assert.deepEqual(opts, {
+            cont: opts.cont,
+            msg_list: opts.msg_list,
+            anchor: "date",
+            anchor_date: date,
+        });
+    };
+
+    narrow.activate(terms, {
+        trigger: "date",
+        anchor_date: date,
+    });
 });

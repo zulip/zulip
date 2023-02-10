@@ -48,6 +48,7 @@ import * as widgetize from "./widgetize";
 let unnarrow_times;
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
+const DATE_MESSAGE_ID = "DATE_ID";
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
@@ -468,6 +469,7 @@ export function activate(raw_operators, opts) {
     maybe_add_local_messages({
         id_info,
         msg_data,
+        trigger: opts.trigger,
     });
 
     if (!id_info.local_select_id) {
@@ -526,13 +528,19 @@ export function activate(raw_operators, opts) {
             case LARGER_THAN_MAX_MESSAGE_ID:
                 anchor = "newest";
                 break;
+            case DATE_MESSAGE_ID:
+                anchor = "date";
+                break;
             default:
                 anchor = id_info.final_select_id;
         }
 
         message_fetch.load_messages_for_narrow({
             anchor,
-            cont() {
+            cont(data) {
+                if (data) {
+                    id_info.final_select_id = data.anchor;
+                }
                 if (!select_immediately) {
                     update_selection({
                         id_info,
@@ -544,6 +552,7 @@ export function activate(raw_operators, opts) {
                 maybe_report_narrow_time(msg_list);
             },
             msg_list,
+            anchor_date: opts.anchor_date,
         });
     }
 
@@ -665,6 +674,11 @@ export function maybe_add_local_messages(opts) {
     if (!id_info.target_id && !narrow_state.filter().allow_use_first_unread_when_narrowing()) {
         // Note that this may be overwritten; see above comment.
         id_info.final_select_id = LARGER_THAN_MAX_MESSAGE_ID;
+    }
+    // If we're looking for jumping to specific date do not search for local database and return immediately.
+    if (opts.trigger === "date") {
+        id_info.final_select_id = DATE_MESSAGE_ID;
+        return;
     }
 
     if (unread_info.flavor === "cannot_compute") {

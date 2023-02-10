@@ -757,6 +757,7 @@ class PostProcessTest(ZulipTestCase):
                 anchored_to_left=anchored_to_left,
                 anchored_to_right=anchored_to_right,
                 first_visible_message_id=first_visible_message_id,
+                anchor_date=None,
             )
 
             self.assertEqual(info.rows, out_rows)
@@ -2887,6 +2888,79 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
         messages_matches_ids(messages, message_ids[6:9])
+
+    def test_anchor_date(self) -> None:
+        self.login("hamlet")
+        stream_name = "Verona"
+        Message.objects.all().delete()
+
+        message_ids = []
+        for i in range(100):
+            message_ids.append(self.send_stream_message(self.example_user("cordelia"), stream_name))
+
+        narrow = [
+            dict(operator="stream", operand=stream_name),
+        ]
+
+        req = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor="date",
+            anchor_date=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            num_before=50,
+            num_after=50,
+        )
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 51) # found_oldest requires +1
+
+        req["num_before"] = 50
+        req["num_after"] = 70
+        req["anchor_date"] = (
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=-1)
+        ).isoformat()
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 71) # found_newest requires +1
+
+        me = self.example_user("hamlet")
+        for i in range(100):
+            self.send_personal_message(me, self.example_user("aaron"))
+
+        narrow = [
+            dict(operator="pm-with", operand=self.example_user("aaron").email),
+        ]
+
+        req = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor="date",
+            anchor_date=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            num_before=50,
+            num_after=50,
+        )
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 51) # found_oldest requires +1
+
+        req["num_before"] = 50
+        req["num_after"] = 70
+        req["anchor_date"] = (
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=-1)
+        ).isoformat()
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 71) # found_newest requires +1
 
     def test_missing_params(self) -> None:
         """

@@ -18,6 +18,7 @@ import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
+import * as flatpickr from "./flatpickr";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
 import * as message_edit from "./message_edit";
@@ -412,6 +413,46 @@ export function initialize() {
     $("body").on("click", ".message_header .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         mute_or_unmute_topic($(e.target), false);
+    });
+
+    function on_message_timestamp_selection(date) {
+        const hash = window.location.hash.split("/");
+        const operators = hash_util.parse_narrow(hash);
+        narrow.activate(operators, {trigger: "date", anchor_date: date});
+    }
+
+    // DATE PICK
+
+    $("body").on("click", ".message_header .recipient_row_date", (e) => {
+        e.stopPropagation();
+        const date = new Date();
+        date.setHours(0);
+        date.setMinutes(0);
+        date.setSeconds(0);
+        flatpickr.show_flatpickr(e.target, on_message_timestamp_selection, date, {
+            position: "below",
+            closeOnSelect: false,
+            enableTime: false,
+        });
+    });
+
+    // MESSAGE ROW DATE PICK
+
+    $("body").on("click", ".message_row .date_row", (e) => {
+        e.stopPropagation();
+        const date = new Date();
+        date.setHours(0);
+        date.setMinutes(0);
+        date.setSeconds(0);
+        flatpickr.show_flatpickr(
+            e.target,
+            on_message_timestamp_selection,
+            date,
+            {
+                position: "auto center",
+                closeOnSelect: false,
+                enableTime: false,
+            });
     });
 
     // RECENT TOPICS

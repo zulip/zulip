@@ -149,6 +149,7 @@ const initialize_data = {
             num_before: 200,
             num_after: 200,
             client_gravatar: true,
+            anchor_date: undefined,
         },
         resp: {
             messages: message_range(201, 801),
@@ -163,6 +164,7 @@ const initialize_data = {
             num_before: 0,
             num_after: 1000,
             client_gravatar: true,
+            anchor_date: undefined,
         },
         resp: {
             messages: message_range(800, 1000),
@@ -176,6 +178,7 @@ const initialize_data = {
             num_before: 1000,
             num_after: 0,
             client_gravatar: true,
+            anchor_date: undefined,
         },
         resp: {
             messages: message_range(100, 200),
@@ -366,6 +369,7 @@ run_test("loading_newer", () => {
                 num_after: 100,
                 narrow: `[{"negated":false,"operator":"pm-with","operand":[${alice.user_id}]}]`,
                 client_gravatar: true,
+                anchor_date: undefined,
             },
             resp: {
                 messages: message_range(500, 600),
@@ -422,6 +426,7 @@ run_test("loading_newer", () => {
                     num_before: 0,
                     num_after: 100,
                     client_gravatar: true,
+                    anchor_date: undefined,
                 },
                 resp: {
                     messages: message_range(500, 600),
@@ -434,6 +439,7 @@ run_test("loading_newer", () => {
                     num_before: 0,
                     num_after: 100,
                     client_gravatar: true,
+                    anchor_date: undefined,
                 },
                 resp: {
                     messages: message_range(700, 800),
