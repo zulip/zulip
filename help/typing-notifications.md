@@ -25,6 +25,6 @@ configure Zulip to not send typing notifications.
 
 ## Related articles
 
-* [Private messages](/help/private-messages)
+* [Direct messages](/help/direct-messages)
 * [Status and availability](/help/status-and-availability)
 * [Read receipts](/help/read-receipts)

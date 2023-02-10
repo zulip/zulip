@@ -1,7 +1,7 @@
 # Mobile notifications
 
 You can customize whether [stream messages](/help/stream-notifications),
-[private messages](/help/pm-mention-alert-notifications) and
+[direct messages](/help/dm-mention-alert-notifications) and
 [mentions][notifications-wildcard-mentions] trigger notifications in Zulip's
 [Android](https://zulip.com/apps/ios) and [iOS](https://zulip.com/apps/ios)
 apps.
@@ -15,7 +15,7 @@ apps.
 
 {end_tabs}
 
-[notifications-wildcard-mentions]: /help/pm-mention-alert-notifications#wildcard-mentions
+[notifications-wildcard-mentions]: /help/dm-mention-alert-notifications#wildcard-mentions
 
 ## Mobile notifications while online
 
@@ -38,7 +38,7 @@ notifications while you are actively using one of the Zulip apps.
 ## Related articles
 
 * [Stream notifications](/help/stream-notifications)
-* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)
 * [Do not disturb](/help/do-not-disturb)

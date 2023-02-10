@@ -300,7 +300,7 @@ to [Getting started with Zulip][getting-started] and the guide to
 
 User groups allow you to [mention](/help/mention-a-user-or-group)
 multiple users at once,
-[notifying](/help/pm-mention-alert-notifications) them about a
+[notifying](/help/dm-mention-alert-notifications) them about a
 message. For example, you may find it useful to set up the following
 user groups:
 

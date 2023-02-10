@@ -2,8 +2,8 @@
 
 Zulip offers visual and audible desktop notifications. You can
 customize whether [stream messages](/help/stream-notifications),
-[private messages](/help/pm-mention-alert-notifications) and
-[mentions](/help/pm-mention-alert-notifications#wildcard-mentions)
+[direct messages](/help/dm-mention-alert-notifications) and
+[mentions](/help/dm-mention-alert-notifications#wildcard-mentions)
 trigger desktop notifications.
 
 {start_tabs}
@@ -56,7 +56,7 @@ count badges.
 ## Troubleshooting desktop notifications
 
 First, make sure you have enabled
-[desktop notifications for PMs](/help/pm-mention-alert-notifications) or for the
+[desktop notifications for DMs](/help/dm-mention-alert-notifications) or for the
 [stream](/help/stream-notifications) you are testing with.
 
 Desktop notifications are triggered when a message arrives, and Zulip is not
@@ -132,7 +132,7 @@ Alternate instructions:
 ## Related articles
 
 * [Stream notifications](/help/stream-notifications)
-* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)
 * [Do not disturb](/help/do-not-disturb)
