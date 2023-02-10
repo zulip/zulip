@@ -20,9 +20,6 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
     )
     date_muted = timezone_now()
 
-    if get_mute_object(user_profile, muted_user) is not None:
-        raise JsonableError(_("User already muted"))
-
     try:
         do_mute_user(user_profile, muted_user, date_muted)
     except IntegrityError:
