@@ -1,4 +1,4 @@
-# PMs, mentions, and alerts
+# DMs, mentions, and alerts
 
 You can configure desktop, mobile, and email notifications for
 [direct messages (DMs)](/help/direct-messages),
@@ -7,24 +7,24 @@ words](#alert-words).
 
 ## Configure notifications
 
-These settings will affect notifications for private messages, group
-private messages, mentions, and alert words.
+These settings will affect notifications for direct messages, group
+direct messages, mentions, and alert words.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. In the **Notification triggers** table, toggle the settings for **PMs, mentions, and alerts**.
+1. In the **Notification triggers** table, toggle the settings for **DMs, mentions, and alerts**.
 
 {end_tabs}
 
-You can also hide the content of private messages (and group private
+You can also hide the content of direct messages (and group direct
 messages) from desktop notifications.
 
 {start_tabs}
 
 1. Under **Desktop message notifications**, toggle
-**Include content of private messages in desktop notifications**.
+**Include content of direct messages in desktop notifications**.
 
 {end_tabs}
 
