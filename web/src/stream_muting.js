@@ -3,6 +3,7 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
+import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import * as settings_notifications from "./settings_notifications";
@@ -20,7 +21,8 @@ export function update_is_muted(sub, value) {
         if (overlays.is_active() || overlays.is_modal_open()) {
             saved_ypos = message_viewport.scrollTop();
         } else if (
-            message_lists.home === message_lists.current &&
+            narrow_state.is_message_feed_visible() &&
+            message_lists.current === message_lists.home &&
             message_lists.current.selected_row().offset() !== null
         ) {
             msg_offset = message_lists.current.selected_row().offset().top;
@@ -34,7 +36,10 @@ export function update_is_muted(sub, value) {
         // Ensure we're still at the same scroll position
         if (overlays.is_overlay_or_modal_open()) {
             message_viewport.scrollTop(saved_ypos);
-        } else if (message_lists.home === message_lists.current) {
+        } else if (
+            narrow_state.is_message_feed_visible() &&
+            message_lists.current === message_lists.home
+        ) {
             // We pass use_closest to handle the case where the
             // currently selected message is being hidden from the
             // home view
