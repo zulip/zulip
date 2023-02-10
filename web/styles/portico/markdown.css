@@ -143,6 +143,11 @@
 
             .codehilite {
                 background-color: hsl(0, 0%, 100%);
+
+                pre {
+                    white-space: pre;
+                    overflow-x: auto;
+                }
             }
 
             & > ul {
