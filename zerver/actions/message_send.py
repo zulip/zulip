@@ -1,6 +1,7 @@
 import datetime
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import (
     AbstractSet,
@@ -153,7 +154,8 @@ def render_incoming_message(
     return rendering_result
 
 
-class RecipientInfoResult(TypedDict):
+@dataclass
+class RecipientInfoResult:
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
     pm_mention_email_disabled_user_ids: Set[int]
@@ -382,7 +384,7 @@ def get_recipient_info(
     # where we determine notifiability of the message for users.
     all_bot_user_ids = {row["id"] for row in rows if row["is_bot"]}
 
-    info: RecipientInfoResult = dict(
+    return RecipientInfoResult(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
         pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
@@ -397,7 +399,6 @@ def get_recipient_info(
         service_bot_tuples=service_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
     )
-    return info
 
 
 def get_service_bot_events(
@@ -570,7 +571,7 @@ def build_message_send_dict(
     # mention in it (and not e.g. wildcard mention syntax inside a
     # code block).
     if rendering_result.mentions_wildcard:
-        wildcard_mention_user_ids = info["wildcard_mention_user_ids"]
+        wildcard_mention_user_ids = info.wildcard_mention_user_ids
     else:
         wildcard_mention_user_ids = set()
 
@@ -581,9 +582,9 @@ def build_message_send_dict(
     get UserMessage rows.
     """
     mentioned_user_ids = rendering_result.mentions_user_ids
-    default_bot_user_ids = info["default_bot_user_ids"]
+    default_bot_user_ids = info.default_bot_user_ids
     mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
-    info["um_eligible_user_ids"] |= mentioned_bot_user_ids
+    info.um_eligible_user_ids |= mentioned_bot_user_ids
 
     message_send_dict = SendMessageRequest(
         stream=stream,
@@ -594,18 +595,18 @@ def build_message_send_dict(
         mentioned_user_groups_map=mentioned_user_groups_map,
         message=message,
         rendering_result=rendering_result,
-        active_user_ids=info["active_user_ids"],
-        online_push_user_ids=info["online_push_user_ids"],
-        pm_mention_email_disabled_user_ids=info["pm_mention_email_disabled_user_ids"],
-        pm_mention_push_disabled_user_ids=info["pm_mention_push_disabled_user_ids"],
-        stream_push_user_ids=info["stream_push_user_ids"],
-        stream_email_user_ids=info["stream_email_user_ids"],
-        muted_sender_user_ids=info["muted_sender_user_ids"],
-        um_eligible_user_ids=info["um_eligible_user_ids"],
-        long_term_idle_user_ids=info["long_term_idle_user_ids"],
-        default_bot_user_ids=info["default_bot_user_ids"],
-        service_bot_tuples=info["service_bot_tuples"],
-        all_bot_user_ids=info["all_bot_user_ids"],
+        active_user_ids=info.active_user_ids,
+        online_push_user_ids=info.online_push_user_ids,
+        pm_mention_email_disabled_user_ids=info.pm_mention_email_disabled_user_ids,
+        pm_mention_push_disabled_user_ids=info.pm_mention_push_disabled_user_ids,
+        stream_push_user_ids=info.stream_push_user_ids,
+        stream_email_user_ids=info.stream_email_user_ids,
+        muted_sender_user_ids=info.muted_sender_user_ids,
+        um_eligible_user_ids=info.um_eligible_user_ids,
+        long_term_idle_user_ids=info.long_term_idle_user_ids,
+        default_bot_user_ids=info.default_bot_user_ids,
+        service_bot_tuples=info.service_bot_tuples,
+        all_bot_user_ids=info.all_bot_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,

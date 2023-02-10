@@ -446,19 +446,17 @@ def do_update_message(
             possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
-        event["online_push_user_ids"] = list(info["online_push_user_ids"])
-        event["pm_mention_push_disabled_user_ids"] = list(info["pm_mention_push_disabled_user_ids"])
-        event["pm_mention_email_disabled_user_ids"] = list(
-            info["pm_mention_email_disabled_user_ids"]
-        )
-        event["stream_push_user_ids"] = list(info["stream_push_user_ids"])
-        event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
-        event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
+        event["online_push_user_ids"] = list(info.online_push_user_ids)
+        event["pm_mention_push_disabled_user_ids"] = list(info.pm_mention_push_disabled_user_ids)
+        event["pm_mention_email_disabled_user_ids"] = list(info.pm_mention_email_disabled_user_ids)
+        event["stream_push_user_ids"] = list(info.stream_push_user_ids)
+        event["stream_email_user_ids"] = list(info.stream_email_user_ids)
+        event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
-        event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
-        event["all_bot_user_ids"] = list(info["all_bot_user_ids"])
+        event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
+        event["all_bot_user_ids"] = list(info.all_bot_user_ids)
         if rendering_result.mentions_wildcard:
-            event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
+            event["wildcard_mention_user_ids"] = list(info.wildcard_mention_user_ids)
         else:
             event["wildcard_mention_user_ids"] = []
 
@@ -466,7 +464,7 @@ def do_update_message(
             target_message,
             prior_mention_user_ids,
             rendering_result.mentions_user_ids,
-            info["stream_push_user_ids"],
+            info.stream_push_user_ids,
         )
 
     if topic_name is not None or new_stream is not None:

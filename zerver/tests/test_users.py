@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
-from zerver.actions.message_send import get_recipient_info
+from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import bulk_regenerate_api_keys
@@ -1769,7 +1769,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         all_user_ids = {hamlet.id, cordelia.id, othello.id}
 
-        expected_info = dict(
+        expected_info = RecipientInfoResult(
             active_user_ids=all_user_ids,
             online_push_user_ids=set(),
             pm_mention_email_disabled_user_ids=set(),
@@ -1797,8 +1797,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["pm_mention_email_disabled_user_ids"], {hamlet.id})
-        self.assertEqual(info["pm_mention_push_disabled_user_ids"], {hamlet.id})
+        self.assertEqual(info.pm_mention_email_disabled_user_ids, {hamlet.id})
+        self.assertEqual(info.pm_mention_push_disabled_user_ids, {hamlet.id})
         hamlet.enable_offline_email_notifications = True
         hamlet.enable_offline_push_notifications = True
         hamlet.save()
@@ -1814,8 +1814,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
@@ -1824,7 +1824,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["wildcard_mention_user_ids"], {hamlet.id, othello.id})
+        self.assertEqual(info.wildcard_mention_user_ids, {hamlet.id, othello.id})
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = False
@@ -1835,7 +1835,7 @@ class RecipientInfoTest(ZulipTestCase):
             sender_id=hamlet.id,
             stream_topic=stream_topic,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
 
         hamlet.enable_stream_push_notifications = False
         hamlet.save()
@@ -1848,7 +1848,7 @@ class RecipientInfoTest(ZulipTestCase):
             sender_id=hamlet.id,
             stream_topic=stream_topic,
         )
-        self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
 
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
         add_topic_mute(
@@ -1865,8 +1865,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
@@ -1875,10 +1875,10 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
         # Since Hamlet has muted the stream and Cordelia has disabled
         # wildcard notifications, it should just be Othello here.
-        self.assertEqual(info["wildcard_mention_user_ids"], {othello.id})
+        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
 
         # If Hamlet mutes Cordelia, he should be in `muted_sender_user_ids` for a message
         # sent by Cordelia.
@@ -1890,7 +1890,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertTrue(hamlet.id in info["muted_sender_user_ids"])
+        self.assertTrue(hamlet.id in info.muted_sender_user_ids)
 
         sub = get_subscription(stream_name, othello)
         sub.wildcard_mentions_notify = False
@@ -1903,9 +1903,9 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
         # Verify that stream-level wildcard_mentions_notify=False works correctly.
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         # Verify that True works as expected as well
         sub = get_subscription(stream_name, othello)
@@ -1919,8 +1919,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
-        self.assertEqual(info["wildcard_mention_user_ids"], {othello.id})
+        self.assertEqual(info.stream_push_user_ids, set())
+        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
 
         # Add a service bot.
         service_bot = do_create_user(
@@ -1940,7 +1940,7 @@ class RecipientInfoTest(ZulipTestCase):
             possibly_mentioned_user_ids={service_bot.id},
         )
         self.assertEqual(
-            info["service_bot_tuples"],
+            info.service_bot_tuples,
             [
                 (service_bot.id, UserProfile.EMBEDDED_BOT),
             ],
@@ -1963,8 +1963,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
-        self.assertEqual(info["default_bot_user_ids"], {normal_bot.id})
-        self.assertEqual(info["all_bot_user_ids"], {normal_bot.id, service_bot.id})
+        self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
+        self.assertEqual(info.all_bot_user_ids, {normal_bot.id, service_bot.id})
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")
