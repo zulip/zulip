@@ -66,5 +66,5 @@ explicitly set a notification preference.
 * [Mobile notifications](/help/mobile-notifications)
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
-* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Do not disturb](/help/do-not-disturb)

@@ -2,8 +2,8 @@
 
 ## Message notification emails
 
-Zulip can be configured to send message notification emails for [PMs
-and mentions](/help/pm-mention-alert-notifications), as well as
+Zulip can be configured to send message notification emails for [DMs
+and mentions](/help/dm-mention-alert-notifications), as well as
 [stream messages](/help/stream-notifications).
 
 {start_tabs}

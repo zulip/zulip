@@ -2,7 +2,7 @@
 
 You can mention a team member or [user group](/help/user-groups) to call their attention to a
 message. Mentions follow the same
-[notification settings](/help/pm-mention-alert-notifications) as private
+[notification settings](/help/dm-mention-alert-notifications) as direct
 messages and alert words.
 
 ## Mention a user or group
@@ -67,7 +67,7 @@ wildcard mentions can be annoying.
 Note that this will not notify anyone who has muted the stream, and
 users can disable receiving email/push notifications for these
 wildcard mentions, either
-[globally](/help/pm-mention-alert-notifications) or for [individual
+[globally](/help/dm-mention-alert-notifications) or for [individual
 streams](/help/stream-notifications).
 
 ## Related articles

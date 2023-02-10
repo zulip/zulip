@@ -4,7 +4,7 @@
 
 Organization administrators can set a policy for which users are
 allowed to use [wildcard
-mentions](/help/pm-mention-alert-notifications#wildcard-mentions) in
+mentions](/help/dm-mention-alert-notifications#wildcard-mentions) in
 large streams (defined for this purpose as streams with more than 15
 subscribers).
 
