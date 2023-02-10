@@ -1310,7 +1310,7 @@ def fetch_messages(
     )
 
 
-def execute_query(query: SelectBase, sa_conn: Connection) -> list[Row]:
+def execute_query(query: SelectBase, sa_conn: Connection) -> List[Row]:
     main_query = query.subquery()
     query = (
         select(*main_query.c).select_from(main_query).order_by(column("message_id", Integer).asc())
