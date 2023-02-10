@@ -35,7 +35,7 @@ other users to a stream][configure-invites].
 
 {end_tabs}
 
-{!automated-pm-stream-subscription.md!}
+{!automated-dm-stream-subscription.md!}
 
 ## Unsubscribe a user from stream(s)
 
