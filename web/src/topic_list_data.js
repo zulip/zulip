@@ -8,8 +8,8 @@ import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
-const max_topics = 5;
-const max_topics_with_unread = 8;
+const max_topics = 8;
+const max_topics_with_unread = 12;
 
 export function get_list_info(stream_id, zoomed) {
     let topics_selected = 0;
