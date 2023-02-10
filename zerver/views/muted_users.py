@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.user_mutes import get_mute_object
+from zerver.lib.muted_users import get_mute_object
 from zerver.lib.users import access_user_by_id
 from zerver.models import UserProfile
 
