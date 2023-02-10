@@ -1,12 +1,12 @@
-# Configure who can use private messages
+# Restrict direct messages
 
 {!admin-only.md!}
 
-In Zulip, users can exchange private messages with other users,
+In Zulip, users can exchange direct messages with other users,
 [bots](/help/bots-and-integrations) and themselves. Organization
-administrators can configure who is allowed to use private messages.
+administrators can configure who is allowed to use direct messages.
 
-## Configure who can use private messages
+## Configure who can use direct messages
 
 !!! warn ""
 
@@ -16,23 +16,23 @@ administrators can configure who is allowed to use private messages.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can use private messages**.
+1. Under **Other permissions**, configure **Who can use direct messages**.
 
 {!save-changes.md!}
 
 {end_tabs}
 
-### Notes on restricting private messages
+### Notes on restricting direct messages
 
-* Disabling private messages will cause sending a private message to
-throw an error; the Zulip UI will appear to still allow private
-messages. We expect to make some UI adjustments when private messages
+* Disabling direct messages will cause sending a direct message to
+throw an error; the Zulip UI will appear to still allow direct
+messages. We expect to make some UI adjustments when direct messages
 are disabled during the beta period.
 
-* Even if private messages are disabled, users can still exchange
-direct private messages with bot users (this detail is important for
+* Even if direct messages are disabled, users can still exchange
+direct messages with bot users (this detail is important for
 Zulip's new user onboarding experience). Consider also [restricting
 bot creation](/help/restrict-bot-creation) when using this feature.
 
-* Restricting private messages does not automatically [restrict creating
+* Restricting direct messages does not automatically [restrict creating
 private streams](/help/configure-who-can-create-streams).
