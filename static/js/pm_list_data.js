@@ -79,16 +79,6 @@ export function get_conversations() {
     return display_objects;
 }
 
-export function is_all_privates() {
-    const filter = narrow_state.filter();
-
-    if (!filter) {
-        return false;
-    }
-
-    return filter.operands("is").includes("private");
-}
-
 // Designed to closely match topic_list_data.get_list_info().
 export function get_list_info(zoomed) {
     const conversations = get_conversations();
