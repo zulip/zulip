@@ -272,10 +272,13 @@ export function zoom_in_topics(options) {
         const $elt = $(this);
         const stream_id = options.stream_id;
 
-        if (stream_id_for_elt($elt) === stream_id) {
+        if (stream_id_for_elt($elt) === stream_id) {            
             $elt.show();
-            // Add search box for topics list.
-            $elt.children("div.bottom_left_row").append(render_filter_topics());
+            // Add search box for topics list.            
+            $elt.children("div.bottom_left_row")                
+                .append(render_filter_topics())
+                .addClass("new-style") // to use style for tab-swicher
+                .append(topic_list.init_resolved_toggle().get());
             $("#filter-topic-input").trigger("focus");
             $("#clear_search_topic_button").hide();
         } else {
@@ -297,6 +300,7 @@ export function zoom_out_topics() {
     $("#stream_filters li.narrow-filter").show();
     // Remove search box for topics list from DOM.
     $(".filter-topics").remove();
+    topic_list.remove_resolved_toggle();
 }
 
 export function set_in_home_view(stream_id, in_home) {

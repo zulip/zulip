@@ -40,9 +40,9 @@ const general = {
 
 stream_data.add_sub(general);
 
-function get_list_info(zoomed) {
+function get_list_info(zoomed, type) {
     const stream_id = general.stream_id;
-    return topic_list_data.get_list_info(stream_id, zoomed);
+    return topic_list_data.get_list_info(stream_id, zoomed, type);
 }
 
 function test(label, f) {
@@ -117,21 +117,37 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     const zoomed = true;
     override(topic_list, "get_topic_search_term", () => "");
-    list_info = get_list_info(zoomed);
+    list_info = get_list_info(zoomed, "all");
     assert.equal(list_info.items.length, 7);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 7);
 
+    list_info = get_list_info(zoomed, "resolved");
+    assert.equal(list_info.items.length, 3);
+    assert.equal(list_info.num_possible_topics, 3);    
+
+    list_info = get_list_info(zoomed, "unresolved");
+    assert.equal(list_info.items.length, 4);
+    assert.equal(list_info.num_possible_topics, 4);
+
     add_topic_message("After Brooklyn", 1008);
     add_topic_message("Catering", 1009);
+    add_topic_message("✔ Catering1", 1010);
     // when topic search is open then we list topics based on search term.
     override(topic_list, "get_topic_search_term", () => "b,c");
-    list_info = get_list_info(zoomed);
-    assert.equal(list_info.items.length, 2);
+    list_info = get_list_info(zoomed, "all");    
+    assert.equal(list_info.items.length, 3);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
-    assert.equal(list_info.num_possible_topics, 2);
+    assert.equal(list_info.num_possible_topics, 3);
+
+    // search term + resolved/unresolved
+    list_info = get_list_info(zoomed, "resolved"); 
+    assert.equal(list_info.items.length, 1);
+
+    list_info = get_list_info(zoomed, "unresolved"); 
+    assert.equal(list_info.items.length, 2);
 });
 
 test("get_list_info unreads", ({override}) => {

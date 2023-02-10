@@ -11,7 +11,7 @@ import * as util from "./util";
 const max_topics = 5;
 const max_topics_with_unread = 8;
 
-export function get_list_info(stream_id, zoomed) {
+export function get_list_info(stream_id, zoomed, should_show_resolved) {
     let topics_selected = 0;
     let more_topics_unreads = 0;
     let more_topics_have_unread_mention_messages = false;
@@ -26,6 +26,13 @@ export function get_list_info(stream_id, zoomed) {
     if (zoomed) {
         const search_term = topic_list.get_topic_search_term();
         topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+
+        if (should_show_resolved !== "all") {
+            topic_names = topic_names.filter(
+                (name) =>
+                    resolved_topic.is_resolved(name) === (should_show_resolved === "resolved"),
+            );
+        }
     }
 
     const items = [];

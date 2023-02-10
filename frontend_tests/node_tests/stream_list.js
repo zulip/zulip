@@ -377,13 +377,24 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     stream_list.set_event_handlers();
 
     mock_template("filter_topics", false, () => "filter-topics-stub");
-    let filter_topics_appended = false;
-    $stream_li1.children = () => ({
-        append(html) {
-            assert.equal(html, "filter-topics-stub");
-            filter_topics_appended = true;
-        },
+    topic_list.init_resolved_toggle = () =>({
+        get() {
+            console.log("init_resolved_toggle");
+            return "resolved_toggle_stub";
+        }
     });
+    let children_list = new Set();
+    let children = {        
+        addClass(class_name) {
+            assert.equal(class_name, "new-style");
+            return children;
+        },
+        append(html) {            
+            children_list.add(html);            
+            return children;
+        },
+    }
+    $stream_li1.children = () => children;
     stream_list.zoom_in_topics({stream_id: 42});
 
     assert.ok(!$label1.visible());
@@ -392,7 +403,8 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok($stream_li1.visible());
     assert.ok(!$stream_li2.visible());
     assert.ok($("#streams_list").hasClass("zoom-in"));
-    assert.ok(filter_topics_appended);
+    assert.ok(children_list.has("filter-topics-stub"));
+    assert.ok(children_list.has("resolved_toggle_stub"));
 
     $("#stream_filters li.narrow-filter").show = () => {
         $stream_li1.show();
@@ -401,8 +413,11 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
 
     $stream_li1.length = 1;
     $(".filter-topics").remove = () => {
-        filter_topics_appended = false;
+        children_list.delete("filter-topics-stub");
     };
+    topic_list.remove_resolved_toggle = () => {
+        children_list.delete("resolved_toggle_stub");
+    }
     stream_list.zoom_out_topics({$stream_li: $stream_li1});
 
     assert.ok($label1.visible());
@@ -411,7 +426,8 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok($stream_li1.visible());
     assert.ok($stream_li2.visible());
     assert.ok($("#streams_list").hasClass("zoom-out"));
-    assert.ok(!filter_topics_appended);
+    assert.ok(!children_list.has("filter-topics-stub"));
+    assert.ok(!children_list.has("resolved_toggle_stub"));
 });
 
 test_ui("narrowing", ({mock_template}) => {

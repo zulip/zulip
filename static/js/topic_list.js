@@ -6,6 +6,8 @@ import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
 import * as blueslip from "./blueslip";
+import * as components from "./components";
+import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as stream_popover from "./stream_popover";
 import * as stream_topic_history from "./stream_topic_history";
@@ -27,6 +29,37 @@ const active_widgets = new Map();
 
 // We know whether we're zoomed or not.
 let zoomed = false;
+
+let resolved_toggle;
+let should_show_resolved = "all";
+
+export function init_resolved_toggle() {
+    resolved_toggle = components.toggle({
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "All"}), key: "all"},
+            {label: $t({defaultMessage: "Unresolved"}), key: "unresolved"},
+            {label: $t({defaultMessage: "Resolved"}), key: "resolved"},
+        ],
+        selected: 0,
+        callback(value, key) {
+            should_show_resolved = key;
+            active_widgets.get(active_stream_id()).build();
+        },
+    });
+    return resolved_toggle;
+}
+
+export function remove_resolved_toggle() {
+    if (resolved_toggle !== undefined) {
+        resolved_toggle.get().remove();
+        resolved_toggle = undefined;
+    }
+}
+
+export function get_resolved_filter_value() {
+    return should_show_resolved;
+}
 
 export function update() {
     for (const widget of active_widgets.values()) {
@@ -125,7 +158,11 @@ export class TopicListWidget {
     }
 
     build_list(spinner) {
-        const list_info = topic_list_data.get_list_info(this.my_stream_id, zoomed);
+        const list_info = topic_list_data.get_list_info(
+            this.my_stream_id,
+            zoomed,
+            should_show_resolved,
+        );
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
