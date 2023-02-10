@@ -17,7 +17,6 @@ from zerver.lib.streams import (
     access_stream_for_unmute_topic_by_name,
     check_for_exactly_one_stream_arg,
 )
-from zerver.lib.user_topics import topic_is_muted
 from zerver.lib.validator import check_int, check_string_in
 from zerver.models import UserProfile
 
@@ -34,9 +33,6 @@ def mute_topic(
     else:
         assert stream_id is not None
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
-
-    if topic_is_muted(user_profile, stream.id, topic_name):
-        raise JsonableError(_("Topic already muted"))
 
     try:
         do_mute_topic(user_profile, stream, topic_name, date_muted)
