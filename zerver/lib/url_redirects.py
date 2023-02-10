@@ -21,6 +21,10 @@ POLICY_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
 
 HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     # Add URL redirects for help center documentation here:
+    URLRedirect("/help/pm-mention-alert-notifications", "/help/dm-mention-alert-notifications"),
+    URLRedirect("/help/restrict-private-messages", "/help/restrict-direct-messages"),
+    URLRedirect("/help/reading-pms", "/help/reading-dms"),
+    URLRedirect("/help/private-messages", "/help/direct-messages"),
     URLRedirect("/help/configure-who-can-edit-topics", "/help/restrict-moving-messages"),
     URLRedirect(
         "/help/configure-message-editing-and-deletion",
@@ -44,7 +48,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/delete-a-stream", "/help/archive-a-stream"),
     URLRedirect("/help/change-the-topic-of-a-message", "/help/rename-a-topic"),
     URLRedirect("/help/configure-missed-message-emails", "/help/email-notifications"),
-    URLRedirect("/help/add-an-alert-word", "/help/pm-mention-alert-notifications#alert-words"),
+    URLRedirect("/help/add-an-alert-word", "/help/dm-mention-alert-notifications#alert-words"),
     URLRedirect("/help/test-mobile-notifications", "/help/mobile-notifications"),
     URLRedirect(
         "/help/troubleshooting-desktop-notifications",

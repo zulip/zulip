@@ -16,8 +16,8 @@ have the following effects:
   picture, and message content, are hidden behind a **Click here to
   reveal** banner. A revealed message can later be [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
 
-* Muted users are hidden from [**Private
-  messages**](/help/private-messages) in the left sidebar and the list
+* Muted users are hidden from [**Direct
+  messages**](/help/direct-messages) in the left sidebar and the list
   of users in the right sidebar. Private messages between you and a
   muted user are excluded from all views, including search, unless you
   [explicitly search](/help/search-for-messages) for `pm-with:<that

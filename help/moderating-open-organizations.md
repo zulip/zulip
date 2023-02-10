@@ -12,8 +12,8 @@ problematic behavior:
 * [Disallow disposable email addresses](/help/restrict-account-creation#dont-allow-disposable-domains)
   or [require users to log in via GitHub or GitLab](/help/configure-authentication-methods).
 * Restrict who can [create streams](/help/configure-who-can-create-streams),
-  [create bots](/help/restrict-bot-creation), [send private
-  messages](/help/restrict-private-messages), or
+  [create bots](/help/restrict-bot-creation), [send direct
+  messages](/help/restrict-direct-messages), or
   [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
 * Link to a code of conduct in your
   [organization description](/help/create-your-organization-profile)

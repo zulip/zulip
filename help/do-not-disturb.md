@@ -50,7 +50,7 @@ time to focus on your work.
 ## Related articles
 
 * [Desktop notifications](/help/desktop-notifications)
-* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Stream notifications](/help/stream-notifications)
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)

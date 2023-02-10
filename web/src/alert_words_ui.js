@@ -103,7 +103,7 @@ export function show_add_alert_word_modal() {
         html_heading: $t_html({defaultMessage: "Add a new alert word"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Add"}),
-        help_link: "/help/pm-mention-alert-notifications#alert-words",
+        help_link: "/help/dm-mention-alert-notifications#alert-words",
         form_id: "add-alert-word-form",
         id: "add-alert-word",
         loading_spinner: true,
