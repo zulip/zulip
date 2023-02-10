@@ -223,15 +223,12 @@ run_test("basics", () => {
 });
 
 run_test("date", () => {
-    stub_message_list();
-    const date = Date.now()
-    const helper = test_helper();
+    const date = Date.now();
+    $("#mark_as_read_turned_off_banner").toggleClass = () => {};
     const terms = [{operator: "stream", operand: "Denmark"}];
     message_lists.current.selected_id = () => -1;
-    let cont;
     message_fetch.load_messages_for_narrow = (opts) => {
         // Only validates the anchor and set of fields
-        cont = opts.cont;
         assert.deepEqual(opts, {
             cont: opts.cont,
             msg_list: opts.msg_list,

@@ -1072,10 +1072,10 @@ def limit_query_to_range(
         after_query = query
         after_query = after_query.where(id_col >= anchor_date)
         after_query = after_query.order_by(id_col.asc())
-        after_query = after_query.limit(num_after + 1) #  +1 is used for found_newest flag later
+        after_query = after_query.limit(num_after + 1)  #  +1 is used for found_newest flag later
         before_query = before_query.where(id_col <= anchor_date)
         before_query = before_query.order_by(id_col.desc())
-        before_query = before_query.limit(num_before + 1) #  +1 is used for found_oldest flag later
+        before_query = before_query.limit(num_before + 1)  #  +1 is used for found_oldest flag later
         return before_query.self_group(), after_query.self_group()
 
     if need_both_sides:
@@ -1156,8 +1156,8 @@ def post_process_limited_query(
         found_oldest = anchored_to_left or (len(before_rows) < num_before)
         found_newest = anchored_to_right or (len(after_rows) < num_after)
     else:
-        found_oldest =  (len(before_rows) < num_before)
-        found_newest =  (len(after_rows) + len(anchor_rows) < num_after)
+        found_oldest = len(before_rows) < num_before
+        found_newest = len(after_rows) + len(anchor_rows) < num_after
     # BUG: history_limited is incorrect False in the event that we had
     # to bump `anchor` up due to first_visible_message_id, and there
     # were actually older messages.  This may be a rare event in the

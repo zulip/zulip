@@ -444,15 +444,11 @@ export function initialize() {
         date.setHours(0);
         date.setMinutes(0);
         date.setSeconds(0);
-        flatpickr.show_flatpickr(
-            e.target,
-            on_message_timestamp_selection,
-            date,
-            {
-                position: "auto center",
-                closeOnSelect: false,
-                enableTime: false,
-            });
+        flatpickr.show_flatpickr(e.target, on_message_timestamp_selection, date, {
+            position: "auto center",
+            closeOnSelect: false,
+            enableTime: false,
+        });
     });
 
     // RECENT TOPICS

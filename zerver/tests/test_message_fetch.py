@@ -2914,7 +2914,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
         result = orjson.loads(payload.content)
         messages = result["messages"]
-        self.assert_length(messages, 51) # found_oldest requires +1
+        self.assert_length(messages, 51)  # found_oldest requires +1
 
         req["num_before"] = 50
         req["num_after"] = 70
@@ -2926,7 +2926,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
         result = orjson.loads(payload.content)
         messages = result["messages"]
-        self.assert_length(messages, 71) # found_newest requires +1
+        self.assert_length(messages, 71)  # found_newest requires +1
 
         me = self.example_user("hamlet")
         for i in range(100):
@@ -2948,7 +2948,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
         result = orjson.loads(payload.content)
         messages = result["messages"]
-        self.assert_length(messages, 51) # found_oldest requires +1
+        self.assert_length(messages, 51)  # found_oldest requires +1
 
         req["num_before"] = 50
         req["num_after"] = 70
@@ -2960,7 +2960,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
         result = orjson.loads(payload.content)
         messages = result["messages"]
-        self.assert_length(messages, 71) # found_newest requires +1
+        self.assert_length(messages, 71)  # found_newest requires +1
 
     def test_missing_params(self) -> None:
         """
