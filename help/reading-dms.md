@@ -1,6 +1,6 @@
-# Reading private messages (PMs)
+# Reading direct messages (DMs)
 
-{!reading-pms.md!}
+{!reading-dms.md!}
 
 ## Related articles
 

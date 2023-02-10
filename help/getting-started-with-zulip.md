@@ -36,7 +36,7 @@ Like your email inbox, Zulip works best if you read it topic-by-topic.
 
 ### Reading private messages
 
-{!reading-pms.md!}
+{!reading-dms.md!}
 
 ## Sending messages
 
@@ -63,4 +63,3 @@ Like your email inbox, Zulip works best if you read it topic-by-topic.
 ## Related articles
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
-
