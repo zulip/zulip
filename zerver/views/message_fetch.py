@@ -86,6 +86,7 @@ def get_messages_backend(
     include_anchor: bool = REQ(json_validator=check_bool, default=True),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
+    anchor_date: Optional[str] = REQ("anchor_date", default=None),
     narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
     use_first_unread_anchor_val: bool = REQ(
         "use_first_unread_anchor", json_validator=check_bool, default=False
@@ -163,6 +164,7 @@ def get_messages_backend(
         include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,
+        anchor_date=anchor_date,
     )
 
     anchor = query_info.anchor

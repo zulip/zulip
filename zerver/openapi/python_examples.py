@@ -874,6 +874,7 @@ def get_messages(client: Client) -> None:
         "anchor": "newest",
         "num_before": 100,
         "num_after": 0,
+        "anchor_date": None,
         "narrow": [
             {"operator": "sender", "operand": "iago@zulip.com"},
             {"operator": "stream", "operand": "Verona"},

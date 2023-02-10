@@ -241,6 +241,7 @@ export function load_messages(opts, attempt = 1) {
 
     data.client_gravatar = true;
     data = handle_operators_supporting_id_based_api(data);
+    data.anchor_date = opts.anchor_date;
 
     if (page_params.is_spectator) {
         // This is a bit of a hack; ideally we'd unify this logic in
@@ -333,6 +334,7 @@ export function load_messages_for_narrow(opts) {
         num_after: consts.narrow_after,
         msg_list: opts.msg_list,
         cont: opts.cont,
+        anchor_date: opts.anchor_date,
     });
 }
 

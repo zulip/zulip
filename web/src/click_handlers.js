@@ -17,6 +17,7 @@ import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
+import * as flatpickr from "./flatpickr";
 import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
@@ -419,6 +420,25 @@ export function initialize() {
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );
+    });
+
+    // JUMP TO DATE
+
+    function on_message_timestamp_selection(date) {
+        const hash = window.location.hash.split("/");
+        const operators = hash_util.parse_narrow(hash);
+        narrow.activate(operators, {trigger: "date", anchor_date: date});
+    }
+
+    $("body").on("click", ".message_header .recipient_row_date", (e) => {
+        e.stopPropagation();
+        const rendered_date = $(e.target).attr("data-tippy-content");
+        const date = new Date(rendered_date);
+        flatpickr.show_flatpickr(e.target, on_message_timestamp_selection, date, {
+            position: "below",
+            closeOnSelect: false,
+            enableTime: false,
+        });
     });
 
     // RECIPIENT BARS

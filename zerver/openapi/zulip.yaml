@@ -5503,6 +5503,13 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: anchor_date
+          in: query
+          description: |
+            Find a message at the specified date.
+          schema:
+            type: string
+          example: "2023-02-20T00:00:00+03:00"
         - name: num_before
           in: query
           description: |

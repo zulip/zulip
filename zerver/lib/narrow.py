@@ -42,7 +42,7 @@ from sqlalchemy.sql import (
     union_all,
 )
 from sqlalchemy.sql.selectable import SelectBase
-from sqlalchemy.types import ARRAY, Boolean, Integer, Text
+from sqlalchemy.types import ARRAY, Boolean, DateTime, Integer, Text
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -250,7 +250,7 @@ class NarrowBuilder:
     def __init__(
         self,
         user_profile: Optional[UserProfile],
-        msg_id_column: ColumnElement[Integer],
+        msg_id_column: Union[ColumnElement[Integer], ColumnElement[DateTime]],
         realm: Realm,
         is_web_public_query: bool = False,
     ) -> None:
@@ -892,15 +892,22 @@ def exclude_muting_conditions(
 
 
 def get_base_query_for_search(
-    user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
-) -> Tuple[Select, ColumnElement[Integer]]:
+    user_profile: Optional[UserProfile],
+    need_message: bool,
+    need_user_message: bool,
+    anchor_date: Optional[str],
+) -> Tuple[Select, Union[ColumnElement[Integer], ColumnElement[DateTime]]]:
+    inner_msg_id_col: Union[ColumnElement[Integer], ColumnElement[DateTime]]
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert need_message
         query = select(column("id", Integer).label("message_id")).select_from(
             table("zerver_message")
         )
-        inner_msg_id_col = literal_column("zerver_message.id", Integer)
+        if anchor_date:
+            inner_msg_id_col = literal_column("zerver_message.date_sent", DateTime)
+        else:
+            inner_msg_id_col = literal_column("zerver_message.id", Integer)
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
@@ -917,21 +924,34 @@ def get_base_query_for_search(
                 )
             )
         )
-        inner_msg_id_col = column("message_id", Integer)
+        if anchor_date:
+            inner_msg_id_col = literal_column("zerver_message.date_sent", DateTime)
+        else:
+            inner_msg_id_col = column("message_id", Integer)
         return (query, inner_msg_id_col)
 
     query = (
         select(column("message_id", Integer), column("flags", Integer))
         .where(column("user_profile_id", Integer) == literal(user_profile.id))
-        .select_from(table("zerver_usermessage"))
+        .select_from(
+            join(
+                table("zerver_usermessage"),
+                table("zerver_message"),
+                literal_column("zerver_usermessage.message_id", Integer)
+                == literal_column("zerver_message.id", Integer),
+            )
+        )
     )
-    inner_msg_id_col = column("message_id", Integer)
+    if anchor_date:
+        inner_msg_id_col = literal_column("zerver_message.date_sent", DateTime)
+    else:
+        inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
 
 
 def add_narrow_conditions(
     user_profile: Optional[UserProfile],
-    inner_msg_id_col: ColumnElement[Integer],
+    inner_msg_id_col: Union[ColumnElement[Integer], ColumnElement[DateTime]],
     query: Select,
     narrow: OptionalNarrowListT,
     is_web_public_query: bool,
@@ -990,6 +1010,7 @@ def find_first_unread_anchor(
         user_profile=user_profile,
         need_message=need_message,
         need_user_message=need_user_message,
+        anchor_date=None,
     )
 
     query, is_search = add_narrow_conditions(
@@ -1040,7 +1061,7 @@ def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool)
         return 0
     if anchor_val == "newest":
         return LARGER_THAN_MAX_MESSAGE_ID
-    if anchor_val == "first_unread":
+    if anchor_val == "first_unread" or anchor_val == "date":
         return None
     try:
         # We don't use `.isnumeric()` to support negative numbers for
@@ -1062,13 +1083,14 @@ def limit_query_to_range(
     query: Select,
     num_before: int,
     num_after: int,
-    anchor: int,
+    anchor: Optional[int],
     include_anchor: bool,
     anchored_to_left: bool,
     anchored_to_right: bool,
-    id_col: ColumnElement[Integer],
+    id_col: Union[ColumnElement[Integer], ColumnElement[DateTime]],
     first_visible_message_id: int,
-) -> SelectBase:
+    anchor_date: Optional[str],
+) -> Union[SelectBase, Tuple[SelectBase, SelectBase]]:
     """
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
@@ -1090,37 +1112,54 @@ def limit_query_to_range(
     #
     # Note that in some cases, if the anchor row isn't found, we
     # actually may fetch an extra row at one of the extremes.
-    if need_both_sides:
-        before_anchor = anchor - 1
-        after_anchor = max(anchor, first_visible_message_id)
-        before_limit = num_before
-        after_limit = num_after + 1
-    elif need_before_query:
-        before_anchor = anchor - (not include_anchor)
-        before_limit = num_before
-        if not anchored_to_right:
-            before_limit += include_anchor
-    elif need_after_query:
-        after_anchor = max(anchor + (not include_anchor), first_visible_message_id)
-        after_limit = num_after + include_anchor
+    if anchor_date is None:
+        assert anchor is not None
+        if need_both_sides:
+            before_anchor = anchor - 1
+            after_anchor = max(anchor, first_visible_message_id)
+            before_limit = num_before
+            after_limit = num_after + 1
+        elif need_before_query:
+            before_anchor = anchor - (not include_anchor)
+            before_limit = num_before
+            if not anchored_to_right:
+                before_limit += include_anchor
+        elif need_after_query:
+            after_anchor = max(anchor + (not include_anchor), first_visible_message_id)
+            after_limit = num_after + include_anchor
 
-    if need_before_query:
+        if need_before_query:
+            before_query = query
+
+            if not anchored_to_right:
+                before_query = before_query.where(id_col <= before_anchor)
+
+            before_query = before_query.order_by(id_col.desc())
+            before_query = before_query.limit(before_limit)
+
+        if need_after_query:
+            after_query = query
+
+            if not anchored_to_left:
+                after_query = after_query.where(id_col >= after_anchor)
+
+            after_query = after_query.order_by(id_col.asc())
+            after_query = after_query.limit(after_limit)
+    else:
+        # We cannot use need_after and need_before_query here since anchor is "date".
         before_query = query
-
-        if not anchored_to_right:
-            before_query = before_query.where(id_col <= before_anchor)
-
-        before_query = before_query.order_by(id_col.desc())
-        before_query = before_query.limit(before_limit)
-
-    if need_after_query:
         after_query = query
 
-        if not anchored_to_left:
-            after_query = after_query.where(id_col >= after_anchor)
-
+        after_query = after_query.where(id_col >= anchor_date)
         after_query = after_query.order_by(id_col.asc())
-        after_query = after_query.limit(after_limit)
+        after_query = after_query.limit(num_after + 1)  # +1 is used for found_newest flag later.
+
+        before_query = before_query.where(id_col <= anchor_date)
+        before_query = before_query.order_by(id_col.desc())
+        before_query = before_query.limit(num_before + 1)  # +1 is used for found_oldest flag later.
+
+        # We need to return them seprately in case of a date based search.
+        return before_query.self_group(), after_query.self_group()
 
     if need_both_sides:
         return union_all(before_query.self_group(), after_query.self_group())
@@ -1156,10 +1195,11 @@ def post_process_limited_query(
     rows: Sequence[MessageRowT],
     num_before: int,
     num_after: int,
-    anchor: int,
+    anchor: Optional[int],
     anchored_to_left: bool,
     anchored_to_right: bool,
     first_visible_message_id: int,
+    anchor_date: Optional[str],
 ) -> LimitedMessages[MessageRowT]:
     # Our queries may have fetched extra rows if they added
     # "headroom" to the limits, but we want to truncate those
@@ -1195,8 +1235,12 @@ def post_process_limited_query(
     limited_rows = [*before_rows, *anchor_rows, *after_rows]
 
     found_anchor = len(anchor_rows) == 1
-    found_oldest = anchored_to_left or (len(before_rows) < num_before)
-    found_newest = anchored_to_right or (len(after_rows) < num_after)
+    if anchor_date is None:
+        found_oldest = anchored_to_left or (len(before_rows) < num_before)
+        found_newest = anchored_to_right or (len(after_rows) < num_after)
+    else:
+        found_oldest = len(before_rows) < num_before
+        found_newest = len(after_rows) + len(anchor_rows) < num_after
     # BUG: history_limited is incorrect False in the event that we had
     # to bump `anchor` up due to first_visible_message_id, and there
     # were actually older messages.  This may be a rare event in the
@@ -1221,7 +1265,7 @@ def post_process_limited_query(
 
 @dataclass
 class FetchedMessages(LimitedMessages[Row]):
-    anchor: int
+    anchor: Optional[int]
     include_history: bool
     is_search: bool
 
@@ -1236,6 +1280,7 @@ def fetch_messages(
     include_anchor: bool,
     num_before: int,
     num_after: int,
+    anchor_date: Optional[str],
 ) -> FetchedMessages:
     include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
     if include_history:
@@ -1259,11 +1304,12 @@ def fetch_messages(
         need_message = True
         need_user_message = True
 
-    query: SelectBase
+    query: Union[SelectBase, Tuple[SelectBase, SelectBase]]
     query, inner_msg_id_col = get_base_query_for_search(
         user_profile=user_profile,
         need_message=need_message,
         need_user_message=need_user_message,
+        anchor_date=anchor_date,
     )
 
     query, is_search = add_narrow_conditions(
@@ -1275,22 +1321,27 @@ def fetch_messages(
         is_web_public_query=is_web_public_query,
     )
 
+    anchored_to_left = False
+    anchored_to_right = False
+
     with get_sqlalchemy_connection() as sa_conn:
-        if anchor is None:
-            # `anchor=None` corresponds to the anchor="first_unread" parameter.
-            anchor = find_first_unread_anchor(
-                sa_conn,
-                user_profile,
-                narrow,
-            )
+        # Do this only when we are not jumping to messages sent on a specific date.
+        if anchor_date is None:
+            if anchor is None:
+                # `anchor=None` corresponds to the anchor="first_unread" parameter.
+                anchor = find_first_unread_anchor(
+                    sa_conn,
+                    user_profile,
+                    narrow,
+                )
 
-        anchored_to_left = anchor == 0
+            anchored_to_left = anchor == 0
 
-        # Set value that will be used to short circuit the after_query
-        # altogether and avoid needless conditions in the before_query.
-        anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
-        if anchored_to_right:
-            num_after = 0
+            # Set value that will be used to short circuit the after_query
+            # altogether and avoid needless conditions in the before_query.
+            anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
+            if anchored_to_right:
+                num_after = 0
 
         first_visible_message_id = get_first_visible_message_id(realm)
 
@@ -1304,17 +1355,23 @@ def fetch_messages(
             anchored_to_right=anchored_to_right,
             id_col=inner_msg_id_col,
             first_visible_message_id=first_visible_message_id,
+            anchor_date=anchor_date,
         )
 
-        main_query = query.subquery()
-        query = (
-            select(*main_query.c)
-            .select_from(main_query)
-            .order_by(column("message_id", Integer).asc())
-        )
-        # This is a hack to tag the query we use for testing
-        query = query.prefix_with("/* get_messages */")
-        rows = list(sa_conn.execute(query).fetchall())
+        rows = []
+        if anchor_date is not None:
+            assert not isinstance(query, SelectBase)
+            rows_before = execute_query(query[0], sa_conn)
+            rows_after = execute_query(query[1], sa_conn)
+            if len(rows_after) == 0:
+                anchor = rows_before[-1][0]
+            else:
+                anchor = rows_after[0][0]
+            rows += rows_before
+            rows += rows_after
+        else:
+            assert isinstance(query, SelectBase)
+            rows = execute_query(query, sa_conn)
 
     query_info = post_process_limited_query(
         rows=rows,
@@ -1324,6 +1381,7 @@ def fetch_messages(
         anchored_to_left=anchored_to_left,
         anchored_to_right=anchored_to_right,
         first_visible_message_id=first_visible_message_id,
+        anchor_date=anchor_date,
     )
 
     return FetchedMessages(
@@ -1336,3 +1394,14 @@ def fetch_messages(
         include_history=include_history,
         is_search=is_search,
     )
+
+
+def execute_query(query: SelectBase, sa_conn: Connection) -> List[Row]:
+    main_query = query.subquery()
+    query = (
+        select(*main_query.c).select_from(main_query).order_by(column("message_id", Integer).asc())
+    )
+    # This is a hack to tag the query we use for testing.
+    query = query.prefix_with("/* get_messages */")
+    rows = list(sa_conn.execute(query).fetchall())
+    return rows

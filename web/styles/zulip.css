@@ -1283,7 +1283,7 @@ td.pointer {
 .recipient_row_date {
     color: var(--color-date);
     font-size: calc(12em / 14);
-    padding: 0 10px;
+    margin: 0 10px;
     text-align: right;
     display: flex;
     align-items: center;
@@ -1293,6 +1293,7 @@ td.pointer {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     padding-top: 1px;
+    cursor: pointer;
 
     /* Display the date when unchanged only for sticky headers. */
     &.recipient_row_date_unchanged {

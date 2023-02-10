@@ -832,6 +832,7 @@ class PostProcessTest(ZulipTestCase):
                 anchored_to_left=anchored_to_left,
                 anchored_to_right=anchored_to_right,
                 first_visible_message_id=first_visible_message_id,
+                anchor_date=None,
             )
 
             self.assertEqual(info.rows, out_rows)
@@ -3088,6 +3089,109 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data["history_limited"], False)
         messages_matches_ids(messages, message_ids[6:9])
 
+    def test_anchor_date(self) -> None:
+        self.login("hamlet")
+        stream_name = "Verona"
+        Message.objects.all().delete()
+
+        message_ids = []
+        for i in range(100):
+            message_ids.append(self.send_stream_message(self.example_user("cordelia"), stream_name))
+
+        narrow = [
+            dict(operator="stream", operand=stream_name),
+        ]
+
+        req = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor="date",
+            anchor_date=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            num_before=50,
+            num_after=50,
+        )
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 51)  # found_oldest requires +1.
+
+        req["num_before"] = 50
+        req["num_after"] = 70
+        req["anchor_date"] = (
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=-1)
+        ).isoformat()
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 71)  # found_newest requires +1.
+
+        # Testing jump to date in private messages.
+        me = self.example_user("hamlet")
+        for i in range(100):
+            self.send_personal_message(me, self.example_user("aaron"))
+
+        narrow = [
+            dict(operator="pm-with", operand=self.example_user("aaron").email),
+        ]
+
+        req = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor="date",
+            anchor_date=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            num_before=50,
+            num_after=50,
+        )
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 51)  # found_oldest requires +1.
+
+        req["num_before"] = 50
+        req["num_after"] = 70
+        req["anchor_date"] = (
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=-1)
+        ).isoformat()
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 71)  # found_newest requires +1.
+
+        # Testing jump to date in all messages.
+        narrow = []
+
+        req = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor="date",
+            anchor_date=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            num_before=50,
+            num_after=50,
+        )
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 51)  # found_oldest requires +1.
+
+        req["num_before"] = 50
+        req["num_after"] = 70
+        req["anchor_date"] = (
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=-1)
+        ).isoformat()
+
+        payload = self.client_get("/json/messages", req)
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+        messages = result["messages"]
+        self.assert_length(messages, 71)  # found_newest requires +1.
+
     def test_missing_params(self) -> None:
         """
         anchor, num_before, and num_after are all required
@@ -3706,27 +3810,27 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 0}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 1, "num_after": 0}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n LIMIT 2) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n LIMIT 2) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 1}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 10}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DESC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DESC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 100, "num_before": 10, "num_after": 0}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM ((SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 99 ORDER BY message_id DESC \n LIMIT 10) UNION ALL (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id ASC \n LIMIT 11)) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM ((SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id <= 99 ORDER BY message_id DESC \n LIMIT 10) UNION ALL (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id ASC \n LIMIT 11)) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 100, "num_before": 10, "num_after": 10}, sql
