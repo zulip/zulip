@@ -57,7 +57,6 @@ from zerver.models import (
     Attachment,
     Message,
     Reaction,
-    Realm,
     Stream,
     UserMessage,
     UserProfile,
@@ -809,16 +808,19 @@ def do_update_message(
     send_event(user_profile.realm, event, users_to_be_notified)
 
     sent_resolve_topic_notification = False
-    if (
-        topic_name is not None
-        and new_stream is None
-        and content is None
-        and len(changed_messages) > 0
-    ):
-        assert stream_being_edited is not None
+    if topic_name is not None and content is None and len(changed_messages) > 0:
+        # When stream is changed and topic is marked as resolved or unresolved
+        # in the same API request, resolved or unresolved notification should
+        # be sent to "new_stream".
+        # In general, it is sent to "stream_being_edited".
+        stream_to_send_resolve_topic_notification = stream_being_edited
+        if new_stream is not None:
+            stream_to_send_resolve_topic_notification = new_stream
+
+        assert stream_to_send_resolve_topic_notification is not None
         sent_resolve_topic_notification = maybe_send_resolve_topic_notifications(
             user_profile=user_profile,
-            stream=stream_being_edited,
+            stream=stream_to_send_resolve_topic_notification,
             old_topic=orig_topic_name,
             new_topic=topic_name,
             changed_messages=changed_messages,
@@ -952,11 +954,14 @@ def check_update_message(
     # and the time limit for editing topics is passed, raise an error.
     if (
         topic_name is not None
+        and user_profile.realm.move_messages_within_stream_limit_seconds is not None
         and not user_profile.is_realm_admin
         and not user_profile.is_moderator
         and not is_no_topic_msg
     ):
-        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
+        deadline_seconds = (
+            user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
+        )
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed"))
 
@@ -1013,6 +1018,19 @@ def check_update_message(
 
         new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
         check_stream_access_based_on_stream_post_policy(user_profile, new_stream)
+
+        if (
+            user_profile.realm.move_messages_between_streams_limit_seconds is not None
+            and not user_profile.is_realm_admin
+            and not user_profile.is_moderator
+        ):
+            deadline_seconds = (
+                user_profile.realm.move_messages_between_streams_limit_seconds + edit_limit_buffer
+            )
+            if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+                raise JsonableError(
+                    _("The time limit for editing this message's stream has passed")
+                )
 
     number_changed = do_update_message(
         user_profile,

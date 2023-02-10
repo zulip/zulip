@@ -26,6 +26,7 @@ from zerver.views.auth import (
     api_fetch_api_key,
     api_get_server_settings,
     json_fetch_api_key,
+    jwt_fetch_api_key,
     log_into_subdomain,
     login_page,
     logout_then_login,
@@ -78,7 +79,6 @@ from zerver.views.message_flags import (
     update_message_flags_for_narrow,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
-from zerver.views.muting import mute_user, unmute_user, update_muted_topic
 from zerver.views.presence import (
     get_presence_backend,
     get_statuses_for_realm,
@@ -182,6 +182,7 @@ from zerver.views.user_groups import (
     update_subgroups_of_user_group,
     update_user_group_backend,
 )
+from zerver.views.user_mutes import mute_user, unmute_user
 from zerver.views.user_settings import (
     confirm_email_change,
     delete_avatar_backend,
@@ -189,6 +190,7 @@ from zerver.views.user_settings import (
     regenerate_api_key,
     set_avatar_backend,
 )
+from zerver.views.user_topics import update_muted_topic
 from zerver.views.users import (
     add_bot_backend,
     avatar,
@@ -471,8 +473,9 @@ v1_api_and_json_patterns = [
         PATCH=update_subscriptions_backend,
         DELETE=remove_subscriptions_backend,
     ),
-    # muting -> zerver.views.muting
+    # topic-muting -> zerver.views.user_topics
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
+    # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
@@ -745,6 +748,12 @@ urls += [
 
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
+
+#  This view accepts a JWT containing an email and returns an API key
+#  and the details for a single user.
+urls += [
+    path("api/v1/jwt/fetch_api_key", jwt_fetch_api_key),
+]
 
 # SCIM2
 

@@ -159,7 +159,9 @@ class HomeTest(ZulipTestCase):
         "realm_message_content_delete_limit_seconds",
         "realm_message_content_edit_limit_seconds",
         "realm_message_retention_days",
+        "realm_move_messages_between_streams_limit_seconds",
         "realm_move_messages_between_streams_policy",
+        "realm_move_messages_within_stream_limit_seconds",
         "realm_name",
         "realm_name_changes_disabled",
         "realm_night_logo_source",
@@ -227,7 +229,7 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         html_bits = [
             "message_feed_errors_container",
-            "Loading...",
+            "app-loading-logo",
             # Verify that the app styles get included
             "app-stubentry.js",
             "data-params",

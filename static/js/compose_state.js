@@ -5,6 +5,14 @@ import * as compose_pm_pill from "./compose_pm_pill";
 let message_type = false; // 'stream', 'private', or false-y
 let recipient_edited_manually = false;
 
+// We use this variable to keep track of whether user has viewed the topic resolved
+// banner for the current compose session, for a narrow. This prevents the banner
+// from popping up for every keystroke while composing.
+// The variable is reset on sending a message, closing the compose box and changing
+// the narrow and the user should still be able to see the banner once after
+// performing these actions
+let recipient_viewed_topic_resolved_banner = false;
+
 export function set_recipient_edited_manually(flag) {
     recipient_edited_manually = flag;
 }
@@ -19,6 +27,14 @@ export function set_message_type(msg_type) {
 
 export function get_message_type() {
     return message_type;
+}
+
+export function set_recipient_viewed_topic_resolved_banner(flag) {
+    recipient_viewed_topic_resolved_banner = flag;
+}
+
+export function has_recipient_viewed_topic_resolved_banner() {
+    return recipient_viewed_topic_resolved_banner;
 }
 
 export function recipient_has_topics() {
@@ -70,24 +86,26 @@ export const message_content = get_or_set("compose-textarea", true);
 
 const untrimmed_message_content = get_or_set("compose-textarea", true, true);
 
-export function cursor_at_start_of_whitespace_in_compose() {
-    // First check if the compose box is focused.  TODO: Maybe we
-    // should make `consider_start_of_whitespace_message_empty` a
-    // parameter to `focus_in_empty_compose` instead.
-    const focused_element_id = document.activeElement.id;
-    if (focused_element_id !== "compose-textarea") {
-        return false;
-    }
-
+function cursor_at_start_of_whitespace_in_compose() {
     const cursor_position = $("#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
 }
 
-export function focus_in_empty_compose() {
+export function focus_in_empty_compose(consider_start_of_whitespace_message_empty = false) {
     // A user trying to press arrow keys in an empty compose is mostly
     // likely trying to navigate messages. This helper function
     // decides whether the compose box is empty for this purpose.
-    if (!composing() || untrimmed_message_content() !== "") {
+    if (!composing()) {
+        return false;
+    }
+
+    // We treat the compose box as empty if it's completely empty, or
+    // if the caller requested, if it contains only whitespace and we're
+    // at the start of te compose box.
+    const treat_compose_as_empty =
+        untrimmed_message_content() === "" ||
+        (consider_start_of_whitespace_message_empty && cursor_at_start_of_whitespace_in_compose());
+    if (!treat_compose_as_empty) {
         return false;
     }
 

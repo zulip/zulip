@@ -636,7 +636,7 @@ def ensure_realm_does_not_have_active_plan(realm: Realm) -> None:
             "Upgrade of %s failed because of existing active plan.",
             realm.string_id,
         )
-        raise UpgradeWithExistingPlanError()
+        raise UpgradeWithExistingPlanError
 
 
 @transaction.atomic
@@ -656,8 +656,8 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
 def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     if remote_server.deactivated:
         billing_logger.warning(
-            f"Cannot deactivate remote server with ID {remote_server.id}, "
-            "server has already been deactivated."
+            "Cannot deactivate remote server with ID %d, server has already been deactivated.",
+            remote_server.id,
         )
         return
 
@@ -1186,6 +1186,10 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     standard_plan.status = CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS
     standard_plan.next_invoice_date = plan_switch_time
     standard_plan.save(update_fields=["status", "next_invoice_date"])
+
+    from zerver.actions.realm_settings import do_change_realm_plan_type
+
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
 
     standard_plan_next_renewal_date = start_of_next_billing_cycle(standard_plan, plan_switch_time)
 

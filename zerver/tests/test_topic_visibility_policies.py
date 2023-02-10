@@ -98,7 +98,7 @@ class MutedTopicsTests(ZulipTestCase):
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
         for data in payloads:
             with mock.patch(
-                "zerver.views.muting.timezone_now",
+                "zerver.views.user_topics.timezone_now",
                 return_value=datetime(2020, 1, 1, tzinfo=timezone.utc),
             ):
                 result = self.api_patch(user, url, data)
@@ -127,7 +127,7 @@ class MutedTopicsTests(ZulipTestCase):
             date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
         )
 
-        with mock.patch("zerver.views.muting.topic_is_muted", return_value=False):
+        with mock.patch("zerver.views.user_topics.topic_is_muted", return_value=False):
             result = self.api_patch(user, url, data)
             self.assert_json_error(result, "Topic already muted")
 

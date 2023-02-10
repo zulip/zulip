@@ -1,10 +1,7 @@
-{{! Client-side Mustache template for rendering the message edit form. }}
+{{! Client-side Handlebars template for rendering the message edit form. }}
 
 <form id="edit_form_{{message_id}}" class="new-style">
-    <div class="alert" id="message-edit-send-status-{{message_id}}">
-        <span class="send-status-close">&times;</span>
-        <span class="error-msg"></span>
-    </div>
+    <div class="banners"></div>
     <div class="edit-controls">
         {{> copy_message_button message_id=this.message_id}}
         <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>

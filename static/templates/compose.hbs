@@ -4,12 +4,15 @@
     minimal css and no JS. We keep it `position: absolute` to prevent
     it changing compose box layout in any way. --}}
     <div id="scroll-to-bottom-button-container" aria-hidden="true">
-        <div id="scroll-to-bottom-button-clickable-area" data-tooltip-template-id="scroll-to-bottom-button-tooltip">
+        <div id="scroll-to-bottom-button-clickable-area" data-tooltip-template-id="scroll-to-bottom-button-tooltip-template">
             <div id="scroll-to-bottom-button">
                 <i class="fa fa-chevron-down"></i>
             </div>
         </div>
-        <template id="scroll-to-bottom-button-tooltip">{{t 'Scroll to bottom' }} <span class="hotkey-hint">({{{scroll_to_bottom_key_html}}})</span></template>
+        <template id="scroll-to-bottom-button-tooltip-template">
+            {{t 'Scroll to bottom' }}
+            {{tooltip_hotkey_hints "End"}}
+        </template>
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
@@ -47,11 +50,6 @@
     </div>
     <div class="message_comp">
         <div id="compose_banners"></div>
-        <div class="alert" id="compose-send-status">
-            <span class="compose-send-status-close">&times;</span>
-            <span id="compose-error-msg"></span>
-        </div>
-        <div id="out-of-view-notification" class="notification-alert"></div>
         <div class="composition-area">
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}
@@ -60,9 +58,15 @@
                         <div id="compose_top_right" class="order-2">
                             <button type="button" class="expand_composebox_button fa fa-chevron-up" aria-label="{{t 'Expand compose' }}" data-tippy-content="{{t 'Expand compose' }}"></button>
                             <button type="button" class="collapse_composebox_button fa fa-chevron-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
-                            <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip"></button>
-                            <template id="compose_close_tooltip">{{t 'Cancel compose' }} <span class="hotkey-hint">(Esc)</span></template>
-                            <template id="compose_close_and_save_tooltip">{{t 'Cancel compose and save draft' }} <span class="hotkey-hint">(Esc)</span></template>
+                            <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
+                            <template id="compose_close_tooltip_template">
+                                {{t 'Cancel compose' }}
+                                {{tooltip_hotkey_hints "Esc"}}
+                            </template>
+                            <template id="compose_close_and_save_tooltip_template">
+                                {{t 'Cancel compose and save draft' }}
+                                {{tooltip_hotkey_hints "Esc"}}
+                            </template>
                         </div>
                         <div id="stream-message" class="order-1">
                             <div class="stream-selection-header-colorblock message_header_stream left_part" tab-index="-1"></div>
@@ -139,4 +143,9 @@
     </div>
 </div>
 
-<template id="add-global-time-tooltip">{{#tr}}Add global time<br />Everyone sees global times in their own time zone.{{/tr}}</template>
+<template id="add-global-time-tooltip">
+    <div>
+        <span>{{#tr}}Add global time{{/tr}}</span><br/>
+        <span class="tooltip-inner-content italic">{{#tr}}Everyone sees global times in their own time zone.{{/tr}}</span>
+    </div>
+</template>

@@ -18,6 +18,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
 import * as linkifiers from "./linkifiers";
+import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -67,7 +68,9 @@ import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as user_events from "./user_events";
+import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
+import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
@@ -204,12 +207,15 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_to_realm_policy: noop,
+                invite_to_realm_policy: settings_invites.update_invite_users_setting_tip,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
+                move_messages_between_streams_limit_seconds: noop,
+                move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
+                move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: noop,
@@ -261,6 +267,10 @@ export function dispatch_normal_event(event) {
                                 page_params["realm_" + key] = value;
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
+                                }
+
+                                if (key === "edit_topic_policy") {
+                                    message_live_update.rerender_messages_view();
                                 }
                             }
                             if (event.data.authentication_methods !== undefined) {
@@ -754,15 +764,21 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     user_groups.add(event.group);
+                    if (overlays.groups_open()) {
+                        user_groups_settings_ui.add_group_to_table(event.group);
+                    }
                     break;
                 case "remove":
+                    user_group_edit.handle_deleted_group(event.group_id);
                     user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
                     break;
                 case "add_members":
                     user_groups.add_members(event.group_id, event.user_ids);
+                    user_group_edit.handle_member_edit_event(event.group_id);
                     break;
                 case "remove_members":
                     user_groups.remove_members(event.group_id, event.user_ids);
+                    user_group_edit.handle_member_edit_event(event.group_id);
                     break;
                 case "add_subgroups":
                     user_groups.add_subgroups(event.group_id, event.direct_subgroup_ids);
@@ -772,6 +788,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     user_groups.update(event);
+                    user_groups_settings_ui.update_group(event.group_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);

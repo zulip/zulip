@@ -3804,6 +3804,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plus_plan.tier, CustomerPlan.PLUS)
         self.assertEqual(LicenseLedger.objects.filter(plan=plus_plan).count(), 1)
 
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
+
         # There are 9 licenses and the realm is on the Standard monthly plan.
         # Therefore, the customer has already paid 800 * 9 = 7200 = $72 for
         # the month. Once they upgrade to Plus, the new price for their 9

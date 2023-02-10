@@ -87,7 +87,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.types import Validator
 from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
-from zerver.lib.users import get_all_api_keys
+from zerver.lib.users import get_all_api_keys, get_api_key, get_raw_user_data
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -5415,7 +5415,7 @@ class TestJWTLogin(ZulipTestCase):
     """
 
     def test_login_success(self) -> None:
-        payload = {"user": "hamlet", "realm": "zulip.com"}
+        payload = {"email": "hamlet@zulip.com"}
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             email = self.example_email("hamlet")
             realm = get_realm("zulip")
@@ -5424,39 +5424,30 @@ class TestJWTLogin(ZulipTestCase):
             web_token = jwt.encode(payload, key, algorithm)
 
             user_profile = get_user_by_delivery_email(email, realm)
-            data = {"json_web_token": web_token}
+            data = {"token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
 
-    def test_login_failure_when_user_is_missing(self) -> None:
-        payload = {"realm": "zulip.com"}
+    def test_login_failure_when_email_is_missing(self) -> None:
+        payload: Dict[str, str] = {}
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
             web_token = jwt.encode(payload, key, algorithm)
-            data = {"json_web_token": web_token}
+            data = {"token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assert_json_error_contains(
-                result, "No user specified in JSON web token claims", 400
-            )
-
-    def test_login_failure_when_realm_is_missing(self) -> None:
-        payload = {"user": "hamlet"}
-        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
-            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
-            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm)
-            data = {"json_web_token": web_token}
-            result = self.client_post("/accounts/login/jwt/", data)
-            self.assert_json_error_contains(
-                result, "No organization specified in JSON web token claims", 400
+                result, "No email specified in JSON web token claims", 400
             )
 
     def test_login_failure_when_key_does_not_exist(self) -> None:
-        data = {"json_web_token": "not relevant"}
-        result = self.client_post("/accounts/login/jwt/", data)
-        self.assert_json_error_contains(result, "Auth key for this subdomain not found.", 400)
+        with self.settings(JWT_AUTH_KEYS={"acme": {"key": "key", "algorithms": ["HS256"]}}):
+            data = {"token": "not relevant"}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assert_json_error_contains(
+                result, "JWT authentication is not enabled for this organization", 400
+            )
 
     def test_login_failure_when_key_is_missing(self) -> None:
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
@@ -5467,56 +5458,43 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             result = self.client_post("/accounts/login/jwt/")
             self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
-            data = {"json_web_token": "bad token"}
+            data = {"token": "bad token"}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assert_json_error_contains(result, "Bad JSON web token", 400)
 
     def test_login_failure_when_user_does_not_exist(self) -> None:
-        payload = {"user": "nonexisting", "realm": "zulip.com"}
+        payload = {"email": "nonexisting@zulip.com"}
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
             web_token = jwt.encode(payload, key, algorithm)
-            data = {"json_web_token": web_token}
+            data = {"token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
             self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
-        payload = {"user": "hamlet", "realm": "zulip.com"}
+        payload = {"email": "hamlet@zulip.com"}
         with self.settings(JWT_AUTH_KEYS={"acme": {"key": "key", "algorithms": ["HS256"]}}):
-            with mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
+            with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
                 key = settings.JWT_AUTH_KEYS["acme"]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS["acme"]["algorithms"]
                 web_token = jwt.encode(payload, key, algorithm)
 
-                data = {"json_web_token": web_token}
+                data = {"token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
-                self.assert_json_error_contains(result, "Wrong subdomain", 400)
-                self.assert_logged_in_user_id(None)
-
-    def test_login_failure_due_to_empty_subdomain(self) -> None:
-        payload = {"user": "hamlet", "realm": "zulip.com"}
-        with self.settings(JWT_AUTH_KEYS={"": {"key": "key", "algorithms": ["HS256"]}}):
-            with mock.patch("zerver.views.auth.get_subdomain", return_value=""):
-                key = settings.JWT_AUTH_KEYS[""]["key"]
-                [algorithm] = settings.JWT_AUTH_KEYS[""]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm)
-
-                data = {"json_web_token": web_token}
-                result = self.client_post("/accounts/login/jwt/", data)
-                self.assert_json_error_contains(result, "Wrong subdomain", 400)
+                self.assert_json_error_contains(result, "Invalid subdomain", 404)
                 self.assert_logged_in_user_id(None)
 
     def test_login_success_under_subdomains(self) -> None:
-        payload = {"user": "hamlet", "realm": "zulip.com"}
+        payload = {"email": "hamlet@zulip.com"}
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             with mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"):
                 key = settings.JWT_AUTH_KEYS["zulip"]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
                 web_token = jwt.encode(payload, key, algorithm)
 
-                data = {"json_web_token": web_token}
+                data = {"token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
                 self.assertEqual(result.status_code, 302)
                 user_profile = self.example_user("hamlet")
@@ -6809,6 +6787,165 @@ class LDAPBackendTest(ZulipTestCase):
             warn_log.output,
             ["WARNING:django_auth_ldap:('Realm is None', 1) while authenticating hamlet"],
         )
+
+
+class JWTFetchAPIKeyTest(ZulipTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.email = self.example_email("hamlet")
+        self.realm = get_realm("zulip")
+        self.user_profile = get_user_by_delivery_email(self.email, self.realm)
+        self.api_key = get_api_key(self.user_profile)
+        self.raw_user_data = get_raw_user_data(
+            self.user_profile.realm,
+            self.user_profile,
+            target_user=self.user_profile,
+            client_gravatar=False,
+            user_avatar_url_field_optional=False,
+            include_custom_profile_fields=False,
+        )[self.user_profile.id]
+
+    def test_success(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_success(result)
+            data = result.json()
+            self.assertEqual(data["api_key"], self.api_key)
+            self.assertEqual(data["email"], self.email)
+            self.assertNotIn("user", data)
+
+    def test_success_with_profile_false(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token, "include_profile": "false"}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_success(result)
+            data = result.json()
+            self.assertEqual(data["api_key"], self.api_key)
+            self.assertEqual(data["email"], self.email)
+            self.assertNotIn("user", data)
+
+    def test_success_with_profile_true(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token, "include_profile": "true"}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_success(result)
+            data = result.json()
+            self.assertEqual(data["api_key"], self.api_key)
+            self.assertEqual(data["email"], self.email)
+            self.assertIn("user", data)
+            self.assertEqual(data["user"], self.raw_user_data)
+
+    def test_invalid_subdomain_from_request_failure(self) -> None:
+        with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
+            result = self.client_post("/api/v1/jwt/fetch_api_key")
+            self.assert_json_error_contains(result, "Invalid subdomain", 404)
+
+    def test_jwt_key_not_found_failure(self) -> None:
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            with mock.patch(
+                "zerver.views.auth.get_realm_from_request", return_value=get_realm("zephyr")
+            ):
+                result = self.client_post("/api/v1/jwt/fetch_api_key")
+                self.assert_json_error_contains(
+                    result, "JWT authentication is not enabled for this organization", 400
+                )
+
+    def test_missing_jwt_payload_failure(self) -> None:
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            result = self.client_post("/api/v1/jwt/fetch_api_key")
+            self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
+
+    def test_invalid_jwt_signature_failure(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, "wrong_key", algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Bad JSON web token", 400)
+
+    def test_invalid_jwt_format_failure(self) -> None:
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            req_data = {"token": "bad_jwt_token"}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Bad JSON web token", 400)
+
+    def test_missing_email_in_jwt_failure(self) -> None:
+        payload = {"bar": "baz"}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(
+                result, "No email specified in JSON web token claims", 400
+            )
+
+    def test_empty_email_in_jwt_failure(self) -> None:
+        payload = {"email": ""}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
+
+    def test_user_not_found_failure(self) -> None:
+        payload = {"email": self.nonreg_email("alice")}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
+
+    def test_inactive_user_failure(self) -> None:
+        payload = {"email": self.email}
+        do_deactivate_user(self.user_profile, acting_user=None)
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Account is deactivated", 401)
+
+    def test_inactive_realm_failure(self) -> None:
+        payload = {"email": self.email}
+        do_deactivate_realm(self.user_profile.realm, acting_user=None)
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "This organization has been deactivated", 401)
+
+    def test_invalid_realm_for_user_failure(self) -> None:
+        payload = {"email": self.mit_email("starnine")}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Invalid subdomain", 404)
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.

@@ -12,10 +12,8 @@ def output_styler(style_func: Callable[[str], str]) -> Callable[[str], str]:
 
     @wraps(style_func)
     def _wrapped_style_func(message: str) -> str:
-        if (
-            message == "Performing system checks...\n\n"
-            or message.startswith("System check identified no issues")
-            or message.startswith(date_prefix)
+        if message == "Performing system checks...\n\n" or message.startswith(
+            ("System check identified no issues", date_prefix)
         ):
             message = ""
         elif "Quit the server with " in message:

@@ -5,7 +5,6 @@ import _ from "lodash";
 import * as fenced_code from "../shared/js/fenced_code";
 
 import * as channel from "./channel";
-import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
@@ -19,7 +18,6 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -92,7 +90,6 @@ function show_compose_box(msg_type, opts) {
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#compose-send-status").removeClass(common.status_classes).hide();
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     $("#compose").css({visibility: "visible"});
@@ -121,7 +118,6 @@ function clear_box() {
     compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
-    $("#compose-send-status").hide(0);
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
 }
@@ -292,7 +288,7 @@ export function start(msg_type, opts) {
     if (reload_state.is_in_progress()) {
         return;
     }
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
     expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
@@ -384,7 +380,7 @@ export function cancel() {
     hide_box();
     $("#compose_close").hide();
     clear_box();
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
     compose.abort_xhr();
     compose.abort_video_callbacks(undefined);
     compose_state.set_message_type(false);

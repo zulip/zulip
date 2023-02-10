@@ -512,7 +512,6 @@ html {
             border-radius: 4px;
             background-color: hsl(0, 0%, 100%);
             color: hsl(0, 0%, 33%);
-            cursor: pointer;
 
             transition: border 0.3s ease;
 
@@ -575,6 +574,7 @@ html {
            right above this one is also 326px. */
         select {
             width: 326px;
+            cursor: pointer;
         }
 
         p.text-error {

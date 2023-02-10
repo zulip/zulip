@@ -2604,6 +2604,8 @@ class RealmPropertyActionTest(BaseAction):
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
             edit_topic_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
+            move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
+            move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
         )
 
         vals = test_values.get(name)

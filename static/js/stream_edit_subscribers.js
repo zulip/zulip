@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
+import render_stream_members from "../templates/stream_settings/stream_members.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
@@ -15,6 +16,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as stream_settings_containers from "./stream_settings_containers";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as ui from "./ui";
@@ -23,13 +25,13 @@ export let pill_widget;
 let current_stream_id;
 let subscribers_list_widget;
 
-function format_member_list_elem(person) {
+function format_member_list_elem(person, user_can_remove_subscribers) {
     return render_stream_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
         email: settings_data.email_for_user_settings(person),
-        can_edit_subscribers: page_params.is_admin,
+        can_remove_subscribers: user_can_remove_subscribers,
         show_email: settings_data.show_email(),
     });
 }
@@ -87,6 +89,7 @@ export function enable_subscriber_management({sub, $parent_container}) {
     });
 
     const user_ids = peer_data.get_subscribers(stream_id);
+    const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
 
     // We track a single subscribers_list_widget for this module, since we
     // only ever have one list of subscribers visible at a time.
@@ -94,10 +97,11 @@ export function enable_subscriber_management({sub, $parent_container}) {
         $parent_container,
         name: "stream_subscribers",
         user_ids,
+        user_can_remove_subscribers,
     });
 }
 
-function make_list_widget({$parent_container, name, user_ids}) {
+function make_list_widget({$parent_container, name, user_ids, user_can_remove_subscribers}) {
     const users = people.get_users_from_ids(user_ids);
     people.sort_but_pin_current_user_on_top(users);
 
@@ -109,7 +113,7 @@ function make_list_widget({$parent_container, name, user_ids}) {
     return ListWidget.create($list_container, users, {
         name,
         modifier(item) {
-            return format_member_list_elem(item);
+            return format_member_list_elem(item, user_can_remove_subscribers);
         },
         filter: {
             $element: $parent_container.find(".search"),
@@ -304,6 +308,43 @@ function update_subscribers_list_widget(subscriber_ids) {
     const users = people.get_users_from_ids(subscriber_ids);
     people.sort_but_pin_current_user_on_top(users);
     subscribers_list_widget.replace_list_data(users);
+}
+
+export function rerender_subscribers_list(sub) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        blueslip.info("ignoring subscription for stream that is no longer being edited");
+        return;
+    }
+
+    if (sub.stream_id !== current_stream_id) {
+        // This should never happen if the prior check works correctly.
+        blueslip.error("current_stream_id does not match sub.stream_id for some reason");
+        return;
+    }
+
+    if (!stream_data.can_view_subscribers(sub)) {
+        return;
+    }
+
+    const user_ids = peer_data.get_subscribers(sub.stream_id);
+    const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
+    const $parent_container = stream_settings_containers
+        .get_edit_container(sub)
+        .find(".edit_subscribers_for_stream");
+
+    $parent_container.html(
+        render_stream_members({
+            can_access_subscribers: true,
+            can_remove_subscribers: user_can_remove_subscribers,
+            render_subscribers: sub.render_subscribers,
+        }),
+    );
+    subscribers_list_widget = make_list_widget({
+        $parent_container,
+        name: "stream_subscribers",
+        user_ids,
+        user_can_remove_subscribers,
+    });
 }
 
 export function initialize() {

@@ -97,4 +97,4 @@ permissions to delete that message.
 * [Delete a topic](/help/delete-a-topic)
 * [Archive a stream](/help/archive-a-stream)
 * [Message retention policy](/help/message-retention-policy)
-* [Configure editing and deletion policies](/help/configure-message-editing-and-deletion)
+* [Restrict message editing and deletion](/help/configure-message-editing-and-deletion)

@@ -766,21 +766,21 @@ def access_web_public_message(
     # message with the provided ID exists on the server if the client
     # shouldn't have access to it.
     if not realm.web_public_streams_enabled():
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     try:
         message = Message.objects.select_related().get(id=message_id)
     except Message.DoesNotExist:
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     if not message.is_stream_message():
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     queryset = get_web_public_streams_queryset(realm)
     try:
         stream = queryset.get(id=message.recipient.type_id)
     except Stream.DoesNotExist:
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     # These should all have been enforced by the code in
     # get_web_public_streams_queryset
@@ -1614,7 +1614,7 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
     raise AssertionError("Invalid wildcard mention policy")
 
 
-def parse_message_content_edit_or_delete_limit(
+def parse_message_time_limit_setting(
     value: Union[int, str],
     special_values_map: Mapping[str, Optional[int]],
     *,

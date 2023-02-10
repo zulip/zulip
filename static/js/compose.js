@@ -19,7 +19,6 @@ import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reminder from "./reminder";
@@ -97,6 +96,11 @@ function update_fade() {
     }
 
     const msg_type = compose_state.get_message_type();
+
+    // It's possible that the new topic is not a resolved topic
+    // so we clear the older warning.
+    compose_validate.clear_topic_resolved_warning();
+
     compose_validate.warn_if_topic_resolved();
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_all();
@@ -195,7 +199,6 @@ export function clear_compose_box() {
     compose_validate.clear_topic_resolved_warning();
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
-    $("#compose-send-status").hide(0);
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_ui.hide_compose_spinner();
@@ -308,7 +311,7 @@ export function finish() {
     clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
 
     const message_content = compose_state.message_content();
 
@@ -445,9 +448,12 @@ export function initialize() {
         // Change compose close button tooltip as per condition.
         // We save compose text in draft only if its length is > 2.
         if (compose_text_length > 2) {
-            $("#compose_close").attr("data-tooltip-template-id", "compose_close_and_save_tooltip");
+            $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
         } else {
-            $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip");
+            $("#compose_close").attr(
+                "data-tooltip-template-id",
+                "compose_close_and_save_tooltip_template",
+            );
         }
     });
 

@@ -20,6 +20,37 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 162**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Added new `move_messages_within_stream_limit_seconds` setting.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Added new `move_messages_between_streams_limit_seconds` setting.
+* [`PATCH /messages/{message_id}`](/api/update-message): Time limit to edit
+  topics, for users other than administrators and moderators, can now be
+  configured using `move_messages_within_stream_limit_seconds` setting.
+* [`PATCH /messages/{message_id}`](/api/update-message): Time limit to move
+  messages between streams, for users other than administrators and moderators,
+  can now be configured using `move_messages_between_streams_limit_seconds` setting.
+
+**Feature level 161**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_remove_subscribers_group_id` parameter to support
+  changing `can_remove_subscribers_group` setting.
+* [`POST /users/me/subscriptions`](/api/subscribe): Added
+  `can_remove_subscribers_group_id` parameter to set
+  `can_remove_subscribers_group` setting while creating
+  streams.
+
+**Feature level 160**
+
+* [`POST /api/v1/jwt/fetch_api_key`]: New API endpoint to fetch API
+  keys using JSON Web Token (JWT) authentication.
+* [`accounts/login/jwt/`]: Adjusted format of requests to this
+  previously undocumented, optional endpoint for
+  JWT authentication log in support.
+
 **Feature level 159**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

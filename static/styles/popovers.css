@@ -382,7 +382,7 @@ ul {
     }
 
     #profile-tab {
-        margin: 0 5px;
+        margin: 1px 5px 0;
     }
 
     .top {
@@ -514,6 +514,11 @@ ul {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
+        .remove-subscription-button {
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+
         .user-stream-list,
         .user-group-list {
             width: 100%;
@@ -522,6 +527,9 @@ ul {
 
             tr {
                 border-bottom: 1px solid hsl(0, 0%, 87%);
+                /* Ensure equal height for rows with a remove-subscription-button and
+                   those without one. */
+                height: 34px;
 
                 &:last-of-type {
                     border-bottom: none;

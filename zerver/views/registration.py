@@ -147,6 +147,7 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
     return prereg_user
 
 
+@add_google_analytics
 @require_post
 @has_request_variables
 def accounts_register(
@@ -175,7 +176,9 @@ def accounts_register(
     try:
         validators.validate_email(email)
     except ValidationError:
-        return render(request, "zerver/invalid_email.html", context={"invalid_email": True})
+        return TemplateResponse(
+            request, "zerver/invalid_email.html", context={"invalid_email": True}
+        )
 
     if realm_creation:
         # For creating a new realm, there is no existing realm or domain
@@ -190,19 +193,19 @@ def accounts_register(
         try:
             email_allowed_for_realm(email, realm)
         except DomainNotAllowedForRealmError:
-            return render(
+            return TemplateResponse(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "closed_domain": True},
             )
         except DisposableEmailError:
-            return render(
+            return TemplateResponse(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "disposable_emails_not_allowed": True},
             )
         except EmailContainsPlusError:
-            return render(
+            return TemplateResponse(
                 request,
                 "zerver/invalid_email.html",
                 context={"realm_name": realm.name, "email_contains_plus": True},
@@ -222,7 +225,7 @@ def accounts_register(
             try:
                 check_spare_licenses_available_for_registering_new_user(realm, email, role=role)
             except LicenseLimitError:
-                return render(request, "zerver/no_spare_licenses.html")
+                return TemplateResponse(request, "zerver/no_spare_licenses.html")
 
     name_validated = False
     require_ldap_password = False
@@ -491,7 +494,7 @@ def accounts_register(
         assert isinstance(auth_result, UserProfile)
         return login_and_go_to_home(request, auth_result)
 
-    return render(
+    return TemplateResponse(
         request,
         "zerver/register.html",
         context={

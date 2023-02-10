@@ -30,6 +30,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_can_remove_subscribers_group,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -79,6 +80,7 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import Validator
+from zerver.lib.user_groups import access_user_group_for_setting
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -97,6 +99,7 @@ from zerver.lib.validator import (
 from zerver.models import (
     Realm,
     Stream,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_active_user,
@@ -266,6 +269,7 @@ def update_stream_backend(
     message_retention_days: Optional[Union[int, str]] = REQ(
         json_validator=check_string_or_int, default=None
     ),
+    can_remove_subscribers_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -346,7 +350,7 @@ def update_stream_backend(
 
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequiredError()
+            raise OrganizationOwnerRequiredError
         user_profile.realm.ensure_not_on_limited_plan()
         new_message_retention_days_value = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
@@ -379,6 +383,20 @@ def update_stream_backend(
             stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
     if stream_post_policy is not None:
         do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
+
+    if can_remove_subscribers_group_id is not None:
+        if sub is None and stream.invite_only:
+            # Admins cannot change this setting for unsubscribed private streams.
+            raise JsonableError(_("Invalid stream ID"))
+
+        user_group = access_user_group_for_setting(
+            can_remove_subscribers_group_id,
+            user_profile,
+            setting_name="can_remove_subscribers_group",
+            require_system_group=True,
+        )
+
+        do_change_can_remove_subscribers_group(stream, user_group, acting_user=user_profile)
 
     return json_success(request)
 
@@ -538,6 +556,7 @@ def add_subscriptions_backend(
     message_retention_days: Union[str, int] = REQ(
         json_validator=check_string_or_int, default=RETENTION_DEFAULT
     ),
+    can_remove_subscribers_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
     announce: bool = REQ(json_validator=check_bool, default=False),
     principals: Union[Sequence[str], Sequence[int]] = REQ(
         json_validator=check_principals,
@@ -548,6 +567,19 @@ def add_subscriptions_backend(
     realm = user_profile.realm
     stream_dicts = []
     color_map = {}
+
+    if can_remove_subscribers_group_id is not None:
+        can_remove_subscribers_group = access_user_group_for_setting(
+            can_remove_subscribers_group_id,
+            user_profile,
+            setting_name="can_remove_subscribers_group",
+            require_system_group=True,
+        )
+    else:
+        can_remove_subscribers_group = UserGroup.objects.get(
+            name="@role:administrators", realm=user_profile.realm, is_system_group=True
+        )
+
     for stream_dict in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -568,6 +600,7 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+        stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
 
         stream_dicts.append(stream_dict_copy)
 

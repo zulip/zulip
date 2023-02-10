@@ -639,6 +639,8 @@ class RealmTest(ZulipTestCase):
             delete_own_message_policy=10,
             edit_topic_policy=10,
             message_content_edit_limit_seconds=0,
+            move_messages_within_stream_limit_seconds=0,
+            move_messages_between_streams_limit_seconds=0,
         )
 
         # We need an admin user.
@@ -1176,6 +1178,8 @@ class RealmAPITest(ZulipTestCase):
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
             edit_topic_policy=Realm.EDIT_TOPIC_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200],
+            move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
+            move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
         )
 
         vals = test_values.get(name)
@@ -1315,6 +1319,22 @@ class RealmAPITest(ZulipTestCase):
         result = orjson.loads(json_result.content)
         self.assertIn("ignored_parameters_unsupported", result)
         self.assertEqual(result["ignored_parameters_unsupported"], ["emoji_set"])
+
+    def test_update_realm_move_messages_within_stream_limit_seconds_unlimited_value(self) -> None:
+        realm = get_realm("zulip")
+        self.login("iago")
+        realm = self.update_with_api(
+            "move_messages_within_stream_limit_seconds", orjson.dumps("unlimited").decode()
+        )
+        self.assertEqual(realm.move_messages_within_stream_limit_seconds, None)
+
+    def test_update_realm_move_messages_between_streams_limit_seconds_unlimited_value(self) -> None:
+        realm = get_realm("zulip")
+        self.login("iago")
+        realm = self.update_with_api(
+            "move_messages_between_streams_limit_seconds", orjson.dumps("unlimited").decode()
+        )
+        self.assertEqual(realm.move_messages_between_streams_limit_seconds, None)
 
     def test_update_realm_delete_own_message_policy(self) -> None:
         """Tests updating the realm property 'delete_own_message_policy'."""

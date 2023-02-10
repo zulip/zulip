@@ -34,7 +34,6 @@ const compose_fade = mock_esm("../../static/js/compose_fade");
 const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 const loading = mock_esm("../../static/js/loading");
 const markdown = mock_esm("../../static/js/markdown");
-const notifications = mock_esm("../../static/js/notifications");
 const reminder = mock_esm("../../static/js/reminder");
 const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
 const resize = mock_esm("../../static/js/resize");
@@ -44,6 +43,7 @@ const transmit = mock_esm("../../static/js/transmit");
 const upload = mock_esm("../../static/js/upload");
 
 const compose_ui = zrequire("compose_ui");
+const compose_banner = zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
@@ -114,7 +114,6 @@ test_ui("send_message_success", ({override_rewire}) => {
     mock_banners();
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
-    $("#compose-send-status").show();
     $("#compose-send-button .loader").show();
 
     let reify_message_id_checked;
@@ -128,7 +127,6 @@ test_ui("send_message_success", ({override_rewire}) => {
 
     assert.equal($("#compose-textarea").val(), "");
     assert.ok($("#compose-textarea").is_focused());
-    assert.ok(!$("#compose-send-status").visible());
     assert.ok(!$("#compose-send-button .loader").visible());
 
     assert.ok(reify_message_id_checked);
@@ -210,7 +208,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         $("#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-status").show();
         $("#compose-send-button .loader").show();
 
         compose.send_message();
@@ -223,7 +220,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.equal($("#compose-textarea").val(), "");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok(!$("#compose-send-status").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
     })();
 
@@ -266,7 +262,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-status").show();
         $("#compose-send-button .loader").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
@@ -286,14 +281,13 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(banner_rendered);
         assert.equal($("#compose-textarea").val(), "foobarfoobar");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok($("#compose-send-status").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
     })();
 });
 
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
-    override(notifications, "clear_compose_notifications", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
@@ -337,12 +331,11 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     user_settings.enter_sends = true;
 
     compose.enter_with_preview_open();
-    assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
 test_ui("finish", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    override(notifications, "clear_compose_notifications", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
@@ -504,6 +497,7 @@ test_ui("initialize", ({override}) => {
 });
 
 test_ui("update_fade", ({override}) => {
+    mock_banners();
     initialize_handlers({override});
 
     const selector =

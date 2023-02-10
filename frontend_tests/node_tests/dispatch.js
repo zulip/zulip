@@ -78,6 +78,9 @@ const ui = mock_esm("../../static/js/ui");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
+const user_group_edit = mock_esm("../../static/js/user_group_edit");
+const overlays = mock_esm("../../static/js/overlays");
+const user_groups_settings_ui = mock_esm("../../static/js/user_groups_settings_ui");
 mock_esm("../../static/js/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
@@ -162,10 +165,20 @@ run_test("user groups", ({override}) => {
     override(settings_user_groups_legacy, "reload", noop);
     {
         const stub = make_stub();
+        const user_group_settings_ui_stub = make_stub();
+
         override(user_groups, "add", stub.f);
+        override(overlays, "groups_open", () => true);
+        override(user_groups_settings_ui, "add_group_to_table", user_group_settings_ui_stub.f);
+
         dispatch(event);
+
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("group");
+        assert.equal(user_group_settings_ui_stub.num_calls, 1);
+
+        let args = stub.get_args("group");
+        assert_same(args.group, event.group);
+        args = user_group_settings_ui_stub.get_args("group");
         assert_same(args.group, event.group);
     }
 
@@ -174,9 +187,17 @@ run_test("user groups", ({override}) => {
         const stub = make_stub();
         override(user_groups, "get_user_group_from_id", stub.f);
         override(user_groups, "remove", noop);
+        const user_group_edit_stub = make_stub();
+        override(user_group_edit, "handle_deleted_group", user_group_edit_stub.f);
+
         dispatch(event);
+
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("group_id");
+        assert.equal(user_group_edit_stub.num_calls, 1);
+
+        let args = stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
+        args = user_group_edit_stub.get_args("group_id");
         assert_same(args.group_id, event.group_id);
     }
 
@@ -184,11 +205,16 @@ run_test("user groups", ({override}) => {
     {
         const stub = make_stub();
         override(user_groups, "add_members", stub.f);
+        const user_group_edit_stub = make_stub();
+        override(user_group_edit, "handle_member_edit_event", user_group_edit_stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("group_id", "user_ids");
+        assert.equal(user_group_edit_stub.num_calls, 1);
+        let args = stub.get_args("group_id", "user_ids");
         assert_same(args.group_id, event.group_id);
         assert_same(args.user_ids, event.user_ids);
+        args = user_group_edit_stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
     }
 
     event = event_fixtures.user_group__add_subgroups;
@@ -206,11 +232,16 @@ run_test("user groups", ({override}) => {
     {
         const stub = make_stub();
         override(user_groups, "remove_members", stub.f);
+        const user_group_edit_stub = make_stub();
+        override(user_group_edit, "handle_member_edit_event", user_group_edit_stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("group_id", "user_ids");
+        assert.equal(user_group_edit_stub.num_calls, 1);
+        let args = stub.get_args("group_id", "user_ids");
         assert_same(args.group_id, event.group_id);
         assert_same(args.user_ids, event.user_ids);
+        args = user_group_edit_stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
     }
 
     event = event_fixtures.user_group__remove_subgroups;
@@ -227,13 +258,22 @@ run_test("user groups", ({override}) => {
     event = event_fixtures.user_group__update;
     {
         const stub = make_stub();
+        const user_group_settings_ui_stub = make_stub();
+
         override(user_groups, "update", stub.f);
+        override(user_groups_settings_ui, "update_group", user_group_settings_ui_stub.f);
+
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("event");
+        assert.equal(user_group_settings_ui_stub.num_calls, 1);
+
+        let args = stub.get_args("event");
         assert_same(args.event.group_id, event.group_id);
         assert_same(args.event.data.name, event.data.name);
         assert_same(args.event.data.description, event.data.description);
+
+        args = user_group_settings_ui_stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
     }
 });
 
@@ -337,6 +377,7 @@ run_test("realm settings", ({override}) => {
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
+    override(settings_invites, "update_invite_users_setting_tip", noop);
     override(notifications, "redraw_title", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
@@ -467,10 +508,12 @@ run_test("realm settings", ({override}) => {
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
     page_params.realm_message_content_edit_limit_seconds = 0;
+    page_params.realm_edit_topic_policy = 3;
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
     assert_same(page_params.realm_allow_message_editing, true);
     assert_same(page_params.realm_message_content_edit_limit_seconds, 5);
+    assert_same(page_params.realm_edit_topic_policy, 4);
     assert_same(page_params.realm_authentication_methods, {Google: true});
 
     event = event_fixtures.realm__update_dict__icon;

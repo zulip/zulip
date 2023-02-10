@@ -79,9 +79,6 @@
     border-top-color: hsl(0,0%,52%);
     animation: zspinner 1s linear infinite;
     }
-    .app-loading-text {
-    font-weight: normal;
-    }
 </style>
 {% endblock %}
 
@@ -93,9 +90,8 @@
     <div id="app-loading-middle-content">
         <div class="app-loading-spinner-container">
             <div class="app-loading-spinner"></div>
-            <img class="app-loading-logo" src="/static/images/logo/zulip-icon-circle.svg"/>
+            <svg class="app-loading-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12"><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#50adff"/><stop offset="1" stop-color="#7877fc"/></linearGradient><circle cx="386.56" cy="386.56" r="386.56" fill="url(#a)"/><path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z" fill="#fff"/></svg>
         </div>
-        <h3 class="app-loading-text">{{ _('Loading...') }}</h3>
     </div>
     <div id="app-loading-bottom-content">
         <p>{% trans %}If this message does not go away, try <a id="reload-lnk">reloading</a> the page.{% endtrans %}</p>
@@ -118,14 +114,6 @@
 
 <div id="navbar_alerts_wrapper"></div>
 <div id="navbar-container"></div>
-
-<div class="fixed-app">
-    <div class="app-main">
-        <div class="column-middle column-overlay">
-            <div id="message_view_header_underpadding"></div>
-        </div>
-    </div>
-</div>
 
 <div class="app">
     <div class="alert-box">
@@ -191,20 +179,6 @@
                     </div>
                 </div>
                 <div id="message_feed_container">
-                    <div class="fixed-app" id="floating_recipient_bar">
-                        <div class="app-main recipient_bar_content">
-                            <div class="column-middle column-overlay recipient-bar-main">
-                                <div class="floating_recipient">
-                                    <div style="display: none;" id="current_label_stream" class="recipient_row">
-                                        <div class="message_label_clickable message_header message_header_stream right_part"></div>
-                                    </div>
-                                    <div style="display: none;" id="current_label_private_message" class="recipient_row">
-                                        <div class="message_label_clickable message_header message_header_private_message right_part"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <div id="alert-bar-container" class="alert-bar-container" style='display: none;'>
                         <div id="alert-bar" class="alert-bar">
                             <div id="alert-bar-contents" class="alert-bar-contents">

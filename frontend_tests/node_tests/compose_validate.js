@@ -375,7 +375,6 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     compose_state.set_stream_name("social");
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
-    assert.ok(!$("#compose-send-status").visible());
 
     peer_data.get_subscriber_count = (stream_id) => {
         assert.equal(stream_id, 101);
@@ -392,7 +391,6 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(!$("#compose-send-status").visible());
     assert.ok(wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
@@ -780,10 +778,19 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     compose_validate.warn_if_topic_resolved(true);
     assert.ok(error_shown);
 
+    // We reset the state to be able to show the banner again
+    compose_state.set_recipient_viewed_topic_resolved_banner(false);
+
     // Call it again with false; this should do the same thing.
     error_shown = false;
     compose_validate.warn_if_topic_resolved(false);
     assert.ok(error_shown);
+
+    // Call the func again. This should not show the error because
+    // we have already shown the error once for this topic.
+    error_shown = false;
+    compose_validate.warn_if_topic_resolved(false);
+    assert.ok(!error_shown);
 
     compose_state.topic("hello");
 

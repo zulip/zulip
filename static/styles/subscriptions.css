@@ -73,6 +73,7 @@
     margin-right: 10px;
 }
 
+.create_user_group_plus_button,
 .create_stream_plus_button {
     font-size: 24px;
     font-weight: 500;
@@ -93,6 +94,12 @@
         position: relative;
         top: -5px;
     }
+}
+
+.create_user_group_button {
+    position: relative;
+    top: 7px;
+    margin: 0 7px 0 0;
 }
 
 #create_user_group_description,
@@ -716,6 +723,10 @@ h4.user_group_setting_subsection_title {
         #stream_creation_form {
             margin: 0;
 
+            .user_group_create_info.show {
+                margin: 5px;
+            }
+
             #user_group_creating_indicator,
             #stream_creating_indicator {
                 &:not(:empty) {
@@ -993,6 +1004,22 @@ div.settings-radio-input-parent {
 
     select.stream_post_policy_setting {
         margin-bottom: 10px;
+    }
+
+    .dropdown-list-widget {
+        .dropdown-toggle {
+            margin-bottom: 10px;
+            width: 325px;
+        }
+
+        ul.dropdown-menu {
+            width: 325px;
+
+            input {
+                /* 325 - 2* (9px (margin) + 1px (border) + 6px (padding)) */
+                width: 293px;
+            }
+        }
     }
 }
 

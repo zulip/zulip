@@ -3,11 +3,22 @@ import $ from "jquery";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
+export let scroll_to_message_banner_message_id: number | null = null;
+export function set_scroll_to_message_banner_message_id(val: number | null): void {
+    scroll_to_message_banner_message_id = val;
+}
+
 // banner types
 export const WARNING = "warning";
 export const ERROR = "error";
 
+const MESSAGE_SENT_CLASSNAMES = {
+    sent_scroll_to_view: "sent_scroll_to_view",
+    narrow_to_recipient: "narrow_to_recipient",
+};
+
 export const CLASSNAMES = {
+    ...MESSAGE_SENT_CLASSNAMES,
     // warnings
     topic_resolved: "topic_resolved",
     recipient_not_subscribed: "recipient_not_subscribed",
@@ -31,6 +42,13 @@ export const CLASSNAMES = {
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
 };
+
+export function clear_message_sent_banners(): void {
+    for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
+        $(`#compose_banners .${classname}`).remove();
+    }
+    scroll_to_message_banner_message_id = null;
+}
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
 function hide_compose_spinner(): void {

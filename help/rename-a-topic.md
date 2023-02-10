@@ -11,9 +11,7 @@ will automatically redirect to the new location of the message. [Muted
 topics](/help/mute-a-topic) are automatically migrated when a topic is renamed.
 
 Organizations can [configure](/help/configure-who-can-edit-topics) which
-[roles](/help/roles-and-permissions) have permission to rename topics. See the
-[guide to message and topic editing](/help/configure-message-editing-and-deletion)
-for the details on when topic editing is allowed.
+[roles](/help/roles-and-permissions) have permission to rename topics.
 
 ## Rename a topic
 
@@ -48,10 +46,10 @@ for the details on when topic editing is allowed.
 
 {end_tabs}
 
-[move-permission-setting]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
-
 ## Related articles
 
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Move content to another stream](/help/move-content-to-another-stream)
 * [Resolve a topic](/help/resolve-a-topic)
+* [Restrict moving messages](/help/configure-who-can-edit-topics)
+

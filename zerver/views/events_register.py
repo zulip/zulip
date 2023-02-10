@@ -98,7 +98,7 @@ def events_register_backend(
         user_profile = None
         realm = get_valid_realm_from_request(request)
         if not realm.allow_web_public_streams_access():
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         # These parameters must be false for anonymous requests.
         if client_gravatar:

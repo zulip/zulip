@@ -62,6 +62,7 @@ export function update_emoji_data() {
                     reaction_type,
                     emoji_name: alias,
                     emoji_code: emoji_dict.emoji_code,
+                    is_realm_emoji: false,
                 });
             }
         }

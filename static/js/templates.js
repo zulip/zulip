@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime";
 
+import * as common from "./common";
 import {default_html_elements, intl} from "./i18n";
 import * as util from "./util";
 
@@ -104,3 +105,14 @@ Handlebars.registerHelper(
 );
 
 Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
+
+Handlebars.registerHelper("tooltip_hotkey_hints", (...hotkeys) => {
+    hotkeys.pop(); // Handlebars options
+    let hotkey_hints = "";
+    common.adjust_mac_tooltip_keys(hotkeys);
+    for (const hotkey of hotkeys) {
+        hotkey_hints += `<span class="tooltip-hotkey-hint">${hotkey}</span>`;
+    }
+    const result = `<span class="tooltip-hotkey-hints">${hotkey_hints}</span>`;
+    return new Handlebars.SafeString(result);
+});

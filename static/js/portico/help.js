@@ -58,7 +58,7 @@ function render_code_sections() {
 
     highlight_current_article();
 
-    common.adjust_mac_shortcuts(".markdown kbd");
+    common.adjust_mac_kbd_tags(".markdown kbd");
 
     $("table").each(function () {
         $(this).addClass("table table-striped");

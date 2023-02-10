@@ -245,6 +245,12 @@ function create_stream() {
     const user_ids = stream_create_subscribers.get_principals();
     data.principals = JSON.stringify(user_ids);
 
+    const can_remove_subscribers_group_id = Number.parseInt(
+        stream_settings_ui.new_stream_can_remove_subscribers_group_widget.value(),
+        10,
+    );
+    data.can_remove_subscribers_group_id = can_remove_subscribers_group_id;
+
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating stream..."}),
     });
@@ -266,8 +272,8 @@ function create_stream() {
         error(xhr) {
             const msg = JSON.parse(xhr.responseText).msg;
             if (msg.includes("access")) {
-                // If we can't access the stream, we can safely assume it's
-                // a duplicate stream that we are not invited to.
+                // If we can't access the stream, we can safely
+                // assume it's a duplicate stream that we are not invited to.
                 //
                 // BUG: This check should be using error codes, not
                 // parsing the error string, so it works correctly
@@ -421,4 +427,6 @@ export function set_up_handlers() {
             e.preventDefault();
         }
     });
+
+    stream_settings_ui.new_stream_can_remove_subscribers_group_widget.setup();
 }

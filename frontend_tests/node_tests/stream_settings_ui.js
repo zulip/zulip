@@ -21,8 +21,18 @@ set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const stream_settings_ui = zrequire("stream_settings_ui");
+const user_groups = zrequire("user_groups");
 
 run_test("redraw_left_panel", ({mock_template}) => {
+    const admins_group = {
+        name: "Admins",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    user_groups.initialize({realm_user_groups: [admins_group]});
+
     // set-up sub rows stubs
     const denmark = {
         elem: "denmark",
@@ -33,6 +43,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1],
         stream_weekly_traffic: null,
         color: "red",
+        can_remove_subscribers_group_id: admins_group.id,
     };
     const poland = {
         elem: "poland",
@@ -43,6 +54,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2, 3],
         stream_weekly_traffic: 13,
         color: "red",
+        can_remove_subscribers_group_id: admins_group.id,
     };
     const pomona = {
         elem: "pomona",
@@ -53,6 +65,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [],
         stream_weekly_traffic: 0,
         color: "red",
+        can_remove_subscribers_group_id: admins_group.id,
     };
     const cpp = {
         elem: "cpp",
@@ -63,6 +76,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2],
         stream_weekly_traffic: 6,
         color: "red",
+        can_remove_subscribers_group_id: admins_group.id,
     };
     const zzyzx = {
         elem: "zzyzx",
@@ -73,6 +87,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         subscribers: [1, 2],
         stream_weekly_traffic: 6,
         color: "red",
+        can_remove_subscribers_group_id: admins_group.id,
     };
 
     const sub_row_data = [denmark, poland, pomona, cpp, zzyzx];

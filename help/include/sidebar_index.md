@@ -125,6 +125,7 @@
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)
 * [Mobile notifications](/help/mobile-notifications)
+* [Do not disturb](/help/do-not-disturb)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
@@ -188,7 +189,7 @@
 * [Require topics in stream messages](/help/require-topics)
 * [Restrict private messages](/help/restrict-private-messages)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Restrict topic editing](/help/configure-who-can-edit-topics)
+* [Restrict moving messages](/help/configure-who-can-edit-topics)
 * [Restrict message editing](/help/configure-message-editing-and-deletion)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Block image and link previews](/help/allow-image-link-previews)

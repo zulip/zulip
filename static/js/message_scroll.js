@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as compose_banner from "./compose_banner";
 import * as hash_util from "./hash_util";
 import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
@@ -39,7 +39,6 @@ export function show_loading_older() {
     if (!loading_older_messages_indicator_showing) {
         loading.make_indicator($("#loading_older_messages_indicator"), {abs_positioned: true});
         loading_older_messages_indicator_showing = true;
-        floating_recipient_bar.hide();
     }
 }
 
@@ -55,7 +54,6 @@ export function show_loading_newer() {
         $(".bottom-messages-logo").show();
         loading.make_indicator($("#loading_newer_messages_indicator"), {abs_positioned: true});
         loading_newer_messages_indicator_showing = true;
-        floating_recipient_bar.hide();
     }
 }
 
@@ -188,10 +186,20 @@ export function is_actively_scrolling() {
 
 export function scroll_finished() {
     actively_scrolling = false;
+    message_lists.current.view.update_sticky_recipient_headers();
     hide_scroll_to_bottom();
 
     if (recent_topics_util.is_visible()) {
         return;
+    }
+
+    if (compose_banner.scroll_to_message_banner_message_id !== null) {
+        const $message_row = message_lists.current.get_row(
+            compose_banner.scroll_to_message_banner_message_id,
+        );
+        if ($message_row.length > 0 && !message_viewport.is_message_below_viewport($message_row)) {
+            compose_banner.clear_message_sent_banners();
+        }
     }
 
     if (update_selection_on_next_scroll) {
@@ -199,8 +207,6 @@ export function scroll_finished() {
     } else {
         update_selection_on_next_scroll = true;
     }
-
-    floating_recipient_bar.update();
 
     if (message_viewport.at_top()) {
         message_fetch.maybe_load_older_messages({

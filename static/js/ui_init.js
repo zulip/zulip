@@ -65,6 +65,7 @@ import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
@@ -150,7 +151,16 @@ function message_hover($message_row) {
         can_move_message,
         msg_id: id,
     };
-    $message_row.find(".edit_content").html(render_edit_content_button(args));
+    const $edit_content = $message_row.find(".edit_content");
+    $edit_content.html(render_edit_content_button(args));
+
+    let data_template_id = "view-source-tooltip-template";
+    if (args.is_content_editable) {
+        data_template_id = "edit-content-tooltip-template";
+    } else if (args.can_move_message) {
+        data_template_id = "move-message-tooltip-template";
+    }
+    $edit_content.attr("data-tooltip-template-id", data_template_id);
 }
 
 function initialize_bottom_whitespace() {
@@ -214,17 +224,12 @@ function initialize_compose_box() {
             embedded: $("#compose").attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
             giphy_enabled: giphy.is_giphy_enabled(),
-            scroll_to_bottom_key_html: common.has_mac_keyboard()
-                ? "Fn + <span class='tooltip_right_arrow'>→</span>"
-                : "End",
-            narrow_to_compose_recipients_key_html:
-                (common.has_mac_keyboard() ? "⌘" : "Ctrl") + " + .",
             max_stream_name_length: page_params.max_stream_name_length,
             max_topic_length: page_params.max_topic_length,
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
-    common.adjust_mac_shortcuts(".enter_sends kbd");
+    common.adjust_mac_kbd_tags(".enter_sends kbd");
 }
 
 function initialize_message_feed_errors() {
@@ -291,8 +296,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     // A little hackish, because it doesn't seem to totally get us the
-    // exact right width for the floating_recipient_bar and compose
-    // box, but, close enough for now.
+    // exact right width for the compose box, but, close enough for now.
     resize.handler();
 
     if (page_params.is_spectator) {
@@ -613,6 +617,7 @@ export function initialize_everything() {
 
     realm_logo.initialize();
     message_lists.initialize();
+    recent_topics_ui.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
     scroll_bar.initialize();

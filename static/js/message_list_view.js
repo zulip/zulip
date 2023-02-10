@@ -20,7 +20,7 @@ import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as $message_viewport from "./message_viewport";
+import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -224,18 +224,51 @@ function populate_group_from_message_container(group, message_container) {
 }
 
 export class MessageListView {
+    // MessageListView is the module responsible for rendering a
+    // MessageList into the DOM, and maintaining it over time.
+    //
+    // Logic to compute context, render templates, insert them into
+    // the DOM, and generally
+
     constructor(list, table_name, collapse_messages) {
+        // The MessageList that this MessageListView is responsible for rendering.
         this.list = list;
+
+        // TODO: Access this via .list.data.
         this.collapse_messages = collapse_messages;
+
+        // These three data structures keep track of groups of messages in the DOM.
+        //
+        // The message_groups are blocks of messages rendered into the
+        // DOM that will share a common recipent bar heading.
+        //
+        // A message_container an object containing a Message object
+        // plus additional computed metadata needed for rendering it
+        // in the DOM.
+        //
+        // _rows contains jQuery objects for the `message_row`
+        // elements rendered by single_message.hbs.
+        //
+        // TODO: Consider renaming _message_groups to something like _recipient_groups.
+        // TODO: Consider renaming _rows to something like $rows.
         this._rows = new Map();
         this.message_containers = new Map();
+        this._message_groups = [];
+
+        // TODO: Should this be just accessing .list.table_name?
         this.table_name = table_name;
         if (this.table_name) {
             this.clear_table();
         }
-        this._message_groups = [];
 
-        // Half-open interval of the indices that define the current render window
+        // For performance reasons, this module renders at most
+        // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
+        // will transparently adjust which messages are rendered
+        // whenever the user scrolls within _RENDER_THRESHOLD of the
+        // edge of the rendered window.
+        //
+        // These two values are a half-open interval keeping track of
+        // what range of messages is currently rendered in the dOM.
         this._render_win_start = 0;
         this._render_win_end = 0;
     }
@@ -732,7 +765,7 @@ export class MessageListView {
         // the bottom message is not visible), then we will respect
         // the user's current position after rendering, rather
         // than auto-scrolling.
-        const started_scrolled_up = $message_viewport.is_scrolled_up();
+        const started_scrolled_up = message_viewport.is_scrolled_up();
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
@@ -874,7 +907,7 @@ export class MessageListView {
             // additional fetches (from bottom_whitespace ending up in
             // the view).  During debugging, we found that this adding
             // this next line seems to prevent the Chrome bug from firing.
-            $message_viewport.scrollTop();
+            message_viewport.scrollTop();
 
             $table.append($rendered_groups);
             condense.condense_and_collapse($dom_messages);
@@ -1002,7 +1035,7 @@ export class MessageListView {
             return false;
         }
 
-        const info = $message_viewport.message_viewport_info();
+        const info = message_viewport.message_viewport_info();
         const scroll_limit = this._scroll_limit($selected_row, info);
 
         // This next decision is fairly debatable.  For a big message that
@@ -1028,7 +1061,7 @@ export class MessageListView {
             // (Even if we are somewhat constrained here, the message may
             // still end up being visible, so we do some arithmetic.)
             scroll_amount = scroll_limit;
-            const offset = $message_viewport.offset_from_bottom($last_visible);
+            const offset = message_viewport.offset_from_bottom($last_visible);
 
             // For determining whether we need to show the user a "you
             // need to scroll down" notification, the obvious check
@@ -1052,7 +1085,7 @@ export class MessageListView {
 
         // Ok, we are finally ready to actually scroll.
         if (scroll_amount > 0) {
-            $message_viewport.system_initiated_animate_scroll(scroll_amount);
+            message_viewport.system_initiated_animate_scroll(scroll_amount);
         }
 
         return need_user_to_scroll;
@@ -1134,7 +1167,7 @@ export class MessageListView {
 
     set_message_offset(offset) {
         const $msg = this.selected_row();
-        $message_viewport.scrollTop($message_viewport.scrollTop() + $msg.offset().top - offset);
+        message_viewport.scrollTop(message_viewport.scrollTop() + $msg.offset().top - offset);
     }
 
     rerender_with_target_scrolltop(selected_row, target_offset) {
@@ -1417,5 +1450,107 @@ export class MessageListView {
         } else {
             message_container.status_message = false;
         }
+    }
+
+    /* This function exist for two purposes:
+        * To track the current `sticky_header` which have some different properties
+          like date being always displayed.
+        * Set date on message header corresponding to the message next to the header. */
+    update_sticky_recipient_headers() {
+        const rows_length = this._rows.size;
+        if (!rows_length) {
+            /* No headers are present */
+            return;
+        }
+        /* Intentionally remove sticky headers class here to make calculations simpler. */
+        $(".sticky_header").removeClass("sticky_header");
+        /* visible_top is navbar top position + height for us. */
+        const visible_top = message_viewport.message_viewport_info().visible_top;
+        /* We need date to be properly visible on the header, so partially visible headers
+           who are about to be scrolled out of view are not acceptable. */
+        const partially_hidden_header_position = visible_top - 1;
+
+        function is_sticky(header) {
+            // header has a box-shodow of `1px` at top but since it doesn't impact
+            // `y` position of the header, we don't take it into account during calculations.
+            const header_props = header.getBoundingClientRect();
+            // This value is dependent upon margin-bottom applied to recipient row.
+            const margin_between_recipient_rows = 10;
+            const sticky_or_about_to_be_sticky_header_position =
+                visible_top + header_props.height + margin_between_recipient_rows;
+            if (header_props.top < partially_hidden_header_position) {
+                return -1;
+            } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
+                return 1;
+            }
+            /* Headers between `partially_hidden_header_position` and `sticky_or_about_to_be_sticky_header_position`
+               are sticky. If two headers next to each other are completely visible
+               (message header at top has no visible content), we don't mind showing
+               date on any of them. Which header is chosen will depend on which
+               comes first when iterating on the headers. */
+            return 0;
+        }
+
+        const $table = rows.get_table(this.table_name);
+        const $headers = $table.find(".message_header");
+        const iterable_headers = $headers.toArray();
+        let start = 0;
+        let end = iterable_headers.length - 1;
+        let $sticky_header; // This is the first fully visible message header.
+
+        /* Binary search to reach the sticky header */
+        while (start <= end) {
+            const mid = Math.floor((start + end) / 2);
+            const header = iterable_headers[mid];
+            const diff = is_sticky(header);
+            if (diff === 0) {
+                $sticky_header = $(header);
+                break;
+            } else if (diff === 1) {
+                end = mid - 1;
+            } else {
+                start = mid + 1;
+            }
+        }
+        /* Set correct date for the sticky_header. */
+        let $message_row;
+        if (!$sticky_header) {
+            /* If the user is at the top of the scroll container,
+               the header is visible for the first message group, and we can display the date for the first visible message.
+               We don't need to add `sticky_header` class here since date is already visible
+               and header is not truly sticky at top of screen yet. */
+            $sticky_header = $headers.first();
+            $message_row = $sticky_header.nextAll(".message_row").first();
+        } else {
+            $sticky_header.addClass("sticky_header");
+            const sticky_header_props = $sticky_header[0].getBoundingClientRect();
+            /* Get `message_row` under the sticky header. */
+            const elements_below_sticky_header = document.elementsFromPoint(
+                sticky_header_props.left,
+                sticky_header_props.top,
+            );
+            $message_row = $(
+                elements_below_sticky_header.filter((element) =>
+                    element.classList.contains("message_row"),
+                ),
+            ).first();
+            if (!$message_row.length) {
+                /* If there is no message row under the header, it means it is not sticky yet,
+                   so we just get the message next to the header. */
+                $message_row = $sticky_header.nextAll(".message_row").first();
+            }
+        }
+        const msg_id = rows.id($message_row);
+        if (msg_id === undefined) {
+            return;
+        }
+        const message = message_store.get(msg_id);
+        if (!message) {
+            return;
+        }
+        const time = new Date(message.timestamp * 1000);
+        const today = new Date();
+        const rendered_date = timerender.render_date(time, undefined, today);
+        $sticky_header.find(".recipient_row_date").html(rendered_date);
     }
 }

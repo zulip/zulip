@@ -45,6 +45,7 @@ def make_set(files: List[str]) -> Set[str]:
 EXEMPT_FILES = make_set(
     [
         "frontend_tests/zjsunit/mdiff.js",
+        "frontend_tests/zjsunit/zjquery_element.js",
         "static/js/about_zulip.js",
         "static/js/add_subscribers_pill.js",
         "static/js/admin.js",
@@ -61,6 +62,7 @@ EXEMPT_FILES = make_set(
         "static/js/click_handlers.js",
         "static/js/compose.js",
         "static/js/compose_actions.js",
+        "static/js/compose_banner.ts",
         "static/js/compose_closed_ui.js",
         "static/js/compose_fade.js",
         "static/js/compose_state.js",
@@ -86,7 +88,6 @@ EXEMPT_FILES = make_set(
         "static/js/feature_flags.ts",
         "static/js/feedback_widget.js",
         "static/js/flatpickr.js",
-        "static/js/floating_recipient_bar.js",
         "static/js/gear_menu.js",
         "static/js/giphy.js",
         "static/js/global.d.ts",
@@ -204,6 +205,7 @@ EXEMPT_FILES = make_set(
         "static/js/unread.js",
         "static/js/unread_ops.js",
         "static/js/unread_ui.js",
+        "static/js/upload.js",
         "static/js/upload_widget.ts",
         "static/js/user_group_create.js",
         "static/js/user_group_create_members.js",

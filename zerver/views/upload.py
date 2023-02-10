@@ -68,7 +68,7 @@ def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bo
     response.headers["Content-Disposition"] = f"{disposition}; {file_expr}"
 
 
-def internal_nginx_redirect(internal_path: str) -> HttpResponse:
+def internal_nginx_redirect(internal_path: str, content_type: Optional[str] = None) -> HttpResponse:
     # The following headers from this initial response are
     # _preserved_, if present, and sent unmodified to the client;
     # all other headers are overridden by the redirected URL:
@@ -78,18 +78,21 @@ def internal_nginx_redirect(internal_path: str) -> HttpResponse:
     #  - Set-Cookie
     #  - Cache-Control
     #  - Expires
-    # As such, we unset the Content-type header to allow nginx to set
-    # it from the static file; the caller can set Content-Disposition
-    # and Cache-Control on this response as they desire, and the
-    # client will see those values.
-    response = HttpResponse()
+    # As such, we default to unsetting the Content-type header to
+    # allow nginx to set it from the static file; the caller can set
+    # Content-Disposition and Cache-Control on this response as they
+    # desire, and the client will see those values.  In some cases
+    # (local files) we do wish to control the Content-Type, so also
+    # support setting it explicitly.
+    response = HttpResponse(content_type=content_type)
     response["X-Accel-Redirect"] = internal_path
-    del response["Content-Type"]
+    if content_type is None:
+        del response["Content-Type"]
     return response
 
 
-def serve_s3(request: HttpRequest, path_id: str, download: bool = False) -> HttpResponse:
-    url = get_signed_upload_url(path_id)
+def serve_s3(request: HttpRequest, path_id: str, force_download: bool = False) -> HttpResponse:
+    url = get_signed_upload_url(path_id, force_download=force_download)
     assert url.startswith("https://")
 
     if settings.DEVELOPMENT:
@@ -99,28 +102,57 @@ def serve_s3(request: HttpRequest, path_id: str, download: bool = False) -> Http
         # this is acceptable in development.
         return redirect(url)
 
-    response = internal_nginx_redirect("/internal/s3/" + url[len("https://") :])
-    patch_disposition_header(response, path_id, download)
+    # We over-escape the path, to work around it being impossible to
+    # get the _unescaped_ new internal request URI in nginx.
+    parsed_url = urlparse(url)
+    assert parsed_url.hostname is not None
+    assert parsed_url.path is not None
+    assert parsed_url.query is not None
+    escaped_path_parts = parsed_url.hostname + quote(parsed_url.path) + "?" + parsed_url.query
+    response = internal_nginx_redirect("/internal/s3/" + escaped_path_parts)
+
+    # It is important that S3 generate both the Content-Type and
+    # Content-Disposition headers; when the file was uploaded, we
+    # stored the browser-provided value for the former, and set
+    # Content-Disposition according to if that was safe.  As such,
+    # only S3 knows if a given attachment is safe to inline; we only
+    # override Content-Disposition to "attachment", and do so by
+    # telling S3 that is what we want in the signed URL.
     patch_cache_control(response, private=True, immutable=True)
     return response
 
 
-def serve_local(request: HttpRequest, path_id: str, download: bool = False) -> HttpResponseBase:
+def serve_local(
+    request: HttpRequest, path_id: str, force_download: bool = False
+) -> HttpResponseBase:
     assert settings.LOCAL_FILES_DIR is not None
     local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
     assert_is_local_storage_path("files", local_path)
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
 
+    mimetype, encoding = guess_type(path_id)
+    download = force_download or mimetype not in INLINE_MIME_TYPES
+
     if settings.DEVELOPMENT:
         # In development, we do not have the nginx server to offload
-        # the response to; serve it directly ourselves.
-        # FileResponse handles setting Content-Disposition, etc.
-        response: HttpResponseBase = FileResponse(open(local_path, "rb"), as_attachment=download)
+        # the response to; serve it directly ourselves.  FileResponse
+        # handles setting Content-Type, Content-Disposition, etc.
+        response: HttpResponseBase = FileResponse(
+            open(local_path, "rb"), as_attachment=download  # noqa: SIM115
+        )
         patch_cache_control(response, private=True, immutable=True)
         return response
 
-    response = internal_nginx_redirect(quote(f"/internal/local/uploads/{path_id}"))
+    # For local responses, we are in charge of generating both
+    # Content-Type and Content-Disposition headers; unlike with S3
+    # storage, the Content-Type is not stored with the file in any
+    # way, so Django makes the determination of it, and thus as well
+    # if that type is safe to have a Content-Disposition of "inline".
+    # nginx respects the values we send.
+    response = internal_nginx_redirect(
+        quote(f"/internal/local/uploads/{path_id}"), content_type=mimetype
+    )
     patch_disposition_header(response, local_path, download)
     patch_cache_control(response, private=True, immutable=True)
     return response
@@ -129,7 +161,9 @@ def serve_local(request: HttpRequest, path_id: str, download: bool = False) -> H
 def serve_file_download_backend(
     request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
 ) -> HttpResponseBase:
-    return serve_file(request, user_profile, realm_id_str, filename, url_only=False, download=True)
+    return serve_file(
+        request, user_profile, realm_id_str, filename, url_only=False, force_download=True
+    )
 
 
 def serve_file_backend(
@@ -158,7 +192,7 @@ def serve_file(
     realm_id_str: str,
     filename: str,
     url_only: bool = False,
-    download: bool = False,
+    force_download: bool = False,
 ) -> HttpResponseBase:
     path_id = f"{realm_id_str}/{filename}"
     realm = get_valid_realm_from_request(request)
@@ -172,13 +206,10 @@ def serve_file(
         url = generate_unauthed_file_access_url(path_id)
         return json_success(request, data=dict(url=url))
 
-    mimetype, encoding = guess_type(path_id)
-    download = download or mimetype not in INLINE_MIME_TYPES
-
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, download=download)
+        return serve_local(request, path_id, force_download=force_download)
     else:
-        return serve_s3(request, path_id, download=download)
+        return serve_s3(request, path_id, force_download=force_download)
 
 
 USER_UPLOADS_ACCESS_TOKEN_SALT = "user_uploads_"
@@ -212,13 +243,10 @@ def serve_file_unauthed_from_token(
     if path_id.split("/")[-1] != filename:
         raise JsonableError(_("Invalid filename"))
 
-    mimetype, encoding = guess_type(path_id)
-    download = mimetype not in INLINE_MIME_TYPES
-
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, download=download)
+        return serve_local(request, path_id)
     else:
-        return serve_s3(request, path_id, download=download)
+        return serve_s3(request, path_id)
 
 
 def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponseBase:
@@ -243,7 +271,7 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
         return HttpResponseNotFound("<p>File not found</p>")
 
     if settings.DEVELOPMENT:
-        response: HttpResponseBase = FileResponse(open(local_path, "rb"))
+        response: HttpResponseBase = FileResponse(open(local_path, "rb"))  # noqa: SIM115
     else:
         response = internal_nginx_redirect(quote(f"/internal/local/user_avatars/{path}"))
 

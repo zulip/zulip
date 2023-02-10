@@ -399,7 +399,6 @@ def main(options: argparse.Namespace) -> NoReturn:
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
     run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
-    run_as_root([*proxy_env, "scripts/lib/install-yarn"])
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])

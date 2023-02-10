@@ -331,7 +331,7 @@ def sanity_check_output(data: TableData) -> None:
     in {__file__} for what to include in data exports.
     """
 
-    assert ALL_ZULIP_TABLES == all_tables_db, error_message
+    assert all_tables_db == ALL_ZULIP_TABLES, error_message
     assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES), error_message
     assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
     assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
@@ -1157,7 +1157,7 @@ def export_usermessages_batch(
     management command).
 
     See write_message_partial_for_query for more context."""
-    assert input_path.endswith(".partial") or input_path.endswith(".locked")
+    assert input_path.endswith((".partial", ".locked"))
     assert output_path.endswith(".json")
 
     with open(input_path, "rb") as input_file:

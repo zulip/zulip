@@ -18,7 +18,6 @@ import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -45,7 +44,6 @@ import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let topics_widget;
-let message_list_displayed_before;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -102,15 +100,6 @@ export function clear_for_tests() {
 
 export function save_filters() {
     ls.set(ls_key, Array.from(filters));
-}
-
-export function load_filters() {
-    if (!page_params.is_spectator) {
-        // A user may have a stored filter and can log out
-        // to see web public view. This ensures no filters are
-        // selected for spectators.
-        filters = new Set(ls.get(ls_key));
-    }
 }
 
 export function set_default_focus() {
@@ -792,10 +781,6 @@ export function complete_rerender() {
         return;
     }
 
-    // Update header
-    load_filters();
-    show_selected_filters();
-
     // Show topics list
     const mapped_topic_values = Array.from(get().values()).map((value) => value);
 
@@ -813,6 +798,13 @@ export function complete_rerender() {
         is_spectator: page_params.is_spectator,
     });
     $("#recent_topics_table").html(rendered_body);
+
+    // `show_selected_filters` needs to be called after the Recent
+    // Conversations view has been added to the DOM, to ensure that filters
+    // have the correct classes (checked or not) if Recent Conversations
+    // was not the first view loaded in the app.
+    show_selected_filters();
+
     const $container = $("#recent_topics_table table tbody");
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
@@ -860,7 +852,6 @@ export function show() {
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
     set_visible(true);
-    $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
     unread_ui.hide_mark_as_read_turned_off_banner();
@@ -894,7 +885,6 @@ export function hide() {
         $focused_element.trigger("blur");
     }
 
-    $("#message_view_header_underpadding").show();
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     set_visible(false);
@@ -906,17 +896,6 @@ export function hide() {
     // to a filter and back to recent topics
     // before it completely re-rerenders.
     message_view_header.render_title_area();
-
-    if (!message_list_displayed_before) {
-        // Hack: If the app is loaded directly to recent topics, then we
-        // need to arrange to call navbar_alerts.resize_app when we first
-        // visit a message list. This is a workaround for bugs where the
-        // floating recipient bar will be invisible (as well as other
-        // alignment issues) when they are initially rendered in the
-        // background because recent topics is displayed.
-        message_list_displayed_before = true;
-        navbar_alerts.resize_app();
-    }
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
@@ -1224,4 +1203,14 @@ export function change_focused_element($elt, input_key) {
     }
 
     return false;
+}
+
+export function initialize() {
+    // load filters from local storage.
+    if (!page_params.is_spectator) {
+        // A user may have a stored filter and can log out
+        // to see web public view. This ensures no filters are
+        // selected for spectators.
+        filters = new Set(ls.get(ls_key));
+    }
 }

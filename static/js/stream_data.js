@@ -8,6 +8,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
+import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -461,6 +462,10 @@ export function update_message_retention_setting(sub, message_retention_days) {
     sub.message_retention_days = message_retention_days;
 }
 
+export function update_can_remove_subscribers_group_id(sub, can_remove_subscribers_group_id) {
+    sub.can_remove_subscribers_group_id = can_remove_subscribers_group_id;
+}
+
 export function receives_notifications(stream_id, notification_name) {
     const sub = sub_store.get(stream_id);
     if (sub === undefined) {
@@ -554,6 +559,36 @@ export function can_view_subscribers(sub) {
 export function can_subscribe_others(sub) {
     // User can add other users to stream if stream is public or user is subscribed to stream.
     return !page_params.is_guest && (!sub.invite_only || sub.subscribed);
+}
+
+export function can_unsubscribe_others(sub) {
+    // Whether the current user has permission to remove other users
+    // from the stream. Organization administrators can remove users
+    // from any stream; additionally, users who can access the stream
+    // and are in the stream's can_remove_subscribers_group can do so
+    // as well.
+    //
+    // TODO: The API allows the current user to remove bots that it
+    // administers from streams; so we might need to refactor this
+    // logic to accept a target_user_id parameter in order to support
+    // that in the UI.
+
+    // A user must be able to view subscribers in a stream in order to
+    // remove them. This check may never fire in practice, since the
+    // UI for removing subscribers generally is a list of the stream's
+    // subscribers.
+    if (!can_view_subscribers(sub)) {
+        return false;
+    }
+
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    return user_groups.is_user_in_group(
+        sub.can_remove_subscribers_group_id,
+        people.my_current_user_id(),
+    );
 }
 
 export function can_post_messages_in_stream(stream) {

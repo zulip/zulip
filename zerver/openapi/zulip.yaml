@@ -3611,6 +3611,7 @@ paths:
                                 value:
                                   description: |
                                     The new value of the property.
+                                  nullable: true
                                   oneOf:
                                     - type: string
                                     - type: boolean
@@ -4032,6 +4033,34 @@ paths:
 
                                         **Changes**: No limit was represented using the
                                         special value `0` before Zulip 6.0 (feature level 138).
+                                    move_messages_within_stream_limit_seconds:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        Messages sent more than this many seconds ago cannot be moved within a
+                                        stream by members with this organization's [message move
+                                        policy](/help/configure-who-can-edit-topics). This setting does not
+                                        affect moderators and administrators.
+
+                                        Will not be 0. A 'null' value means no limit: messages can be moved
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
+                                        limit was always 72 hours.
+                                    move_messages_between_streams_limit_seconds:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        Messages sent more than this many seconds ago cannot be moved between
+                                        streams by members with this organization's [message move
+                                        policy](/help/configure-who-can-edit-topics). This setting does not
+                                        affect moderators and administrators.
+
+                                        Will not be 0. A 'null' value means no limit: messages can be moved
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
+                                        was not possible to add a time limit for moving messages.
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -6460,6 +6489,13 @@ paths:
         **Note**: See [configuring message editing][config-message-editing]
         for detailed documentation on when users are allowed to edit topics.
 
+        **Changes**: Before Zulip 7.0 (feature level 162), users who were not
+        administrators or moderators could only edit topics if the target
+        message was sent within the last 3 days. That time limit is now
+        controlled by the `move_messages_within_stream_limit_seconds` setting. A
+        similar time limit for moving topics to different streams was added,
+        controlled by the `move_messages_between_streams_limit_seconds` setting.
+
         **Changes**: Before Zulip 7.0 (feature level 159), editing
         streams and topics of messages was forbidden if
         `allow_message_editing` was `false`, regardless of the
@@ -7855,6 +7891,7 @@ paths:
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
           description: Success.
@@ -8027,14 +8064,23 @@ paths:
         Unsubscribe yourself or other users from one or more streams.
 
         In addition to managing the current user's subscriptions, this
-        endpoint can be used by organization administrators to remove
-        other users from streams, or to remove a bot that the current
-        user is the `bot_owner` for from any stream that the current
-        user can access.
+        endpoint can be used to remove other users from streams. This
+        is possible in 3 situations:
 
-        **Changes**: Before Zulip 6.0 (feature level 145), only
-        organization administrators could remove other users from
-        streams.
+        - Organization administrators can remove any user from any
+          stream.
+        - Users can remove a bot that they own from any stream that
+          the user can access.
+        - Users who can access a stream and are in the group with ID
+          `can_remove_subscribers_group_id` for that stream can
+          unsubscribe any user from that stream.
+
+        **Changes**: Before Zulip 7.0 (feature level 161),
+        `can_remove_subscribers_group_id` was always the system group
+        for organization administrators.
+
+        Before Zulip 6.0 (feature level 145), users had no special
+        privileges for managing bots that they own.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -12192,6 +12238,38 @@ paths:
 
                           **Changes**: No limit was represented using the
                           special value `0` before Zulip 6.0 (feature level 138).
+                      realm_move_messages_within_stream_limit_seconds:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Messages sent more than this many seconds ago cannot be moved within a
+                          stream by members with this organization's [message move
+                          policy](/help/configure-who-can-edit-topics). This setting does not
+                          affect moderators and administrators.
+
+                          Will not be 0. A 'null' value means no limit: messages can be moved
+                          regardless of how long ago they were sent.
+
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
+                          limit was always 72 hours.
+                      realm_move_messages_between_streams_limit_seconds:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Messages sent more than this many seconds ago cannot be moved between
+                          streams by members with this organization's [message move
+                          policy](/help/configure-who-can-edit-topics). This setting does not
+                          affect moderators and administrators.
+
+                          Will not be 0. A 'null' value means no limit: messages can be moved
+                          regardless of how long ago they were sent.
+
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
+                          was not possible to add a time limit for moving messages.
                       realm_community_topic_editing_limit_seconds:
                         type: integer
                         description: |
@@ -14536,6 +14614,7 @@ paths:
           required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -17561,6 +17640,22 @@ components:
           - type: string
           - type: integer
       example: "20"
+      required: false
+    CanRemoveSubscribersGroupId:
+      name: can_remove_subscribers_group_id
+      in: query
+      description: |
+        ID of the user group whose members are allowed to unsubscribe others
+        from the stream, if they have access to this stream, even if
+        they are not an organization administrator.
+
+        This setting can currently only be set to system user groups
+        except `@role:internet` and `@role:owners` group.
+
+        **Changes**: New in Zulip 7.0 (feature level 161).
+      schema:
+        type: integer
+      example: 20
       required: false
     LinkifierPattern:
       name: pattern

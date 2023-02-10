@@ -380,6 +380,7 @@ exports.fixtures = {
         data: {
             allow_message_editing: true,
             message_content_edit_limit_seconds: 5,
+            edit_topic_policy: 4,
             authentication_methods: {
                 Google: true,
             },

@@ -26,7 +26,7 @@ link_mapping = {
     ],
     "display-settings": ["Personal settings", "Display settings", "/#settings/display-settings"],
     "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
-    "your-bots": ["Personal settings", "your Bots", "/#settings/your-bots"],
+    "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
     "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
     "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
     "muted-topics": ["Personal settings", "Muted topics", "/#settings/muted-topics"],
@@ -70,7 +70,7 @@ link_mapping = {
     ],
     "bot-list-admin": [
         "Organization settings",
-        "your organization's Bots",
+        "Bots",
         "/#organization/bot-list-admin",
     ],
     "default-streams-list": [
@@ -115,6 +115,21 @@ settings_markdown = """
 """
 
 
+def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) -> str:
+    if relative_settings_links:
+        relative_link = f"[{setting_name}]({setting_link})"
+        # The "Bots" label appears in both Personal and Organization settings
+        # in the user interface so we need special text for this setting.
+        if setting_name == "Bots":
+            return f"1. Navigate to the {relative_link} \
+                    tab of the **{setting_type_name}** menu."
+        return f"1. Go to {relative_link}."
+    return settings_markdown.format(
+        setting_type_name=setting_type_name,
+        setting_reference=f"**{setting_name}**",
+    )
+
+
 class SettingHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """Add SettingHelpExtension to the Markdown instance."""
@@ -156,15 +171,7 @@ class Setting(Preprocessor):
 
     def handleMatch(self, match: Match[str]) -> str:
         setting_identifier = match.group("setting_identifier")
-        setting_type_name = link_mapping[setting_identifier][0]
-        setting_name = link_mapping[setting_identifier][1]
-        setting_link = link_mapping[setting_identifier][2]
-        if relative_settings_links:
-            return f"1. Go to [{setting_name}]({setting_link})."
-        return settings_markdown.format(
-            setting_type_name=setting_type_name,
-            setting_reference=f"**{setting_name}**",
-        )
+        return getMarkdown(*link_mapping[setting_identifier])
 
 
 def makeExtension(*args: Any, **kwargs: Any) -> SettingHelpExtension:

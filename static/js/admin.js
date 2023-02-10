@@ -11,6 +11,7 @@ import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_invites from "./settings_invites";
 import * as settings_org from "./settings_org";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
@@ -153,6 +154,7 @@ export function build_page() {
         admin_settings_label,
         msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
+        msg_move_limit_dropdown_values: settings_config.msg_move_limit_dropdown_values,
         bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
         waiting_period_threshold_dropdown_values:
@@ -215,6 +217,7 @@ export function build_page() {
     $("#settings_content .alert").removeClass("show");
 
     settings_bots.update_bot_settings_tip();
+    settings_invites.update_invite_users_setting_tip();
     insert_tip_box();
 
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);

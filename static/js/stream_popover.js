@@ -412,6 +412,14 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         from_message_actions_popover: message !== undefined,
     };
 
+    // When the modal is opened for moving the whole topic from left sidebar,
+    // we do not have any message object and so we disable the stream input
+    // based on the move_messages_between_streams_policy setting. In other
+    // cases message row, message object is available and thus we check
+    // the time-based permissions as well in the below if block to enable or
+    // disable the stream input.
+    let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
+
     let modal_heading = $t_html({defaultMessage: "Move topic"});
     if (message !== undefined) {
         modal_heading = $t_html({defaultMessage: "Move messages"});
@@ -423,6 +431,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         // Though, this will be changed soon as we are going to make topic
         // edit permission independent of message.
         args.disable_topic_input = !message_edit.is_topic_editable(message);
+        disable_stream_input = !message_edit.is_stream_editable(message);
     }
 
     function get_params_from_form() {
@@ -474,16 +483,17 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
             // there has been no change in the topic name.
             new_topic_name = undefined;
         }
+        if (select_stream_id === current_stream_id) {
+            // We use `undefined` to tell the server that
+            // there has been no change in stream. This is
+            // important for cases when changing stream is
+            // not allowed or when changes other than
+            // stream-change has been made.
+            select_stream_id = undefined;
+        }
 
         let propagate_mode = "change_all";
         if (message !== undefined) {
-            if (select_stream_id === current_stream_id) {
-                // We use `undefined` to tell the server that
-                // there has been no change in stream. This is
-                // important for cases when changing stream is
-                // not allowed.
-                select_stream_id = undefined;
-            }
             // We already have the message_id here which means that modal is opened using
             // message popover.
             propagate_mode = $("#move_topic_modal select.message_edit_topic_propagate").val();
@@ -503,16 +513,14 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
             current_stream_id,
             old_topic_name,
             (message_id) => {
-                if (old_topic_name && select_stream_id) {
-                    message_edit.move_topic_containing_message_to_stream(
-                        message_id,
-                        select_stream_id,
-                        new_topic_name,
-                        send_notification_to_new_thread,
-                        send_notification_to_old_thread,
-                        propagate_mode,
-                    );
-                }
+                message_edit.move_topic_containing_message_to_stream(
+                    message_id,
+                    select_stream_id,
+                    new_topic_name,
+                    send_notification_to_new_thread,
+                    send_notification_to_old_thread,
+                    propagate_mode,
+                );
             },
             (xhr) => {
                 dialog_widget.hide_dialog_spinner();
@@ -534,7 +542,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
     }
 
     function move_topic_on_update() {
-        update_submit_button_disabled_state();
+        update_submit_button_disabled_state(stream_widget.value());
         set_stream_topic_typeahead();
     }
 
@@ -564,10 +572,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
 
         stream_widget.setup();
 
-        $("#select_stream_widget .dropdown-toggle").prop(
-            "disabled",
-            !settings_data.user_can_move_messages_between_streams(),
-        );
+        $("#select_stream_widget .dropdown-toggle").prop("disabled", disable_stream_input);
         update_submit_button_disabled_state(stream_widget.value());
         $("#move_topic_modal .inline_topic_edit").on("input", () => {
             update_submit_button_disabled_state(stream_widget.value());

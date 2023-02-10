@@ -5,6 +5,7 @@ import render_message_sent_banner from "../templates/compose_banner/message_sent
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as compose_banner from "./compose_banner";
 import * as favicon from "./favicon";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -164,24 +165,23 @@ export function is_window_focused() {
 }
 
 export function notify_above_composebox(
-    note,
-    link_class,
+    banner_text,
+    classname,
     above_composebox_narrow_url,
     link_msg_id,
     link_text,
 ) {
     const $notification = $(
         render_message_sent_banner({
-            note,
-            link_class,
+            banner_text,
+            classname,
             above_composebox_narrow_url,
             link_msg_id,
             link_text,
         }),
     );
-    clear_compose_notifications();
-    $("#out-of-view-notification").append($notification);
-    $("#out-of-view-notification").show();
+    compose_banner.clear_message_sent_banners();
+    $("#compose_banners").append($notification);
 }
 
 if (window.electron_bridge !== undefined) {
@@ -608,17 +608,23 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
             continue;
         }
 
-        let reason = get_local_notify_mix_reason(message);
+        let banner_text = get_local_notify_mix_reason(message);
 
-        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
+        const link_msg_id = message.id;
 
-        if (!reason) {
+        if (!banner_text) {
             if (need_user_to_scroll) {
-                reason = $t({defaultMessage: "Sent! Scroll down to view your message."});
-                notify_above_composebox(reason, "", above_composebox_narrow_url, null, "");
-                setTimeout(() => {
-                    $("#out-of-view-notification").hide();
-                }, 3000);
+                banner_text = $t({defaultMessage: "Sent!"});
+                const link_text = $t({defaultMessage: "Scroll down to view your message."});
+                notify_above_composebox(
+                    banner_text,
+                    compose_banner.CLASSNAMES.sent_scroll_to_view,
+                    // Don't display a URL on hover for the "Scroll to bottom" link.
+                    null,
+                    link_msg_id,
+                    link_text,
+                );
+                compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
             }
 
             // This is the HAPPY PATH--for most messages we do nothing
@@ -626,17 +632,15 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
             continue;
         }
 
-        const link_msg_id = message.id;
-        const link_class = "compose_notification_narrow_by_topic";
         const link_text = $t(
             {defaultMessage: "Narrow to {message_recipient}"},
             {message_recipient: get_message_header(message)},
         );
 
         notify_above_composebox(
-            reason,
-            link_class,
-            above_composebox_narrow_url,
+            banner_text,
+            compose_banner.CLASSNAMES.narrow_to_recipient,
+            get_above_composebox_narrow_url(message),
             link_msg_id,
             link_text,
         );
@@ -670,18 +674,12 @@ export function notify_messages_outside_current_search(messages) {
         );
         notify_above_composebox(
             $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
-            "compose_notification_narrow_by_topic",
+            compose_banner.CLASSNAMES.narrow_to_recipient,
             above_composebox_narrow_url,
             message.id,
             link_text,
         );
     }
-}
-
-export function clear_compose_notifications() {
-    $("#out-of-view-notification").empty();
-    $("#out-of-view-notification").stop(true, true);
-    $("#out-of-view-notification").hide();
 }
 
 export function reify_message_id(opts) {
@@ -690,35 +688,40 @@ export function reify_message_id(opts) {
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
-    for (const e of $("#out-of-view-notification a")) {
+    for (const e of $("#compose_banners a")) {
         const $elem = $(e);
         const message_id = $elem.data("message-id");
 
         if (message_id === old_id) {
             $elem.data("message-id", new_id);
+            compose_banner.set_scroll_to_message_banner_message_id(new_id);
         }
     }
 }
 
 export function register_click_handlers() {
-    $("#out-of-view-notification").on("click", ".compose_notification_narrow_by_topic", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        narrow.by_topic(message_id, {trigger: "compose_notification"});
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("#out-of-view-notification").on("click", ".compose_notification_scroll_to_message", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        message_lists.current.select_id(message_id);
-        navigate.scroll_to_selected();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $("#out-of-view-notification").on("click", ".out-of-view-notification-close", (e) => {
-        clear_compose_notifications();
-        e.stopPropagation();
-        e.preventDefault();
-    });
+    $("#compose_banners").on(
+        "click",
+        ".narrow_to_recipient .above_compose_banner_action_link",
+        (e) => {
+            const message_id = $(e.currentTarget).data("message-id");
+            narrow.by_topic(message_id, {trigger: "compose_notification"});
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
+    $("#compose_banners").on(
+        "click",
+        ".sent_scroll_to_view .above_compose_banner_action_link",
+        (e) => {
+            const message_id = $(e.currentTarget).data("message-id");
+            message_lists.current.select_id(message_id);
+            navigate.scroll_to_selected();
+            compose_banner.clear_message_sent_banners();
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
 }
 
 export function handle_global_notification_updates(notification_name, setting) {

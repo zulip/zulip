@@ -231,8 +231,13 @@ h3,
 
 #uploaded_files_table > tr > td:nth-of-type(1),
 .upload-file-name {
-    width: 30%;
+    width: 43%;
     word-break: break-all;
+}
+
+.upload-mentioned-in,
+.upload-date {
+    word-break: normal;
 }
 
 #linkifier-settings {
@@ -657,6 +662,10 @@ input[type="checkbox"] {
     #emoji_preview_text {
         margin-top: 6px;
     }
+
+    #emoji_preview_image {
+        object-fit: cover;
+    }
 }
 
 #emoji_file_input_error {
@@ -858,6 +867,26 @@ input[type="checkbox"] {
     #bot-role-select:disabled {
         opacity: 1;
     }
+
+    #current_bot_avatar_image {
+        margin: 5px 0 8px;
+    }
+
+    .edit_bot_avatar_preview_text {
+        display: none;
+    }
+}
+
+#add_bot_preview_text {
+    display: none;
+}
+
+.edit_bot_avatar_preview_image,
+#add_bot_preview_image {
+    height: 100px;
+    object-fit: cover;
+    width: 100px;
+    margin: 2px 0 8px;
 }
 
 #add-alert-word {
@@ -1452,7 +1481,9 @@ $option_title_width: 180px;
 #id_realm_edit_topic_policy,
 #id_realm_message_content_edit_limit_seconds,
 #id_realm_delete_own_message_policy,
-#id_realm_message_content_delete_limit_seconds {
+#id_realm_message_content_delete_limit_seconds,
+#id_realm_move_messages_within_stream_limit_seconds,
+#id_realm_move_messages_between_streams_limit_seconds {
     width: 325px;
 }
 
@@ -1717,6 +1748,10 @@ $option_title_width: 180px;
 }
 
 @media (width < $lg_min) {
+    .upload-size {
+        display: none;
+    }
+
     .user-avatar-section,
     .realm-icon-section {
         display: block;

@@ -115,6 +115,8 @@ from zerver.lib.validator import (
 MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
+SECONDS_PER_DAY = 86400
+
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 
 if TYPE_CHECKING:
@@ -379,6 +381,16 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
+    DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
+
+    move_messages_within_stream_limit_seconds = models.PositiveIntegerField(
+        default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
+    )
+
+    move_messages_between_streams_limit_seconds = models.PositiveIntegerField(
+        default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
+    )
+
     # Who in the organization is allowed to add custom emojis.
     add_custom_emoji_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
@@ -464,7 +476,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
-    MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
+    MESSAGE_TIME_LIMIT_SETTING_SPECIAL_VALUES_MAP = {
         "unlimited": None,
     }
     message_content_delete_limit_seconds = models.PositiveIntegerField(
@@ -728,6 +740,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=(int, type(None)),
         message_content_delete_limit_seconds=(int, type(None)),
+        move_messages_between_streams_limit_seconds=(int, type(None)),
+        move_messages_within_stream_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
         move_messages_between_streams_policy=int,
         name=str,
@@ -2620,7 +2634,9 @@ class UserTopic(models.Model):
     # belongs to a muted stream.
     UNMUTED = 2
 
-    # This topic will behave like `UNMUTED`, plus will also always trigger notifications.
+    # This topic will behave like `UNMUTED`, plus some additional
+    # display and/or notifications priority that is TBD and likely to
+    # be configurable; see #6027. Not yet implemented.
     FOLLOWED = 3
 
     visibility_policy_choices = (
@@ -2998,7 +3014,7 @@ class Message(AbstractMessage):
 def get_context_for_message(message: Message) -> QuerySet[Message]:
     return Message.objects.filter(
         recipient_id=message.recipient_id,
-        subject=message.subject,
+        subject__iexact=message.subject,
         id__lt=message.id,
         date_sent__gt=message.date_sent - timedelta(minutes=15),
     ).order_by("-id")[:10]
@@ -3731,7 +3747,7 @@ def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
     user_profile = maybe_get_user_profile_by_api_key(api_key)
     if user_profile is None:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
 
     return user_profile
 
@@ -3788,7 +3804,7 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
     See get_user docstring for important usage notes."""
     user_profile = get_user(email, realm)
     if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
     return user_profile
 
 
@@ -3799,7 +3815,7 @@ def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
     user_profile = get_user_profile_by_id_in_realm(uid, realm)
     if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
     return user_profile
 
 
@@ -3837,7 +3853,7 @@ def get_user_by_id_in_realm_including_cross_realm(
     if is_cross_realm_bot_email(user_profile.delivery_email):
         return user_profile
 
-    raise UserProfile.DoesNotExist()
+    raise UserProfile.DoesNotExist
 
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)

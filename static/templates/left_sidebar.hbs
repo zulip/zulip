@@ -81,17 +81,21 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-tippy-content="{{t 'Filter streams' }} (q)">{{t 'STREAMS' }}</h4>
+            <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'STREAMS' }}</h4>
                 <span class="tippy-zulip-tooltip streams_inline_icon_wrapper hidden-for-spectators" data-tippy-content="{{t 'Add streams' }}">
                     <i id="streams_inline_icon" class='fa fa-plus' aria-hidden="true" ></i>
                 </span>
-                <i class="streams_filter_icon fa fa-filter tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Filter streams' }} (q)"></i>
+                <i class="streams_filter_icon fa fa-filter tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
                 <div class="input-append notdisplayed stream_search_section">
                     <input class="stream-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{t 'Filter streams' }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
+                <template id="filter-streams-tooltip-template">
+                    {{t 'Filter streams' }}
+                    {{tooltip_hotkey_hints "Q"}}
+                </template>
             </div>
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to streams' }}</a>

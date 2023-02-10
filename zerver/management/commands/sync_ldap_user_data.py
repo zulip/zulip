@@ -55,7 +55,7 @@ def sync_ldap_user_data(
                         "Use the --force option if the mass deactivation is intended."
                     )
     except Exception:
-        logger.error("LDAP sync failed", exc_info=True)
+        logger.exception("LDAP sync failed")
         raise
 
     logger.info("Finished update.")
