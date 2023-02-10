@@ -44,6 +44,11 @@ const cardelio = {
     user_id: 105,
     full_name: "Cardelio",
 };
+const iago = {
+    email: "iago@zulip.com",
+    user_id: 106,
+    full_name: "Iago",
+};
 const bot_test = {
     email: "outgoingwebhook@zulip.com",
     user_id: 314,
@@ -56,6 +61,7 @@ people.add_active_user(bob);
 people.add_active_user(me);
 people.add_active_user(zoe);
 people.add_active_user(cardelio);
+people.add_active_user(iago);
 people.add_active_user(bot_test);
 people.initialize_current_user(me.user_id);
 
@@ -211,9 +217,23 @@ test("get_list_info_unread_messages", ({override}) => {
     pm_conversations.recent.insert([zoe.user_id, bob.user_id, alice.user_id], 8);
     pm_conversations.recent.insert([cardelio.user_id, zoe.user_id], 9);
     pm_conversations.recent.insert([cardelio.user_id, bob.user_id], 10);
+    pm_conversations.recent.insert([cardelio.user_id, alice.user_id], 11);
+    pm_conversations.recent.insert([cardelio.user_id, zoe.user_id, bob.user_id], 12);
+    pm_conversations.recent.insert([cardelio.user_id, zoe.user_id, alice.user_id], 13);
+    pm_conversations.recent.insert([cardelio.user_id, bob.user_id, alice.user_id], 14);
+    pm_conversations.recent.insert([cardelio.user_id, bob.user_id, alice.user_id, zoe.user_id], 15);
+    pm_conversations.recent.insert([cardelio.user_id], 16);
+    pm_conversations.recent.insert([iago.user_id], 17);
 
     list_info = pm_list_data.get_list_info(false);
-    check_list_info(list_info, 8, 2, [
+    check_list_info(list_info, 15, 2, [
+        "Iago",
+        "Cardelio",
+        "Alice, Bob, Cardelio, Zoe",
+        "Alice, Bob, Cardelio",
+        "Alice, Cardelio, Zoe",
+        "Bob, Cardelio, Zoe",
+        "Alice, Cardelio",
         "Bob, Cardelio",
         "Cardelio, Zoe",
         "Alice, Bob, Zoe",
@@ -229,7 +249,14 @@ test("get_list_info_unread_messages", ({override}) => {
     // unread is removed from more_conversations_unread_count.
     set_pm_with_filter("alice@zulip.com");
     list_info = pm_list_data.get_list_info(false);
-    check_list_info(list_info, 9, 1, [
+    check_list_info(list_info, 16, 1, [
+        "Iago",
+        "Cardelio",
+        "Alice, Bob, Cardelio, Zoe",
+        "Alice, Bob, Cardelio",
+        "Alice, Cardelio, Zoe",
+        "Bob, Cardelio, Zoe",
+        "Alice, Cardelio",
         "Bob, Cardelio",
         "Cardelio, Zoe",
         "Alice, Bob, Zoe",
@@ -244,7 +271,14 @@ test("get_list_info_unread_messages", ({override}) => {
     // Zooming will show all conversations and there will
     // be no unreads in more_conversations_unread_count.
     list_info = pm_list_data.get_list_info(true);
-    check_list_info(list_info, 10, 0, [
+    check_list_info(list_info, 17, 0, [
+        "Iago",
+        "Cardelio",
+        "Alice, Bob, Cardelio, Zoe",
+        "Alice, Bob, Cardelio",
+        "Alice, Cardelio, Zoe",
+        "Bob, Cardelio, Zoe",
+        "Alice, Cardelio",
         "Bob, Cardelio",
         "Cardelio, Zoe",
         "Alice, Bob, Zoe",
@@ -269,17 +303,32 @@ test("get_list_info_no_unread_messages", ({override}) => {
     pm_conversations.recent.insert([cardelio.user_id], 5);
     pm_conversations.recent.insert([zoe.user_id, cardelio.user_id], 6);
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 7);
+    pm_conversations.recent.insert([zoe.user_id, bob.user_id], 8);
+    pm_conversations.recent.insert([alice.user_id, cardelio.user_id], 9);
+    pm_conversations.recent.insert([bob.user_id, cardelio.user_id], 10);
 
     // Visible conversations are limited to value of
     // `max_conversations_to_show`.
     list_info = pm_list_data.get_list_info(false);
-    check_list_info(list_info, 5, 0, ["Alice, Bob", "Cardelio, Zoe", "Cardelio", "Zoe", "Bob"]);
+    check_list_info(list_info, 8, 0, [
+        "Bob, Cardelio",
+        "Alice, Cardelio",
+        "Bob, Zoe",
+        "Alice, Bob",
+        "Cardelio, Zoe",
+        "Cardelio",
+        "Zoe",
+        "Bob",
+    ]);
 
     // Narrowing to private messages with Alice adds older
     // one-on-one conversation with her to the list.
     set_pm_with_filter("alice@zulip.com");
     list_info = pm_list_data.get_list_info(false);
-    check_list_info(list_info, 6, 0, [
+    check_list_info(list_info, 9, 0, [
+        "Bob, Cardelio",
+        "Alice, Cardelio",
+        "Bob, Zoe",
         "Alice, Bob",
         "Cardelio, Zoe",
         "Cardelio",
@@ -290,7 +339,10 @@ test("get_list_info_no_unread_messages", ({override}) => {
 
     // Zooming will show all conversations.
     list_info = pm_list_data.get_list_info(true);
-    check_list_info(list_info, 7, 0, [
+    check_list_info(list_info, 10, 0, [
+        "Bob, Cardelio",
+        "Alice, Cardelio",
+        "Bob, Zoe",
         "Alice, Bob",
         "Cardelio, Zoe",
         "Cardelio",

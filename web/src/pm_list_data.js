@@ -7,10 +7,10 @@ import * as unread from "./unread";
 import * as user_status from "./user_status";
 
 // Maximum number of conversation threads to show in default view.
-const max_conversations_to_show = 5;
+const max_conversations_to_show = 8;
 
 // Maximum number of conversation threads to show in default view with unreads.
-const max_conversations_to_show_with_unreads = 8;
+const max_conversations_to_show_with_unreads = 15;
 
 export function get_active_user_ids_string() {
     const filter = narrow_state.filter();
