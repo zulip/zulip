@@ -414,9 +414,14 @@ ul {
         }
     }
 
+    .user_profile_edit_button {
+        margin-left: 10px;
+        width: 25px;
+        text-align: center;
+    }
+
     #edit-button {
         font-size: 18px;
-        margin-left: 10px;
     }
 
     #default-section {
