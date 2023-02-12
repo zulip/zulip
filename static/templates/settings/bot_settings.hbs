@@ -8,7 +8,9 @@
                 {{#*inline "z-api"}}<a href="/api" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </div>
-        <div class="tip bot-settings-tip"></div>
+        <div class="bot-settings-tip" id="personal-bot-settings-tip">
+            {{> bot_settings_tip}}
+        </div>
         <div>
             <button class="button rounded sea-green add-a-new-bot {{#unless can_create_new_bots}}hide{{/unless}}">{{t "Add a new bot" }}</button>
         </div>

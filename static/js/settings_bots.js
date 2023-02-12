@@ -4,6 +4,7 @@ import $ from "jquery";
 import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
+import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
@@ -157,30 +158,23 @@ export function can_create_new_bots() {
 }
 
 export function update_bot_settings_tip() {
-    const permission_type = bot_creation_policy_values;
-    let tip_text;
+    const rendered_tip = render_bot_settings_tip({
+        realm_bot_creation_policy: page_params.realm_bot_creation_policy,
+        permission_type: bot_creation_policy_values,
+    });
 
-    if (!can_create_new_bots()) {
-        // This policy doesn't currently support restricting by role
-        // beyond just requiring an administrator.
-        tip_text = $t({
-            defaultMessage: "Only organization administrators can add bots to this organization.",
-        });
-    } else if (
-        page_params.realm_bot_creation_policy === permission_type.restricted.code &&
-        !page_params.is_admin
-    ) {
-        // We arguably need a tip for restrictions on bot type even if you can create bots.
-        // Probably it would be better to have two independent permission settings, but
-        // this is the model we have.
-        tip_text = $t({defaultMessage: "Only organization administrators can add generic bots."});
-    } else {
-        $(".bot-settings-tip").hide();
+    $(".bot-settings-tip").html(rendered_tip);
+    $("#personal-bot-settings-tip").hide();
+
+    if (page_params.is_admin) {
         return;
     }
 
+    if (page_params.realm_bot_creation_policy === bot_creation_policy_values.everyone.code) {
+        $("#admin-bot-settings-tip").hide();
+        return;
+    }
     $(".bot-settings-tip").show();
-    $(".bot-settings-tip").text(tip_text);
 }
 
 function update_add_bot_button() {
