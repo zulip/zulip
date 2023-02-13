@@ -35,6 +35,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_user_messages,
@@ -142,6 +143,76 @@ class MessagePOSTTest(ZulipTestCase):
         expected = (
             "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
             "stream ID 99999, but there is no stream with that ID."
+        )
+        self.assertEqual(msg.content, expected)
+
+    def test_message_to_stream_with_no_subscribers(self) -> None:
+        """
+        Sending a message to an empty stream succeeds, but sends a warning
+        to the owner.
+        """
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        bot = self.create_test_bot(
+            short_name="whatever",
+            user_profile=cordelia,
+        )
+        stream = create_stream_if_needed(realm, "Acropolis")[0]
+        result = self.api_post(
+            bot,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps(stream.name).decode(),
+                "content": "Stream message to an empty stream by name.",
+                "topic": "Test topic for empty stream name message",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        expected = "Stream message to an empty stream by name."
+        self.assertEqual(msg.content, expected)
+
+        msg = self.get_second_to_last_message()
+        expected = (
+            "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
+            "stream #**Acropolis**. The stream exists but does not have any subscribers."
+        )
+        self.assertEqual(msg.content, expected)
+
+    def test_message_to_stream_with_no_subscribers_by_id(self) -> None:
+        """
+        Sending a message to an empty stream succeeds, but sends a warning
+        to the owner.
+        """
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        bot = self.create_test_bot(
+            short_name="whatever",
+            user_profile=cordelia,
+        )
+        stream = create_stream_if_needed(realm, "Acropolis")[0]
+        result = self.api_post(
+            bot,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps([stream.id]).decode(),
+                "content": "Stream message to an empty stream by id.",
+                "topic": "Test topic for empty stream id message",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        expected = "Stream message to an empty stream by id."
+        self.assertEqual(msg.content, expected)
+
+        msg = self.get_second_to_last_message()
+        expected = (
+            "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
+            "stream #**Acropolis**. The stream exists but does not have any subscribers."
         )
         self.assertEqual(msg.content, expected)
 

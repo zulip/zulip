@@ -1240,22 +1240,28 @@ def send_pm_if_empty_stream(
     if not sender.is_bot or sender.bot_owner is None:
         return
 
-    arg_dict = {
-        "bot_identity": f"`{sender.delivery_email}`",
-        "stream_id": stream_id,
-        "stream_name": f"#**{stream_name}**",
-        "new_stream_link": "#streams/new",
-    }
     if sender.bot_owner is not None:
         with override_language(sender.bot_owner.default_language):
+            arg_dict: Dict[str, Any] = {
+                "bot_identity": f"`{sender.delivery_email}`",
+            }
             if stream is None:
                 if stream_id is not None:
+                    arg_dict = {
+                        **arg_dict,
+                        "stream_id": stream_id,
+                    }
                     content = _(
                         "Your bot {bot_identity} tried to send a message to stream ID "
                         "{stream_id}, but there is no stream with that ID."
                     ).format(**arg_dict)
                 else:
                     assert stream_name is not None
+                    arg_dict = {
+                        **arg_dict,
+                        "stream_name": f"#**{stream_name}**",
+                        "new_stream_link": "#streams/new",
+                    }
                     content = _(
                         "Your bot {bot_identity} tried to send a message to stream "
                         "{stream_name}, but that stream does not exist. "
@@ -1264,6 +1270,10 @@ def send_pm_if_empty_stream(
             else:
                 if num_subscribers_for_stream_id(stream.id) > 0:
                     return
+                arg_dict = {
+                    **arg_dict,
+                    "stream_name": f"#**{stream.name}**",
+                }
                 content = _(
                     "Your bot {bot_identity} tried to send a message to "
                     "stream {stream_name}. The stream exists but "
