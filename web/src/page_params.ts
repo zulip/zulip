@@ -12,12 +12,14 @@ export const page_params: {
         percent_translated: number | undefined;
     }[];
     login_page: string;
+    delivery_email: string;
     is_admin: boolean;
     is_bot: boolean;
     is_guest: boolean;
     is_moderator: boolean;
     is_owner: boolean;
     is_spectator: boolean;
+    muted_users: {id: number; timestamp: number}[];
     needs_tutorial: boolean;
     page_load_time: number;
     promote_sponsoring_zulip: boolean;
@@ -64,7 +66,6 @@ export const page_params: {
     zulip_plan_is_not_limited: boolean;
     zulip_merge_base: string;
     zulip_version: string;
-    muted_users: {id: number; timestamp: number}[];
 } = $("#page-params").remove().data("params");
 const t2 = performance.now();
 export const page_params_parse_time = t2 - t1;
