@@ -747,7 +747,6 @@ a.compose_control_button.hide {
 
 #compose_stream_selection_dropdown {
     display: flex;
-    flex-wrap: wrap;
     justify-content: flex-start;
 
     .stream_header_colorblock {
@@ -757,6 +756,7 @@ a.compose_control_button.hide {
     .dropdown-toggle {
         border-radius: 0 4px 4px 0 !important;
         display: flex;
+        max-width: 130px;
     }
 
     .dropup .dropdown-menu {
@@ -773,6 +773,9 @@ a.compose_control_button.hide {
 
     #compose_select_stream_name {
         flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .dropdown-list-body .list_item a {
