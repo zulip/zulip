@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.presence import do_update_user_presence
+from zerver.actions.users import notify_users_on_updated_user_profile
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
     cache_delete,
@@ -221,6 +222,12 @@ def do_change_full_name(
             dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
         )
+    notify_users_on_updated_user_profile(
+        acting_user=acting_user,
+        recipient_user=user_profile,
+        old_full_name=old_name,
+        new_full_name=full_name,
+    )
 
 
 def check_change_full_name(

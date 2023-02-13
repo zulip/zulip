@@ -367,6 +367,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_user_can_change_full_name(self) -> None:
+        # Test full name changes on normal users
         new_name = "new name"
         self.login("iago")
         hamlet = self.example_user("hamlet")
@@ -375,6 +376,22 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.full_name, new_name)
+
+        # Normal users should receive a message explaining the changes
+        expected_notification = "@_**Iago|11** has made the following changes to your profile.\n- **Old `name`:** King Hamlet\n- **New `name`:** new name"
+        self.assertEqual(self.get_last_message().content, expected_notification)
+
+        # Test full name change on bots
+        bot = self.example_user("default_bot")
+        req = dict(full_name=new_name)
+        initial_last_message = self.get_last_message()
+        result = self.client_patch(f"/json/users/{bot.id}", req)
+        self.assert_json_success(result)
+        bot = self.example_user("default_bot")
+        self.assertEqual(bot.full_name, new_name)
+
+        # Bots shouldn't receive any new messages regarding changes
+        self.assertEqual(self.get_last_message(), initial_last_message)
 
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login("hamlet")

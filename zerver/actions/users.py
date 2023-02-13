@@ -6,9 +6,12 @@ from typing import Any, Dict, List, Optional
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.invites import revoke_invites_generated_by_user
+from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
@@ -17,6 +20,7 @@ from zerver.lib.avatar import avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
+from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
@@ -40,6 +44,7 @@ from zerver.models import (
     get_bot_dicts_in_realm,
     get_bot_services,
     get_fake_email_domain,
+    get_system_bot,
     get_user_profile_by_id,
 )
 from zerver.tornado.django_api import send_event, send_event_on_commit
@@ -602,3 +607,45 @@ def get_owned_bot_dicts(
         }
         for botdict in result
     ]
+
+
+def notify_users_on_updated_user_profile(
+    acting_user: Optional[UserProfile],
+    recipient_user: UserProfile,
+    *,
+    old_full_name: Optional[str] = None,
+    new_full_name: Optional[str] = None,
+) -> None:
+    realm = recipient_user.realm
+    mention_backend = MentionBackend(realm.id)
+
+    notification = []
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+
+    if recipient_user.is_bot or acting_user == recipient_user:
+        return
+
+    with override_language(recipient_user.default_language):
+        message = _("The following updates have been made to your account.")
+        if acting_user is not None:
+            message = _("{user_full_name} has made the following changes to your profile.").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+            )
+        if old_full_name and new_full_name:
+            message += _(
+                "\n- **Old `name`:** {old_full_name}\n- **New `name`:** {new_full_name}"
+            ).format(
+                old_full_name=old_full_name,
+                new_full_name=new_full_name,
+            )
+
+    notification.append(
+        internal_prep_private_message(
+            sender=sender,
+            recipient_user=recipient_user,
+            content=message,
+            mention_backend=mention_backend,
+        )
+    )
+
+    do_send_messages(notification)
