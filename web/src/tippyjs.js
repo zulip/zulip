@@ -360,7 +360,10 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ["#api_key_button_container.disabled_setting_tooltip"],
+        target: [
+            "#api_key_button_container.disabled_setting_tooltip",
+            "#user_email_address_dropdown_container.disabled_setting_tooltip",
+        ],
         content: $t({
             defaultMessage: "You must configure your email to access this feature.",
         }),
