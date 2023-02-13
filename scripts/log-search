@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
 import argparse
+import calendar
 import gzip
 import logging
 import os
 import re
 import signal
 import sys
+from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import List, Match, Set, TextIO, Tuple
+from typing import List, Match, Optional, Set, TextIO, Tuple
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
@@ -91,6 +93,7 @@ def parser() -> argparse.ArgumentParser:
 
     output = parser.add_argument_group("Output")
     output.add_argument("--full-line", "-F", help="Show full matching line", action="store_true")
+    output.add_argument("--timeline", "-T", help="Show start, end, and gaps", action="store_true")
     return parser
 
 
@@ -178,6 +181,8 @@ def main() -> None:
 
     (filter_types, filter_funcs) = parse_filters(args)
     logfile_names = parse_logfile_names(args)
+    if args.timeline and args.nginx:
+        print("! nginx logs not suggested for timeline, due to imprecision", file=sys.stderr)
 
     use_color = sys.stdout.isatty()
     try:
@@ -342,24 +347,36 @@ def passes_filters(
         return not args.no_other
 
 
+last_match_end: Optional[datetime] = None
+month_lookup = {v: f"{k:02d}" for k, v in enumerate(calendar.month_abbr)}
+
+
 def print_line(
     match: Match[str],
     args: argparse.Namespace,
     filter_types: Set[FilterType],
+    use_color: bool,
 ) -> None:
+    global last_match_end
+
     if args.full_line:
         print(match.group(0))
         return
 
+    if args.nginx:
+        day_of_month, month_abbr, year = match["date"].split("/")
+        date = f"{year}-{month_lookup[month_abbr]}-{day_of_month}"
+    else:
+        date = match["date"]
     if args.all_logs or args.log_files is not None and args.log_files > 1:
-        ts = match["date"] + ":" + match["time"]
+        ts = date + " " + match["time"]
     else:
         ts = match["time"]
 
     if match["duration"].endswith("ms"):
-        duration = match["duration"][:-2]
+        duration_ms = int(match["duration"][:-2])
     else:
-        duration = str(int(float(match["duration"][:-1]) * 1000))
+        duration_ms = int(float(match["duration"][:-1]) * 1000)
 
     code = int(match["code"])
     indicator = " "
@@ -400,9 +417,30 @@ def print_line(
     if not args.nginx and match["user_id"] is not None:
         user_id = match["user_id"] + "@"
 
+    if args.timeline:
+        logline_end = datetime.fromisoformat(date + " " + match["time"])
+        logline_start = logline_end - timedelta(milliseconds=duration_ms)
+        if last_match_end is not None:
+            gap_ms = int((logline_start - last_match_end) / timedelta(milliseconds=1))
+            if gap_ms > 5000:
+                print()
+                print(f"========== {int(gap_ms/1000):>4} second gap ==========")
+                print()
+            elif gap_ms > 1000:
+                print(f"============ {gap_ms:>5}ms gap ============")
+            elif gap_ms > 0:
+                print(f"------------ {gap_ms:>5}ms gap ------------")
+            else:
+                print(f"!!!!!!!!!! {abs(gap_ms):>5}ms overlap !!!!!!!!!!")
+        if args.all_logs or args.log_files is not None and args.log_files > 1:
+            print(logline_start.isoformat(" ", timespec="milliseconds") + " (start)")
+        else:
+            print(logline_start.time().isoformat(timespec="milliseconds") + " (start)")
+        last_match_end = logline_end
+
     parts = [
         ts,
-        f"{duration:>5}ms",
+        f"{duration_ms:>5}ms",
         f"{user_id:7}" if not args.nginx and FilterType.USER_ID not in filter_types else None,
         f"{match['ip']:39}" if FilterType.CLIENT_IP not in filter_types else None,
         indicator + match["code"],
