@@ -317,3 +317,17 @@ run_test("user_can_create_web_public_streams", () => {
     page_params.is_moderator = false;
     assert.equal(settings_data.user_can_create_web_public_streams(), false);
 });
+
+run_test("user_email_not_configured", () => {
+    const user_email_not_configured = settings_data.user_email_not_configured;
+
+    page_params.is_owner = false;
+    assert.equal(user_email_not_configured(), false);
+
+    page_params.is_owner = true;
+    page_params.delivery_email = "";
+    assert.equal(user_email_not_configured(), true);
+
+    page_params.delivery_email = "name@example.com";
+    assert.equal(user_email_not_configured(), false);
+});
