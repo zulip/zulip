@@ -132,6 +132,9 @@ LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
 SENTRY_DSN: Optional[str] = None
+SENTRY_FRONTEND_DSN: Optional[str] = None
+SENTRY_FRONTEND_SAMPLE_RATE: float = 1.0
+SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 
 # File uploads and avatars
 # TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.

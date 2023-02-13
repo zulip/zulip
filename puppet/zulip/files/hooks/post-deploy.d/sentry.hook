@@ -20,8 +20,10 @@ if ! SENTRY_ORG=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
     exit 0
 fi
 
-if ! SENTRY_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry project); then
-    echo "sentry: No project set!  Set sentry.project in /etc/zulip/zulip.conf"
+SENTRY_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry project)
+SENTRY_FRONTEND_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry frontend_project)
+if [ -z "$SENTRY_PROJECT" ] && [ -z "$SENTRY_FRONTEND_PROJECT" ]; then
+    echo "sentry: No project set!  Set sentry.project and/or sentry.frontend_project in /etc/zulip/zulip.conf"
     exit 0
 fi
 
