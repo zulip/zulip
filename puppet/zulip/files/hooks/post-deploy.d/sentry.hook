@@ -42,9 +42,9 @@ ENVIRONMENT=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || echo "d
 echo "sentry: Adding deploy of '$ENVIRONMENT' and finalizing release"
 
 export SENTRY_AUTH_TOKEN
-sentry-cli releases --org="$SENTRY_ORG" --project="$SENTRY_PROJECT" deploys "$SENTRY_RELEASE" new \
+sentry-cli releases --org="$SENTRY_ORG" deploys "$SENTRY_RELEASE" new \
     --env "$ENVIRONMENT" \
     --started "$(stat -c %Y ./sentry-release)" \
     --finished "$(date +%s)" \
     --name "$(hostname --fqdn)"
-sentry-cli releases --org="$SENTRY_ORG" --project="$SENTRY_PROJECT" finalize "$SENTRY_RELEASE"
+sentry-cli releases --org="$SENTRY_ORG" finalize "$SENTRY_RELEASE"
