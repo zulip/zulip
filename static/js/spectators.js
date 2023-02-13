@@ -22,7 +22,7 @@ export function login_to_access(empty_narrow) {
 
     $("body").append(
         render_login_to_access_modal({
-            signup_link: "/register",
+            signup_link: "/register/",
             login_link,
             empty_narrow,
             realm_name,
