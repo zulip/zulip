@@ -5,7 +5,20 @@
 make remote work productive and delightful. Fortune 500 companies, [leading open
 source projects][rust-case-study], and thousands of other organizations use
 Zulip every day. Zulip is the only [modern team chat app][features] that is
-designed for both live and asynchronous conversations.
+designed for both live and asynchronous conversations. 
+Zulip can be integrated with multiple tools such as Github, Google Calendar and Trello making it a great solution for both small and large businesses. Different real-world use cases of Zulip include:
+- Faciliating daily-stand ups and collaborations for a software team
+- Helping a marketing team coordinate events, and create campaings
+- Handling customer service requests, increasing the productivity output for the customer service team
+
+# Zulip features
+
+- Streams: Zulip facilitates and organizes convesations into streams
+- Multi-platform support: Zulip can be used on multiple devices, with great user experience across the platforms
+- Integration: Zulip can improve the workflow of a project by integrating with other vital features
+- Code Syntax Help: Zulip helps developers job easier by helping with the code syntax and emphasizing the code, making a team technical discussions easier to foloow
+- File Sharing: Zulip makes it easy to share important files securely with the team
+
 
 Zulip is built by a distributed community of developers from all around the
 world, with 74+ people who have each contributed 100+ commits. With
