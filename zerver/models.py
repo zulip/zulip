@@ -1612,13 +1612,16 @@ class UserBaseSettings(models.Model):
     email_address_visibility = models.PositiveSmallIntegerField(
         default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
     )
-    EMAIL_ADDRESS_VISIBILITY_TYPES = [
-        EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-        EMAIL_ADDRESS_VISIBILITY_MEMBERS,
-        EMAIL_ADDRESS_VISIBILITY_ADMINS,
-        EMAIL_ADDRESS_VISIBILITY_NOBODY,
-        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-    ]
+
+    EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP = {
+        EMAIL_ADDRESS_VISIBILITY_EVERYONE: gettext_lazy("Admins, moderators, members and guests"),
+        EMAIL_ADDRESS_VISIBILITY_MEMBERS: gettext_lazy("Admins, moderators and members"),
+        EMAIL_ADDRESS_VISIBILITY_MODERATORS: gettext_lazy("Admins and moderators"),
+        EMAIL_ADDRESS_VISIBILITY_ADMINS: gettext_lazy("Admins only"),
+        EMAIL_ADDRESS_VISIBILITY_NOBODY: gettext_lazy("Nobody"),
+    }
+
+    EMAIL_ADDRESS_VISIBILITY_TYPES = list(EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.keys())
 
     display_settings_legacy = dict(
         # Don't add anything new to this legacy dict.

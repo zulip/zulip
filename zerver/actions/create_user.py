@@ -390,6 +390,7 @@ def do_create_user(
     *,
     acting_user: Optional[UserProfile],
     enable_marketing_emails: bool = True,
+    email_address_visibility: Optional[int] = None,
 ) -> UserProfile:
     with transaction.atomic():
         user_profile = create_user(
@@ -409,6 +410,7 @@ def do_create_user(
             default_all_public_streams=default_all_public_streams,
             source_profile=source_profile,
             enable_marketing_emails=enable_marketing_emails,
+            email_address_visibility=email_address_visibility,
         )
 
         event_time = user_profile.date_joined
