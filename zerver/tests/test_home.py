@@ -2,7 +2,7 @@ import calendar
 import datetime
 import urllib
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict
 from unittest.mock import patch
 
 import orjson
@@ -198,6 +198,7 @@ class HomeTest(ZulipTestCase):
         "server_needs_upgrade",
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
+        "server_sentry_dsn",
         "server_timestamp",
         "server_web_public_streams_enabled",
         "settings_send_digest_emails",
@@ -355,6 +356,7 @@ class HomeTest(ZulipTestCase):
             "realm_rendered_description",
             "request_language",
             "search_pills_enabled",
+            "server_sentry_dsn",
             "show_billing",
             "show_plans",
             "show_webathena",
@@ -366,6 +368,49 @@ class HomeTest(ZulipTestCase):
             "webpack_public_path",
         ]
         self.assertEqual(actual_keys, expected_keys)
+
+    def test_sentry_keys(self) -> None:
+        def home_params() -> Dict[str, Any]:
+            result = self._get_home_page()
+            self.assertEqual(result.status_code, 200)
+            return self._get_page_params(result)
+
+        self.login("hamlet")
+        page_params = home_params()
+        self.assertEqual(page_params["server_sentry_dsn"], None)
+        self.assertEqual(
+            [], [key for key in page_params if key != "server_sentry_dsn" and "sentry" in key]
+        )
+
+        with self.settings(SENTRY_FRONTEND_DSN="https://aaa@bbb.ingest.sentry.io/1234"):
+            page_params = home_params()
+            self.assertEqual(
+                page_params["server_sentry_dsn"], "https://aaa@bbb.ingest.sentry.io/1234"
+            )
+            self.assertEqual(page_params["realm_sentry_key"], "zulip")
+            self.assertEqual(page_params["server_sentry_environment"], "development")
+            self.assertEqual(page_params["server_sentry_sample_rate"], 1.0)
+            self.assertEqual(page_params["server_sentry_trace_rate"], 0.1)
+
+        # Make sure these still exist for logged-out users as well
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
+        self.logout()
+        page_params = home_params()
+        self.assertEqual(page_params["server_sentry_dsn"], None)
+        self.assertEqual(
+            [], [key for key in page_params if key != "server_sentry_dsn" and "sentry" in key]
+        )
+
+        with self.settings(SENTRY_FRONTEND_DSN="https://aaa@bbb.ingest.sentry.io/1234"):
+            page_params = home_params()
+            self.assertEqual(
+                page_params["server_sentry_dsn"], "https://aaa@bbb.ingest.sentry.io/1234"
+            )
+            self.assertEqual(page_params["realm_sentry_key"], "zulip")
+            self.assertEqual(page_params["server_sentry_environment"], "development")
+            self.assertEqual(page_params["server_sentry_sample_rate"], 1.0)
+            self.assertEqual(page_params["server_sentry_trace_rate"], 0.1)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
