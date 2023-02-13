@@ -1216,7 +1216,7 @@ export function initialize() {
         filters = new Set(ls.get(ls_key));
     }
 
-    $("#recent_topics_table").on("click", ".participant_profile", function (e) {
+    $("body").on("click", "#recent_topics_table .participant_profile", function (e) {
         const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
         e.stopPropagation();
         const user = people.get_by_user_id(participant_user_id);
