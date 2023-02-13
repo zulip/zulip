@@ -174,7 +174,8 @@ h3,
 #change_email_button,
 #user_deactivate_account_button,
 .deactivate_realm_button,
-#api_key_button {
+#api_key_button,
+#user_email_address_visibility {
     &:disabled {
         pointer-events: none;
     }
