@@ -115,6 +115,15 @@ class RegistrationForm(forms.Form):
     realm_type = forms.IntegerField(required=False)
     is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
+    email_address_visibility = forms.TypedChoiceField(
+        required=False,
+        coerce=int,
+        empty_value=None,
+        choices=[
+            (value, name)
+            for value, name in UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()
+        ],
+    )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we

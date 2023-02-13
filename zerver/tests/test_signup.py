@@ -4291,6 +4291,45 @@ class UserSignUpTest(InviteUserBase):
             user_profile.twenty_four_hour_time, realm_user_default.twenty_four_hour_time
         )
 
+    def test_email_address_visibility_for_new_user(self) -> None:
+        email = self.nonreg_email("newguy")
+        password = "newpassword"
+        realm = get_realm("zulip")
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(
+            realm_user_default.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
+
+        result = self.client_post("/accounts/home/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        # Pick a password and agree to the ToS.
+        result = self.submit_reg_form_for_user(
+            email, password, email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+        self.assertEqual(result.status_code, 302)
+
+        # Realm-level default is overridden by the value passed during signup.
+        user_profile = self.nonreg_user("newguy")
+        self.assertEqual(
+            user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+        from django.core.mail import outbox
+
+        outbox.pop()
+
     def test_signup_already_active(self) -> None:
         """
         Check if signing up with an active email redirects to a login page.
@@ -4668,9 +4707,10 @@ class UserSignUpTest(InviteUserBase):
             password,
             source_realm_id=str(hamlet_in_zulip.realm.id),
             HTTP_HOST=subdomain + ".testserver",
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         )
 
-        hamlet_in_lear = get_user(email, lear_realm)
+        hamlet_in_lear = get_user_by_delivery_email(email, lear_realm)
         self.assertEqual(hamlet_in_lear.left_side_userlist, True)
         self.assertEqual(hamlet_in_lear.default_language, "de")
         self.assertEqual(hamlet_in_lear.emojiset, "twitter")
@@ -4679,7 +4719,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(hamlet_in_lear.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet_in_lear.tutorial_status, UserProfile.TUTORIAL_FINISHED)
         self.assertEqual(
-            hamlet_in_lear.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            hamlet_in_lear.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
 
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)

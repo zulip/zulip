@@ -755,6 +755,7 @@ Output:
         key: Optional[str] = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         enable_marketing_emails: Optional[bool] = None,
+        email_address_visibility: Optional[int] = None,
         is_demo_organization: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -783,6 +784,8 @@ Output:
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
+        if email_address_visibility is not None:
+            payload["email_address_visibility"] = email_address_visibility
         if password is not None:
             payload["password"] = password
         if realm_in_root_domain is not None:

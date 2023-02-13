@@ -350,6 +350,7 @@ def accounts_register(
 
         full_name = form.cleaned_data["full_name"]
         enable_marketing_emails = form.cleaned_data["enable_marketing_emails"]
+        email_address_visibility = form.cleaned_data["email_address_visibility"]
         default_stream_group_names = request.POST.getlist("default_stream_group")
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
@@ -464,6 +465,7 @@ def accounts_register(
                 realm_creation=realm_creation,
                 acting_user=None,
                 enable_marketing_emails=enable_marketing_emails,
+                email_address_visibility=email_address_visibility,
             )
 
         if realm_creation:
