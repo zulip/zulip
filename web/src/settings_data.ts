@@ -198,3 +198,10 @@ export function using_dark_theme(): boolean {
     }
     return false;
 }
+
+export function user_email_not_configured(): boolean {
+    // The following should also be true in the only circumstance
+    // under which we expect this condition to be possible:
+    // page_params.demo_organization_scheduled_deletion_date
+    return page_params.is_owner && page_params.delivery_email === "";
+}
