@@ -179,6 +179,7 @@ def main() -> None:
     (filter_types, filter_funcs) = parse_filters(args)
     logfile_names = parse_logfile_names(args)
 
+    use_color = sys.stdout.isatty()
     try:
         for logfile_name in reversed(logfile_names):
             with maybe_gzip(logfile_name) as logfile:
@@ -203,6 +204,7 @@ def main() -> None:
                             match,
                             args,
                             filter_types=filter_types,
+                            use_color=use_color,
                         )
     except KeyboardInterrupt:
         sys.exit(signal.SIGINT + 128)
@@ -374,7 +376,13 @@ def print_line(
     elif code >= 500 and code <= 599:
         indicator = "!"
         color = FAIL
-    url = f"{BOLD}{match['path']}"
+
+    if use_color:
+        url = f"{BOLD}{match['path']}"
+    else:
+        url = match["path"]
+        color = ""
+
     if FilterType.HOSTNAME not in filter_types:
         hostname = match["hostname"]
         if hostname is None:
@@ -402,7 +410,7 @@ def print_line(
         url,
     ]
 
-    print(color + " ".join([p for p in parts if p is not None]) + ENDC)
+    print(color + " ".join([p for p in parts if p is not None]) + ENDC if use_color else "")
 
 
 if __name__ == "__main__":
