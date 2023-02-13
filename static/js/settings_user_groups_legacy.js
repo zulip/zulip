@@ -10,9 +10,11 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
@@ -34,6 +36,49 @@ export function reload() {
     const $user_groups_section = $("#user-groups").expectOne();
     $user_groups_section.empty();
     populate_user_groups();
+}
+
+export function update_user_groups_settings_tip() {
+    if (!overlays.settings_open()) {
+        return;
+    }
+
+    if (!page_params.is_admin && settings_data.user_can_edit_user_groups()) {
+        $(".user-group-settings-tip").hide();
+        return;
+    }
+
+    const user_group_policy_options = settings_config.common_policy_values;
+    let user_group_tip_text;
+
+    switch (page_params.realm_user_group_edit_policy) {
+        case user_group_policy_options.by_admins_only.code:
+            user_group_tip_text = $t({
+                defaultMessage:
+                    "Only organization administrators can modify user groups in this organization.",
+            });
+            break;
+        case user_group_policy_options.by_moderators_only.code:
+            user_group_tip_text = $t({
+                defaultMessage:
+                    "Only organization administrators and moderators can modify user groups in this organization.",
+            });
+            break;
+        case user_group_policy_options.by_full_members.code:
+            user_group_tip_text = $t({
+                defaultMessage:
+                    "Only full members belonging to the group, organization administrators and moderators can modify a group.",
+            });
+            break;
+        case user_group_policy_options.by_members.code:
+            user_group_tip_text = $t({
+                defaultMessage:
+                    "Only group members, organization administrators and moderators can modify a group.",
+            });
+            break;
+    }
+    $(".user-group-settings-tip").show();
+    $(".user-group-settings-tip").text(user_group_tip_text);
 }
 
 export function can_edit(group_id) {
@@ -298,6 +343,7 @@ export function populate_user_groups() {
             });
         }
     }
+    update_user_groups_settings_tip();
 }
 
 export function add_user_group(e) {
