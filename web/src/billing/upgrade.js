@@ -6,6 +6,7 @@ import * as helpers from "./helpers";
 
 export const initialize = () => {
     helpers.set_tab("upgrade");
+    helpers.set_sponsorship_form();
     $("#add-card-button").on("click", (e) => {
         const license_management = $("input[type=radio][name=license_management]:checked").val();
         if (
@@ -33,16 +34,6 @@ export const initialize = () => {
         e.preventDefault();
         helpers.create_ajax_request("/json/billing/upgrade", "invoice", [], "POST", () =>
             window.location.replace("/billing/"),
-        );
-    });
-
-    $("#sponsorship-button").on("click", (e) => {
-        if (!helpers.is_valid_input($("#sponsorship-form"))) {
-            return;
-        }
-        e.preventDefault();
-        helpers.create_ajax_request("/json/billing/sponsorship", "sponsorship", [], "POST", () =>
-            window.location.replace("/"),
         );
     });
 

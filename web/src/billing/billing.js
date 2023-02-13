@@ -14,6 +14,7 @@ export function create_update_license_request() {
 
 export function initialize() {
     helpers.set_tab("billing");
+    helpers.set_sponsorship_form();
 
     $("#update-card-button").on("click", (e) => {
         const success_callback = (response) => {

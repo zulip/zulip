@@ -1,0 +1,51 @@
+<div class="tab-pane" id="sponsorship">
+    <div id="sponsorship-error" class="alert alert-danger"></div>
+    <div id="sponsorship-input-section">
+        <form id="sponsorship-form" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+            <label>
+                <h4>Organization type</h4>
+            </label>
+            <select name="organization-type" class="bootstrap-focus-style">
+                {% for org_type in sorted_org_types %}
+                    {% if not org_type[1].hidden %}
+                    <option data-string-value="{{ org_type[0] }}"
+                      {% if org_type[1].id == realm_org_type %}selected{% endif %}
+                      value="{{ org_type[1].id }}">
+                        {{ _(org_type[1].name) }}
+                    </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <br />
+            <label>
+                <h4>Organization website</h4>
+            </label>
+            <input name="website" type="text" class="input-large" placeholder="{{ _('Leave blank if your organization does not have a website.') }}"/>
+            <label>
+                <h4>Describe your organization briefly</h4>
+            </label>
+            <textarea name="description" cols="100" rows="5" required></textarea>
+            <br />
+            <p id="sponsorship-discount-details"></p>
+            <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
+            <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
+    <div id="sponsorship-loading">
+        <div class="zulip-loading-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                <circle cx="386.56" cy="386.56" r="386.56"/>
+                <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+            </svg>
+        </div>
+        <div id="sponsorship_loading_indicator"></div>
+    </div>
+    <div id="sponsorship-success" class="alert alert-info">
+        Request received! The page will now reload.
+    </div>
+</div>
