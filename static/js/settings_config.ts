@@ -123,11 +123,10 @@ export const email_address_visibility_values = {
         code: 1,
         description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
-    // // Backend support for this configuration is not available yet.
-    // admins_and_members: {
-    //     code: 2,
-    //     description: $t({defaultMessage: "Members and admins"}),
-    // },
+    members: {
+        code: 2,
+        description: $t({defaultMessage: "Admins, moderators and members"}),
+    },
     moderators: {
         code: 5,
         description: $t({defaultMessage: "Admins and moderators"}),

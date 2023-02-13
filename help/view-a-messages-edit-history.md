@@ -38,5 +38,5 @@ Organization administrators can
 
 ## Related articles
 
-* [Restrict message editing and deletion](/help/configure-message-editing-and-deletion)
+* [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)
 * [Disable message edit history](/help/disable-message-edit-history)

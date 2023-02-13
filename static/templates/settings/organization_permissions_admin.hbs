@@ -81,14 +81,6 @@
                   is_checked=realm_avatar_changes_disabled
                   label=admin_settings_label.realm_avatar_changes_disabled}}
             </div>
-            <div class="input-group">
-                <label for="realm_email_address_visibility">{{t "Who can access user email addresses" }}
-                    {{> ../help_link_widget link="/help/restrict-visibility-of-email-addresses" }}
-                </label>
-                <select name="realm_email_address_visibility" class="setting-widget prop-element bootstrap-focus-style" id="id_realm_email_address_visibility" data-setting-widget-type="number">
-                    {{> dropdown_options_widget option_values=email_address_visibility_values}}
-                </select>
-            </div>
         </div>
 
         <div id="org-stream-permissions" class="settings-subsection-parent">
@@ -143,7 +135,7 @@
         <div id="org-msg-editing" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message editing" }}
-                    {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
+                    {{> ../help_link_widget link="/help/restrict-message-editing-and-deletion" }}
                 </h3>
                 {{> settings_save_discard_widget section_name="msg-editing" }}
             </div>
@@ -185,7 +177,7 @@
         <div id="org-moving-msgs" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Moving messages" }}
-                    {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
+                    {{> ../help_link_widget link="/help/restrict-message-editing-and-deletion" }}
                 </h3>
                 {{> settings_save_discard_widget section_name="moving-msgs" }}
             </div>

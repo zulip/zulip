@@ -78,6 +78,15 @@
                   help_link="/help/status-and-availability"
                   prefix="user_"}}
             </div>
+            <div class="input-group">
+                <label for="email_address_visibility" class="dropdown-title">{{t "Who can access your email address" }}
+                    {{> ../help_link_widget link="/help/configure-email-visibility" }}
+                </label>
+                <select name="email_address_visibility" class="email_address_visibility prop-element bootstrap-focus-style" data-setting-widget-type="number"
+                  id="user_email_address_visibility">
+                    {{> dropdown_options_widget option_values=email_address_visibility_values}}
+                </select>
+            </div>
         </div>
 
         <hr class="settings_separator" />

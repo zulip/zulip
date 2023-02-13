@@ -34,6 +34,7 @@ from zerver.lib.message import (
     get_starred_message_ids,
     remove_message_id_from_unread_mgs,
 )
+from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -48,7 +49,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
-from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
@@ -767,6 +767,14 @@ def apply_event(
 
         if event["op"] == "add":
             person = copy.deepcopy(person)
+
+            if client_gravatar:
+                email_address_visibility = UserProfile.objects.get(
+                    id=person_user_id
+                ).email_address_visibility
+                if email_address_visibility != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+                    client_gravatar = False
+
             if client_gravatar and person["avatar_url"].startswith("https://secure.gravatar.com/"):
                 person["avatar_url"] = None
             person["is_active"] = True
@@ -856,17 +864,27 @@ def apply_event(
                     if not was_admin and now_admin:
                         state["realm_bots"] = get_owned_bot_dicts(user_profile)
 
-            if (
-                client_gravatar
-                and "avatar_url" in person
-                # Respect the client_gravatar setting in the `users` data.
-                and person["avatar_url"].startswith("https://secure.gravatar.com/")
-            ):
-                person["avatar_url"] = None
-                person["avatar_url_medium"] = None
-
             if person_user_id in state["raw_users"]:
                 p = state["raw_users"][person_user_id]
+
+                if "avatar_url" in person:
+                    # Respect the client_gravatar setting in the `users` data.
+                    if client_gravatar:
+                        email_address_visibility = UserProfile.objects.get(
+                            id=person_user_id
+                        ).email_address_visibility
+                        if (
+                            email_address_visibility
+                            != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+                        ):
+                            client_gravatar = False
+
+                    if client_gravatar and person["avatar_url"].startswith(
+                        "https://secure.gravatar.com/"
+                    ):
+                        person["avatar_url"] = None
+                        person["avatar_url_medium"] = None
+
                 for field in p:
                     if field in person:
                         p[field] = person[field]
@@ -1398,11 +1416,6 @@ def do_events_register(
     )
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
     user_settings_object = client_capabilities.get("user_settings_object", False)
-
-    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        # If real email addresses are not available to the user, their
-        # clients cannot compute gravatars, so we force-set it to false.
-        client_gravatar = False
 
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)

@@ -14,7 +14,7 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import NoReturn, Optional
+from typing import Literal, NoReturn, Optional
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -25,11 +25,13 @@ os.environ["LANGUAGE"] = "C.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
     assert_running_as_root,
     get_config,
     get_config_file,
     listening_publicly,
     parse_os_release,
+    parse_version_from,
     run_psql_as_postgres,
     start_arg_parser,
     su_to_zulip,
@@ -142,6 +144,15 @@ os.chdir(deploy_path)
 config_file = get_config_file()
 
 IS_SERVER_UP = True
+
+if args.from_git:
+    logging.info("Caching Zulip Git version...")
+    subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
+
+from version import ZULIP_VERSION as NEW_ZULIP_VERSION
+
+old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
+logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)
 
 
 # Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
@@ -349,8 +360,6 @@ elif args.from_git:
             logging.error("Try stopping the Zulip server (scripts/stop-server) and trying again.")
         sys.exit(1)
 
-    logging.info("Caching Zulip Git version...")
-    subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:
     # Since this doesn't do any actual work, it's likely safe to have
     # this run before we apply Puppet changes (saving a bit of downtime).
@@ -398,6 +407,13 @@ if not migrations_needed:
         ["./manage.py", "fill_memcached_caches", "--skip-checks"], preexec_fn=su_to_zulip
     )
 
+# Install hooks before we check for puppet changes, so we skip an
+# unnecessary stop/start cycle if hook changes are the only ones.
+logging.info("Installing hooks")
+subprocess.check_call(
+    ["./scripts/zulip-puppet-apply", "--tags", "hooks", "--force"],
+)
+
 # If we are planning on running puppet, we can pre-run it in --noop
 # mode and see if it will actually make any changes; if not, we can
 # skip it during the upgrade.  We omit this check if the server is
@@ -423,6 +439,19 @@ if not args.skip_puppet and IS_SERVER_UP:
         sys.exit(1)
 
 
+def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
+    # Updates to the above literal to add a new hook type should
+    # adjust puppet's `app_frontend_base.pp` as well.
+    path = f"/etc/zulip/hooks/{kind}.d"
+    if not os.path.exists(path):
+        return
+    for script_name in sorted(f for f in os.listdir(path) if f.endswith(".hook")):
+        subprocess.check_call(
+            [os.path.join(path, script_name), old_version, NEW_ZULIP_VERSION],
+            cwd=deploy_path,
+        )
+
+
 if args.skip_restart:
     logging.info("Successfully configured in %s!", deploy_path)
 else:
@@ -430,6 +459,8 @@ else:
     # shutting down the server; we should strive to minimize the number of
     # steps that happen between here and the "Restarting Zulip" line
     # below.
+
+    run_hooks("pre-deploy")
 
     if rabbitmq_dist_listen:
         shutdown_server()
@@ -481,6 +512,8 @@ else:
         subprocess.check_call(["./scripts/start-server", *start_args], preexec_fn=su_to_zulip)
 
     logging.info("Upgrade complete!")
+
+    run_hooks("post-deploy")
 
 if args.audit_fts_indexes:
     logging.info("Correcting full-text search indexes for updated dictionary files")

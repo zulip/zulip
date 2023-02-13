@@ -161,13 +161,13 @@ how to assign roles and permissions for a class.
 
 - Set [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations).
   (Recommended: Admins)
-- Set [who can access user email addresses](/help/restrict-visibility-of-email-addresses).
+- Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
 - Set [who can create streams](/help/configure-who-can-create-streams).
   (Recommended: Admins for public streams; Admins, moderators and members for private streams)
 - Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
   (Recommended: Admins and moderators)
-- Set [who can edit the topic of any message](/help/configure-who-can-edit-topics).
+- Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: (default) Members for small classes;
   Admins and moderators for large classes)
 - Set [who can move messages between streams][move-between-streams].
@@ -176,7 +176,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 
 [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
-[move-between-streams]: /help/configure-who-can-edit-topics#configure-who-can-move-messages-to-another-stream
+[move-between-streams]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream
 
 #### Recommended roles and permissions for a department
 
@@ -191,14 +191,14 @@ how to assign roles and permissions for a class.
 
 - Set [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations).
   (Recommended: Admins and moderators)
-- Set [who can access user email addresses](/help/restrict-visibility-of-email-addresses).
+- Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
 - Set [who can create streams](/help/configure-who-can-create-streams).
   (Recommended: Admins and moderators for public streams;
    Admins, moderators and members for private streams)
 - Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
   (Recommended: Admins and moderators)
-- Set [who can edit the topic of any message](/help/configure-who-can-edit-topics).
+- Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: Admins and moderators)
 - Set [who can move messages between streams][move-between-streams].
   (Recommended: Admins and moderators)

@@ -3,7 +3,7 @@
         <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">{{name}}</a>
         {{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
     </td>
-    {{#if show_email}}
+    {{#if email}}
     <td class="subscriber-email">{{email}}</td>
     {{else}}
     <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>

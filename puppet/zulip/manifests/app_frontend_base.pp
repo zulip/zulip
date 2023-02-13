@@ -5,6 +5,7 @@ class zulip::app_frontend_base {
   include zulip::sasl_modules
   include zulip::supervisor
   include zulip::tornado_sharding
+  include zulip::hooks::base
 
   if $::os['family'] == 'Debian' {
     # Upgrade and other tooling wants to be able to get a database

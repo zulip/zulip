@@ -296,13 +296,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__email_addresses_visibility: {
-        type: "realm",
-        op: "update",
-        property: "email_address_visibility",
-        value: 3,
-    },
-
     realm__update__emails_restricted_to_domains: {
         type: "realm",
         op: "update",
@@ -547,6 +540,7 @@ exports.fixtures = {
             profile_data: {},
             timezone: "America/New_York",
             date_joined: "2020-01-01",
+            delivery_email: "test-delivery@example.com",
         },
     },
 

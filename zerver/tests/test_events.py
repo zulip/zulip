@@ -189,6 +189,7 @@ from zerver.lib.events import (
 )
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import render_markdown
+from zerver.lib.muted_users import get_mute_object
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -200,7 +201,6 @@ from zerver.lib.test_helpers import (
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import create_user_group
-from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -527,6 +527,13 @@ class NormalActionsTest(BaseAction):
         )
         check_message("events[0]", events[0])
         assert isinstance(events[0]["message"]["avatar_url"], str)
+
+        do_change_user_setting(
+            self.example_user("hamlet"),
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
 
         events = self.verify_action(
             lambda: self.send_stream_message(
@@ -1160,10 +1167,11 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[2]", events[2])
 
     def test_register_events_email_address_visibility(self) -> None:
-        do_set_realm_property(
-            self.user_profile.realm,
+        realm_user_default = RealmUserDefault.objects.get(realm=self.user_profile.realm)
+        do_set_realm_user_default_setting(
+            realm_user_default,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 
@@ -1486,6 +1494,12 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[0]["person"]["avatar_url"], str)
         assert isinstance(events[0]["person"]["avatar_url_medium"], str)
 
+        do_change_user_setting(
+            self.user_profile,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=self.user_profile,
+        )
         events = self.verify_action(
             lambda: do_change_avatar_fields(
                 self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=self.user_profile
@@ -1501,11 +1515,11 @@ class NormalActionsTest(BaseAction):
         )
         check_realm_user_update("events[0]", events[0], "full_name")
 
-    def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
-        do_set_realm_property(
-            self.user_profile.realm,
+    def test_change_user_delivery_email_email_address_visibilty_admins(self) -> None:
+        do_change_user_setting(
+            self.user_profile,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         # Important: We need to refresh from the database here so that
@@ -1521,10 +1535,10 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[1]["person"]["avatar_url_medium"], str)
 
     def test_change_user_delivery_email_email_address_visibility_everyone(self) -> None:
-        do_set_realm_property(
-            self.user_profile.realm,
+        do_change_user_setting(
+            self.user_profile,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         # Important: We need to refresh from the database here so that
@@ -2588,7 +2602,6 @@ class RealmPropertyActionTest(BaseAction):
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
@@ -2631,12 +2644,6 @@ class RealmPropertyActionTest(BaseAction):
             state_change_expected = True
             old_value = vals[count]
             num_events = 1
-            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
-                old_value,
-                val,
-            ]:
-                # email update event is sent for each user.
-                num_events = 11
 
             events = self.verify_action(
                 lambda: do_set_realm_property(
@@ -2672,12 +2679,6 @@ class RealmPropertyActionTest(BaseAction):
             else:
                 check_realm_update("events[0]", events[0], name)
 
-            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
-                old_value,
-                val,
-            ]:
-                check_realm_user_update("events[1]", events[1], "email")
-
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
@@ -2694,6 +2695,7 @@ class RealmPropertyActionTest(BaseAction):
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -2766,6 +2768,7 @@ class UserDisplayActionTest(BaseAction):
             demote_inactive_streams=[2, 3, 1],
             user_list_style=[1, 2, 3],
             color_scheme=[2, 3, 1],
+            email_address_visibility=[5, 4, 1, 2, 3],
         )
 
         user_settings_object = True
@@ -2794,6 +2797,19 @@ class UserDisplayActionTest(BaseAction):
             raise AssertionError(f"No test created for {setting_name}")
 
         for value in values:
+            if setting_name == "email_address_visibility":
+                # When "email_address_visibility" setting is changed, there is at least
+                # one event with type "user_settings" sent to the modified user itself.
+                num_events = 1
+
+                old_value = getattr(self.user_profile, setting_name)
+                if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [old_value, value]:
+                    # In case when either the old value or new value of setting is
+                    # UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE, "email" field of
+                    # UserProfile object is updated and thus two additional events, for
+                    # changing email and avatar_url field, are sent.
+                    num_events = 3
+
             events = self.verify_action(
                 lambda: do_change_user_setting(
                     self.user_profile, setting_name, value, acting_user=self.user_profile
@@ -2831,6 +2847,40 @@ class UserDisplayActionTest(BaseAction):
             check_user_settings_update("events[0]", events[0])
             check_update_display_settings("events[1]", events[1])
             check_realm_user_update("events[2]", events[2], "timezone")
+
+    def test_delivery_email_events_on_changing_email_address_visibility(self) -> None:
+        cordelia = self.example_user("cordelia")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        do_change_user_setting(
+            cordelia,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            acting_user=None,
+        )
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                cordelia,
+                "email_address_visibility",
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                acting_user=self.user_profile,
+            ),
+            user_settings_object=True,
+        )
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        self.assertIsNone(events[0]["person"]["delivery_email"])
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                cordelia,
+                "email_address_visibility",
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+                acting_user=self.user_profile,
+            ),
+            user_settings_object=True,
+        )
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        self.assertEqual(events[0]["person"]["delivery_email"], cordelia.delivery_email)
 
 
 class SubscribeActionTest(BaseAction):

@@ -16,14 +16,6 @@ const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
-const visibility = settings_config.email_address_visibility_values;
-const admins_only = visibility.admins_only.code;
-const everyone = visibility.everyone.code;
-
-function set_email_visibility(code) {
-    page_params.realm_email_address_visibility = code;
-}
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -57,7 +49,6 @@ function initialize() {
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
-    set_email_visibility(admins_only);
     muted_users.set_muted_users([]);
 }
 
@@ -1168,26 +1159,33 @@ test_people("matches_user_settings_search", () => {
     page_params.is_admin = true;
 
     assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
-    assert.equal(match({delivery_email: "bogus", email: "fred@example.com"}, "fr"), false);
+    assert.equal(
+        match(
+            {
+                delivery_email: "bogus",
+                email: "fred@example.com",
+            },
+            "fr",
+        ),
+        false,
+    );
 
-    set_email_visibility(everyone);
-    page_params.is_admin = false;
-    assert.equal(match({delivery_email: "fred@example.com"}, "fr"), false);
-    assert.equal(match({email: "fred@example.com"}, "fr"), true);
+    assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
+    assert.equal(match({email: "fred@example.com"}, "fr"), false);
 
     // test normal stuff
     assert.equal(match({email: "fred@example.com"}, "st"), false);
     assert.equal(match({full_name: "Fred Smith"}, "st"), false);
     assert.equal(match({full_name: "Joe Frederick"}, "st"), false);
 
-    assert.equal(match({email: "fred@example.com"}, "fr"), true);
+    assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
     assert.equal(match({full_name: "Fred Smith"}, "fr"), true);
     assert.equal(match({full_name: "Joe Frederick"}, "fr"), true);
 
     // test in-string matches...we may want not to be so liberal
     // here about matching, as it's noisy for large realms (who
     // need search the most)
-    assert.equal(match({email: "fred@example.com"}, "re"), true);
+    assert.equal(match({delivery_email: "fred@example.com"}, "re"), true);
     assert.equal(match({full_name: "Fred Smith"}, "re"), true);
     assert.equal(match({full_name: "Joe Frederick"}, "re"), true);
 });

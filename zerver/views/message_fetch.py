@@ -25,7 +25,7 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa
 from zerver.lib.utils import statsd
 from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
-from zerver.models import Realm, UserMessage, UserProfile
+from zerver.models import UserMessage, UserProfile
 
 MAX_MESSAGES_PER_FETCH = 5000
 
@@ -137,12 +137,10 @@ def get_messages_backend(
 
     assert realm is not None
 
-    if (
-        is_web_public_query
-        or realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-    ):
-        # If email addresses are only available to administrators,
-        # clients cannot compute gravatars, so we force-set it to false.
+    if is_web_public_query:
+        # client_gravatar here is just the user-requested value. "finalize_payload" function
+        # is responsible for sending avatar_url based on each individual sender's
+        # email_address_visibility setting.
         client_gravatar = False
 
     if narrow is not None:

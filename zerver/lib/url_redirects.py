@@ -21,6 +21,12 @@ POLICY_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
 
 HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     # Add URL redirects for help center documentation here:
+    URLRedirect("/help/configure-who-can-edit-topics", "/help/restrict-moving-messages"),
+    URLRedirect(
+        "/help/configure-message-editing-and-deletion",
+        "/help/restrict-message-editing-and-deletion",
+    ),
+    URLRedirect("/help/restrict-visibility-of-email-addresses", "/help/configure-email-visibility"),
     URLRedirect("/help/change-default-view", "/help/configure-default-view"),
     URLRedirect("/help/recent-topics", "/help/recent-conversations"),
     URLRedirect(
@@ -52,7 +58,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     # The `help/about-streams-and-topics` redirect is particularly important,
     # because the old URL appears in links from Welcome Bot messages.
     URLRedirect("/help/about-streams-and-topics", "/help/streams-and-topics"),
-    URLRedirect("/help/community-topic-edits", "/help/configure-who-can-edit-topics"),
+    URLRedirect("/help/community-topic-edits", "/help/restrict-moving-messages"),
     URLRedirect(
         "/help/only-allow-admins-to-add-emoji", "/help/custom-emoji#change-who-can-add-custom-emoji"
     ),

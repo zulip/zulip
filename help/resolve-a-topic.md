@@ -37,7 +37,7 @@ approaches for deciding when to mark a topic as resolved:
 
 Users can resolve and unresolve a topic if they have permission to edit
 topics. Organization administrators can [configure who can edit
-topics](/help/configure-who-can-edit-topics).
+topics](/help/restrict-moving-messages).
 
 ## Mark a topic as resolved
 
@@ -107,5 +107,5 @@ topics](/help/configure-who-can-edit-topics).
 
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Restrict topic editing](/help/configure-who-can-edit-topics)
+* [Restrict topic editing](/help/restrict-moving-messages)
 * [API documentation for resolving topics](/api/update-message)

@@ -1,0 +1,50 @@
+#!/usr/bin/bash
+# Arguments: OLD_COMMIT NEW_COMMIT ...where both are `git describe`
+# output or tag names.  The CWD will be the new deploy directory.
+
+set -e
+set -u
+
+if ! grep -q 'SENTRY_DSN' /etc/zulip/settings.py; then
+    echo "sentry: No DSN configured!  Set SENTRY_DSN in /etc/zulip/settings.py"
+    exit 0
+fi
+
+if ! SENTRY_AUTH_TOKEN=$(crudini --get /etc/zulip/zulip-secrets.conf secrets sentry_release_auth_token); then
+    echo "sentry: No release auth token set!  Set sentry_release_auth_token in /etc/zulip/zulip-secrets.conf"
+    exit 0
+fi
+
+if ! SENTRY_ORG=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
+    echo "sentry: No organization set!  Set sentry.organization in /etc/zulip/zulip.conf"
+    exit 0
+fi
+
+if ! SENTRY_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry project); then
+    echo "sentry: No project set!  Set setry.project in /etc/zulip/zulip.conf"
+    exit 0
+fi
+
+if ! which sentry-cli >/dev/null; then
+    echo "sentry: No sentry-cli installed!"
+    exit 0
+fi
+
+if ! [ -f ./sentry-release ]; then
+    echo "sentry: No Sentry sentry-release file found!"
+    exit 0
+fi
+
+SENTRY_RELEASE=$(cat ./sentry-release)
+
+ENVIRONMENT=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || echo "development")
+
+echo "sentry: Adding deploy of '$ENVIRONMENT' and finalizing release"
+
+export SENTRY_AUTH_TOKEN
+sentry-cli releases --org="$SENTRY_ORG" --project="$SENTRY_PROJECT" deploys "$SENTRY_RELEASE" new \
+    --env "$ENVIRONMENT" \
+    --started "$(stat -c %Y ./sentry-release)" \
+    --finished "$(date +%s)" \
+    --name "$(hostname --fqdn)"
+sentry-cli releases --org="$SENTRY_ORG" --project="$SENTRY_PROJECT" finalize "$SENTRY_RELEASE"

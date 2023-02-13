@@ -11,7 +11,7 @@ will automatically redirect to the new location of the message. [Muted
 topics](/help/mute-a-topic) are automatically migrated when an entire
 topic is moved.
 
-Organizations can [configure](/help/configure-who-can-edit-topics) which
+Organizations can [configure](/help/restrict-moving-messages) which
 [roles](/help/roles-and-permissions) have permission to modify topics.
 
 ## Move messages to another topic
@@ -37,4 +37,4 @@ Organizations can [configure](/help/configure-who-can-edit-topics) which
 
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another stream](/help/move-content-to-another-stream)
-* [Restrict moving messages](/help/configure-who-can-edit-topics)
+* [Restrict moving messages](/help/restrict-moving-messages)

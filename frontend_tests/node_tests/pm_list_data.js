@@ -214,23 +214,6 @@ test("get_active_user_ids_string", () => {
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 });
 
-function private_filter() {
-    return {
-        operands(operand) {
-            assert.equal(operand, "is");
-            return ["private", "starred"];
-        },
-    };
-}
-
-test("is_all_privates", () => {
-    assert.equal(narrow_state.filter(), undefined);
-    assert.equal(pm_list_data.is_all_privates(), false);
-
-    narrow_state.set_current_filter(private_filter());
-    assert.equal(pm_list_data.is_all_privates(), true);
-});
-
 test("get_list_info", ({override}) => {
     let list_info;
     assert.equal(narrow_state.filter(), undefined);

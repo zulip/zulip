@@ -85,6 +85,63 @@ running on the server; though installing alongside other applications
 is not recommended, we do have [some notes on the
 process](install-existing-server.md).
 
+## Deployment hooks
+
+Zulip's upgrades have a hook system which allows for arbitrary
+user-configured actions to run before and after an upgrade; see the
+[upgrading documentation](upgrade.md#deployment-hooks) for details on
+how to write your own.
+
+Zulip also provides and optional deploy hook for Sentry.
+
+### Sentry deploy hook
+
+Zulip can use its deploy hooks to create [Sentry
+releases][sentry-release], which can help associate Sentry [error
+logging][sentry-error] with specific releases. If you are deploying
+Zulip from Git, it can be aware of which Zulip commits are associated
+with the release, and help identify which commits might be relevant to
+an error.
+
+To do so:
+
+1. Enable [Sentry error logging][sentry-error].
+2. Add a new [internal Sentry integration][sentry-internal] named
+   "Release annotator".
+3. Grant the internal integration the [permissions][sentry-perms] of
+   "Admin" on "Release".
+4. Add `, zulip::hooks::sentry` to the `puppet_classes` line in `/etc/zulip/zulip.conf`
+5. Add a `[sentry]` section to `/etc/zulip/zulip.conf`:
+   ```ini
+   [sentry]
+   organization = your-organization-name
+   project = your-project-name
+   ```
+6. Add the [authentication token] for your internal Sentry integration
+   to your `/etc/zulip/zulip-secrets.conf`:
+   ```ini
+   # Replace with your own token, found in Sentry
+   sentry_release_auth_token = 6c12f890c1c864666e64ee9c959c4552b3de473a076815e7669f53793fa16afc
+   ```
+7. As root, run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.
+
+If you are deploying Zulip from Git, you will also need to:
+
+1. In your Zulip project, add the [GitHub integration][sentry-github].
+2. Configure the `zulip/zulip` GitHub project for your Sentry project.
+   You should do this even if you are deploying a private fork of
+   Zulip.
+3. Additionally grant the internal integration "Read & Write" on
+   "Organization"; this is necessary to associate the commits with the
+   release.
+
+[sentry-release]: https://docs.sentry.io/product/releases/
+[sentry-error]: ../subsystems/logging.md#sentry-error-logging
+[sentry-github]: https://docs.sentry.io/product/integrations/source-code-mgmt/github/
+[sentry-internal]: https://docs.sentry.io/product/integrations/integration-platform/internal-integration/
+[sentry-perms]: https://docs.sentry.io/product/integrations/integration-platform/#permissions
+[sentry-tokens]: https://docs.sentry.io/product/integrations/integration-platform/internal-integration#auth-tokens
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
@@ -838,3 +895,13 @@ Because Camo includes logic to deny access to private subnets, routing
 its requests through Smokescreen is generally not necessary. Set to
 true or false to override the default, which uses the proxy only if
 it is not the default of Smokescreen on a local host.
+
+### `[sentry]`
+
+#### `organization`
+
+The Sentry organization used for the [Sentry deploy hook](#sentry-deploy-hook).
+
+#### `project`
+
+The Sentry project used for the [Sentry deploy hook](#sentry-deploy-hook).

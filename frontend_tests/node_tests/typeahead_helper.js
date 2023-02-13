@@ -106,8 +106,6 @@ function test(label, f) {
         people.clear_recipient_counts_for_testing();
         page_params.is_admin = false;
         page_params.realm_is_zephyr_mirror_realm = false;
-        page_params.realm_email_address_visibility =
-            settings_config.email_address_visibility_values.admins_only.code;
 
         f(helpers);
     });
@@ -678,11 +676,11 @@ test("render_person when emails hidden", ({mock_template}) => {
 
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
-    page_params.is_admin = true;
+    a_user.delivery_email = "a_user_delivery@zulip.org";
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);
-        assert.equal(args.secondary, a_user.email);
+        assert.equal(args.secondary, a_user.delivery_email);
         rendered = true;
         return "typeahead-item-stub";
     });

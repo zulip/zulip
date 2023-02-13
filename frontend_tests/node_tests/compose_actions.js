@@ -40,9 +40,6 @@ mock_esm("../../static/js/recent_topics_util", {
 mock_esm("../../static/js/drafts", {
     update_draft: noop,
 });
-mock_esm("../../static/js/common", {
-    status_classes: "status_classes",
-});
 mock_esm("../../static/js/unread_ops", {
     notify_server_message_read: noop,
 });

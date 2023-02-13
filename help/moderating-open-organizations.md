@@ -23,7 +23,7 @@ problematic behavior:
   post](/help/stream-sending-policy).
 * Add a [waiting period](/help/restrict-permissions-of-new-members) before
   new users can take disruptive actions.
-* [Restrict visibility of email addresses](/help/restrict-visibility-of-email-addresses)
+* [Configure email visibility](/help/configure-email-visibility)
   to prevent off-platform spam.
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
   so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.

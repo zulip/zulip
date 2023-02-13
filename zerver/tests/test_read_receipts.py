@@ -5,8 +5,8 @@ from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
+from zerver.lib.muted_users import add_user_mute, get_mute_object
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_mutes import add_user_mute, get_mute_object
 from zerver.models import UserMessage, UserProfile
 
 

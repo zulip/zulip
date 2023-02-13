@@ -504,9 +504,13 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the delivery email of a user changes.
+                                        When the value of the user's delivery email as visible to you changes,
+                                        either due to the email address changing or your access to the user's
+                                        email via their `email_address_visibility` policy changing.
 
-                                        Note: This event is only visible to admins.
+                                        **Changes**: Prior to Zulip 7.0 (feature level 163), this event was
+                                        sent only to the affected user, and this event would only be triggered
+                                        by changing the affected user's delivery email.
                                       properties:
                                         user_id:
                                           type: integer
@@ -514,8 +518,17 @@ paths:
                                             The ID of the user affected by this change.
                                         delivery_email:
                                           type: string
+                                          nullable: true
                                           description: |
                                             The new delivery email of the user.
+
+                                            This value can be `None` if user changes the
+                                            `email_address_visibility` value such that
+                                            you cannot access user's real email.
+
+                                            **Changes**: As of Zulip 7.0 (feature level 163),
+                                            `None` is a possible value as this event is also
+                                            sent on changing `email_address_visibility` setting.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -557,10 +570,10 @@ paths:
                                       description: |
                                         When the Zulip display email address of a user changes,
                                         either due to the user's email address changing, or
-                                        due to changes in the organization's
+                                        due to changes in the user's
                                         [email address visibility][help-email-visibility].
 
-                                        [help-email-visibility]: /help/restrict-visibility-of-email-addresses
+                                        [help-email-visibility]: /help/configure-email-visibility
                                       properties:
                                         user_id:
                                           type: integer
@@ -3759,6 +3772,12 @@ paths:
                                 Unlike the simpler [realm/update](#realm-update) event format, this
                                 event type supports multiple properties being changed in a
                                 single event.
+
+                                **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
+                                It was replaced by a [user setting](/api/update-settings) with a
+                                [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
+                                values preserved. Clients can support all versions by supporting the current API and treating
+                                every user as having the realm's email address visibility value.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3803,7 +3822,7 @@ paths:
                                     allow_message_editing:
                                       type: boolean
                                       description: |
-                                        Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
+                                        Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
                                         allows editing the content of messages.
                                     authentication_methods:
                                       type: object
@@ -3826,7 +3845,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot have
                                         their topics edited by other users with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
+                                        [message edit policy](/help/restrict-message-editing-and-deletion).
 
                                         **Changes**: New in Zulip 3.0 (feature level 11). Previously this
                                         value was hardcoded to 86400 seconds (1 day).
@@ -3899,21 +3918,6 @@ paths:
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-                                    email_address_visibility:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for which users in this organization can see
-                                        the real email addresses of other users.
-
-                                        - 1 = Everyone
-                                        - 2 = Members only
-                                        - 3 = Administrators only
-                                        - 4 = Nobody (though note that administrators can change this setting)
-                                        - 5 = Moderators only
-
-                                        **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -4016,7 +4020,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be deleted
                                         with this organization's
-                                        [message deletion policy](/help/configure-message-editing-and-deletion).
+                                        [message deletion policy](/help/restrict-message-editing-and-deletion).
 
                                         Will not be 0. A 'null' value means no limit: messages can be deleted
                                         regardless of how long ago they were sent.
@@ -4029,7 +4033,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be edited
                                         with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
+                                        [message edit policy](/help/restrict-message-editing-and-deletion).
 
                                         **Changes**: No limit was represented using the
                                         special value `0` before Zulip 6.0 (feature level 138).
@@ -4039,7 +4043,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved within a
                                         stream by members with this organization's [message move
-                                        policy](/help/configure-who-can-edit-topics). This setting does not
+                                        policy](/help/restrict-moving-messages). This setting does not
                                         affect moderators and administrators.
 
                                         Will not be 0. A 'null' value means no limit: messages can be moved
@@ -4053,7 +4057,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved between
                                         streams by members with this organization's [message move
-                                        policy](/help/configure-who-can-edit-topics). This setting does not
+                                        policy](/help/restrict-moving-messages). This setting does not
                                         affect moderators and administrators.
 
                                         Will not be 0. A 'null' value means no limit: messages can be moved
@@ -6503,7 +6507,7 @@ paths:
         Before Zulip 7.0 (feature level 159), message senders were allowed
         to edit the topic indefinitely.
 
-        [config-message-editing]: /help/configure-message-editing-and-deletion
+        [config-message-editing]: /help/restrict-message-editing-and-deletion
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -7225,11 +7229,20 @@ paths:
                         example: 1
                       delivery_email:
                         type: string
+                        nullable: true
                         description: |
-                          The user's real email address. This field is present only if
-                          [email address visibility](/help/restrict-visibility-of-email-addresses) is
-                          limited and you are an administrator with access to real email addresses
-                          under the configured policy.
+                          The user's real email address. This value will be `None` if you cannot
+                          access this user's real email address. For bot users, this field is
+                          always set to the real email of the bot, because bot users always have
+                          `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+
+                          **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
+                          only when `email_address_visibility` was restricted and you had access to
+                          the user's real email. Now, this field is always present, including the case
+                          when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
+                          with the value being `None` if you don't have access to the user's real email.
+                          For bot users, this field is now always set to the real email irrespective of
+                          `email_address_visibility` setting.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
                     example:
@@ -9141,6 +9154,31 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: email_address_visibility
+          in: query
+          description: |
+            The [policy][permission-level] this user has selected for which other
+            users in this organization can see the real email address of this user.
+
+            - 1 = Everyone
+            - 2 = Members only
+            - 3 = Administrators only
+            - 4 = Nobody
+            - 5 = Moderators only
+
+            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            realm-level setting.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+          example: 1
       responses:
         "200":
           description: Success
@@ -9298,7 +9336,7 @@ paths:
 
         Note that this endpoint uses Zulip display emails addresses
         for organizations that have configured limited [email address
-        visibility](/help/restrict-visibility-of-email-addresses).
+        visibility](/help/configure-email-visibility).
 
         You can also fetch details on [all users in the organization](/api/get-users) or
         [by user ID](/api/get-user). Fetching by user ID is generally recommended
@@ -9864,6 +9902,12 @@ paths:
         if you need deeper details about how the Zulip event queue system
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
+
+        **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
+        It was replaced by a [user setting](/api/update-settings) with a
+        [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
+        values preserved. Clients can support all versions by supporting the current API and treating
+        every user as having the realm's email address visibility value.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -11096,6 +11140,8 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          email_address_visibility:
+                            $ref: "#/components/schemas/EmailAddressVisibility"
                       user_topics:
                         type: array
                         description: |
@@ -11907,23 +11953,6 @@ paths:
 
                           Whether the organization disallows disposable email
                           addresses.
-                      realm_email_address_visibility:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users in this organization can see
-                          the real email addresses of other users.
-
-                          - 1 = Everyone
-                          - 2 = Members only
-                          - 3 = Administrators only
-                          - 4 = Nobody (though note that administrators can change this setting)
-                          - 5 = Moderators only
-
-                          **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_email_changes_disabled:
                         type: boolean
                         description: |
@@ -12176,7 +12205,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be deleted
                           with this organization's
-                          [message deletion policy](/help/configure-message-editing-and-deletion).
+                          [message deletion policy](/help/restrict-message-editing-and-deletion).
 
                           Will not be 0. A 'null' value means no limit: messages can be deleted
                           regardless of how long ago they were sent.
@@ -12201,7 +12230,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
+                          Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
                           allows editing the content of messages.
                       realm_edit_topic_policy:
                         type: integer
@@ -12231,7 +12260,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be edited
                           with this organization's
-                          [message edit policy](/help/configure-message-editing-and-deletion).
+                          [message edit policy](/help/restrict-message-editing-and-deletion).
 
                           Will not be 0. A 'null' value means no limit: messages can be edited
                           regardless of how long ago they were sent.
@@ -12246,7 +12275,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be moved within a
                           stream by members with this organization's [message move
-                          policy](/help/configure-who-can-edit-topics). This setting does not
+                          policy](/help/restrict-moving-messages). This setting does not
                           affect moderators and administrators.
 
                           Will not be 0. A 'null' value means no limit: messages can be moved
@@ -12262,7 +12291,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be moved between
                           streams by members with this organization's [message move
-                          policy](/help/configure-who-can-edit-topics). This setting does not
+                          policy](/help/restrict-moving-messages). This setting does not
                           affect moderators and administrators.
 
                           Will not be 0. A 'null' value means no limit: messages can be moved
@@ -12277,7 +12306,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot have
                           their topics edited by other users with this organization's
-                          [message edit policy](/help/configure-message-editing-and-deletion).
+                          [message edit policy](/help/restrict-message-editing-and-deletion).
 
                           **Changes**: New in Zulip 3.0 (feature level 11). Previously this
                           value was hardcoded to 86400 seconds (1 day).
@@ -13044,6 +13073,8 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          email_address_visibility:
+                            $ref: "#/components/schemas/EmailAddressVisibility"
                       realm_users:
                         type: array
                         description: |
@@ -14176,6 +14207,31 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: email_address_visibility
+          in: query
+          description: |
+            The [policy][permission-level] this user has selected for which other
+            users in this organization can see the real email address of this user.
+
+            - 1 = Everyone
+            - 2 = Members only
+            - 3 = Administrators only
+            - 4 = Nobody
+            - 5 = Moderators only
+
+            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            realm-level setting.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+          example: 1
       responses:
         "200":
           description: Success
@@ -16345,6 +16401,22 @@ components:
             in the default stream group.
           items:
             $ref: "#/components/schemas/BasicStream"
+    EmailAddressVisibility:
+      type: integer
+      description: |
+        The [policy][permission-level] this user has selected for which other
+        users in this organization can see the real email address of this user.
+
+        - 1 = Everyone
+        - 2 = Members only
+        - 3 = Administrators only
+        - 4 = Nobody
+        - 5 = Moderators only
+
+        **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+        realm-level setting.
+
+        [permission-level]: /api/roles-and-permissions#permission-levels
     EmojiReaction:
       allOf:
         - $ref: "#/components/schemas/EmojiReactionBase"
@@ -16814,7 +16886,8 @@ components:
         - additionalProperties: false
           properties:
             user_id: {}
-            delivery_email: {}
+            delivery_email:
+              nullable: true
             email: {}
             full_name: {}
             date_joined: {}
@@ -16845,11 +16918,20 @@ components:
             The unique ID of the user.
         delivery_email:
           type: string
+          nullable: true
           description: |
-            The user's real email address. This field is present only if
-            [email address visibility](/help/restrict-visibility-of-email-addresses) is
-            limited and you are an administrator with access to real email addresses
-            under the configured policy.
+            The user's real email address. This value will be `None` if you cannot
+            access user's real email address. For bot users, this field is always
+            set to the real email of the bot, because bot users always have
+            `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+
+            **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
+            only when `email_address_visibility` was restricted and you had access to the
+            user's real email. Now, this field is always present, including the case when
+            `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
+            with the value being `None` if you don't have access the user's real email.
+            For bot users, this field is now always set to the real email irrespective of
+            `email_address_visibility` setting.
         email:
           type: string
           description: |

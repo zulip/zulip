@@ -91,6 +91,8 @@ def create_user_profile(
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
     force_id: Optional[int] = None,
     force_date_joined: Optional[datetime] = None,
+    *,
+    email_address_visibility: int,
 ) -> UserProfile:
     if force_date_joined is None:
         date_joined = timezone_now()
@@ -120,6 +122,7 @@ def create_user_profile(
         onboarding_steps=orjson.dumps([]).decode(),
         default_language=default_language,
         delivery_email=email,
+        email_address_visibility=email_address_visibility,
         **extra_kwargs,
     )
     if bot_type or not active:
@@ -154,6 +157,14 @@ def create_user(
     force_date_joined: Optional[datetime] = None,
     enable_marketing_emails: Optional[bool] = None,
 ) -> UserProfile:
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    if bot_type is None:
+        email_address_visibility = realm_user_default.email_address_visibility
+    else:
+        # There is no privacy motivation for limiting access to bot email addresses,
+        # so we hardcode them to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+        email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+
     user_profile = create_user_profile(
         realm,
         email,
@@ -168,6 +179,7 @@ def create_user(
         default_language,
         force_id=force_id,
         force_date_joined=force_date_joined,
+        email_address_visibility=email_address_visibility,
     )
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
@@ -189,7 +201,6 @@ def create_user(
         # save is not required.
         copy_default_settings(source_profile, user_profile)
     elif bot_type is None:
-        realm_user_default = RealmUserDefault.objects.get(realm=realm)
         copy_default_settings(realm_user_default, user_profile)
     else:
         # This will be executed only for bots.

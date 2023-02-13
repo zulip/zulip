@@ -14,10 +14,10 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
-from zerver.actions.message_send import get_recipient_info
+from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_settings import bulk_regenerate_api_keys
+from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
@@ -54,7 +54,6 @@ from zerver.models import (
     InvalidFakeEmailDomainError,
     Message,
     PreregistrationUser,
-    Realm,
     RealmDomain,
     RealmUserDefault,
     Recipient,
@@ -328,31 +327,17 @@ class PermissionTest(ZulipTestCase):
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
         with self.captureOnCommitCallbacks(execute=True):
-            do_set_realm_property(
-                user.realm,
+            do_change_user_setting(
+                user,
                 "email_address_visibility",
-                Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 acting_user=None,
             )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        # Note that the Gravatar URL should still be computed from the
-        # `delivery_email`; otherwise, we won't be able to serve the
-        # user's Gravatar.
         self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
-        self.assertEqual(hamlet["delivery_email"], user.delivery_email)
-
-        # Also verify the /events code path.  This is a bit hacky, but
-        # basically we want to verify client_gravatar is being
-        # overridden.
-        with mock.patch(
-            "zerver.lib.events.request_event_queue", return_value=None
-        ) as mock_request_event_queue:
-            with self.assertRaises(JsonableError):
-                do_events_register(user, user.realm, get_client("website"), client_gravatar=True)
-            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], False)
 
         # client_gravatar is still turned off for admins.  In theory,
         # it doesn't need to be, but client-side changes would be
@@ -834,8 +819,11 @@ class QueryCountTest(ZulipTestCase):
 class BulkCreateUserTest(ZulipTestCase):
     def test_create_users(self) -> None:
         realm = get_realm("zulip")
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        realm.save()
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_user_default.email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
+        realm_user_default.save()
 
         name_list = [
             ("Fred Flintstone", "fred@zulip.com"),
@@ -855,8 +843,10 @@ class BulkCreateUserTest(ZulipTestCase):
         self.assertEqual(lisa.is_bot, False)
         self.assertEqual(lisa.bot_type, None)
 
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        realm.save()
+        realm_user_default.email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
+        realm_user_default.save()
 
         name_list = [
             ("Bono", "bono@zulip.com"),
@@ -1769,7 +1759,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         all_user_ids = {hamlet.id, cordelia.id, othello.id}
 
-        expected_info = dict(
+        expected_info = RecipientInfoResult(
             active_user_ids=all_user_ids,
             online_push_user_ids=set(),
             pm_mention_email_disabled_user_ids=set(),
@@ -1797,8 +1787,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["pm_mention_email_disabled_user_ids"], {hamlet.id})
-        self.assertEqual(info["pm_mention_push_disabled_user_ids"], {hamlet.id})
+        self.assertEqual(info.pm_mention_email_disabled_user_ids, {hamlet.id})
+        self.assertEqual(info.pm_mention_push_disabled_user_ids, {hamlet.id})
         hamlet.enable_offline_email_notifications = True
         hamlet.enable_offline_push_notifications = True
         hamlet.save()
@@ -1814,8 +1804,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
@@ -1824,7 +1814,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["wildcard_mention_user_ids"], {hamlet.id, othello.id})
+        self.assertEqual(info.wildcard_mention_user_ids, {hamlet.id, othello.id})
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = False
@@ -1835,7 +1825,7 @@ class RecipientInfoTest(ZulipTestCase):
             sender_id=hamlet.id,
             stream_topic=stream_topic,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
 
         hamlet.enable_stream_push_notifications = False
         hamlet.save()
@@ -1848,7 +1838,7 @@ class RecipientInfoTest(ZulipTestCase):
             sender_id=hamlet.id,
             stream_topic=stream_topic,
         )
-        self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
 
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
         add_topic_mute(
@@ -1865,8 +1855,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
@@ -1875,10 +1865,10 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
         # Since Hamlet has muted the stream and Cordelia has disabled
         # wildcard notifications, it should just be Othello here.
-        self.assertEqual(info["wildcard_mention_user_ids"], {othello.id})
+        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
 
         # If Hamlet mutes Cordelia, he should be in `muted_sender_user_ids` for a message
         # sent by Cordelia.
@@ -1890,7 +1880,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertTrue(hamlet.id in info["muted_sender_user_ids"])
+        self.assertTrue(hamlet.id in info.muted_sender_user_ids)
 
         sub = get_subscription(stream_name, othello)
         sub.wildcard_mentions_notify = False
@@ -1903,9 +1893,9 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
         # Verify that stream-level wildcard_mentions_notify=False works correctly.
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         # Verify that True works as expected as well
         sub = get_subscription(stream_name, othello)
@@ -1919,8 +1909,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
-        self.assertEqual(info["wildcard_mention_user_ids"], {othello.id})
+        self.assertEqual(info.stream_push_user_ids, set())
+        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
 
         # Add a service bot.
         service_bot = do_create_user(
@@ -1940,7 +1930,7 @@ class RecipientInfoTest(ZulipTestCase):
             possibly_mentioned_user_ids={service_bot.id},
         )
         self.assertEqual(
-            info["service_bot_tuples"],
+            info.service_bot_tuples,
             [
                 (service_bot.id, UserProfile.EMBEDDED_BOT),
             ],
@@ -1963,8 +1953,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
-        self.assertEqual(info["default_bot_user_ids"], {normal_bot.id})
-        self.assertEqual(info["all_bot_user_ids"], {normal_bot.id, service_bot.id})
+        self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
+        self.assertEqual(info.all_bot_user_ids, {normal_bot.id, service_bot.id})
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -2132,7 +2122,9 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user("hamlet")
-        result = self.api_get(hamlet, "/api/v1/users")
+        result = self.api_get(
+            hamlet, "/api/v1/users", {"client_gravatar": orjson.dumps(False).decode()}
+        )
         response_dict = self.assert_json_success(result)
 
         (my_user,) = (user for user in response_dict["members"] if user["email"] == hamlet.email)
@@ -2145,11 +2137,10 @@ class GetProfileTest(ZulipTestCase):
     def test_user_email_according_to_email_address_visibility_setting(self) -> None:
         hamlet = self.example_user("hamlet")
 
-        realm = hamlet.realm
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
         )
 
@@ -2160,10 +2151,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 
@@ -2180,10 +2171,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
             acting_user=None,
         )
 
@@ -2200,10 +2191,30 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            acting_user=None,
+        )
+
+        # Check that normal user can access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_MEMBERS.
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        # Check that guest cannot access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_MEMBERS.
+        self.login("polonius")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        do_change_user_setting(
+            hamlet,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
 
@@ -2211,17 +2222,17 @@ class GetProfileTest(ZulipTestCase):
         # is set to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
         self.login("shiva")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
         self.login("cordelia")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
         self.login("polonius")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
 

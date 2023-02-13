@@ -127,9 +127,6 @@ def update_realm(
     wildcard_mention_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
     ),
-    email_address_visibility: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
-    ),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),
@@ -471,6 +468,9 @@ def update_realm_user_settings_defaults(
     send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     user_list_style: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
+    ),
+    email_address_visibility: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:

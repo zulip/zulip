@@ -1,6 +1,7 @@
 import datetime
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import (
     AbstractSet,
@@ -51,7 +52,12 @@ from zerver.lib.message import (
     truncate_topic,
     wildcard_mention_allowed,
 )
-from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
+from zerver.lib.muted_users import get_muting_users
+from zerver.lib.notification_data import (
+    UserMessageNotificationsData,
+    get_user_group_mentions_data,
+    user_allows_notifications_in_StreamTopic,
+)
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.stream_subscription import (
@@ -65,7 +71,6 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import filter_by_exact_message_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
-from zerver.lib.user_mutes import get_muting_users
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
@@ -153,7 +158,8 @@ def render_incoming_message(
     return rendering_result
 
 
-class RecipientInfoResult(TypedDict):
+@dataclass
+class RecipientInfoResult:
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
     pm_mention_email_disabled_user_ids: Set[int]
@@ -235,44 +241,28 @@ def get_recipient_info(
 
         message_to_user_ids = [row["user_profile_id"] for row in subscription_rows]
 
-        def should_send(setting: str, row: Dict[str, Any]) -> bool:
-            # This implements the structure that the UserProfile stream notification settings
-            # are defaults, which can be overridden by the stream-level settings (if those
-            # values are not null).
-            if row["is_muted"]:
-                return False
-            if row["user_profile_id"] in user_ids_muting_topic:
-                return False
-            if row[setting] is not None:
-                return row[setting]
-            return row["user_profile_" + setting]
-
-        stream_push_user_ids = {
-            row["user_profile_id"]
-            for row in subscription_rows
-            # Note: muting a stream overrides stream_push_notify
-            if should_send("push_notifications", row)
-        }
-
-        stream_email_user_ids = {
-            row["user_profile_id"]
-            for row in subscription_rows
-            # Note: muting a stream overrides stream_email_notify
-            if should_send("email_notifications", row)
-        }
-
-        if possible_wildcard_mention:
-            # If there's a possible wildcard mention, we need to
-            # determine the set of users who have enabled the
-            # "wildcard_mentions_notify" setting (that is, the set of
-            # users for whom wildcard mentions should be treated like
-            # personal mentions for notifications). This setting
-            # applies to both email and push notifications.
-            wildcard_mention_user_ids = {
+        def notification_recipients(setting: str) -> Set[int]:
+            return {
                 row["user_profile_id"]
                 for row in subscription_rows
-                if should_send("wildcard_mentions_notify", row)
+                if user_allows_notifications_in_StreamTopic(
+                    row["is_muted"],
+                    row["user_profile_id"] in user_ids_muting_topic,
+                    row[setting],
+                    row["user_profile_" + setting],
+                )
             }
+
+        stream_push_user_ids = notification_recipients("push_notifications")
+        stream_email_user_ids = notification_recipients("email_notifications")
+
+        if possible_wildcard_mention:
+            # We calculate `wildcard_mention_user_ids` only if there's a possible
+            # wildcard mention in the message. This is important so as to avoid
+            # unnecessarily sending huge user ID lists with thousands of elements
+            # to the event queue (which can happen because this setting is `True`
+            # by default for new users.)
+            wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
@@ -382,7 +372,7 @@ def get_recipient_info(
     # where we determine notifiability of the message for users.
     all_bot_user_ids = {row["id"] for row in rows if row["is_bot"]}
 
-    info: RecipientInfoResult = dict(
+    return RecipientInfoResult(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
         pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
@@ -397,7 +387,6 @@ def get_recipient_info(
         service_bot_tuples=service_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
     )
-    return info
 
 
 def get_service_bot_events(
@@ -570,7 +559,7 @@ def build_message_send_dict(
     # mention in it (and not e.g. wildcard mention syntax inside a
     # code block).
     if rendering_result.mentions_wildcard:
-        wildcard_mention_user_ids = info["wildcard_mention_user_ids"]
+        wildcard_mention_user_ids = info.wildcard_mention_user_ids
     else:
         wildcard_mention_user_ids = set()
 
@@ -581,9 +570,9 @@ def build_message_send_dict(
     get UserMessage rows.
     """
     mentioned_user_ids = rendering_result.mentions_user_ids
-    default_bot_user_ids = info["default_bot_user_ids"]
+    default_bot_user_ids = info.default_bot_user_ids
     mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
-    info["um_eligible_user_ids"] |= mentioned_bot_user_ids
+    info.um_eligible_user_ids |= mentioned_bot_user_ids
 
     message_send_dict = SendMessageRequest(
         stream=stream,
@@ -594,18 +583,18 @@ def build_message_send_dict(
         mentioned_user_groups_map=mentioned_user_groups_map,
         message=message,
         rendering_result=rendering_result,
-        active_user_ids=info["active_user_ids"],
-        online_push_user_ids=info["online_push_user_ids"],
-        pm_mention_email_disabled_user_ids=info["pm_mention_email_disabled_user_ids"],
-        pm_mention_push_disabled_user_ids=info["pm_mention_push_disabled_user_ids"],
-        stream_push_user_ids=info["stream_push_user_ids"],
-        stream_email_user_ids=info["stream_email_user_ids"],
-        muted_sender_user_ids=info["muted_sender_user_ids"],
-        um_eligible_user_ids=info["um_eligible_user_ids"],
-        long_term_idle_user_ids=info["long_term_idle_user_ids"],
-        default_bot_user_ids=info["default_bot_user_ids"],
-        service_bot_tuples=info["service_bot_tuples"],
-        all_bot_user_ids=info["all_bot_user_ids"],
+        active_user_ids=info.active_user_ids,
+        online_push_user_ids=info.online_push_user_ids,
+        pm_mention_email_disabled_user_ids=info.pm_mention_email_disabled_user_ids,
+        pm_mention_push_disabled_user_ids=info.pm_mention_push_disabled_user_ids,
+        stream_push_user_ids=info.stream_push_user_ids,
+        stream_email_user_ids=info.stream_email_user_ids,
+        muted_sender_user_ids=info.muted_sender_user_ids,
+        um_eligible_user_ids=info.um_eligible_user_ids,
+        long_term_idle_user_ids=info.long_term_idle_user_ids,
+        default_bot_user_ids=info.default_bot_user_ids,
+        service_bot_tuples=info.service_bot_tuples,
+        all_bot_user_ids=info.all_bot_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
