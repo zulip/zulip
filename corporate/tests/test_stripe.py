@@ -2293,6 +2293,20 @@ class StripeTest(StripeTestCase):
         self.assert_in_success_response(
             ["Your organization has requested sponsored or discounted hosting."], response
         )
+        self.assert_in_success_response(
+            [
+                'Please <a href="mailto:support@zulip.com">contact Zulip support</a> if you have any questions or concerns.'
+            ],
+            response,
+        )
+        # Ensure that the other "contact support" footer is not displayed, since that would be
+        # duplicate.
+        self.assert_not_in_success_response(
+            [
+                'Contact <a href="mailto:support@zulip.com">support@zulip.com</a> for billing history.'
+            ],
+            response,
+        )
 
         self.login_user(self.example_user("othello"))
         response = self.client_get("/billing/")
@@ -2307,6 +2321,12 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(
             ["Your organization is fully sponsored and is on the <b>Zulip Cloud Standard</b>"],
+            response,
+        )
+        self.assert_in_success_response(
+            [
+                'Contact <a href="mailto:support@zulip.com">support@zulip.com</a> for billing history.'
+            ],
             response,
         )
 

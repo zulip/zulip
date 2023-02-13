@@ -194,6 +194,8 @@
                 <div class="tab-content">
                     {% if sponsorship_pending %}
                     <h3>Your organization has requested sponsored or discounted hosting.</h3>
+                    <br />
+                    Please <a href="mailto:support@zulip.com">contact Zulip support</a> if you have any questions or concerns.
                     {% elif is_sponsored %}
                     <center>
                         <p>
@@ -214,11 +216,14 @@
                     </center>
                     {% endif %}
                 </div>
+                {% if not sponsorship_pending %}
+                {# In the other case, we're displaying a different message about contacting support. #}
                 <div class="support-link">
                     <p>
                         Contact <a href="mailto:support@zulip.com">support@zulip.com</a> for billing history.
                     </p>
                 </div>
+                {% endif %}
                 {% else %}
                 <p>
                     You must be an organization owner or a billing administrator to view this page.
