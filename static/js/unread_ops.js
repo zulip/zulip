@@ -9,10 +9,10 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
+import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
-import * as recent_topics_util from "./recent_topics_util";
 import * as ui_report from "./ui_report";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -369,7 +369,7 @@ export function notify_server_message_read(message, options) {
 }
 
 export function process_scrolled_to_bottom() {
-    if (recent_topics_util.is_visible()) {
+    if (!narrow_state.is_message_feed_visible()) {
         // First, verify the current message list is visible.
         return;
     }

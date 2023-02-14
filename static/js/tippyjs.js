@@ -11,7 +11,6 @@ import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
-import * as recent_topics_util from "./recent_topics_util";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
@@ -251,7 +250,7 @@ export function initialize() {
         content() {
             const narrow_filter = narrow_state.filter();
             let display_current_view;
-            if (!recent_topics_util.is_visible()) {
+            if (narrow_state.is_message_feed_visible()) {
                 if (narrow_filter === undefined) {
                     display_current_view = $t({defaultMessage: "Currently viewing all messages."});
                 } else if (

@@ -27,7 +27,6 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
-import * as recent_topics_util from "./recent_topics_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
@@ -791,7 +790,7 @@ export class MessageListView {
 
         const restore_scroll_position = () => {
             if (
-                !recent_topics_util.is_visible() &&
+                narrow_state.is_message_feed_visible() &&
                 list === message_lists.current &&
                 orig_scrolltop_offset !== undefined
             ) {

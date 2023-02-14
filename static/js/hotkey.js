@@ -27,6 +27,7 @@ import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -874,13 +875,9 @@ export function process_hotkey(e, hotkey) {
             return true;
     }
 
-    // We don't want hotkeys below this to work when recent topics is
-    // open. These involve hotkeys that can only be performed on a message.
-    if (recent_topics_util.is_visible()) {
-        return false;
-    }
-
-    if (message_lists.current.empty()) {
+    // Hotkeys below this point are for the message feed, and so
+    // should only function if the message feed is visible and nonempty.
+    if (!narrow_state.is_message_feed_visible() || message_lists.current.empty()) {
         return false;
     }
 

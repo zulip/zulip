@@ -52,6 +52,7 @@ import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
+import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
@@ -66,7 +67,6 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_topics_ui from "./recent_topics_ui";
-import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -259,7 +259,7 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.$message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_overlay_or_modal_open() && !recent_topics_util.is_visible()) {
+        if (!overlays.is_overlay_or_modal_open() && narrow_state.is_message_feed_visible()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }

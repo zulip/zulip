@@ -2,6 +2,7 @@ import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as recent_topics_util from "./recent_topics_util";
 import * as stream_data from "./stream_data";
 import * as unread from "./unread";
 
@@ -30,6 +31,10 @@ export function operators() {
         return new Filter(page_params.narrow).operators();
     }
     return current_filter.operators();
+}
+
+export function is_message_feed_visible() {
+    return !recent_topics_util.is_visible();
 }
 
 export function update_email(user_id, new_email) {

@@ -6,7 +6,6 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
-import * as recent_topics_util from "./recent_topics_util";
 
 export function get_recipient_label(message) {
     // TODO: This code path is bit of a type-checking disaster; we mix
@@ -109,14 +108,12 @@ export function update_reply_recipient_label(message) {
 export function initialize() {
     // When the message selection changes, change the label on the Reply button.
     $(document).on("message_selected.zulip", () => {
-        if (recent_topics_util.is_visible()) {
+        if (narrow_state.is_message_feed_visible()) {
             // message_selected events can occur with recent topics
             // open due to "All messages" loading in the background,
-            // so we return without calling changing button state.
-            return;
+            // so we only update if message feed is visible.
+            update_reply_recipient_label();
         }
-
-        update_reply_recipient_label();
     });
 
     // Click handlers for buttons in the compose box.
