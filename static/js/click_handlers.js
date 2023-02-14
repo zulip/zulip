@@ -1,5 +1,4 @@
 import $ from "jquery";
-import _ from "lodash";
 import tippy from "tippy.js";
 import WinChan from "winchan";
 
@@ -30,7 +29,6 @@ import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
@@ -46,7 +44,6 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
-import * as unread_ops from "./unread_ops";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
 
@@ -397,111 +394,6 @@ export function initialize() {
     $("body").on("click", ".message_header .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         muted_topics_ui.mute_or_unmute_topic($(e.target), false);
-    });
-
-    // RECENT TOPICS
-
-    $("#recent_topics_table").on("click", ".participant_profile", function (e) {
-        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
-        e.stopPropagation();
-        const user = people.get_by_user_id(participant_user_id);
-        popovers.show_user_info_popover(this, user);
-    });
-
-    $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
-
-    $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
-        e.stopPropagation();
-        const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, false);
-    });
-
-    $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
-
-    $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
-        e.stopPropagation();
-        const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, true);
-    });
-
-    $("body").on("click", "#recent_topics_search", (e) => {
-        e.stopPropagation();
-        recent_topics_ui.change_focused_element($(e.target), "click");
-    });
-
-    $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
-        e.stopPropagation();
-        const $elt = $(e.currentTarget);
-        const topic_row_index = $elt.closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.read);
-        const user_ids_string = $elt.attr("data-user-ids-string");
-        if (user_ids_string) {
-            // PM row
-            unread_ops.mark_pm_as_read(user_ids_string);
-        } else {
-            // Stream row
-            const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
-            const topic = $elt.attr("data-topic-name");
-            unread_ops.mark_topic_as_read(stream_id, topic);
-        }
-        recent_topics_ui.change_focused_element($elt, "down_arrow");
-    });
-
-    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
-
-    $("body").on("click", ".btn-recent-filters", (e) => {
-        e.stopPropagation();
-        if (page_params.is_spectator) {
-            // Filter buttons are disabled for spectator.
-            return;
-        }
-
-        recent_topics_ui.change_focused_element($(e.target), "click");
-        recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
-        recent_topics_ui.update_filters_view();
-        recent_topics_ui.revive_current_focus();
-    });
-
-    $("body").on("click", "td.recent_topic_stream", (e) => {
-        e.stopPropagation();
-        const topic_row_index = $(e.target).closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.stream);
-        window.location.href = $(e.currentTarget).find("a").attr("href");
-    });
-
-    $("body").on("click", "td.recent_topic_name", (e) => {
-        e.stopPropagation();
-        // The element's parent may re-render while it is being passed to
-        // other functions, so, we get topic_key first.
-        const $topic_row = $(e.target).closest("tr");
-        const topic_key = $topic_row.attr("id").slice("recent_conversation:".length);
-        const topic_row_index = $topic_row.index();
-        recent_topics_ui.focus_clicked_element(
-            topic_row_index,
-            recent_topics_ui.COLUMNS.topic,
-            topic_key,
-        );
-        window.location.href = $(e.currentTarget).find("a").attr("href");
-    });
-
-    // Search for all table rows (this combines stream & topic names)
-    $("body").on(
-        "keyup",
-        "#recent_topics_search",
-        _.debounce(() => {
-            recent_topics_ui.update_filters_view();
-            // Wait for user to go idle before initiating search.
-        }, 300),
-    );
-
-    $("body").on("click", "#recent_topics_search_clear", (e) => {
-        e.stopPropagation();
-        $("#recent_topics_search").val("");
-        recent_topics_ui.update_filters_view();
     });
 
     // RECIPIENT BARS

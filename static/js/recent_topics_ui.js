@@ -16,12 +16,14 @@ import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
+import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
 import {
@@ -38,7 +40,9 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
 import * as ui from "./ui";
+import * as ui_util from "./ui_util";
 import * as unread from "./unread";
+import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
@@ -1211,4 +1215,103 @@ export function initialize() {
         // selected for spectators.
         filters = new Set(ls.get(ls_key));
     }
+
+    $("#recent_topics_table").on("click", ".participant_profile", function (e) {
+        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
+        e.stopPropagation();
+        const user = people.get_by_user_id(participant_user_id);
+        popovers.show_user_info_popover(this, user);
+    });
+
+    $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
+
+    $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.target);
+        const topic_row_index = $elt.closest("tr").index();
+        focus_clicked_element(topic_row_index, COLUMNS.mute);
+        muted_topics_ui.mute_or_unmute_topic($elt, false);
+    });
+
+    $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
+
+    $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.target);
+        const topic_row_index = $elt.closest("tr").index();
+        focus_clicked_element(topic_row_index, COLUMNS.mute);
+        muted_topics_ui.mute_or_unmute_topic($elt, true);
+    });
+
+    $("body").on("click", "#recent_topics_search", (e) => {
+        e.stopPropagation();
+        change_focused_element($(e.target), "click");
+    });
+
+    $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.currentTarget);
+        const topic_row_index = $elt.closest("tr").index();
+        focus_clicked_element(topic_row_index, COLUMNS.read);
+        const user_ids_string = $elt.attr("data-user-ids-string");
+        if (user_ids_string) {
+            // PM row
+            unread_ops.mark_pm_as_read(user_ids_string);
+        } else {
+            // Stream row
+            const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+            const topic = $elt.attr("data-topic-name");
+            unread_ops.mark_topic_as_read(stream_id, topic);
+        }
+        change_focused_element($elt, "down_arrow");
+    });
+
+    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
+
+    $("body").on("click", ".btn-recent-filters", (e) => {
+        e.stopPropagation();
+        if (page_params.is_spectator) {
+            // Filter buttons are disabled for spectator.
+            return;
+        }
+
+        change_focused_element($(e.target), "click");
+        set_filter(e.currentTarget.dataset.filter);
+        update_filters_view();
+        revive_current_focus();
+    });
+
+    $("body").on("click", "td.recent_topic_stream", (e) => {
+        e.stopPropagation();
+        const topic_row_index = $(e.target).closest("tr").index();
+        focus_clicked_element(topic_row_index, COLUMNS.stream);
+        window.location.href = $(e.currentTarget).find("a").attr("href");
+    });
+
+    $("body").on("click", "td.recent_topic_name", (e) => {
+        e.stopPropagation();
+        // The element's parent may re-render while it is being passed to
+        // other functions, so, we get topic_key first.
+        const $topic_row = $(e.target).closest("tr");
+        const topic_key = $topic_row.attr("id").slice("recent_conversation:".length);
+        const topic_row_index = $topic_row.index();
+        focus_clicked_element(topic_row_index, COLUMNS.topic, topic_key);
+        window.location.href = $(e.currentTarget).find("a").attr("href");
+    });
+
+    // Search for all table rows (this combines stream & topic names)
+    $("body").on(
+        "keyup",
+        "#recent_topics_search",
+        _.debounce(() => {
+            update_filters_view();
+            // Wait for user to go idle before initiating search.
+        }, 300),
+    );
+
+    $("body").on("click", "#recent_topics_search_clear", (e) => {
+        e.stopPropagation();
+        $("#recent_topics_search").val("");
+        update_filters_view();
+    });
 }
