@@ -167,7 +167,13 @@ export function mark_unsubscribed(sub) {
     }
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
+        // Update UI components if we just unsubscribed from the
+        // currently viewed stream.
         message_lists.current.update_trailing_bookend();
+
+        // This update would likely be better implemented by having it
+        // disappear whenever no unread messages remain.
+        unread_ui.hide_mark_as_read_turned_off_banner();
     }
 
     // Unread messages in the now-unsubscribe stream need to be
