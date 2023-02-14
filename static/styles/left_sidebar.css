@@ -98,11 +98,14 @@ li.show-more-topics {
     padding: 0;
     font-weight: normal;
 
-    .input-append.topic_search_section,
-    .tab-switcher {
+    .filter-topics {
         padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
         margin-bottom: 3px;
         margin-left: 3px;
+
+        .input-append {
+            margin-bottom: 0;
+        }
     }
 
     .input-append.topic_search_section input {
@@ -110,8 +113,10 @@ li.show-more-topics {
     }
 
     .tab-switcher {
+        width: calc(100% - 17px);
+        margin-left: 0;
         display: flex;
-        font-size: 80%;
+        font-size: 75%;
     }
 
     li {

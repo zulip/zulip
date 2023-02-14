@@ -42,7 +42,7 @@ export function init_resolved_toggle() {
             {label: $t({defaultMessage: "Resolved"}), key: "resolved"},
         ],
         selected: 0,
-        callback(value, key) {
+        callback(_value, key) {
             should_show_resolved = key;
             active_widgets.get(active_stream_id()).build();
         },
