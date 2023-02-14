@@ -1685,7 +1685,15 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         response = self._do_test(user)
-        self.assertEqual(response.status_code, 200)
+        self.assert_json_success(response)
+
+    def test_authenticated_json_post_view_if_user_not_logged_in(self) -> None:
+        user = self.example_user("hamlet")
+        self.assert_json_error_contains(
+            self._do_test(user),
+            "Not logged in: API authentication or user session required",
+            status_code=401,
+        )
 
     def test_authenticated_json_post_view_with_get_request(self) -> None:
         self.login("hamlet")
@@ -1774,7 +1782,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def _do_test(self, user: UserProfile) -> "TestHttpResponse":
         stream_name = "stream name"
         self.common_subscribe_to_streams(user, [stream_name], allow_fail=True)
-        data = {"password": initial_password(user.email), "stream": stream_name}
+        data = {"stream": stream_name}
         return self.client_post("/json/subscriptions/exists", data)
 
 
