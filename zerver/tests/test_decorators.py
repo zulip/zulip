@@ -24,6 +24,7 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     internal_notify_view,
+    process_client,
     public_json_view,
     return_success_on_head_request,
     validate_api_key,
@@ -54,7 +55,7 @@ from zerver.lib.request import (
 )
 from zerver.lib.response import json_response, json_success
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import HostRequestMock, dummy_handler
+from zerver.lib.test_helpers import HostRequestMock, dummy_handler, queries_captured
 from zerver.lib.types import Validator
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
@@ -83,7 +84,7 @@ from zerver.lib.validator import (
     to_wild_value,
 )
 from zerver.middleware import LogRequests, parse_client
-from zerver.models import Realm, UserProfile, get_realm, get_user
+from zerver.models import Client, Realm, UserProfile, clear_client_cache, get_realm, get_user
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
@@ -2171,3 +2172,74 @@ class TestRequestNotes(ZulipTestCase):
                 "There is no Zulip organization hosted at this subdomain.", result
             )
             mock_home_real.assert_not_called()
+
+
+class ClientTestCase(ZulipTestCase):
+    def test_process_client(self) -> None:
+        def request_user_agent(user_agent: str) -> Tuple[Client, str]:
+            request = HttpRequest()
+            request.META["HTTP_USER_AGENT"] = user_agent
+            LogRequests(lambda request: HttpResponse()).process_request(request)
+            process_client(request)
+            notes = RequestNotes.get_notes(request)
+            assert notes.client is not None
+            assert notes.client_name is not None
+            return notes.client, notes.client_name
+
+        self.assertEqual(Client.objects.filter(name="ZulipThingy").count(), 0)
+        with queries_captured() as queries:
+            client, client_name = request_user_agent("ZulipThingy/1.0.0")
+        self.assertEqual(client.name, "ZulipThingy")
+        self.assertEqual(client_name, "ZulipThingy")
+        self.assertEqual(Client.objects.filter(name="ZulipThingy").count(), 1)
+        self.assert_length(queries, 2)
+
+        # Ensure our in-memory cache prevents another database hit
+        with queries_captured() as queries:
+            client, client_name = request_user_agent(
+                "ZulipThingy/1.0.0",
+            )
+        self.assertEqual(client.name, "ZulipThingy")
+        self.assertEqual(client_name, "ZulipThingy")
+        self.assert_length(queries, 0)
+
+        # This operates on the extracted value, so different ZulipThingy versions don't cause another DB query
+        with queries_captured() as queries:
+            client, client_name = request_user_agent(
+                "ZulipThingy/2.0.0",
+            )
+        self.assertEqual(client.name, "ZulipThingy")
+        self.assertEqual(client_name, "ZulipThingy")
+        self.assert_length(queries, 0)
+
+        # If we clear the memory cache we see a database query but get
+        # the same client-id back.
+        clear_client_cache()
+        with queries_captured() as queries:
+            fresh_client, client_name = request_user_agent(
+                "ZulipThingy/2.0.0",
+            )
+        self.assertEqual(fresh_client.name, "ZulipThingy")
+        self.assertEqual(client, fresh_client)
+        self.assert_length(queries, 1)
+
+        # Ensure that long parsed user-agents (longer than 30 characters) work
+        with queries_captured() as queries:
+            client, client_name = request_user_agent(
+                "very-long-name-goes-here-and-somewhere-else (client@example.com)"
+            )
+        self.assertEqual(client.name, "very-long-name-goes-here-and-s")
+        # client_name has the full name still, though
+        self.assertEqual(client_name, "very-long-name-goes-here-and-somewhere-else")
+        self.assert_length(queries, 2)
+
+        # Longer than that uses the same in-memory cache key, so no database queries
+        with queries_captured() as queries:
+            client, client_name = request_user_agent(
+                "very-long-name-goes-here-and-still-works (client@example.com)"
+            )
+        self.assertIsNotNone(client)
+        self.assertEqual(client.name, "very-long-name-goes-here-and-s")
+        # client_name has the full name still, though
+        self.assertEqual(client_name, "very-long-name-goes-here-and-still-works")
+        self.assert_length(queries, 0)

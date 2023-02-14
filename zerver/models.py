@@ -2688,7 +2688,8 @@ post_delete.connect(flush_muting_users_cache, sender=MutedUser)
 
 
 class Client(models.Model):
-    name = models.CharField(max_length=30, db_index=True, unique=True)
+    MAX_NAME_LENGTH = 30
+    name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True, unique=True)
 
     def __str__(self) -> str:
         return f"<Client: {self.name}>"
@@ -2705,7 +2706,7 @@ def clear_client_cache() -> None:  # nocoverage
 def get_client(name: str) -> Client:
     # Accessing KEY_PREFIX through the module is necessary
     # because we need the updated value of the variable.
-    cache_name = cache.KEY_PREFIX + name
+    cache_name = cache.KEY_PREFIX + name[0 : Client.MAX_NAME_LENGTH]
     if cache_name not in get_client_cache:
         result = get_client_remote_cache(name)
         get_client_cache[cache_name] = result
@@ -2718,7 +2719,7 @@ def get_client_cache_key(name: str) -> str:
 
 @cache_with_key(get_client_cache_key, timeout=3600 * 24 * 7)
 def get_client_remote_cache(name: str) -> Client:
-    (client, _) = Client.objects.get_or_create(name=name)
+    (client, _) = Client.objects.get_or_create(name=name[0 : Client.MAX_NAME_LENGTH])
     return client
 
 
