@@ -112,3 +112,13 @@ export function toggle_topic_mute(message) {
         mute_topic(stream_id, topic, true);
     }
 }
+
+export function mute_or_unmute_topic($elt, mute_topic) {
+    const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+    const topic = $elt.attr("data-topic-name");
+    if (mute_topic) {
+        mute_topic(stream_id, topic);
+    } else {
+        unmute_topic(stream_id, topic);
+    }
+}
