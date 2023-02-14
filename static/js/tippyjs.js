@@ -451,9 +451,11 @@ export function initialize() {
     delegate("body", {
         target: "#show_all_private_messages",
         placement: "bottom",
-        content: $t({
-            defaultMessage: "All private messages (P)",
-        }),
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const $template = $("#" + $elem.attr("data-tooltip-template-id"));
+            instance.setContent(parse_html($template.html()));
+        },
         appendTo: () => document.body,
     });
 
