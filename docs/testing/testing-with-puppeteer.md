@@ -21,7 +21,7 @@ debugging.
 
 The test files live in `frontend_tests/puppeteer_tests` and make use
 of various useful helper functions defined in
-`frontend_tests/puppeteer_lib/common.js`.
+`frontend_tests/puppeteer_lib/common.ts`.
 
 ## How Puppeteer tests work
 
@@ -123,7 +123,7 @@ These tools/features are often useful when debugging:
 See also [Puppeteer upstream's debugging
 tips](https://github.com/puppeteer/puppeteer#debugging-tips); some
 tips may require temporary patches to functions like `run_test` or
-`ensure_browser` in `frontend_tests/puppeteer_lib/common.js`.
+`ensure_browser` in `frontend_tests/puppeteer_lib/common.ts`.
 
 ## Writing Puppeteer tests
 
