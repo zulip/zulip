@@ -59,11 +59,13 @@ const overlays = mock_esm("../../static/js/overlays", {
     is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../../static/js/popovers", {
-    actions_popped: () => false,
     user_info_manage_menu_popped: () => false,
     message_info_popped: () => false,
     user_sidebar_popped: () => false,
     user_info_popped: () => false,
+});
+const popover_menus = mock_esm("../../static/js/popover_menus", {
+    actions_popped: () => false,
 });
 const reactions = mock_esm("../../static/js/reactions");
 const search = mock_esm("../../static/js/search");
@@ -366,7 +368,7 @@ run_test("misc", ({override}) => {
     assert_mapping("s", narrow, "by_recipient");
     assert_mapping("S", narrow, "by_topic");
     assert_mapping("u", popovers, "show_sender_info");
-    assert_mapping("i", popovers, "open_message_menu");
+    assert_mapping("i", popover_menus, "toggle_message_actions_menu");
     assert_mapping(":", reactions, "open_reactions_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");

@@ -53,9 +53,9 @@
  *
  * 4. Escape hooks:
  *
- *  You can set an on_escape hook to take extra actions when the user hits
- *  the `Esc` key.  We use this in our navbar code to close the navbar when
- *  a user hits escape while in the typeahead.
+ *   You can set an on_escape hook to take extra actions when the user hits
+ *   the `Esc` key.  We use this in our navbar code to close the navbar when
+ *   a user hits escape while in the typeahead.
  *
  * 5. Help on empty strings:
  *
@@ -71,15 +71,50 @@
  *   Our custom changes include all mentions of `helpOnEmptyStrings` and `hideOnEmpty`.
  *
  * 6. Prevent typeahead going off top of screen:
+ *
  *   If typeahead would go off the top of the screen, we set its top to 0 instead.
  *   This patch should be replaced with something more flexible.
  *
+ * 7. Ignore IME Enter events:
+ *
+ *   See #22062 for details. Enter keypress that are part of IME composing are
+ *   treated as a separate/invalid -13 key, to prevent them from being incorrectly
+ *   processed as a bonus Enter press.
+ *
+ * 8. Make the typeahead completions undo friendly:
+ *
+ *   We now use the undo supporting `insert` function from the
+ *   `text-field-edit` module to update the text after autocompletion,
+ *   instead of just resetting the value of the textarea / input, which was
+ *   not undo-able.
+ *
+ *   So that the undo history seems sensible, we replace only the minimal
+ *   diff between the text before and after autocompletion. This ensures that
+ *   only this diff, and not the entire text, is highlighted when undoing,
+ *   as would be ideal.
+ *
+ * 9. Re-render on window resize:
+ *
+ *   We add a new event handler, resizeHandler, for window.on('resize', ...)
+ *   that calls this.show to re-render the typeahead in the correct position.
+ *
  * ============================================================ */
+
+import {insert} from "text-field-edit";
+import {get_string_diff} from "../../js/util";
 
 !function($){
 
   "use strict"; // jshint ;_;
 
+  function get_pseudo_keycode(e) {
+      const isComposing = (event.originalEvent && event.originalEvent.isComposing) || false;
+      /* We treat IME compose enter keypresses as a separate -13 key. */
+      if (e.keyCode === 13 && isComposing) {
+          return -13;
+      }
+      return e.keyCode;
+  }
 
  /* TYPEAHEAD PUBLIC CLASS DEFINITION
   * ================================= */
@@ -126,7 +161,12 @@
         // converts the input text to html elements.
         this.$element.html('');
       } else {
-        this.$element.val(this.updater(val, e)).trigger("change");
+        const after_text = this.updater(val, e);
+        const [from, to_before, to_after] = get_string_diff(this.$element.val(), after_text);
+        const replacement = after_text.substring(from, to_after);
+        // select / highlight the minimal text to be replaced
+        this.$element[0].setSelectionRange(from, to_before);
+        insert(this.$element[0], replacement);
       }
 
       return this.hide()
@@ -332,6 +372,8 @@
         .on('click', 'li', this.click.bind(this))
         .on('mouseenter', 'li', this.mouseenter.bind(this))
         .on('mousemove', 'li', this.mousemove.bind(this))
+
+      $(window).on('resize', this.resizeHandler.bind(this));
     }
 
   , unlisten: function () {
@@ -352,10 +394,17 @@
       return isSupported
     }
 
+  , resizeHandler: function() {
+      if(this.shown) {
+        this.show();
+      }
+  }
+
   , move: function (e) {
       if (!this.shown) return
+      const pseudo_keycode = get_pseudo_keycode(e);
 
-      switch(e.keyCode) {
+      switch(pseudo_keycode) {
         case 9: // tab
         case 13: // enter
         case 27: // escape
@@ -373,7 +422,7 @@
           break
       }
 
-      if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
+      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
           && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
           e.stopPropagation()
       }
@@ -389,12 +438,13 @@
     }
 
   , keydown: function (e) {
+    const pseudo_keycode = get_pseudo_keycode(e);
     if (this.trigger_selection(e)) {
       if (!this.shown) return;
       e.preventDefault();
       this.select(e);
     }
-      this.suppressKeyPressRepeat = !~$.inArray(e.keyCode, [40,38,9,13,27])
+      this.suppressKeyPressRepeat = !~$.inArray(pseudo_keycode, [40,38,9,13,27]);
       this.move(e)
     }
 
@@ -404,7 +454,9 @@
     }
 
   , keyup: function (e) {
-      switch(e.keyCode) {
+      const pseudo_keycode = get_pseudo_keycode(e);
+
+      switch(pseudo_keycode) {
         case 40: // down arrow
         case 38: // up arrow
           break
@@ -423,6 +475,11 @@
           }
           break
 
+        // to stop typeahead from showing up momentarily
+        // when shift + tabbing to a field with typeahead
+        case 16: // shift
+          break
+
         default:
           var hideOnEmpty = false
           if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
@@ -431,7 +488,7 @@
           this.lookup(hideOnEmpty)
       }
 
-      if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
+      if ((this.options.stopAdvance || (pseudo_keycode != 9 && pseudo_keycode != 13))
           && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
           e.stopPropagation()
       }

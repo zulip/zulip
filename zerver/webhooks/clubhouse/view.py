@@ -4,7 +4,7 @@ from typing import Callable, Dict, Iterable, Iterator, List, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
@@ -546,7 +546,7 @@ def get_story_update_owner_body(payload: WildValue, action: WildValue) -> str:
 
 def get_story_update_batch_body(payload: WildValue, action: WildValue) -> Optional[str]:
     # When the user selects one or more stories with the checkbox, they can perform
-    # a batch update on multiple stories while changing multiple attribtues at the
+    # a batch update on multiple stories while changing multiple attributes at the
     # same time.
     changes = action["changes"]
     kwargs = {
@@ -695,7 +695,7 @@ def send_stream_messages_for_actions(
     body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
     topic_func = get_topic_function_based_on_type(payload, action)
     if body_func is None or topic_func is None:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     topic = topic_func(payload, action)
     body = body_func(payload, action)
@@ -773,7 +773,6 @@ def api_clubhouse_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # Clubhouse has a tendency to send empty POST requests to
     # third-party endpoints. It is unclear as to which event type
     # such requests correspond to. So, it is best to ignore such

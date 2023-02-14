@@ -44,7 +44,6 @@ logger_string = "zulip.soft_deactivation"
 
 
 class HomeTest(ZulipTestCase):
-
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "alert_words",
@@ -133,7 +132,6 @@ class HomeTest(ZulipTestCase):
         "realm_disallow_disposable_email_addresses",
         "realm_domains",
         "realm_edit_topic_policy",
-        "realm_email_address_visibility",
         "realm_email_auth_enabled",
         "realm_email_changes_disabled",
         "realm_emails_restricted_to_domains",
@@ -160,7 +158,9 @@ class HomeTest(ZulipTestCase):
         "realm_message_content_delete_limit_seconds",
         "realm_message_content_edit_limit_seconds",
         "realm_message_retention_days",
+        "realm_move_messages_between_streams_limit_seconds",
         "realm_move_messages_between_streams_policy",
+        "realm_move_messages_within_stream_limit_seconds",
         "realm_name",
         "realm_name_changes_disabled",
         "realm_night_logo_source",
@@ -228,7 +228,7 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         html_bits = [
             "message_feed_errors_container",
-            "Loading...",
+            "app-loading-logo",
             # Verify that the app styles get included
             "app-stubentry.js",
             "data-params",
@@ -263,7 +263,7 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
 
-        actual_keys = sorted(str(k) for k in page_params.keys())
+        actual_keys = sorted(str(k) for k in page_params)
 
         self.assertEqual(actual_keys, self.expected_page_params_keys)
 
@@ -284,7 +284,7 @@ class HomeTest(ZulipTestCase):
             "user_id",
         ]
 
-        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0].keys())
+        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
@@ -307,9 +307,10 @@ class HomeTest(ZulipTestCase):
                 self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        actual_keys = sorted(str(k) for k in page_params.keys())
-        expected_keys = self.expected_page_params_keys + [
-            "demo_organization_scheduled_deletion_date"
+        actual_keys = sorted(str(k) for k in page_params)
+        expected_keys = [
+            *self.expected_page_params_keys,
+            "demo_organization_scheduled_deletion_date",
         ]
 
         self.assertEqual(set(actual_keys), set(expected_keys))
@@ -331,7 +332,7 @@ class HomeTest(ZulipTestCase):
         # Check no unnecessary params are passed to spectators.
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["is_spectator"], True)
-        actual_keys = sorted(str(k) for k in page_params.keys())
+        actual_keys = sorted(str(k) for k in page_params)
         expected_keys = [
             "apps_page_url",
             "bot_types",

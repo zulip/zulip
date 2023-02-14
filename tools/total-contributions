@@ -156,7 +156,7 @@ add_log(out_dict, repo_log)
 
 # TODO: We should migrate the last couple repositories to use the
 # `main` default branch name and then simplify this.
-for (full_repository, branch) in [
+for full_repository, branch in [
     ("zulip/zulip-mobile", "main"),
     ("zulip/zulip-desktop", "main"),
     ("zulip/docker-zulip", "main"),

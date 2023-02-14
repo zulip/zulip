@@ -15,6 +15,7 @@ from django.utils.timezone import now as timezone_now
 
 logger = logging.getLogger("zulip.debug")
 
+
 # Interactive debugging code from
 # https://stackoverflow.com/questions/132058/showing-the-stack-trace-from-a-running-python-application
 # (that link also points to code for an interactive remote debugger
@@ -85,7 +86,8 @@ def tracemalloc_listen() -> None:
     listener_pid = os.getpid()
 
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    path = f"/tmp/tracemalloc.{os.getpid()}"
+    os.makedirs(settings.TRACEMALLOC_DUMP_DIR, exist_ok=True)
+    path = os.path.join(settings.TRACEMALLOC_DUMP_DIR, f"tracemalloc.{os.getpid()}")
     sock.bind(path)
     thread = threading.Thread(target=lambda: tracemalloc_listen_sock(sock), daemon=True)
     thread.start()
@@ -96,7 +98,7 @@ def maybe_tracemalloc_listen() -> None:
     """If tracemalloc tracing enabled, listen for requests to dump a snapshot.
 
     To trigger once this is listening:
-      echo | socat -u stdin unix-sendto:/tmp/tracemalloc.$pid
+      echo | socat -u stdin unix-sendto:/var/log/zulip/tracemalloc/tracemalloc.$pid
 
     To enable in the Zulip web server: edit /etc/zulip/uwsgi.ini ,
     and add e.g. ` PYTHONTRACEMALLOC=5` to the `env=` line.

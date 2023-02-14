@@ -20,8 +20,8 @@ from zerver.lib.email_mirror_helpers import (
     get_email_gateway_message_string_from_address,
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
-from zerver.lib.exceptions import JsonableError, RateLimited
-from zerver.lib.message import normalize_body, truncate_topic
+from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
@@ -147,7 +147,9 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
         return FromAddress.NOREPLY
 
     mm_address = MissedMessageEmailAddress.objects.create(
-        message=message, user_profile=user_profile, email_token=generate_missed_message_token()
+        message=message,
+        user_profile=user_profile,
+        email_token=generate_missed_message_token(),
     )
     return str(mm_address)
 
@@ -155,6 +157,8 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
 def construct_zulip_body(
     message: EmailMessage,
     realm: Realm,
+    *,
+    sender: UserProfile,
     show_sender: bool = False,
     include_quotes: bool = False,
     include_footer: bool = False,
@@ -168,15 +172,26 @@ def construct_zulip_body(
 
     if not body.endswith("\n"):
         body += "\n"
-    body += extract_and_upload_attachments(message, realm)
     if not body.rstrip():
         body = "(No email body)"
 
+    preamble = ""
     if show_sender:
-        sender = str(message.get("From", ""))
-        body = f"From: {sender}\n{body}"
+        from_address = str(message.get("From", ""))
+        preamble = f"From: {from_address}\n"
 
-    return body
+    postamble = extract_and_upload_attachments(message, realm, sender)
+    if postamble != "":
+        postamble = "\n" + postamble
+
+    # Truncate the content ourselves, to ensure that the attachments
+    # all make it into the body-as-posted
+    body = truncate_content(
+        body,
+        settings.MAX_MESSAGE_LENGTH - len(preamble) - len(postamble),
+        "\n[message truncated]",
+    )
+    return preamble + body + postamble
 
 
 ## Sending the Zulip ##
@@ -314,9 +329,7 @@ def filter_footer(text: str) -> str:
     return re.split(r"^\s*--\s*$", text, 1, flags=re.MULTILINE)[0].strip()
 
 
-def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
-    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
-
+def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: UserProfile) -> str:
     attachment_links = []
     for part in message.walk():
         content_type = part.get_content_type()
@@ -329,7 +342,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
                     len(attachment),
                     content_type,
                     attachment,
-                    user_profile,
+                    sender,
                     target_realm=realm,
                 )
                 formatted_link = f"[{filename}]({s3_url})"
@@ -414,8 +427,9 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
-    body = construct_zulip_body(message, stream.realm, **options)
-    send_zulip(get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id), stream, subject, body)
+    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+    body = construct_zulip_body(message, stream.realm, sender=user_profile, **options)
+    send_zulip(user_profile, stream, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
         stream.name,
@@ -440,7 +454,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         logger.warning("Sending user is not active. Ignoring this message notification email.")
         return
 
-    body = construct_zulip_body(message, user_profile.realm)
+    body = construct_zulip_body(message, user_profile.realm, sender=user_profile)
 
     assert recipient is not None
     if recipient.type == Recipient.STREAM:
@@ -534,4 +548,4 @@ def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
     ratelimited, secs_to_freedom = RateLimitedRealmMirror(recipient_realm).rate_limit()
 
     if ratelimited:
-        raise RateLimited(secs_to_freedom)
+        raise RateLimitedError(secs_to_freedom)

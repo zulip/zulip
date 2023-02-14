@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
+import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
@@ -30,6 +31,7 @@ import {
     is_visible,
     set_visible,
 } from "./recent_topics_util";
+import * as search from "./search";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
@@ -38,6 +40,7 @@ import * as top_left_corner from "./top_left_corner";
 import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let topics_widget;
@@ -97,15 +100,6 @@ export function clear_for_tests() {
 
 export function save_filters() {
     ls.set(ls_key, Array.from(filters));
-}
-
-export function load_filters() {
-    if (!page_params.is_spectator) {
-        // A user may have a stored filter and can log out
-        // to see web public view. This ensures no filters are
-        // selected for spectators.
-        filters = new Set(ls.get(ls_key));
-    }
 }
 
 export function set_default_focus() {
@@ -296,17 +290,17 @@ export function process_messages(messages) {
     // the UX can be bad if user wants to scroll down the list as
     // the UI will be returned to the beginning of the list on every
     // update.
-    //
-    // Only rerender if topic_data actually
-    // changed.
-    let topic_data_changed = false;
-    for (const msg of messages) {
-        if (process_message(msg)) {
-            topic_data_changed = true;
+    let conversation_data_updated = false;
+    if (messages.length > 0) {
+        for (const msg of messages) {
+            if (process_message(msg)) {
+                conversation_data_updated = true;
+            }
         }
     }
 
-    if (topic_data_changed) {
+    // Only rerender if conversation data actually changed.
+    if (conversation_data_updated) {
         complete_rerender();
     }
 }
@@ -316,6 +310,43 @@ function message_to_conversation_unread_count(msg) {
         return unread.num_unread_for_user_ids_string(msg.to_user_ids);
     }
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
+}
+
+export function get_pm_tooltip_data(user_ids_string) {
+    const user_id = Number.parseInt(user_ids_string, 10);
+    const person = people.get_by_user_id(user_id);
+
+    if (person.is_bot) {
+        const bot_owner = people.get_bot_owner_user(person);
+
+        if (bot_owner) {
+            const bot_owner_name = $t(
+                {defaultMessage: "Owner: {name}"},
+                {name: bot_owner.full_name},
+            );
+
+            return {
+                first_line: person.full_name,
+                second_line: bot_owner_name,
+            };
+        }
+
+        // Bot does not have an owner.
+        return {
+            first_line: person.full_name,
+            second_line: "",
+            third_line: "",
+        };
+    }
+
+    const last_seen = buddy_data.user_last_seen_time_status(user_id);
+
+    // Users does not have a status.
+    return {
+        first_line: last_seen,
+        second_line: "",
+        third_line: "",
+    };
 }
 
 function format_conversation(conversation_data) {
@@ -359,8 +390,12 @@ function format_conversation(conversation_data) {
             context.topic,
         );
 
-        // Display in most recent sender first order
-        all_senders = recent_senders.get_topic_recent_senders(context.stream_id, context.topic);
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        all_senders = recent_senders
+            .get_topic_recent_senders(context.stream_id, context.topic)
+            .reverse();
         senders = all_senders.slice(-MAX_AVATAR);
 
         // Collect extra sender fullname for tooltip
@@ -369,26 +404,48 @@ function format_conversation(conversation_data) {
     } else if (type === "private") {
         // Private message info
         context.user_ids_string = last_msg.to_user_ids;
-        context.pm_with = last_msg.display_reply_to;
+        context.rendered_pm_with = last_msg.display_recipient
+            .filter(
+                (recipient) =>
+                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
+            )
+            .map((user) =>
+                render_user_with_status_icon({
+                    name: user.full_name,
+                    status_emoji_info: user_status.get_status_emoji(user.id),
+                }),
+            )
+            .join(", ");
         context.recipient_id = last_msg.recipient_id;
         context.pm_url = last_msg.pm_with_url;
         context.is_group = last_msg.display_recipient.length > 2;
 
-        // Display in most recent sender first order
-        all_senders = last_msg.display_recipient;
-        senders = all_senders.slice(-MAX_AVATAR).map((sender) => sender.id);
-
         if (!context.is_group) {
-            context.user_circle_class = buddy_data.get_user_circle_class(
-                Number.parseInt(last_msg.to_user_ids, 10),
-            );
+            const user_id = Number.parseInt(last_msg.to_user_ids, 10);
+            const user = people.get_by_user_id(user_id);
+            if (user.is_bot) {
+                // Bots do not have status emoji, and are modeled as
+                // always present.
+                context.user_circle_class = "user_circle_green";
+            } else {
+                context.user_circle_class = buddy_data.get_user_circle_class(user_id);
+            }
         }
 
+        // Since the css for displaying senders in reverse order is much simpler,
+        // we provide our handlebars with senders in opposite order.
+        // Display in most recent sender first order.
+        // To match the behavior for streams, we display the set of users who've actually
+        // participated, with the most recent participants first. It could make sense to
+        // display the other recipients on the PM conversation with different styling,
+        // but it's important to not destroy the information of "who's actually talked".
+        all_senders = recent_senders
+            .get_pm_recent_senders(context.user_ids_string)
+            .participants.reverse();
+        senders = all_senders.slice(-MAX_AVATAR);
         // Collect extra senders fullname for tooltip.
         extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids
-            .slice(-MAX_EXTRA_SENDERS)
-            .map((sender) => sender.id);
+        displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     }
 
     context.senders = people.sender_info_for_recent_topics_row(senders);
@@ -509,51 +566,39 @@ export function inplace_rerender(topic_key) {
 
     const topic_data = topics.get(topic_key);
     const topic_row = get_topic_row(topic_data);
+    // We cannot rely on `topic_widget.meta.filtered_list` to know
+    // if a topic is rendered since the `filtered_list` might have
+    // already been updated via other calls.
+    const is_topic_rendered = topic_row.length;
     // Resorting the topics_widget is important for the case where we
     // are rerendering because of message editing or new messages
     // arriving, since those operations often change the sort key.
     topics_widget.filter_and_sort();
     const current_topics_list = topics_widget.get_current_list();
-    if (topic_row.length && filters_should_hide_topic(topic_data)) {
-        const row_is_focused = get_focused_row_message().id === topic_data.last_msg_id;
+    if (is_topic_rendered && filters_should_hide_topic(topic_data)) {
+        // Since the row needs to be removed from DOM, we need to adjust `row_focus`
+        // if the row being removed is focused and is the last row in the list.
+        // This prevents the row_focus either being reset to the first row or
+        // middle of the visible table rows.
+        // We need to get the current focused row details from DOM since we cannot
+        // rely on `current_topics_list` since it has already been updated and row
+        // doesn't exist inside it.
+        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
         if (row_is_focused && row_focus >= current_topics_list.length) {
             row_focus = current_topics_list.length - 1;
         }
-        topic_row.remove();
-        // We removed a rendered row, so we need to reduce one offset.
-        // TODO: This is correct, but a list_widget abstractions violation.
-        topics_widget.meta.offset -= 1;
-    } else if (!topic_row.length && filters_should_hide_topic(topic_data)) {
+        topics_widget.remove_rendered_row(topic_row);
+    } else if (!is_topic_rendered && filters_should_hide_topic(topic_data)) {
         // In case `topic_row` is not present, our job is already done here
         // since it has not been rendered yet and we already removed it from
         // the filtered list in `topic_widget`. So, it won't be displayed in
         // the future too.
-    } else if (topic_row.length && !filters_should_hide_topic(topic_data)) {
+    } else if (is_topic_rendered && !filters_should_hide_topic(topic_data)) {
         // Only a re-render is required in this case.
         topics_widget.render_item(topic_data);
     } else {
-        // Final case: !topic_row.length && !filters_should_hide_topic(topic_data).
-        if (current_topics_list.length <= 2) {
-            // Avoids edge cases for us and could be faster too.
-            topics_widget.clean_redraw();
-            revive_current_focus();
-            return true;
-        }
-        // We need to insert the row for it to be displayed at the
-        // correct position. current_topics_list must contain the
-        // topic_item, since we know !filters_should_hide_topic(topic_data).
-        const topic_insert_index = current_topics_list.findIndex(
-            (topic_item) => topic_item.last_msg_id === topic_data.last_msg_id,
-        );
-        // Rows greater than `offset` are not rendered in the DOM by list_widget;
-        // for those, there's nothing to update.
-        // TODO: This is correct, but a list_widget abstractions violation.
-        if (topic_insert_index <= topics_widget.meta.offset) {
-            const rendered_row = render_recent_topic_row(format_conversation(topic_data));
-            const $target_row = $(`#recent_topics_table table tbody tr:eq(${topic_insert_index})`);
-            $target_row.before(rendered_row);
-            topics_widget.meta.offset += 1;
-        }
+        // Final case: !is_topic_rendered && !filters_should_hide_topic(topic_data).
+        topics_widget.insert_rendered_row(topic_data);
     }
     setTimeout(revive_current_focus, 0);
     return true;
@@ -734,10 +779,6 @@ export function complete_rerender() {
         return;
     }
 
-    // Update header
-    load_filters();
-    show_selected_filters();
-
     // Show topics list
     const mapped_topic_values = Array.from(get().values()).map((value) => value);
 
@@ -755,6 +796,13 @@ export function complete_rerender() {
         is_spectator: page_params.is_spectator,
     });
     $("#recent_topics_table").html(rendered_body);
+
+    // `show_selected_filters` needs to be called after the Recent
+    // Conversations view has been added to the DOM, to ensure that filters
+    // have the correct classes (checked or not) if Recent Conversations
+    // was not the first view loaded in the app.
+    show_selected_filters();
+
     const $container = $("#recent_topics_table table tbody");
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
@@ -802,7 +850,6 @@ export function show() {
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
     set_visible(true);
-    $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
     unread_ui.hide_mark_as_read_turned_off_banner();
@@ -813,11 +860,11 @@ export function show() {
     compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
-    const recent_topics_title = $t({defaultMessage: "Recent conversations"});
-    narrow.set_narrow_title(recent_topics_title);
+    narrow.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
     pm_list.handle_narrow_deactivated();
+    search.clear_search_form();
 
     complete_rerender();
 }
@@ -836,7 +883,6 @@ export function hide() {
         $focused_element.trigger("blur");
     }
 
-    $("#message_view_header_underpadding").show();
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     set_visible(false);
@@ -848,9 +894,6 @@ export function hide() {
     // to a filter and back to recent topics
     // before it completely re-rerenders.
     message_view_header.render_title_area();
-
-    // Fire our custom event
-    $("#message_feed_container").trigger("message_feed_shown");
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
@@ -1158,4 +1201,14 @@ export function change_focused_element($elt, input_key) {
     }
 
     return false;
+}
+
+export function initialize() {
+    // load filters from local storage.
+    if (!page_params.is_spectator) {
+        // A user may have a stored filter and can log out
+        // to see web public view. This ensures no filters are
+        // selected for spectators.
+        filters = new Set(ls.get(ls_key));
+    }
 }

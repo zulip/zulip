@@ -125,6 +125,10 @@ IGNORED_PHRASES = [
     r"he/him",
     r"she/her",
     r"they/them",
+    # Used in message-move-time-limit setting label
+    r"does not apply to moderators and administrators",
+    # Used in message-delete-time-limit setting label
+    r"does not apply to administrators",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

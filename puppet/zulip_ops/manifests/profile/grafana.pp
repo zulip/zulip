@@ -60,7 +60,7 @@ class zulip_ops::profile::grafana {
     ensure => directory,
     owner  => 'root',
     group  => 'root',
-    mode   => '0644',
+    mode   => '0755',
   }
   file { '/etc/grafana/grafana.ini':
     ensure => file,

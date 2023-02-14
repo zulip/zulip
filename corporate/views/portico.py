@@ -7,9 +7,14 @@ from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
+from corporate.lib.stripe import is_realm_on_free_trial
+from corporate.models import get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics
-from zerver.lib.github import InvalidPlatform, get_latest_github_release_download_link_for_platform
+from zerver.lib.github import (
+    InvalidPlatformError,
+    get_latest_github_release_download_link_for_platform,
+)
 from zerver.lib.realm_description import get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.subdomains import is_subdomain_root_or_alias
@@ -18,19 +23,27 @@ from zerver.models import Realm
 
 @add_google_analytics
 def apps_view(request: HttpRequest, platform: Optional[str] = None) -> HttpResponse:
-    if settings.ZILENCER_ENABLED:
-        return TemplateResponse(
-            request,
-            "corporate/apps.html",
-        )
-    return HttpResponseRedirect("https://zulip.com/apps/", status=301)
+    if not settings.CORPORATE_ENABLED:
+        # This seems impossible (CORPORATE_ENABLED set to false when
+        # rendering a "corporate" view) -- but we add it to make
+        # testing possible.  Tests default to running with the
+        # "corporate" app installed, and unsetting that is difficult,
+        # as one cannot easily reload the URL resolution -- so we add
+        # a redirect here, equivalent to the one zerver would have
+        # installed when "corporate" is not enabled, to make the
+        # behaviour testable with CORPORATE_ENABLED set to false.
+        return HttpResponseRedirect("https://zulip.com/apps/", status=301)
+    return TemplateResponse(
+        request,
+        "corporate/apps.html",
+    )
 
 
 def app_download_link_redirect(request: HttpRequest, platform: str) -> HttpResponse:
     try:
         download_link = get_latest_github_release_download_link_for_platform(platform)
         return HttpResponseRedirect(download_link, status=302)
-    except InvalidPlatform:
+    except InvalidPlatformError:
         return TemplateResponse(request, "404.html", status=404)
 
 
@@ -52,14 +65,10 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             return redirect_to_login(next="/plans")
         if request.user.is_guest:
             return TemplateResponse(request, "404.html", status=404)
-        if settings.CORPORATE_ENABLED:
-            from corporate.lib.stripe import is_realm_on_free_trial
-            from corporate.models import get_customer_by_realm
-
-            customer = get_customer_by_realm(realm)
-            if customer is not None:
-                sponsorship_pending = customer.sponsorship_pending
-                realm_on_free_trial = is_realm_on_free_trial(realm)
+        customer = get_customer_by_realm(realm)
+        if customer is not None:
+            sponsorship_pending = customer.sponsorship_pending
+            realm_on_free_trial = is_realm_on_free_trial(realm)
 
     return TemplateResponse(
         request,

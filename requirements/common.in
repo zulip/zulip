@@ -137,9 +137,6 @@ django-two-factor-auth[call,phonenumberslite,sms]
 # Needed for processing payments (in corporate)
 stripe
 
-# Needed for serving uploaded files from nginx but perform auth checks in django.
-django-sendfile2
-
 # For checking whether email of the user is from a disposable email provider.
 disposable-email-domains
 
@@ -162,7 +159,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
-openapi-schema-validator
+importlib-resources ; python_version < "3.9"
 
 # For reporting errors to sentry.io
 sentry-sdk

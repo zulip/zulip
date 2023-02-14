@@ -1,5 +1,6 @@
 import logging
 import os
+import posixpath
 import random
 import secrets
 import shutil
@@ -8,6 +9,7 @@ import zipfile
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
+from urllib.parse import urlsplit
 
 import orjson
 import requests
@@ -42,7 +44,8 @@ from zerver.data_import.slack_message_conversion import (
 )
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.upload import resize_logo, sanitize_name
+from zerver.lib.storage import static_path
+from zerver.lib.upload.base import resize_logo, sanitize_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -61,13 +64,12 @@ SlackToZulipRecipientT = Dict[str, int]
 # Generic type for SlackBotEmail class
 SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
 
-# Initialize iamcal emoji data, because Slack seems to use emoji naming from iamcal.
-# According to https://emojipedia.org/slack/, Slack's emoji shortcodes are
-# derived from https://github.com/iamcal/emoji-data.
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
-NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")
-EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, "emoji-datasource-google", "emoji.json")
-with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
+# We can look up unicode codepoints for Slack emoji using iamcal emoji
+# data. https://emojipedia.org/slack/, documents Slack's emoji names
+# are derived from https://github.com/iamcal/emoji-data; this seems
+# likely to remain true since Cal is a Slack's cofounder.
+emoji_data_file_path = static_path("generated/emoji/emoji-datasource-google-emoji.json")
+with open(emoji_data_file_path, "rb") as emoji_data_file:
     emoji_data = orjson.loads(emoji_data_file.read())
 
 
@@ -211,11 +213,15 @@ def build_realmemoji(
     emoji_url_map = {}
     emoji_id = 0
     for emoji_name, url in custom_emoji_list.items():
-        if "emoji.slack-edge.com" in url:
+        split_url = urlsplit(url)
+        if split_url.hostname == "emoji.slack-edge.com":
             # Some of the emojis we get from the API have invalid links
             # this is to prevent errors related to them
             realmemoji = RealmEmoji(
-                name=emoji_name, id=emoji_id, file_name=os.path.basename(url), deactivated=False
+                name=emoji_name,
+                id=emoji_id,
+                file_name=posixpath.basename(split_url.path),
+                deactivated=False,
             )
 
             realmemoji_dict = model_to_dict(realmemoji, exclude=["realm", "author"])
@@ -910,7 +916,7 @@ def channel_message_to_zerver_message(
 
         message_id = NEXT_ID("message")
 
-        if "reactions" in message.keys():
+        if "reactions" in message:
             build_reactions(
                 reaction_list,
                 message["reactions"],
@@ -1040,12 +1046,13 @@ def process_message_files(
             continue
 
         url = fileinfo["url_private"]
+        split_url = urlsplit(url)
 
-        if "files.slack.com" in url:
+        if split_url.hostname == "files.slack.com":
             # For attachments with Slack download link
             has_attachment = True
             has_link = True
-            has_image = True if "image" in fileinfo["mimetype"] else False
+            has_image = "image" in fileinfo["mimetype"]
 
             file_user = [
                 iterate_user for iterate_user in users if message["user"] == iterate_user["id"]
@@ -1120,6 +1127,18 @@ def build_reactions(
     for realm_emoji in zerver_realmemoji:
         realmemoji[realm_emoji["name"]] = realm_emoji["id"]
 
+    # Slack's data exports use encode skin tone variants on emoji
+    # reactions like this: `clap::skin-tone-2`. For now, we only
+    # use the name of the base emoji, since Zulip's emoji
+    # reactions system doesn't yet support skin tone modifiers.
+    # We need to merge and dedup reactions, as someone may have
+    # reacted to `clap::skin-tone-1` and `clap::skin-tone-2`, etc.
+    merged_reactions = defaultdict(set)
+    for slack_reaction in reactions:
+        emoji_name = slack_reaction["name"].split("::", maxsplit=1)[0]
+        merged_reactions[emoji_name].update(slack_reaction["users"])
+    reactions = [{"name": k, "users": v, "count": len(v)} for k, v in merged_reactions.items()]
+
     # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
@@ -1142,6 +1161,10 @@ def build_reactions(
             continue
 
         for slack_user_id in slack_reaction["users"]:
+            if slack_user_id not in slack_user_id_to_zulip_user_id:
+                # Deleted users still have reaction references but no profile, so we skip
+                continue
+
             reaction_id = NEXT_ID("reaction")
             reaction = Reaction(
                 id=reaction_id,
@@ -1307,6 +1330,14 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
             os.makedirs(slack_data_dir)
 
         with zipfile.ZipFile(original_path) as zipObj:
+            # Slack's export doesn't set the UTF-8 flag on each
+            # filename entry, despite encoding them as such, so
+            # zipfile mojibake's the output.  Explicitly re-interpret
+            # it as UTF-8 mis-decoded as cp437, the default.
+            for fileinfo in zipObj.infolist():
+                fileinfo.flag_bits |= 0x800
+                fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")
+                zipObj.NameToInfo[fileinfo.filename] = fileinfo
             zipObj.extractall(slack_data_dir)
     elif os.path.isdir(original_path):
         slack_data_dir = original_path

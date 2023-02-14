@@ -45,7 +45,7 @@ def timeout_error(final_url: Any, **request_kwargs: Any) -> Any:
 
 
 def connection_error(final_url: Any, **request_kwargs: Any) -> Any:
-    raise requests.exceptions.ConnectionError()
+    raise requests.exceptions.ConnectionError
 
 
 class DoRestCallTests(ZulipTestCase):
@@ -66,6 +66,7 @@ class DoRestCallTests(ZulipTestCase):
                 "sender_full_name": bot_user.full_name,
                 "sender_avatar_source": UserProfile.AVATAR_FROM_GRAVATAR,
                 "sender_avatar_version": 1,
+                "sender_email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 "recipient_type": "stream",
                 "recipient_type_id": 999,
                 "sender_is_mirror_dummy": False,

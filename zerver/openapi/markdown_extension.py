@@ -141,7 +141,7 @@ def render_python_code_example(
     endpoint, endpoint_method = function.split(":")
     extra_imports = check_additional_imports(endpoint, endpoint_method)
     if extra_imports:
-        extra_imports = sorted(extra_imports + ["zulip"])
+        extra_imports = sorted([*extra_imports, "zulip"])
         extra_imports = [f"import {each_import}" for each_import in extra_imports]
         config_string = config_string.replace("import zulip", "\n".join(extra_imports))
 
@@ -273,7 +273,6 @@ def generate_curl_example(
     exclude: Optional[List[str]] = None,
     include: Optional[List[str]] = None,
 ) -> List[str]:
-
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
@@ -307,16 +306,14 @@ def generate_curl_example(
             authentication_required = True
         else:
             raise AssertionError(
-                "Unhandled global securityScheme."
-                + " Please update the code to handle this scheme."
+                "Unhandled global securityScheme. Please update the code to handle this scheme."
             )
     elif operation_security == []:
         if operation in insecure_operations:
             authentication_required = False
         else:
             raise AssertionError(
-                "Unknown operation without a securityScheme. "
-                + "Please update insecure_operations."
+                "Unknown operation without a securityScheme. Please update insecure_operations."
             )
     else:
         raise AssertionError(
@@ -437,11 +434,11 @@ class APIMarkdownExtension(Extension):
 
 class BasePreprocessor(Preprocessor):
     def __init__(
-        self, REGEXP: Pattern[str], md: markdown.Markdown, config: Mapping[str, Any]
+        self, regexp: Pattern[str], md: markdown.Markdown, config: Mapping[str, Any]
     ) -> None:
         super().__init__(md)
         self.api_url = config["api_url"]
-        self.REGEXP = REGEXP
+        self.REGEXP = regexp
 
     def run(self, lines: List[str]) -> List[str]:
         done = False

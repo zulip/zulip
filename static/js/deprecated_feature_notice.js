@@ -44,7 +44,7 @@ export function maybe_show_deprecation_notice(key) {
             html_heading: $t_html({defaultMessage: "Deprecation notice"}),
             html_body: message,
             html_submit_button: $t_html({defaultMessage: "Got it"}),
-            on_click: () => {},
+            on_click() {},
             close_on_submit: true,
             focus_submit_on_open: true,
             single_footer_button: true,

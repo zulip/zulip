@@ -110,10 +110,10 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.source.html"
 
-        from zerver.lib.send_email import NoEmailArgumentException
+        from zerver.lib.send_email import NoEmailArgumentError
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -124,7 +124,7 @@ class TestCustomEmails(ZulipTestCase):
         )
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -142,10 +142,10 @@ class TestCustomEmails(ZulipTestCase):
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
         )
 
-        from zerver.lib.send_email import DoubledEmailArgumentException
+        from zerver.lib.send_email import DoubledEmailArgumentError
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -156,7 +156,7 @@ class TestCustomEmails(ZulipTestCase):
         )
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
             [hamlet],
             options={
@@ -214,7 +214,10 @@ class TestFollowupEmails(ZulipTestCase):
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
-        self.assertEqual(email_data["context"]["getting_started_link"], "https://zulip.com")
+        self.assertEqual(
+            email_data["context"]["getting_user_started_link"],
+            "http://zulip.testserver/help/getting-started-with-zulip",
+        )
         self.assertNotIn("ldap_username", email_data["context"])
 
         ScheduledEmail.objects.all().delete()
@@ -226,8 +229,12 @@ class TestFollowupEmails(ZulipTestCase):
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
         self.assertEqual(
-            email_data["context"]["getting_started_link"],
+            email_data["context"]["getting_organization_started_link"],
             "http://zulip.testserver/help/getting-your-organization-started-with-zulip",
+        )
+        self.assertEqual(
+            email_data["context"]["getting_user_started_link"],
+            "http://zulip.testserver/help/getting-started-with-zulip",
         )
         self.assertNotIn("ldap_username", email_data["context"])
 
@@ -350,7 +357,7 @@ class TestFollowupEmails(ZulipTestCase):
         self.assert_length(outbox, 1)
 
         message = outbox[0]
-        self.assertIn("You've created the new Zulip organization", message.body)
+        self.assertIn("you have created a new Zulip organization", message.body)
         self.assertNotIn("demo org", message.body)
 
     def test_followup_emails_for_demo_realms(self) -> None:
@@ -372,7 +379,7 @@ class TestFollowupEmails(ZulipTestCase):
         self.assert_length(outbox, 1)
 
         message = outbox[0]
-        self.assertIn("You've created a demo Zulip organization", message.body)
+        self.assertIn("you have created a new demo Zulip organization", message.body)
 
 
 class TestMissedMessages(ZulipTestCase):
@@ -509,7 +516,12 @@ class TestMissedMessages(ZulipTestCase):
         self, send_as_user: bool, show_message_content: bool = True
     ) -> None:
         for i in range(0, 11):
-            self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
+            self.send_stream_message(
+                self.example_user("othello"),
+                "Denmark",
+                content=str(i),
+                topic_name="test" if i % 2 == 0 else "TEST",
+            )
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
         msg_id = self.send_stream_message(
             self.example_user("othello"), "denmark", "@**King Hamlet**"
@@ -624,6 +636,29 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = "#Denmark > test"
         self._test_cases(
             msg_id, verify_body_include, email_subject, send_as_user, trigger="mentioned"
+        )
+
+    def _resolved_topic_missed_stream_messages_thread_friendly(self, send_as_user: bool) -> None:
+        topic_name = "threading and so forth"
+        othello_user = self.example_user("othello")
+        msg_id = -1
+        for i in range(0, 3):
+            msg_id = self.send_stream_message(
+                othello_user,
+                "Denmark",
+                content=str(i),
+                topic_name=topic_name,
+            )
+
+        self.assert_json_success(self.resolve_topic_containing_message(othello_user, msg_id))
+
+        verify_body_include = [
+            "Othello, the Moor of Venice: > 0 > 1 > 2 -- ",
+            "You are receiving this because you have email notifications enabled for #Denmark.",
+        ]
+        email_subject = "[resolved] #Denmark > threading and so forth"
+        self._test_cases(
+            msg_id, verify_body_include, email_subject, send_as_user, trigger="stream_email_notify"
         )
 
     def _extra_context_in_missed_personal_messages(
@@ -821,9 +856,11 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
 
-        hamlet_only = create_user_group("hamlet_only", [hamlet], get_realm("zulip"))
+        hamlet_only = create_user_group(
+            "hamlet_only", [hamlet], get_realm("zulip"), acting_user=None
+        )
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         hamlet_only_message_id = self.send_stream_message(othello, "Denmark", "@*hamlet_only*")
@@ -861,7 +898,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         user_group_mentioned_message_id = self.send_stream_message(
@@ -901,7 +938,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
 
         hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
         )
 
         wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
@@ -1027,6 +1064,13 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_extra_context_in_missed_stream_messages_email_notify(self) -> None:
         self._extra_context_in_missed_stream_messages_email_notify(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_resolved_topic_missed_stream_messages_thread_friendly_as_user(self) -> None:
+        self._resolved_topic_missed_stream_messages_thread_friendly(True)
+
+    def test_resolved_topic_missed_stream_messages_thread_friendly(self) -> None:
+        self._resolved_topic_missed_stream_messages_thread_friendly(False)
 
     @override_settings(EMAIL_GATEWAY_PATTERN="")
     def test_reply_warning_in_missed_personal_messages(self) -> None:
@@ -1419,7 +1463,7 @@ class TestMissedMessages(ZulipTestCase):
         actual_output = convert(test_data)
         expected_output = (
             '<div><a href="http://example.com/user_uploads/{realm_id}/1f/some_random_value">'
-            + "/user_uploads/{realm_id}/1f/some_random_value</a></div>"
+            "/user_uploads/{realm_id}/1f/some_random_value</a></div>"
         )
         expected_output = expected_output.format(realm_id=zephyr_realm.id)
         self.assertEqual(actual_output, expected_output)
@@ -1433,27 +1477,31 @@ class TestMissedMessages(ZulipTestCase):
         # A narrow URL which begins with a '#'.
         test_data = (
             '<p><a href="#narrow/stream/test/topic/test.20topic/near/142"'
-            + 'title="#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
+            ' title="#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
         )
         actual_output = convert(test_data)
         expected_output = (
-            '<div><p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142" '
-            + 'title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p></div>'
+            '<div><p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142"'
+            ' title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p></div>'
         )
         self.assertEqual(actual_output, expected_output)
 
         # Scrub inline images.
         test_data = (
-            '<p>See this <a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" '
-            + 'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p>'
-            + '<div class="message_inline_image"><a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" '
-            + 'target="_blank" title="avatar_103.jpeg"><img src="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
+            "<p>See this <a"
+            ' href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"'
+            ' target="_blank" title="avatar_103.jpeg">avatar_103.jpeg</a>.</p>'
+            '<div class="message_inline_image"><a'
+            ' href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"'
+            ' target="_blank" title="avatar_103.jpeg"><img'
+            ' src="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
         )
         test_data = test_data.format(realm_id=zulip_realm.id)
         actual_output = convert(test_data)
         expected_output = (
-            '<div><p>See this <a href="http://example.com/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" '
-            + 'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
+            "<div><p>See this <a"
+            ' href="http://example.com/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"'
+            ' target="_blank" title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
         )
         expected_output = expected_output.format(realm_id=zulip_realm.id)
         self.assertEqual(actual_output, expected_output)
@@ -1461,16 +1509,17 @@ class TestMissedMessages(ZulipTestCase):
         # A message containing only an inline image URL preview, we do
         # somewhat more extensive surgery.
         test_data = (
-            '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" '
-            + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
-            + '<img data-src-fullsize="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" '
-            + 'src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
+            '<div class="message_inline_image"><a'
+            ' href="https://www.google.com/images/srpr/logo4w.png"'
+            ' target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
+            '<img data-src-fullsize="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0"'
+            ' src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
         )
         actual_output = convert(test_data)
         expected_output = (
-            '<div><p><a href="https://www.google.com/images/srpr/logo4w.png" '
-            + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
-            + "https://www.google.com/images/srpr/logo4w.png</a></p></div>"
+            '<div><p><a href="https://www.google.com/images/srpr/logo4w.png"'
+            ' target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
+            "https://www.google.com/images/srpr/logo4w.png</a></p></div>"
         )
         self.assertEqual(actual_output, expected_output)
 
@@ -1516,15 +1565,17 @@ class TestMissedMessages(ZulipTestCase):
     def test_fix_emoji(self) -> None:
         # An emoji.
         test_data = (
-            '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8" role="img" title="cloud with lightning and rain">'
-            + ":cloud_with_lightning_and_rain:</span>.</p>"
+            '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8"'
+            ' role="img" title="cloud with lightning and'
+            ' rain">:cloud_with_lightning_and_rain:</span>.</p>'
         )
         fragment = lxml.html.fromstring(test_data)
         fix_emojis(fragment, "http://example.com", "google")
         actual_output = lxml.html.tostring(fragment, encoding="unicode")
         expected_output = (
-            '<p>See <img alt=":cloud_with_lightning_and_rain:" src="http://example.com/static/generated/emoji/images-google-64/26c8.png" '
-            + 'title="cloud with lightning and rain" style="height: 20px;">.</p>'
+            '<p>See <img alt=":cloud_with_lightning_and_rain:"'
+            ' src="http://example.com/static/generated/emoji/images-google-64/26c8.png"'
+            ' title="cloud with lightning and rain" style="height: 20px;">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
 
@@ -1545,7 +1596,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         large_user_group = create_user_group(
-            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip")
+            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip"), acting_user=None
         )
 
         # Do note that the event dicts for the missed messages are constructed by hand

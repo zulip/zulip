@@ -30,10 +30,10 @@ function make_cursor_helper() {
     const events = [];
 
     stream_list.__Rewire__("stream_cursor", {
-        reset: () => {
+        reset() {
             events.push("reset");
         },
-        clear: () => {
+        clear() {
             events.push("clear");
         },
     });

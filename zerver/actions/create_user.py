@@ -59,8 +59,12 @@ ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
 ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
 
+DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 
-def create_historical_user_messages(*, user_id: int, message_ids: List[int]) -> None:
+
+def create_historical_user_messages(
+    *, user_id: int, message_ids: Iterable[int], flags: int = DEFAULT_HISTORICAL_FLAGS
+) -> None:
     # Users can see and interact with messages sent to streams with
     # public history for which they do not have a UserMessage because
     # they were not a subscriber at the time the message was sent.
@@ -68,12 +72,10 @@ def create_historical_user_messages(*, user_id: int, message_ids: List[int]) -> 
     # those messages, we create UserMessage objects for those messages;
     # these have the special historical flag which keeps track of the
     # fact that the user did not receive the message at the time it was sent.
-    for message_id in message_ids:
-        UserMessage.objects.create(
-            user_profile_id=user_id,
-            message_id=message_id,
-            flags=UserMessage.flags.historical | UserMessage.flags.read,
-        )
+    UserMessage.objects.bulk_create(
+        UserMessage(user_profile_id=user_id, message_id=message_id, flags=flags)
+        for message_id in message_ids
+    )
 
 
 def send_message_to_signup_notification_stream(
@@ -303,9 +305,7 @@ def notify_created_user(user_profile: UserProfile) -> None:
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
     for user in active_users:
-        if can_access_delivery_email(
-            user, user_profile.id, user_profile.realm.email_address_visibility
-        ):
+        if can_access_delivery_email(user, user_profile.id, user_row["email_address_visibility"]):
             user_ids_with_real_email_access.append(user.id)
         else:
             user_ids_without_real_email_access.append(user.id)
@@ -313,12 +313,20 @@ def notify_created_user(user_profile: UserProfile) -> None:
     if user_ids_with_real_email_access:
         person["delivery_email"] = user_profile.delivery_email
         event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
-        send_event(user_profile.realm, event, user_ids_with_real_email_access)
+        transaction.on_commit(
+            lambda event=event: send_event(
+                user_profile.realm, event, user_ids_with_real_email_access
+            )
+        )
 
     if user_ids_without_real_email_access:
-        del person["delivery_email"]
+        person["delivery_email"] = None
         event = dict(type="realm_user", op="add", person=person)
-        send_event(user_profile.realm, event, user_ids_without_real_email_access)
+        transaction.on_commit(
+            lambda event=event: send_event(
+                user_profile.realm, event, user_ids_without_real_email_access
+            )
+        )
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -355,9 +363,12 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
 
 def notify_created_bot(user_profile: UserProfile) -> None:
     event = created_bot_event(user_profile)
-    send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
+    transaction.on_commit(
+        lambda: send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
+    )
 
 
+@transaction.atomic(durable=True)
 def do_create_user(
     email: str,
     password: Optional[str],
@@ -381,75 +392,74 @@ def do_create_user(
     acting_user: Optional[UserProfile],
     enable_marketing_emails: bool = True,
 ) -> UserProfile:
-    with transaction.atomic():
-        user_profile = create_user(
-            email=email,
-            password=password,
-            realm=realm,
-            full_name=full_name,
-            role=role,
-            bot_type=bot_type,
-            bot_owner=bot_owner,
-            tos_version=tos_version,
-            timezone=timezone,
-            avatar_source=avatar_source,
-            default_language=default_language,
-            default_sending_stream=default_sending_stream,
-            default_events_register_stream=default_events_register_stream,
-            default_all_public_streams=default_all_public_streams,
-            source_profile=source_profile,
-            enable_marketing_emails=enable_marketing_emails,
-        )
+    user_profile = create_user(
+        email=email,
+        password=password,
+        realm=realm,
+        full_name=full_name,
+        role=role,
+        bot_type=bot_type,
+        bot_owner=bot_owner,
+        tos_version=tos_version,
+        timezone=timezone,
+        avatar_source=avatar_source,
+        default_language=default_language,
+        default_sending_stream=default_sending_stream,
+        default_events_register_stream=default_events_register_stream,
+        default_all_public_streams=default_all_public_streams,
+        source_profile=source_profile,
+        enable_marketing_emails=enable_marketing_emails,
+    )
 
-        event_time = user_profile.date_joined
-        if not acting_user:
-            acting_user = user_profile
-        RealmAuditLog.objects.create(
+    event_time = user_profile.date_joined
+    if not acting_user:
+        acting_user = user_profile
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        event_type=RealmAuditLog.USER_CREATED,
+        event_time=event_time,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            }
+        ).decode(),
+    )
+
+    if realm_creation:
+        # If this user just created a realm, make sure they are
+        # properly tagged as the creator of the realm.
+        realm_creation_audit_log = (
+            RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
+            .order_by("id")
+            .last()
+        )
+        assert realm_creation_audit_log is not None
+        realm_creation_audit_log.acting_user = user_profile
+        realm_creation_audit_log.save(update_fields=["acting_user"])
+
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["active_users_log:is_bot:day"],
+        user_profile.is_bot,
+        event_time,
+    )
+    if settings.BILLING_ENABLED:
+        update_license_ledger_if_needed(user_profile.realm, event_time)
+
+    system_user_group = get_system_user_group_for_user(user_profile)
+    UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
+
+    if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+        full_members_system_group = UserGroup.objects.get(
+            name=UserGroup.FULL_MEMBERS_GROUP_NAME,
             realm=user_profile.realm,
-            acting_user=acting_user,
-            modified_user=user_profile,
-            event_type=RealmAuditLog.USER_CREATED,
-            event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
+            is_system_group=True,
         )
-
-        if realm_creation:
-            # If this user just created a realm, make sure they are
-            # properly tagged as the creator of the realm.
-            realm_creation_audit_log = (
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
-                .order_by("id")
-                .last()
-            )
-            assert realm_creation_audit_log is not None
-            realm_creation_audit_log.acting_user = user_profile
-            realm_creation_audit_log.save(update_fields=["acting_user"])
-
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
+        UserGroupMembership.objects.create(
+            user_profile=user_profile, user_group=full_members_system_group
         )
-        if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
-
-        system_user_group = get_system_user_group_for_user(user_profile)
-        UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
-
-        if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
-            full_members_system_group = UserGroup.objects.get(
-                name=UserGroup.FULL_MEMBERS_GROUP_NAME,
-                realm=user_profile.realm,
-                is_system_group=True,
-            )
-            UserGroupMembership.objects.create(
-                user_profile=user_profile, user_group=full_members_system_group
-            )
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
@@ -533,32 +543,32 @@ def do_activate_mirror_dummy_user(
     notify_created_user(user_profile)
 
 
+@transaction.atomic(savepoint=False)
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     """Reactivate a user that had previously been deactivated"""
-    with transaction.atomic():
-        change_user_is_active(user_profile, True)
+    change_user_is_active(user_profile, True)
 
-        event_time = timezone_now()
-        RealmAuditLog.objects.create(
-            realm=user_profile.realm,
-            modified_user=user_profile,
-            acting_user=acting_user,
-            event_type=RealmAuditLog.USER_REACTIVATED,
-            event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
-        )
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-        )
-        if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.USER_REACTIVATED,
+        event_time=event_time,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            }
+        ).decode(),
+    )
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["active_users_log:is_bot:day"],
+        user_profile.is_bot,
+        event_time,
+    )
+    if settings.BILLING_ENABLED:
+        update_license_ledger_if_needed(user_profile.realm, event_time)
 
     notify_created_user(user_profile)
 

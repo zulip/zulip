@@ -21,7 +21,7 @@ export const page_params: {
     realm_create_web_public_stream_policy: number;
     realm_delete_own_message_policy: number;
     realm_edit_topic_policy: number;
-    realm_email_address_visibility: number;
+    realm_email_changes_disabled: boolean;
     realm_enable_spectator_access: boolean;
     realm_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;
@@ -36,6 +36,7 @@ export const page_params: {
     server_web_public_streams_enabled: boolean;
     translation_data: Record<string, string>;
     zulip_plan_is_not_limited: boolean;
+    muted_users: {id: number; timestamp: number}[];
 } = $("#page-params").remove().data("params");
 const t2 = performance.now();
 export const page_params_parse_time = t2 - t1;

@@ -57,8 +57,8 @@ test("unloaded", () => {
 function createSaveButtons(subsection) {
     const $stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
     const $save_button_controls = $(".save-button-controls");
-    const $stub_save_button = $(`#org-submit-${CSS.escape(subsection)}`);
-    const $stub_discard_button = $(`#org-discard-${CSS.escape(subsection)}`);
+    const $stub_save_button = $(".save-discard-widget-button.save-button");
+    const $stub_discard_button = $(".save-discard-widget-button.discard-button");
     const $stub_save_button_text = $(".save-discard-widget-button-text");
     $stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
@@ -70,7 +70,7 @@ function createSaveButtons(subsection) {
     $stub_save_button_header.set_find_results(".save-button-controls", $save_button_controls);
     $stub_save_button_header.set_find_results(
         ".subsection-changes-discard button",
-        $(`#org-discard-${CSS.escape(subsection)}`),
+        $stub_discard_button,
     );
     $save_button_controls.set_find_results(".discard-button", $stub_discard_button);
     const props = {};
@@ -99,8 +99,6 @@ function createSaveButtons(subsection) {
 function test_submit_settings_form(override, submit_form) {
     Object.assign(page_params, {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
-        realm_email_address_visibility:
-            settings_config.email_address_visibility_values.admins_only.code,
         realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
@@ -127,10 +125,11 @@ function test_submit_settings_form(override, submit_form) {
     });
 
     let subsection = "other-permissions";
-    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
+    ev.currentTarget = ".save-discard-widget-button.save-button";
     let stubs = createSaveButtons(subsection);
     let $save_button = stubs.$save_button;
-    $save_button.attr("id", `org-submit-${subsection}`);
+    let $save_button_header = stubs.$save_button_header;
+    $save_button_header.attr("id", `org-${subsection}`);
 
     $("#id_realm_waiting_period_threshold").val(10);
 
@@ -158,10 +157,6 @@ function test_submit_settings_form(override, submit_form) {
     $bot_creation_policy_elem.val("1");
     $bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
     $bot_creation_policy_elem.data = () => "number";
-    const $email_address_visibility_elem = $("#id_realm_email_address_visibility");
-    $email_address_visibility_elem.val("1");
-    $email_address_visibility_elem.attr("id", "id_realm_email_address_visibility");
-    $email_address_visibility_elem.data = () => "number";
 
     const $invite_to_realm_policy_elem = $("#id_realm_invite_to_realm_policy");
     $invite_to_realm_policy_elem.val("2");
@@ -169,10 +164,8 @@ function test_submit_settings_form(override, submit_form) {
     $invite_to_realm_policy_elem.data = () => "number";
 
     let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.closest = () => $subsection_elem;
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
-        $email_address_visibility_elem,
         $add_custom_emoji_policy_elem,
         $create_public_stream_policy_elem,
         $create_private_stream_policy_elem,
@@ -188,7 +181,6 @@ function test_submit_settings_form(override, submit_form) {
         bot_creation_policy: 1,
         invite_to_realm_policy: 2,
         invite_to_stream_policy: 1,
-        email_address_visibility: 1,
         add_custom_emoji_policy: 1,
         create_public_stream_policy: 2,
         create_private_stream_policy: 2,
@@ -196,10 +188,11 @@ function test_submit_settings_form(override, submit_form) {
     assert.deepEqual(data, expected_value);
 
     subsection = "user-defaults";
-    ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
+    ev.currentTarget = ".save-discard-widget-button.save-button";
     stubs = createSaveButtons(subsection);
     $save_button = stubs.$save_button;
-    $save_button.attr("id", `org-submit-${subsection}`);
+    $save_button_header = stubs.$save_button_header;
+    $save_button_header.attr("id", `org-${subsection}`);
 
     const $realm_default_language_elem = $("#id_realm_default_language");
     $realm_default_language_elem.val("en");
@@ -207,7 +200,6 @@ function test_submit_settings_form(override, submit_form) {
     $realm_default_language_elem.data = () => "string";
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.closest = () => $subsection_elem;
     $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
 
     submit_form(ev);
@@ -226,9 +218,15 @@ function test_submit_settings_form(override, submit_form) {
 }
 
 function test_change_save_button_state() {
-    const {$save_button_controls, $save_button_text, $save_button, $discard_button, props} =
-        createSaveButtons("msg-editing");
-    $save_button.attr("id", "org-submit-msg-editing");
+    const {
+        $save_button_controls,
+        $save_button_text,
+        $save_button,
+        $save_button_header,
+        $discard_button,
+        props,
+    } = createSaveButtons("msg-editing");
+    $save_button_header.attr("id", "org-msg-editing");
 
     {
         settings_org.change_save_button_state($save_button_controls, "unsaved");
@@ -433,7 +431,7 @@ function test_discard_changes_button(discard_changes) {
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
-        target: "#org-discard-msg-editing",
+        target: ".save-discard-widget-button.discard-button",
     };
 
     page_params.realm_allow_edit_history = true;
@@ -472,7 +470,7 @@ function test_discard_changes_button(discard_changes) {
         "id_realm_message_content_delete_limit_minutes",
     );
 
-    const $discard_button_parent = $(".org-subsection-parent");
+    const $discard_button_parent = $(".settings-subsection-parent");
     $discard_button_parent.find = () => [
         $allow_edit_history,
         $msg_edit_limit_setting,
@@ -526,6 +524,12 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
         $.create("<stub edit limit custom input parent>"),
     );
+    $("#id_realm_move_messages_within_stream_limit_minutes").set_parent(
+        $.create("<stub move within stream custom input parent>"),
+    );
+    $("#id_realm_move_messages_between_streams_limit_minutes").set_parent(
+        $.create("<stub move between streams custom input parent>"),
+    );
     $("#id_realm_message_content_delete_limit_minutes").set_parent(
         $.create("<stub delete limit custom input parent>"),
     );
@@ -534,6 +538,18 @@ test("set_up", ({override, override_rewire}) => {
     );
     $("#id_realm_message_content_edit_limit_seconds").set_parent(
         $stub_message_content_edit_limit_parent,
+    );
+
+    const $stub_move_within_stream_limit_parent = $.create("<stub move_within_stream_limit parent");
+    $("#id_realm_move_messages_within_stream_limit_seconds").set_parent(
+        $stub_move_within_stream_limit_parent,
+    );
+
+    const $stub_move_between_streams_limit_parent = $.create(
+        "<stub move_between_streams_limit parent",
+    );
+    $("#id_realm_move_messages_between_streams_limit_seconds").set_parent(
+        $stub_move_between_streams_limit_parent,
     );
 
     const $stub_message_content_delete_limit_parent = $.create(
@@ -545,19 +561,73 @@ test("set_up", ({override, override_rewire}) => {
 
     const $custom_edit_limit_input = $("#id_realm_message_content_edit_limit_minutes");
     $stub_message_content_edit_limit_parent.set_find_results(
-        ".admin-realm-time-limit-input",
+        ".time-limit-custom-input",
         $custom_edit_limit_input,
     );
     $custom_edit_limit_input.attr("id", "id_realm_message_content_edit_limit_minutes");
 
+    const $custom_move_within_stream_limit_input = $(
+        "#id_realm_move_messages_within_stream_limit_minutes",
+    );
+    $stub_move_within_stream_limit_parent.set_find_results(
+        ".time-limit-custom-input",
+        $custom_move_within_stream_limit_input,
+    );
+    $custom_move_within_stream_limit_input.attr(
+        "id",
+        "id_realm_move_messages_within_stream_limit_minutes",
+    );
+
+    const $custom_move_between_streams_limit_input = $(
+        "#id_realm_move_messages_between_streams_limit_minutes",
+    );
+    $stub_move_between_streams_limit_parent.set_find_results(
+        ".time-limit-custom-input",
+        $custom_move_between_streams_limit_input,
+    );
+    $custom_move_between_streams_limit_input.attr(
+        "id",
+        "id_realm_move_messages_between_streams_limit_minutes",
+    );
+
     const $custom_delete_limit_input = $("#id_realm_message_content_delete_limit_minutes");
     $stub_message_content_delete_limit_parent.set_find_results(
-        ".admin-realm-time-limit-input",
+        ".time-limit-custom-input",
         $custom_delete_limit_input,
     );
     $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
 
-    $("#id_realm_message_retention_days").set_parent($.create("<stub retention period parent>"));
+    const $stub_realm_message_retention_parent = $.create(
+        "<stub message retention setting parent>",
+    );
+    const $realm_message_retention_custom_input = $("#id_realm_message_retention_custom_input");
+    $("#id_realm_message_retention_days").set_parent($stub_realm_message_retention_parent);
+    $realm_message_retention_custom_input.set_parent($stub_realm_message_retention_parent);
+    $stub_realm_message_retention_parent.set_find_results(
+        ".message-retention-setting-custom-input",
+        $realm_message_retention_custom_input,
+    );
+    $realm_message_retention_custom_input.attr("id", "id_realm_message_retention_custom_input");
+
+    const $stub_realm_waiting_period_threshold_parent = $.create(
+        "<stub waiting period threshold setting parent>",
+    );
+    const $realm_waiting_period_threshold_custom_input = $(
+        "#id_realm_waiting_period_threshold_custom_input",
+    );
+    $("#id_realm_waiting_period_threshold").set_parent($stub_realm_waiting_period_threshold_parent);
+    $realm_waiting_period_threshold_custom_input.set_parent(
+        $stub_realm_waiting_period_threshold_parent,
+    );
+    $stub_realm_waiting_period_threshold_parent.set_find_results(
+        ".time-limit-custom-input",
+        $realm_waiting_period_threshold_custom_input,
+    );
+    $realm_waiting_period_threshold_custom_input.attr(
+        "id",
+        "id_realm_waiting_period_threshold_custom_input",
+    );
+
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
     );
@@ -703,6 +773,8 @@ test("test get_sorted_options_list", () => {
 
 test("misc", ({override_rewire}) => {
     page_params.is_admin = false;
+    $("#user-avatar-upload-widget").length = 1;
+    $("#user_details_section").length = 1;
 
     const $stub_notification_disable_parent = $.create("<stub notification_disable parent");
     $stub_notification_disable_parent.set_find_results(
@@ -714,59 +786,62 @@ test("misc", ({override_rewire}) => {
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
-    assert.equal($(".change_name_tooltip").is(":visible"), false);
+    assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
-    assert.ok($(".change_name_tooltip").is(":visible"));
+    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
-    assert.ok($(".change_name_tooltip").is(":visible"));
+    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
-    assert.ok($(".change_name_tooltip").is(":visible"));
+    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     page_params.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
-    assert.ok(!$("#change_email").prop("disabled"));
+    assert.ok(!$("#change_email_button").prop("disabled"));
 
     page_params.realm_email_changes_disabled = true;
     settings_account.update_email_change_display();
-    assert.ok($("#change_email").prop("disabled"));
+    assert.ok($("#change_email_button").prop("disabled"));
 
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.ok($("#user-avatar-upload-widget .image_upload_button").is(":visible"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
     // If organization admin, these UI elements are never disabled.
     page_params.is_admin = true;
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
-    assert.equal($(".change_name_tooltip").is(":visible"), false);
+    assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
     settings_account.update_email_change_display();
-    assert.ok(!$("#change_email").prop("disabled"));
+    assert.ok(!$("#change_email_button").prop("disabled"));
+
+    settings_account.update_avatar_change_display();
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
     override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},

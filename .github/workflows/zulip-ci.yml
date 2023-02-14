@@ -150,6 +150,7 @@ jobs:
           ./tools/test-migrations
           ./tools/setup/optimize-svg --check
           ./tools/setup/generate_integration_bots_avatars.py --check-missing
+          ./tools/ci/check-executables
 
           # Ban check-database-compatibility.py from transitively
           # relying on static/generated, because it might not be
@@ -233,8 +234,19 @@ jobs:
       - name: Check development database build
         run: ./tools/ci/setup-backend
 
-      - name: Report status
-        if: failure()
-        env:
-          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
-        run: tools/ci/send-failure-message
+      - name: Generate failure report string
+        id: failure_report_string
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+
+      - name: Report status to CZO
+        if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "automated testing"
+          topic: ${{ steps.failure_report_string.outputs.topic }}
+          type: "stream"
+          content: ${{ steps.failure_report_string.outputs.content }}

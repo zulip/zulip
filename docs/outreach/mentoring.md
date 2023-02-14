@@ -14,6 +14,10 @@ and help make sure that everything is on track. You are also expected to help
 program administrators keep an eye on your mentee's progress, and flag any
 concerns you might have.
 
+Mentors can refer to the excellent [GSoC Mentor
+Guide](https://google.github.io/gsocguides/mentor/) for detailed guidance,
+including GSoC's expectations, and best practices that can apply to any program.
+
 ## Who can mentor
 
 In order to mentor with Zulip, you need to have spent significant time working
@@ -51,7 +55,7 @@ will depend on what your mentee needs. It might be any combination of:
 - Helping your mentee figure out how to test their changes.
 
 - Helping your mentee break their PRs into [coherent
-  commits](../contributing/version-control.md#commit-discipline).
+  commits](../contributing/commit-discipline.md).
 
 - Doing [code review](../contributing/code-reviewing.md) of your
   mentee's work.
@@ -73,6 +77,24 @@ If you don’t understand something about the changes being made, there
 is a good chance others would also find it confusing. Asking your
 mentee for an explanation will itself be valuable feedback on what
 parts of the PR need to be commented or rewritten in a more clear way.
+
+### Establishing communication patterns
+
+Over the course of the program, you will interact with your mentee both
+synchronously (e.g., on calls, pair programming, and/or via chat in the
+development community), and asynchronously (in the development community and on
+GitHub).
+
+It's important to ensure that there are regular opportunities for synchronous
+interactions, which are the best way to resolve some types of questions and
+concerns, and will help your mentee feel supported.
+
+Please schedule at least one synchronous interaction opportunity with your
+mentee per week. A weekly call is highly recommended, as calls can be especially
+helpful for getting a feel for how your mentee is doing, and lowering the bar
+for asking questions and sharing concerns. A good pattern might be a weekly
+call, plus 1-2 other regular time slots when you and your mentee check in in the
+development community.
 
 ## Managing challenges
 

@@ -11,6 +11,7 @@ const message_live_update = mock_esm("../../static/js/message_live_update");
 const settings_account = mock_esm("../../static/js/settings_account", {
     update_email() {},
     update_full_name() {},
+    update_account_settings_display() {},
 });
 
 mock_esm("../../static/js/activity", {
@@ -18,9 +19,6 @@ mock_esm("../../static/js/activity", {
 });
 mock_esm("../../static/js/compose", {
     update_email() {},
-});
-mock_esm("../../static/js/gear_menu", {
-    update_org_settings_menu_item() {},
 });
 mock_esm("../../static/js/narrow_state", {
     update_email() {},
@@ -74,6 +72,7 @@ run_test("updates", () => {
 
     const isaac = {
         email: "isaac@example.com",
+        delivery_email: null,
         user_id: 32,
         full_name: "Isaac Newton",
     };
@@ -187,6 +186,19 @@ run_test("updates", () => {
     assert.equal(person.is_admin, true);
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, "Sir Isaac");
+
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.delivery_email, null);
+    user_events.update_person({
+        user_id: isaac.user_id,
+        delivery_email: "isaac-delivery@example.com",
+    });
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.delivery_email, "isaac-delivery@example.com");
+
+    user_events.update_person({user_id: isaac.user_id, delivery_email: null});
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.delivery_email, null);
 
     user_events.update_person({user_id: isaac.user_id, avatar_url: "http://gravatar.com/123456"});
     person = people.get_by_email(isaac.email);

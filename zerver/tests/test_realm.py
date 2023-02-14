@@ -15,6 +15,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_change_realm_plan_type,
     do_deactivate_realm,
+    do_reactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
     do_set_realm_property,
@@ -367,6 +368,36 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.deactivated_redirect, new_redirect_url)
         self.assertNotEqual(realm.deactivated_redirect, redirect_url)
 
+    def test_do_reactivate_realm(self) -> None:
+        realm = get_realm("zulip")
+        do_deactivate_realm(realm, acting_user=None)
+        self.assertTrue(realm.deactivated)
+
+        do_reactivate_realm(realm)
+        self.assertFalse(realm.deactivated)
+
+        log_entry = RealmAuditLog.objects.last()
+        assert log_entry is not None
+
+        self.assertEqual(log_entry.realm, realm)
+        self.assertEqual(log_entry.event_type, RealmAuditLog.REALM_REACTIVATED)
+        log_entry_id = log_entry.id
+
+        with self.assertLogs(level="WARNING") as m:
+            # do_reactivate_realm on a realm that's not deactivated should be a noop.
+            do_reactivate_realm(realm)
+
+        self.assertEqual(
+            m.output,
+            [f"WARNING:root:Realm {realm.id} cannot be reactivated because it is already active."],
+        )
+
+        self.assertFalse(realm.deactivated)
+
+        latest_log_entry = RealmAuditLog.objects.last()
+        assert latest_log_entry is not None
+        self.assertEqual(latest_log_entry.id, log_entry_id)
+
     def test_realm_reactivation_link(self) -> None:
         realm = get_realm("zulip")
         do_deactivate_realm(realm, acting_user=None)
@@ -399,6 +430,8 @@ class RealmTest(ZulipTestCase):
 
     def test_do_send_realm_reactivation_email(self) -> None:
         realm = get_realm("zulip")
+        do_deactivate_realm(realm, acting_user=None)
+        self.assertEqual(realm.deactivated, True)
         iago = self.example_user("iago")
         do_send_realm_reactivation_email(realm, acting_user=iago)
         from django.core.mail import outbox
@@ -582,7 +615,6 @@ class RealmTest(ZulipTestCase):
         self.assertFalse(realm.deactivated)
 
     def test_invalid_integer_attribute_values(self) -> None:
-
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
 
         invalid_values = dict(
@@ -591,7 +623,6 @@ class RealmTest(ZulipTestCase):
             create_private_stream_policy=10,
             create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
-            email_address_visibility=10,
             message_retention_days=10,
             video_chat_provider=10,
             giphy_rating=10,
@@ -607,6 +638,8 @@ class RealmTest(ZulipTestCase):
             delete_own_message_policy=10,
             edit_topic_policy=10,
             message_content_edit_limit_seconds=0,
+            move_messages_within_stream_limit_seconds=0,
+            move_messages_between_streams_limit_seconds=0,
         )
 
         # We need an admin user.
@@ -620,7 +653,6 @@ class RealmTest(ZulipTestCase):
             self.do_test_invalid_integer_attribute_value(name, invalid_value)
 
     def do_test_invalid_integer_attribute_value(self, val_name: str, invalid_val: int) -> None:
-
         possible_messages = {
             f"Invalid {val_name}",
             f"Bad value for '{val_name}'",
@@ -643,7 +675,7 @@ class RealmTest(ZulipTestCase):
         req = {"video_chat_provider": orjson.dumps(invalid_video_chat_provider_value).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(
-            result, ("Invalid video_chat_provider {}").format(invalid_video_chat_provider_value)
+            result, f"Invalid video_chat_provider {invalid_video_chat_provider_value}"
         )
 
         req = {
@@ -832,7 +864,6 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(realm.name, "realm name")
         self.assertFalse(realm.emails_restricted_to_domains)
-        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
         self.assertEqual(realm.description, "")
         self.assertTrue(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
@@ -862,7 +893,6 @@ class RealmTest(ZulipTestCase):
             "realm name",
             emails_restricted_to_domains=True,
             date_created=date_created,
-            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
             description="realm description",
             invite_required=False,
             plan_type=Realm.PLAN_TYPE_STANDARD_FREE,
@@ -871,7 +901,6 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(realm.name, "realm name")
         self.assertTrue(realm.emails_restricted_to_domains)
-        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS)
         self.assertEqual(realm.description, "realm description")
         self.assertFalse(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
@@ -1126,7 +1155,6 @@ class RealmAPITest(ZulipTestCase):
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
-            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_TYPES,
             video_chat_provider=[
                 dict(
                     video_chat_provider=orjson.dumps(
@@ -1140,11 +1168,13 @@ class RealmAPITest(ZulipTestCase):
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
-            move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
+            move_messages_between_streams_policy=Realm.MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
-            edit_topic_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            edit_topic_policy=Realm.EDIT_TOPIC_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200],
+            move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
+            move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
         )
 
         vals = test_values.get(name)
@@ -1210,6 +1240,7 @@ class RealmAPITest(ZulipTestCase):
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -1284,6 +1315,22 @@ class RealmAPITest(ZulipTestCase):
         result = orjson.loads(json_result.content)
         self.assertIn("ignored_parameters_unsupported", result)
         self.assertEqual(result["ignored_parameters_unsupported"], ["emoji_set"])
+
+    def test_update_realm_move_messages_within_stream_limit_seconds_unlimited_value(self) -> None:
+        realm = get_realm("zulip")
+        self.login("iago")
+        realm = self.update_with_api(
+            "move_messages_within_stream_limit_seconds", orjson.dumps("unlimited").decode()
+        )
+        self.assertEqual(realm.move_messages_within_stream_limit_seconds, None)
+
+    def test_update_realm_move_messages_between_streams_limit_seconds_unlimited_value(self) -> None:
+        realm = get_realm("zulip")
+        self.login("iago")
+        realm = self.update_with_api(
+            "move_messages_between_streams_limit_seconds", orjson.dumps("unlimited").decode()
+        )
+        self.assertEqual(realm.move_messages_between_streams_limit_seconds, None)
 
     def test_update_realm_delete_own_message_policy(self) -> None:
         """Tests updating the realm property 'delete_own_message_policy'."""

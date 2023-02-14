@@ -248,13 +248,13 @@ class UpgradeWithExistingPlanError(BillingError):
         )
 
 
-class InvalidBillingSchedule(Exception):
+class InvalidBillingScheduleError(Exception):
     def __init__(self, billing_schedule: int) -> None:
         self.message = f"Unknown billing_schedule: {billing_schedule}"
         super().__init__(self.message)
 
 
-class InvalidTier(Exception):
+class InvalidTierError(Exception):
     def __init__(self, tier: int) -> None:
         self.message = f"Unknown tier: {tier}"
         super().__init__(self.message)
@@ -570,16 +570,16 @@ def get_price_per_license(
         elif billing_schedule == CustomerPlan.MONTHLY:
             price_per_license = 800
         else:  # nocoverage
-            raise InvalidBillingSchedule(billing_schedule)
+            raise InvalidBillingScheduleError(billing_schedule)
     elif tier == CustomerPlan.PLUS:
         if billing_schedule == CustomerPlan.ANNUAL:
             price_per_license = 16000
         elif billing_schedule == CustomerPlan.MONTHLY:
             price_per_license = 1600
         else:  # nocoverage
-            raise InvalidBillingSchedule(billing_schedule)
+            raise InvalidBillingScheduleError(billing_schedule)
     else:
-        raise InvalidTier(tier)
+        raise InvalidTierError(tier)
 
     if discount is not None:
         price_per_license = calculate_discounted_price_per_license(price_per_license, discount)
@@ -602,7 +602,7 @@ def compute_plan_parameters(
     elif billing_schedule == CustomerPlan.MONTHLY:
         period_end = add_months(billing_cycle_anchor, 1)
     else:  # nocoverage
-        raise InvalidBillingSchedule(billing_schedule)
+        raise InvalidBillingScheduleError(billing_schedule)
 
     price_per_license = get_price_per_license(tier, billing_schedule, discount)
 
@@ -636,7 +636,7 @@ def ensure_realm_does_not_have_active_plan(realm: Realm) -> None:
             "Upgrade of %s failed because of existing active plan.",
             realm.string_id,
         )
-        raise UpgradeWithExistingPlanError()
+        raise UpgradeWithExistingPlanError
 
 
 @transaction.atomic
@@ -656,8 +656,8 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
 def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     if remote_server.deactivated:
         billing_logger.warning(
-            f"Cannot deactivate remote server with ID {remote_server.id}, "
-            "server has already been deactivated."
+            "Cannot deactivate remote server with ID %d, server has already been deactivated.",
+            remote_server.id,
         )
         return
 
@@ -1007,8 +1007,10 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             plan_name = "Zulip Cloud Standard"
             emoji = ":tada:"
             message = _(
-                f"Your organization's request for sponsored hosting has been approved! {emoji}.\n"
-                f"You have been upgraded to {plan_name}, free of charge."
+                "Your organization's request for sponsored hosting has been approved! "
+                f"You have been upgraded to {plan_name}, free of charge. {emoji}\n\n"
+                "If you could [list Zulip as a sponsor on your website](/help/linking-to-zulip-website), "
+                "we would really appreciate it!"
             )
             internal_send_private_message(notification_bot, user, message)
 
@@ -1184,6 +1186,10 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     standard_plan.status = CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS
     standard_plan.next_invoice_date = plan_switch_time
     standard_plan.save(update_fields=["status", "next_invoice_date"])
+
+    from zerver.actions.realm_settings import do_change_realm_plan_type
+
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
 
     standard_plan_next_renewal_date = start_of_next_billing_cycle(standard_plan, plan_switch_time)
 

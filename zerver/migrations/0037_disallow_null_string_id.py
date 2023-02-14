@@ -19,14 +19,14 @@ def set_string_id_using_domain(apps: StateApps, schema_editor: BaseDatabaseSchem
                 try:
                     realm.string_id = prefix + str(i)
                     realm.save(update_fields=["string_id"])
-                    continue
+                    break
                 except IntegrityError:
                     pass
-            raise RuntimeError(f"Unable to find a good string_id for realm {realm}")
+            else:
+                raise RuntimeError(f"Unable to find a good string_id for realm {realm}")
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0036_rename_subdomain_to_string_id"),
     ]

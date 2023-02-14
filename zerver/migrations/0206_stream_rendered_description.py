@@ -17,7 +17,6 @@ def render_all_stream_descriptions(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0205_remove_realmauditlog_requires_billing_update"),
     ]

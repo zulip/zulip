@@ -8,17 +8,18 @@ import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_data from "./settings_data";
 import * as ui from "./ui";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 
 export let pill_widget;
 let current_group_id;
+let member_list_widget;
 
 function get_potential_members() {
     const group = user_groups.get_user_group_from_id(current_group_id);
@@ -34,14 +35,22 @@ function get_potential_members() {
     return people.filter_all_users(is_potential_member);
 }
 
+export function update_member_list_widget(group_id, member_ids) {
+    if (!hash_util.is_editing_group(group_id)) {
+        return;
+    }
+    const users = people.get_users_from_ids(member_ids);
+    people.sort_but_pin_current_user_on_top(users);
+    member_list_widget.replace_list_data(users);
+}
+
 function format_member_list_elem(person) {
     return render_user_group_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
-        email: settings_data.email_for_user_settings(person),
+        email: person.delivery_email,
         can_edit_subscribers: user_group_edit.can_edit(current_group_id),
-        show_email: settings_data.show_email(),
     });
 }
 
@@ -85,7 +94,7 @@ export function enable_member_management({group, $parent_container}) {
         get_potential_subscribers: get_potential_members,
     });
 
-    make_list_widget({
+    member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",
         user_ids: Array.from(group.members),

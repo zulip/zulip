@@ -34,6 +34,7 @@ from zerver.lib.message import (
     get_starred_message_ids,
     remove_message_id_from_unread_mgs,
 )
+from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -48,7 +49,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
-from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
@@ -76,7 +76,7 @@ from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
-class RestartEventException(Exception):
+class RestartEventError(Exception):
     """
     Special error for handling restart events in apply_events.
     """
@@ -204,14 +204,16 @@ def fetch_initial_state_data(
             user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
             state["drafts"] = user_draft_dicts
 
-    if want("muted_topics"):
+    if want("muted_topics") and (
         # Suppress muted_topics data for clients that explicitly
         # support user_topic. This allows clients to request both the
         # user_topic and muted_topics, and receive the duplicate
         # muted_topics data only from older servers that don't yet
         # support user_topic.
-        if event_types is None or not want("user_topic"):
-            state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
+        event_types is None
+        or not want("user_topic")
+    ):
+        state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
     if want("muted_users"):
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
@@ -267,11 +269,6 @@ def fetch_initial_state_data(
             Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
         )
 
-        # TODO: Can we delete these lines?  They seem to be in property_types...
-        state["realm_message_content_edit_limit_seconds"] = realm.message_content_edit_limit_seconds
-        state[
-            "realm_message_content_delete_limit_seconds"
-        ] = realm.message_content_delete_limit_seconds
         state[
             "realm_community_topic_editing_limit_seconds"
         ] = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS
@@ -542,21 +539,20 @@ def fetch_initial_state_data(
             [] if user_profile is None else get_starred_message_ids(user_profile)
         )
 
-    if want("stream"):
-        if include_streams:
-            # The web app doesn't use the data from here; instead,
-            # it uses data from state["subscriptions"] and other
-            # places.
-            if user_profile is not None:
-                state["streams"] = do_get_streams(
-                    user_profile, include_all_active=user_profile.is_realm_admin
-                )
-            else:
-                # TODO: This line isn't used by the web app because it
-                # gets these data via the `subscriptions` key; it will
-                # be used when the mobile apps support logged-out
-                # access.
-                state["streams"] = get_web_public_streams(realm)  # nocoverage
+    if want("stream") and include_streams:
+        # The web app doesn't use the data from here; instead,
+        # it uses data from state["subscriptions"] and other
+        # places.
+        if user_profile is not None:
+            state["streams"] = do_get_streams(
+                user_profile, include_all_active=user_profile.is_realm_admin
+            )
+        else:
+            # TODO: This line isn't used by the web app because it
+            # gets these data via the `subscriptions` key; it will
+            # be used when the mobile apps support logged-out
+            # access.
+            state["streams"] = get_web_public_streams(realm)  # nocoverage
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
@@ -646,7 +642,7 @@ def apply_events(
 ) -> None:
     for event in events:
         if event["type"] == "restart":
-            raise RestartEventException()
+            raise RestartEventError
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -707,13 +703,17 @@ def apply_event(
 
         # Below, we handle maintaining first_message_id.
         for sub_dict in state.get("subscriptions", []):
-            if event["message"]["stream_id"] == sub_dict["stream_id"]:
-                if sub_dict["first_message_id"] is None:
-                    sub_dict["first_message_id"] = event["message"]["id"]
+            if (
+                event["message"]["stream_id"] == sub_dict["stream_id"]
+                and sub_dict["first_message_id"] is None
+            ):
+                sub_dict["first_message_id"] = event["message"]["id"]
         for stream_dict in state.get("streams", []):
-            if event["message"]["stream_id"] == stream_dict["stream_id"]:
-                if stream_dict["first_message_id"] is None:
-                    stream_dict["first_message_id"] = event["message"]["id"]
+            if (
+                event["message"]["stream_id"] == stream_dict["stream_id"]
+                and stream_dict["first_message_id"] is None
+            ):
+                stream_dict["first_message_id"] = event["message"]["id"]
 
     elif event["type"] == "heartbeat":
         # It may be impossible for a heartbeat event to actually reach
@@ -758,7 +758,7 @@ def apply_event(
                 if "profile_data" not in user_dict:
                     continue
                 profile_data = user_dict["profile_data"]
-                for (field_id, field_data) in list(profile_data.items()):
+                for field_id, field_data in list(profile_data.items()):
                     if int(field_id) not in custom_profile_field_ids:
                         del profile_data[field_id]
     elif event["type"] == "realm_user":
@@ -767,9 +767,16 @@ def apply_event(
 
         if event["op"] == "add":
             person = copy.deepcopy(person)
+
             if client_gravatar:
-                if person["avatar_url"].startswith("https://secure.gravatar.com"):
-                    person["avatar_url"] = None
+                email_address_visibility = UserProfile.objects.get(
+                    id=person_user_id
+                ).email_address_visibility
+                if email_address_visibility != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+                    client_gravatar = False
+
+            if client_gravatar and person["avatar_url"].startswith("https://secure.gravatar.com/"):
+                person["avatar_url"] = None
             person["is_active"] = True
             if not person["is_bot"]:
                 person["profile_data"] = {}
@@ -857,14 +864,27 @@ def apply_event(
                     if not was_admin and now_admin:
                         state["realm_bots"] = get_owned_bot_dicts(user_profile)
 
-            if client_gravatar and "avatar_url" in person:
-                # Respect the client_gravatar setting in the `users` data.
-                if person["avatar_url"].startswith("https://secure.gravatar.com"):
-                    person["avatar_url"] = None
-                    person["avatar_url_medium"] = None
-
             if person_user_id in state["raw_users"]:
                 p = state["raw_users"][person_user_id]
+
+                if "avatar_url" in person:
+                    # Respect the client_gravatar setting in the `users` data.
+                    if client_gravatar:
+                        email_address_visibility = UserProfile.objects.get(
+                            id=person_user_id
+                        ).email_address_visibility
+                        if (
+                            email_address_visibility
+                            != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+                        ):
+                            client_gravatar = False
+
+                    if client_gravatar and person["avatar_url"].startswith(
+                        "https://secure.gravatar.com/"
+                    ):
+                        person["avatar_url"] = None
+                        person["avatar_url_medium"] = None
+
                 for field in p:
                     if field in person:
                         p[field] = person[field]
@@ -1011,11 +1031,13 @@ def apply_event(
                     if permission in state:
                         state[permission] = user_profile.has_permission(policy)
 
-            if event["property"] in policy_permission_dict.keys():
-                if policy_permission_dict[event["property"]] in state:
-                    state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
-                        event["property"]
-                    )
+            if (
+                event["property"] in policy_permission_dict
+                and policy_permission_dict[event["property"]] in state
+            ):
+                state[policy_permission_dict[event["property"]]] = user_profile.has_permission(
+                    event["property"]
+                )
 
             # Finally, we need to recompute this value from its inputs.
             state["can_create_streams"] = (
@@ -1395,11 +1417,6 @@ def do_events_register(
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
     user_settings_object = client_capabilities.get("user_settings_object", False)
 
-    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        # If real email addresses are not available to the user, their
-        # clients cannot compute gravatars, so we force-set it to false.
-        client_gravatar = False
-
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
     elif event_types is not None:
@@ -1483,7 +1500,7 @@ def do_events_register(
                 slim_presence=slim_presence,
                 include_subscribers=include_subscribers,
             )
-        except RestartEventException:
+        except RestartEventError:
             # This represents a rare race condition, where Tornado
             # restarted (and sent `restart` events) while we were waiting
             # for fetch_initial_state_data to return. To avoid the client

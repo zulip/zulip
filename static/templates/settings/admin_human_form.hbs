@@ -1,5 +1,5 @@
 <div id="edit-user-form" data-user-id="{{user_id}}">
-    <form class="form-horizontal name-setting">
+    <form class="name-setting">
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group name_change_container">
             <label for="edit_user_full_name">{{t "Full name" }}</label>
@@ -19,7 +19,7 @@
             <label class="input-label" for="user-role-select">{{t 'User role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}
             </label>
-            <select name="user-role-select" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
+            <select name="user-role-select" class="bootstrap-focus-style" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
                 {{> dropdown_options_widget option_values=user_role_values}}
             </select>
         </div>

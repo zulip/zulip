@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("confirmation", "0010_alter_confirmation_expiry_date"),
     ]

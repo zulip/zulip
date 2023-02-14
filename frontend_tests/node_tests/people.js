@@ -16,14 +16,6 @@ const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
-const visibility = settings_config.email_address_visibility_values;
-const admins_only = visibility.admins_only.code;
-const everyone = visibility.everyone.code;
-
-function set_email_visibility(code) {
-    page_params.realm_email_address_visibility = code;
-}
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -57,7 +49,6 @@ function initialize() {
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
-    set_email_visibility(admins_only);
     muted_users.set_muted_users([]);
 }
 
@@ -304,6 +295,9 @@ test_people("basics", () => {
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
 
+    let bot_user_ids = people.get_bot_ids();
+    assert.equal(bot_user_ids.length, 0);
+
     // Now deactivate isaac
     people.deactivate(isaac);
     assert.equal(people.get_non_active_human_ids().length, 1);
@@ -313,6 +307,8 @@ test_people("basics", () => {
 
     people.add_active_user(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+    bot_user_ids = people.get_bot_ids();
+    assert.deepEqual(bot_user_ids, [bot_botson.user_id]);
 
     assert.equal(people.get_bot_owner_user(bot_botson).full_name, "Isaac Newton");
 
@@ -335,6 +331,10 @@ test_people("basics", () => {
             .sort(),
         [me.user_id, bot_botson.user_id],
     );
+
+    // get_bot_ids() includes all bot users.
+    bot_user_ids = people.get_bot_ids();
+    assert.deepEqual(bot_user_ids, [bot_botson.user_id, welcome_bot.user_id]);
 
     // The bot doesn't add to our human count.
     assert.equal(people.get_active_human_count(), 1);
@@ -515,6 +515,17 @@ test_people("user_timezone", () => {
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 
+test_people("utcToZonedTime", ({override}) => {
+    MockDate.set(parseISO("20130208T080910").getTime());
+    user_settings.twenty_four_hour_time = true;
+
+    assert.equal(people.get_user_time(me.user_id), "0:09");
+
+    override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
+    blueslip.expect("error", "Got invalid date for timezone: Eriador/Rivendell");
+    people.get_user_time(me.user_id);
+});
+
 test_people("user_type", () => {
     people.init();
 
@@ -577,6 +588,20 @@ test_people("set_custom_profile_field_data", () => {
     people.set_custom_profile_field_data(person.user_id, field);
     assert.equal(person.profile_data[field.id].value, "Field value");
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
+});
+
+test_people("is_current_user_only_owner", () => {
+    const person = people.get_by_email(me.email);
+    person.is_owner = false;
+    page_params.is_owner = false;
+    assert.ok(!people.is_current_user_only_owner());
+
+    person.is_owner = true;
+    page_params.is_owner = true;
+    assert.ok(people.is_current_user_only_owner());
+
+    people.add_active_user(realm_owner);
+    assert.ok(!people.is_current_user_only_owner());
 });
 
 test_people("recipient_counts", () => {
@@ -1134,26 +1159,33 @@ test_people("matches_user_settings_search", () => {
     page_params.is_admin = true;
 
     assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
-    assert.equal(match({delivery_email: "bogus", email: "fred@example.com"}, "fr"), false);
+    assert.equal(
+        match(
+            {
+                delivery_email: "bogus",
+                email: "fred@example.com",
+            },
+            "fr",
+        ),
+        false,
+    );
 
-    set_email_visibility(everyone);
-    page_params.is_admin = false;
-    assert.equal(match({delivery_email: "fred@example.com"}, "fr"), false);
-    assert.equal(match({email: "fred@example.com"}, "fr"), true);
+    assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
+    assert.equal(match({email: "fred@example.com"}, "fr"), false);
 
     // test normal stuff
     assert.equal(match({email: "fred@example.com"}, "st"), false);
     assert.equal(match({full_name: "Fred Smith"}, "st"), false);
     assert.equal(match({full_name: "Joe Frederick"}, "st"), false);
 
-    assert.equal(match({email: "fred@example.com"}, "fr"), true);
+    assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
     assert.equal(match({full_name: "Fred Smith"}, "fr"), true);
     assert.equal(match({full_name: "Joe Frederick"}, "fr"), true);
 
     // test in-string matches...we may want not to be so liberal
     // here about matching, as it's noisy for large realms (who
     // need search the most)
-    assert.equal(match({email: "fred@example.com"}, "re"), true);
+    assert.equal(match({delivery_email: "fred@example.com"}, "re"), true);
     assert.equal(match({full_name: "Fred Smith"}, "re"), true);
     assert.equal(match({full_name: "Joe Frederick"}, "re"), true);
 });

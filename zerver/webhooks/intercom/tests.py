@@ -265,3 +265,7 @@ New user created:
             "Contact: Eeshan Garg",
             "User unsubscribed from emails.",
         )
+
+    def test_success_on_http_head(self) -> None:
+        result = self.client_head(self.url)
+        self.assertEqual(result.status_code, 200)

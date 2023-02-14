@@ -129,7 +129,7 @@ run_test("server", () => {
 
     user_status.server_update_status({
         status_text: "out to lunch",
-        success: () => {
+        success() {
             called = true;
         },
     });

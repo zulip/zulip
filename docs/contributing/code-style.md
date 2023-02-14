@@ -141,7 +141,7 @@ You should work with the IDs instead:
 ```python
 obj: UserProfile = get_user_profile_by_id(17)
 some_objs = UserProfile.objects.get(id=17)
-assert obj.id in set([o.id for i in some_objs])
+assert obj.id in set([o.id for o in some_objs])
 ```
 
 ### user_profile.save()
@@ -273,7 +273,7 @@ editor](https://prettier.io/docs/en/editors.html).
 
 Combine adjacent on-ready functions, if they are logically related.
 
-The best way to build complicated DOM elements is a Mustache template
+The best way to build complicated DOM elements is a Handlebars template
 like `static/templates/message_reactions.hbs`. For simpler things
 you can use jQuery DOM building APIs like so:
 

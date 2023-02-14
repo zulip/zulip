@@ -64,7 +64,7 @@ class zulip_ops::profile::base {
     require => User['zulip'],
     owner   => 'zulip',
     group   => 'zulip',
-    mode    => '0600',
+    mode    => '0700',
   }
 
   # Clear /etc/update-motd.d, to fix load problems with Nagios
@@ -144,14 +144,6 @@ class zulip_ops::profile::base {
       source  => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
     }
 
-    file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
-      ensure => absent,
-    }
-
-    file { '/etc/network/if-up.d/zulip-ec2-configure-interfaces_if-up.d.sh':
-      ensure => absent,
-    }
-
     file { '/etc/chrony/chrony.conf':
       ensure  => file,
       mode    => '0644',
@@ -178,14 +170,14 @@ class zulip_ops::profile::base {
     require => User['nagios'],
     owner   => 'nagios',
     group   => 'nagios',
-    mode    => '0600',
+    mode    => '0700',
   }
   file { '/var/lib/nagios/.ssh':
     ensure  => directory,
     require => File['/var/lib/nagios/'],
     owner   => 'nagios',
     group   => 'nagios',
-    mode    => '0600',
+    mode    => '0700',
   }
   file { '/home/nagios':
     ensure  => absent,

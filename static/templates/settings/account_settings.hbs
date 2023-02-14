@@ -5,15 +5,15 @@
             <div id="user_details_section">
                 <h3 class="inline-block">{{t "Account" }}</h3>
                 <div class="alert-notification" id="account-settings-status"></div>
-                <form class="email-change-form grid">
+                <form class="grid">
                     <div class="input-group">
                         <label class="inline-block title">{{t "Email" }}</label>
-                        <button id='change_email' type="button" class="button btn-link small rounded inline-block"
-                          {{#if (and page_params.realm_email_changes_disabled (not page_params.is_admin))}}disabled="disabled"{{/if}}>
-                            {{page_params.delivery_email}}
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <i class="tippy-zulip-tooltip fa fa-question-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-tippy-content="{{t 'Email address changes are disabled in this organization.' }}"></i>
+                        <div id="change_email_button_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
+                            <button id="change_email_button" type="button" class="button btn-link small rounded inline-block" {{#unless user_can_change_email}}disabled="disabled"{{/unless}}>
+                                {{page_params.delivery_email}}
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        </div>
                     </div>
                 </form>
 
@@ -36,14 +36,17 @@
                 </form>
 
                 <div class="input-group">
-                    <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button">
-                        {{t 'Deactivate account' }}
-                    </button>
+                    <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
+                        <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button"
+                          {{#if user_is_only_organization_owner}}disabled="disabled"{{/if}}>
+                            {{t 'Deactivate account' }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="form-horizontal" id="privacy_settings_box">
+        <div id="privacy_settings_box">
             <h3 class="inline-block">{{t "Privacy" }}</h3>
             <div class="alert-notification privacy-setting-status"></div>
             <div class="input-group">
@@ -75,11 +78,20 @@
                   help_link="/help/status-and-availability"
                   prefix="user_"}}
             </div>
+            <div class="input-group">
+                <label for="email_address_visibility" class="dropdown-title">{{t "Who can access your email address" }}
+                    {{> ../help_link_widget link="/help/configure-email-visibility" }}
+                </label>
+                <select name="email_address_visibility" class="email_address_visibility prop-element bootstrap-focus-style" data-setting-widget-type="number"
+                  id="user_email_address_visibility">
+                    {{> dropdown_options_widget option_values=email_address_visibility_values}}
+                </select>
+            </div>
         </div>
 
         <hr class="settings_separator" />
 
-        <div class="form-horizontal" id="api_key_button_box">
+        <div id="api_key_button_box">
             <h3>{{t "API key" }}</h3>
 
             <div class="input-group">

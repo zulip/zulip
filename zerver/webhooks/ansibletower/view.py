@@ -28,7 +28,6 @@ def api_ansibletower_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     body = get_body(payload)
     subject = payload["name"].tame(check_string)
 
@@ -78,7 +77,6 @@ def get_body(payload: WildValue) -> str:
         )
 
     else:
-
         if payload["status"].tame(check_string) == "successful":
             status = "was successful"
         else:

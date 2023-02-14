@@ -44,7 +44,6 @@ def topic_narrow_url(realm: Realm, stream: Stream, topic: str) -> str:
 
 
 def near_message_url(realm: Realm, message: Dict[str, Any]) -> str:
-
     if message["type"] == "stream":
         url = near_stream_message_url(
             realm=realm,

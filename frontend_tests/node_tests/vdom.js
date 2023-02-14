@@ -71,13 +71,13 @@ run_test("attribute updates", () => {
         return {
             children: () => [],
 
-            attr: (k, v) => {
+            attr(k, v) {
                 assert.equal(k, "color");
                 assert.equal(v, "red");
                 updated = true;
             },
 
-            removeAttr: (k) => {
+            removeAttr(k) {
                 assert.equal(k, "id");
                 removed = true;
             },
@@ -184,10 +184,10 @@ run_test("partial updates", () => {
 
     find = () => ({
         children: () => ({
-            eq: (i) => {
+            eq(i) {
                 assert.equal(i, 0);
                 return {
-                    replaceWith: (html) => {
+                    replaceWith(html) {
                         patched_html = html;
                     },
                 };

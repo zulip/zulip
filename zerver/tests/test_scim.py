@@ -114,6 +114,19 @@ class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
 
 
 class TestSCIMUser(SCIMTestCase):
+    def test_bad_authentication(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        result = self.client_get(f"/scim/v2/Users/{hamlet.id}", {})
+        self.assertEqual(result.status_code, 401)
+        self.assertEqual(result.headers["WWW-Authenticate"], 'Basic realm="django-scim2"')
+
+        result = self.client_get(
+            f"/scim/v2/Users/{hamlet.id}", {"HTTP_AUTHORIZATION": "Bearer wrong"}
+        )
+        self.assertEqual(result.status_code, 401)
+        self.assertEqual(result.headers["WWW-Authenticate"], 'Basic realm="django-scim2"')
+
     def test_get_by_id(self) -> None:
         hamlet = self.example_user("hamlet")
         expected_response_schema = self.generate_user_schema(hamlet)

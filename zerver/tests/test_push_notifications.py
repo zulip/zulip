@@ -31,7 +31,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
     DeviceToken,
-    UserPushIndentityCompat,
+    UserPushIdentityCompat,
     b64_to_hex,
     get_apns_badge_count,
     get_apns_badge_count_future,
@@ -49,7 +49,7 @@ from zerver.lib.push_notifications import (
     send_notifications_to_bouncer,
 )
 from zerver.lib.remote_server import (
-    PushNotificationBouncerException,
+    PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     build_analytics_data,
     send_analytics_to_remote_server,
@@ -360,7 +360,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             ],
         )
 
-        user_identity = UserPushIndentityCompat(user_id=hamlet.id)
+        user_identity = UserPushIdentityCompat(user_id=hamlet.id)
         apple_push.assert_called_once_with(
             user_identity,
             [apple_token],
@@ -995,7 +995,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 )
             for _, _, token in gcm_devices:
                 self.assertIn(
-                    "INFO:zerver.lib.push_notifications:" f"GCM: Sent {token} as {message.id}",
+                    f"INFO:zerver.lib.push_notifications:GCM: Sent {token} as {message.id}",
                     pn_logger.output,
                 )
 
@@ -1280,9 +1280,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_send_android, mock.patch(
             "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ) as mock_push_notifications:
-
             handle_push_notification(self.user_profile.id, missed_message)
-            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
             mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
@@ -1364,7 +1363,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_send_apple:
             handle_remove_push_notification(self.user_profile.id, [message.id])
             mock_push_notifications.assert_called_once()
-            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
             mock_send_android.assert_called_with(
                 user_identity,
                 android_devices,
@@ -1492,7 +1491,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_push_notifications:
             handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_not_called()
-            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
             mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
@@ -1504,7 +1503,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         large_user_group = create_user_group(
-            "large_user_group", [self.user_profile, othello, cordelia], get_realm("zulip")
+            "large_user_group",
+            [self.user_profile, othello, cordelia],
+            get_realm("zulip"),
+            acting_user=None,
         )
 
         # Personal mention in a stream message should soft reactivate the user
@@ -1588,7 +1590,7 @@ class TestAPNs(PushNotificationTest):
         payload_data: Mapping[str, Any] = {},
     ) -> None:
         send_apple_push_notification(
-            UserPushIndentityCompat(user_id=self.user_profile.id),
+            UserPushIdentityCompat(user_id=self.user_profile.id),
             devices if devices is not None else self.devices(),
             payload_data,
         )
@@ -1701,7 +1703,6 @@ class TestAPNs(PushNotificationTest):
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
     def test_apns_badge_count(self, mock_push_notifications: mock.MagicMock) -> None:
-
         user_profile = self.example_user("othello")
         # Test APNs badge count for personal messages.
         message_ids = [
@@ -1873,7 +1874,9 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     def test_get_message_payload_apns_user_group_mention(self) -> None:
         user_profile = self.example_user("othello")
-        user_group = create_user_group("test_user_group", [user_profile], get_realm("zulip"))
+        user_group = create_user_group(
+            "test_user_group", [user_profile], get_realm("zulip"), acting_user=None
+        )
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         payload = get_message_payload_apns(
@@ -2220,7 +2223,7 @@ class TestSendToPushBouncer(ZulipTestCase):
         # This is the exception our decorator uses for an invalid Zulip server
         error_response = json_response_from_error(InvalidZulipServerError("testRole"))
         self.add_mock_response(body=error_response.content, status=error_response.status_code)
-        with self.assertRaises(PushNotificationBouncerException) as exc:
+        with self.assertRaises(PushNotificationBouncerError) as exc:
             send_to_push_bouncer("POST", "register", {"msg": "true"})
         self.assertEqual(
             str(exc.exception),
@@ -2237,7 +2240,7 @@ class TestSendToPushBouncer(ZulipTestCase):
     @responses.activate
     def test_300_error(self) -> None:
         self.add_mock_response(body=b"/", status=300)
-        with self.assertRaises(PushNotificationBouncerException) as exc:
+        with self.assertRaises(PushNotificationBouncerError) as exc:
             send_to_push_bouncer("POST", "register", {"msg": "true"})
         self.assertEqual(
             str(exc.exception), "Push notification bouncer returned unexpected status code 300"
@@ -2759,20 +2762,20 @@ class PushBouncerSignupTest(ZulipTestCase):
         )
 
 
-class TestUserPushIndentityCompat(ZulipTestCase):
+class TestUserPushIdentityCompat(ZulipTestCase):
     def test_filter_q(self) -> None:
-        user_identity_id = UserPushIndentityCompat(user_id=1)
-        user_identity_uuid = UserPushIndentityCompat(user_uuid="aaaa")
-        user_identity_both = UserPushIndentityCompat(user_id=1, user_uuid="aaaa")
+        user_identity_id = UserPushIdentityCompat(user_id=1)
+        user_identity_uuid = UserPushIdentityCompat(user_uuid="aaaa")
+        user_identity_both = UserPushIdentityCompat(user_id=1, user_uuid="aaaa")
 
         self.assertEqual(user_identity_id.filter_q(), Q(user_id=1))
         self.assertEqual(user_identity_uuid.filter_q(), Q(user_uuid="aaaa"))
         self.assertEqual(user_identity_both.filter_q(), Q(user_uuid="aaaa") | Q(user_id=1))
 
     def test_eq(self) -> None:
-        user_identity_a = UserPushIndentityCompat(user_id=1)
-        user_identity_b = UserPushIndentityCompat(user_id=1)
-        user_identity_c = UserPushIndentityCompat(user_id=2)
+        user_identity_a = UserPushIdentityCompat(user_id=1)
+        user_identity_b = UserPushIdentityCompat(user_id=1)
+        user_identity_c = UserPushIdentityCompat(user_id=2)
         self.assertEqual(user_identity_a, user_identity_b)
         self.assertNotEqual(user_identity_a, user_identity_c)
 

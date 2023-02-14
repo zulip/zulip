@@ -23,6 +23,7 @@ MAX_REQUEST_RETRIES = 3
 ChannelT = TypeVar("ChannelT", Channel, BlockingChannel)
 Consumer = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, bytes], None]
 
+
 # This simple queuing library doesn't expose much of the power of
 # RabbitMQ/Pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
@@ -87,7 +88,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         return f"{queue_name}_{str(random.getrandbits(16))}"
 
     def _reconnect_consumer_callback(self, queue: str, consumer: Consumer[ChannelT]) -> None:
-        self.log.info(f"Queue reconnecting saved consumer {consumer} to queue {queue}")
+        self.log.info("Queue reconnecting saved consumer %r to queue %s", consumer, queue)
         self.ensure_queue(
             queue,
             lambda channel: channel.basic_consume(
@@ -141,7 +142,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel = self.connection.channel()
-        self.log.info(f"SimpleQueueClient connected (connecting took {time.time() - start:.3f}s)")
+        self.log.info("SimpleQueueClient connected (connecting took %.3fs)", time.time() - start)
 
     def _reconnect(self) -> None:
         self.connection = None

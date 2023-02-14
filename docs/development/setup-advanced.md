@@ -9,16 +9,15 @@ Contents:
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
-If you'd like to install a Zulip development environment on a computer
-that's running one of:
+One can install the Zulip development environment directly on a Linux
+host by following these instructions. Currently supported platforms
+are:
 
 - Ubuntu 20.04, 22.04
 - Debian 11
 - CentOS 7 (beta)
 - Fedora 33 and 34 (beta)
 - RHEL 7 (beta)
-
-You can just run the Zulip provision script on your machine.
 
 **Note**: You should not use the `root` user to run the installation.
 If you are using a [remote server](remote.md), see

@@ -19,7 +19,7 @@ git clone https://github.com/zulip/zulip.git zulip-server-git
 
 and then
 [continue the normal installation instructions](install.md#step-2-install-zulip).
-You can also [upgrade Zulip from Git](upgrade-or-modify.md#upgrading-from-a-git-repository).
+You can also [upgrade Zulip from Git](upgrade.md#upgrading-from-a-git-repository).
 
 The most common use case for this is upgrading to `main` to get a
 feature that hasn't made it into an official release yet (often
@@ -33,8 +33,8 @@ In particular, we are always very glad to investigate problems with
 installing Zulip from `main`; they are rare and help us ensure that
 our next major release has a reliable install experience.
 
-[upgrade-to-main]: upgrade-or-modify.md#upgrading-to-main
-[upgrade-to-future-release]: upgrade-or-modify.md#upgrading-to-future-releases
+[upgrade-to-main]: modify.md#upgrading-to-main
+[upgrade-to-future-release]: modify.md#upgrading-to-future-releases
 
 ## Zulip in Docker
 
@@ -84,6 +84,63 @@ Zulip's installation process assumes it is the only application
 running on the server; though installing alongside other applications
 is not recommended, we do have [some notes on the
 process](install-existing-server.md).
+
+## Deployment hooks
+
+Zulip's upgrades have a hook system which allows for arbitrary
+user-configured actions to run before and after an upgrade; see the
+[upgrading documentation](upgrade.md#deployment-hooks) for details on
+how to write your own.
+
+Zulip also provides and optional deploy hook for Sentry.
+
+### Sentry deploy hook
+
+Zulip can use its deploy hooks to create [Sentry
+releases][sentry-release], which can help associate Sentry [error
+logging][sentry-error] with specific releases. If you are deploying
+Zulip from Git, it can be aware of which Zulip commits are associated
+with the release, and help identify which commits might be relevant to
+an error.
+
+To do so:
+
+1. Enable [Sentry error logging][sentry-error].
+2. Add a new [internal Sentry integration][sentry-internal] named
+   "Release annotator".
+3. Grant the internal integration the [permissions][sentry-perms] of
+   "Admin" on "Release".
+4. Add `, zulip::hooks::sentry` to the `puppet_classes` line in `/etc/zulip/zulip.conf`
+5. Add a `[sentry]` section to `/etc/zulip/zulip.conf`:
+   ```ini
+   [sentry]
+   organization = your-organization-name
+   project = your-project-name
+   ```
+6. Add the [authentication token] for your internal Sentry integration
+   to your `/etc/zulip/zulip-secrets.conf`:
+   ```ini
+   # Replace with your own token, found in Sentry
+   sentry_release_auth_token = 6c12f890c1c864666e64ee9c959c4552b3de473a076815e7669f53793fa16afc
+   ```
+7. As root, run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.
+
+If you are deploying Zulip from Git, you will also need to:
+
+1. In your Zulip project, add the [GitHub integration][sentry-github].
+2. Configure the `zulip/zulip` GitHub project for your Sentry project.
+   You should do this even if you are deploying a private fork of
+   Zulip.
+3. Additionally grant the internal integration "Read & Write" on
+   "Organization"; this is necessary to associate the commits with the
+   release.
+
+[sentry-release]: https://docs.sentry.io/product/releases/
+[sentry-error]: ../subsystems/logging.md#sentry-error-logging
+[sentry-github]: https://docs.sentry.io/product/integrations/source-code-mgmt/github/
+[sentry-internal]: https://docs.sentry.io/product/integrations/integration-platform/internal-integration/
+[sentry-perms]: https://docs.sentry.io/product/integrations/integration-platform/#permissions
+[sentry-tokens]: https://docs.sentry.io/product/integrations/integration-platform/internal-integration#auth-tokens
 
 ## Running Zulip's service dependencies on different machines
 
@@ -302,13 +359,15 @@ public Internet.
 
 #### Configuring Zulip to allow HTTP
 
-Depending on your environment, you may want the reverse proxy to talk
-to the Zulip server over HTTP; this can be secure when the Zulip
-server is not directly exposed to the public Internet.
+Zulip requires clients to connect to Zulip servers over the secure
+HTTPS protocol; the insecure HTTP protocol is not supported. However,
+we do support using a reverse proxy that speaks HTTPS to clients and
+connects to the Zulip server over HTTP; this can be secure when the
+Zulip server is not directly exposed to the public Internet.
 
-After installing the Zulip server as
-[described above](#installer-options), you can configure Zulip to talk
-HTTP as follows:
+After installing the Zulip server as [described
+above](#installer-options), you can configure Zulip to accept HTTP
+requests from a reverse proxy as follows:
 
 1. Add the following block to `/etc/zulip/zulip.conf`:
 
@@ -581,8 +640,8 @@ If you are using password authentication, you can set a
 
 The file `/etc/zulip/zulip.conf` is used to configure properties of
 the system and deployment; `/etc/zulip/settings.py` is used to
-configure the application itself. The `zulip.conf` sections and
-settings are described below.
+[configure the application itself](settings.md). The `zulip.conf`
+sections and settings are described below.
 
 When a setting refers to "set to true" or "set to false", the values
 `true` and `false` are canonical, but any of the following values will
@@ -623,6 +682,14 @@ you will need to add **`zulip::apache_sso`** to the list.
 Set to true if enabling the [multi-language PGroonga search
 extension](../subsystems/full-text-search.md#multi-language-full-text-search).
 
+#### `timesync`
+
+What time synchronization daemon to use; defaults to `chrony`, but also supports
+`ntpd` and `none`. Installations should not adjust this unless they are aligning
+with a fleet-wide standard of `ntpd`. `none` is only reasonable in containers
+like LXC which do not allow adjustment of the clock; a Zulip server will not
+function correctly without an accurate clock.
+
 ### `[deployment]`
 
 #### `deploy_options`
@@ -644,7 +711,7 @@ for servers that are upgraded frequently by core Zulip developers.
 #### `git_repo_url`
 
 Default repository URL used when [upgrading from a Git
-repository](upgrade-or-modify.md#upgrading-from-a-git-repository).
+repository](upgrade.md#upgrading-from-a-git-repository).
 
 ### `[application_server]`
 
@@ -658,15 +725,6 @@ SSL/TLS termination.
 
 Set to the port number if you [prefer to listen on a port other than
 443](#using-an-alternate-port).
-
-#### `no_serve_uploads`
-
-To enable the [the S3 uploads backend][s3-uploads], one needs to both
-configure `settings.py` and set this to true to configure
-`nginx`. Remove this field to return to the local uploads backend (any
-non-empty value is currently equivalent to true).
-
-[s3-uploads]: upload-backends.md#s3-backend-configuration
 
 #### `queue_workers_multiprocess`
 
@@ -691,6 +749,29 @@ all at once. This decreases the number of 502's served to clients, at
 the cost of slightly increased memory usage, and the possibility that
 different requests will be served by different versions of the code.
 
+#### `s3_memory_cache_size`
+
+Used only when the [S3 storage backend][s3-backend] is in use.
+Controls the in-memory size of the cache _index_; the default is 1MB,
+which is enough to store about 8 thousand entries.
+
+#### `s3_disk_cache_size`
+
+Used only when the [S3 storage backend][s3-backend] is in use.
+Controls the on-disk size of the cache _contents_; the default is
+200MB.
+
+#### `s3_cache_inactive_time`
+
+Used only when the [S3 storage backend][s3-backend] is in use.
+Controls the longest amount of time an entry will be cached since last
+use; the default is 30 days. Since the contents of the cache are
+immutable, this serves only as a potential additional limit on the
+size of the contents on disk; `s3_disk_cache_size` is expected to be
+the primary control for cache sizing.
+
+[s3-backend]: upload-backends.md
+
 #### `uwsgi_listen_backlog_limit`
 
 Override the default uwsgi backlog of 128 connections.
@@ -705,7 +786,8 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 #### `mailname`
 
 The hostname that [Postfix should be configured to receive mail
-at](email-gateway.md#local-delivery-setup).
+at](email-gateway.md#local-delivery-setup), as well as identify itself as for
+outgoing email.
 
 ### `[postgresql]`
 
@@ -766,7 +848,7 @@ for potential values.
 #### `version`
 
 The version of PostgreSQL that is in use. Do not set by hand; use the
-[PostgreSQL upgrade tool](upgrade-or-modify.md#upgrading-postgresql).
+[PostgreSQL upgrade tool](upgrade.md#upgrading-postgresql).
 
 ### `[memcached]`
 
@@ -774,6 +856,12 @@ The version of PostgreSQL that is in use. Do not set by hand; use the
 
 Override the number of megabytes of memory that memcached should be
 configured to consume; defaults to 1/8th of the total server memory.
+
+#### `max_item_size`
+
+Override the maximum size that an item in memcached can store. This defaults to
+1m; adjusting it should only be necessary if your Zulip server has organizations
+which have more than 20k users.
 
 ### `[loadbalancer]`
 
@@ -807,3 +895,13 @@ Because Camo includes logic to deny access to private subnets, routing
 its requests through Smokescreen is generally not necessary. Set to
 true or false to override the default, which uses the proxy only if
 it is not the default of Smokescreen on a local host.
+
+### `[sentry]`
+
+#### `organization`
+
+The Sentry organization used for the [Sentry deploy hook](#sentry-deploy-hook).
+
+#### `project`
+
+The Sentry project used for the [Sentry deploy hook](#sentry-deploy-hook).

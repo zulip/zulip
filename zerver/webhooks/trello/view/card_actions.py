@@ -1,6 +1,6 @@
 from typing import Mapping, Optional, Tuple
 
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 
 SUPPORTED_CARD_ACTIONS = [
@@ -52,7 +52,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     SET_DESC: "set description for {card_url_template} to:\n~~~ quote\n{desc}\n~~~\n",
     CHANGE_DESC: (
         "changed description for {card_url_template} from\n"
-        + "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
+        "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
     ),
     REMOVE_DESC: "removed description from {card_url_template}.",
     ARCHIVE: "archived {card_url_template}.",
@@ -126,7 +126,7 @@ def get_proper_action(payload: WildValue, action_type: str) -> Optional[str]:
         for field in ignored_fields:
             if field in old_data:
                 return None
-        raise UnsupportedWebhookEventType(action_type)
+        raise UnsupportedWebhookEventTypeError(action_type)
 
     return action_type
 
@@ -177,7 +177,6 @@ def get_updated_card_body(payload: WildValue, action_type: str) -> str:
 
 
 def get_renamed_card_body(payload: WildValue, action_type: str) -> str:
-
     data = {
         "old_name": get_action_data(payload)["old"]["name"].tame(check_string),
         "new_name": get_action_data(payload)["old"]["name"].tame(check_string),

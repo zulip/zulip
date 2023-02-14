@@ -15,10 +15,9 @@ from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import get_language
+from django.utils.translation import get_language, gettext_lazy
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
-from markupsafe import Markup as mark_safe
+from markupsafe import Markup
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
@@ -27,7 +26,7 @@ from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.send_email import FromAddress, send_email
@@ -53,15 +52,15 @@ if settings.BILLING_ENABLED:
 # We don't mark this error for translation, because it's displayed
 # only to MIT users.
 MIT_VALIDATION_ERROR = (
-    "That user does not exist at MIT or is a "
-    + '<a href="https://ist.mit.edu/email-lists">mailing list</a>. '
-    + "If you want to sign up an alias for Zulip, "
-    + '<a href="mailto:support@zulip.com">contact us</a>.'
+    "That user does not exist at MIT or is a"
+    ' <a href="https://ist.mit.edu/email-lists">mailing list</a>.'
+    " If you want to sign up an alias for Zulip,"
+    ' <a href="mailto:support@zulip.com">contact us</a>.'
 )
 
 DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
-    "Your account {username} has been deactivated. "
-    + "Please contact your organization administrator to reactivate it."
+    "Your account {username} has been deactivated."
+    " Please contact your organization administrator to reactivate it."
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
 
@@ -75,9 +74,9 @@ def email_is_not_mit_mailing_list(email: str) -> None:
             DNS.dnslookup(f"{address.username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
-                # This error is mark_safe only because 1. it needs to render HTML
+                # This error is Markup only because 1. it needs to render HTML
                 # 2. It's not formatted with any user input.
-                raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
+                raise ValidationError(Markup(MIT_VALIDATION_ERROR))
             else:
                 raise AssertionError("Unexpected DNS error")
 
@@ -345,7 +344,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             try:
                 rate_limit_password_reset_form_by_email(email)
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
-            except RateLimited:
+            except RateLimitedError:
                 logging.info(
                     "Too many password reset attempts for email %s from %s",
                     email,
@@ -354,11 +353,10 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 # The view will handle the RateLimit exception and render an appropriate page
                 raise
 
-        user: Optional[UserProfile] = None
         try:
             user = get_user_by_delivery_email(email, realm)
         except UserProfile.DoesNotExist:
-            pass
+            user = None
 
         context = {
             "email": email,
@@ -419,7 +417,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
 def rate_limit_password_reset_form_by_email(email: str) -> None:
     ratelimited, secs_to_freedom = RateLimitedPasswordResetByEmail(email).rate_limit()
     if ratelimited:
-        raise RateLimited(secs_to_freedom)
+        raise RateLimitedError(secs_to_freedom)
 
 
 class CreateUserForm(forms.Form):
@@ -448,13 +446,13 @@ class OurAuthenticationForm(AuthenticationForm):
                     realm=realm,
                     return_data=return_data,
                 )
-            except RateLimited as e:
+            except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
                 secs_to_freedom = int(e.secs_to_freedom)
                 error_message = _(
-                    "You're making too many attempts to sign in. "
-                    + "Try again in {} seconds or contact your organization administrator "
-                    + "for help."
+                    "You're making too many attempts to sign in."
+                    " Try again in {} seconds or contact your organization administrator"
+                    " for help."
                 )
                 raise ValidationError(error_message.format(secs_to_freedom))
 

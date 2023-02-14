@@ -14,7 +14,6 @@ def fix_bot_email_property(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0241_usermessage_bigint_id_migration_finalize"),
     ]

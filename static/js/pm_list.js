@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
+import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
@@ -161,6 +162,9 @@ export function toggle_private_messages_section() {
 
 function zoom_in() {
     zoomed = true;
+    if (topic_zoom.is_zoomed_in()) {
+        topic_zoom.zoom_out();
+    }
     update_private_messages();
     $(".private_messages_container").removeClass("zoom-out").addClass("zoom-in");
     $("#streams_list").hide();

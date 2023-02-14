@@ -56,7 +56,7 @@ class VersionTest(ZulipTestCase):
                 self.assertIsNone(version_lt(ver1, ver2), msg=msg)
                 self.assertIsNone(version_lt(ver2, ver1), msg=msg)
             else:
-                raise AssertionError()  # nocoverage
+                raise AssertionError  # nocoverage
 
     mobile_os_data = [
         case.split(None, 1)
@@ -115,7 +115,7 @@ class CompatibilityTest(ZulipTestCase):
             elif expected == "old":
                 self.assert_json_error(result, "Client is too old")
             else:
-                raise AssertionError()  # nocoverage
+                raise AssertionError  # nocoverage
 
     @mock.patch("zerver.lib.compatibility.DESKTOP_MINIMUM_VERSION", "5.0.0")
     @mock.patch("zerver.lib.compatibility.DESKTOP_WARNING_VERSION", "5.2.0")

@@ -3,7 +3,6 @@ from django.db.models import Q
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0097_reactions_emoji_code"),
     ]

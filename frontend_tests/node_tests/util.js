@@ -32,13 +32,6 @@ run_test("extract_pm_recipients", () => {
     assert.equal(util.extract_pm_recipients("bob@foo.com, ").length, 1);
 });
 
-run_test("is_pm_recipient", () => {
-    const message = {to_user_ids: "31,32,33"};
-    assert.ok(util.is_pm_recipient(31, message));
-    assert.ok(util.is_pm_recipient(32, message));
-    assert.ok(!util.is_pm_recipient(34, message));
-});
-
 run_test("lower_bound", () => {
     const arr = [{x: 10}, {x: 20}, {x: 30}, {x: 40}, {x: 50}];
 
@@ -87,8 +80,6 @@ run_test("same_recipient", () => {
     );
 
     assert.ok(!util.same_recipient({type: "private", to_user_ids: undefined}, {type: "private"}));
-
-    assert.ok(!util.same_recipient({type: "unknown type"}, {type: "unknown type"}));
 
     assert.ok(!util.same_recipient(undefined, {type: "private"}));
 
@@ -271,6 +262,7 @@ run_test("clean_user_content_links", () => {
                 '<a href="/#fragment" target="_blank">fragment</a>' +
                 '<div class="message_inline_image">' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" title="inline image">upload</a> ' +
+                '<a role="button">button</a> ' +
                 "</div>",
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
@@ -280,6 +272,7 @@ run_test("clean_user_content_links", () => {
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
             '<div class="message_inline_image">' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
+            '<a role="button">button</a> ' +
             "</div>",
     );
 });
@@ -309,4 +302,16 @@ run_test("filter_by_word_prefix_match", () => {
         0,
     ]);
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
+});
+
+run_test("get_string_diff", () => {
+    assert.deepEqual(
+        util.get_string_diff("#ann is for updates", "#**announce** is for updates"),
+        [1, 4, 13],
+    );
+    assert.deepEqual(util.get_string_diff("/p", "/poll"), [2, 2, 5]);
+    assert.deepEqual(util.get_string_diff("Hey @Aa", "Hey @**aaron** "), [5, 7, 15]);
+    assert.deepEqual(util.get_string_diff("same", "same"), [0, 0, 0]);
+    assert.deepEqual(util.get_string_diff("same-end", "two same-end"), [0, 0, 4]);
+    assert.deepEqual(util.get_string_diff("space", "sp ace"), [2, 2, 3]);
 });

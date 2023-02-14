@@ -6,7 +6,7 @@ from django.conf import settings
 from zerver.apps import flush_cache
 from zerver.lib.cache import (
     MEMCACHED_MAX_KEY_LENGTH,
-    InvalidCacheKeyException,
+    InvalidCacheKeyError,
     bulk_cached_fetch,
     cache_delete,
     cache_delete_many,
@@ -38,18 +38,18 @@ class AppsTest(ZulipTestCase):
 class CacheKeyValidationTest(ZulipTestCase):
     def test_validate_cache_key(self) -> None:
         validate_cache_key("nice_Ascii:string!~")
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             validate_cache_key("utf8_character:ą")
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             validate_cache_key("new_line_character:\n")
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             validate_cache_key("control_character:\r")
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             validate_cache_key("whitespace_character: ")
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             validate_cache_key("too_long:" + "X" * MEMCACHED_MAX_KEY_LENGTH)
 
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             # validate_cache_key does validation on a key with the
             # KEY_PREFIX appended to the start, so even though we're
             # passing something "short enough" here, it becomes too
@@ -59,18 +59,18 @@ class CacheKeyValidationTest(ZulipTestCase):
     def test_cache_functions_raise_exception(self) -> None:
         invalid_key = "invalid_character:\n"
         good_key = "good_key"
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             cache_get(invalid_key)
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             cache_set(invalid_key, 0)
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             cache_delete(invalid_key)
 
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             cache_get_many([good_key, invalid_key])
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             cache_set_many({good_key: 0, invalid_key: 1})
-        with self.assertRaises(InvalidCacheKeyException):
+        with self.assertRaises(InvalidCacheKeyError):
             cache_delete_many([good_key, invalid_key])
 
 
@@ -248,11 +248,11 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
         # Get the user cached:
         get_user_profile_by_id(hamlet.id)
 
-        class CustomException(Exception):
+        class CustomError(Exception):
             pass
 
         def query_function(ids: List[int]) -> List[UserProfile]:
-            raise CustomException("The query function was called")
+            raise CustomError("The query function was called")
 
         # query_function shouldn't be called, because the only requested object
         # is already cached:
@@ -268,7 +268,7 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
         self.assertEqual(info_log.output, ["INFO:root:Clearing memcached cache after migrations"])
 
         # With the cache flushed, the query_function should get called:
-        with self.assertRaises(CustomException):
+        with self.assertRaises(CustomError):
             result = bulk_cached_fetch(
                 cache_key_function=user_profile_by_id_cache_key,
                 query_function=query_function,
@@ -277,18 +277,18 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             )
 
     def test_empty_object_ids_list(self) -> None:
-        class CustomException(Exception):
+        class CustomError(Exception):
             pass
 
         def cache_key_function(
             email: str,
         ) -> str:  # nocoverage -- this is just here to make sure it's not called
-            raise CustomException("The cache key function was called")
+            raise CustomError("The cache key function was called")
 
         def query_function(
             emails: List[str],
         ) -> List[UserProfile]:  # nocoverage -- this is just here to make sure it's not called
-            raise CustomException("The query function was called")
+            raise CustomError("The query function was called")
 
         # query_function and cache_key_function shouldn't be called, because
         # objects_ids is empty, so there's nothing to do.

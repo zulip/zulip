@@ -39,7 +39,7 @@ from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.markdown import IMAGE_EXTENSIONS
-from zerver.lib.upload import sanitize_name
+from zerver.lib.upload.base import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
@@ -65,10 +65,10 @@ def process_user(
     def is_team_admin(user_dict: Dict[str, Any]) -> bool:
         if user_dict["teams"] is None:
             return False
-        for team in user_dict["teams"]:
-            if team["name"] == team_name and "team_admin" in team["roles"]:
-                return True
-        return False
+        return any(
+            team["name"] == team_name and "team_admin" in team["roles"]
+            for team in user_dict["teams"]
+        )
 
     def get_full_name(user_dict: Dict[str, Any]) -> str:
         full_name = "{} {}".format(user_dict["first_name"], user_dict["last_name"])
@@ -119,7 +119,6 @@ def convert_user_data(
     realm_id: int,
     team_name: str,
 ) -> None:
-
     user_data_list = []
     for username in user_data_map:
         user = user_data_map[username]
@@ -239,7 +238,6 @@ def convert_huddle_data(
     realm_id: int,
     team_name: str,
 ) -> List[ZerverFieldsT]:
-
     zerver_huddle = []
     for huddle in huddle_data:
         if len(huddle["members"]) > 2:
@@ -545,7 +543,6 @@ def process_posts(
     zerver_attachment: List[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
-
     post_data_list = []
     for post in post_data:
         if "team" not in post:
@@ -809,10 +806,7 @@ def check_user_in_team(user: Dict[str, Any], team_name: str) -> bool:
     if user["teams"] is None:
         # This is null for users not on any team
         return False
-    for team in user["teams"]:
-        if team["name"] == team_name:
-            return True
-    return False
+    return any(team["name"] == team_name for team in user["teams"])
 
 
 def label_mirror_dummy_users(

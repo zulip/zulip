@@ -98,6 +98,7 @@ export function build_page() {
         display_settings: settings_config.get_all_display_settings(),
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
+        user_can_change_email: settings_data.user_can_change_email(),
         user_role_text: people.get_user_type(page_params.user_id),
         default_language_name: settings_display.user_default_language_name,
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
@@ -105,6 +106,8 @@ export function build_page() {
         send_read_receipts_tooltip: $t({
             defaultMessage: "Read receipts are currently disabled in this organization.",
         }),
+        user_is_only_organization_owner: people.is_current_user_only_owner(),
+        email_address_visibility_values: settings_config.email_address_visibility_values,
     });
 
     $(".settings-box").html(rendered_settings_tab);

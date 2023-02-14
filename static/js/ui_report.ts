@@ -90,3 +90,21 @@ export function hide_error($target: JQuery): void {
 export function show_error($target: JQuery): void {
     $target.addClass("show");
 }
+
+export function loading(
+    response_html: string,
+    $status_box: JQuery,
+    successfully_loaded: boolean = false,
+): void {
+    $status_box.find(".alert-content").html(response_html);
+    if (!successfully_loaded) {
+        $status_box.removeClass(common.status_classes).addClass("alert-loading").stop(true);
+    } else {
+        $status_box.removeClass(common.status_classes).addClass("alert-success").stop(true);
+        setTimeout(() => {
+            $status_box.removeClass("show");
+        }, 2500);
+    }
+
+    $status_box.addClass("show");
+}

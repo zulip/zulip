@@ -26,7 +26,6 @@ def set_realm_for_existing_scheduledemails(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0127_disallow_chars_in_stream_and_user_name"),
     ]

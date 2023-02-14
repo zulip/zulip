@@ -13,7 +13,7 @@
     </div>
 
     <div class="white-box">
-        <form method="post" class="form-horizontal" action="/complete/{{ backend }}/">
+        <form method="post" class="select-email-form" action="/complete/{{ backend }}/">
             <div class="choose-email-box">
                 <input type="hidden" name="email" value="{{ primary_email }}" />
                 {% if avatar_urls[primary_email] %}
@@ -37,7 +37,7 @@
             </div>
         </form>
         {% for email in verified_non_primary_emails %}
-        <form method="post" class="form-horizontal" action="/complete/{{ backend }}/">
+        <form method="post" class="select-email-form" action="/complete/{{ backend }}/">
             <div class="choose-email-box">
                 <input type="hidden" name="email" value="{{ email }}" />
                 {% if avatar_urls[email] %}

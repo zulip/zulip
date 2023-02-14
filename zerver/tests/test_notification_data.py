@@ -113,6 +113,23 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertFalse(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
+        # 'disable_external_notifications' takes precedence over other flags.
+        user_data = self.create_user_notifications_data_object(
+            user_id=user_id,
+            pm_push_notify=True,
+            pm_email_notify=True,
+            mention_push_notify=True,
+            mention_email_notify=True,
+            wildcard_mention_push_notify=True,
+            wildcard_mention_email_notify=True,
+            disable_external_notifications=True,
+        )
+        self.assertEqual(
+            user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
+            None,
+        )
+        self.assertFalse(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
+
     def test_is_email_notifiable(self) -> None:
         user_id = self.example_user("hamlet").id
         acting_user_id = self.example_user("cordelia").id
@@ -209,6 +226,23 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertFalse(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
+        # Message sender is the welcome bot.
+        user_data = self.create_user_notifications_data_object(
+            user_id=user_id,
+            pm_push_notify=True,
+            pm_email_notify=True,
+            mention_push_notify=True,
+            mention_email_notify=True,
+            wildcard_mention_push_notify=True,
+            wildcard_mention_email_notify=True,
+            disable_external_notifications=True,
+        )
+        self.assertEqual(
+            user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
+            None,
+        )
+        self.assertFalse(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
+
     def test_is_notifiable(self) -> None:
         # This is just for coverage purposes. We've already tested all scenarios above,
         # and `is_notifiable` is a simple OR of the email and push functions.
@@ -224,6 +258,7 @@ class TestNotificationData(ZulipTestCase):
                 user_id=user_id,
                 flags=["mentioned"],
                 private_message=True,
+                disable_external_notifications=False,
                 online_push_user_ids=set(),
                 pm_mention_email_disabled_user_ids=set(),
                 pm_mention_push_disabled_user_ids=set(),
@@ -240,8 +275,10 @@ class TestNotificationData(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         realm = hamlet.realm
 
-        hamlet_only = create_user_group("hamlet_only", [hamlet], realm)
-        hamlet_and_cordelia = create_user_group("hamlet_and_cordelia", [hamlet, cordelia], realm)
+        hamlet_only = create_user_group("hamlet_only", [hamlet], realm, acting_user=None)
+        hamlet_and_cordelia = create_user_group(
+            "hamlet_and_cordelia", [hamlet, cordelia], realm, acting_user=None
+        )
 
         mention_backend = MentionBackend(realm.id)
 

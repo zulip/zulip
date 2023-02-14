@@ -7,20 +7,17 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_esm("../../static/js/resize", {
-    resize_stream_filters_container: () => {},
+    resize_stream_filters_container() {},
 });
 
 const all_messages_data = mock_esm("../../static/js/all_messages_data");
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
+const compose_banner = mock_esm("../../static/js/compose_banner");
 const compose_closed_ui = mock_esm("../../static/js/compose_closed_ui");
 const hashchange = mock_esm("../../static/js/hashchange");
 const message_fetch = mock_esm("../../static/js/message_fetch");
-const message_list = mock_esm("../../static/js/message_list", {
-    set_narrowed(value) {
-        message_list.narrowed = value;
-    },
-});
+const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists", {
     home: {},
     current: {},
@@ -35,10 +32,9 @@ const search = mock_esm("../../static/js/search");
 const stream_list = mock_esm("../../static/js/stream_list");
 const top_left_corner = mock_esm("../../static/js/top_left_corner");
 const typing_events = mock_esm("../../static/js/typing_events");
-const ui_util = mock_esm("../../static/js/ui_util");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 mock_esm("../../static/js/recent_topics_util", {
-    is_visible: () => {},
+    is_visible() {},
 });
 
 //
@@ -76,13 +72,13 @@ function test_helper() {
         };
     }
 
+    stub(compose_banner, "clear_message_sent_banners");
     stub(compose_actions, "on_narrow");
     stub(compose_closed_ui, "update_reply_recipient_label");
     stub(hashchange, "save_narrow");
     stub(message_scroll, "hide_indicators");
     stub(message_scroll, "show_loading_older");
     stub(message_scroll, "hide_top_of_narrow_notices");
-    stub(notifications, "clear_compose_notifications");
     stub(notifications, "redraw_title");
     stub(search, "update_button_visibility");
     stub(stream_list, "handle_narrow_activated");
@@ -90,7 +86,6 @@ function test_helper() {
     stub(top_left_corner, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_actions, "update_narrow_to_recipient_visibility");
-    stub(ui_util, "change_tab_to");
     stub(unread_ops, "process_visible");
     stub(compose_closed_ui, "update_buttons_for_stream");
     stub(compose_closed_ui, "update_buttons_for_private");
@@ -98,13 +93,13 @@ function test_helper() {
     $("#mark_as_read_turned_off_banner").toggleClass = () => {};
 
     return {
-        clear: () => {
+        clear() {
             events = [];
         },
-        push_event: (event) => {
+        push_event(event) {
             events.push(event);
         },
-        assert_events: (expected_events) => {
+        assert_events(expected_events) {
             assert.deepEqual(events, expected_events);
         },
     };
@@ -171,10 +166,12 @@ run_test("basics", () => {
     let cont;
 
     message_fetch.load_messages_for_narrow = (opts) => {
+        // Only validates the anchor and set of fields
         cont = opts.cont;
 
         assert.deepEqual(opts, {
             cont: opts.cont,
+            msg_list: opts.msg_list,
             anchor: 1000,
         });
     };
@@ -183,16 +180,15 @@ run_test("basics", () => {
         then_select_id: selected_id,
     });
 
-    assert.equal(message_list.narrowed.selected_id, selected_id);
-    assert.equal(message_list.narrowed.view.offset, 25);
+    assert.equal(message_lists.current.selected_id, selected_id);
+    assert.equal(message_lists.current.view.offset, 25);
     assert.equal(narrow_state.narrowed_to_pms(), false);
 
     helper.assert_events([
         [message_scroll, "hide_top_of_narrow_notices"],
         [message_scroll, "hide_indicators"],
-        [notifications, "clear_compose_notifications"],
+        [compose_banner, "clear_message_sent_banners"],
         [notifications, "redraw_title"],
-        [ui_util, "change_tab_to"],
         [unread_ops, "process_visible"],
         [hashchange, "save_narrow"],
         [compose_closed_ui, "update_buttons_for_stream"],

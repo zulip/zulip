@@ -9,7 +9,7 @@ import logging
 import os
 import sys
 import unicodedata
-from datetime import date
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Union
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -117,7 +117,7 @@ def update_contributor_data_file() -> None:
         "zulip-android",
     ]
 
-    data: ContributorsJSON = dict(date=str(date.today()), contributors=[])
+    data: ContributorsJSON = dict(date=str(datetime.now(tz=timezone.utc).date()), contributors=[])
     contributor_username_to_data: Dict[str, Dict[str, Union[str, int]]] = {}
 
     for repo_name in repo_names:

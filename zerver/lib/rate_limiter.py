@@ -11,7 +11,7 @@ from django.conf import settings
 from django.http import HttpRequest
 
 from zerver.lib.cache import cache_with_key
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.utils import statsd
 from zerver.models import UserProfile
@@ -27,7 +27,7 @@ KEY_PREFIX = ""
 logger = logging.getLogger(__name__)
 
 
-class RateLimiterLockingException(Exception):
+class RateLimiterLockingError(Exception):
     pass
 
 
@@ -61,7 +61,7 @@ class RateLimitedObject(ABC):
         # Abort this request if the user is over their rate limits
         if ratelimited:
             # Pass information about what kind of entity got limited in the exception:
-            raise RateLimited(time)
+            raise RateLimitedError(time)
 
         calls_remaining, seconds_until_reset = self.api_calls_left()
 
@@ -69,7 +69,7 @@ class RateLimitedObject(ABC):
         request_notes.ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
 
     def block_access(self, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
         self.backend.block_access(self.key(), seconds)
 
     def unblock_access(self) -> None:
@@ -79,11 +79,11 @@ class RateLimitedObject(ABC):
         self.backend.clear_history(self.key())
 
     def max_api_calls(self) -> int:
-        "Returns the API rate limit for the highest limit"
+        """Returns the API rate limit for the highest limit"""
         return self.get_rules()[-1][1]
 
     def max_api_window(self) -> int:
-        "Returns the API time window for the highest limit"
+        """Returns the API time window for the highest limit"""
         return self.get_rules()[-1][0]
 
     def api_calls_left(self) -> Tuple[int, float]:
@@ -161,9 +161,7 @@ def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
 
 
 def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = "api_by_user") -> None:
-    "Add a rate-limiting rule to the ratelimiter"
-    global rules
-
+    """Add a rate-limiting rule to the ratelimiter"""
     if domain not in rules:
         # If we don't have any rules for domain yet, the domain key needs to be
         # added to the rules dictionary.
@@ -176,7 +174,6 @@ def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = "api
 def remove_ratelimit_rule(
     range_seconds: int, num_requests: int, domain: str = "api_by_user"
 ) -> None:
-    global rules
     rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
 
 
@@ -184,7 +181,7 @@ class RateLimiterBackend(ABC):
     @classmethod
     @abstractmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
 
     @classmethod
     @abstractmethod
@@ -340,7 +337,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
         _, _, blocking_key = cls.get_keys(entity_key)
         with client.pipeline() as pipe:
             pipe.set(blocking_key, 1)
@@ -389,7 +386,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def is_ratelimited(cls, entity_key: str, rules: List[Tuple[int, int]]) -> Tuple[bool, float]:
-        "Returns a tuple of (rate_limited, time_till_free)"
+        """Returns a tuple of (rate_limited, time_till_free)"""
         assert rules
         list_key, set_key, blocking_key = cls.get_keys(entity_key)
 
@@ -483,7 +480,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                     break
                 except redis.WatchError:  # nocoverage # Ideally we'd have a test for this.
                     if count > 10:
-                        raise RateLimiterLockingException()
+                        raise RateLimiterLockingError
                     count += 1
 
                     continue
@@ -500,7 +497,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         else:
             try:
                 cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
-            except RateLimiterLockingException:
+            except RateLimiterLockingError:
                 logger.warning("Deadlock trying to incr_ratelimit for %s", entity_key)
                 # rate-limit users who are hitting the API so hard we can't update our stats.
                 ratelimited = True
@@ -536,7 +533,7 @@ class RateLimitedSpectatorAttachmentAccessByFile(RateLimitedObject):
 def rate_limit_spectator_attachment_access_by_file(path_id: str) -> None:
     ratelimited, _ = RateLimitedSpectatorAttachmentAccessByFile(path_id).rate_limit()
     if ratelimited:
-        raise RateLimited
+        raise RateLimitedError
 
 
 def is_local_addr(addr: str) -> bool:
@@ -579,7 +576,7 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
 
 def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> None:
-    """Returns whether or not a user was rate limited. Will raise a RateLimited exception
+    """Returns whether or not a user was rate limited. Will raise a RateLimitedError exception
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
     if not should_rate_limit(request):

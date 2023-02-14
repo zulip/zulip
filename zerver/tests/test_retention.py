@@ -20,7 +20,7 @@ from zerver.lib.retention import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
-from zerver.lib.upload import create_attachment
+from zerver.lib.upload.base import create_attachment
 from zerver.models import (
     ArchivedAttachment,
     ArchivedMessage,
@@ -189,9 +189,10 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
         self.subscribe(user_profile, "Denmark")
         body = (
-            "Some files here ... [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...."
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+            "Some files here ..."
+            " [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
+            " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some"
+            " more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
         ).format(id=realm_id, host=host)
 
         expired_message_id = self.send_stream_message(user_profile, "Denmark", body)
@@ -657,8 +658,8 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         king = self.lear_user("king")
 
         zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(0, 3)]
-        leary_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
-        msg_ids = zulip_msg_ids + leary_msg_ids
+        lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
+        msg_ids = zulip_msg_ids + lear_msg_ids
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()

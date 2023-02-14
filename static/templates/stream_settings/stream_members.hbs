@@ -24,7 +24,7 @@
                     <th>{{t "Name" }}</th>
                     <th>{{t "Email" }}</th>
                     <th>{{t "User ID" }}</th>
-                    {{#if is_realm_admin}}
+                    {{#if can_remove_subscribers}}
                     <th class="actions">{{t "Actions" }}</th>
                     {{/if}}
                 </thead>

@@ -21,7 +21,7 @@ class zulip::postfix_localmail {
     mode    => '0644',
     owner   => root,
     group   => root,
-    content => $fqdn,
+    content => $postfix_mailname,
   }
 
   file {'/etc/postfix/main.cf':

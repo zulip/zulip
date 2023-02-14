@@ -4,7 +4,6 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {page_params} = require("../zjsunit/zpage_params");
 
 const muted_users = zrequire("muted_users");
 
@@ -84,12 +83,14 @@ test("get_mutes", () => {
 });
 
 test("initialize", () => {
-    page_params.muted_users = [
-        {id: 3, timestamp: 1577836800},
-        {id: 2, timestamp: 1577836800},
-    ];
+    const muted_users_params = {
+        muted_users: [
+            {id: 3, timestamp: 1577836800},
+            {id: 2, timestamp: 1577836800},
+        ],
+    };
 
-    muted_users.initialize();
+    muted_users.initialize(muted_users_params);
 
     assert.deepEqual(muted_users.get_muted_users().sort(), [
         {

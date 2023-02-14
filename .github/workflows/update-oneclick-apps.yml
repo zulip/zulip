@@ -22,6 +22,6 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           git clone https://github.com/zulip/marketplace-partners
-          pip3 install python-digitalocean zulip fab-classic
+          pip3 install python-digitalocean zulip fab-classic PyNaCl
           echo $PATH
           python3 tools/oneclickapps/prepare_digital_ocean_one_click_app_release.py

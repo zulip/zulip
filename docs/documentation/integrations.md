@@ -64,7 +64,7 @@ phrases and steps at the location of the macros. Macros help eliminate
 repeated content in our documentation.
 
 The source for macros is the Markdown files under
-`templates/zerver/help/include` in the
+`templates/zerver/integrations/include/` in the
 [main Zulip server repository](https://github.com/zulip/zulip). If you find
 multiple instances of particular content in the documentation, you can
 always create a new macro by adding a new file to that folder.

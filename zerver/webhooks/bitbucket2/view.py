@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Protocol
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
@@ -25,6 +25,7 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_remove_branch_event_message,
+    get_short_sha,
 )
 from zerver.models import UserProfile
 
@@ -89,9 +90,8 @@ def api_bitbucket2_webhook(
         if not payload["push"]["changes"]:
             return json_success(request)
         branch = get_branch_name_for_push_event(payload)
-        if branch and branches:
-            if branches.find(branch) == -1:
-                return json_success(request)
+        if branch and branches and branches.find(branch) == -1:
+            return json_success(request)
 
         subjects = get_push_subjects(payload)
         bodies = get_push_bodies(payload)
@@ -195,7 +195,7 @@ def get_type(request: HttpRequest, payload: WildValue) -> str:
         if event_key == "repo:updated":
             return event_key
 
-    raise UnsupportedWebhookEventType(event_key)
+    raise UnsupportedWebhookEventTypeError(event_key)
 
 
 class BodyGetter(Protocol):
@@ -293,7 +293,7 @@ def get_commit_status_changed_body(payload: WildValue, include_title: bool) -> s
 
     commit_info = "[{short_commit_id}]({repo_url}/commits/{commit_id})".format(
         repo_url=get_repository_url(payload["repository"]),
-        short_commit_id=commit_id[:7],
+        short_commit_id=get_short_sha(commit_id),
         commit_id=commit_id,
     )
 

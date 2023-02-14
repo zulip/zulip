@@ -5,7 +5,7 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_flags import do_mark_muted_user_messages_as_read
-from zerver.lib.user_mutes import add_user_mute, get_user_mutes
+from zerver.lib.muted_users import add_user_mute, get_user_mutes
 from zerver.models import MutedUser, RealmAuditLog, UserProfile
 from zerver.tornado.django_api import send_event
 

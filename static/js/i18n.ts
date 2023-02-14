@@ -14,7 +14,8 @@ export const intl = createIntl(
         locale: page_params.request_language,
         defaultLocale: "en",
         messages: page_params.translation_data,
-        onError: /* istanbul ignore next */ (error) => {
+        /* istanbul ignore next */
+        onError(error) {
             // Ignore complaints about untranslated strings that were
             // added since the last sync-translations run.
             if (error.code !== IntlErrorCode.MISSING_TRANSLATION) {

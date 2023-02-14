@@ -2,7 +2,7 @@ from unittest import mock
 
 import orjson
 
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.pivotal.view import api_pivotal_webhook_v5
 
@@ -218,7 +218,7 @@ Try again next time
             self.assertEqual(result[0], "#0: ")
 
         bad = orjson.loads(self.get_body("bad_kind"))
-        with self.assertRaisesRegex(UnsupportedWebhookEventType, "'unknown_kind'.* supported"):
+        with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, "'unknown_kind'.* supported"):
             with mock.patch("zerver.webhooks.pivotal.view.orjson.loads", return_value=bad):
                 api_pivotal_webhook_v5(request, hamlet)
 

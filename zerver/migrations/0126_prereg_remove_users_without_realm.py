@@ -13,7 +13,6 @@ def remove_prereg_users_without_realm(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0125_realm_max_invites"),
     ]

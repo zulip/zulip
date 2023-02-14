@@ -102,7 +102,17 @@
         }
 
         .messagebox-content {
-            padding: 4px 10px 1px;
+            grid-template-rows: auto;
+            grid-template-columns: auto max-content;
+            padding: 10px;
+
+            .message_content {
+                grid-column: 1 / 2;
+            }
+
+            .message_top_line {
+                grid-column: 2 / 3;
+            }
         }
 
         .messagebox {
@@ -110,18 +120,8 @@
             box-shadow: none;
         }
 
-        .message_content {
-            line-height: 1;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            padding-right: 10px;
-            margin-left: 0;
-        }
-
         .draft_controls {
             display: inline-block;
-            padding-top: 10px;
-            float: right;
             font-size: 0.9em;
 
             [data-tippy-root] {

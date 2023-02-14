@@ -15,11 +15,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_reactivate_user
-from zerver.actions.realm_settings import (
-    do_deactivate_realm,
-    do_reactivate_realm,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import (
     authenticate_notify,
@@ -43,13 +40,13 @@ from zerver.lib.exceptions import (
     InvalidAPIKeyFormatError,
     InvalidJSONError,
     JsonableError,
-    UnsupportedWebhookEventType,
+    UnsupportedWebhookEventTypeError,
 )
 from zerver.lib.initial_password import initial_password
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.request import (
     REQ,
-    RequestConfusingParmsError,
+    RequestConfusingParamsError,
     RequestNotes,
     RequestVariableConversionError,
     RequestVariableMissingError,
@@ -183,7 +180,7 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(orjson.loads(double(request).content).get("number"), 10)
 
         request = HostRequestMock(post_data={"number": "6", "x": "7"})
-        with self.assertRaises(RequestConfusingParmsError) as cm:
+        with self.assertRaises(RequestConfusingParamsError) as cm:
             double(request)
         self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
 
@@ -315,7 +312,7 @@ class DecoratorTestCase(ZulipTestCase):
         def my_webhook_raises_exception_unsupported_event(
             request: HttpRequest, user_profile: UserProfile
         ) -> HttpResponse:
-            raise UnsupportedWebhookEventType("test_event")
+            raise UnsupportedWebhookEventTypeError("test_event")
 
         webhook_bot_email = "webhook-bot@zulip.com"
         webhook_bot_realm = get_realm("zulip")
@@ -410,7 +407,7 @@ class DecoratorTestCase(ZulipTestCase):
         request.POST["api_key"] = webhook_bot_api_key
         exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
         with self.assertLogs("zulip.zerver.webhooks.unsupported", level="ERROR") as log:
-            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
+            with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 request.body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
@@ -564,7 +561,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         def my_webhook_raises_exception(
             request: HttpRequest, user_profile: UserProfile
         ) -> HttpResponse:
-            raise UnsupportedWebhookEventType("test_event")
+            raise UnsupportedWebhookEventTypeError("test_event")
 
         webhook_bot_email = "webhook-bot@zulip.com"
 
@@ -582,7 +579,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             exception_msg = (
                 "The 'test_event' event isn't currently supported by the ClientName webhook"
             )
-            with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
+            with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 my_webhook_raises_exception(request)
 
         mock_exception.assert_called_with(exception_msg, stack_info=True)
@@ -1089,7 +1086,7 @@ class ValidatorTestCase(ZulipTestCase):
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
             x["a"].get("a")
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
-            "a" in x["a"]
+            _ = "a" in x["a"]
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
             x["a"].keys()
         with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
@@ -1239,10 +1236,10 @@ class FetchAPIKeyTest(ZulipTestCase):
 
     def test_fetch_api_key_email_address_visibility(self) -> None:
         user = self.example_user("cordelia")
-        do_set_realm_property(
-            user.realm,
+        do_change_user_setting(
+            user,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 
@@ -1971,8 +1968,8 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
             return json_response(msg="from_test_function")  # nocoverage. isn't meant to be called
 
         response = test_function(request)
-        self.assert_json_success(response)
-        self.assertNotEqual(orjson.loads(response.content).get("msg"), "from_test_function")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"")
 
     def test_returns_normal_response_if_request_method_is_not_head(self) -> None:
         class HeadRequest(HostRequestMock):

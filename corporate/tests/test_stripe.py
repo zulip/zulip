@@ -40,8 +40,8 @@ from corporate.lib.stripe import (
     MIN_INVOICED_LICENSES,
     STRIPE_API_VERSION,
     BillingError,
-    InvalidBillingSchedule,
-    InvalidTier,
+    InvalidBillingScheduleError,
+    InvalidTierError,
     StripeCardError,
     add_months,
     approve_sponsorship,
@@ -268,9 +268,7 @@ def normalize_fixture_data(
             f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'
         ] = f'"{timestamp_field}": 1{i+1:02}%07d'
 
-    normalized_values: Dict[str, Dict[str, str]] = {
-        pattern: {} for pattern in pattern_translations.keys()
-    }
+    normalized_values: Dict[str, Dict[str, str]] = {pattern: {} for pattern in pattern_translations}
     for fixture_file in fixture_files_for_function(decorated_function):
         with open(fixture_file) as f:
             file_content = f.read()
@@ -622,7 +620,7 @@ class StripeTestCase(ZulipTestCase):
         free_trial: bool,
     ) -> None:
         class StripeMock(Mock):
-            def __init__(self, depth: int = 1):
+            def __init__(self, depth: int = 1) -> None:
                 super().__init__(spec=stripe.Card)
                 self.id = "id"
                 self.created = "1000"
@@ -1482,7 +1480,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(ledger_entry.licenses_at_next_renewal, new_seat_count)
 
     @mock_stripe()
-    def test_upgrade_first_card_fails_and_retry_with_another_card_without_starting_from_begining(
+    def test_upgrade_first_card_fails_and_retry_with_another_card_without_starting_from_beginning(
         self, *mocks: Mock
     ) -> None:
         user = self.example_user("hamlet")
@@ -1652,7 +1650,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/billing/", response["Location"])
 
     @mock_stripe()
-    def test_upgrade_first_card_fails_and_restart_from_begining(self, *mocks: Mock) -> None:
+    def test_upgrade_first_card_fails_and_restart_from_beginning(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
         # From https://stripe.com/docs/testing#cards: Attaching this card to
@@ -2532,7 +2530,10 @@ class StripeTest(StripeTestCase):
         realm = get_realm("zulip")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
 
-        expected_message = "Your organization's request for sponsored hosting has been approved! :tada:.\nYou have been upgraded to Zulip Cloud Standard, free of charge."
+        expected_message = (
+            "Your organization's request for sponsored hosting has been approved! You have been upgraded to Zulip Cloud Standard, free of charge. :tada:"
+            "\n\nIf you could [list Zulip as a sponsor on your website](/help/linking-to-zulip-website), we would really appreciate it!"
+        )
         sender = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
         recipient_id = self.example_user("desdemona").recipient_id
         message = Message.objects.filter(sender=sender.id).first()
@@ -3803,6 +3804,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plus_plan.tier, CustomerPlan.PLUS)
         self.assertEqual(LicenseLedger.objects.filter(plan=plus_plan).count(), 1)
 
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
+
         # There are 9 licenses and the realm is on the Standard monthly plan.
         # Therefore, the customer has already paid 800 * 9 = 7200 = $72 for
         # the month. Once they upgrade to Plus, the new price for their 9
@@ -4302,10 +4306,10 @@ class BillingHelpersTest(ZulipTestCase):
             800,
         )
 
-        with self.assertRaisesRegex(InvalidBillingSchedule, "Unknown billing_schedule: 1000"):
+        with self.assertRaisesRegex(InvalidBillingScheduleError, "Unknown billing_schedule: 1000"):
             get_price_per_license(CustomerPlan.STANDARD, 1000)
 
-        with self.assertRaisesRegex(InvalidTier, "Unknown tier: 10"):
+        with self.assertRaisesRegex(InvalidTierError, "Unknown tier: 10"):
             get_price_per_license(CustomerPlan.ENTERPRISE, CustomerPlan.ANNUAL)
 
     def test_get_plan_renewal_or_end_date(self) -> None:

@@ -1,4 +1,5 @@
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.validator import wrap_wild_value
 from zerver.webhooks.opbeat.view import get_value
 
 
@@ -37,7 +38,8 @@ App foo created
         )
 
     def test_get_empty_value(self) -> None:
-        self.assertEqual(get_value({"key": "value"}, "foo"), "")
+        test_dictionary = wrap_wild_value("test_dictionary", {"key": "value"})
+        self.assertEqual(get_value(test_dictionary, "foo"), "")
 
     def test_no_subject_type(self) -> None:
         expected_topic = "test title"

@@ -18,6 +18,30 @@ Hello, world.
             expected_message,
         )
 
+    def test_message_formatting(self) -> None:
+        tests = [
+            ("some *foo* word", "some **foo** word"),
+            ("*foo*", "**foo**"),
+            ("*foo* *bar*", "**foo** **bar**"),
+            ("*foo*a*bar*", "*foo*a*bar*"),
+            ("some _foo_ word", "some *foo* word"),
+        ]
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        for input_value, output_value in tests:
+            payload = {"text": input_value}
+            msg = self.send_webhook_payload(
+                self.test_user,
+                self.url,
+                payload,
+                content_type="application/json",
+            )
+            self.assert_stream_message(
+                message=msg,
+                stream_name=self.STREAM_NAME,
+                topic_name="(no topic)",
+                content=output_value,
+            )
+
     def test_null_message(self) -> None:
         self.check_webhook(
             "null_text",
@@ -50,6 +74,9 @@ Danny Torrence left the following *review* for your property:
 [Overlook Hotel](https://google.com) \n :star: \n Doors had too many axe holes, guest in room 237 was far too rowdy, whole place felt stuck in the 1920s.
 
 [Haunted hotel image](https://is5-ssl.mzstatic.com/image/thumb/Purple3/v4/d3/72/5c/d3725c8f-c642-5d69-1904-aa36e4297885/source/256x256bb.jpg)
+
+**Average Rating**
+1.0
 """.strip()
 
         self.check_webhook(
@@ -66,6 +93,9 @@ Danny Torrence left the following review for your property:
 [Overlook Hotel](https://example.com) \n :star: \n Doors had too many axe holes, guest in room 237 was far too rowdy, whole place felt stuck in the 1920s.
 
 [Haunted hotel image](https://is5-ssl.mzstatic.com/image/thumb/Purple3/v4/d3/72/5c/d3725c8f-c642-5d69-1904-aa36e4297885/source/256x256bb.jpg)
+
+**Average Rating**
+1.0
 """.strip()
 
         self.check_webhook(
@@ -151,6 +181,12 @@ This is a section block with an accessory image.
 [cute cat](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
 
 This is a section block with a button.
+
+| | |
+|-|-|
+| one | two |
+| three | four |
+| five |  |
         """.strip()
 
         self.check_webhook(
@@ -167,7 +203,9 @@ Build bla bla succeeded
 **Requested by**: Some user
 **Duration**: 00:02:03
 **Build pipeline**: ConsumerAddressModule
+**Title with null value**
 **Title without value**
+Value with null title
 Value without title
         """.strip()
 

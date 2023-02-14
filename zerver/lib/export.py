@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from contextlib import suppress
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
 
@@ -22,7 +23,6 @@ from django.conf import settings
 from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
-from django.utils.timezone import make_aware as timezone_make_aware
 from mypy_boto3_s3.service_resource import Object
 
 import zerver.lib.upload
@@ -30,8 +30,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.upload import get_bucket
-from zerver.lib.utils import assert_is_not_none
+from zerver.lib.upload.s3 import get_bucket
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -332,7 +331,7 @@ def sanity_check_output(data: TableData) -> None:
     in {__file__} for what to include in data exports.
     """
 
-    assert ALL_ZULIP_TABLES == all_tables_db, error_message
+    assert all_tables_db == ALL_ZULIP_TABLES, error_message
     assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES), error_message
     assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
     assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
@@ -430,17 +429,12 @@ def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
 def floatify_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field in DATE_FIELDS[table]:
-            orig_dt = item[field]
-            if orig_dt is None:
+            dt = item[field]
+            if dt is None:
                 continue
-            assert isinstance(orig_dt, datetime.datetime)
-            if timezone_is_naive(orig_dt):
-                logging.warning("Naive datetime:", item)
-                dt = timezone_make_aware(orig_dt)
-            else:
-                dt = orig_dt
-            utc_naive = dt.replace(tzinfo=None) - assert_is_not_none(dt.utcoffset())
-            item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
+            assert isinstance(dt, datetime.datetime)
+            assert not timezone_is_naive(dt)
+            item[field] = dt.timestamp()
 
 
 def listify_bithandler_fields(data: TableData, table: TableName) -> None:
@@ -625,12 +619,12 @@ def export_from_config(
         assert parent.table is not None
         assert config.include_rows is not None
         parent_ids = [r["id"] for r in response[parent.table]]
-        filter_parms: Dict[str, Any] = {config.include_rows: parent_ids}
+        filter_params: Dict[str, Any] = {config.include_rows: parent_ids}
         if config.filter_args is not None:
-            filter_parms.update(config.filter_args)
+            filter_params.update(config.filter_args)
         assert model is not None
         try:
-            query = model.objects.filter(**filter_parms)
+            query = model.objects.filter(**filter_params)
         except Exception:
             print(
                 f"""
@@ -640,7 +634,7 @@ def export_from_config(
                 table: {table}
                 parent: {parent.table}
 
-                filter_parms: {filter_parms}
+                filter_params: {filter_params}
                 """
             )
             raise
@@ -659,10 +653,10 @@ def export_from_config(
         if config.source_filter:
             child_rows = [r for r in child_rows if config.source_filter(r)]
         lookup_ids = [r[field] for r in child_rows]
-        filter_parms = dict(id__in=lookup_ids)
+        filter_params = dict(id__in=lookup_ids)
         if config.filter_args:
-            filter_parms.update(config.filter_args)
-        query = model.objects.filter(**filter_parms)
+            filter_params.update(config.filter_args)
+        query = model.objects.filter(**filter_params)
         rows = list(query)
 
     if rows is not None:
@@ -1089,7 +1083,6 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
 
 
 def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
-
     realm = context["realm"]
     user_profile_ids = {r["id"] for r in response["zerver_userprofile"]}
 
@@ -1164,7 +1157,7 @@ def export_usermessages_batch(
     management command).
 
     See write_message_partial_for_query for more context."""
-    assert input_path.endswith(".partial") or input_path.endswith(".locked")
+    assert input_path.endswith((".partial", ".locked"))
     assert output_path.endswith(".json")
 
     with open(input_path, "rb") as input_file:
@@ -1349,7 +1342,6 @@ def write_message_partials(
     output_dir: Path,
     user_profile_ids: Set[int],
 ) -> None:
-
     dump_file_id = 1
 
     for message_id_chunk in message_id_chunks:
@@ -1416,23 +1408,25 @@ def export_uploads_and_avatars(
         realm_emojis = list(RealmEmoji.objects.filter(author_id=user.id))
 
     if settings.LOCAL_UPLOADS_DIR:
+        assert settings.LOCAL_FILES_DIR
+        assert settings.LOCAL_AVATARS_DIR
         # Small installations and developers will usually just store files locally.
         export_uploads_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "files"),
+            local_dir=settings.LOCAL_FILES_DIR,
             output_dir=uploads_output_dir,
             attachments=attachments,
         )
         export_avatars_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+            local_dir=settings.LOCAL_AVATARS_DIR,
             output_dir=avatars_output_dir,
             users=users,
             handle_system_bots=handle_system_bots,
         )
         export_emoji_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+            local_dir=settings.LOCAL_AVATARS_DIR,
             output_dir=emoji_output_dir,
             realm_emojis=realm_emojis,
         )
@@ -1440,7 +1434,7 @@ def export_uploads_and_avatars(
         if user is None:
             export_realm_icons(
                 realm,
-                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
+                local_dir=settings.LOCAL_AVATARS_DIR,
                 output_dir=realm_icons_output_dir,
             )
     else:
@@ -1600,9 +1594,8 @@ def export_files_from_s3(
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
-        if valid_hashes is not None:
-            if bkey.Object().key not in valid_hashes:
-                continue
+        if valid_hashes is not None and bkey.Object().key not in valid_hashes:
+            continue
 
         key = bucket.Object(bkey.key)
 
@@ -1649,7 +1642,6 @@ def export_files_from_s3(
 def export_uploads_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
 ) -> None:
-
     count = 0
     records = []
     for attachment in attachments:
@@ -1691,7 +1683,6 @@ def export_avatars_from_local(
     users: List[UserProfile],
     handle_system_bots: bool,
 ) -> None:
-
     count = 0
     records = []
 
@@ -1767,7 +1758,6 @@ def get_emoji_path(realm_emoji: RealmEmoji) -> str:
 def export_emoji_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
 ) -> None:
-
     count = 0
     records = []
     for realm_emoji in realm_emojis:
@@ -1947,10 +1937,8 @@ def create_soft_link(source: Path, in_progress: bool = True) -> None:
     if in_progress:
         new_target = in_progress_link
     else:
-        try:
+        with suppress(FileNotFoundError):
             os.remove(in_progress_link)
-        except FileNotFoundError:
-            pass
         new_target = done_link
 
     overwrite_symlink(source, new_target)
@@ -2002,7 +1990,6 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
 
 
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
-
     config = get_single_user_config()
     export_from_config(
         response=response,

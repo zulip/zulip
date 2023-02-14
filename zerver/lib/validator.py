@@ -30,7 +30,7 @@ for any particular type of object.
 import re
 import sys
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import (
     Any,
@@ -147,7 +147,10 @@ def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
     try:
-        if datetime.strptime(val, "%Y-%m-%d").strftime("%Y-%m-%d") != val:
+        if (
+            datetime.strptime(val, "%Y-%m-%d").replace(tzinfo=timezone.utc).strftime("%Y-%m-%d")
+            != val
+        ):
             raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
     except ValueError:
         raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
@@ -161,6 +164,11 @@ def check_int(var_name: str, val: object) -> int:
 
 
 def check_int_in(possible_values: List[int]) -> Validator[int]:
+    """
+    Assert that the input is an integer and is contained in `possible_values`. If the input is not in
+    `possible_values`, a `ValidationError` is raised containing the failing field's name.
+    """
+
     def validator(var_name: str, val: object) -> int:
         n = check_int(var_name, val)
         if n not in possible_values:
@@ -449,7 +457,6 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
         raise ValidationError("extra_data is not a dict")
 
     if widget_type == "zform":
-
         if "type" not in extra_data:
             raise ValidationError("zform is missing type field")
 

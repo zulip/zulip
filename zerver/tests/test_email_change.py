@@ -1,8 +1,10 @@
 import datetime
+from email.headerregistry import Address
 from unittest import mock
 
 from django.conf import settings
 from django.core import mail
+from django.utils.html import escape
 from django.utils.timezone import now
 
 from confirmation.models import (
@@ -13,12 +15,11 @@ from confirmation.models import (
 )
 from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import do_deactivate_realm, do_set_realm_property
-from zerver.actions.user_settings import do_start_email_change_process
+from zerver.actions.user_settings import do_change_user_setting, do_start_email_change_process
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     EmailChangeStatus,
-    Realm,
     UserProfile,
     get_realm,
     get_user,
@@ -87,15 +88,10 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_confirm_email_change(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(
-            user_profile.realm,
-            "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-            acting_user=None,
-        )
 
         old_email = user_profile.delivery_email
-        new_email = "hamlet-new@zulip.com"
+        new_email = '"<li>hamlet-new<li>"@zulip.com'
+        new_email_address = Address(addr_spec=new_email)
         new_realm = get_realm("zulip")
         self.login("hamlet")
         obj = EmailChangeStatus.objects.create(
@@ -109,7 +105,11 @@ class EmailChangeTestCase(ZulipTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assert_in_success_response(
-            ["This confirms that the email address for your Zulip"], response
+            [
+                "This confirms that the email address for your Zulip",
+                f'<a href="mailto:{escape(new_email)}">{escape(new_email_address.username)}@<wbr>{escape(new_email_address.domain)}</wbr></a>',
+            ],
+            response,
         )
         user_profile = get_user_by_delivery_email(new_email, new_realm)
         self.assertTrue(bool(user_profile))
@@ -263,10 +263,10 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_change_delivery_email_end_to_end_with_admins_visibility(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            user_profile,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 

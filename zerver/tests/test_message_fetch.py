@@ -15,6 +15,7 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import do_update_message
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.uploads import do_claim_attachments
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
@@ -27,11 +28,15 @@ from zerver.lib.message import (
     update_first_visible_message_id,
 )
 from zerver.lib.narrow import (
-    BadNarrowOperator,
+    LARGER_THAN_MAX_MESSAGE_ID,
+    BadNarrowOperatorError,
     NarrowBuilder,
     build_narrow_filter,
     exclude_muting_conditions,
+    find_first_unread_anchor,
     is_spectator_compatible,
+    ok_to_include_history,
+    post_process_limited_query,
 )
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
@@ -39,7 +44,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT
-from zerver.lib.upload import create_attachment
+from zerver.lib.upload.base import create_attachment
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.user_topics import set_topic_mutes
 from zerver.models import (
@@ -53,13 +58,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
-from zerver.views.message_fetch import (
-    LARGER_THAN_MAX_MESSAGE_ID,
-    find_first_unread_anchor,
-    get_messages_backend,
-    ok_to_include_history,
-    post_process_limited_query,
-)
+from zerver.views.message_fetch import get_messages_backend
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -94,7 +93,7 @@ def mute_stream(realm: Realm, user_profile: UserProfile, stream_name: str) -> No
 
 def first_visible_id_as(message_id: int) -> Any:
     return mock.patch(
-        "zerver.views.message_fetch.get_first_visible_message_id",
+        "zerver.lib.narrow.get_first_visible_message_id",
         return_value=message_id,
     )
 
@@ -111,7 +110,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_not_defined_operator(self) -> None:
         term = dict(operator="not-defined", operand="any")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_stream_operator(self) -> None:
         term = dict(operator="stream", operand="Scotland")
@@ -125,7 +124,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = dict(operator="stream", operand="NonExistingStream")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = dict(operator="is", operand="private")
@@ -135,7 +134,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = dict(operator="streams", operand="invalid_operands")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_streams_operator_and_public_stream_operand(self) -> None:
         term = dict(operator="streams", operand="public")
@@ -263,7 +262,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator="is", operand="non_supported")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
         term = dict(operator="topic", operand="lunch")
@@ -293,7 +292,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = dict(operator="sender", operand="non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self) -> None:
         term = dict(operator="pm-with", operand=self.othello_email)
@@ -377,13 +376,13 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_pm_with_operator_with_comma_noise(self) -> None:
         term = dict(operator="pm-with", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_pm_with_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
         term = dict(operator="pm-with", operand=self.othello_email + ",non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_id_operator(self) -> None:
         term = dict(operator="id", operand=555)
@@ -391,10 +390,10 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_id_operator_invalid(self) -> None:
         term = dict(operator="id", operand="")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
         term = dict(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator="id", operand=555, negated=True)
@@ -421,7 +420,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self) -> None:
@@ -477,7 +476,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
         term = dict(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_in_operator(self) -> None:
         mute_stream(self.realm, self.user_profile, "Verona")
@@ -505,7 +504,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
         term = dict(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperator, self._build_query, term)
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_near_operator(self) -> None:
         term = dict(operator="near", operand="operand")
@@ -520,7 +519,7 @@ class NarrowBuilderTest(ZulipTestCase):
         def _build_query(term: Dict[str, Any]) -> Select:
             return builder.add_term(self.raw_query, term)
 
-        self.assertRaises(BadNarrowOperator, _build_query, term)
+        self.assertRaises(BadNarrowOperatorError, _build_query, term)
 
     def _do_add_term_test(
         self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None
@@ -761,11 +760,11 @@ class PostProcessTest(ZulipTestCase):
                 first_visible_message_id=first_visible_message_id,
             )
 
-            self.assertEqual(info["rows"], out_rows)
-            self.assertEqual(info["found_anchor"], found_anchor)
-            self.assertEqual(info["found_newest"], found_newest)
-            self.assertEqual(info["found_oldest"], found_oldest)
-            self.assertEqual(info["history_limited"], history_limited)
+            self.assertEqual(info.rows, out_rows)
+            self.assertEqual(info.found_anchor, found_anchor)
+            self.assertEqual(info.found_newest, found_newest)
+            self.assertEqual(info.found_oldest, found_oldest)
+            self.assertEqual(info.history_limited, history_limited)
 
         # typical 2-sided query, with a bunch of tests for different
         # values of first_visible_message_id.
@@ -1683,31 +1682,37 @@ class GetOldMessagesTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
-        do_set_realm_property(
-            hamlet.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
 
         self.send_personal_message(hamlet, self.example_user("iago"))
 
-        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(False).decode()))
+        result = self.get_and_check_messages(
+            dict(anchor="newest", client_gravatar=orjson.dumps(False).decode())
+        )
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 
-        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
+        result = self.get_and_check_messages(
+            dict(anchor="newest", client_gravatar=orjson.dumps(True).decode())
+        )
         message = result["messages"][0]
         self.assertEqual(message["avatar_url"], None)
 
         # Now verify client_gravatar doesn't run with EMAIL_ADDRESS_VISIBILITY_ADMINS
-        do_set_realm_property(
-            hamlet.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
+        result = self.get_and_check_messages(
+            dict(anchor="newest", client_gravatar=orjson.dumps(True).decode())
+        )
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 
@@ -2180,8 +2185,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(meeting_message[MATCH_TOPIC], "meetings")
         self.assertEqual(
             meeting_message["match_content"],
-            '<p>discuss <span class="highlight">lunch</span> after '
-            + '<span class="highlight">lunch</span></p>',
+            (
+                '<p>discuss <span class="highlight">lunch</span> after <span'
+                ' class="highlight">lunch</span></p>'
+            ),
         )
 
         (lunch_message,) = (m for m in messages if m[TOPIC_NAME] == "lunch plans")
@@ -2226,7 +2233,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(japanese_message[MATCH_TOPIC], '<span class="highlight">日本</span>')
         self.assertEqual(
             japanese_message["match_content"],
-            '<p>昨日、<span class="highlight">日本</span>' + " のお菓子を送りました。</p>",
+            '<p>昨日、<span class="highlight">日本</span> のお菓子を送りました。</p>',
         )
 
         (english_message,) = (m for m in messages if m[TOPIC_NAME] == "english")
@@ -2374,7 +2381,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(japanese_message[MATCH_TOPIC], '<span class="highlight">日本</span>語')
         self.assertEqual(
             japanese_message["match_content"],
-            '<p>昨日、<span class="highlight">日本</span>の' + "お菓子を送りました。</p>",
+            '<p>昨日、<span class="highlight">日本</span>のお菓子を送りました。</p>',
         )
 
         english_message = [m for m in messages if m[TOPIC_NAME] == "english"][0]
@@ -2866,6 +2873,28 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
 
+        data = self.get_messages_response(
+            anchor=message_ids[5], num_before=3, num_after=0, include_anchor=False
+        )
+
+        messages = data["messages"]
+        self.assertEqual(data["found_anchor"], False)
+        self.assertEqual(data["found_oldest"], False)
+        self.assertEqual(data["found_newest"], False)
+        self.assertEqual(data["history_limited"], False)
+        messages_matches_ids(messages, message_ids[2:5])
+
+        data = self.get_messages_response(
+            anchor=message_ids[5], num_before=0, num_after=3, include_anchor=False
+        )
+
+        messages = data["messages"]
+        self.assertEqual(data["found_anchor"], False)
+        self.assertEqual(data["found_oldest"], False)
+        self.assertEqual(data["found_newest"], False)
+        self.assertEqual(data["history_limited"], False)
+        messages_matches_ids(messages, message_ids[6:9])
+
     def test_missing_params(self) -> None:
         """
         anchor, num_before, and num_after are all required
@@ -2915,6 +2944,13 @@ class GetOldMessagesTest(ZulipTestCase):
                 }
                 result = self.client_get("/json/messages", post_params)
                 self.assert_json_error(result, f"Bad value for '{param}': {type}")
+
+    def test_bad_include_anchor(self) -> None:
+        self.login("hamlet")
+        result = self.client_get(
+            "/json/messages", dict(anchor=1, num_before=1, num_after=1, include_anchor="false")
+        )
+        self.assert_json_error(result, "The anchor can only be excluded at an end of the range")
 
     def test_bad_narrow_type(self) -> None:
         """
@@ -2982,7 +3018,6 @@ class GetOldMessagesTest(ZulipTestCase):
     def exercise_bad_narrow_operand_using_dict_api(
         self, operator: str, operands: Sequence[Any], error_msg: str
     ) -> None:
-
         for operand in operands:
             narrow = [dict(operator=operator, operand=operand)]
             params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())

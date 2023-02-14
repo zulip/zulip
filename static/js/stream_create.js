@@ -40,7 +40,7 @@ class StreamSubscriptionError {
         $("#stream_subscription_error").show();
     }
 
-    cant_create_stream_without_susbscribing() {
+    cant_create_stream_without_subscribing() {
         $("#stream_subscription_error").text(
             $t({
                 defaultMessage:
@@ -226,7 +226,7 @@ function create_stream() {
     let message_retention_selection = $(
         "#stream_creation_form select[name=stream_message_retention_setting]",
     ).val();
-    if (message_retention_selection === "retain_for_period") {
+    if (message_retention_selection === "custom_period") {
         message_retention_selection = Number.parseInt(
             $("#stream_creation_form input[name=stream-message-retention-days]").val(),
             10,
@@ -244,6 +244,12 @@ function create_stream() {
     //       once we upgrade the backend to accept user_ids.
     const user_ids = stream_create_subscribers.get_principals();
     data.principals = JSON.stringify(user_ids);
+
+    const can_remove_subscribers_group_id = Number.parseInt(
+        stream_settings_ui.new_stream_can_remove_subscribers_group_widget.value(),
+        10,
+    );
+    data.can_remove_subscribers_group_id = can_remove_subscribers_group_id;
 
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating stream..."}),
@@ -266,8 +272,8 @@ function create_stream() {
         error(xhr) {
             const msg = JSON.parse(xhr.responseText).msg;
             if (msg.includes("access")) {
-                // If we can't access the stream, we can safely assume it's
-                // a duplicate stream that we are not invited to.
+                // If we can't access the stream, we can safely
+                // assume it's a duplicate stream that we are not invited to.
                 //
                 // BUG: This check should be using error codes, not
                 // parsing the error string, so it works correctly
@@ -316,20 +322,37 @@ export function show_new_stream_modal() {
 
     // Select the first visible and enabled choice for stream privacy.
     $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
-    // Make the options default to the same each time:
-    // "announce stream" on.
-    $("#stream_creation_form .stream-message-retention-days-input").hide();
-    $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
+    // Make the options default to the same each time
 
-    // Add listener to .show stream-message-retention-days-input that we've hidden above
-    $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
-        if (e.target.value === "retain_for_period") {
-            $("#stream_creation_form .stream-message-retention-days-input").show();
-        } else {
-            $("#stream_creation_form .stream-message-retention-days-input").hide();
+    // The message retention setting is visible to owners only. The below block
+    // sets the default state of setting if it is visible.
+    if (page_params.is_owner) {
+        $("#stream_creation_form .stream-message-retention-days-input").hide();
+        $("#stream_creation_form select[name=stream_message_retention_setting]").val(
+            "realm_default",
+        );
+
+        // The user is not allowed to set the setting to amy value other than
+        // "realm_default" for realms on limited plans, so we disable the setting.
+        $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
+            "disabled",
+            !page_params.zulip_plan_is_not_limited,
+        );
+
+        // This listener is only needed if the dropdown setting is enabled.
+        if (page_params.zulip_plan_is_not_limited) {
+            // Add listener to .show stream-message-retention-days-input that we've hidden above
+            $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+                if (e.target.value === "custom_period") {
+                    $("#stream_creation_form .stream-message-retention-days-input").show();
+                } else {
+                    $("#stream_creation_form .stream-message-retention-days-input").hide();
+                }
+            });
         }
-    });
+    }
 
+    // set default state for "announce stream" option.
     update_announce_stream_state();
     clear_error_display();
 }
@@ -359,7 +382,7 @@ export function set_up_handlers() {
             return;
         }
         if (!principals.includes(people.my_current_user_id()) && !page_params.is_admin) {
-            stream_subscription_error.cant_create_stream_without_susbscribing();
+            stream_subscription_error.cant_create_stream_without_subscribing();
             return;
         }
 
@@ -372,7 +395,7 @@ export function set_up_handlers() {
             confirm_dialog.launch({
                 html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
                 html_body,
-                on_click: () => {
+                on_click() {
                     create_stream();
                 },
             });
@@ -404,4 +427,6 @@ export function set_up_handlers() {
             e.preventDefault();
         }
     });
+
+    stream_settings_ui.new_stream_can_remove_subscribers_group_widget.setup();
 }

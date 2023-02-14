@@ -51,7 +51,7 @@ function make_zjquery() {
         // that you'd find on a "real" jQuery object.  Sometimes we
         // expects devs to create their own stubs.
         const handler = {
-            get: (target, key) => {
+            get(target, key) {
                 // Handle the special case of equality checks, which
                 // we can infer by assert.equal trying to access the
                 // "stack" key.

@@ -2,15 +2,19 @@
     <div class="right-sidebar-items">
         <div id="user-list">
             <div id="userlist-header">
-                <h4 class='sidebar-title'
-                  id='userlist-title' data-tippy-content="{{t 'Search people' }} (w)">
+                <h4 class='sidebar-title' data-tooltip-template-id="search-people-tooltip-template"
+                  id='userlist-title'>
                     {{t 'USERS' }}
                 </h4>
                 <i id="user_filter_icon" class="fa fa-search"
                   aria-hidden="true" aria-label="{{t 'Search people' }}"
-                  data-tippy-content="{{t 'Search people' }} (w)">
+                  data-tooltip-template-id="search-people-tooltip-template">
                 </i>
             </div>
+            <template id="search-people-tooltip-template">
+                {{t 'Search people' }}
+                {{tooltip_hotkey_hints "W"}}
+            </template>
             <div class="input-append notdisplayed" id="user_search_section">
                 <input class="user-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{t 'Search people' }}" />
                 <button type="button" class="btn clear_search_button" id="clear_search_people_button">
@@ -27,8 +31,11 @@
             <a id="invite-user-link" href="#invite"><i class="fa fa-user-plus" aria-hidden="true"></i>{{t 'Invite more users' }}</a>
             {{/if}}
             <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts" class="hidden-for-spectators">
-                <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tooltip-template-id="keyboard-icon-tooltip"></i>
-                <template id="keyboard-icon-tooltip">{{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span></template>
+                <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tooltip-template-id="keyboard-icon-tooltip-template"></i>
+                <template id="keyboard-icon-tooltip-template">
+                    {{t 'Keyboard shortcuts' }}
+                    {{tooltip_hotkey_hints "?"}}
+                </template>
             </a>
             <div class="only-visible-for-spectators">
                 <div class="realm-description">

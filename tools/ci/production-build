@@ -39,13 +39,15 @@ cp -a \
     tools/ci/production-upgrade \
     tools/ci/production-pgroonga \
     tools/ci/production-upgrade-pg \
-    tools/ci/send-failure-message \
+    tools/ci/generate-failure-message \
     package.json yarn.lock \
     /tmp/production-build
 
 # Check that webpack bundles use only ES2019 syntax.
+# Use the yarn binary installed by tools/provision.
+YARN="/usr/local/bin/yarn"
 tar -C /tmp -xzf /tmp/production-build/zulip-server-test.tar.gz zulip-server-test/prod-static/serve/webpack-bundles
 (
     GLOBIGNORE=/tmp/zulip-server-test/prod-static/serve/webpack-bundles/katex-cli.js
-    yarn run es-check es2019 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
+    $YARN run es-check es2019 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
 )

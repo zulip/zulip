@@ -5,8 +5,8 @@ import _ from "lodash";
 import * as fenced_code from "../shared/js/fenced_code";
 
 import * as channel from "./channel";
-import * as common from "./common";
 import * as compose from "./compose";
+import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -18,7 +18,6 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -91,7 +90,8 @@ function show_compose_box(msg_type, opts) {
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#compose-send-status").removeClass(common.status_classes).hide();
+    compose_banner.clear_errors();
+    compose_banner.clear_warnings();
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
@@ -108,16 +108,18 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
-    compose_validate.clear_all_everyone_warnings();
+    compose_validate.clear_wildcard_warnings();
     compose.clear_private_stream_alert();
-    compose_validate.set_user_acknowledged_all_everyone_flag(undefined);
+    compose_validate.set_user_acknowledged_wildcard_flag(undefined);
 
+    compose_state.set_recipient_edited_manually(false);
     compose.clear_preview_area();
     clear_textarea();
     compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
-    $("#compose-send-status").hide(0);
+    compose_banner.clear_errors();
+    compose_banner.clear_warnings();
 }
 
 export function autosize_message_content() {
@@ -263,8 +265,8 @@ export function update_placeholder_text() {
 
     const opts = {
         message_type: compose_state.get_message_type(),
-        stream: $("#stream_message_recipient_stream").val(),
-        topic: $("#stream_message_recipient_topic").val(),
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
         private_message_recipient: compose_pm_pill.get_emails(),
     };
 
@@ -286,7 +288,7 @@ export function start(msg_type, opts) {
     if (reload_state.is_in_progress()) {
         return;
     }
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
     expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
@@ -324,7 +326,7 @@ export function start(msg_type, opts) {
     //
     // TODO: Move these into a conditional on message_type, using an
     // explicit "clear" function for compose_state.
-    compose_state.stream_name(opts.stream);
+    compose_state.set_stream_name(opts.stream);
     compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
@@ -378,7 +380,7 @@ export function cancel() {
     hide_box();
     $("#compose_close").hide();
     clear_box();
-    notifications.clear_compose_notifications();
+    compose_banner.clear_message_sent_banners();
     compose.abort_xhr();
     compose.abort_video_callbacks(undefined);
     compose_state.set_message_type(false);
@@ -490,8 +492,8 @@ export function on_topic_narrow() {
 
     if (compose_state.stream_name() !== narrow_state.stream()) {
         // If we changed streams, then we only leave the
-        // compose box open if there is content.
-        if (compose_state.has_message_content()) {
+        // compose box open if there is content or if the recipient was edited.
+        if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
             compose_fade.update_message_list();
             return;
         }
@@ -501,14 +503,17 @@ export function on_topic_narrow() {
         return;
     }
 
-    if (compose_state.topic() && compose_state.has_message_content()) {
-        // If the user has written something to a different topic,
+    if (
+        (compose_state.topic() && compose_state.has_message_content()) ||
+        compose_state.is_recipient_edited_manually()
+    ) {
+        // If the user has written something to a different topic or edited it,
         // they probably want that content, so leave compose open.
         //
         // This effectively uses the heuristic of whether there is
-        // content in compose to determine whether the user had firmly
-        // decided to compose to the old topic or is just looking to
-        // reply to what they see.
+        // content in compose or the topic was edited to determine whether
+        // the user had firmly decided to compose to the old topic or is
+        // just looking to reply to what they see.
         compose_fade.update_message_list();
         return;
     }
@@ -557,7 +562,6 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
-        const prev_caret = $textarea.caret();
         let content = $t(
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
@@ -569,25 +573,8 @@ export function quote_and_reply(opts) {
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
 
-        const placeholder_offset = $textarea.val().indexOf(quoting_placeholder);
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
-
-        // When replacing content in a textarea, we need to move the
-        // cursor to preserve its logical position if and only if the
-        // content we just added was before the current cursor
-        // position.  If we do, we need to move it by the increase in
-        // the length of the content before the placeholder.
-        if (prev_caret >= placeholder_offset + quoting_placeholder.length) {
-            $textarea.caret(prev_caret + content.length - quoting_placeholder.length);
-        } else if (prev_caret > placeholder_offset) {
-            /* In the rare case that our cursor was inside the
-             * placeholder, we treat that as though the cursor was
-             * just after the placeholder. */
-            $textarea.caret(placeholder_offset + content.length + 1);
-        } else {
-            $textarea.caret(prev_caret);
-        }
     }
 
     if (message && message.raw_content) {
@@ -625,7 +612,7 @@ export function on_narrow(opts) {
         return;
     }
 
-    if (compose_state.has_message_content()) {
+    if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
         compose_fade.update_message_list();
         return;
     }

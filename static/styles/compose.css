@@ -100,7 +100,7 @@
         padding: 0;
         display: flex;
         align-items: center;
-        width: 100%;
+        flex: 1;
 
         .fa-angle-right {
             font-size: 0.9em;
@@ -128,7 +128,6 @@
 
     .pm_recipient {
         margin-left: 5px;
-        margin-right: 35px;
         display: flex;
         align-items: center;
         width: 100%;
@@ -227,7 +226,7 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 2;
+    z-index: 4;
     width: 100%;
 
     background-color: hsl(0, 0%, 100%);
@@ -277,107 +276,173 @@
     display: none;
 }
 
-.compose_resolved_topic,
-.compose_invite_user,
-.compose_private_stream_alert,
-.compose-all-everyone,
-.compose_not_subscribed {
-    padding: 4px 0;
+.compose_banner {
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    position: relative;
-}
+    font-size: 15px;
+    line-height: 18px;
 
-#compose_not_subscribed_close {
-    top: 0;
-    right: 0;
-    position: absolute;
-}
+    p {
+        margin: 0; /* override bootstrap */
+        /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
+        padding: 12px 5px 12px 15px;
+    }
 
-.compose_resolved_topic_user_controls .compose_resolved_topic_close,
-.compose_invite_user_controls .compose_invite_close,
-.compose_private_stream_alert_controls .compose_private_stream_alert_close {
-    display: inline-block;
-    position: absolute;
-    margin-top: -2px;
-    margin-right: -2px;
-    width: 10px;
-}
+    .banner_content {
+        flex-grow: 1;
+    }
 
-.compose_resolved_topic_user_controls,
-.compose-all-everyone-controls,
-.compose_invite_user_controls,
-.compose_private_stream_alert_controls {
-    float: right;
-    position: relative;
-}
+    .compose_banner_action_button {
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-weight: 600;
+        margin-left: 10px;
+        margin-top: 4.5px;
+        margin-bottom: 4.5px;
+        height: 32px;
+        white-space: nowrap;
 
-.compose_invite_user p,
-.compose_resolved_topic p,
-.compose_not_subscribed p {
-    margin: 5px 20px;
-    display: inline-block;
-    max-width: calc(100% - 100px);
-}
+        /* Extra margin to ensure the layout is identical when there is no
+           close button. */
+        &.right_edge {
+            margin-right: 10px;
+        }
+    }
 
-#error-message-sub-button {
-    margin-right: 30px;
-}
-
-/* Like .nav-tabs > li > a */
-div[id^="message-edit-send-status"],
-#compose-send-status {
-    padding: 8px 14px;
-    margin-bottom: 8px;
-    line-height: 20px;
-    display: none;
-}
-
-#compose-send-status .progress {
-    height: 10px;
-    margin-bottom: 10px;
-}
-
-/* Like .alert .close */
-.send-status-close,
-.compose-send-status-close {
-    font-size: 17px;
-    font-weight: bold;
-    color: hsl(0, 0%, 0%);
-    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-    opacity: 0.2;
-    float: right;
-}
-
-.send-status-close:hover,
-.compose-send-status-close:hover {
-    cursor: pointer;
-    opacity: 0.4;
-}
-
-#out-of-view-notification {
-    position: relative;
-    margin-bottom: 6px;
-
-    background-color: hsla(152, 51%, 63%, 0.25);
-    border: 1px solid hsla(0, 0%, 0%, 0.1);
-    border-radius: 4px;
-
-    .close {
-        position: absolute;
-        right: 8px;
-        top: 4px;
+    .compose_banner_close_button {
         font-size: 17px;
-        font-weight: bold;
-        color: hsl(0, 0%, 0%);
-        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-        opacity: 0.2;
+        text-decoration: none;
+        padding: 12px 10px;
+    }
+
+    &.success {
+        background-color: hsl(147, 43%, 92%);
+        border: 1px solid hsla(147, 57%, 25%, 0.4);
+        color: hsl(147, 57%, 25%);
+
+        .compose_banner_close_button {
+            color: hsla(147, 57%, 25%, 0.5);
+
+            &:hover {
+                color: hsl(147, 57%, 25%);
+            }
+
+            &:active {
+                color: hsla(147, 57%, 25%, 0.75);
+            }
+        }
+    }
+
+    &.warning {
+        background-color: hsl(50, 75%, 92%);
+        border-color: hsla(38, 44%, 27%, 0.4);
+        color: hsl(38, 44%, 27%);
+
+        .compose_banner_close_button {
+            color: hsla(38, 44%, 27%, 0.5);
+
+            &:hover {
+                color: hsl(38, 44%, 27%);
+            }
+
+            &:active {
+                color: hsla(38, 44%, 27%, 0.75);
+            }
+        }
+
+        .compose_banner_action_button {
+            background-color: hsla(38, 44%, 27%, 0.1);
+            color: inherit;
+
+            &:hover {
+                background-color: hsla(38, 44%, 27%, 0.12);
+            }
+
+            &:active {
+                background-color: hsla(38, 44%, 27%, 0.15);
+            }
+        }
+    }
+
+    &.error {
+        background-color: hsl(4, 35%, 90%);
+        border-color: hsla(3, 57%, 33%, 0.4);
+        color: hsl(4, 58%, 33%);
+
+        .compose_banner_close_button {
+            color: hsla(4, 58%, 33%, 0.5);
+
+            &:hover {
+                color: hsl(4, 58%, 33%);
+            }
+
+            &:active {
+                color: hsla(4, 58%, 33%, 0.75);
+            }
+        }
+
+        .compose_banner_action_button {
+            background-color: hsla(3, 57%, 33%, 0.1);
+            color: inherit;
+
+            &:hover {
+                background-color: hsla(3, 57%, 33%, 0.12);
+            }
+
+            &:active {
+                background-color: hsla(3, 57%, 33%, 0.15);
+            }
+        }
+    }
+
+    &.info {
+        background-color: hsl(204, 58%, 92%);
+        border-color: hsla(204, 49%, 29%, 0.4);
+        position: relative;
+        color: hsl(204, 49%, 29%);
+
+        .compose_banner_close_button {
+            color: hsla(204, 49%, 29%, 0.5);
+
+            &:hover {
+                color: hsl(204, 49%, 29%);
+            }
+
+            &:active {
+                color: hsla(204, 49%, 29%, 0.75);
+            }
+        }
     }
 }
 
-.compose-notifications-content {
-    padding: 4px 22px;
-    text-align: center;
+.upload_banner {
+    overflow: hidden;
+
+    &.hidden {
+        display: none;
+    }
+
+    .moving_bar {
+        position: absolute;
+        width: 0;
+        /* The progress updates seem to come every second or so,
+        so this is the smoothest it can probably get. */
+        transition: width 1s ease-in-out;
+        background: hsl(204, 63%, 85%);
+        top: 0;
+        bottom: 0;
+    }
+
+    .upload_msg,
+    .compose_banner_close_button {
+        z-index: 1;
+        position: relative;
+    }
 }
 
 .composition-area {
@@ -394,6 +459,9 @@ textarea.new_message_textarea {
     margin-bottom: 0;
     resize: vertical !important;
     margin-top: 5px;
+    border-radius: 4px;
+    color: hsl(0, 0%, 33%);
+    background-color: hsl(0, 0%, 100%);
 
     @keyframes flash {
         0% {
@@ -413,6 +481,12 @@ textarea.new_message_textarea {
             animation: flash 0.5s ease-in-out infinite;
         }
     }
+
+    &:read-only,
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0, 0%, 93%);
+    }
 }
 
 textarea.new_message_textarea,
@@ -422,6 +496,7 @@ textarea.new_message_textarea,
     transition: border 0.2s ease;
 
     &:focus {
+        outline: 0;
         border: 1px solid hsl(0, 0%, 67%);
         box-shadow: none;
     }
@@ -486,6 +561,15 @@ input.recipient_box {
         input[type="radio"] {
             position: relative;
             top: 5px;
+            width: auto;
+            cursor: pointer;
+            margin: 4px 0 0;
+
+            &:focus {
+                outline: 1px dotted hsl(0, 0%, 20%);
+                outline: 5px auto -webkit-focus-ring-color;
+                outline-offset: -2px;
+            }
         }
 
         &:first-child {
@@ -715,7 +799,6 @@ a.compose_control_button.hide {
     margin-right: 4px;
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     #compose-content {
         margin-right: 7px;
@@ -758,7 +841,11 @@ a.compose_control_button.hide {
 
     #compose-textarea,
     #preview_message_area {
+        /* Setting height to 0 is necessary to make the flex+Simplebar
+           combination work correctly, without pushing the compose
+           controls offscreen when previewing a very tall message. */
         max-height: none !important;
+        height: 0;
         flex: 1;
     }
 }

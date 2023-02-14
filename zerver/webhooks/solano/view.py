@@ -7,6 +7,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import get_short_sha
 from zerver.models import UserProfile
 
 MESSAGE_TEMPLATE = """
@@ -63,7 +64,7 @@ def api_solano_webhook(
     body = MESSAGE_TEMPLATE.format(
         author=author,
         build_log_url=build_log,
-        commit_id=commit_id[:7],
+        commit_id=get_short_sha(commit_id),
         commit_url=commit_url,
         status=status,
         emoji=emoji,

@@ -26,20 +26,18 @@ from the Internet, and we'd like the documentation to be available in that
 environment.
 
 The source for help center documentation is the Markdown files under
-`templates/zerver/help/` in the
-[main Zulip server repository](https://github.com/zulip/zulip). The file
-`foo.md` is automatically rendered by the `render_markdown_path` function in
-`zerver/templatetags/app_filters.py` when the user accesses a URL of the
-form `/help/foo`; with special cases for `/help/` going to `index.md` and
-`/help/unknown_article` going to `missing.md` (with a 404 response). Images
-are usually linked from `static/images/help/`.
+`help/` in the [main Zulip server repository](https://github.com/zulip/zulip).
+The file `foo.md` is automatically rendered by the `render_markdown_path`
+function in `zerver/templatetags/app_filters.py` when the user accesses a URL
+of the form `/help/foo`; with special cases for `/help/` going to `index.md`
+and `/help/unknown_article` going to `missing.md` (with a 404 response).
+Images are usually linked from `static/images/help/`.
 
 This means that you can contribute to the Zulip help center documentation
 by just adding to or editing the collection of Markdown files under
-`templates/zerver/help`. If you have the Zulip development environment
-set up, you simply need to reload your browser on
-`http://localhost:9991/help/foo` to see the latest version of `foo.md`
-rendered.
+`help/...`. If you have the Zulip development environment set up, you simply
+need to reload your browser on `http://localhost:9991/help/foo` to see the
+latest version of `foo.md` rendered.
 
 This system is designed to make writing and maintaining such documentation
 highly efficient. We link to the docs extensively from the landing pages and
@@ -69,9 +67,8 @@ the current documentation as a resource and guide as you begin.
 - Should the feature you're documenting be added or merged into an
   existing article?
 
-  - If so, you can locate that article in
-    `templates/zerver/help` and start working on updating it with
-    content about the new feature.
+  - If so, you can locate that article in `help/` and start working
+    on updating it with content about the new feature.
 
   - If not, choose an existing article to use as a template for your
     new article and make a list of which articles (or guides) would be
@@ -213,7 +210,7 @@ as guidance when documenting Zulip's features.
 When you refer to the features in the Zulip UI, you should **bold** the
 feature's name followed by the feature itself (e.g. **Settings** page,
 **Change password** button, **Email** field). No quotation marks should be
-used.
+used. Use **bold** for stream names, and quotation marks for topic names.
 
 Keep in mind that the UI may change — don’t describe it in more detail than
 is needed. **Never identify or refer to a button by its color.**
@@ -311,40 +308,40 @@ base class `icon-vector` and have dropped support for it. We now only support
 icons from [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) which
 make use of `fa` as a base class.
 
-- cog (<i class="fa fa-cog"></i>) icon —
-  `cog (<i class="fa fa-cog"></i>) icon`
-- down chevron (<i class="fa fa-chevron-down"></i>) icon —
-  `down chevron (<i class="fa fa-chevron-down"></i>) icon`
-- eye (<i class="fa fa-eye"></i>) icon —
-  `eye (<i class="fa fa-eye"></i>) icon`
-- file (<i class="fa fa-file-code-o"></i>) icon —
-  `file (<i class="fa fa-file-code-o"></i>) icon`
-- filled star (<i class="fa fa-star"></i>) icon —
-  `filled star (<i class="fa fa-star"></i>) icon`
-- formatting (<i class="fa fa-font"></i>) icon —
-  `formatting (<i class="fa fa-font"></i>) icon`
-- menu (<i class="fa fa-bars"></i>) icon —
-  `menu (<i class="fa fa-bars"></i>) icon`
-- overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
-  `overflow ( <i class="fa fa-ellipsis-v"></i> ) icon`
-- paperclip (<i class="fa fa-paperclip"></i>) icon —
-  `paperclip (<i class="fa fa-paperclip"></i>) icon`
-- pencil (<i class="fa fa-pencil"></i>) icon —
-  `pencil (<i class="fa fa-pencil"></i>) icon`
-- pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon —
-  `pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon`
-- plus (<i class="fa fa-plus"></i>) icon —
-  `plus (<i class="fa fa-plus"></i>) icon`
-- smiley face (<i class="fa fa-smile-o"></i>) icon —
-  `smiley face (<i class="fa fa-smile-o"></i>) icon`
-- star (<i class="fa fa-star-o"></i>) icon —
-  `star (<i class="fa fa-star-o"></i>) icon`
-- trash (<i class="fa fa-trash-o"></i>) icon —
-  `trash (<i class="fa fa-trash-o"></i>) icon`
-- video-camera (<i class="fa fa-video-camera"></i>) icon —
-  `video-camera (<i class="fa fa-video-camera"></i>) icon`
-- x (<i class="fa fa-times"></i>) icon —
-  `x (<i class="fa fa-times"></i>) icon`
+- **cog** (<i class="fa fa-cog"></i>) icon:
+  `**cog** (<i class="fa fa-cog"></i>) icon`
+- **down chevron** (<i class="fa fa-chevron-down"></i>) icon:
+  `**down chevron** (<i class="fa fa-chevron-down"></i>) icon`
+- **eye** (<i class="fa fa-eye"></i>) icon:
+  `**eye** (<i class="fa fa-eye"></i>) icon`
+- **file** (<i class="fa fa-file-code-o"></i>) icon:
+  `**file** (<i class="fa fa-file-code-o"></i>) icon`
+- **filled star** (<i class="fa fa-star"></i>) icon:
+  `**filled star** (<i class="fa fa-star"></i>) icon`
+- **formatting** (<i class="fa fa-font"></i>) icon:
+  `**formatting** (<i class="fa fa-font"></i>) icon`
+- **menu** (<i class="fa fa-bars"></i>) icon:
+  `**menu** (<i class="fa fa-bars"></i>) icon`
+- **verflow** ( <i class="fa fa-ellipsis-v"></i> ) icon:
+  `**overflow** ( <i class="fa fa-ellipsis-v"></i> ) icon`
+- **paperclip** (<i class="fa fa-paperclip"></i>) icon:
+  `**paperclip** (<i class="fa fa-paperclip"></i>) icon`
+- **pencil** (<i class="fa fa-pencil"></i>) icon:
+  `**pencil** (<i class="fa fa-pencil"></i>) icon`
+- **pencil and paper** (<i class="fa fa-pencil-square-o"></i>) icon:
+  `**pencil and paper** (<i class="fa fa-pencil-square-o"></i>) icon`
+- **plus** (<i class="fa fa-plus"></i>) icon:
+  `**plus** (<i class="fa fa-plus"></i>) icon`
+- **smiley face** (<i class="fa fa-smile-o"></i>) icon:
+  `**smiley face** (<i class="fa fa-smile-o"></i>) icon`
+- **star** (<i class="fa fa-star-o"></i>) icon:
+  `**star** (<i class="fa fa-star-o"></i>) icon`
+- **trash** (<i class="fa fa-trash-o"></i>) icon:
+  `**trash** (<i class="fa fa-trash-o"></i>) icon`
+- **video-camera** (<i class="fa fa-video-camera"></i>) icon:
+  `**video-camera** (<i class="fa fa-video-camera"></i>) icon`
+- **x** (<i class="fa fa-times"></i>) icon:
+  `**x** (<i class="fa fa-times"></i>) icon`
 
 ### Macros
 
@@ -352,8 +349,7 @@ make use of `fa` as a base class.
 phrases and steps at the location of the macros. Macros help eliminate
 repeated content in our documentation.
 
-The source for macros is the Markdown files under
-`templates/zerver/help/include` in the
+The source for macros is the Markdown files under `help/include` in the
 [main Zulip server repository](https://github.com/zulip/zulip).
 
 - **Administrator only feature** `{!admin-only.md!}`: Notes that the feature

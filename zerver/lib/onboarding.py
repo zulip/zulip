@@ -1,7 +1,6 @@
 from typing import Dict, List
 
 from django.conf import settings
-from django.db import transaction
 from django.db.models import Count
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -74,7 +73,7 @@ def send_initial_pms(user: UserProfile) -> None:
                 _(
                     "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
                 ),
-                "{organization_setup_text}" + "\n\n",
+                "{organization_setup_text}\n\n",
                 "{demo_org_warning}",
                 _(
                     "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
@@ -93,7 +92,12 @@ def send_initial_pms(user: UserProfile) -> None:
     )
 
     internal_send_private_message(
-        get_system_bot(settings.WELCOME_BOT, user.realm_id), user, content
+        get_system_bot(settings.WELCOME_BOT, user.realm_id),
+        user,
+        content,
+        # Note: Welcome bot doesn't trigger email/push notifications,
+        # as this is intended to be seen contextually in the application.
+        disable_external_notifications=True,
     )
 
 
@@ -214,10 +218,17 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
     human_response_lower = send_request.message.content.lower()
     content = select_welcome_bot_response(human_response_lower)
-    internal_send_private_message(welcome_bot, send_request.message.sender, content)
+
+    internal_send_private_message(
+        welcome_bot,
+        send_request.message.sender,
+        content,
+        # Note: Welcome bot doesn't trigger email/push notifications,
+        # as this is intended to be seen contextually in the application.
+        disable_external_notifications=True,
+    )
 
 
-@transaction.atomic
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
     # Make sure each stream created in the realm creation process has at least one message below

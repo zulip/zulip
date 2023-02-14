@@ -27,12 +27,12 @@ run_test("scrub_realm", () => {
 
     let submit_form_called = false;
     $fake_this.form = {
-        submit: () => {
+        submit() {
             submit_form_called = true;
         },
     };
     const event = {
-        preventDefault: () => {},
+        preventDefault() {},
     };
 
     window.prompt = () => "zulip";

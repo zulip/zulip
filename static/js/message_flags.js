@@ -20,7 +20,6 @@ export const _unread_batch_size = 1000;
 
 export const send_read = (function () {
     let queue = [];
-    let on_success;
     let start;
     function server_request() {
         // Wait for server IDs before sending flags
@@ -40,23 +39,18 @@ export const send_read = (function () {
         channel.post({
             url: "/json/messages/flags",
             data: {messages: JSON.stringify(real_msg_ids_batch), op: "add", flag: "read"},
-            success: on_success,
+            success() {
+                const batch_set = new Set(real_msg_ids_batch);
+                queue = queue.filter((message) => !batch_set.has(message.id));
+
+                if (queue.length > 0) {
+                    start();
+                }
+            },
         });
     }
 
     start = _.throttle(server_request, 1000);
-
-    on_success = function on_success(data) {
-        if (data === undefined || data.messages === undefined) {
-            return;
-        }
-
-        queue = queue.filter((message) => !data.messages.includes(message.id));
-
-        if (queue.length > 0) {
-            start();
-        }
-    };
 
     function add(messages) {
         queue = queue.concat(messages);

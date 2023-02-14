@@ -48,14 +48,15 @@ class RealmExportTest(ZulipTestCase):
             with self.settings(LOCAL_UPLOADS_DIR=None), stdout_suppressed(), self.assertLogs(
                 level="INFO"
             ) as info_logs:
-                result = self.client_post("/json/export/realm")
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["public_only"], True)
-        self.assertIn("/tmp/zulip-export-", args["output_dir"])
+        self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.
@@ -118,14 +119,15 @@ class RealmExportTest(ZulipTestCase):
         # Test the export logic.
         with patch("zerver.lib.export.do_export_realm", return_value=tarball_path) as mock_export:
             with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
-                result = self.client_post("/json/export/realm")
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["public_only"], True)
-        self.assertIn("/tmp/zulip-export-", args["output_dir"])
+        self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.

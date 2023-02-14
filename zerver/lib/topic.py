@@ -207,7 +207,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
     # recent row.
     rows = sorted(rows, key=lambda tup: tup[1])
 
-    for (topic_name, max_message_id) in rows:
+    for topic_name, max_message_id in rows:
         canonical_name = topic_name.lower()
         canonical_topic_names[canonical_name] = (max_message_id, topic_name)
 
@@ -270,3 +270,17 @@ def get_topic_history_for_stream(
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
+
+
+def get_topic_resolution_and_bare_name(stored_name: str) -> Tuple[bool, str]:
+    """
+    Resolved topics are denoted only by a title change, not by a boolean toggle in a database column. This
+    method inspects the topic name and returns a tuple of:
+
+    - Whether the topic has been resolved
+    - The topic name with the resolution prefix, if present in stored_name, removed
+    """
+    if stored_name.startswith(RESOLVED_TOPIC_PREFIX):
+        return (True, stored_name[len(RESOLVED_TOPIC_PREFIX) :])
+
+    return (False, stored_name)

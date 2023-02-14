@@ -18,7 +18,6 @@ def upgrade_stream_post_policy(apps: StateApps, schema_editor: BaseDatabaseSchem
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0263_stream_stream_post_policy"),
     ]

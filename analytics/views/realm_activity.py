@@ -13,6 +13,7 @@ from analytics.views.activity_common import (
     format_date_for_activity_reports,
     get_user_activity_summary,
     make_table,
+    realm_stats_link,
     user_activity_link,
 )
 from zerver.decorator import require_server_admin
@@ -252,8 +253,10 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     data += [(page_title, content)]
 
     title = realm_str
+    realm_stats = realm_stats_link(realm_str)
+
     return render(
         request,
         "analytics/activity.html",
-        context=dict(data=data, realm_link=None, title=title),
+        context=dict(data=data, realm_stats_link=realm_stats, title=title),
     )

@@ -99,7 +99,7 @@ $(() => {
         }
     });
 
-    // Code in this block will be executed when the /accounts/send_confirm
+    // Code in this block will be executed when the /accounts/send_confirm/
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
         $("#resend_email_link").on("click", () => {
@@ -184,7 +184,7 @@ $(() => {
         },
     });
 
-    function check_subdomain_avilable(subdomain) {
+    function check_subdomain_available(subdomain) {
         const url = "/json/realm/subdomain/" + subdomain;
         $.get(url, (response) => {
             if (response.msg !== "available") {
@@ -223,7 +223,7 @@ $(() => {
     });
     $("#id_team_subdomain").on("keyup", () => {
         clearTimeout(timer);
-        timer = setTimeout(check_subdomain_avilable, 250, $("#id_team_subdomain").val());
+        timer = setTimeout(check_subdomain_available, 250, $("#id_team_subdomain").val());
     });
 
     // GitHub auth

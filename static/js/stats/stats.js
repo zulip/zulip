@@ -188,14 +188,20 @@ function get_thirty_days_messages_sent(data) {
 }
 
 function set_storage_space_used_statistic(upload_space_used) {
-    const space_used = bytes_to_size(upload_space_used, true);
+    let space_used = "N/A";
+    if (upload_space_used !== null) {
+        space_used = bytes_to_size(upload_space_used, true);
+    }
 
     $("#id_storage_space_used").text(space_used);
     $("#id_storage_space_used").closest("summary-stats").show();
 }
 
 function set_guest_users_statistic(guest_users) {
-    const guest_users_string = guest_users.toLocaleString();
+    let guest_users_string = "N/A";
+    if (guest_users !== null) {
+        guest_users_string = guest_users.toLocaleString();
+    }
 
     $("#id_guest_users_count").text(guest_users_string);
     $("#id_guest_users_count").closest("summary-stats").show();

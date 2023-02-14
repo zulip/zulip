@@ -16,9 +16,6 @@ REGEXP = re.compile(r"\{generate_return_values_table\|\s*(.+?)\s*\|\s*(.+)\s*\}"
 
 
 class MarkdownReturnValuesTableGenerator(Extension):
-    def __init__(self, configs: Mapping[str, Any] = {}) -> None:
-        self.config: Dict[str, Any] = {}
-
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
             APIReturnValuesTablePreprocessor(md, self.getConfigs()),
@@ -54,7 +51,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 else:
                     text = self.render_table(return_values, 0)
                 if len(text) > 0:
-                    text = ["#### Return values"] + text
+                    text = ["#### Return values", *text]
                 line_split = REGEXP.split(line, maxsplit=0)
                 preceding = line_split[0]
                 following = line_split[-1]
@@ -194,7 +191,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         # Directly using `###` for subheading causes errors so use h3 with made up id.
         argument_template = (
             '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
-            + " {event_type} {op}</h3></p></div> \n{description}\n\n\n"
+            "{event_type} {op}</h3></p></div> \n{description}\n\n\n"
         )
         for events in events_dict["oneOf"]:
             event_type: Dict[str, Any] = events["properties"]["type"]
@@ -225,4 +222,4 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
 
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownReturnValuesTableGenerator:
-    return MarkdownReturnValuesTableGenerator(kwargs)
+    return MarkdownReturnValuesTableGenerator(*args, **kwargs)

@@ -316,7 +316,6 @@ class Command(BaseCommand):
                 string_id="zulip",
                 name="Zulip Dev",
                 emails_restricted_to_domains=False,
-                email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 description="The Zulip development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,
@@ -333,6 +332,9 @@ class Command(BaseCommand):
 
             realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
             realm_user_default.enter_sends = True
+            realm_user_default.email_address_visibility = (
+                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            )
             realm_user_default.save()
 
             if options["test_suite"]:
@@ -1002,7 +1004,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple streams
 # - multiple subjects per stream
 # - multiple huddles
-# - multiple personals converastions
+# - multiple personal conversations
 # - multiple messages per subject
 # - both single and multi-line content
 def generate_and_send_messages(
@@ -1237,4 +1239,6 @@ def create_user_groups() -> None:
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
-    create_user_group("hamletcharacters", members, zulip, description="Characters of Hamlet")
+    create_user_group(
+        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
+    )

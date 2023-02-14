@@ -3,6 +3,7 @@
 # This class should only be included by classes that are intended to
 # be able to be deployed on their own host.
 class zulip::profile::base {
+  include zulip::timesync
   include zulip::common
   case $::os['family'] {
     'Debian': {
@@ -28,8 +29,6 @@ class zulip::profile::base {
         'procps',
         # Used to read /etc/zulip/zulip.conf for `zulipconf` Puppet function
         'crudini',
-        # Accurate time is essential
-        'chrony',
         # Used for tools like sponge
         'moreutils',
         # Nagios monitoring plugins
@@ -49,7 +48,6 @@ class zulip::profile::base {
         'curl',
         'jq',
         'crudini',
-        'chrony',
         'moreutils',
         'nmap-ncat',
         'nagios-plugins',  # there is no dummy package on CentOS 7
@@ -60,8 +58,6 @@ class zulip::profile::base {
       fail('osfamily not supported')
     }
   }
-  package { 'ntp': ensure => purged, before => Package['chrony'] }
-  service { 'chrony': require => Package['chrony'] }
   package { $base_packages: ensure => installed }
 
   group { 'zulip':
@@ -79,7 +75,7 @@ class zulip::profile::base {
 
   file { '/etc/zulip':
     ensure => directory,
-    mode   => '0644',
+    mode   => '0755',
     owner  => 'zulip',
     group  => 'zulip',
     links  => follow,
@@ -107,18 +103,24 @@ class zulip::profile::base {
     source => 'puppet:///modules/zulip/limits.conf',
   }
 
+  service { 'puppet':
+    ensure  => 'stopped',
+    enable  => 'false',
+    require => Package['puppet'],
+  }
+
   # This directory is written to by cron jobs for reading by Nagios
   file { '/var/lib/nagios_state/':
     ensure => directory,
     group  => 'zulip',
-    mode   => '0774',
+    mode   => '0775',
   }
 
   file { '/var/log/zulip':
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
-    mode   => '0640',
+    mode   => '0750',
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_base":

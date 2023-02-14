@@ -8,6 +8,7 @@ import time
 import traceback
 import uuid
 from collections import deque
+from contextlib import suppress
 from dataclasses import asdict
 from functools import lru_cache
 from typing import (
@@ -208,7 +209,7 @@ class ClientDescriptor:
                 )
             finally:
                 self.disconnect_handler()
-                return True
+            return True
         return False
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
@@ -350,10 +351,28 @@ class EventQueue:
         event["id"] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
-        if full_event_type == "restart" or full_event_type.startswith("flags/"):
+        if full_event_type == "restart" or (
+            full_event_type.startswith("flags/")
+            and not full_event_type.startswith("flags/remove/read")
+        ):
+            # virtual_events are an optimization that allows certain
+            # simple events, such as update_message_flags events that
+            # simply contain a list of message IDs to operate on, to
+            # be compressed together. This is primarily useful for
+            # flags/add/read, where normal Zulip usage will result in
+            # many small flags/add/read events as users scroll.
+            #
+            # We need to exclude flags/remove/read, because it has an
+            # extra message_details field that cannot be compressed.
+            #
+            # BUG: This compression algorithm is incorrect in the
+            # presence of mark-as-unread, since it does not respect
+            # the ordering of "mark as read" and "mark as unread"
+            # updates for a given message.
             if full_event_type not in self.virtual_events:
                 self.virtual_events[full_event_type] = copy.deepcopy(event)
                 return
+
             # Update the virtual event with the values from the event
             virtual_event = self.virtual_events[full_event_type]
             virtual_event["id"] = event["id"]
@@ -521,7 +540,7 @@ def gc_event_queues(port: int) -> None:
     to_remove: Set[str] = set()
     affected_users: Set[int] = set()
     affected_realms: Set[int] = set()
-    for (id, client) in clients.items():
+    for id, client in clients.items():
         if client.expired(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
@@ -622,10 +641,8 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
         load_event_queues(port)
         autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
-    try:
+    with suppress(OSError):
         os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
-    except OSError:
-        pass
 
     # Set up event queue garbage collection
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
@@ -765,6 +782,9 @@ def missedmessage_hook(
             stream_email_notify=internal_data.get("stream_email_notify", False),
             # Since one is by definition idle, we don't need to check online_push_enabled
             online_push_enabled=False,
+            disable_external_notifications=internal_data.get(
+                "disable_external_notifications", False
+            ),
         )
 
         mentioned_user_group_id = internal_data.get("mentioned_user_group_id")
@@ -915,6 +935,7 @@ def process_message_event(
     wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
+    disable_external_notifications = event_template.get("disable_external_notifications", False)
 
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
@@ -955,6 +976,7 @@ def process_message_event(
             user_id=user_profile_id,
             flags=flags,
             private_message=private_message,
+            disable_external_notifications=disable_external_notifications,
             online_push_user_ids=online_push_user_ids,
             pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
             pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
@@ -1110,6 +1132,7 @@ def process_message_update_event(
     wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
+    disable_external_notifications = event_template.pop("disable_external_notifications", False)
 
     # TODO/compatibility: Translation code for the rename of
     # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
@@ -1140,7 +1163,7 @@ def process_message_update_event(
         user_profile_id = user_data["id"]
 
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
-        for key in user_data.keys():
+        for key in user_data:
             if key != "id":
                 user_event[key] = user_data[key]
 
@@ -1150,7 +1173,6 @@ def process_message_update_event(
         # Therefore, we know only events where `rendering_only_update`
         # is False possibly send notifications.
         if not rendering_only_update:
-
             # The user we'll get here will be the sender if the message's
             # content was edited, and the editor for topic edits. That's
             # the correct "acting_user" for both cases.
@@ -1161,6 +1183,7 @@ def process_message_update_event(
                 user_id=user_profile_id,
                 flags=flags,
                 private_message=(stream_name is None),
+                disable_external_notifications=disable_external_notifications,
                 online_push_user_ids=online_push_user_ids,
                 pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
                 pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
@@ -1340,6 +1363,18 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_presence_event(event, cast(List[int], users))
     elif event["type"] == "custom_profile_fields":
         process_custom_profile_fields_event(event, cast(List[int], users))
+    elif event["type"] == "cleanup_queue":
+        # cleanup_event_queue may generate this event to forward cleanup
+        # requests to the right shard.
+        assert isinstance(users[0], int)
+        try:
+            client = access_client_descriptor(users[0], event["queue_id"])
+        except BadEventQueueIdError:
+            logging.info(
+                "Ignoring cleanup request for bad queue id %s (%d)", event["queue_id"], users[0]
+            )
+        else:
+            client.cleanup()
     else:
         process_event(event, cast(List[int], users))
     logging.debug(

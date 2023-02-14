@@ -3,7 +3,7 @@ from typing import Callable, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
@@ -133,11 +133,10 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
 
 def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
     event_name = payload["eventType"].tame(check_string)
-    if event_name == "git.push":
-        if branches is not None:
-            branch = get_code_push_branch_name(payload)
-            if branches.find(branch) == -1:
-                return None
+    if event_name == "git.push" and branches is not None:
+        branch = get_code_push_branch_name(payload)
+        if branches.find(branch) == -1:
+            return None
     if event_name == "git.pullrequest.merged":
         status = payload["resource"]["status"].tame(check_string)
         merge_status = payload["resource"]["mergeStatus"].tame(check_string)
@@ -148,7 +147,7 @@ def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]
             return None
     if event_name in EVENT_FUNCTION_MAPPER:
         return event_name
-    raise UnsupportedWebhookEventType(event_name)
+    raise UnsupportedWebhookEventTypeError(event_name)
 
 
 EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], str]] = {

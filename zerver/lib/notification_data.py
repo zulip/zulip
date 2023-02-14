@@ -20,6 +20,7 @@ class UserMessageNotificationsData:
     stream_push_notify: bool
     stream_email_notify: bool
     sender_is_muted: bool
+    disable_external_notifications: bool
 
     def __post_init__(self) -> None:
         # Check that there's no dubious data.
@@ -36,6 +37,7 @@ class UserMessageNotificationsData:
         user_id: int,
         flags: Collection[str],
         private_message: bool,
+        disable_external_notifications: bool,
         online_push_user_ids: Set[int],
         pm_mention_push_disabled_user_ids: Set[int],
         pm_mention_email_disabled_user_ids: Set[int],
@@ -45,7 +47,6 @@ class UserMessageNotificationsData:
         muted_sender_user_ids: Set[int],
         all_bot_user_ids: Set[int],
     ) -> "UserMessageNotificationsData":
-
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
             return cls(
@@ -60,6 +61,7 @@ class UserMessageNotificationsData:
                 stream_push_notify=False,
                 stream_email_notify=False,
                 sender_is_muted=False,
+                disable_external_notifications=False,
             )
 
         # `wildcard_mention_user_ids` are those user IDs for whom wildcard mentions should
@@ -96,11 +98,28 @@ class UserMessageNotificationsData:
             stream_push_notify=(user_id in stream_push_user_ids),
             stream_email_notify=(user_id in stream_email_user_ids),
             sender_is_muted=(user_id in muted_sender_user_ids),
+            disable_external_notifications=disable_external_notifications,
         )
 
     # For these functions, acting_user_id is the user sent a message
     # (or edited a message) triggering the event for which we need to
     # determine notifiability.
+    def trivially_should_not_notify(self, acting_user_id: int) -> bool:
+        """Common check for reasons not to trigger a notification that arex
+        independent of users' notification settings and thus don't
+        depend on what type of notification (email/push) it is.
+        """
+        if self.user_id == acting_user_id:
+            return True
+
+        if self.sender_is_muted:
+            return True
+
+        if self.disable_external_notifications:
+            return True
+
+        return False
+
     def is_notifiable(self, acting_user_id: int, idle: bool) -> bool:
         return self.is_email_notifiable(acting_user_id, idle) or self.is_push_notifiable(
             acting_user_id, idle
@@ -113,10 +132,7 @@ class UserMessageNotificationsData:
         if not idle and not self.online_push_enabled:
             return None
 
-        if self.user_id == acting_user_id:
-            return None
-
-        if self.sender_is_muted:
+        if self.trivially_should_not_notify(acting_user_id):
             return None
 
         # The order here is important. If, for example, both
@@ -140,10 +156,7 @@ class UserMessageNotificationsData:
         if not idle:
             return None
 
-        if self.user_id == acting_user_id:
-            return None
-
-        if self.sender_is_muted:
+        if self.trivially_should_not_notify(acting_user_id):
             return None
 
         # The order here is important. If, for example, both
@@ -159,6 +172,25 @@ class UserMessageNotificationsData:
             return NotificationTriggers.STREAM_EMAIL
         else:
             return None
+
+
+def user_allows_notifications_in_StreamTopic(
+    stream_is_muted: bool,
+    topic_is_muted: bool,
+    stream_specific_setting: Optional[bool],
+    global_setting: bool,
+) -> bool:
+    """
+    Captures the hierarchy of notification settings, where muting is considered first, followed
+    by stream-specific settings, and the global-setting in the UserProfile is the fallback.
+    """
+    if stream_is_muted or topic_is_muted:
+        return False
+
+    if stream_specific_setting is not None:
+        return stream_specific_setting
+
+    return global_setting
 
 
 def get_user_group_mentions_data(

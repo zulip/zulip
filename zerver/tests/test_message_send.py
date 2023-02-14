@@ -63,7 +63,7 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.message_send import InvalidMirrorInput
+from zerver.views.message_send import InvalidMirrorInputError
 
 if sys.version_info < (3, 9):  # nocoverage
     from backports import zoneinfo
@@ -1098,7 +1098,7 @@ class MessagePOSTTest(ZulipTestCase):
     def test_send_message_create_mirrored_message_user_returns_invalid_input(
         self, create_mirrored_message_users_mock: Any
     ) -> None:
-        create_mirrored_message_users_mock.side_effect = InvalidMirrorInput()
+        create_mirrored_message_users_mock.side_effect = InvalidMirrorInputError()
         result = self.api_post(
             self.mit_user("starnine"),
             "/api/v1/messages",
@@ -1695,6 +1695,7 @@ class StreamMessagesTest(ZulipTestCase):
                 user,
                 stream_name,
                 content=content,
+                capture_on_commit_callbacks=False,
             )
         users = events[0]["users"]
         user_ids = {u["id"] for u in users}
@@ -2118,7 +2119,6 @@ class ExtractTest(ZulipTestCase):
             extract_stream_indicator('[1,2,"general"]')
 
     def test_extract_private_recipients_emails(self) -> None:
-
         # JSON list w/dups, empties, and trailing whitespace
         s = orjson.dumps([" alice@zulip.com ", " bob@zulip.com ", "   ", "bob@zulip.com"]).decode()
         # sorted() gets confused by extract_private_recipients' return type

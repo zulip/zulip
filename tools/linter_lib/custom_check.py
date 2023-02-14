@@ -116,7 +116,7 @@ js_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude": {"static/js/util.js", "frontend_tests/"},
+            "exclude": {"static/js/types.ts", "static/js/util.ts", "frontend_tests/"},
             "exclude_pattern": "emails",
             "description": "avoid subject in JS code",
             "good_lines": ["topic_name"],
@@ -151,11 +151,6 @@ js_rules = RuleList(
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
             "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
             "exclude": {"frontend_tests/node_tests/"},
-        },
-        {
-            "pattern": r"""compose_error\(["']""",
-            "description": "Argument to compose_error should be a literal string translated "
-            "by $t_html()",
         },
         {
             "pattern": r"ui.report_success\(",
@@ -277,12 +272,6 @@ python_rules = RuleList(
             "bad_lines": ["def foo(self: Any):"],
         },
         {
-            "pattern": "assertEquals[(]",
-            "description": "Use assertEqual, not assertEquals (which is deprecated).",
-            "good_lines": ["assertEqual(1, 2)"],
-            "bad_lines": ["assertEquals(1, 2)"],
-        },
-        {
             "pattern": r"assertEqual[(]len[(][^\n ]*[)],",
             "description": "Use the assert_length helper instead of assertEqual(len(..), ..).",
             "good_lines": ["assert_length(data, 2)"],
@@ -388,24 +377,12 @@ python_rules = RuleList(
             "description": "Please use access_stream_by_*() to fetch Stream objects",
         },
         {
-            "pattern": "datetime[.](now|utcnow)",
-            "include_only": {"zerver/", "analytics/"},
-            "description": "Don't use datetime in backend code.\n"
-            "See https://zulip.readthedocs.io/en/latest/contributing/code-style.html#naive-datetime-objects",
-        },
-        {
             "pattern": "from os.path",
             "description": "Don't use from when importing from the standard library",
         },
         {
             "pattern": "import os.path",
             "description": "Use import os instead of import os.path",
-        },
-        {
-            "pattern": r"(logging|logger)\.warn\W",
-            "description": "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
-            "good_lines": ["logging.warning('I am a warning.')", "logger.warning('warning')"],
-            "bad_lines": ["logging.warn('I am a warning.')", "logger.warn('warning')"],
         },
         {
             "pattern": r"\.pk",
@@ -420,12 +397,6 @@ python_rules = RuleList(
         },
         {
             "pattern": r"\S[\t ]*#[\t ]*type:(?![\t ]*ignore)",
-            "exclude": {
-                "scripts/lib/hash_reqs.py",
-                "scripts/lib/setup_venv.py",
-                "scripts/lib/zulip_tools.py",
-                "tools/lib/provision.py",
-            },
             "description": "Comment-style variable type annotation. Use Python 3.6 style annotations instead.",
             "good_lines": ["a: List[int] = []"],
             "bad_lines": ["a = []  # type: List[int]"],
@@ -690,9 +661,7 @@ html_rules: List["Rule"] = [
     {
         "pattern": "style ?=",
         "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
-        "exclude_pattern": r'.*style ?=["'
-        + "'"
-        + "](display: ?none|background: {{|color: {{|background-color: {{).*",
+        "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*""",
         "exclude": {
             # 5xx page doesn't have external CSS
             "static/html/5xx.html",
@@ -851,6 +820,7 @@ markdown_rules = RuleList(
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
             "exclude": {
+                "api_docs/",
                 "docs/contributing/contributing.md",
                 "docs/overview/readme.md",
                 "docs/README.md",
@@ -882,7 +852,6 @@ markdown_rules = RuleList(
             "description": "Don't link directly to line numbers",
         },
     ],
-    exclude_files_in="templates/zerver/help/",
 )
 
 help_markdown_rules = RuleList(
@@ -892,13 +861,13 @@ help_markdown_rules = RuleList(
         {
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
-            "include_only": {"templates/zerver/help/"},
+            "include_only": {"help/"},
             "exclude_pattern": "Rocket.Chat",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",
-            "include_only": {"templates/zerver/help/"},
-            "exclude": {"templates/zerver/help/change-organization-url.md"},
+            "include_only": {"help/"},
+            "exclude": {"help/change-organization-url.md"},
             "good_lines": ["Organization", "deactivate_realm", "realm_filter"],
             "bad_lines": ["Users are in a realm", "Realm is the best model"],
             "description": "Realms are referred to as Organizations in user-facing docs.",

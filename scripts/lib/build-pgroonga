@@ -8,7 +8,7 @@ tmpdir="$(mktemp -d)"
 trap 'rm -r "$tmpdir"' EXIT
 cd "$tmpdir"
 tarball="pgroonga-$version.tar.gz"
-curl -fLO "https://packages.groonga.org/source/pgroonga/$tarball"
+curl -fLO --retry 3 "https://packages.groonga.org/source/pgroonga/$tarball"
 sha256sum -c <<<"$sha256 $tarball"
 tar -xzf "$tarball"
 cd "pgroonga-$version"

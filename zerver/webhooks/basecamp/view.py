@@ -4,7 +4,7 @@ import string
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_string, to_wild_value
@@ -16,8 +16,8 @@ from .support_event import SUPPORT_EVENTS
 DOCUMENT_TEMPLATE = "{user_name} {verb} the document [{title}]({url})"
 QUESTION_TEMPLATE = "{user_name} {verb} the question [{title}]({url})"
 QUESTIONS_ANSWER_TEMPLATE = (
-    "{user_name} {verb} the [answer]({answer_url}) "
-    + "of the question [{question_title}]({question_url})"
+    "{user_name} {verb} the [answer]({answer_url})"
+    " of the question [{question_title}]({question_url})"
 )
 COMMENT_TEMPLATE = (
     "{user_name} {verb} the [comment]({answer_url}) of the task [{task_title}]({task_url})"
@@ -47,7 +47,7 @@ def api_basecamp_webhook(
     event = get_event_type(payload)
 
     if event not in SUPPORT_EVENTS:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     subject = get_project_name(payload)
     if event.startswith("document_"):
@@ -72,7 +72,7 @@ def api_basecamp_webhook(
         body = get_comment_body(event, payload)
         event = "comment"
     else:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     check_send_webhook_message(request, user_profile, subject, body, event)
     return json_success(request)

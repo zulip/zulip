@@ -2,7 +2,7 @@ Receive Zabbix notifications in Zulip!
 
 !!! warn ""
 
-    **Note:** This guide is for Zabbix 5.2 and above; some older Zabbix versions have a
+    **Note:** This guide is for Zabbix 5.4 and above; some older Zabbix versions have a
     different workflow for creating an outgoing webhook.
 
 1. {!create-stream.md!}
@@ -29,8 +29,6 @@ Receive Zabbix notifications in Zulip!
     * Add `zulip_endpoint` as the seventh parameter with the value set as the URL
       constructed earlier.
 
-    Check the **Enabled** option, and click **Update**.
-
 1. Click the **Pencil** to edit the script and replace any existing content with the below script:
 
          try {
@@ -42,11 +40,11 @@ Receive Zabbix notifications in Zulip!
                }
             },
             params = JSON.parse(value),
-            req = new CurlHttpRequest(),
+            req = new HttpRequest(),
             payload = {},
             resp;
 
-            req.AddHeader('Content-Type: application/json');
+            req.addHeader('Content-Type: application/json');
 
             payload.hostname = params.hostname;
             payload.severity = params.severity;
@@ -54,11 +52,11 @@ Receive Zabbix notifications in Zulip!
             payload.item = params.item;
             payload.trigger = params.trigger;
             payload.link = params.link;
-            resp = req.Post(params.zulip_endpoint,
+            resp = req.post(params.zulip_endpoint,
                JSON.stringify(payload))
 
-            if (req.Status() != 200) {
-               throw 'Response code: '+req.Status();
+            if (req.getStatus() != 200) {
+               throw 'Response code: '+req.getStatus();
             }
 
             resp = JSON.parse(resp);
@@ -73,7 +71,9 @@ Receive Zabbix notifications in Zulip!
 
          return JSON.stringify(result);
 
-1. Click **Apply**. Click **Message Templates**. Click **Add**. Select **Problem**.
+1. Check the **Enabled** option.
+
+1. Click **Message Templates** in the top bar. Click **Add** under **Message Type**. Select **Problem**.
 
 1. Set **Subject** to `{TRIGGER.STATUS}-{TRIGGER.SEVERITY}-{TRIGGER.NAME}`.
    Set **Message** to the following:
@@ -87,7 +87,7 @@ Receive Zabbix notifications in Zulip!
          "link": "{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}"
          }
 
-1. Click **Add**. Click **Update**.
+1. Click **Add**.
 
 1. Go back to your Zabbix web interface, and click **Administration**.
    Click on **Users**, and select the alias of the user you would like

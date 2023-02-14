@@ -111,7 +111,6 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: BaseDatabaseSche
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0297_draft"),
     ]

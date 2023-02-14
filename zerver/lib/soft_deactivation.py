@@ -48,7 +48,7 @@ def filter_by_subscription_history(
             user_messages_to_insert.append(user_message)
             seen_message_ids.add(message["id"])
 
-    for (stream_id, stream_messages_raw) in all_stream_messages.items():
+    for stream_id, stream_messages_raw in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]
         # Make a copy of the original list of messages, which we will
         # mutate in the loop below.
@@ -95,22 +95,23 @@ def filter_by_subscription_history(
                         stream_messages = stream_messages[i:]
                         break
                 final_msg_count = len(stream_messages)
-                if initial_msg_count == final_msg_count:
-                    if stream_messages[-1]["id"] <= event_last_message_id:
-                        stream_messages = []
+                if (
+                    initial_msg_count == final_msg_count
+                    and stream_messages[-1]["id"] <= event_last_message_id
+                ):
+                    stream_messages = []
             else:
                 raise AssertionError(f"{log_entry.event_type} is not a subscription event.")
 
-        if len(stream_messages) > 0:
-            # We do this check for last event since if the last subscription
-            # event was a subscription_deactivated then we don't want to create
-            # UserMessage rows for any of the remaining messages.
-            if stream_subscription_logs[-1].event_type in (
-                RealmAuditLog.SUBSCRIPTION_ACTIVATED,
-                RealmAuditLog.SUBSCRIPTION_CREATED,
-            ):
-                for stream_message in stream_messages:
-                    store_user_message_to_insert(stream_message)
+        # We do this check for last event since if the last subscription
+        # event was a subscription_deactivated then we don't want to create
+        # UserMessage rows for any of the remaining messages.
+        if len(stream_messages) > 0 and stream_subscription_logs[-1].event_type in (
+            RealmAuditLog.SUBSCRIPTION_ACTIVATED,
+            RealmAuditLog.SUBSCRIPTION_CREATED,
+        ):
+            for stream_message in stream_messages:
+                store_user_message_to_insert(stream_message)
     return user_messages_to_insert
 
 

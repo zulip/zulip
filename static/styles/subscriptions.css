@@ -73,6 +73,7 @@
     margin-right: 10px;
 }
 
+.create_user_group_plus_button,
 .create_stream_plus_button {
     font-size: 24px;
     font-weight: 500;
@@ -93,6 +94,12 @@
         position: relative;
         top: -5px;
     }
+}
+
+.create_user_group_button {
+    position: relative;
+    top: 7px;
+    margin: 0 7px 0 0;
 }
 
 #create_user_group_description,
@@ -257,11 +264,6 @@ h4.user_group_setting_subsection_title {
     font-size: 25px;
     font-weight: 300;
     padding-top: 40px;
-}
-
-.change-stream-privacy {
-    width: 100%;
-    text-align: center;
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
@@ -675,30 +677,20 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
-    #user-group-creation {
-        max-height: calc(100% - 102px);
-
-        .user-group-creation-body {
-            padding: 15px;
-        }
-    }
-
-    #stream-creation {
-        .stream-creation-body {
-            height: calc(95vh - 155px);
-            padding: 15px;
-
-            @media (width < $md_min) {
-                height: calc(95vh - 115px);
-            }
-        }
-    }
-
     #user-group-creation,
     #stream-creation {
         overflow: auto;
         outline: none;
         -webkit-overflow-scrolling: touch;
+
+        .user-group-creation-body,
+        .stream-creation-body {
+            /*
+                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer) + 15px (padding for .simplebar-content)
+            */
+            height: calc(95vh - 164px);
+            padding: 15px 15px 0;
+        }
 
         .modal-footer {
             position: absolute;
@@ -730,6 +722,10 @@ h4.user_group_setting_subsection_title {
         #user_group_creation_form,
         #stream_creation_form {
             margin: 0;
+
+            .user_group_create_info.show {
+                margin: 5px;
+            }
 
             #user_group_creating_indicator,
             #stream_creating_indicator {
@@ -861,21 +857,6 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream_setting_subsection_header {
-        display: flex;
-
-        .stream_permission_change_info {
-            /* TODO: Deduplicate with .save-discard-widget-button. */
-            margin: 12px auto 12px 3px;
-        }
-
-        .button-group {
-            display: inline;
-            margin-left: auto;
-            align-self: center;
-        }
-    }
-
     .checkmark {
         display: none;
         margin-left: 5px;
@@ -885,18 +866,6 @@ h4.user_group_setting_subsection_title {
 
         &.show {
             display: block;
-        }
-    }
-
-    .subscription-type {
-        margin-bottom: 10px;
-
-        .subscription-type-text {
-            display: inline;
-        }
-
-        b {
-            font-weight: 600;
         }
     }
 
@@ -971,35 +940,47 @@ h4.user_group_setting_subsection_title {
     vertical-align: middle;
 }
 
-#stream_privacy_modal,
+div.settings-radio-input-parent {
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    margin: 2px 0 2px 5px;
+    padding: 2px 0;
+
+    &:last-of-type {
+        border-bottom: none;
+    }
+
+    label.radio {
+        display: inline;
+        margin: 5px;
+    }
+
+    input {
+        float: left;
+        width: auto;
+        cursor: pointer;
+        margin: 3.5px 0 1px;
+
+        &:focus {
+            outline: 1px dotted hsl(0, 0%, 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+}
+
+.stream-permissions,
 .stream-creation-body {
     .input-group {
         margin-bottom: 10px;
-
-        .radio-input-parent {
-            border-bottom: 1px solid hsl(0, 0%, 87%);
-            margin: 2px 0 2px 5px;
-            padding: 2px 0;
-
-            &:last-of-type {
-                border-bottom: none;
-            }
-
-            label.radio {
-                display: inline;
-                margin: 5px;
-                padding-left: 0;
-            }
-        }
 
         &.message-retention-setting-group {
             input {
                 width: 5ch;
                 text-align: right;
-            }
-
-            select {
-                margin-bottom: 0;
             }
         }
     }
@@ -1008,16 +989,38 @@ h4.user_group_setting_subsection_title {
         /* Match .setting_desktop_icon_count_display */
         width: 325px;
         height: fit-content;
+        padding: 4px 6px;
+        color: hsl(0, 0%, 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0, 0%, 80%);
+        cursor: pointer;
+        background-color: hsl(0, 0%, 100%);
+
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0, 0%, 93%);
+        }
     }
-}
 
-.stream-creation-body input[type="radio"] {
-    margin: 3.5px 0 1px;
-}
+    select.stream_post_policy_setting {
+        margin-bottom: 10px;
+    }
 
-/* we have this 2px difference due to the font size being larger in the modal */
-#stream_privacy_modal input[type="radio"] {
-    margin: 5.5px 0 1px;
+    .dropdown-list-widget {
+        .dropdown-toggle {
+            margin-bottom: 10px;
+            width: 325px;
+        }
+
+        ul.dropdown-menu {
+            width: 325px;
+
+            input {
+                /* 325 - 2* (9px (margin) + 1px (border) + 6px (padding)) */
+                width: 293px;
+            }
+        }
+    }
 }
 
 #change_user_group_description,
@@ -1028,7 +1031,7 @@ h4.user_group_setting_subsection_title {
     box-sizing: border-box;
 }
 
-#stream_privacy_modal .stream-message-retention-days-input input[type="text"] {
+.stream-permissions .stream-message-retention-days-input input[type="text"] {
     border-radius: 5px;
     box-shadow: none;
     margin: 0;
@@ -1173,6 +1176,11 @@ h4.user_group_setting_subsection_title {
             max-width: max-content;
             white-space: nowrap;
         }
+
+        .save-button-controls {
+            display: block;
+            margin: 0 0 10px;
+        }
     }
 }
 
@@ -1189,14 +1197,6 @@ h4.user_group_setting_subsection_title {
                 .ind-tab {
                     width: 85px;
                 }
-            }
-        }
-
-        .stream_setting_subsection_header {
-            display: block;
-
-            .stream_permission_change_info {
-                margin: 12px auto 0 3px;
             }
         }
     }

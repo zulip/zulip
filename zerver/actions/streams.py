@@ -297,7 +297,9 @@ def send_subscription_add_events(
 
         # Send a notification to the user who subscribed.
         event = dict(type="subscription", op="add", subscriptions=sub_dicts)
-        send_event(realm, event, [user_id])
+        transaction.on_commit(
+            lambda event=event, user_id=user_id: send_event(realm, event, [user_id])
+        )
 
 
 # This function contains all the database changes as part of
@@ -311,7 +313,6 @@ def bulk_add_subs_to_db_with_logging(
     subs_to_add: List[SubInfo],
     subs_to_activate: List[SubInfo],
 ) -> None:
-
     Subscription.objects.bulk_create(info.sub for info in subs_to_add)
     sub_ids = [info.sub.id for info in subs_to_activate]
     Subscription.objects.filter(id__in=sub_ids).update(active=True)
@@ -399,7 +400,11 @@ def send_peer_subscriber_events(
                 stream_ids=[stream_id],
                 user_ids=sorted(altered_user_ids),
             )
-            send_event(realm, event, peer_user_ids)
+            transaction.on_commit(
+                lambda event=event, peer_user_ids=peer_user_ids: send_event(
+                    realm, event, peer_user_ids
+                )
+            )
 
     public_stream_ids = [
         stream_id
@@ -437,7 +442,11 @@ def send_peer_subscriber_events(
                         stream_ids=[stream_id],
                         user_ids=sorted(altered_user_ids),
                     )
-                    send_event(realm, event, peer_user_ids)
+                    transaction.on_commit(
+                        lambda event=event, peer_user_ids=peer_user_ids: send_event(
+                            realm, event, peer_user_ids
+                        )
+                    )
 
         for user_id, stream_ids in user_streams.items():
             peer_user_ids = public_peer_ids - {user_id}
@@ -447,7 +456,11 @@ def send_peer_subscriber_events(
                 stream_ids=sorted(stream_ids),
                 user_ids=[user_id],
             )
-            send_event(realm, event, peer_user_ids)
+            transaction.on_commit(
+                lambda event=event, peer_user_ids=peer_user_ids: send_event(
+                    realm, event, peer_user_ids
+                )
+            )
 
 
 SubT = Tuple[List[SubInfo], List[SubInfo]]
@@ -610,7 +623,6 @@ def send_peer_remove_events(
 def notify_subscriptions_removed(
     realm: Realm, user_profile: UserProfile, streams: Iterable[Stream]
 ) -> None:
-
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove", subscriptions=payload)
     send_event(realm, event, [user_profile.id])
@@ -627,7 +639,7 @@ def send_subscription_remove_events(
 ) -> None:
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
-    for (user, stream) in removed_subs:
+    for user, stream in removed_subs:
         streams_by_user[user.id].append(stream)
         altered_user_dict[stream.id].add(user.id)
 
@@ -659,7 +671,6 @@ def bulk_remove_subscriptions(
     *,
     acting_user: Optional[UserProfile],
 ) -> SubAndRemovedT:
-
     users = list(users)
     streams = list(streams)
 

@@ -67,8 +67,8 @@ organization in Zulip). The following files are involved in the process:
 **Documentation**
 
 - `zerver/openapi/zulip.yaml`: OpenAPI definitions for the Zulip REST API.
-- `templates/zerver/api/changelog.md`: documentation listing all changes to the Zulip Server API.
-- `templates/zerver/help/...`: end user facing documentation (Help Center) for the application.
+- `api_docs/changelog.md`: documentation listing all changes to the Zulip Server API.
+- `help/...`: end user facing documentation (Help Center) for the application.
 
 ### Adding a field to the database
 
@@ -157,14 +157,14 @@ For detailed information on the kinds of documentation Zulip has, see
 [Documentation](../documentation/overview.md).
 
 **Help center documentation:** You will likely need to at least update,
-extend and link to `/help/` articles that are related to your new
-feature. [Writing help center articles](../documentation/helpcenter.md)
+extend and link to articles in the `help/` directory that are related
+to your new feature. [Writing help center articles](../documentation/helpcenter.md)
 provides more detailed information about writing and editing feature
-`/help/` articles.
+`help/` directory articles.
 
 **API documentation:** A new feature will probably impact the REST API
 documentation as well, which will mean updating `zerver/openapi/zulip.yaml`
-and modifying `templates/zerver/api/changelog.md` for a new feature
+and modifying `api_docs/changelog.md` for a new feature
 level. [Documenting REST API endpoints](../documentation/api.md)
 explains Zulip's API documentation system and provides a step by step
 guide to adding or updating documentation for an API endpoint.
@@ -517,6 +517,12 @@ the setting enabled).
 Visit Zulip's [Django testing](../testing/testing-with-django.md)
 documentation to learn more about the backend testing framework.
 
+Also note that you may already need to update the API documentation for
+your new feature to pass new or existing backend tests at this point.
+The tutorial for [writing REST API endpoints](../documentation/api.md)
+can be a helpful resource, especially the section on [debugging schema
+validation errors](../documentation//api.md#debugging-schema-validation-errors).
+
 ### Update the frontend
 
 After completing the process of adding a new feature on the backend,
@@ -539,12 +545,11 @@ Then add the new form control in `static/js/admin.js`.
 ```diff
  // static/js/admin.js
 
- function _setup_page() {
-     var options = {
+ export function build_page() {
+     const options = {
+         custom_profile_field_types: page_params.custom_profile_field_types,
+         full_name: page_params.full_name,
          realm_name: page_params.realm_name,
-         realm_description: page_params.realm_description,
-         realm_emails_restricted_to_domains: page_params.realm_emails_restricted_to_domains,
-         realm_invite_required: page_params.realm_invite_required,
          // ...
 +        realm_mandatory_topics: page_params.mandatory_topics,
          // ...
@@ -592,8 +597,8 @@ manually handle such situations in a couple key functions:
 
 - `settings_org.update_dependent_subsettings`: This handles settings
   whose value and state depend on other elements. For example,
-  `realm_waiting_period_threshold` is only shown for with the right
-  state of `realm_waiting_period_setting`.
+  `realm_waiting_period_threshold_custom_input` is only shown for with
+  the right state of `realm_waiting_period_threshold`.
 
 Finally, update `server_events_dispatch.js` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
@@ -641,9 +646,9 @@ Here are few important cases you should consider when testing your changes:
 
 - If your setting is dependent on another setting, carefully check
   that both are properly synchronized. For example, the input element
-  for `realm_waiting_period_threshold` is shown only when we have
-  selected the custom time limit option in the
-  `realm_waiting_period_setting` dropdown.
+  for `realm_waiting_period_threshold_custom_input` is shown only when
+  we have selected the custom time limit option in the
+  `realm_waiting_period_threshold` dropdown.
 
 - Do some manual testing for the real-time synchronization of input
   elements across the browsers and just like "Discard changes" button,
@@ -691,10 +696,10 @@ this feature would be to update and/or augment Zulip's existing
 changes and additions.
 
 At the very least, this will involve modifying (or adding) a Markdown
-file documenting the feature to `templates/zerver/help/` in the main
-Zulip server repository, where the source for Zulip's end user
-documentation is stored. Details about writing, editing and testing
-these Markdown files can be found in:
+file documenting the feature in the `help/` directory of the main Zulip
+server repository, where the source for Zulip's end user documentation
+is stored. Details about writing, editing and testing these Markdown
+files can be found in:
 [Writing help center articles](../documentation/helpcenter.md).
 
 Also, new features will often impact Zulip's REST API documentation,
@@ -709,7 +714,7 @@ documentation is to read more about Zulip's
 and [OpenAPI configuration](../documentation/openapi.md).
 
 In particular, if there is an API change, **make sure** you document
-your new feature in `templates/zerver/api/changelog.md` and bump the
+your new feature in `api_docs/changelog.md` and bump the
 `API_FEATURE_LEVEL` in `version.py`. The API feature level allows the
 developers of mobile clients and other tools using the Zulip API to
 programmatically determine whether the Zulip server they are

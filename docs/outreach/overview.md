@@ -61,11 +61,21 @@ official end of the program. A number of folks who get started as participants
 go on to mentor the next cohort, and several have joined Zulip's team of core
 maintainers.
 
-To learn more about the experience of doing an outreach program with Zulip,
-check out our [Zulip's Google Summer of Code 2021 blog
-post](https://blog.zulip.com/2021/09/30/google-summer-of-code-2021/). Our [guide
-for having an amazing experience with Zulip](experience.md) will also give you a
-feel for what it's like to do an internship with us.
+To learn more about the experience of doing an outreach program with Zulip:
+
+- Check out our blog posts about Zulip's
+  [2022](https://blog.zulip.com/2022/11/02/google-summer-of-code-2022/) and
+  [2021](https://blog.zulip.com/2021/09/30/google-summer-of-code-2021/) Google
+  Summer of Code programs.
+
+- Watch our [3-minute video](https://youtu.be/h4s-JUei3Z0) about what it's like
+  to do GSoC with Zulip.
+
+- Watch our [Having a Great GSoC](https://youtu.be/dPUAEZVBrJg) Google Summer of
+  Code Community Talk.
+
+- Read our [guide](experience.md) to having an amazing experience with Zulip's
+  outreach programs.
 
 > _“It has been the best summer I've ever had! I'm thankful to my mentors, my
 > peers, Zulip, and Google for providing me an opportunity of getting involved

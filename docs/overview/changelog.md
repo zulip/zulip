@@ -3,13 +3,87 @@
 This page the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip 6.x series
+## Zulip 7.x series
 
-### 6.0 -- unreleased
+### 7.0 -- unreleased
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of raw changes.
+log][commit-log] for an up-to-date list of all changes.
+
+#### Upgrade notes for 7.0
+
+- When the [S3 storage backend](../production/upload-backends.md) is used for
+  storing file uploads, those contents are now fetched by nginx, cached locally
+  on the server, and served to clients; this lets clients cache the contents,
+  and saves them a redirect. However, it may require administrators adjust the
+  size of the server's cache if they have a large deploy; see the
+  [documentation](../production/upload-backends.md#s3-local-caching).
+- Removed the `application_server.no_serve_uploads` setting in
+  `/etc/zulip/zulip.conf`, as all uploads requests go through Zulip now.
+- Installations using the previously undocumented [JWT authentication
+  feature](../production/authentication-methods.md#jwt) will need
+  to make minor adjustments in the format of JWT requests; see the
+  documentation for details on the new format.
+
+## Zulip 6.x series
+
+### 6.1 -- 2023-01-23
+
+- Fixed a bug that caused the web app to not load on Safari 13 and lower;
+  affected users would only see a blank page.
+- Recent conversations now displays the “Participants” column for private
+  messages too.
+- Fixed minor bugs in “Recent conversations” focus and re-rendering.
+- Fixed bugs that caused some unicode emoji to be incorrectly unavailable.
+- Fixed subtle display bugs rendering the left sidebar.
+- Fixed a bug causing the message feed to briefly show a “no matching messages”
+  notice while loading.
+- Fixed a double escaping display bug when displaying user names in an error
+  notice.
+- Fixed an unhandled exception when displaying user cards if the current user
+  has an invalid timezone configured.
+- Fixed a subtle interaction bug with the compose box preview widget.
+- Added a workaround for a bug in Chromium affecting older versions of the Zulip
+  desktop app that would cause horizontal lines to appear between messages.
+- Stopped clipping the tops of tall characters in stream and topic names.
+- Use internationalized form of “at” in message timestamps.
+- Updated translations.
+- Fixed the “custom” value for the
+  “[delay before sending message notification emails](https://zulip.com/help/email-notifications#delay-before-sending-emails)”
+  setting.
+- Fixed an error which prevented users from changing
+  [stream-specific notification settings](https://zulip.com/help/stream-notifications#set-notifications-for-a-single-stream).
+- Fixed the redirect from `/apps` to https://zulip.com/apps/.
+- Started preserving timezone information in
+  [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).
+- Updated the Intercom integration to return success on `HEAD`
+  requests, which it uses to verify its configuration.
+- Documented how each
+  [rate limit](../production/security-model.md#rate-limiting)
+  category is used.
+- Documented the `reset_authentication_attempt_count` command for when users
+  lock themselves out.
+- Documented the
+  [full S3 bucket policy](../production/upload-backends.md#s3-bucket-policy)
+  for avatar and uploads buckets.
+- Clarified what the `--email` value passed to the installer will be used for.
+- Hid harmless "non-existent database" warnings during initial installation.
+- Forced a known locale when upgrading PostgreSQL, which avoids errors when
+  using some terminal applications.
+- Verified that PostgreSQL was running after upgrading it, in case a previous
+  try at an upgrade left it stopped.
+- Updated custom emoji migration 0376 to be a single SQL statement, and no
+  longer crash when no active owners were found.
+- Replaced `transifex-client` internationalization library with new
+  `transifex-cli`.
+- Began respecting proxy settings when installing `shellcheck` and `shfmt`
+  tools.
+- Fixed the invitation code to signal a user data validation error, and not a
+  server error, if an invalid “invite as” value was given.
+- Renamed internal exceptions to end with `Error`.
+
+### 6.0 -- 2022-11-17
 
 #### Highlights
 
@@ -98,6 +172,7 @@ log][commit-log] for an up-to-date list of raw changes.
   coming releases, we plan to migrate all Zulip permissions settings
   to be based on this more flexible groups-based system. We currently
   expect this migration to be fully backwards-compatible.
+- Added a new compliance export management command.
 - Zulip's automated emails use the `X-Auto-Response-Suppress` header
   to reduce auto-responder replies.
 - Changed various icons to be more intuitive. The bell-based icon for
@@ -111,6 +186,7 @@ log][commit-log] for an up-to-date list of raw changes.
   view.
 - Added an automated notification to the "stream events" topic when
   changing a stream's privacy settings.
+- Added support for conveniently overriding the default rate-limiting rules.
 - Improved the search typeahead to show profile pictures for users.
 - Improved typeahead matching algorithm for stream/user/emoji names
   containing multiple spaces and other corner cases.
@@ -128,26 +204,35 @@ log][commit-log] for an up-to-date list of raw changes.
   message or personal mention. These users are now automatically soft
   reactivated at the time of the notification, for a smoother
   experience when they log in.
+- Improved the Tornado server-to-client push system's sharding system
+  to support realm regular expressions and experimental support for
+  splitting a single realm across multiple push server processes.
 - Improved user deactivation modal to provide details about bots and
   invitations that will be disabled.
 - Improve matching algorithm for left sidebar stream filtering.
-- Improved several integrations, including Harbor, NewRelic, and the
-  Slack compatible incoming webhook.
+- Improved several integrations, including CircleCI, Grafana, Harbor,
+  NewRelic, and the Slack compatible incoming webhook. Git webhooks
+  now use a consistent algorithm for choosing shortened commit IDs to
+  display.
 - Improved mention typeahead and rendering for cases where mention
   syntax appears next to symbols.
 - Improved browser window titles used by the app to be clearer.
 - Improved the language in message notification emails explaining
   why the notification was sent.
+- Improved interface for accessing stream email addresses.
 - Reordered the organization settings panels to be more intuitive.
 - Increased timeout for processing slow requests from 20s to 60s.
+- Removed the "user list in left sidebar in narrow windows" setting.
 - Removed limits that prevented replying to Zulip email notifications multiple
   times or, several days after receiving them.
 - Fixed numerous bugs and performance issues with the Rocket.Chat data
-  import tool.
+  import tool. Improved importing emoji from Slack.
 - Fixed several bugs where drafts could fail to be saved.
 - Fixed a bug where copy-paste would incorrectly copy an entire message.
 - Fixed the app's main loading page to not suggest reloading until
   several seconds have passed.
+- Fixed multiple bugs that could cause the web app to flood the server
+  with requests after the computer wakes up from suspend.
 - Fixed a bug where public streams imported from other chat systems
   could incorrectly be configured as public streams without shared
   history, a configuration not otherwise possible in Zulip.
@@ -160,13 +245,18 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fixed many CSS corner cases issues involving content overflowing containers.
 - Fixed entering an emoji in the mobile web app using an emoji
   keyboard.
+- Fixed Enter being processed incorrectly when inputting a character
+  into Zulip phonetically via an IME composing session.
 - Fixed several subtle bugs with confirmation links.
 - Fixed a subtle performance issue for full-text search for uncommon words.
 - Fixed the estimator for the size of public data exports.
+- Fixed "mark all as read" requiring a browser reload.
 - Major improvements to our documentation for setting up the development
   environment and for joining the project as a new contributor.
 - Extracted several JavaScript modules to share code with the mobile
   app.
+- Replaced several Python linters with Ruff, an incredibly fast
+  Python linter written in Rust.
 - Upgraded many third-party dependencies including Django 4.1, and
   substantially modernized the Python codebase.
 
@@ -187,10 +277,34 @@ log][commit-log] for an up-to-date list of raw changes.
   million messages in the database. The new column is not yet used in
   this release, so this migration can be run in the background for
   installations hoping to avoid extended downtime.
+- Custom profile fields with "Pronouns" in their name and the "short
+  text" field type were converted to the new "Pronouns" field type.
 
 [docker-zulip-upgrade-database]: https://github.com/zulip/docker-zulip/#upgrading-zulipzulip-postgresql-to-14
 
 ## Zulip 5.x series
+
+### 5.7 -- 2022-11-16
+
+- CVE-2022-41914: Fixed the verification of the SCIM account
+  management bearer tokens to use a constant-time comparator. Zulip
+  Server 5.0 through 5.6 checked SCIM bearer tokens using a comparator
+  that did not run in constant time. For organizations with SCIM
+  account management enabled, this bug theoretically allowed an
+  attacker to steal the SCIM bearer token, and use it to read and
+  update the Zulip organization’s user accounts. In practice, this
+  vulnerability may not have been practical or exploitable. Zulip
+  Server installations which have not explicitly enabled SCIM are not
+  affected.
+- Fixed an error with deactivating users with `manage.py sync_ldap_user_data`
+  when `LDAP_DEACTIVATE_NON_MATCHING_USERS` was enabled.
+- Fixed several subtle bugs that could lead to browsers reloading
+  repeatedly when the server was updated.
+- Fixed a live-update bug when changing certain notifications
+  settings.
+- Improved error logs when sending push notifications to the push
+  notifications service fails.
+- Upgraded Python requirements.
 
 ### 5.6 -- 2022-08-24
 
@@ -854,7 +968,7 @@ log][commit-log] for an up-to-date list of raw changes.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.md#customizing-the-outgoing-http-proxy
-[update-settings-docs]: ../production/upgrade-or-modify.md#updating-settingspy-inline-documentation
+[update-settings-docs]: ../production/upgrade.md#updating-settingspy-inline-documentation
 
 #### Full feature changelog
 
@@ -1143,7 +1257,7 @@ log][commit-log] for an up-to-date list of raw changes.
   Upgrade notes for all releases one is upgrading across.
 
 [manage-shell]: ../production/management-commands.md#managepy-shell
-[postgresql-upgrade]: ../production/upgrade-or-modify.md#upgrading-postgresql
+[postgresql-upgrade]: ../production/upgrade.md#upgrading-postgresql
 
 #### Full feature changelog
 
@@ -1437,7 +1551,7 @@ details.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production. We're now interested in beta testers for this feature.
 - Reorganized Zulip's documentation for sysadmins, and added [new
-  documentation](../production/upgrade-or-modify.md#modifying-zulip)
+  documentation](../production/modify.md)
   on maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).
@@ -2901,17 +3015,17 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 6.0](#upgrade-notes-for-60)
-
-* [Upgrade notes for 5.0](#upgrade-notes-for-50)
-* [Upgrade notes for 4.0](#upgrade-notes-for-40)
-* [Upgrade notes for 3.0](#upgrade-notes-for-30)
-* [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
-* [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
-* [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
-* [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
-* [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
-* [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
+- [Draft upgrade notes for 7.0](#upgrade-notes-for-70)
+- [Upgrade notes for 6.0](#upgrade-notes-for-60)
+- [Upgrade notes for 5.0](#upgrade-notes-for-50)
+- [Upgrade notes for 4.0](#upgrade-notes-for-40)
+- [Upgrade notes for 3.0](#upgrade-notes-for-30)
+- [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
+- [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
+- [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
+- [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
+- [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
+- [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [commit-log]: https://github.com/zulip/zulip/commits/main

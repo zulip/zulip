@@ -5,7 +5,6 @@ USER_GROUP_EDIT_POLICY_MEMBERS = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0251_prereg_user_add_full_name"),
     ]

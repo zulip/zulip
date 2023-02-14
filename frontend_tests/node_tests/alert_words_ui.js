@@ -22,7 +22,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     alert_words_ui.reset();
     const ListWidget = mock_esm("../../static/js/list_widget", {
         modifier: noop,
-        create: (container, words, opts) => {
+        create(container, words, opts) {
             const alert_words = [];
             ListWidget.modifier = opts.modifier;
             for (const word of words) {
@@ -86,7 +86,10 @@ run_test("remove_alert_word", ({override_rewire}) => {
     // test success
     success_func();
     assert.ok($alert_word_status.hasClass("alert-success"));
-    assert.equal($alert_word_status_text.text(), "translated: Alert word removed successfully!");
+    assert.equal(
+        $alert_word_status_text.text(),
+        `translated: Alert word "translated: zot" removed successfully!`,
+    );
     assert.ok($alert_word_status.visible());
 });
 
@@ -104,7 +107,7 @@ run_test("close_status_message", ({override_rewire}) => {
     $alert.show();
 
     const event = {
-        preventDefault: () => {},
+        preventDefault() {},
         currentTarget: ".close-alert-word-status",
     };
 

@@ -28,7 +28,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as stream_colors
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
     Huddle,
@@ -176,7 +176,6 @@ def make_user_messages(
     mention_map: Dict[int, Set[int]],
     wildcard_mention_map: Mapping[int, bool] = {},
 ) -> List[ZerverFieldsT]:
-
     zerver_usermessage = []
 
     for message in zerver_message:
@@ -203,7 +202,7 @@ def make_user_messages(
 
 
 def build_subscription(recipient_id: int, user_id: int, subscription_id: int) -> ZerverFieldsT:
-    subscription = Subscription(color=random.choice(stream_colors), id=subscription_id)
+    subscription = Subscription(color=random.choice(STREAM_COLORS), id=subscription_id)
     subscription_dict = model_to_dict(subscription, exclude=["user_profile", "recipient_id"])
     subscription_dict["user_profile"] = user_id
     subscription_dict["recipient"] = recipient_id
@@ -220,7 +219,6 @@ def build_stream_subscriptions(
     zerver_recipient: List[ZerverFieldsT],
     zerver_stream: List[ZerverFieldsT],
 ) -> List[ZerverFieldsT]:
-
     subscriptions: List[ZerverFieldsT] = []
 
     stream_ids = {stream["id"] for stream in zerver_stream}
@@ -249,7 +247,6 @@ def build_huddle_subscriptions(
     zerver_recipient: List[ZerverFieldsT],
     zerver_huddle: List[ZerverFieldsT],
 ) -> List[ZerverFieldsT]:
-
     subscriptions: List[ZerverFieldsT] = []
 
     huddle_ids = {huddle["id"] for huddle in zerver_huddle}
@@ -274,7 +271,6 @@ def build_huddle_subscriptions(
 
 
 def build_personal_subscriptions(zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
-
     subscriptions: List[ZerverFieldsT] = []
 
     personal_recipients = [
@@ -456,7 +452,6 @@ def build_stream(
     invite_only: bool = False,
     stream_post_policy: int = 1,
 ) -> ZerverFieldsT:
-
     # Other applications don't have the distinction of "private stream with public history"
     # vs "private stream with hidden history" - and we've traditionally imported private "streams"
     # of other products as private streams with hidden history.
@@ -783,7 +778,7 @@ def long_term_idle_helper(
             recent_senders.add(user)
 
         sender_counts[user] += 1
-    for (user, count) in sender_counts.items():
+    for user, count in sender_counts.items():
         if count > 10:
             recent_senders.add(user)
 

@@ -32,6 +32,7 @@ EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
 # These are skipped but return true as the validator cannot exclude objects
 EXCLUDE_DOCUMENTED_ENDPOINTS: Set[Tuple[str, str]] = set()
 
+
 # Most of our code expects allOf to be preprocessed away because that is what
 # yamole did.  Its algorithm for doing so is not standards compliant, but we
 # replicate it here.
@@ -474,7 +475,18 @@ def validate_against_openapi_schema(
                     validator_value=brief_error_validator_value,
                     cause=error.cause,
                 )
+            # Some endpoints have long, descriptive OpenAPI schemas
+            # which, when printed to the console, do not assist with
+            # debugging, so we omit some of the error information.
+            if path in ["/register"] and isinstance(error, JsonSchemaValidationError):
+                error.schema = "OpenAPI schema omitted due to length of output."
+                if len(error.instance) > 100:
+                    error.instance = "Error instance omitted due to length of output."
             message += f"\n\n{type(error).__name__}: {error}"
+        message += (
+            "\n\nFor help debugging these errors see: "
+            "https://zulip.readthedocs.io/en/latest/documentation/api.html#debugging-schema-validation-errors"
+        )
         raise SchemaError(message) from None
 
     return True
@@ -496,8 +508,8 @@ def validate_schema(schema: Dict[str, Any]) -> None:
     elif schema["type"] == "object":
         if "additionalProperties" not in schema:
             raise SchemaError(
-                "additionalProperties needs to be defined for objects to make "
-                + "sure they have no additional properties left to be documented."
+                "additionalProperties needs to be defined for objects to make sure they have no"
+                " additional properties left to be documented."
             )
         for property_schema in schema.get("properties", {}).values():
             validate_schema(property_schema)

@@ -7,6 +7,8 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
+const {mock_banners} = require("./lib/compose_banner");
+
 const settings_config = zrequire("settings_config");
 
 const noop = () => {};
@@ -28,9 +30,7 @@ const hash_util = mock_esm("../../static/js/hash_util");
 const narrow_state = mock_esm("../../static/js/narrow_state", {
     set_compose_defaults: noop,
 });
-mock_esm("../../static/js/notifications", {
-    clear_compose_notifications: noop,
-});
+
 mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
@@ -39,9 +39,6 @@ mock_esm("../../static/js/recent_topics_util", {
 });
 mock_esm("../../static/js/drafts", {
     update_draft: noop,
-});
-mock_esm("../../static/js/common", {
-    status_classes: "status_classes",
 });
 mock_esm("../../static/js/unread_ops", {
     notify_server_message_read: noop,
@@ -105,6 +102,7 @@ test("initial_state", () => {
 });
 
 test("start", ({override, override_rewire}) => {
+    mock_banners();
     override_private_message_recipient({override});
     override_rewire(compose_actions, "autosize_message_content", () => {});
     override_rewire(compose_actions, "expand_compose_box", () => {});
@@ -128,8 +126,8 @@ test("start", ({override, override_rewire}) => {
     assert_visible("#stream-message");
     assert_hidden("#private-message");
 
-    assert.equal($("#stream_message_recipient_stream").val(), "stream1");
-    assert.equal($("#stream_message_recipient_topic").val(), "topic1");
+    assert.equal(compose_state.stream_name(), "stream1");
+    assert.equal(compose_state.topic(), "topic1");
     assert.equal(compose_state.get_message_type(), "stream");
     assert.ok(compose_state.composing());
 
@@ -148,8 +146,8 @@ test("start", ({override, override_rewire}) => {
 
     opts = {};
     start("stream", opts);
-    assert.equal($("#stream_message_recipient_stream").val(), "Denmark");
-    assert.equal($("#stream_message_recipient_topic").val(), "");
+    assert.equal(compose_state.stream_name(), "Denmark");
+    assert.equal(compose_state.topic(), "");
 
     compose_defaults = {
         trigger: "compose_hotkey",
@@ -157,8 +155,8 @@ test("start", ({override, override_rewire}) => {
 
     opts = {};
     start("stream", opts);
-    assert.equal($("#stream_message_recipient_stream").val(), "Denmark");
-    assert.equal($("#stream_message_recipient_topic").val(), "");
+    assert.equal(compose_state.stream_name(), "Denmark");
+    assert.equal(compose_state.topic(), "");
 
     const social = {
         subscribed: true,
@@ -171,8 +169,8 @@ test("start", ({override, override_rewire}) => {
     // More than 1 subscription, do not autofill
     opts = {};
     start("stream", opts);
-    assert.equal($("#stream_message_recipient_stream").val(), "");
-    assert.equal($("#stream_message_recipient_topic").val(), "");
+    assert.equal(compose_state.stream_name(), "");
+    assert.equal(compose_state.topic(), "");
     stream_data.clear_subscriptions();
 
     // Start PM
@@ -228,6 +226,7 @@ test("start", ({override, override_rewire}) => {
 });
 
 test("respond_to_message", ({override, override_rewire}) => {
+    mock_banners();
     override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
@@ -264,10 +263,11 @@ test("respond_to_message", ({override, override_rewire}) => {
     opts = {};
 
     respond_to_message(opts);
-    assert.equal($("#stream_message_recipient_stream").val(), "devel");
+    assert.equal(compose_state.stream_name(), "devel");
 });
 
 test("reply_with_mention", ({override, override_rewire}) => {
+    mock_banners();
     compose_state.set_message_type("stream");
     override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
@@ -291,7 +291,7 @@ test("reply_with_mention", ({override, override_rewire}) => {
     const opts = {};
 
     reply_with_mention(opts);
-    assert.equal($("#stream_message_recipient_stream").val(), "devel");
+    assert.equal(compose_state.stream_name(), "devel");
     assert.equal(syntax_to_insert, "@**Bob Roberts**");
 
     // Test for extended mention syntax
@@ -309,11 +309,12 @@ test("reply_with_mention", ({override, override_rewire}) => {
     people.add_active_user(bob_2);
 
     reply_with_mention(opts);
-    assert.equal($("#stream_message_recipient_stream").val(), "devel");
+    assert.equal(compose_state.stream_name(), "devel");
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
 test("quote_and_reply", ({disallow, override, override_rewire}) => {
+    mock_banners();
     compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,

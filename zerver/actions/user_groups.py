@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, Sequence, TypedDict
+from typing import Dict, List, Optional, Sequence, TypedDict
 
 import django.db.utils
 from django.db import transaction
@@ -27,7 +27,7 @@ class MemberGroupUserDict(TypedDict):
 
 @transaction.atomic(savepoint=False)
 def update_users_in_full_members_system_group(
-    realm: Realm, affected_user_ids: Sequence[int] = []
+    realm: Realm, affected_user_ids: Sequence[int] = [], *, acting_user: Optional[UserProfile]
 ) -> None:
     full_members_system_group = UserGroup.objects.get(
         realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
@@ -83,15 +83,19 @@ def update_users_in_full_members_system_group(
     new_full_member_ids = [user["id"] for user in new_full_members]
 
     if len(old_full_members) > 0:
-        remove_members_from_user_group(full_members_system_group, old_full_member_ids)
+        remove_members_from_user_group(
+            full_members_system_group, old_full_member_ids, acting_user=acting_user
+        )
 
     if len(new_full_members) > 0:
-        bulk_add_members_to_user_group(full_members_system_group, new_full_member_ids)
+        bulk_add_members_to_user_group(
+            full_members_system_group, new_full_member_ids, acting_user=acting_user
+        )
 
 
 def promote_new_full_members() -> None:
     for realm in Realm.objects.filter(deactivated=False).exclude(waiting_period_threshold=0):
-        update_users_in_full_members_system_group(realm)
+        update_users_in_full_members_system_group(realm, acting_user=None)
 
 
 def do_send_create_user_group_event(
@@ -113,10 +117,17 @@ def do_send_create_user_group_event(
 
 
 def check_add_user_group(
-    realm: Realm, name: str, initial_members: List[UserProfile], description: str
+    realm: Realm,
+    name: str,
+    initial_members: List[UserProfile],
+    description: str,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     try:
-        user_group = create_user_group(name, initial_members, realm, description=description)
+        user_group = create_user_group(
+            name, initial_members, realm, description=description, acting_user=acting_user
+        )
         do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{}' already exists.").format(name))
@@ -127,7 +138,9 @@ def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, str])
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
-def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
+def do_update_user_group_name(
+    user_group: UserGroup, name: str, *, acting_user: Optional[UserProfile]
+) -> None:
     try:
         user_group.name = name
         user_group.save(update_fields=["name"])
@@ -136,7 +149,9 @@ def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
     do_send_user_group_update_event(user_group, dict(name=name))
 
 
-def do_update_user_group_description(user_group: UserGroup, description: str) -> None:
+def do_update_user_group_description(
+    user_group: UserGroup, description: str, *, acting_user: Optional[UserProfile]
+) -> None:
     user_group.description = description
     user_group.save(update_fields=["description"])
     do_send_user_group_update_event(user_group, dict(description=description))
@@ -152,7 +167,9 @@ def do_send_user_group_members_update_event(
 
 
 @transaction.atomic(savepoint=False)
-def bulk_add_members_to_user_group(user_group: UserGroup, user_profile_ids: List[int]) -> None:
+def bulk_add_members_to_user_group(
+    user_group: UserGroup, user_profile_ids: List[int], *, acting_user: Optional[UserProfile]
+) -> None:
     memberships = [
         UserGroupMembership(user_group_id=user_group.id, user_profile_id=user_id)
         for user_id in user_profile_ids
@@ -163,7 +180,9 @@ def bulk_add_members_to_user_group(user_group: UserGroup, user_profile_ids: List
 
 
 @transaction.atomic(savepoint=False)
-def remove_members_from_user_group(user_group: UserGroup, user_profile_ids: List[int]) -> None:
+def remove_members_from_user_group(
+    user_group: UserGroup, user_profile_ids: List[int], *, acting_user: Optional[UserProfile]
+) -> None:
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id, user_profile_id__in=user_profile_ids
     ).delete()
@@ -183,7 +202,9 @@ def do_send_subgroups_update_event(
 
 
 @transaction.atomic
-def add_subgroups_to_user_group(user_group: UserGroup, subgroups: List[UserGroup]) -> None:
+def add_subgroups_to_user_group(
+    user_group: UserGroup, subgroups: List[UserGroup], *, acting_user: Optional[UserProfile]
+) -> None:
     group_memberships = [
         GroupGroupMembership(supergroup=user_group, subgroup=subgroup) for subgroup in subgroups
     ]
@@ -194,7 +215,9 @@ def add_subgroups_to_user_group(user_group: UserGroup, subgroups: List[UserGroup
 
 
 @transaction.atomic
-def remove_subgroups_from_user_group(user_group: UserGroup, subgroups: List[UserGroup]) -> None:
+def remove_subgroups_from_user_group(
+    user_group: UserGroup, subgroups: List[UserGroup], *, acting_user: Optional[UserProfile]
+) -> None:
     GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
 
     subgroup_ids = [subgroup.id for subgroup in subgroups]
@@ -206,7 +229,9 @@ def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: 
     send_event(realm, event, active_user_ids(realm_id))
 
 
-def check_delete_user_group(user_group_id: int, user_profile: UserProfile) -> None:
+def check_delete_user_group(
+    user_group_id: int, user_profile: UserProfile, *, acting_user: Optional[UserProfile]
+) -> None:
     user_group = access_user_group_by_id(user_group_id, user_profile)
     user_group.delete()
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)

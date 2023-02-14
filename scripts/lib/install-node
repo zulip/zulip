@@ -1,30 +1,31 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version=18.10.0
+version=18.14.0
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="node-v$version-linux-x64.tar.xz"
-        sha256=1aff4537bbb81c29c5c1c7c96379c6a2133b43651812745b524db8e1b65ee12b
+        sha256=1ccec74b6240fce8754813e31fdbc93ad520df2e814729cea29efe9075e48350
         ;;
 
     aarch64)
         tarball="node-v$version-linux-arm64.tar.xz"
-        sha256=bbe88afe35569780aae8a84d9be8b55e4944d13e9212b0d51883a5dcf6a7de8b
+        sha256=30ef375f0b8006759c0e08bee9d4b74915b95abfa924006c289d2d474a8b152e
         ;;
 esac
 
 check_version() {
-    out="$(node --version)" && [ "$out" = "v$version" ]
+    out="$(node --version)" && [ "$out" = "v$version" ] \
+        && [ /usr/local/bin/yarn -ef /srv/zulip-node/lib/node_modules/corepack/dist/yarn.js ]
 }
 
 if ! check_version 2>/dev/null; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
-    curl_opts=(-fLO)
+    curl_opts=(-fLO --retry 3)
     if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
         curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
     fi
@@ -33,7 +34,11 @@ if ! check_version 2>/dev/null; then
     rm -rf /srv/zulip-node
     mkdir -p /srv/zulip-node
     tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-node
-    ln -sf /srv/zulip-node/bin/{node,npm,npx} /usr/local/bin
-    rm -rf /usr/local/nvm
+    ln -sf /srv/zulip-node/bin/{corepack,node,npm,npx} /usr/local/bin
+    COREPACK_DEFAULT_TO_LATEST=0 /usr/local/bin/corepack enable
+
+    # Clean up after previous versions of this script
+    rm -rf /srv/zulip-yarn /usr/bin/yarn /usr/local/nvm
+
     check_version
 fi

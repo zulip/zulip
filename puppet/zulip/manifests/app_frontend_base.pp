@@ -5,6 +5,7 @@ class zulip::app_frontend_base {
   include zulip::sasl_modules
   include zulip::supervisor
   include zulip::tornado_sharding
+  include zulip::hooks::base
 
   if $::os['family'] == 'Debian' {
     # Upgrade and other tooling wants to be able to get a database
@@ -67,6 +68,38 @@ class zulip::app_frontend_base {
     mode    => '0644',
     source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams',
     notify  => Service['nginx'],
+  }
+
+  $s3_memory_cache_size = zulipconf('application_server', 's3_memory_cache_size', '1M')
+  $s3_disk_cache_size = zulipconf('application_server', 's3_disk_cache_size', '200M')
+  $s3_cache_inactive_time = zulipconf('application_server', 's3_cache_inactive_time', '30d')
+  file { '/etc/nginx/zulip-include/s3-cache':
+    require => [Package[$zulip::common::nginx], File['/srv/zulip-uploaded-files-cache']],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/nginx/s3-cache.template.erb'),
+    notify  => Service['nginx'],
+  }
+
+  file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
+    ensure  => file,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    notify  => Service['nginx'],
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads-internal.conf',
+  }
+
+  file { [
+    # TODO/compatibility: Removed 2021-04 in Zulip 4.0; these lines can
+    # be removed once one must have upgraded through Zulip 4.0 or higher
+    # to get to the next release.
+    '/etc/nginx/zulip-include/uploads.route',
+    '/etc/nginx/zulip-include/app.d/thumbor.conf',
+  ]:
+    ensure => absent,
   }
 
   # This determines whether we run queue processors multithreaded or
@@ -147,52 +180,27 @@ class zulip::app_frontend_base {
     onlyif      => 'touch /proc/sys/net/core/somaxconn',
   }
 
-  file { '/home/zulip/tornado':
+  file { [
+    '/home/zulip/tornado',
+    '/home/zulip/prod-static',
+    '/home/zulip/deployments',
+    '/srv/zulip-npm-cache',
+    '/srv/zulip-emoji-cache',
+    '/srv/zulip-uploaded-files-cache',
+  ]:
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0755',
   }
-  file { '/home/zulip/logs':
+  file { [
+    '/var/log/zulip/queue_error',
+    '/var/log/zulip/queue_stats',
+  ]:
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
-  }
-  file { '/home/zulip/prod-static':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
-  file { '/home/zulip/deployments':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-  }
-  file { '/srv/zulip-npm-cache':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0755',
-  }
-  file { '/srv/zulip-emoji-cache':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0755',
-  }
-
-  file { '/var/log/zulip/queue_error':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0640',
-  }
-
-  file { '/var/log/zulip/queue_stats':
-    ensure => directory,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0640',
+    mode   => '0750',
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":

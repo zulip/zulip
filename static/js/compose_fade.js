@@ -5,7 +5,6 @@ import {buddy_list} from "./buddy_list";
 import * as compose_fade_helper from "./compose_fade_helper";
 import * as compose_fade_users from "./compose_fade_users";
 import * as compose_state from "./compose_state";
-import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as people from "./people";
@@ -27,8 +26,8 @@ export function set_focused_recipient(msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        const stream_name = $("#stream_message_recipient_stream").val();
-        focused_recipient.topic = $("#stream_message_recipient_topic").val();
+        const stream_name = compose_state.stream_name();
+        focused_recipient.topic = compose_state.topic();
         focused_recipient.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
         if (sub) {
@@ -50,7 +49,6 @@ function display_messages_normally() {
     $table.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
-    floating_recipient_bar.update();
 }
 
 function change_fade_state($elt, should_fade_group) {
@@ -105,8 +103,6 @@ function fade_messages() {
                 );
                 change_fade_state($group_elt, should_fade_group);
             }
-
-            floating_recipient_bar.update();
         },
         0,
         message_lists.current,

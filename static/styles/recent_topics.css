@@ -70,13 +70,6 @@
             padding-right: 3px;
         }
 
-        .fa-group {
-            font-size: 0.8rem;
-            margin-left: 5px;
-            /* color: hsl(105, 2%, 50%); */
-            opacity: 0.6;
-        }
-
         .fa-envelope {
             font-size: 0.7rem;
             margin-right: 2px;
@@ -173,18 +166,14 @@
             visibility: hidden;
         }
 
-        .user_circle {
-            /* Shrink the user activity circle for the recent topics context. */
-            min-width: 7px;
-            height: 7px;
-            margin-left: 8px;
-            top: 0;
-        }
-
         .flex_container_pm {
             /* Flex container to fit in user circle and group icon */
             display: flex;
             justify-content: space-between;
+
+            .tippy-content {
+                font-weight: 400;
+            }
         }
 
         .flex_container {
@@ -194,6 +183,12 @@
 
         .flex_container .left_part {
             flex-wrap: wrap;
+
+            .user_status_icon_wrapper {
+                display: inline-flex;
+                align-items: center;
+                flex-direction: row;
+            }
         }
 
         .flex_container .right_part {
@@ -394,6 +389,42 @@
             .recent_topic_actions {
                 margin-right: 5px;
                 font-size: 15px;
+            }
+        }
+
+        .private_conversation_row {
+            .recent_topic_stream {
+                /* Reduce padding of stream section so that user status
+                   icon can have more padding without impacting height of the row */
+                padding: 5px 0 5px 8px;
+            }
+
+            .pm_status_icon {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                /* Increasing vertical padding any further will increase
+                the height of the row. */
+                padding: 8px;
+                position: relative;
+                right: -8px; /* To cancel padding-right */
+                /* To accommodate fa-group icon */
+                width: 14px;
+                height: 14px;
+
+                .fa-group {
+                    font-size: 0.8rem;
+                    /* color: hsl(105, 2%, 50%); */
+                    opacity: 0.6;
+                }
+
+                .user_circle {
+                    /* Shrink the user activity circle for the recent topics context. */
+                    min-width: 7px;
+                    height: 7px;
+                    float: left;
+                    position: unset;
+                }
             }
         }
     }

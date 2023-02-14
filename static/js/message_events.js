@@ -13,7 +13,6 @@ import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
@@ -130,12 +129,12 @@ export function insert_new_messages(messages, sent_by_this_client) {
         message_util.add_new_messages(messages, message_lists.home);
 
         if (narrow_state.filter().can_apply_locally()) {
-            render_info = message_util.add_new_messages(messages, message_list.narrowed);
+            render_info = message_util.add_new_messages(messages, message_lists.current);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
             maybe_add_narrowed_messages(
                 messages,
-                message_list.narrowed,
+                message_lists.current,
                 message_util.add_new_messages,
             );
         }
@@ -509,7 +508,7 @@ export function update_messages(events) {
     // changed the correct grouping of messages).
     if (any_topic_edited || any_stream_changed) {
         message_lists.home.update_muting_and_rerender();
-        // However, we don't need to rerender message_list.narrowed if
+        // However, we don't need to rerender message_list if
         // we just changed the narrow earlier in this function.
         //
         // TODO: We can potentially optimize this logic to avoid
@@ -518,8 +517,8 @@ export function update_messages(events) {
         // edit.  Doing so could save significant work, since most
         // topic edits will not match the current topic narrow in
         // large organizations.
-        if (!changed_narrow && message_lists.current === message_list.narrowed) {
-            message_list.narrowed.update_muting_and_rerender();
+        if (!changed_narrow && message_lists.current.narrowed) {
+            message_lists.current.update_muting_and_rerender();
         }
     } else {
         // If the content of the message was edited, we do a special animation.

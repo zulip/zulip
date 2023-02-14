@@ -20,6 +20,9 @@ process.env.NODE_ENV = "test";
 
 const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
 global.DOMParser = dom.window.DOMParser;
+global.navigator = {
+    userAgent: "node.js",
+};
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -46,7 +49,7 @@ assert.notEqual(files.length, 0, "No tests found");
 
 // Set up our namespace helpers.
 const window = new Proxy(global, {
-    set: (obj, prop, value) => {
+    set(obj, prop, value) {
         namespace.set_global(prop, value);
         return true;
     },

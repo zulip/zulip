@@ -105,7 +105,6 @@ def get_bulk_stream_subscriber_info(
     users: List[UserProfile],
     streams: List[Stream],
 ) -> Dict[int, List[SubInfo]]:
-
     stream_ids = {stream.id for stream in streams}
 
     subs = Subscription.objects.filter(
@@ -220,7 +219,6 @@ def bulk_get_private_peers(
     realm: Realm,
     private_streams: List[Stream],
 ) -> Dict[int, Set[int]]:
-
     if not private_streams:
         return {}
 

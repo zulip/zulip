@@ -613,7 +613,6 @@ so maybe we shouldn't include it in pending_endpoints.
 
 
 class TestCurlExampleGeneration(ZulipTestCase):
-
     spec_mock_without_examples = {
         "security": [{"basicAuth": []}],
         "paths": {
@@ -819,6 +818,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode anchor=43 \\",
+            "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
@@ -893,6 +893,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode anchor=43 \\",
+            "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',

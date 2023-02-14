@@ -106,8 +106,6 @@ function test(label, f) {
         people.clear_recipient_counts_for_testing();
         page_params.is_admin = false;
         page_params.realm_is_zephyr_mirror_realm = false;
-        page_params.realm_email_address_visibility =
-            settings_config.email_address_visibility_values.admins_only.code;
 
         f(helpers);
     });
@@ -265,7 +263,7 @@ test("sort_languages", () => {
     Object.assign(pygments_data, {
         langs: {
             python: {priority: 26},
-            javscript: {priority: 27},
+            javascript: {priority: 27},
             php: {priority: 16},
             pascal: {priority: 15},
             perl: {priority: 3},
@@ -358,19 +356,19 @@ test("sort_recipients", () => {
     pm_conversations.set_partner(7);
 
     // For splitting based on recency
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 7,
         stream_id: 1,
         topic: "Dev topic",
         id: (next_id += 1),
     });
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 5,
         stream_id: 1,
         topic: "Dev topic",
         id: (next_id += 1),
     });
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 6,
         stream_id: 1,
         topic: "Dev topic",
@@ -388,13 +386,13 @@ test("sort_recipients", () => {
         "a_bot@zulip.com",
     ]);
 
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 5,
         stream_id: 2,
         topic: "Linux topic",
         id: (next_id += 1),
     });
-    recent_senders.process_message_for_senders({
+    recent_senders.process_stream_message({
         sender_id: 7,
         stream_id: 2,
         topic: "Linux topic",
@@ -678,11 +676,11 @@ test("render_person when emails hidden", ({mock_template}) => {
 
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
-    page_params.is_admin = true;
+    a_user.delivery_email = "a_user_delivery@zulip.org";
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);
-        assert.equal(args.secondary, a_user.email);
+        assert.equal(args.secondary, a_user.delivery_email);
         rendered = true;
         return "typeahead-item-stub";
     });

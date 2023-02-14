@@ -39,6 +39,10 @@ export function streams_open() {
     return open_overlay_name === "subscriptions";
 }
 
+export function groups_open() {
+    return open_overlay_name === "group_subscriptions";
+}
+
 export function lightbox_open() {
     return open_overlay_name === "lightbox";
 }
@@ -91,7 +95,6 @@ export function open_overlay(opts) {
 
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
-    $(".fixed-app").attr("aria-hidden", "true");
     $(".header").attr("aria-hidden", "true");
 
     close_handler = function () {
@@ -182,6 +185,22 @@ export function open_modal(selector, conf = {}) {
         }
     });
 
+    $micromodal.find(".modal__overlay").on("click", (e) => {
+        /* Micromodal's data-micromodal-close feature doesn't check for
+           range selections; this means dragging a selection of text in an
+           input inside the modal too far will weirdly close the modal.
+           See https://github.com/ghosh/Micromodal/issues/505.
+           Work around this with our own implementation. */
+        if (!$(e.target).is(".modal__overlay")) {
+            return;
+        }
+
+        if (document.getSelection().type === "Range") {
+            return;
+        }
+        close_modal(selector);
+    });
+
     Micromodal.show(selector, {
         disableFocus: true,
         openClass: "modal--opening",
@@ -209,7 +228,6 @@ export function close_overlay(name) {
 
     $active_overlay.attr("aria-hidden", "true");
     $(".app").attr("aria-hidden", "false");
-    $(".fixed-app").attr("aria-hidden", "false");
     $(".header").attr("aria-hidden", "false");
 
     if (!close_handler) {

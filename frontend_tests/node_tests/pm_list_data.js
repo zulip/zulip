@@ -199,7 +199,7 @@ test("get_active_user_ids_string", () => {
 
     function set_filter_result(emails) {
         const active_filter = {
-            operands: (operand) => {
+            operands(operand) {
                 assert.equal(operand, "pm-with");
                 return emails;
             },
@@ -212,23 +212,6 @@ test("get_active_user_ids_string", () => {
 
     set_filter_result(["bob@zulip.com,alice@zulip.com"]);
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
-});
-
-function private_filter() {
-    return {
-        operands: (operand) => {
-            assert.equal(operand, "is");
-            return ["private", "starred"];
-        },
-    };
-}
-
-test("is_all_privates", () => {
-    assert.equal(narrow_state.filter(), undefined);
-    assert.equal(pm_list_data.is_all_privates(), false);
-
-    narrow_state.set_current_filter(private_filter());
-    assert.equal(pm_list_data.is_all_privates(), true);
 });
 
 test("get_list_info", ({override}) => {
@@ -247,7 +230,7 @@ test("get_list_info", ({override}) => {
     // Filter` rather than creating a mock.
     function set_filter_result(emails) {
         const active_filter = {
-            operands: (operand) => {
+            operands(operand) {
                 assert.equal(operand, "pm-with");
                 return emails;
             },
@@ -299,7 +282,7 @@ test("get_list_info", ({override}) => {
         more_conversations_unread_count: 0,
     });
 
-    // Now, add additional converstaions until we exceed
+    // Now, add additional conversations until we exceed
     // `max_conversations_to_show_with_unreads`.
 
     pm_conversations.recent.insert([zoe.user_id], 3);

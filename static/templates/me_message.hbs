@@ -1,13 +1,13 @@
-<span class="message_sender no-select">
+<span class="message_sender no-select is_me_message">
     <span class="sender_info_hover">
-        <span title="{{t 'View user profile' }} (u)">
+        <span>
             {{> message_avatar}}
         </span>
     </span>
 
     <span class="sender-status">
         <span class="sender_info_hover sender_name-in-status auto-select" role="button" tabindex="0">
-            <span title="{{t 'View user profile' }} (u)" >
+            <span class="view_user_card_tooltip">
                 {{msg/sender_full_name}}
             </span>
         </span>

@@ -11,10 +11,12 @@ import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_invites from "./settings_invites";
 import * as settings_org from "./settings_org";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import * as settings_users from "./settings_users";
 
 const admin_settings_label = {
     // Organization profile
@@ -153,8 +155,11 @@ export function build_page() {
         admin_settings_label,
         msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
+        msg_move_limit_dropdown_values: settings_config.msg_move_limit_dropdown_values,
         bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
+        waiting_period_threshold_dropdown_values:
+            settings_config.waiting_period_threshold_dropdown_values,
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
         realm_invite_required: page_params.realm_invite_required,
         can_edit_user_groups: settings_data.user_can_edit_user_groups(),
@@ -182,7 +187,6 @@ export function build_page() {
         disable_enable_spectator_access_setting:
             !page_params.server_web_public_streams_enabled ||
             !page_params.zulip_plan_is_not_limited,
-        can_sort_by_email: settings_data.show_email(),
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         realm_org_type_values: settings_org.get_org_type_dropdown_options(),
         realm_want_advertise_in_communities_directory:
@@ -192,6 +196,8 @@ export function build_page() {
         is_business_type_org:
             page_params.realm_org_type === settings_config.all_org_type_values.business.code,
         realm_enable_read_receipts: page_params.realm_enable_read_receipts,
+        allow_sorting_deactivated_users_list_by_email:
+            settings_users.allow_sorting_deactivated_users_list_by_email(),
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -213,10 +219,10 @@ export function build_page() {
     $("#settings_content .alert").removeClass("show");
 
     settings_bots.update_bot_settings_tip();
+    settings_invites.update_invite_users_setting_tip();
     insert_tip_box();
 
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
-    $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
 }

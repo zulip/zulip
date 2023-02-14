@@ -38,14 +38,14 @@ const message_helper = mock_esm("../../static/js/message_helper");
 const message_lists = mock_esm("../../static/js/message_lists");
 const message_util = mock_esm("../../static/js/message_util");
 const stream_list = mock_esm("../../static/js/stream_list", {
-    maybe_scroll_narrow_into_view: () => {},
+    maybe_scroll_narrow_into_view() {},
 });
 mock_esm("../../static/js/message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
-    update_top_of_narrow_notices: () => {},
+    update_top_of_narrow_notices() {},
 });
 set_global("document", "document-stub");
 

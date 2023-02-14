@@ -231,7 +231,9 @@ def do_change_user_role(
     do_send_user_group_members_update_event("add_members", system_group, [user_profile.id])
 
     if UserProfile.ROLE_MEMBER in [old_value, value]:
-        update_users_in_full_members_system_group(user_profile.realm, [user_profile.id])
+        update_users_in_full_members_system_group(
+            user_profile.realm, [user_profile.id], acting_user=acting_user
+        )
 
 
 def do_make_user_billing_admin(user_profile: UserProfile) -> None:
@@ -301,9 +303,8 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: Dict[str, s
 def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
-    service_dicts: List[Dict[str, Any]] = []
     if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-        service_dicts = [
+        return [
             {
                 "base_url": service.base_url,
                 "interface": service.interface,
@@ -313,7 +314,7 @@ def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
         ]
     elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
         try:
-            service_dicts = [
+            return [
                 {
                     "config_data": get_bot_config(user_profile),
                     "service_name": services[0].name,
@@ -321,8 +322,9 @@ def get_service_dicts_for_bot(user_profile_id: int) -> List[Dict[str, Any]]:
             ]
         # A ConfigError just means that there are no config entries for user_profile.
         except ConfigError:
-            pass
-    return service_dicts
+            return []
+    else:
+        return []
 
 
 def get_service_dicts_for_bots(
@@ -353,15 +355,14 @@ def get_service_dicts_for_bots(
                 }
                 for service in services
             ]
-        elif bot_type == UserProfile.EMBEDDED_BOT:
-            if bot_profile_id in embedded_bot_configs.keys():
-                bot_config = embedded_bot_configs[bot_profile_id]
-                service_dicts = [
-                    {
-                        "config_data": bot_config,
-                        "service_name": services[0].name,
-                    }
-                ]
+        elif bot_type == UserProfile.EMBEDDED_BOT and bot_profile_id in embedded_bot_configs:
+            bot_config = embedded_bot_configs[bot_profile_id]
+            service_dicts = [
+                {
+                    "config_data": bot_config,
+                    "service_name": services[0].name,
+                }
+            ]
         service_dicts_by_uid[bot_profile_id] = service_dicts
     return service_dicts_by_uid
 

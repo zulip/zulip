@@ -7,8 +7,8 @@ supports English text, but there is an experimental
 full-text search for all languages.
 
 The user interface and feature set for Zulip's full-text search is
-documented in the "Search operators" documentation section in the Zulip
-app's gear menu.
+documented in the in-app "Search filters" reference which can be
+accessed from the Zulip app's gear menu.
 
 ## The default full-text search implementation
 

@@ -38,24 +38,24 @@ from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.exceptions import (
     AccessDeniedError,
-    AnomalousWebhookPayload,
+    AnomalousWebhookPayloadError,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
     InvalidJSONError,
     JsonableError,
-    OrganizationAdministratorRequired,
-    OrganizationMemberRequired,
-    OrganizationOwnerRequired,
+    OrganizationAdministratorRequiredError,
+    OrganizationMemberRequiredError,
+    OrganizationOwnerRequiredError,
     RealmDeactivatedError,
     UnauthorizedError,
-    UnsupportedWebhookEventType,
+    UnsupportedWebhookEventTypeError,
     UserDeactivatedError,
     WebhookError,
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import is_local_addr, rate_limit_request_by_ip, rate_limit_user
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
-from zerver.lib.response import json_method_not_allowed, json_success
+from zerver.lib.response import json_method_not_allowed
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
@@ -139,7 +139,7 @@ def require_realm_owner(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+            raise OrganizationOwnerRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -157,7 +157,7 @@ def require_realm_admin(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_admin:
-            raise OrganizationAdministratorRequired()
+            raise OrganizationAdministratorRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -175,7 +175,7 @@ def require_organization_member(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if user_profile.role > UserProfile.ROLE_MEMBER:
-            raise OrganizationMemberRequired()
+            raise OrganizationMemberRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -257,9 +257,9 @@ def validate_api_key(
 
 def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfile) -> None:
     if user_profile.realm.deactivated:
-        raise RealmDeactivatedError()
+        raise RealmDeactivatedError
     if not user_profile.is_active:
-        raise UserDeactivatedError()
+        raise UserDeactivatedError
 
     # Either the subdomain matches, or we're accessing Tornado from
     # and to localhost (aka spoofing a request as the user).
@@ -281,17 +281,17 @@ def access_user_by_api_key(
     request: HttpRequest, api_key: str, email: Optional[str] = None
 ) -> UserProfile:
     if not has_api_key_format(api_key):
-        raise InvalidAPIKeyFormatError()
+        raise InvalidAPIKeyFormatError
 
     try:
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
-        raise InvalidAPIKeyError()
+        raise InvalidAPIKeyError
     if email is not None and email.lower() != user_profile.delivery_email.lower():
         # This covers the case that the API key is correct, but for a
         # different user.  We may end up wanting to relaxing this
         # constraint or give a different error message in the future.
-        raise InvalidAPIKeyError()
+        raise InvalidAPIKeyError
 
     validate_account_and_subdomain(request, user_profile)
 
@@ -303,15 +303,15 @@ def log_unsupported_webhook_event(summary: str) -> None:
     # webhook integrations (e.g. GitHub) that need to log an unsupported
     # event based on attributes nested deep within a complicated JSON
     # payload. In such cases, the error message we want to log may not
-    # really fit what a regular UnsupportedWebhookEventType exception
+    # really fit what a regular UnsupportedWebhookEventTypeError exception
     # represents.
     webhook_unsupported_events_logger.exception(summary, stack_info=True)
 
 
 def log_exception_to_webhook_logger(err: Exception) -> None:
-    if isinstance(err, AnomalousWebhookPayload):
+    if isinstance(err, AnomalousWebhookPayloadError):
         webhook_anomalous_payloads_logger.exception(str(err), stack_info=True)
-    elif isinstance(err, UnsupportedWebhookEventType):
+    elif isinstance(err, UnsupportedWebhookEventTypeError):
         webhook_unsupported_events_logger.exception(str(err), stack_info=True)
     else:
         webhook_logger.exception(str(err), stack_info=True)
@@ -866,7 +866,7 @@ def authenticated_json_view(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not request.user.is_authenticated:
-            raise UnauthorizedError()
+            raise UnauthorizedError
 
         user_profile = request.user
         if not skip_rate_limiting:
@@ -913,7 +913,7 @@ def internal_notify_view(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
             if not authenticate_notify(request):
-                raise AccessDeniedError()
+                raise AccessDeniedError
             request_notes = RequestNotes.get_notes(request)
             is_tornado_request = request_notes.tornado_handler_id is not None
             # These next 2 are not security checks; they are internal
@@ -962,7 +962,7 @@ def return_success_on_head_request(
         request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
         if request.method == "HEAD":
-            return json_success(request)
+            return HttpResponse()
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view_func

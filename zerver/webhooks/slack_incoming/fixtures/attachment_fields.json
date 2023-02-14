@@ -19,12 +19,20 @@
           "short": true
         },
         {
-          "title": "Title without value",
+          "title": "Title with null value",
           "value": null,
           "short": true
         },
         {
+          "title": "Title without value",
+          "short": true
+        },
+        {
           "title": null,
+          "value": "Value with null title",
+          "short": true
+        },
+        {
           "value": "Value without title",
           "short": true
         },

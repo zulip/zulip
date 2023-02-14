@@ -2,6 +2,7 @@ import datetime
 import re
 import secrets
 import time
+from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
@@ -81,7 +82,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -113,6 +114,8 @@ from zerver.lib.validator import (
 
 MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
+
+SECONDS_PER_DAY = 86400
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 
@@ -365,7 +368,28 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         POLICY_NOBODY,
     ]
 
+    EDIT_TOPIC_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
+        POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_EVERYONE,
+        POLICY_NOBODY,
+    ]
+
+    MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
+
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
+
+    DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
+
+    move_messages_within_stream_limit_seconds = models.PositiveIntegerField(
+        default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
+    )
+
+    move_messages_between_streams_limit_seconds = models.PositiveIntegerField(
+        default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
+    )
 
     # Who in the organization is allowed to add custom emojis.
     add_custom_emoji_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
@@ -425,26 +449,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         WILDCARD_MENTION_POLICY_MODERATORS,
     ]
 
-    # Who in the organization has access to users' actual email
-    # addresses.  Controls whether the UserProfile.email field is the
-    # same as UserProfile.delivery_email, or is instead garbage.
-    EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
-    EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
-    EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
-    EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
-    EMAIL_ADDRESS_VISIBILITY_MODERATORS = 5
-    email_address_visibility = models.PositiveSmallIntegerField(
-        default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-    )
-    EMAIL_ADDRESS_VISIBILITY_TYPES = [
-        EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-        # The MEMBERS level is not yet implemented on the backend.
-        ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
-        EMAIL_ADDRESS_VISIBILITY_ADMINS,
-        EMAIL_ADDRESS_VISIBILITY_NOBODY,
-        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-    ]
-
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
     waiting_period_threshold = models.PositiveIntegerField(default=0)
@@ -452,7 +456,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
-    MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
+    MESSAGE_TIME_LIMIT_SETTING_SPECIAL_VALUES_MAP = {
         "unlimited": None,
     }
     message_content_delete_limit_seconds = models.PositiveIntegerField(
@@ -701,7 +705,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         digest_weekday=int,
         disallow_disposable_email_addresses=bool,
         edit_topic_policy=int,
-        email_address_visibility=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         enable_read_receipts=bool,
@@ -716,6 +719,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=(int, type(None)),
         message_content_delete_limit_seconds=(int, type(None)),
+        move_messages_between_streams_limit_seconds=(int, type(None)),
+        move_messages_within_stream_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
         move_messages_between_streams_policy=int,
         name=str,
@@ -792,11 +797,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(realm) -> Dict[str, EmojiInfo]:
+    def get_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
         return get_realm_emoji_uncached(realm)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:
+    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
         return get_active_realm_emoji_uncached(realm)
 
     def get_admin_users_and_bots(
@@ -897,7 +902,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
     @cache_with_key(get_realm_used_upload_space_cache_key, timeout=3600 * 24 * 7)
-    def currently_used_upload_space_bytes(realm) -> int:
+    def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
         used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
         if used_space is None:
             return 0
@@ -1338,7 +1343,7 @@ def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     linkifiers = []
-    for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
+    for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("id"):
         linkifiers.append(
             LinkifierDict(
                 pattern=linkifier.pattern,
@@ -1353,10 +1358,8 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
 def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
     realm_id = instance.realm_id
     cache_delete(get_linkifiers_cache_key(realm_id))
-    try:
+    with suppress(KeyError):
         per_request_linkifiers_cache.pop(realm_id)
-    except KeyError:
-        pass
 
 
 post_save.connect(flush_linkifiers, sender=RealmFilter)
@@ -1485,10 +1488,13 @@ class UserBaseSettings(models.Model):
     created after the change.
     """
 
-    # UI settings
+    ### Generic UI settings
     enter_sends = models.BooleanField(default=False)
 
-    # display settings
+    ### Display settings. ###
+    # left_side_userlist was removed from the UI in Zulip 6.0; the
+    # database model is being temporarily preserved in case we want to
+    # restore a version of the setting, preserving who had it enabled.
     left_side_userlist = models.BooleanField(default=False)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     # This setting controls which view is rendered first when Zulip loads.
@@ -1593,6 +1599,26 @@ class UserBaseSettings(models.Model):
     send_private_typing_notifications = models.BooleanField(default=True)
     send_read_receipts = models.BooleanField(default=True)
 
+    # Who in the organization has access to users' actual email
+    # addresses.  Controls whether the UserProfile.email field is
+    # the same as UserProfile.delivery_email, or is instead a fake
+    # generated value encoding the user ID and realm hostname.
+    EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
+    EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
+    EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
+    EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
+    EMAIL_ADDRESS_VISIBILITY_MODERATORS = 5
+    email_address_visibility = models.PositiveSmallIntegerField(
+        default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+    )
+    EMAIL_ADDRESS_VISIBILITY_TYPES = [
+        EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+        EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+    ]
+
     display_settings_legacy = dict(
         # Don't add anything new to this legacy dict.
         # Instead, see `modern_settings` below.
@@ -1640,6 +1666,7 @@ class UserBaseSettings(models.Model):
     modern_settings = dict(
         # Add new general settings here.
         display_emoji_reaction_users=bool,
+        email_address_visibility=int,
         escape_navigates_to_default_view=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
@@ -2017,7 +2044,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         allowed_bot_types = []
         if (
             self.is_realm_admin
-            or not self.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+            or self.realm.bot_creation_policy != Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
         ):
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [
@@ -2029,9 +2056,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         return allowed_bot_types
 
     def email_address_is_realm_public(self) -> bool:
-        if self.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-            return True
-        if self.is_bot:
+        # Bots always have EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+        if self.email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
             return True
         return False
 
@@ -2107,7 +2133,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     def can_edit_user_groups(self) -> bool:
         return self.has_permission("user_group_edit_policy")
 
-    def can_edit_topic_of_any_message(self) -> bool:
+    def can_move_messages_to_another_topic(self) -> bool:
         return self.has_permission("edit_topic_policy")
 
     def can_add_custom_emoji(self) -> bool:
@@ -2330,6 +2356,12 @@ class MultiuseInvite(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
 
+    # status for tracking whether the invite has been revoked.
+    # If revoked, set to confirmation.settings.STATUS_REVOKED.
+    # STATUS_USED is not supported, because these objects are supposed
+    # to be usable multiple times.
+    status = models.IntegerField(default=0)
+
 
 class EmailChangeStatus(models.Model):
     new_email = models.EmailField()
@@ -2381,7 +2413,6 @@ class AbstractPushDeviceToken(models.Model):
 
 
 class PushDeviceToken(AbstractPushDeviceToken):
-
     # The user whose device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
 
@@ -2602,7 +2633,9 @@ class UserTopic(models.Model):
     # belongs to a muted stream.
     UNMUTED = 2
 
-    # This topic will behave like `UNMUTED`, plus will also always trigger notifications.
+    # This topic will behave like `UNMUTED`, plus some additional
+    # display and/or notifications priority that is TBD and likely to
+    # be configurable; see #6027. Not yet implemented.
     FOLLOWED = 3
 
     visibility_policy_choices = (
@@ -2758,7 +2791,6 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
 
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
-
     # The caller should ensure that user_profile_ids includes
     # the sender.  Note that get_huddle hits the cache, and then
     # we hit another cache to get the recipient.  We may want to
@@ -2981,7 +3013,7 @@ class Message(AbstractMessage):
 def get_context_for_message(message: Message) -> QuerySet[Message]:
     return Message.objects.filter(
         recipient_id=message.recipient_id,
-        subject=message.subject,
+        subject__iexact=message.subject,
         id__lt=message.id,
         date_sent__gt=message.date_sent - timedelta(minutes=15),
     ).order_by("-id")[:10]
@@ -3051,7 +3083,7 @@ class Draft(models.Model):
                 to = []
                 for r in get_display_recipient(self.recipient):
                     assert not isinstance(r, str)  # It will only be a string for streams
-                    if not r["id"] == self.user_profile_id:
+                    if r["id"] != self.user_profile_id:
                         to.append(r["id"])
         return {
             "id": self.id,
@@ -3497,7 +3529,7 @@ def validate_attachment_request_for_spectator_access(
             from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 
             rate_limit_spectator_attachment_access_by_file(attachment.path_id)
-        except RateLimited:
+        except RateLimitedError:
             return False
 
     return True
@@ -3714,7 +3746,7 @@ def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
     user_profile = maybe_get_user_profile_by_api_key(api_key)
     if user_profile is None:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
 
     return user_profile
 
@@ -3771,7 +3803,7 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
     See get_user docstring for important usage notes."""
     user_profile = get_user(email, realm)
     if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
     return user_profile
 
 
@@ -3782,7 +3814,7 @@ def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
 def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
     user_profile = get_user_profile_by_id_in_realm(uid, realm)
     if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
+        raise UserProfile.DoesNotExist
     return user_profile
 
 
@@ -3820,7 +3852,7 @@ def get_user_by_id_in_realm_including_cross_realm(
     if is_cross_realm_bot_email(user_profile.delivery_email):
         return user_profile
 
-    raise UserProfile.DoesNotExist()
+    raise UserProfile.DoesNotExist
 
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
@@ -4442,9 +4474,8 @@ def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = F
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid user ID: {}").format(user_id))
 
-        if not allow_deactivated:
-            if not user_profile.is_active:
-                raise ValidationError(_("User with ID {} is deactivated").format(user_id))
+        if not allow_deactivated and not user_profile.is_active:
+            raise ValidationError(_("User with ID {} is deactivated").format(user_id))
 
         if user_profile.is_bot:
             raise ValidationError(_("User with ID {} is a bot").format(user_id))
@@ -4593,6 +4624,7 @@ class CustomProfileFieldValue(models.Model):
 GENERIC_INTERFACE = "GenericService"
 SLACK_INTERFACE = "SlackOutgoingWebhookService"
 
+
 # A Service corresponds to either an outgoing webhook bot or an embedded bot.
 # The type of Service is determined by the bot_type field of the referenced
 # UserProfile.
@@ -4663,7 +4695,7 @@ class BotConfigData(models.Model):
         unique_together = ("bot_profile", "key")
 
 
-class InvalidFakeEmailDomain(Exception):
+class InvalidFakeEmailDomainError(Exception):
     pass
 
 
@@ -4679,7 +4711,7 @@ def get_fake_email_domain(realm: Realm) -> str:
         # Check that the fake email domain can be used to form valid email addresses.
         validate_email(Address(username="bot", domain=settings.FAKE_EMAIL_DOMAIN).addr_spec)
     except ValidationError:
-        raise InvalidFakeEmailDomain(
+        raise InvalidFakeEmailDomainError(
             settings.FAKE_EMAIL_DOMAIN + " is not a valid domain. "
             "Consider setting the FAKE_EMAIL_DOMAIN setting."
         )

@@ -29,7 +29,9 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, get_bucket, sanitize_name, upload_backend
+from zerver.lib.upload import upload_backend
+from zerver.lib.upload.base import BadImageError, sanitize_name
+from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
@@ -723,11 +725,9 @@ def process_avatars(record: Dict[str, Any]) -> None:
 
     if record["s3_path"].endswith(".original"):
         user_profile = get_user_profile_by_id(record["user_profile_id"])
-        if settings.LOCAL_UPLOADS_DIR is not None:
+        if settings.LOCAL_AVATARS_DIR is not None:
             avatar_path = user_avatar_path_from_ids(user_profile.id, record["realm_id"])
-            medium_file_path = (
-                os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path) + "-medium.png"
-            )
+            medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
             if os.path.exists(medium_file_path):
                 # We remove the image here primarily to deal with
                 # issues when running the import script multiple
@@ -873,10 +873,12 @@ def import_uploads(
             )
         else:
             assert settings.LOCAL_UPLOADS_DIR is not None
+            assert settings.LOCAL_AVATARS_DIR is not None
+            assert settings.LOCAL_FILES_DIR is not None
             if processing_avatars or processing_emojis or processing_realm_icons:
-                file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
+                file_path = os.path.join(settings.LOCAL_AVATARS_DIR, relative_path)
             else:
-                file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", relative_path)
+                file_path = os.path.join(settings.LOCAL_FILES_DIR, relative_path)
             orig_file_path = os.path.join(import_dir, record["path"])
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             shutil.copy(orig_file_path, file_path)
@@ -1058,7 +1060,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
-    for (table, model, related_table) in realm_tables:
+    for table, model, related_table in realm_tables:
         re_map_foreign_keys(data, table, "realm", related_table="realm")
         update_model_ids(model, data, related_table)
         bulk_import_model(data, model)
@@ -1511,7 +1513,6 @@ def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir:
 
 
 def import_attachments(data: TableData) -> None:
-
     # Clean up the data in zerver_attachment that is not
     # relevant to our many-to-many import.
     fix_datetime_fields(data, "zerver_attachment")

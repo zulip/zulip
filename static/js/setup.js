@@ -18,7 +18,6 @@ $(() => {
     // get_events completes.
     if (!page_params.needs_tutorial) {
         loading.make_indicator($("#page_loading_indicator"), {
-            text: "Loading...",
             abs_positioned: true,
         });
     }

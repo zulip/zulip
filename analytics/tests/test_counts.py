@@ -53,7 +53,7 @@ from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import TimeZoneNotUTCException, floor_to_day
+from zerver.lib.timestamp import TimeZoneNotUTCError, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -227,14 +227,13 @@ class AnalyticsTestCase(ZulipTestCase):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
                 kwargs[key] = kwargs.get(key, value)
-            if table is not InstallationCount:
-                if "realm" not in kwargs:
-                    if "user" in kwargs:
-                        kwargs["realm"] = kwargs["user"].realm
-                    elif "stream" in kwargs:
-                        kwargs["realm"] = kwargs["stream"].realm
-                    else:
-                        kwargs["realm"] = self.default_realm
+            if table is not InstallationCount and "realm" not in kwargs:
+                if "user" in kwargs:
+                    kwargs["realm"] = kwargs["user"].realm
+                elif "stream" in kwargs:
+                    kwargs["realm"] = kwargs["stream"].realm
+                else:
+                    kwargs["realm"] = self.default_realm
             self.assertEqual(table.objects.filter(**kwargs).count(), 1)
         self.assert_length(arg_values, table.objects.count())
 
@@ -290,7 +289,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat = self.make_dummy_count_stat("test stat")
         with self.assertRaises(ValueError):
             process_count_stat(stat, installation_epoch() + 65 * self.MINUTE)
-        with self.assertRaises(TimeZoneNotUTCException):
+        with self.assertRaises(TimeZoneNotUTCError):
             process_count_stat(stat, installation_epoch().replace(tzinfo=None))
 
     # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
@@ -1402,27 +1401,23 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
-        try:
+        with self.assertRaises(InvitationError):
             do_invite_users(
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(4)
 
         # Test inviting existing users
-        try:
+        with self.assertRaises(InvitationError):
             do_invite_users(
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit

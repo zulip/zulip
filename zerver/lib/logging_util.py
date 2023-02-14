@@ -3,6 +3,7 @@ import hashlib
 import logging
 import threading
 import traceback
+from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from logging import Logger
 from typing import Optional, Tuple, Union
@@ -238,10 +239,8 @@ class ZulipWebhookFormatter(ZulipFormatter):
         else:
             payload = request.POST["payload"]
 
-        try:
+        with suppress(orjson.JSONDecodeError):
             payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
-        except orjson.JSONDecodeError:
-            pass
 
         header_text = "".join(
             f"{header}: {value}\n"

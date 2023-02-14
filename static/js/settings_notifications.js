@@ -29,7 +29,7 @@ function rerender_ui() {
     const unmatched_streams =
         stream_settings_data.get_unmatched_streams_for_notification_settings();
 
-    $unmatched_streams_table.find(".stream-row").remove();
+    $unmatched_streams_table.find(".stream-notifications-row").remove();
 
     const muted_stream_ids = stream_data.muted_stream_ids();
 
@@ -249,7 +249,9 @@ export function update_page(settings_panel) {
 
 export function update_muted_stream_state(sub) {
     const $row = $(
-        `#stream-specific-notify-table .stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
+        `#stream-specific-notify-table .stream-notifications-row[data-stream-id='${CSS.escape(
+            sub.stream_id,
+        )}']`,
     );
 
     $row.toggleClass("control-label-disabled", sub.is_muted);
@@ -275,7 +277,7 @@ export function initialize() {
     $("body").on("click", "#stream-specific-notify-table .unmute_stream", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const $row = $(e.currentTarget).closest(".stream-row");
+        const $row = $(e.currentTarget).closest(".stream-notifications-row");
         const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
 

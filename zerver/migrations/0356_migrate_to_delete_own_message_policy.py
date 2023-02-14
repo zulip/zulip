@@ -20,7 +20,6 @@ def migrate_to_delete_own_message_policy(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0355_realm_delete_own_message_policy"),
     ]

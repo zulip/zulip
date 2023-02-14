@@ -82,7 +82,7 @@ def check_spare_licenses_available_for_adding_new_users(
     if plan.licenses() < get_seat_count(
         realm, extra_non_guests_count=extra_non_guests_count, extra_guests_count=extra_guests_count
     ):
-        raise LicenseLimitError()
+        raise LicenseLimitError
 
 
 def check_spare_licenses_available_for_registering_new_user(

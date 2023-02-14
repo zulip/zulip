@@ -5,7 +5,6 @@ STREAM_POST_POLICY_EVERYONE = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0262_mutedtopic_date_muted"),
     ]

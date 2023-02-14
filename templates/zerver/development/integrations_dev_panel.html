@@ -37,7 +37,7 @@
     <div class="row1">
         <div>
             <label for="bot_name"><b>Bot</b></label>
-            <select id="bot_name">
+            <select class="bootstrap-focus-style" id="bot_name">
                 <option value=""></option>
                 {% for bot in bots %}
                 <option value="{{ bot.api_key }}"> {{ bot.full_name }} </option>
@@ -47,7 +47,7 @@
 
         <div>
             <label><b>Integration</b></label>
-            <select id="integration_name">
+            <select class="bootstrap-focus-style" id="integration_name">
                 <option value=""></option>
                 {% for integration in integrations %}
                 <option value="{{ integration }}"> {{ integration }} </option>
@@ -57,7 +57,7 @@
 
         <div>
             <label for="fixture_name"><b>Fixture</b></label>
-            <select id="fixture_name"></select>
+            <select class="bootstrap-focus-style" id="fixture_name"></select>
         </div>
 
         <div>

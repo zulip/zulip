@@ -809,22 +809,6 @@ input#terminal:checked ~ #tab-terminal {
     width: 100%;
 }
 
-.btn-direct {
-    margin-top: 0;
-    margin-bottom: 0;
-    padding: 8px;
-    font-size: 18px;
-    border-radius: 0;
-    min-width: 300px;
-}
-
-.btn-admin {
-    background-color: hsl(0, 0%, 100%);
-    border-color: hsl(198, 100%, 48%);
-    border-style: solid;
-    color: hsl(207, 89%, 54%);
-}
-
 .login-page {
     text-align: center;
 
@@ -1322,15 +1306,6 @@ label.label-title {
 
 .float-right {
     float: right;
-}
-
-#find_account .form-control {
-    height: 30px;
-}
-
-#find_account .btn {
-    height: 40px;
-    border-radius: 5px;
 }
 
 .documentation-footer {

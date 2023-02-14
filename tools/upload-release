@@ -51,6 +51,9 @@ for obj_summary in bucket.objects.filter(Prefix="server/zulip-server-"):
     head = client.head_object(Bucket=bucket.name, Key=obj_summary.key)
     assert obj_summary.key.startswith("server/")
     filename = obj_summary.key[len("server/") :]
+    if filename in file_hashes:
+        print(f"  {filename} was already uploaded, skipping existing hash")
+        continue
     metadata = head["Metadata"]
     if "sha256sum" not in metadata:
         print(f"  {filename} does not have SHA256 metadata!")

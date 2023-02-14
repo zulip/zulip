@@ -11,7 +11,6 @@ from zerver.tornado.django_api import send_event
 def do_send_typing_notification(
     realm: Realm, sender: UserProfile, recipient_user_profiles: List[UserProfile], operator: str
 ) -> None:
-
     sender_dict = {"user_id": sender.id, "email": sender.email}
 
     # Include a list of recipients in the event body to help identify where the typing is happening
@@ -67,7 +66,6 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
 def do_send_stream_typing_notification(
     sender: UserProfile, operator: str, stream: Stream, topic: str
 ) -> None:
-
     sender_dict = {"user_id": sender.id, "email": sender.email}
 
     event = dict(

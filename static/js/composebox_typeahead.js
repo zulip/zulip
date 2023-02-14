@@ -18,7 +18,6 @@ import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -62,6 +61,7 @@ export function update_emoji_data() {
                     reaction_type,
                     emoji_name: alias,
                     emoji_code: emoji_dict.emoji_code,
+                    is_realm_emoji: false,
                 });
             }
         }
@@ -89,7 +89,7 @@ function get_language_matcher(query) {
 export function query_matches_person(query, person) {
     return (
         typeahead.query_matches_string(query, person.full_name, " ") ||
-        (settings_data.show_email() &&
+        (Boolean(person.delivery_email) &&
             typeahead.query_matches_string(query, people.get_visible_email(person), " "))
     );
 }
@@ -314,6 +314,11 @@ export function tokenize_compose_str(s) {
                     return s.slice(i);
                 }
                 break;
+            case "<":
+                if (s.indexOf("<time", i) === i) {
+                    return s.slice(i);
+                }
+                break;
             case ">":
                 // topic_jump
                 //
@@ -331,11 +336,6 @@ export function tokenize_compose_str(s) {
                 // maybe topic_list; let's let the stream_topic_regex decide later.
                 return ">topic_list";
         }
-    }
-
-    const timestamp_index = s.indexOf("<time");
-    if (timestamp_index >= 0) {
-        return s.slice(timestamp_index);
     }
 
     return "";
@@ -445,6 +445,8 @@ export function get_pm_people(query) {
     const opts = {
         want_broadcast: false,
         filter_pills: true,
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
     };
     return get_person_suggestions(query, opts);
 }

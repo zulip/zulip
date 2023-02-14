@@ -4,17 +4,19 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {$t, $t_html} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
+const {mock_banners} = require("./lib/compose_banner");
+
 const noop = () => {};
 
 set_global("document", {
-    querySelector: () => {},
+    querySelector() {},
 });
 set_global("navigator", {});
 set_global(
@@ -32,17 +34,16 @@ const compose_fade = mock_esm("../../static/js/compose_fade");
 const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 const loading = mock_esm("../../static/js/loading");
 const markdown = mock_esm("../../static/js/markdown");
-const notifications = mock_esm("../../static/js/notifications");
 const reminder = mock_esm("../../static/js/reminder");
 const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
 const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
-const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
-const subscriber_api = mock_esm("../../static/js/subscriber_api");
 const transmit = mock_esm("../../static/js/transmit");
 const upload = mock_esm("../../static/js/upload");
 
+const compose_ui = zrequire("compose_ui");
+const compose_banner = zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
@@ -110,9 +111,9 @@ function initialize_handlers({override}) {
 }
 
 test_ui("send_message_success", ({override_rewire}) => {
+    mock_banners();
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
-    $("#compose-send-status").show();
     $("#compose-send-button .loader").show();
 
     let reify_message_id_checked;
@@ -126,13 +127,13 @@ test_ui("send_message_success", ({override_rewire}) => {
 
     assert.equal($("#compose-textarea").val(), "");
     assert.ok($("#compose-textarea").is_focused());
-    assert.ok(!$("#compose-send-status").visible());
     assert.ok(!$("#compose-send-button .loader").visible());
 
     assert.ok(reify_message_id_checked);
 });
 
-test_ui("send_message", ({override, override_rewire}) => {
+test_ui("send_message", ({override, override_rewire, mock_template}) => {
+    mock_banners();
     MockDate.set(new Date(fake_now * 1000));
 
     override(sent_messages, "start_tracking_message", () => {});
@@ -207,7 +208,6 @@ test_ui("send_message", ({override, override_rewire}) => {
 
         $("#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-status").show();
         $("#compose-send-button .loader").show();
 
         compose.send_message();
@@ -220,7 +220,6 @@ test_ui("send_message", ({override, override_rewire}) => {
         assert.deepEqual(stub_state, state);
         assert.equal($("#compose-textarea").val(), "");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok(!$("#compose-send-status").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
     })();
 
@@ -254,10 +253,15 @@ test_ui("send_message", ({override, override_rewire}) => {
     })();
 
     (function test_error_codepath_local_id_undefined() {
+        let banner_rendered = false;
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, "generic_compose_error");
+            assert.equal(data.banner_text, "Error sending message: Server says 408");
+            banner_rendered = true;
+        });
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-status").show();
         $("#compose-send-button .loader").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
@@ -274,16 +278,16 @@ test_ui("send_message", ({override, override_rewire}) => {
         };
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
-        assert.equal($("#compose-error-msg").html(), "Error sending message: Server says 408");
+        assert.ok(banner_rendered);
         assert.equal($("#compose-textarea").val(), "foobarfoobar");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok($("#compose-send-status").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
     })();
 });
 
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
-    override(notifications, "clear_compose_notifications", () => {});
+    mock_banners();
+    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
@@ -296,7 +300,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");
-    compose_state.stream_name("social");
+    compose_state.set_stream_name("social");
 
     $("#compose-textarea").val("message me");
     $("#compose-textarea").hide();
@@ -327,11 +331,11 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     user_settings.enter_sends = true;
 
     compose.enter_with_preview_open();
-    assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
-test_ui("finish", ({override, override_rewire}) => {
-    override(notifications, "clear_compose_notifications", () => {});
+test_ui("finish", ({override, override_rewire, mock_template}) => {
+    mock_banners();
+    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
@@ -341,20 +345,21 @@ test_ui("finish", ({override, override_rewire}) => {
     });
 
     (function test_when_compose_validation_fails() {
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, "empty_message");
+            assert.equal(data.banner_text, $t({defaultMessage: "You have nothing to send!"}));
+        });
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
         $("#compose-send-button .loader").hide();
         $("#compose-textarea").off("select");
         $("#compose-textarea").val("");
+        compose_ui.compose_spinner_visible = false;
         const res = compose.finish();
         assert.equal(res, false);
-        assert.ok(!$("#compose_invite_users").visible());
+        assert.ok(!$("#compose_banners .recipient_not_subscribed").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
-        assert.equal(
-            $("#compose-error-msg").html(),
-            $t_html({defaultMessage: "You have nothing to send!"}),
-        );
         assert.ok(show_button_spinner_called);
     })();
 
@@ -364,6 +369,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
+        compose_ui.compose_spinner_visible = false;
         compose_state.set_message_type("private");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
         override(compose_pm_pill, "get_user_ids", () => []);
@@ -389,8 +395,9 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
+        compose_ui.compose_spinner_visible = false;
         compose_state.set_message_type("stream");
-        compose_state.stream_name("social");
+        compose_state.set_stream_name("social");
         override_rewire(people, "get_by_user_id", () => []);
         compose_finished_event_checked = false;
         let schedule_message = false;
@@ -439,7 +446,7 @@ test_ui("initialize", ({override}) => {
         assert.equal(config.mode, "compose");
         setup_upload_called = true;
         return {
-            cancelAll: () => {
+            cancelAll() {
                 uppy_cancel_all_called = true;
             },
         };
@@ -490,6 +497,7 @@ test_ui("initialize", ({override}) => {
 });
 
 test_ui("update_fade", ({override}) => {
+    mock_banners();
     initialize_handlers({override});
 
     const selector =
@@ -550,196 +558,10 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
     assert.ok(compose_finish_checked);
 });
 
-test_ui("on_events", ({override, override_rewire}) => {
+test_ui("on_events", ({override}) => {
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", () => {});
-
-    function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
-        const $container = $.create("fake " + container_sel);
-        let container_removed = false;
-
-        $container.remove = () => {
-            container_removed = true;
-        };
-
-        const $target = $.create("fake click target (" + target_sel + ")");
-
-        $target.set_parents_result(parent, $container);
-
-        const event = {
-            preventDefault: noop,
-            stopPropagation: noop,
-            // FIXME: event.target should not be a jQuery object
-            target: $target,
-        };
-
-        const helper = {
-            event,
-            $container,
-            $target,
-            container_was_removed: () => container_removed,
-        };
-
-        return helper;
-    }
-
-    (function test_compose_all_everyone_confirm_clicked() {
-        const handler = $("#compose-all-everyone").get_on_handler(
-            "click",
-            ".compose-all-everyone-confirm",
-        );
-
-        const helper = setup_parents_and_mock_remove(
-            "compose-all-everyone",
-            "compose-all-everyone",
-            ".compose-all-everyone",
-        );
-
-        $("#compose-all-everyone").show();
-        $("#compose-send-status").show();
-
-        let compose_finish_checked = false;
-        override_rewire(compose, "finish", () => {
-            compose_finish_checked = true;
-        });
-
-        handler(helper.event);
-
-        assert.ok(helper.container_was_removed());
-        assert.ok(compose_finish_checked);
-        assert.ok(!$("#compose-all-everyone").visible());
-        assert.ok(!$("#compose-send-status").visible());
-    })();
-
-    (function test_compose_invite_users_clicked() {
-        const handler = $("#compose_invite_users").get_on_handler("click", ".compose_invite_link");
-        const subscription = {
-            stream_id: 102,
-            name: "test",
-            subscribed: true,
-        };
-        const mentioned = {
-            full_name: "Foo Barson",
-            email: "foo@bar.com",
-            user_id: 34,
-        };
-        people.add_active_user(mentioned);
-
-        override(subscriber_api, "add_user_ids_to_stream", (user_ids, sub, success) => {
-            assert.deepEqual(user_ids, [mentioned.user_id]);
-            assert.equal(sub, subscription);
-            success(); // This will check success callback path.
-        });
-
-        const helper = setup_parents_and_mock_remove(
-            "compose_invite_users",
-            "compose_invite_link",
-            ".compose_invite_user",
-        );
-
-        helper.$container.data = (field) => {
-            switch (field) {
-                case "user-id":
-                    return "34";
-                case "stream-id":
-                    return "102";
-                /* istanbul ignore next */
-                default:
-                    throw new Error(`Unknown field ${field}`);
-            }
-        };
-        helper.$target.prop("disabled", false);
-
-        // !sub will result in true here and we check the success code path.
-        stream_data.add_sub(subscription);
-        $("#stream_message_recipient_stream").val("test");
-        let all_invite_children_called = false;
-        $("#compose_invite_users").children = () => {
-            all_invite_children_called = true;
-            return [];
-        };
-        $("#compose_invite_users").show();
-
-        handler(helper.event);
-
-        assert.ok(helper.container_was_removed());
-        assert.ok(!$("#compose_invite_users").visible());
-        assert.ok(all_invite_children_called);
-    })();
-
-    (function test_compose_invite_close_clicked() {
-        const handler = $("#compose_invite_users").get_on_handler("click", ".compose_invite_close");
-
-        const helper = setup_parents_and_mock_remove(
-            "compose_invite_users_close",
-            "compose_invite_close",
-            ".compose_invite_user",
-        );
-
-        let all_invite_children_called = false;
-        $("#compose_invite_users").children = () => {
-            all_invite_children_called = true;
-            return [];
-        };
-        $("#compose_invite_users").show();
-
-        handler(helper.event);
-
-        assert.ok(helper.container_was_removed());
-        assert.ok(all_invite_children_called);
-        assert.ok(!$("#compose_invite_users").visible());
-    })();
-
-    (function test_compose_not_subscribed_clicked() {
-        const handler = $("#compose-send-status").get_on_handler("click", ".sub_unsub_button");
-        const subscription = {
-            stream_id: 102,
-            name: "test",
-            subscribed: false,
-        };
-        let compose_not_subscribed_called = false;
-        stream_settings_ui.sub_or_unsub = () => {
-            compose_not_subscribed_called = true;
-        };
-
-        const helper = setup_parents_and_mock_remove(
-            "compose-send-status",
-            "sub_unsub_button",
-            ".compose_not_subscribed",
-        );
-
-        handler(helper.event);
-
-        assert.ok(compose_not_subscribed_called);
-
-        stream_data.add_sub(subscription);
-        $("#stream_message_recipient_stream").val("test");
-        $("#compose-send-status").show();
-
-        handler(helper.event);
-
-        assert.ok(!$("#compose-send-status").visible());
-    })();
-
-    (function test_compose_not_subscribed_close_clicked() {
-        const handler = $("#compose-send-status").get_on_handler(
-            "click",
-            "#compose_not_subscribed_close",
-        );
-
-        const helper = setup_parents_and_mock_remove(
-            "compose_user_not_subscribed_close",
-            "compose_not_subscribed_close",
-            ".compose_not_subscribed",
-        );
-
-        $("#compose-send-status").show();
-
-        handler(helper.event);
-
-        assert.ok(!$("#compose-send-status").visible());
-    })();
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
@@ -907,7 +729,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 });
 
 test_ui("create_message_object", ({override, override_rewire}) => {
-    $("#stream_message_recipient_stream").val("social");
+    compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
 
@@ -920,7 +742,7 @@ test_ui("create_message_object", ({override, override_rewire}) => {
 
     blueslip.expect("error", "Trying to send message with bad stream name: BOGUS STREAM");
 
-    $("#stream_message_recipient_stream").val("BOGUS STREAM");
+    compose_state.set_stream_name("BOGUS STREAM");
     message = compose.create_message_object();
     assert.equal(message.to, "BOGUS STREAM");
     assert.equal(message.topic, "lunch");

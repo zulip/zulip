@@ -68,7 +68,9 @@ import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as user_events from "./user_events";
+import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
+import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
@@ -200,17 +202,19 @@ export function dispatch_normal_event(event) {
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
-                email_address_visibility: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_to_realm_policy: noop,
+                invite_to_realm_policy: settings_invites.update_invite_users_setting_tip,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
+                move_messages_between_streams_limit_seconds: noop,
+                move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
+                move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: noop,
@@ -260,11 +264,12 @@ export function dispatch_normal_event(event) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
                                 page_params["realm_" + key] = value;
-                                if (key === "allow_message_editing") {
-                                    message_edit.update_message_topic_editing_pencil();
-                                }
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
+                                }
+
+                                if (key === "edit_topic_policy") {
+                                    message_live_update.rerender_messages_view();
                                 }
                             }
                             if (event.data.authentication_methods !== undefined) {
@@ -328,23 +333,19 @@ export function dispatch_normal_event(event) {
                 case "add":
                     bot_data.add(event.bot);
                     settings_bots.render_bots();
-                    settings_users.redraw_bots_list();
                     break;
                 case "remove":
                     bot_data.deactivate(event.bot.user_id);
                     event.bot.is_active = false;
                     settings_bots.render_bots();
-                    settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.render_bots();
-                    settings_users.redraw_bots_list();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
                     settings_bots.render_bots();
-                    settings_users.update_bot_data(event.bot.user_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);
@@ -433,15 +434,21 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     people.add_active_user(event.person);
+                    settings_account.maybe_update_deactivate_account_button();
+                    settings_users.redraw_bots_list();
                     break;
                 case "remove":
                     people.deactivate(event.person);
                     stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
                     settings_users.update_view_on_deactivate(event.person.user_id);
                     buddy_list.maybe_remove_key({key: event.person.user_id});
+                    settings_account.maybe_update_deactivate_account_button();
+                    settings_users.update_bot_data(event.person.user_id);
                     break;
                 case "update":
                     user_events.update_person(event.person);
+                    settings_account.maybe_update_deactivate_account_button();
+                    settings_users.update_bot_data(event.person.user_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);
@@ -616,7 +623,6 @@ export function dispatch_normal_event(event) {
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
-                "left_side_userlist",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -684,10 +690,6 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();
-            }
-            if (event.property === "left_side_userlist") {
-                // TODO: Make this change the view immediately rather
-                // than requiring a reload or page resize.
             }
             if (event.property === "default_language") {
                 // TODO: Make this change the view immediately rather than
@@ -761,15 +763,21 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     user_groups.add(event.group);
+                    if (overlays.groups_open()) {
+                        user_groups_settings_ui.add_group_to_table(event.group);
+                    }
                     break;
                 case "remove":
+                    user_group_edit.handle_deleted_group(event.group_id);
                     user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
                     break;
                 case "add_members":
                     user_groups.add_members(event.group_id, event.user_ids);
+                    user_group_edit.handle_member_edit_event(event.group_id);
                     break;
                 case "remove_members":
                     user_groups.remove_members(event.group_id, event.user_ids);
+                    user_group_edit.handle_member_edit_event(event.group_id);
                     break;
                 case "add_subgroups":
                     user_groups.add_subgroups(event.group_id, event.direct_subgroup_ids);
@@ -779,6 +787,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     user_groups.update(event);
+                    user_groups_settings_ui.update_group(event.group_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);

@@ -75,6 +75,7 @@ docs_without_macros = [
     "incoming-webhooks-walkthrough.md",
 ]
 
+
 # render_markdown_path is passed a context dictionary (unhashable), which
 # results in the calls not being cached. To work around this, we convert the
 # dict to a tuple of dict items to cache the results.
@@ -83,7 +84,11 @@ docs_without_macros = [
 @items_tuple_to_dict
 @register.filter(name="render_markdown_path", is_safe=True)
 def render_markdown_path(
-    markdown_file_path: str, context: Optional[Dict[str, Any]] = None, pure_markdown: bool = False
+    markdown_file_path: str,
+    context: Optional[Dict[str, Any]] = None,
+    pure_markdown: bool = False,
+    integration_doc: bool = False,
+    help_center: bool = False,
 ) -> str:
     """Given a path to a Markdown file, return the rendered HTML.
 
@@ -115,22 +120,14 @@ def render_markdown_path(
             zerver.lib.markdown.fenced_code.makeExtension(
                 run_content_validators=context.get("run_content_validators", False),
             ),
-            zerver.lib.markdown.api_arguments_table_generator.makeExtension(
-                base_path="templates/zerver/api/"
-            ),
-            zerver.lib.markdown.api_return_values_table_generator.makeExtension(
-                base_path="templates/zerver/api/"
-            ),
+            zerver.lib.markdown.api_arguments_table_generator.makeExtension(),
+            zerver.lib.markdown.api_return_values_table_generator.makeExtension(),
             zerver.lib.markdown.nested_code_blocks.makeExtension(),
             zerver.lib.markdown.tabbed_sections.makeExtension(),
             zerver.lib.markdown.help_settings_links.makeExtension(),
             zerver.lib.markdown.help_relative_links.makeExtension(),
             zerver.lib.markdown.help_emoticon_translations_table.makeExtension(),
         ]
-    if md_macro_extension is None:
-        md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path="templates/zerver/help/include/"
-        )
     if "api_url" in context:
         # We need to generate the API code examples extension each
         # time so the `api_url` config parameter can be set dynamically.
@@ -146,6 +143,16 @@ def render_markdown_path(
     else:
         extensions = md_extensions
 
+    if integration_doc:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
+            base_path="templates/zerver/integrations/include/"
+        )
+    elif help_center:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(base_path="help/include/")
+    else:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
+            base_path="api_docs/include/"
+        )
     if not any(doc in markdown_file_path for doc in docs_without_macros):
         extensions = [md_macro_extension, *extensions]
 

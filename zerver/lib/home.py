@@ -210,7 +210,7 @@ def build_page_params_for_home_page_load(
         no_event_queue=user_profile is None,
     )
 
-    for field_name in register_ret.keys():
+    for field_name in register_ret:
         page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:

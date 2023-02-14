@@ -109,7 +109,6 @@ COMMON_DEPENDENCIES = [
     "ca-certificates",  # Explicit dependency in case e.g. curl is already installed
     "puppet",  # Used by lint (`puppet parser validate`)
     "gettext",  # Used by makemessages i18n
-    "transifex-client",  # Needed to sync translations from transifex
     "curl",  # Used for testing our API documentation
     "moreutils",  # Used for sponge command
     "unzip",  # Needed for Slack import
@@ -175,23 +174,23 @@ if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version 
         *VENV_DEPENDENCIES,
     ]
 elif "debian" in os_families():
-    DEBIAN_DEPENDECIES = UBUNTU_COMMON_APT_DEPENDENCIES
+    DEBIAN_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES
     # The below condition is required since libappindicator is
     # not available for Debian 11. "libgroonga1" is an
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
     if vendor == "debian" and os_version == "11":
-        DEBIAN_DEPENDECIES.remove("libappindicator1")
-        DEBIAN_DEPENDECIES.append("libgroonga0")
+        DEBIAN_DEPENDENCIES.remove("libappindicator1")
+        DEBIAN_DEPENDENCIES.append("libgroonga0")
 
     # If we are on an aarch64 processor, ninja will be built from source,
     # so cmake is required
     if platform.machine() == "aarch64":
-        DEBIAN_DEPENDECIES.append("cmake")
+        DEBIAN_DEPENDENCIES.append("cmake")
 
     SYSTEM_DEPENDENCIES = [
-        *DEBIAN_DEPENDECIES,
+        *DEBIAN_DEPENDENCIES,
         f"postgresql-{POSTGRESQL_VERSION}",
         f"postgresql-{POSTGRESQL_VERSION}-pgroonga",
         *VENV_DEPENDENCIES,
@@ -233,7 +232,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 
 def install_system_deps() -> None:
-
     # By doing list -> set -> list conversion, we remove duplicates.
     deps_to_install = sorted(set(SYSTEM_DEPENDENCIES))
 
@@ -348,7 +346,6 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
 
 
 def main(options: argparse.Namespace) -> NoReturn:
-
     # yarn and management commands expect to be run from the root of the
     # project.
     os.chdir(ZULIP_PATH)
@@ -356,8 +353,8 @@ def main(options: argparse.Namespace) -> NoReturn:
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
-    for apt_depedency in SYSTEM_DEPENDENCIES:
-        sha_sum.update(apt_depedency.encode())
+    for apt_dependency in SYSTEM_DEPENDENCIES:
+        sha_sum.update(apt_dependency.encode())
     if "debian" in os_families():
         with open("scripts/lib/setup-apt-repo", "rb") as fb:
             sha_sum.update(fb.read())
@@ -402,7 +399,6 @@ def main(options: argparse.Namespace) -> NoReturn:
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
     run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
-    run_as_root([*proxy_env, "scripts/lib/install-yarn"])
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
         run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
@@ -425,9 +421,12 @@ def main(options: argparse.Namespace) -> NoReturn:
             sys.exit(1)
 
     # Install shellcheck.
-    run_as_root(["tools/setup/install-shellcheck"])
+    run_as_root([*proxy_env, "tools/setup/install-shellcheck"])
     # Install shfmt.
-    run_as_root(["tools/setup/install-shfmt"])
+    run_as_root([*proxy_env, "tools/setup/install-shfmt"])
+
+    # Install transifex-cli.
+    run_as_root([*proxy_env, "tools/setup/install-transifex-cli"])
 
     setup_venvs.main()
 
@@ -459,7 +458,7 @@ def main(options: argparse.Namespace) -> NoReturn:
     activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
     provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
     with open(activate_this) as f:
-        exec(f.read(), dict(__file__=activate_this))
+        exec(f.read(), dict(__file__=activate_this))  # noqa: S102
     os.execvp(
         provision_inner,
         [

@@ -50,10 +50,22 @@
     font-size: 1.375rem;
     font-weight: 600;
     line-height: 1.25;
+    display: flex;
 
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
         margin-left: 5px;
+    }
+}
+
+.user_profile_name_heading {
+    padding-right: 1rem;
+    max-width: 80%;
+
+    .user_profile_name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
@@ -84,7 +96,6 @@
     border-radius: 0.25rem;
     border-width: 0;
     cursor: pointer;
-    appearance: button;
     text-transform: none;
     overflow: visible;
     line-height: 1.15;
@@ -93,6 +104,10 @@
     backface-visibility: hidden;
     transform: translateZ(0);
     transition: transform 0.25s ease-out;
+
+    &:hover {
+        text-decoration: none;
+    }
 
     &:disabled {
         cursor: not-allowed;
@@ -209,6 +224,7 @@
     .email_field_textarea {
         width: 97%;
         resize: vertical;
+        margin-bottom: 10px;
     }
 
     .border-top {
@@ -304,5 +320,21 @@
 
     .stream-email-header {
         font-size: 18px;
+    }
+}
+
+.micromodal select {
+    height: 30px;
+    width: 220px;
+    padding: 4px 6px;
+    color: hsl(0, 0%, 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0, 0%, 80%);
+    cursor: pointer;
+    background-color: hsl(0, 0%, 100%);
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0, 0%, 93%);
     }
 }

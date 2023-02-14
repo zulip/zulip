@@ -26,15 +26,21 @@ page can be easily identified in it's respective JavaScript file -->
                     <h2>{{_('Anonymous user') }}</h2>
                     <p>
                         <input type="submit" formaction="{{ current_realm.uri }}{{ url('login-local') }}"
-                          name="prefers_web_public_view" class="btn-direct btn-admin" value="Anonymous login" />
+                          name="prefers_web_public_view" class="dev-button dev-login-button" value="Anonymous login" />
                     </p>
                     {% endif %}
                     <h2>{{_('Owners') }}</h2>
                     {% if direct_owners %}
                         {% for direct_owner in direct_owners %}
                         <p>
-                            <input type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_owner.delivery_email }}" />
+                            <button type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('login-local') }}"
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_owner.delivery_email }}">
+                                {% if direct_owner.realm.demo_organization_scheduled_deletion_date %}
+                                    {{ direct_owner.full_name }}
+                                {% else %}
+                                    {{ direct_owner.delivery_email }}
+                                {% endif %}
+                            </button>
                         </p>
                         {% endfor %}
                     {% else %}
@@ -45,7 +51,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for direct_admin in direct_admins %}
                         <p>
                             <input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.delivery_email }}" />
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_admin.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -56,7 +62,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for direct_moderator in direct_moderators %}
                         <p>
                             <input type="submit" formaction="{{ direct_moderator.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_moderator.delivery_email }}" />
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_moderator.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -67,7 +73,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for guest_user in guest_users %}
                         <p>
                             <input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.delivery_email }}" />
+                              name="direct_email" class="dev-button dev-login-button" value="{{ guest_user.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -81,7 +87,7 @@ page can be easily identified in it's respective JavaScript file -->
                         {% for direct_user in direct_users %}
                         <p>
                             <input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('login-local') }}"
-                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.delivery_email }}" />
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_user.delivery_email }}" />
                         </p>
                         {% endfor %}
                     {% else %}
@@ -93,7 +99,7 @@ page can be easily identified in it's respective JavaScript file -->
         <form name="change_realm" action="{{ url('login_page') }}" method="post">
             {{ csrf_input }}
             <h2>Realm</h2>
-            <select name="new_realm" onchange="this.form.submit()">
+            <select class="bootstrap-focus-style" name="new_realm" onchange="this.form.submit()">
                 <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All realms</option>
                 {% for realm in all_realms %}
                 <option value="{{realm.string_id}}" {% if current_realm == realm %}selected="selected"{% endif %}>{{realm.name}}</option>
@@ -103,13 +109,13 @@ page can be easily identified in it's respective JavaScript file -->
         <div id="devtools-wrapper">
             <div id="devtools-registration">
                 <form name="register_dev_user" action="{{ url('register_dev_user') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create new user" />
+                    <input type="submit" class="dev-button dev-create-button" value="Create new user" />
                 </form>
                 <form name="register_dev_realm" action="{{ url('register_dev_realm') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create new realm" />
+                    <input type="submit" class="dev-button dev-create-button" value="Create new realm" />
                 </form>
                 <form name="register_demo_dev_realm" action="{{ url('register_demo_dev_realm') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create demo organization" />
+                    <input type="submit" class="dev-button dev-create-button" value="Create demo organization" />
                 </form>
             </div>
             <a href="/devtools">Zulip developer tools</a>

@@ -57,7 +57,6 @@ from zerver.models import (
     Attachment,
     Message,
     Reaction,
-    Realm,
     Stream,
     UserMessage,
     UserProfile,
@@ -105,21 +104,16 @@ def validate_message_edit_payload(
 
 
 def can_edit_topic(
-    message: Message,
     user_profile: UserProfile,
     is_no_topic_msg: bool,
 ) -> bool:
-    # You have permission to edit the message topic if you sent it.
-    if message.sender_id == user_profile.id:
-        return True
-
     # We allow anyone to edit (no topic) messages to help tend them.
     if is_no_topic_msg:
         return True
 
-    # The can_edit_topic_of_any_message helper returns whether the user can edit the topic
-    # or not based on edit_topic_policy setting and the user's role.
-    if user_profile.can_edit_topic_of_any_message():
+    # The can_move_messages_to_another_topic helper returns whether the user can edit
+    # the topic or not based on edit_topic_policy setting and the user's role.
+    if user_profile.can_move_messages_to_another_topic():
         return True
 
     return False
@@ -134,14 +128,10 @@ def maybe_send_resolve_topic_notifications(
     changed_messages: List[Message],
 ) -> bool:
     """Returns True if resolve topic notifications were in fact sent."""
-
     # Note that topics will have already been stripped in check_update_message.
     #
     # This logic is designed to treat removing a weird "✔ ✔✔ "
     # prefix as unresolving the topic.
-    if old_topic.lstrip(RESOLVED_TOPIC_PREFIX) != new_topic.lstrip(RESOLVED_TOPIC_PREFIX):
-        return False
-
     topic_resolved: bool = new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
         RESOLVED_TOPIC_PREFIX
     )
@@ -456,19 +446,17 @@ def do_update_message(
             possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
-        event["online_push_user_ids"] = list(info["online_push_user_ids"])
-        event["pm_mention_push_disabled_user_ids"] = list(info["pm_mention_push_disabled_user_ids"])
-        event["pm_mention_email_disabled_user_ids"] = list(
-            info["pm_mention_email_disabled_user_ids"]
-        )
-        event["stream_push_user_ids"] = list(info["stream_push_user_ids"])
-        event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
-        event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
+        event["online_push_user_ids"] = list(info.online_push_user_ids)
+        event["pm_mention_push_disabled_user_ids"] = list(info.pm_mention_push_disabled_user_ids)
+        event["pm_mention_email_disabled_user_ids"] = list(info.pm_mention_email_disabled_user_ids)
+        event["stream_push_user_ids"] = list(info.stream_push_user_ids)
+        event["stream_email_user_ids"] = list(info.stream_email_user_ids)
+        event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
-        event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
-        event["all_bot_user_ids"] = list(info["all_bot_user_ids"])
+        event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
+        event["all_bot_user_ids"] = list(info.all_bot_user_ids)
         if rendering_result.mentions_wildcard:
-            event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
+            event["wildcard_mention_user_ids"] = list(info.wildcard_mention_user_ids)
         else:
             event["wildcard_mention_user_ids"] = []
 
@@ -476,7 +464,7 @@ def do_update_message(
             target_message,
             prior_mention_user_ids,
             rendering_result.mentions_user_ids,
-            info["stream_push_user_ids"],
+            info.stream_push_user_ids,
         )
 
     if topic_name is not None or new_stream is not None:
@@ -542,6 +530,10 @@ def do_update_message(
                 user_id for user_id in new_stream_sub_ids if user_id not in old_stream_sub_ids
             ]
 
+    # We save the full topic name so that checks that require comparison
+    # between the original topic and the topic name passed into this function
+    # will not be affected by the potential truncation of topic_name below.
+    pre_truncation_topic_name = topic_name
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
         target_message.set_topic_name(topic_name)
@@ -673,55 +665,52 @@ def do_update_message(
     # newly sent messages anyway) and having magical live-updates
     # where possible.
     users_to_be_notified = list(map(user_info, ums))
-    if stream_being_edited is not None:
-        if stream_being_edited.is_history_public_to_subscribers():
-            subscriptions = get_active_subscriptions_for_stream_id(
-                stream_id, include_deactivated_users=False
-            )
-            # We exclude long-term idle users, since they by
-            # definition have no active clients.
-            subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-            # Remove duplicates by excluding the id of users already
-            # in users_to_be_notified list.  This is the case where a
-            # user both has a UserMessage row and is a current
-            # Subscriber
+    if stream_being_edited is not None and stream_being_edited.is_history_public_to_subscribers():
+        subscriptions = get_active_subscriptions_for_stream_id(
+            stream_id, include_deactivated_users=False
+        )
+        # We exclude long-term idle users, since they by
+        # definition have no active clients.
+        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
+        # Remove duplicates by excluding the id of users already
+        # in users_to_be_notified list.  This is the case where a
+        # user both has a UserMessage row and is a current
+        # Subscriber
+        subscriptions = subscriptions.exclude(
+            user_profile_id__in=[um.user_profile_id for um in ums]
+        )
+
+        if new_stream is not None:
+            assert delete_event_notify_user_ids is not None
+            subscriptions = subscriptions.exclude(user_profile_id__in=delete_event_notify_user_ids)
+
+        # All users that are subscribed to the stream must be
+        # notified when a message is edited
+        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+
+        if new_stream is not None:
+            # TODO: Guest users don't see the new moved topic
+            # unless breadcrumb message for new stream is
+            # enabled. Excluding these users from receiving this
+            # event helps us avoid a error traceback for our
+            # clients. We should figure out a way to inform the
+            # guest users of this new topic if sending a 'message'
+            # event for these messages is not an option.
+            #
+            # Don't send this event to guest subs who are not
+            # subscribers of the old stream but are subscribed to
+            # the new stream; clients will be confused.
+            old_stream_unsubbed_guests = [
+                sub
+                for sub in subs_to_new_stream
+                if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
+            ]
             subscriptions = subscriptions.exclude(
-                user_profile_id__in=[um.user_profile_id for um in ums]
+                user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
             )
-
-            if new_stream is not None:
-                assert delete_event_notify_user_ids is not None
-                subscriptions = subscriptions.exclude(
-                    user_profile_id__in=delete_event_notify_user_ids
-                )
-
-            # All users that are subscribed to the stream must be
-            # notified when a message is edited
             subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
-            if new_stream is not None:
-                # TODO: Guest users don't see the new moved topic
-                # unless breadcrumb message for new stream is
-                # enabled. Excluding these users from receiving this
-                # event helps us avoid a error traceback for our
-                # clients. We should figure out a way to inform the
-                # guest users of this new topic if sending a 'message'
-                # event for these messages is not an option.
-                #
-                # Don't send this event to guest subs who are not
-                # subscribers of the old stream but are subscribed to
-                # the new stream; clients will be confused.
-                old_stream_unsubbed_guests = [
-                    sub
-                    for sub in subs_to_new_stream
-                    if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
-                ]
-                subscriptions = subscriptions.exclude(
-                    user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
-                )
-                subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-
-            users_to_be_notified += list(map(subscriber_info, sorted(subscriber_ids)))
+        users_to_be_notified += list(map(subscriber_info, sorted(subscriber_ids)))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -817,16 +806,19 @@ def do_update_message(
     send_event(user_profile.realm, event, users_to_be_notified)
 
     sent_resolve_topic_notification = False
-    if (
-        topic_name is not None
-        and new_stream is None
-        and content is None
-        and len(changed_messages) > 0
-    ):
-        assert stream_being_edited is not None
+    if topic_name is not None and content is None and len(changed_messages) > 0:
+        # When stream is changed and topic is marked as resolved or unresolved
+        # in the same API request, resolved or unresolved notification should
+        # be sent to "new_stream".
+        # In general, it is sent to "stream_being_edited".
+        stream_to_send_resolve_topic_notification = stream_being_edited
+        if new_stream is not None:
+            stream_to_send_resolve_topic_notification = new_stream
+
+        assert stream_to_send_resolve_topic_notification is not None
         sent_resolve_topic_notification = maybe_send_resolve_topic_notifications(
             user_profile=user_profile,
-            stream=stream_being_edited,
+            stream=stream_to_send_resolve_topic_notification,
             old_topic=orig_topic_name,
             new_topic=topic_name,
             changed_messages=changed_messages,
@@ -869,9 +861,9 @@ def do_update_message(
             new_stream is not None
             or not sent_resolve_topic_notification
             or (
-                topic_name is not None
+                pre_truncation_topic_name is not None
                 and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
-                != topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+                != pre_truncation_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
             )
         ):
             if moved_all_visible_messages:
@@ -918,7 +910,7 @@ def check_update_message(
     """
     message, ignored_user_message = access_message(user_profile, message_id)
 
-    if not user_profile.realm.allow_message_editing:
+    if content is not None and not user_profile.realm.allow_message_editing:
         raise JsonableError(_("Your organization has turned off message editing"))
 
     # The zerver/views/message_edit.py call point already strips this
@@ -932,14 +924,16 @@ def check_update_message(
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
-    if content is not None:
+    if (
+        content is not None
         # You cannot edit the content of message sent by someone else.
-        if message.sender_id != user_profile.id:
-            raise JsonableError(_("You don't have permission to edit this message"))
+        and message.sender_id != user_profile.id
+    ):
+        raise JsonableError(_("You don't have permission to edit this message"))
 
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
-    if topic_name is not None and not can_edit_topic(message, user_profile, is_no_topic_msg):
+    if topic_name is not None and not can_edit_topic(user_profile, is_no_topic_msg):
         raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
@@ -954,17 +948,18 @@ def check_update_message(
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     # If there is a change to the topic, check that the user is allowed to
-    # edit it and that it has not been too long. If this is not the user who
-    # sent the message, they are not the admin, and the time limit for editing
-    # topics is passed, raise an error.
+    # edit it and that it has not been too long. If user is not admin or moderator,
+    # and the time limit for editing topics is passed, raise an error.
     if (
         topic_name is not None
-        and message.sender != user_profile
+        and user_profile.realm.move_messages_within_stream_limit_seconds is not None
         and not user_profile.is_realm_admin
         and not user_profile.is_moderator
         and not is_no_topic_msg
     ):
-        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
+        deadline_seconds = (
+            user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
+        )
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed"))
 
@@ -1021,6 +1016,19 @@ def check_update_message(
 
         new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
         check_stream_access_based_on_stream_post_policy(user_profile, new_stream)
+
+        if (
+            user_profile.realm.move_messages_between_streams_limit_seconds is not None
+            and not user_profile.is_realm_admin
+            and not user_profile.is_moderator
+        ):
+            deadline_seconds = (
+                user_profile.realm.move_messages_between_streams_limit_seconds + edit_limit_buffer
+            )
+            if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+                raise JsonableError(
+                    _("The time limit for editing this message's stream has passed")
+                )
 
     number_changed = do_update_message(
         user_profile,

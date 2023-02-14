@@ -31,7 +31,6 @@ def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zilencer", "0021_alter_remotezulipserver_uuid"),
     ]

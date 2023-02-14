@@ -53,8 +53,10 @@ TAB_SECTION_LABELS = {
     "desktop": "Desktop",
     "mobile": "Mobile",
     "mm-default": "Default installation",
+    "mm-cloud": "Cloud instance",
     "mm-docker": "Docker",
     "mm-gitlab-omnibus": "GitLab Omnibus",
+    "mm-self-hosting-cloud-export": "Self hosting (cloud export)",
     "require-invitations": "Require invitations",
     "allow-anyone-to-join": "Allow anyone to join",
     "restrict-by-email-domain": "Restrict by email domain",
@@ -75,7 +77,7 @@ TAB_SECTION_LABELS = {
     "public-streams": "Public streams",
     "private-streams": "Private streams",
     "web-public-streams": "Web-public streams",
-    "via-user-profile": "Via the user's profile",
+    "via-user-card": "Via user card",
     "via-organization-settings": "Via organization settings",
     "via-personal-settings": "Via personal settings",
     "default-subdomain": "Default subdomain",
@@ -88,6 +90,8 @@ TAB_SECTION_LABELS = {
     "keycloak": "Keycloak",
     "logged-in": "If you are logged in",
     "logged-out": "If you are logged out",
+    "user": "User",
+    "bot": "Bot",
 }
 
 

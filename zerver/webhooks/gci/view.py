@@ -17,7 +17,7 @@ def build_instance_url(instance_id: int) -> str:
     return f"https://codein.withgoogle.com/dashboard/task-instances/{instance_id}/"
 
 
-class UnknownEventType(Exception):
+class UnknownEventTypeError(Exception):
     pass
 
 
@@ -155,7 +155,7 @@ def get_event(payload: WildValue) -> Optional[str]:
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
-    raise UnknownEventType(f"Event '{event}' is unknown and cannot be handled")  # nocoverage
+    raise UnknownEventTypeError(f"Event '{event}' is unknown and cannot be handled")  # nocoverage
 
 
 def get_body_based_on_event(event: str) -> Callable[[WildValue], str]:

@@ -844,7 +844,7 @@ test("missing unicode emojis", ({override}) => {
 test("katex_throws_unexpected_exceptions", ({override_rewire}) => {
     const message = {raw_content: "$$a$$"};
     override_rewire(markdown, "katex", {
-        renderToString: () => {
+        renderToString() {
             throw new Error("some-exception");
         },
     });

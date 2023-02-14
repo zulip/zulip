@@ -214,7 +214,7 @@ export function set_up_toggler() {
         values: [
             {label: $t({defaultMessage: "Keyboard shortcuts"}), key: "keyboard-shortcuts"},
             {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
-            {label: $t({defaultMessage: "Search operators"}), key: "search-operators"},
+            {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
         callback(name, key) {
             $(".overlay-modal").hide();
@@ -250,8 +250,8 @@ export function set_up_toggler() {
         "notdisplayed",
         !user_settings.escape_navigates_to_default_view,
     );
-    common.adjust_mac_shortcuts(".hotkeys_table .hotkey kbd");
-    common.adjust_mac_shortcuts("#markdown-instructions kbd");
+    common.adjust_mac_kbd_tags(".hotkeys_table .hotkey kbd");
+    common.adjust_mac_kbd_tags("#markdown-instructions kbd");
 }
 
 export function show(target) {

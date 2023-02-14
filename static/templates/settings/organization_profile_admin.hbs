@@ -1,8 +1,8 @@
 <div id="organization-profile" data-name="organization-profile" class="settings-section">
-    <form class="form-horizontal admin-realm-form org-profile-form">
+    <form class="admin-realm-form org-profile-form">
         <div class="alert" id="admin-realm-deactivation-status"></div>
 
-        <div id="org-org-profile" class="org-subsection-parent">
+        <div id="org-org-profile" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Organization profile" }}
                     {{> ../help_link_widget link="/help/create-your-organization-profile" }}
@@ -21,7 +21,7 @@
                     <label for="realm_org_type" class="dropdown-title">{{t "Organization type" }}
                         {{> ../help_link_widget link="/help/organization-type" }}
                     </label>
-                    <select name="realm_org_type" class="setting-widget prop-element" id="id_realm_org_type" data-setting-widget-type="number">
+                    <select name="realm_org_type" class="setting-widget prop-element bootstrap-focus-style" id="id_realm_org_type" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=realm_org_type_values}}
                     </select>
                 </div>
@@ -34,7 +34,7 @@
                   help_link="/help/communities-directory"}}
                 <div class="input-group admin-realm">
                     <label for="realm_description">{{t "Organization description" }}</label>
-                    <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element"
+                    <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element settings_textarea"
                       maxlength="1000" data-setting-widget-type="string">{{ realm_description }}</textarea>
                 </div>
             </div>
@@ -61,10 +61,10 @@
             {{> upgrade_tip_widget }}
         </div>
 
-        <p>{{t "A wide image for the upper left corner of the app." }}</p>
+        <p>{{t "A wide image (200×25 pixels) for the upper left corner of the app." }}</p>
         <div class="realm-logo-group">
             <div class="realm-logo-block realm-logo-section">
-                <h5 class="realm-logo-title">{{t 'Day logo' }}</h5>
+                <h5 class="realm-logo-title">{{t "Light theme logo" }}</h5>
                 {{> image_upload_widget
                   widget = "realm-day-logo"
                   upload_text = (t "Upload logo")
@@ -73,7 +73,7 @@
                   image = realm_logo_url }}
             </div>
             <div class="realm-logo-block realm-logo-section">
-                <h5 class="realm-logo-title">{{t 'Night logo' }}</h5>
+                <h5 class="realm-logo-title">{{t "Dark theme logo" }}</h5>
                 {{> image_upload_widget
                   widget = "realm-night-logo"
                   upload_text = (t "Upload logo")
@@ -84,13 +84,15 @@
         </div>
         <h3 class="light">
             {{t "Deactivate organization" }}
-            <i class="fa fa-info-circle settings-info-icon realm_deactivation_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can deactivate the organization.' }}"></i>
+            {{> ../help_link_widget link="/help/deactivate-your-organization" }}
         </h3>
         <div class="deactivate-realm-section">
             <div class="input-group">
-                <button class="button rounded btn-danger" id="deactivate_realm_button">
-                    {{t 'Deactivate organization' }}
-                </button>
+                <div id="deactivate_realm_button_container" class="inline-block {{#unless is_owner}}disabled_setting_tooltip{{/unless}}">
+                    <button class="button rounded btn-danger" id="deactivate_realm_button">
+                        {{t 'Deactivate organization' }}
+                    </button>
+                </div>
             </div>
         </div>
     </form>

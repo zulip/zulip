@@ -7,7 +7,6 @@ import $ from "jquery";
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
-import * as gear_menu from "./gear_menu";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -46,7 +45,7 @@ export const update_person = function update(person) {
 
     if (Object.hasOwn(person, "delivery_email")) {
         const delivery_email = person.delivery_email;
-
+        person_obj.delivery_email = delivery_email;
         if (people.is_my_user_id(person.user_id)) {
             settings_account.update_email(delivery_email);
             page_params.delivery_email = delivery_email;
@@ -83,12 +82,12 @@ export const update_person = function update(person) {
 
         if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
             page_params.is_admin = person_obj.is_admin;
-            gear_menu.update_org_settings_menu_item();
             settings_linkifiers.maybe_disable_widgets();
             settings_org.maybe_disable_widgets();
             settings_profile_fields.maybe_disable_widgets();
             settings_streams.maybe_disable_widgets();
             settings_realm_user_settings_defaults.maybe_disable_widgets();
+            settings_account.update_account_settings_display();
         }
 
         if (

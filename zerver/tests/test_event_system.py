@@ -1,6 +1,7 @@
 import time
 from typing import Any, Callable, Dict, List, Mapping, Optional
 from unittest import mock
+from urllib.parse import urlsplit
 
 import orjson
 from django.conf import settings
@@ -12,18 +13,22 @@ from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import HostRequestMock, dummy_handler, stub_event_queue_user_events
+from zerver.lib.test_helpers import (
+    HostRequestMock,
+    dummy_handler,
+    reset_emails_in_zulip_realm,
+    stub_event_queue_user_events,
+)
 from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
     CustomProfileField,
-    Realm,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -50,8 +55,11 @@ from zerver.views.events_register import (
 
 
 class EventsEndpointTest(ZulipTestCase):
-    def test_events_register_endpoint(self) -> None:
+    def test_events_register_without_user_agent(self) -> None:
+        result = self.client_post("/json/register", skip_user_agent=True)
+        self.assert_json_success(result)
 
+    def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
         # events_register code paths
         user = self.example_user("hamlet")
@@ -210,7 +218,6 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_tornado_endpoint(self) -> None:
-
         # This test is mostly intended to get minimal coverage on
         # the /notify_tornado endpoint, so we can have 100% URL coverage,
         # but it does exercise a little bit of the codepath.
@@ -314,16 +321,17 @@ class GetEventsTest(ZulipTestCase):
         self.assert_length(events, 0)
 
         local_id = "10.01"
-        check_send_message(
-            sender=user_profile,
-            client=get_client("whatever"),
-            message_type_name="private",
-            message_to=[recipient_email],
-            topic_name=None,
-            message_content="hello",
-            local_id=local_id,
-            sender_queue_id=queue_id,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            check_send_message(
+                sender=user_profile,
+                client=get_client("whatever"),
+                message_type_name="private",
+                message_to=[recipient_email],
+                topic_name=None,
+                message_content="hello",
+                local_id=local_id,
+                sender_queue_id=queue_id,
+            )
 
         result = self.tornado_call(
             get_events,
@@ -347,16 +355,17 @@ class GetEventsTest(ZulipTestCase):
         last_event_id = events[0]["id"]
         local_id = "10.02"
 
-        check_send_message(
-            sender=user_profile,
-            client=get_client("whatever"),
-            message_type_name="private",
-            message_to=[recipient_email],
-            topic_name=None,
-            message_content="hello",
-            local_id=local_id,
-            sender_queue_id=queue_id,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            check_send_message(
+                sender=user_profile,
+                client=get_client("whatever"),
+                message_type_name="private",
+                message_to=[recipient_email],
+                topic_name=None,
+                message_content="hello",
+                local_id=local_id,
+                sender_queue_id=queue_id,
+            )
 
         result = self.tornado_call(
             get_events,
@@ -454,12 +463,19 @@ class GetEventsTest(ZulipTestCase):
         message = get_message(apply_markdown=False, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "**hello**")
-        self.assertTrue(message["avatar_url"].startswith("https://secure.gravatar.com"))
+        self.assertEqual(urlsplit(message["avatar_url"]).hostname, "secure.gravatar.com")
 
         message = get_message(apply_markdown=True, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertIn("gravatar.com", message["avatar_url"])
+
+        do_change_user_setting(
+            user_profile,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
 
         message = get_message(apply_markdown=False, client_gravatar=True)
         self.assertEqual(message["display_recipient"], "Denmark")
@@ -600,63 +616,58 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
     def test_delivery_email_presence_for_non_admins(self) -> None:
         user_profile = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
         self.assertFalse(user_profile.is_realm_admin)
+        hamlet = self.example_user("hamlet")
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertIsNone(hamlet_obj["delivery_email"])
 
     def test_delivery_email_presence_for_admins(self) -> None:
         user_profile = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
         self.assertTrue(user_profile.is_realm_admin)
+        hamlet = self.example_user("hamlet")
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
-        for key, value in result["raw_users"].items():
-            self.assertIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertIn("delivery_email", hamlet_obj)
 
     def test_user_avatar_url_field_optional(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -689,8 +700,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
         gravatar_users_id = [
             user_dict["user_id"]
             for user_dict in raw_users.values()
-            if "avatar_url" in user_dict and "gravatar.com" in user_dict["avatar_url"]
+            if "avatar_url" in user_dict
+            and urlsplit(user_dict["avatar_url"]).hostname == "secure.gravatar.com"
         ]
+
+        reset_emails_in_zulip_realm()
 
         # Test again with client_gravatar = True
         result = fetch_initial_state_data(
@@ -950,6 +964,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 sender_avatar_version=1,
                 sender_is_mirror_dummy=None,
+                sender_email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 recipient_type=None,
                 recipient_type_id=None,
             ),

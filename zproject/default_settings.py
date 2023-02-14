@@ -1,6 +1,6 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
@@ -141,6 +141,8 @@ S3_REGION: Optional[str] = None
 S3_ENDPOINT_URL: Optional[str] = None
 S3_SKIP_PROXY = True
 LOCAL_UPLOADS_DIR: Optional[str] = None
+LOCAL_AVATARS_DIR: Optional[str] = None
+LOCAL_FILES_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
@@ -171,7 +173,6 @@ REMOTE_POSTGRES_HOST = ""
 REMOTE_POSTGRES_PORT = ""
 REMOTE_POSTGRES_SSLMODE = ""
 THUMBNAIL_IMAGES = False
-SENDFILE_BACKEND: Optional[str] = None
 
 TORNADO_PORTS: List[int] = []
 USING_TORNADO = True
@@ -197,6 +198,82 @@ RATE_LIMITING_AUTHENTICATE = True
 RATE_LIMIT_TOR_TOGETHER = False
 SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
+
+DEFAULT_RATE_LIMITING_RULES = {
+    # Limits total number of API requests per unit time by each user.
+    # Rate limiting general API access protects the server against
+    # clients causing unreasonable server load.
+    "api_by_user": [
+        # 200 requests per limit
+        (60, 200),
+    ],
+    # Limits total number of unauthenticated API requests (primarily
+    # used by the public access option). Since these are
+    # unauthenticated requests, each IP address is a separate bucket.
+    "api_by_ip": [
+        (60, 100),
+    ],
+    # Limits total requests to the Mobile Push Notifications Service
+    # by each individual Zulip server that is using the service. This
+    # is a Zulip Cloud setting that has no effect on self-hosted Zulip
+    # servers that are not hosting their own copy of the push
+    # notifications service.
+    "api_by_remote_server": [
+        (60, 1000),
+    ],
+    # Limits how many authentication attempts with login+password can
+    # be made to a single username. This applies to the authentication
+    # backends such as LDAP or email+password where a login+password
+    # gets submitted to the Zulip server. No limit is applied for
+    # external authentication methods (like GitHub SSO), since with
+    # those authentication backends, we only receive a username if
+    # authentication is successful.
+    "authenticate_by_username": [
+        # 5 failed login attempts within 30 minutes
+        (1800, 5),
+    ],
+    # Limits how many requests a user can make to change their email
+    # address. A low/strict limit is recommended here, since there is
+    # not real use case for triggering several of these from a single
+    # user account, and by definition, the emails are sent to an email
+    # address that does not already have a relationship with Zulip, so
+    # this feature can be abused to attack the server's spam
+    # reputation. Applies in addition to sends_email_by_ip.
+    "email_change_by_user": [
+        # 2 emails per hour, and up to 5 per day.
+        (3600, 2),
+        (86400, 5),
+    ],
+    # Limits how many requests to send password reset emails can be
+    # made for a single email address. A low/strict limit is
+    # desirable, since this feature could be used to spam users with
+    # password reset emails, given their email address. Applies in
+    # addition to sends_email_by_ip, below.
+    "password_reset_form_by_email": [
+        # 2 emails per hour, and up to 5 per day.
+        (3600, 2),
+        (86400, 5),
+    ],
+    # This limit applies to all requests which directly trigger the
+    # sending of an email, restricting the number per IP address. This
+    # is a general anti-spam measure.
+    "sends_email_by_ip": [
+        (86400, 5),
+    ],
+    # Limits access to uploaded files, in web-public contexts, done by
+    # unauthenticated users. Each file gets its own bucket, and every
+    # access to the file by an unauthenticated user counts towards the
+    # limit.  This is important to prevent abuse of Zulip's file
+    # uploads feature for file distribution.
+    "spectator_attachment_access_by_file": [
+        # 1000 per day per file
+        (86400, 1000),
+    ],
+}
+# Rate limiting defaults can be individually overridden by adding
+# entries in this object, which is merged with
+# DEFAULT_RATE_LIMITING_RULES.
+RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {}
 
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
@@ -372,7 +449,7 @@ TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 # Hostname used for Zulip's statsd logging integration.
 STATSD_HOST = ""
 
-# Configuration for JWT auth.
+# Configuration for JWT auth (sign in and API key fetch)
 JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {}
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SERVER_EMAIL

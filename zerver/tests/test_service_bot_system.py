@@ -10,7 +10,7 @@ from typing_extensions import Concatenate, ParamSpec
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
 from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
-from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
+from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsListError, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
@@ -409,7 +409,7 @@ class TestServiceBotConfigHandler(ZulipTestCase):
 
     def test_bot_send_pm_with_empty_recipients_list(self) -> None:
         with self.assertRaisesRegex(
-            EmbeddedBotEmptyRecipientsList, "Message must have recipients!"
+            EmbeddedBotEmptyRecipientsListError, "Message must have recipients!"
         ):
             self.bot_handler.send_message(message={"type": "private", "to": []})
 

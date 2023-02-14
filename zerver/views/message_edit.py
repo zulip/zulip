@@ -193,7 +193,6 @@ def json_fetch_raw_message(
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
     apply_markdown: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
-
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)
         message = access_web_public_message(realm, message_id)

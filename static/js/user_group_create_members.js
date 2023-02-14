@@ -7,7 +7,6 @@ import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_data from "./settings_data";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 
 let pill_widget;
@@ -96,12 +95,10 @@ export function build_widgets() {
         modifier(user_id) {
             const user = people.get_by_user_id(user_id);
             const item = {
-                show_email: settings_data.show_email(),
-                email: people.get_visible_email(user),
+                email: user.delivery_email,
                 user_id,
                 full_name: user.full_name,
                 is_current_user: user_id === current_user_id,
-                disabled: user_id === current_user_id,
             };
             return render_new_user_group_user(item);
         },
@@ -113,7 +110,7 @@ export function build_widgets() {
             },
         },
         $simplebar_container,
-        html_selector: (user_id) => {
+        html_selector(user_id) {
             const user = people.get_by_user_id(user_id);
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
         },

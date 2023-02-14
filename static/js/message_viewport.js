@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import {media_breakpoints_num} from "./css_variables";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as notifications from "./notifications";
@@ -49,18 +48,23 @@ export function message_viewport_info() {
     // Return a structure that tells us details of the viewport
     // accounting for fixed elements like the top navbar.
     //
-    // The message_header is NOT considered to be part of the visible
+    // Sticky message_header is NOT considered to be part of the visible
     // message pane, which should make sense for callers, who will
     // generally be concerned about whether actual message content is
     // visible.
 
     const res = {};
 
-    const $element_just_above_us = $(".floating_recipient");
+    const $element_just_above_us = $("#navbar-container .header");
     const $element_just_below_us = $("#compose");
 
     res.visible_top =
         $element_just_above_us.offset().top + $element_just_above_us.safeOuterHeight();
+
+    const $sticky_header = $(".sticky_header");
+    if ($sticky_header.length) {
+        res.visible_top += $sticky_header.safeOuterHeight();
+    }
 
     res.visible_bottom = $element_just_below_us.position().top;
 
@@ -183,7 +187,14 @@ function add_to_visible(
 
 const top_of_feed = new util.CachedValue({
     compute_value() {
-        return $(".floating_recipient").offset().top + $(".floating_recipient").safeOuterHeight();
+        const $header = $("#navbar-container .header");
+        let visible_top = $header.offset().top + $header.safeOuterHeight();
+
+        const $sticky_header = $(".sticky_header");
+        if ($sticky_header.length) {
+            visible_top += $sticky_header.safeOuterHeight();
+        }
+        return visible_top;
     },
 });
 
@@ -313,13 +324,6 @@ export function stop_auto_scrolling() {
     }
 }
 
-export function is_narrow() {
-    // This basically returns true when we hide the right sidebar for
-    // the left_side_userlist skinny mode.  It would be nice to have a less brittle
-    // test for this.
-    return window.innerWidth < media_breakpoints_num.xl;
-}
-
 export function system_initiated_animate_scroll(scroll_amount) {
     message_scroll.suppress_selection_update_on_next_scroll();
     const viewport_offset = scrollTop();
@@ -379,6 +383,12 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
     } else if (is_below) {
         set_message_position(message_top, message_height, viewport_info, 1 / 7);
     }
+}
+
+export function is_message_below_viewport($message_row) {
+    const info = message_viewport_info();
+    const offset = $message_row.offset();
+    return offset.top >= info.visible_bottom;
 }
 
 export function keep_pointer_in_view() {

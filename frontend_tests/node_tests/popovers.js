@@ -27,15 +27,7 @@ const message_lists = mock_esm("../../static/js/message_lists", {
         view: {
             message_containers: {},
         },
-        data: {
-            fetch_status: {
-                has_found_newest: () => true,
-            },
-        },
     },
-});
-mock_esm("../../static/js/message_viewport", {
-    height: () => 500,
 });
 mock_esm("../../static/js/stream_popover", {
     hide_stream_popover: noop,
@@ -48,11 +40,11 @@ mock_esm("../../static/js/stream_popover", {
 
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const message_edit = zrequire("message_edit");
 const popovers = zrequire("popovers");
 
 const alice = {
     email: "alice@example.com",
+    delivery_email: "alice-delivery@example.com",
     full_name: "Alice Smith",
     user_id: 42,
     avatar_version: 5,
@@ -109,7 +101,6 @@ function make_image_stubber() {
 function test_ui(label, f) {
     run_test(label, (handlers) => {
         page_params.is_admin = false;
-        page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
         popovers.clear_for_testing();
         popovers.register_click_handlers();
@@ -181,7 +172,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             can_send_private_message: true,
             display_profile_fields: [],
             user_full_name: "Alice Smith",
-            user_email: "alice@example.com",
+            user_email: "alice-delivery@example.com",
             user_id: 42,
             user_time: undefined,
             user_type: $t({defaultMessage: "Member"}),
@@ -191,7 +182,6 @@ test_ui("sender_hover", ({override, mock_template}) => {
             pm_with_url: "#narrow/pm-with/42-Alice-Smith",
             sent_by_uri: "#narrow/sender/42-Alice-Smith",
             private_message_class: "respond_personal_button",
-            show_email: false,
             show_manage_menu: true,
             is_me: false,
             is_active: true,
@@ -222,55 +212,4 @@ test_ui("sender_hover", ({override, mock_template}) => {
     assert.equal(avatar_img.src.toString(), "/avatar/42/medium");
 
     // todo: load image
-});
-
-test_ui("actions_popover", ({override, mock_template}) => {
-    override($.fn, "popover", noop);
-
-    const $target = $.create("click target");
-
-    const handler = $("#main_div").get_on_handler("click", ".actions_hover");
-
-    const message = {
-        id: 999,
-        topic: "Actions (1)",
-        type: "stream",
-        stream_id: 123,
-        sent_by_me: true,
-    };
-
-    message_lists.current.get = (msg_id) => {
-        assert.equal(msg_id, message.id);
-        return message;
-    };
-
-    message_lists.current.view.message_containers.get = (msg_id) => {
-        assert.equal(msg_id, message.id);
-        return {
-            is_hidden: false,
-        };
-    };
-
-    override(page_params, "realm_allow_message_editing", true);
-    override(page_params, "realm_message_content_edit_limit_seconds", null);
-    assert.equal(message_edit.get_editability(message), message_edit.editability_types.FULL);
-
-    $target.closest = (sel) => {
-        assert.equal(sel, ".message_row");
-        return {
-            toggleClass: noop,
-        };
-    };
-
-    mock_template("actions_popover_template.hbs", false, () => "actions-template");
-    mock_template("actions_popover_content.hbs", false, (opts) => {
-        // TODO: Test all the properties of the popover
-        assert.equal(
-            opts.conversation_time_uri,
-            "http://zulip.zulipdev.com/#narrow/stream/123-unknown/topic/Actions.20.281.29/near/999",
-        );
-        return "actions-content";
-    });
-
-    handler.call($target, e);
 });

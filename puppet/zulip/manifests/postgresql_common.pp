@@ -44,7 +44,7 @@ class zulip::postgresql_common {
       # allows ssl-cert group to read /etc/pki/tls/private
       file { '/etc/pki/tls/private':
         ensure => directory,
-        mode   => '0640',
+        mode   => '0750',
         owner  => 'root',
         group  => 'ssl-cert',
       }

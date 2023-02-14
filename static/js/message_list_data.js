@@ -8,16 +8,51 @@ import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 export class MessageListData {
+    // MessageListData is a core data structure for keeping track of a
+    // contiguous block of messages matching a given narrow that can
+    // be displayed in a Zulip message feed.
+    //
+    // See also MessageList and MessageListView, which are important
+    // to actually display a message list.
+
     constructor({excludes_muted_topics, filter = new Filter()}) {
-        this.excludes_muted_topics = excludes_muted_topics;
+        // The Filter object defines which messages match the narrow,
+        // and defines most of the configuration for the MessageListData.
+        this.filter = filter;
+
+        // The FetchStatus object keeps track of our understanding of
+        // to what extent this MessageListData has all the messages
+        // that the server possesses matching this narrow, and whether
+        // we're in the progress of fetching more.
+        this.fetch_status = new FetchStatus();
+
+        // _all_items is a sorted list of all message objects that
+        // match this.filter, regardless of muting.
+        //
+        // Most code will instead use _items, which contains contains
+        // only messages that should be displayed after excluding
+        // muted topics and messages sent by muted users.
         this._all_items = [];
         this._items = [];
-        this._hash = new Map();
-        this._local_only = new Set();
-        this._selected_id = -1;
 
-        this.filter = filter;
-        this.fetch_status = new FetchStatus();
+        // _hash contains the same messages as _all_items, mapped by
+        // message ID. It's used to efficiently query if a given
+        // message is present.
+        this._hash = new Map();
+
+        // Some views exclude muted topics.
+        //
+        // TODO: Refactor this to be a property of Filter, rather than
+        // a parameter that needs to be passed into the constructor..
+        this.excludes_muted_topics = excludes_muted_topics;
+
+        // Tracks any locally echoed messages, which we know aren't present on the server.
+        this._local_only = new Set();
+
+        // The currently selected message ID. The special value -1
+        // there is no selected message. A common situation is when
+        // there are no messages matching the current filter.
+        this._selected_id = -1;
     }
 
     all_messages() {

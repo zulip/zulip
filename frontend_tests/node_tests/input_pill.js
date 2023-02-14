@@ -168,7 +168,7 @@ run_test("copy from pill", ({mock_template}) => {
     const e = {
         originalEvent: {
             clipboardData: {
-                setData: (format, text) => {
+                setData(format, text) {
                     assert.equal(format, "text/plain");
                     copied_text = text;
                 },
@@ -204,7 +204,7 @@ run_test("paste to input", ({mock_template}) => {
     const e = {
         originalEvent: {
             clipboardData: {
-                getData: (format) => {
+                getData(format) {
                     assert.equal(format, "text/plain");
                     return paste_text;
                 },
@@ -257,14 +257,14 @@ run_test("arrows on pills", ({mock_template}) => {
 
     const $pill_stub = {
         prev: () => ({
-            trigger: (type) => {
+            trigger(type) {
                 if (type === "focus") {
                     prev_focused = true;
                 }
             },
         }),
         next: () => ({
-            trigger: (type) => {
+            trigger(type) {
                 if (type === "focus") {
                     next_focused = true;
                 }
@@ -303,7 +303,7 @@ run_test("left arrow on input", ({mock_template}) => {
 
     $container.set_find_results(".pill", {
         last: () => ({
-            trigger: (type) => {
+            trigger(type) {
                 if (type === "focus") {
                     last_pill_focused = true;
                 }
@@ -469,7 +469,7 @@ run_test("insert_remove", ({mock_template}) => {
     let next_pill_focused = false;
 
     const $next_pill_stub = {
-        trigger: (type) => {
+        trigger(type) {
             if (type === "focus") {
                 next_pill_focused = true;
             }
@@ -520,7 +520,7 @@ run_test("exit button on pill", ({mock_template}) => {
     let next_pill_focused = false;
 
     const $next_pill_stub = {
-        trigger: (type) => {
+        trigger(type) {
             if (type === "focus") {
                 next_pill_focused = true;
             }
@@ -534,7 +534,7 @@ run_test("exit button on pill", ({mock_template}) => {
 
     const exit_button_stub = {
         to_$: () => ({
-            closest: (sel) => {
+            closest(sel) {
                 assert.equal(sel, ".pill");
                 return $curr_pill_stub;
             },
@@ -569,7 +569,7 @@ run_test("misc things", () => {
 
     const input_stub = {
         to_$: () => ({
-            removeClass: (cls) => {
+            removeClass(cls) {
                 assert.equal(cls, "shake");
                 shake_class_removed = true;
             },

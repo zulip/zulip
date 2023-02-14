@@ -27,7 +27,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from typing_extensions import Concatenate, ParamSpec
 
-import zerver.lib.rate_limiter as rate_limiter
+from zerver.lib import rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.notes import BaseNotes
 from zerver.lib.types import Validator
@@ -63,7 +63,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     realm: Optional[Realm] = None
     has_fetched_realm: bool = False
     set_language: Optional[str] = None
-    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=lambda: [])
+    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=list)
     query: Optional[str] = None
     error_format: Optional[str] = None
     placeholder_open_graph_description: Optional[str] = None
@@ -78,7 +78,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
         return RequestNotes()
 
 
-class RequestConfusingParmsError(JsonableError):
+class RequestConfusingParamsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
     data_fields = ["var_name1", "var_name2"]
 
@@ -349,7 +349,7 @@ def has_request_variables(
 
     view_func_full_name = ".".join([req_func.__module__, req_func.__name__])
 
-    for (name, value) in zip(default_param_names, default_param_values):
+    for name, value in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):
             value.func_var_name = name
             if value.post_var_name is None:
@@ -413,7 +413,7 @@ def has_request_variables(
                         # fails to recognize this for some reason.
                         continue  # nocoverage
                     if post_var_name is not None:
-                        raise RequestConfusingParmsError(post_var_name, req_var)
+                        raise RequestConfusingParamsError(post_var_name, req_var)
                     post_var_name = req_var
 
                 if post_var_name is None:

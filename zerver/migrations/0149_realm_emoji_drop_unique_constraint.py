@@ -17,7 +17,7 @@ class Uploader:
         self.new_path_template = "{realm_id}/emoji/images/{emoji_file_name}"
 
     def copy_files(self, src_path: str, dst_path: str) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def ensure_emoji_images(self, realm_id: int, old_filename: str, new_filename: str) -> None:
         # Copy original image file.
@@ -51,9 +51,11 @@ class LocalUploader(Uploader):
 
     def copy_files(self, src_path: str, dst_path: str) -> None:
         assert settings.LOCAL_UPLOADS_DIR is not None
-        src_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", src_path)
+        assert settings.LOCAL_AVATARS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+        src_path = os.path.join(settings.LOCAL_AVATARS_DIR, src_path)
         self.mkdirs(src_path)
-        dst_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", dst_path)
+        dst_path = os.path.join(settings.LOCAL_AVATARS_DIR, dst_path)
         self.mkdirs(dst_path)
         shutil.copyfile(src_path, dst_path)
 
@@ -107,7 +109,6 @@ def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0148_max_invites_forget_default"),
     ]

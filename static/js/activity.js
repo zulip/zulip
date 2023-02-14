@@ -15,6 +15,7 @@ import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
+import * as util from "./util";
 import * as watchdog from "./watchdog";
 
 export let user_cursor;
@@ -241,15 +242,15 @@ export function initialize() {
 
     buddy_list.start_scroll_handler();
 
-    // Let the server know we're here, but pass "false" for
-    // want_redraw, since we just got all this info in page_params.
-    send_presence_to_server(false);
-
     function get_full_presence_list_update() {
         send_presence_to_server(true);
     }
 
-    setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
+    util.call_function_periodically(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
+
+    // Let the server know we're here, but pass "false" for
+    // want_redraw, since we just got all this info in page_params.
+    send_presence_to_server(false);
 }
 
 export function update_presence_info(user_id, info, server_time) {

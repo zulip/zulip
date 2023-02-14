@@ -15,7 +15,6 @@ def handle_waiting_period(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0213_realm_digest_weekday"),
     ]

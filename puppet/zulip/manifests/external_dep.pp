@@ -1,8 +1,9 @@
 define zulip::external_dep(
   String $version,
   String $url,
-  String $tarball_prefix,
+  String $tarball_prefix = '',
   String $sha256 = '',
+  String $mode = '0755',
 ) {
   if $sha256 == '' {
     if $zulip::common::versions[$title]['sha256'] =~ Hash {
@@ -19,26 +20,38 @@ define zulip::external_dep(
     $sha256_filled = $sha256
   }
 
-  $dir = "/srv/zulip-${title}-${version}"
+  $path = "/srv/zulip-${title}-${version}"
 
-  zulip::sha256_tarball_to { $title:
-    url     => $url,
-    sha256  => $sha256_filled,
-    install => {
-      $tarball_prefix => $dir,
-    },
+  if $tarball_prefix == '' {
+    zulip::sha256_file_to { $title:
+      url        => $url,
+      sha256     => $sha256_filled,
+      install_to => $path,
+      before     => File[$path],
+    }
+    file { $path:
+      ensure => file,
+      mode   => $mode,
+    }
+  } else {
+    zulip::sha256_tarball_to { $title:
+      url          => $url,
+      sha256       => $sha256_filled,
+      install_from => $tarball_prefix,
+      install_to   => $path,
+      before       => File[$path],
+    }
+    file { $path:
+      ensure => directory,
+    }
   }
 
-  file { $dir:
-    ensure  => present,
-    require => Zulip::Sha256_Tarball_To[$title],
-  }
 
   tidy { "/srv/zulip-${title}-*":
     path    => '/srv/',
     recurse => 1,
     rmdirs  => true,
     matches => "zulip-${title}-*",
-    require => File[$dir],
+    require => File[$path],
   }
 }

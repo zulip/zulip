@@ -472,6 +472,78 @@ function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) 
     }
 }
 
+function current_recipient_data() {
+    // Prioritize recipients from the compose box first. If the compose
+    // box isn't open, just return data from the current narrow.
+    if (!compose_state.composing()) {
+        const stream_name = narrow_state.stream();
+        return {
+            stream_name,
+            topic: narrow_state.topic(),
+            private_recipients: narrow_state.pm_emails_string(),
+        };
+    }
+
+    if (compose_state.get_message_type() === "stream") {
+        const stream_name = compose_state.stream_name();
+        return {
+            stream_name,
+            topic: compose_state.topic(),
+            private_recipients: undefined,
+        };
+    } else if (compose_state.get_message_type() === "private") {
+        return {
+            stream_name: undefined,
+            topic: undefined,
+            private_recipients: compose_state.private_message_recipient(),
+        };
+    }
+    return {
+        stream_name: undefined,
+        topic: undefined,
+        private_recipients: undefined,
+    };
+}
+
+function filter_drafts_by_compose_box_and_recipient(drafts) {
+    const {stream_name, topic, private_recipients} = current_recipient_data();
+    const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
+    const narrow_drafts_ids = [];
+    for (const [id, draft] of Object.entries(drafts)) {
+        // Match by stream and topic.
+        if (
+            stream_id &&
+            topic &&
+            draft.topic &&
+            util.same_recipient(draft, {type: "stream", stream_id, topic})
+        ) {
+            narrow_drafts_ids.push(id);
+        }
+        // Match by only stream.
+        else if (draft.type === "stream" && stream_id && !topic && draft.stream_id === stream_id) {
+            narrow_drafts_ids.push(id);
+        }
+        // Match by private message recipient.
+        else if (
+            draft.type === "private" &&
+            private_recipients &&
+            _.isEqual(
+                draft.private_message_recipient
+                    .split(",")
+                    .map((s) => s.trim())
+                    .sort(),
+                private_recipients
+                    .split(",")
+                    .map((s) => s.trim())
+                    .sort(),
+            )
+        ) {
+            narrow_drafts_ids.push(id);
+        }
+    }
+    return _.pick(drafts, narrow_drafts_ids);
+}
+
 export function launch() {
     function format_drafts(data) {
         for (const [id, draft] of Object.entries(data)) {
@@ -549,83 +621,6 @@ export function launch() {
 
             remove_draft($draft_row);
         });
-    }
-
-    function current_recipient_data() {
-        // Prioritize recipients from the compose box first. If the compose
-        // box isn't open, just return data from the current narrow.
-        if (!compose_state.composing()) {
-            const stream_name = narrow_state.stream();
-            return {
-                stream_name,
-                topic: narrow_state.topic(),
-                private_recipients: narrow_state.pm_emails_string(),
-            };
-        }
-
-        if (compose_state.get_message_type() === "stream") {
-            const stream_name = compose_state.stream_name();
-            return {
-                stream_name,
-                topic: compose_state.topic(),
-                private_recipients: undefined,
-            };
-        } else if (compose_state.get_message_type() === "private") {
-            return {
-                stream_name: undefined,
-                topic: undefined,
-                private_recipients: compose_state.private_message_recipient(),
-            };
-        }
-        return {
-            stream_name: undefined,
-            topic: undefined,
-            private_recipients: undefined,
-        };
-    }
-
-    function filter_drafts_by_compose_box_and_recipient(drafts) {
-        const {stream_name, topic, private_recipients} = current_recipient_data();
-        const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
-        const narrow_drafts_ids = [];
-        for (const [id, draft] of Object.entries(drafts)) {
-            // Match by stream and topic.
-            if (
-                stream_id &&
-                topic &&
-                draft.topic &&
-                util.same_recipient(draft, {type: "stream", stream_id, topic})
-            ) {
-                narrow_drafts_ids.push(id);
-            }
-            // Match by only stream.
-            else if (
-                draft.type === "stream" &&
-                stream_id &&
-                !topic &&
-                draft.stream_id === stream_id
-            ) {
-                narrow_drafts_ids.push(id);
-            }
-            // Match by private message recipient.
-            else if (
-                draft.type === "private" &&
-                private_recipients &&
-                _.isEqual(
-                    draft.private_message_recipient
-                        .split(",")
-                        .map((s) => s.trim())
-                        .sort(),
-                    private_recipients
-                        .split(",")
-                        .map((s) => s.trim())
-                        .sort(),
-                )
-            ) {
-                narrow_drafts_ids.push(id);
-            }
-        }
-        return _.pick(drafts, narrow_drafts_ids);
     }
 
     const drafts = draft_model.get();

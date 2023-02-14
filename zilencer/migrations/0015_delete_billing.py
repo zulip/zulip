@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zilencer", "0014_cleanup_pushdevicetoken"),
     ]

@@ -17,5 +17,5 @@ class Command(BaseCommand):
             fill_remote_cache(options["cache"])
             return
 
-        for cache in cache_fillers.keys():
+        for cache in cache_fillers:
             fill_remote_cache(cache)

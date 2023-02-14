@@ -108,11 +108,14 @@ def get_deploy_root() -> str:
 
 
 def parse_version_from(deploy_path: str) -> str:
-    with open(os.path.join(deploy_path, "version.py")) as f:
-        result = re.search('ZULIP_VERSION = "(.*)"', f.read())
-        if result:
-            return result.groups()[0]
-    return "0.0.0"
+    try:
+        return subprocess.check_output(
+            [sys.executable, "-c", "from version import ZULIP_VERSION; print(ZULIP_VERSION)"],
+            cwd=deploy_path,
+            text=True,
+        ).strip()
+    except subprocess.CalledProcessError:
+        return "0.0.0"
 
 
 def get_deployment_version(extract_path: str) -> str:
@@ -165,7 +168,7 @@ def su_to_zulip(save_suid: bool = False) -> None:
 
 
 def make_deploy_path() -> str:
-    timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
+    timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)  # noqa: DTZ005
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 
@@ -268,7 +271,9 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
-    threshold_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
+    threshold_date = datetime.datetime.now() - datetime.timedelta(  # noqa: DTZ005
+        days=threshold_days
+    )
     for dir_name in os.listdir(DEPLOYMENTS_DIR):
         target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
         if not os.path.isdir(target_dir):
@@ -278,7 +283,7 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
             # Skip things like "lock" that aren't actually a deployment directory
             continue
         try:
-            date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)
+            date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)  # noqa: DTZ007
             if date >= threshold_date:
                 recent.add(target_dir)
         except ValueError:
@@ -295,7 +300,7 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
 def get_threshold_timestamp(threshold_days: int) -> int:
     # Given number of days, this function returns timestamp corresponding
     # to the time prior to given number of days.
-    threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
+    threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)  # noqa: DTZ005
     threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
     return threshold_timestamp
 
@@ -454,9 +459,8 @@ def get_tzdata_zi() -> IO[str]:
     for path in zoneinfo.TZPATH:
         filename = os.path.join(path, "tzdata.zi")
         if os.path.exists(filename):
-            return open(filename)
-    else:
-        raise RuntimeError("Missing time zone data (tzdata.zi)")
+            return open(filename)  # noqa: SIM115
+    raise RuntimeError("Missing time zone data (tzdata.zi)")
 
 
 def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[str]) -> str:
@@ -595,8 +599,9 @@ def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
     if config_file.has_section("tornado_sharding"):
         ports = sorted(
             {
-                int(key[: -len("_regex")] if key.endswith("_regex") else key)
+                int(port)
                 for key in config_file.options("tornado_sharding")
+                for port in (key[: -len("_regex")] if key.endswith("_regex") else key).split("_")
             }
         )
     if not ports:

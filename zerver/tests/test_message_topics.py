@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import timeout_mock
-from zerver.lib.timeout import TimeoutExpired
+from zerver.lib.timeout import TimeoutExpiredError
 from zerver.models import Message, UserMessage, get_client, get_realm, get_stream
 
 
@@ -322,7 +322,7 @@ class TopicDeleteTest(ZulipTestCase):
 
         self.login_user(user_profile)
         endpoint = "/json/streams/" + str(stream.id) + "/delete_topic"
-        with mock.patch("zerver.views.streams.timeout", side_effect=TimeoutExpired):
+        with mock.patch("zerver.views.streams.timeout", side_effect=TimeoutExpiredError):
             result = self.client_post(
                 endpoint,
                 {

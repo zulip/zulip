@@ -74,7 +74,7 @@ run_test("create_ajax_request", ({override}) => {
     $(form_error).show = () => {
         state.form_error_show += 1;
         return {
-            text: (msg) => {
+            text(msg) {
                 assert.equal(msg, "response_message");
             },
         };

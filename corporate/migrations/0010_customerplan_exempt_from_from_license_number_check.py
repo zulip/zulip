@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("corporate", "0009_customer_sponsorship_pending"),
     ]

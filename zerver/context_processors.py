@@ -71,12 +71,12 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
 def get_valid_realm_from_request(request: HttpRequest) -> Realm:
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     return realm
 
 
 def get_apps_page_url() -> str:
-    if settings.ZILENCER_ENABLED:
+    if settings.CORPORATE_ENABLED:
         return "/apps/"
     return "https://zulip.com/apps/"
 

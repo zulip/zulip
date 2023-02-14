@@ -21,13 +21,16 @@ export function build_bot_create_widget() {
     const $input_error = $("#bot_avatar_file_input_error");
     const $clear_button = $("#bot_avatar_clear_button");
     const $upload_button = $("#bot_avatar_upload_button");
-
+    const $preview_text = $("#add_bot_preview_text");
+    const $preview_image = $("#add_bot_preview_image");
     return upload_widget.build_widget(
         get_file_input,
         $file_name_field,
         $input_error,
         $clear_button,
         $upload_button,
+        $preview_text,
+        $preview_image,
     );
 }
 
@@ -40,6 +43,8 @@ export function build_bot_edit_widget($target) {
     const $input_error = $target.find(".edit_bot_avatar_error");
     const $clear_button = $target.find(".edit_bot_avatar_clear_button");
     const $upload_button = $target.find(".edit_bot_avatar_upload_button");
+    const $preview_text = $target.find(".edit_bot_avatar_preview_text");
+    const $preview_image = $target.find(".edit_bot_avatar_preview_image");
 
     return upload_widget.build_widget(
         get_file_input,
@@ -47,6 +52,8 @@ export function build_bot_edit_widget($target) {
         $input_error,
         $clear_button,
         $upload_button,
+        $preview_text,
+        $preview_image,
     );
 }
 
@@ -72,6 +79,10 @@ export function build_user_avatar_widget(upload_function) {
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();
+    }
+
+    if (!settings_data.user_can_change_avatar) {
+        return undefined;
     }
 
     $("#user-avatar-upload-widget .image-delete-button").on("click", (e) => {
@@ -104,15 +115,11 @@ export function build_user_avatar_widget(upload_function) {
         });
     });
 
-    if (settings_data.user_can_change_avatar()) {
-        return upload_widget.build_direct_upload_widget(
-            get_file_input,
-            $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
-            $("#user-avatar-upload-widget .image_upload_button").expectOne(),
-            upload_function,
-            page_params.max_avatar_file_size_mib,
-        );
-    }
-
-    return undefined;
+    return upload_widget.build_direct_upload_widget(
+        get_file_input,
+        $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
+        $("#user-avatar-upload-widget .image_upload_button").expectOne(),
+        upload_function,
+        page_params.max_avatar_file_size_mib,
+    );
 }

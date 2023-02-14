@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
+import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
 import * as blueslip from "./blueslip";
@@ -13,7 +14,10 @@ import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import * as ui from "./ui";
 import * as user_group_create from "./user_group_create";
+import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
+
+let group_list_widget;
 
 export function set_up_click_handlers() {
     $("#groups_overlay").on("click", ".left #clear_search_group_name", (e) => {
@@ -62,6 +66,10 @@ export function row_for_group_id(group_id) {
     return $(`.group-row[data-group-id='${CSS.escape(group_id)}']`);
 }
 
+export function is_group_already_present(group) {
+    return row_for_group_id(group.id).length > 0;
+}
+
 export function get_active_data() {
     const $active_row = $("div.group-row.active");
     const valid_active_id = Number.parseInt($active_row.attr("data-group-id"), 10);
@@ -93,6 +101,54 @@ export function switch_to_group_row(group_id) {
 function show_right_section() {
     $(".right").addClass("show");
     $(".user-groups-header").addClass("slide-left");
+}
+
+export function add_group_to_table(group) {
+    if (is_group_already_present(group)) {
+        // If a group is already listed/added in groups modal,
+        // then we simply return.
+        // This can happen in some corner cases (which might
+        // be backend bugs) where a realm administrator may
+        // get two user_group-add events.
+        return;
+    }
+
+    const settings_html = render_user_group_settings({
+        group,
+        can_edit: user_group_edit.can_edit(group.id),
+    });
+
+    group_list_widget.replace_list_data(user_groups.get_realm_user_groups());
+    ui.get_content_element($("#manage_groups_container .settings")).append($(settings_html));
+
+    // TODO: Address issue for visibility of newely created group.
+    if (user_group_create.get_name() === group.name) {
+        // This `user_group_create.get_name()` check tells us whether the
+        // group was just created in this browser window; it's a hack
+        // to work around the server_events code flow not having a
+        // good way to associate with this request because the group
+        // ID isn't known yet.
+        row_for_group_id(group.id).trigger("click");
+        user_group_create.reset_name();
+    }
+}
+
+export function update_group(group_id) {
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(group_id);
+    const $group_row = row_for_group_id(group_id);
+    // update left side pane
+    $group_row.find(".group-name").text(group.name);
+    $group_row.find(".description").text(group.description);
+
+    if (get_active_data().id === group.id) {
+        // update right side pane
+        user_group_edit.update_settings_pane(group);
+        // update settings title
+        $("#groups_overlay .user-group-info-title").text(group.name);
+    }
 }
 
 export function change_state(section) {
@@ -132,7 +188,7 @@ export function setup_page(callback) {
         const $container = $("#manage_groups_container .user-groups-list");
         const user_groups_list = user_groups.get_realm_user_groups();
 
-        ListWidget.create($container, user_groups_list, {
+        group_list_widget = ListWidget.create($container, user_groups_list, {
             name: "user-groups-overlay",
             modifier(item) {
                 item.is_member = user_groups.is_direct_member_of(

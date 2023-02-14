@@ -9,7 +9,7 @@ from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.actions.bots import do_change_bot_owner
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
 from zerver.lib.bot_config import ConfigError, get_bot_config
@@ -19,6 +19,7 @@ from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.models import (
     Realm,
+    RealmUserDefault,
     Service,
     UserProfile,
     get_bot_services,
@@ -118,7 +119,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         error_message = (
             "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-            + "Please contact your server administrator."
+            "Please contact your server administrator."
         )
         self.assert_json_error(result, error_message)
         self.assert_num_bots_equal(0)
@@ -163,7 +164,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -316,12 +317,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_add_bot_email_address_visibility(self) -> None:
         # Test that we don't mangle the email field with
-        # email_address_visiblity limited to admins
+        # email_address_visibility limited to admins
         user = self.example_user("hamlet")
-        do_set_realm_property(
-            user.realm,
+        realm_user_default = RealmUserDefault.objects.get(realm=user.realm)
+        do_set_realm_user_default_setting(
+            realm_user_default,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         user.refresh_from_db()
@@ -329,7 +331,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -427,7 +429,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot(default_sending_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_sending_stream"], "Denmark")
@@ -511,7 +513,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot(default_events_register_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_events_register_stream"], "Denmark")

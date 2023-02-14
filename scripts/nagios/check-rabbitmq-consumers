@@ -53,7 +53,7 @@ for line in output.split("\n"):
 
 now = int(time.time())
 
-for queue_name in consumers.keys():
+for queue_name in consumers:
     state_file_path = "/var/lib/nagios_state/check-rabbitmq-consumers-" + queue_name
     state_file_tmp = state_file_path + "-tmp"
 

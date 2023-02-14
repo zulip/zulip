@@ -14,7 +14,6 @@ def disable_realm_inline_url_embed_preview(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0226_archived_submessage_model"),
     ]

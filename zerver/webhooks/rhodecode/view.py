@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_string, to_wild_value
@@ -48,14 +48,13 @@ def get_push_branch_name(payload: WildValue) -> str:
 
 def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
     event_name = payload["event"]["name"].tame(check_string)
-    if event_name == "repo-push":
-        if branches is not None:
-            branch = get_push_branch_name(payload)
-            if branches.find(branch) == -1:
-                return None
+    if event_name == "repo-push" and branches is not None:
+        branch = get_push_branch_name(payload)
+        if branches.find(branch) == -1:
+            return None
     if event_name in EVENT_FUNCTION_MAPPER:
         return event_name
-    raise UnsupportedWebhookEventType(event_name)
+    raise UnsupportedWebhookEventTypeError(event_name)
 
 
 def get_repository_name(payload: WildValue) -> str:

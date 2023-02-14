@@ -2,6 +2,7 @@
 This is the header, aka the navbar.
 */
 $header_height: 40px;
+$header_height_sm: 30px;
 
 /*
 We have a 10px gutter below the header,
@@ -13,10 +14,10 @@ $header_padding_bottom: 10px;
 
 /*
 Our sidebars (and anything that top-align
-with them such as floating recipient bars)
-go beneath the header.
+with them) go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
+$sidebar_top_sm: calc($header_height_sm + $header_padding_bottom);
 
 $left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
@@ -49,6 +50,10 @@ body,
     transition: background-color 200ms linear;
 }
 
+:root {
+    color-scheme: light;
+}
+
 input,
 button,
 select,
@@ -76,71 +81,6 @@ a {
 code,
 pre {
     font-family: "Source Code Pro", monospace;
-}
-
-[data-tippy-root] {
-    /* Since tooltip elements are sometimes inside elements
-     * which have different font-family, we force font-family
-     * for tooltips here.
-     */
-    font-family: "Source Sans 3", sans-serif !important;
-    word-wrap: break-word;
-
-    /* Affects all tippy tooltips not using any theme. */
-    .tippy-box:not([data-theme]) {
-        background-color: hsl(0, 0%, 12%);
-
-        &[data-placement^="top"] {
-            > .tippy-arrow {
-                &::before {
-                    border-top-color: hsl(0, 0%, 12%);
-                }
-            }
-        }
-
-        &[data-placement^="bottom"] {
-            > .tippy-arrow {
-                &::before {
-                    border-bottom-color: hsl(0, 0%, 12%);
-                }
-            }
-        }
-
-        &[data-placement^="left"] {
-            > .tippy-arrow {
-                &::before {
-                    border-left-color: hsl(0, 0%, 12%);
-                }
-            }
-        }
-
-        &[data-placement^="right"] {
-            > .tippy-arrow {
-                &::before {
-                    border-right-color: hsl(0, 0%, 12%);
-                }
-            }
-        }
-    }
-
-    .tippy-content {
-        font-size: 13px;
-    }
-
-    .tippy-arrow::before {
-        /* `.tippy-arrow:before` element sometimes
-         * inherits the height of the parent, we
-         * don't want any height here since we
-         * want it to remain an triangle.
-         * The bug was only found in Firefox.
-         */
-        height: 0 !important;
-    }
-    /* If the text in the tooltips stretches to multiple lines,
-     * we want the lines to be left-indented and not right-indented
-     * by default.
-     */
-    text-align: left;
 }
 
 .no-select {
@@ -216,6 +156,13 @@ p.n-margin {
     display: none;
 }
 
+.top-messages-logo {
+    /* Since padding under message header is not transparent
+       we need to position it below the padding. */
+    padding-top: $header_padding_bottom;
+}
+
+.alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
     width: 24px;
@@ -308,7 +255,8 @@ p.n-margin {
     width: 100%;
     height: $header_height;
     padding-bottom: $header_padding_bottom;
-    background-color: inherit;
+    /* Since the headers are sticky, we need non-transparent background. */
+    background-color: hsl(0, 0%, 100%);
 }
 
 #top_navbar {
@@ -440,13 +388,6 @@ p.n-margin {
     background-color: hsl(0, 0%, 100%);
 }
 
-.fixed-app {
-    width: 100%;
-    position: fixed;
-    z-index: 98;
-    left: 0;
-}
-
 .column-right {
     width: $right_sidebar_width;
     max-width: $right_sidebar_width;
@@ -545,6 +486,7 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
+        /* We need `overflow-y: visible` for sticky headers to work. */
     }
 }
 
@@ -889,20 +831,6 @@ li.actual-dropdown-menu i {
     padding: 6px 12px;
 }
 
-#settings_content .dependent-block,
-#invite-user .dependent-block {
-    margin: 15px 0 -5px 23px;
-}
-
-.message_area_padder {
-    /* The height of the header and the message_view_header plus a small gap */
-    margin-top: 57px;
-    /* This is needed for the floating recipient bar
-       in Firefox only, for some reason;
-       otherwise it gets a scrollbar */
-    overflow: visible;
-}
-
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
@@ -928,30 +856,6 @@ td.pointer {
         position: static;
         padding: 0;
         width: auto;
-    }
-
-    .message_time {
-        top: -4px;
-    }
-
-    .alert-msg {
-        top: -3px;
-    }
-
-    .message_controls {
-        top: -5px;
-    }
-
-    .message_top_line {
-        margin-top: 6px;
-    }
-
-    .message_content:not(:empty) {
-        margin-top: -18px;
-    }
-
-    .message_edit {
-        margin-top: -14px;
     }
 }
 
@@ -985,15 +889,9 @@ td.pointer {
 .message_edit_notice {
     font-size: 10px;
     opacity: 0.5;
-    line-height: 0px;
-    text-align: right;
-    padding-left: 5px;
-    width: 40px;
-    position: absolute;
-    left: 0;
-    top: 16px;
     user-select: none;
     white-space: nowrap;
+    overflow-x: hidden;
     overflow-x: clip;
 }
 
@@ -1001,12 +899,7 @@ td.pointer {
     display: block;
     font-size: 12px;
     opacity: 0.4;
-    padding: 1px;
     font-weight: 400;
-    position: absolute;
-    right: -105px;
-    line-height: 20px;
-    text-align: right;
     /* Disable blue link styling for the message timestamp link. */
     color: hsl(0, 0%, 20%);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
@@ -1020,13 +913,9 @@ td.pointer {
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
 .alert-msg {
-    position: absolute;
-    right: -110px;
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
-    padding-left: 20px;
-    padding-right: 40px;
     font-weight: 400;
     display: none;
 }
@@ -1037,11 +926,6 @@ td.pointer {
 
 .message_controls {
     display: inline-block;
-    position: absolute;
-    top: -1px;
-    right: -56px;
-    width: 54px;
-    height: 22px;
     z-index: 1;
 
     /* This is a bit tricky; we need to reserve space for the message
@@ -1061,6 +945,15 @@ td.pointer {
 
         > i {
             vertical-align: middle;
+        }
+    }
+
+    .actions_hover {
+        line-height: 1;
+
+        .zulip-icon-ellipsis-v-solid {
+            padding: 2px 5.33px;
+            outline: none;
         }
     }
 
@@ -1099,17 +992,20 @@ td.pointer {
     }
 
     .message_failed {
-        opacity: 1 !important;
         display: inline-flex;
         justify-content: space-between;
-        /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
-        width: 30px;
         cursor: pointer;
         position: relative;
         vertical-align: middle;
+        padding-left: 2px;
+
+        &.hide {
+            display: none;
+        }
 
         .rotating {
             display: inline-block;
+            outline: none;
 
             animation: rotate 1s infinite linear;
         }
@@ -1118,6 +1014,7 @@ td.pointer {
             opacity: 1 !important;
             color: hsl(0, 100%, 50%);
             font-weight: bold;
+            padding: 1px;
         }
 
         .message_control_button {
@@ -1163,10 +1060,6 @@ td.pointer {
             visibility: visible;
         }
     }
-
-    .message_top_line {
-        position: relative;
-    }
 }
 
 .message_header {
@@ -1185,22 +1078,26 @@ td.pointer {
 .message_list {
     .recipient_row {
         border-bottom: 1px solid hsl(0, 0%, 88%);
+        /* This value should be in sync with `margin_between_recipient_rows`
+           in `message_list_view`. */
         margin-bottom: 10px;
     }
-}
 
-.floating_recipient {
-    .recipient_row {
-        border-top: 1px solid hsl(0, 0%, 88%);
-    }
+    .message_header {
+        position: sticky;
+        top: $sidebar_top;
+        z-index: 3;
+        box-shadow: 0 -1px 0 0 hsl(0, 0%, 100%);
 
-    .recipient_row_date.hide-date {
-        display: block;
-    }
+        @media (width < $sm_min) {
+            top: $sidebar_top_sm;
+        }
 
-    .message_header_private_message {
-        border-bottom: 0;
-        border-left: 0;
+        &.sticky_header {
+            .recipient_row_date {
+                display: block;
+            }
+        }
     }
 }
 
@@ -1346,6 +1243,8 @@ td.pointer {
 }
 
 .message_header_private_message {
+    background-color: hsl(0, 0%, 100%);
+
     .message_label_clickable {
         background-color: hsl(0, 0%, 27%);
         display: inline-block;
@@ -1373,7 +1272,21 @@ td.pointer {
     .messagebox,
     .date_row {
         background-color: hsla(192, 19%, 75%, 0.2);
-        box-shadow: inset 2px 0 0 0 hsl(0, 0%, 27%), -1px 0 0 0 hsl(0, 0%, 27%);
+        /* The 5th parameter here is a spread-radius, which, when negative,
+         * causes the shadow to shrink (be smaller than the target
+         * element), resulting in a visual width of 3px-1px=2px. This
+         * is a workaround for a regression found in Electron
+         * v18.3.15+ where the box-shadow with spread-radius >= 0
+         * would cause horizontal separator lines to appear between
+         * messages in the color of the left ruler. The root cause of
+         * that regression is yet unknown.
+         *
+         * Similar CSS for stream messages is present directly in the
+         * Handlebars templates, since the color used there is the
+         * stream's configured color.
+         */
+        box-shadow: inset 3px 0 0 -1px hsl(0, 0%, 27%),
+            -1px 0 0 0 hsl(0, 0%, 27%);
     }
 }
 
@@ -1401,7 +1314,7 @@ td.pointer {
     left: 2px;
     top: 0;
     opacity: 0;
-    z-index: 1;
+    z-index: 2;
     bottom: 1px;
     transition: all 0.3s ease-out;
 
@@ -1420,19 +1333,18 @@ td.pointer {
     height: 100%;
 }
 
-.last_message {
-    .unread_marker {
-        bottom: 0;
-    }
-
-    .messagebox-content {
-        padding-bottom: 1px;
-    }
-}
-
 .unread .unread_marker {
     transition: all 0.3s ease-out;
     opacity: 1;
+}
+
+.message_header + .selected_message {
+    /* Sticky message header overlaps 1px with the box-shadow, so we add another
+       2px wide box-shadow 1px below from top to compensate for that. */
+    .messagebox-content {
+        box-shadow: inset 0 1px 0 2px hsl(215, 47%, 50%),
+            inset 0 0 0 2px hsl(215, 47%, 50%), 0 0 0 1px hsl(215, 47%, 50%);
+    }
 }
 
 .selected_message {
@@ -1442,16 +1354,11 @@ td.pointer {
 
     .messagebox-content {
         box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
-            -1px -1px 0 0 hsl(215, 47%, 50%), 1px 1px 0 0 hsl(215, 47%, 50%),
-            -1px 1px 0 0 hsl(215, 47%, 50%), 1px -1px 0 0 hsl(215, 47%, 50%);
+            0 0 0 1px hsl(215, 47%, 50%);
     }
 }
 
 .message_sender {
-    height: 0;
-    vertical-align: top;
-    position: relative;
-
     i.zulip-icon.zulip-icon-bot {
         font-size: 12px;
     }
@@ -1460,8 +1367,6 @@ td.pointer {
 .sender_name {
     display: inline-block;
     font-weight: 700;
-    vertical-align: top;
-    line-height: 12px;
 }
 
 .sender_name-in-status {
@@ -1534,10 +1439,6 @@ a.dark_background:hover,
     color: hsl(200, 99%, 60%);
 }
 
-.message_top_line {
-    position: relative;
-}
-
 .small {
     font-size: 80%;
 }
@@ -1582,7 +1483,6 @@ div.focused_table {
 .message_content {
     line-height: 1.214;
     min-height: 17px;
-    margin-left: 46px;
     display: block;
     position: relative;
     overflow: hidden;
@@ -1697,8 +1597,7 @@ div.focused_table {
     outline: none;
 }
 
-.message_edit_topic_propagate {
-    display: inline-block;
+#move_topic_modal select {
     width: auto;
     margin-bottom: 10px;
     max-width: 100%;
@@ -1740,9 +1639,6 @@ div.focused_table {
     text-align: center;
     color: hsl(200, 100%, 40%);
 
-    /* to match .message_content */
-    margin-left: 5px;
-    margin-right: 35px;
     /* to make message-uncollapse easier */
     margin-top: 10px;
 
@@ -1751,18 +1647,9 @@ div.focused_table {
     }
 }
 
-.messagebox-content {
-    padding: 4px 115px 1px 10px;
-}
-
 .bookend {
     margin-top: 10px;
     background-color: transparent;
-}
-
-.next_is_same_sender {
-    border-bottom: 0;
-    padding-bottom: 0;
 }
 
 .inline_profile_picture {
@@ -1998,8 +1885,10 @@ div.focused_table {
     }
 
     .navbar-search.expanded {
+        float: left;
         overflow: hidden;
         margin-top: 0;
+        margin-bottom: 0;
         width: calc(100% - 2px);
         position: absolute;
 
@@ -2136,14 +2025,6 @@ div.focused_table {
             margin-right: 14px;
         }
     }
-}
-
-#message_view_header_underpadding {
-    position: absolute;
-    width: 100%;
-    top: $header_height;
-    height: $header_padding_bottom;
-    z-index: 99;
 }
 
 #navbar-buttons {
@@ -2336,16 +2217,6 @@ nav {
     }
 }
 
-div.floating_recipient {
-    border-collapse: separate;
-    width: 100%;
-    position: relative;
-}
-
-#floating_recipient_bar {
-    top: $sidebar_top;
-}
-
 #bottom_whitespace {
     display: block;
     height: 300px;
@@ -2461,11 +2332,34 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 20px;
 }
 
-#invitee_emails {
+textarea.invitee_emails {
     min-height: 40px;
     max-height: 300px;
     width: 96%;
     max-width: 96%;
+
+    color: hsl(0, 0%, 33%);
+    background-color: hsl(0, 0%, 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 4px 6px;
+
+    box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
+    transition: border linear 0.2s, box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsla(206.5, 80%, 62%, 0.8);
+        outline: 0;
+
+        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
+            0 0 8px hsla(206.5, 80%, 62%, 0.6);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0, 0%, 93%);
+    }
 }
 
 #invite-user {
@@ -2507,6 +2401,20 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
+select.invite-expires-in,
+select.custom-expiration-time,
+select.invite-as {
+    width: 220px;
+    height: 30px;
+    padding: 4px 6px;
+    color: hsl(0, 0%, 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0, 0%, 80%);
+    cursor: pointer;
+    background-color: hsl(0, 0%, 100%);
+    vertical-align: middle;
+}
+
 #invite_status {
     display: none;
 }
@@ -2536,6 +2444,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #invite-stream-checkboxes {
     padding-bottom: 26px;
+
+    i.zulip-icon-globe {
+        font-size: 80%;
+    }
 }
 
 #invite-method-choice {
@@ -2680,9 +2592,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .message_edit {
     display: none;
-    margin-top: 5px;
-    margin-left: 47px;
-    position: relative;
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
@@ -2713,6 +2622,30 @@ div.topic_edit_spinner .loading_indicator_spinner {
         /* Setting resize as none hides the bottom right diagonal box
            (which even has a background color of its own!). */
         resize: none !important;
+        color: hsl(0, 0%, 33%);
+        background-color: hsl(0, 0%, 100%);
+        border-radius: 4px;
+        vertical-align: middle;
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 4px 6px;
+        margin-bottom: 10px;
+
+        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
+        transition: border linear 0.2s, box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsla(206.5, 80%, 62%, 0.8);
+            outline: 0;
+
+            box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
+                0 0 8px hsla(206.5, 80%, 62%, 0.6);
+        }
+
+        &:read-only,
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0, 0%, 93%);
+        }
     }
 }
 
@@ -2727,7 +2660,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #message_feed_container {
-    margin-top: 41px;
+    padding-top: $sidebar_top;
 }
 
 .screen {
@@ -2771,10 +2704,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .email_copied i {
     display: none !important;
-}
-
-.hotkey-hint {
-    opacity: 0.75;
 }
 
 .flatpickr-calendar {
@@ -2846,7 +2775,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,
     .header-main {
@@ -2884,7 +2812,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 30px;
     }
 
-    #top_navbar.rightside-userlist #navbar-buttons {
+    #top_navbar #navbar-buttons {
         margin-right: 41px;
     }
 
@@ -2909,18 +2837,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     .search_closed .fa-search {
         right: 115px;
-    }
-
-    #top_navbar:not(.rightside-userlist) {
-        .search_closed .fa-search {
-            right: 72px;
-        }
-
-        .top-navbar-border,
-        #searchbox_legacy .navbar-search.expanded,
-        #searchbox .navbar-search.expanded {
-            width: calc(100% - 50px);
-        }
     }
 }
 
@@ -3001,17 +2917,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .search_closed .fa-search {
         right: 115px;
     }
-
-    #top_navbar:not(.rightside-userlist) {
-        .top-navbar-border {
-            width: calc(100% - 75px);
-        }
-
-        #searchbox_legacy .navbar-search.expanded,
-        #searchbox .navbar-search.expanded {
-            width: calc(100% - 90px);
-        }
-    }
 }
 
 @media (width < $sm_min) {
@@ -3045,21 +2950,21 @@ div.topic_edit_spinner .loading_indicator_spinner {
     #searchbox,
     #searchbox_legacy,
     .header {
-        line-height: 30px;
-        height: 30px;
+        line-height: $header_height_sm;
+        height: $header_height_sm;
     }
 
     .spectator_narrow_login_button {
-        height: 30px !important;
+        height: $header_height_sm !important;
     }
 
     #search_query {
-        height: 30px !important;
+        height: $header_height_sm !important;
         vertical-align: text-bottom;
     }
 
     #streamlist-toggle-button {
-        height: 30px;
+        height: $header_height_sm;
         padding-top: 0;
         padding-bottom: 0;
     }
@@ -3081,18 +2986,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 
-    #message_view_header_underpadding {
-        top: 30px;
-        height: 10px;
-    }
-
     .messagebox-content {
         padding-right: 15px;
-    }
-
-    /* In mobile views we place it just to the right of the time element */
-    .message_controls {
-        right: 40px;
     }
 
     .include-sender .message_controls {
@@ -3101,21 +2996,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border: none !important;
     }
 
-    .message_time {
-        left: auto;
-        right: -5px;
-    }
-
-    .sender_name {
-        max-width: 250px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        line-height: 15px;
-    }
-
     #floating_recipient_bar {
-        top: 40px;
+        top: $sidebar_top_sm;
     }
 
     .message_content {
@@ -3218,7 +3100,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .message_row.unread {
         .date_row {
             position: relative;
-            z-index: 1;
+            z-index: 3;
             background-color: hsl(0, 0%, 100%);
         }
     }
@@ -3244,4 +3126,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
             background-color: hsl(192, 20%, 95%);
         }
     }
+}
+
+.simplebar-content-wrapper {
+    /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
+        but we don't want it to have an outline when focused anywhere in the app. */
+    outline: none;
 }

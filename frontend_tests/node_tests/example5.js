@@ -63,7 +63,7 @@ function test_helper({override}) {
     const events = [];
 
     return {
-        redirect: (module, func_name) => {
+        redirect(module, func_name) {
             override(module, func_name, () => {
                 events.push([module, func_name]);
             });

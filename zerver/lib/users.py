@@ -21,8 +21,8 @@ from zerver.lib.cache import (
 )
 from zerver.lib.exceptions import (
     JsonableError,
-    OrganizationAdministratorRequired,
-    OrganizationOwnerRequired,
+    OrganizationAdministratorRequiredError,
+    OrganizationOwnerRequiredError,
 )
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
@@ -145,12 +145,12 @@ def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
         return
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_ADMINS_ONLY:
-        raise OrganizationAdministratorRequired()
+        raise OrganizationAdministratorRequiredError
     if (
         user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
         and bot_type == UserProfile.DEFAULT_BOT
     ):
-        raise OrganizationAdministratorRequired()
+        raise OrganizationAdministratorRequiredError
 
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
@@ -255,7 +255,7 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
         # default, because it can be abused to send spam. Requiring an
         # owner is intended to ensure organizational responsibility
         # for use of this permission.
-        raise OrganizationOwnerRequired()
+        raise OrganizationOwnerRequiredError
 
     return target
 
@@ -308,7 +308,6 @@ def access_user_by_email(
     allow_bots: bool = False,
     for_admin: bool,
 ) -> UserProfile:
-
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -397,16 +396,25 @@ def validate_user_custom_profile_data(
 
 
 def can_access_delivery_email(
-    user_profile: UserProfile, target_user_id: int, email_address_visibility: int
+    user_profile: UserProfile,
+    target_user_id: int,
+    email_address_visibility: int,
 ) -> bool:
     if target_user_id == user_profile.id:
         return True
 
-    if email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+    # Bots always have email_address_visibility as EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        return True
+
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS:
         return user_profile.is_realm_admin
 
-    if email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
         return user_profile.is_realm_admin or user_profile.is_moderator
+
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS:
+        return not user_profile.is_guest
 
     return False
 
@@ -484,9 +492,11 @@ def format_user_row(
         )
 
     if acting_user is not None and can_access_delivery_email(
-        acting_user, row["id"], realm.email_address_visibility
+        acting_user, row["id"], row["email_address_visibility"]
     ):
         result["delivery_email"] = row["delivery_email"]
+    else:
+        result["delivery_email"] = None
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
@@ -608,12 +618,15 @@ def get_raw_user_data(
     for row in user_dicts:
         if profiles_by_user_id is not None:
             custom_profile_field_data = profiles_by_user_id.get(row["id"], {})
-
+        client_gravatar_for_user = (
+            client_gravatar
+            and row["email_address_visibility"] == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
         result[row["id"]] = format_user_row(
             realm,
             acting_user=acting_user,
             row=row,
-            client_gravatar=client_gravatar,
+            client_gravatar=client_gravatar_for_user,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             custom_profile_field_data=custom_profile_field_data,
         )
@@ -636,3 +649,17 @@ def is_2fa_verified(user: UserProfile) -> bool:
     # is True before calling `is_2fa_verified`.
     assert settings.TWO_FACTOR_AUTHENTICATION_ENABLED
     return is_verified(user)
+
+
+def get_users_with_access_to_real_email(user_profile: UserProfile) -> List[int]:
+    active_users = user_profile.realm.get_active_users()
+    user_ids_with_real_email_access = []
+    for user in active_users:
+        if can_access_delivery_email(
+            user,
+            user_profile.id,
+            user_profile.email_address_visibility,
+        ):
+            user_ids_with_real_email_access.append(user.id)
+
+    return user_ids_with_real_email_access

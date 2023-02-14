@@ -150,7 +150,7 @@ The following review steps apply to the majority of PRs.
    about commit structure in Zulip.
 
 2. Does each commit have a **clear commit message**? Check for content, format,
-   spelling and grammar. See the [Zulip version control][commit-messages]
+   spelling and grammar. See the [Zulip commit discipline][commit-messages]
    documentation for details on what we look for.
 
 You should also go through any of the following checks that are applicable:
@@ -398,8 +398,8 @@ We also recommend the following resources on code reviews.
 - [Zulip code of conduct](../code-of-conduct.md)
 
 [code-style]: code-style.md
-[commit-discipline]: version-control.md#commit-discipline
-[commit-messages]: version-control.md#commit-messages
+[commit-discipline]: commit-discipline.md
+[commit-messages]: commit-discipline.md#commit-messages
 [test-writing]: ../testing/testing.md
 [backend-testing]: ../testing/testing-with-django.md
 [frontend-testing]: ../testing/testing-with-node.md

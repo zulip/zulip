@@ -13,7 +13,7 @@ from django.contrib.auth.views import (
 from django.urls import path, re_path
 from django.urls.resolvers import URLPattern, URLResolver
 from django.utils.module_loading import import_string
-from django.views.generic import RedirectView, TemplateView
+from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
@@ -26,6 +26,7 @@ from zerver.views.auth import (
     api_fetch_api_key,
     api_get_server_settings,
     json_fetch_api_key,
+    jwt_fetch_api_key,
     log_into_subdomain,
     login_page,
     logout_then_login,
@@ -75,9 +76,10 @@ from zerver.views.message_flags import (
     mark_stream_as_read,
     mark_topic_as_read,
     update_message_flags,
+    update_message_flags_for_narrow,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
-from zerver.views.muting import mute_user, unmute_user, update_muted_topic
+from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.presence import (
     get_presence_backend,
     get_statuses_for_realm,
@@ -123,7 +125,9 @@ from zerver.views.registration import (
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
+    new_realm_send_confirm,
     realm_redirect,
+    signup_send_confirm,
 )
 from zerver.views.report import (
     report_csp_violations,
@@ -163,8 +167,9 @@ from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
     serve_file_download_backend,
+    serve_file_unauthed_from_token,
     serve_file_url_backend,
-    serve_local_file_unauthed,
+    serve_local_avatar_unauthed,
     upload_file_backend,
 )
 from zerver.views.user_groups import (
@@ -185,6 +190,7 @@ from zerver.views.user_settings import (
     regenerate_api_key,
     set_avatar_backend,
 )
+from zerver.views.user_topics import update_muted_topic
 from zerver.views.users import (
     add_bot_backend,
     avatar,
@@ -329,6 +335,7 @@ v1_api_and_json_patterns = [
     ),
     rest_path("messages/render", POST=render_message_backend),
     rest_path("messages/flags", POST=update_message_flags),
+    rest_path("messages/flags/narrow", POST=update_message_flags_for_narrow),
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
@@ -466,8 +473,9 @@ v1_api_and_json_patterns = [
         PATCH=update_subscriptions_backend,
         DELETE=remove_subscriptions_backend,
     ),
-    # muting -> zerver.views.muting
+    # topic-muting -> zerver.views.user_topics
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
+    # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
@@ -561,14 +569,13 @@ i18n_urls = [
     # Registration views, require a confirmation ID.
     path("accounts/home/", accounts_home),
     path(
-        "accounts/send_confirm/<email>",
-        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
+        "accounts/send_confirm/",
+        signup_send_confirm,
         name="signup_send_confirm",
     ),
     path(
-        "accounts/new/send_confirm/<email>",
-        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
-        {"realm_creation": True},
+        "accounts/new/send_confirm/",
+        new_realm_send_confirm,
         name="new_realm_send_confirm",
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),
@@ -636,8 +643,8 @@ urls += [
 urls += [
     path(
         "user_uploads/temporary/<token>/<filename>",
-        serve_local_file_unauthed,
-        name="local_file_unauthed",
+        serve_file_unauthed_from_token,
+        name="file_unauthed_from_token",
     ),
     rest_path(
         "user_uploads/download/<realm_id_str>/<path:filename>",
@@ -665,6 +672,11 @@ urls += [
             avatar_medium,
             {"override_api_url_scheme", "allow_anonymous_user_web"},
         ),
+    ),
+    path(
+        "user_avatars/<path:path>",
+        serve_local_avatar_unauthed,
+        name="local_avatar_unauthed",
     ),
 ]
 
@@ -737,6 +749,12 @@ urls += [
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
+#  This view accepts a JWT containing an email and returns an API key
+#  and the details for a single user.
+urls += [
+    path("api/v1/jwt/fetch_api_key", jwt_fetch_api_key),
+]
+
 # SCIM2
 
 from django_scim import views as scim_views
@@ -772,10 +790,14 @@ urls += [
 
 # User documentation site
 help_documentation_view = MarkdownDirectoryView.as_view(
-    template_name="zerver/documentation_main.html", path_template="/zerver/help/%s.md"
+    template_name="zerver/documentation_main.html",
+    path_template=f"{settings.DEPLOY_ROOT}/help/%s.md",
+    help_view=True,
 )
 api_documentation_view = MarkdownDirectoryView.as_view(
-    template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
+    template_name="zerver/documentation_main.html",
+    path_template=f"{settings.DEPLOY_ROOT}/api_docs/%s.md",
+    api_doc_view=True,
 )
 policy_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html",
@@ -795,6 +817,14 @@ urls += [
     path("policies/", policy_documentation_view),
     path("policies/<slug:article>", policy_documentation_view),
 ]
+
+if not settings.CORPORATE_ENABLED:
+    # This conditional behavior cannot be tested directly, since
+    # urls.py is not readily reloaded in Django tests. See the block
+    # comment inside apps_view for details.
+    urls += [
+        path("apps/", RedirectView.as_view(url="https://zulip.com/apps/", permanent=True)),
+    ]
 
 # Two-factor URLs
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:

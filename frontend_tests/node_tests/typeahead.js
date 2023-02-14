@@ -20,8 +20,8 @@ const unicode_emojis = [
 ];
 
 const emojis = [
-    {emoji_name: "japanese_post_office", url: "TBD"},
-    {emoji_name: "tada", random_field: "whatever"},
+    {emoji_name: "japanese_post_office", reaction_type: "realm_emoji", url: "TBD"},
+    {emoji_name: "tada", reaction_type: "realm_emoji", random_field: "whatever"},
     ...unicode_emojis.map(([emoji_code, emoji_name]) => ({
         emoji_name,
         emoji_code,
@@ -156,10 +156,10 @@ function sort_emojis(emojis, query) {
 
 run_test("sort_emojis: th", () => {
     const emoji_list = [
-        {emoji_name: "mother_nature"},
-        {emoji_name: "thermometer"},
-        {emoji_name: "thumbs_down"},
-        {emoji_name: "thumbs_up", emoji_code: "1f44d"},
+        {emoji_name: "mother_nature", reaction_type: "realm_emoji"},
+        {emoji_name: "thermometer", reaction_type: "realm_emoji"},
+        {emoji_name: "thumbs_down", reaction_type: "realm_emoji"},
+        {emoji_name: "thumbs_up", reaction_type: "unicode_emoji", emoji_code: "1f44d"},
     ];
     assert.deepEqual(sort_emojis(emoji_list, "th"), [
         "thumbs_up",
@@ -171,9 +171,9 @@ run_test("sort_emojis: th", () => {
 
 run_test("sort_emojis: sm", () => {
     const emoji_list = [
-        {emoji_name: "big_smile"},
-        {emoji_name: "slight_smile", emoji_code: "1f642"},
-        {emoji_name: "small_airplane"},
+        {emoji_name: "big_smile", reaction_type: "realm_emoji"},
+        {emoji_name: "slight_smile", reaction_type: "unicode_emoji", emoji_code: "1f642"},
+        {emoji_name: "small_airplane", reaction_type: "realm_emoji"},
     ];
     assert.deepEqual(sort_emojis(emoji_list, "sm"), [
         "slight_smile",
@@ -184,9 +184,9 @@ run_test("sort_emojis: sm", () => {
 
 run_test("sort_emojis: SM", () => {
     const emoji_list = [
-        {emoji_name: "big_smile"},
-        {emoji_name: "slight_smile", emoji_code: "1f642"},
-        {emoji_name: "small_airplane"},
+        {emoji_name: "big_smile", reaction_type: "realm_emoji"},
+        {emoji_name: "slight_smile", reaction_type: "unicode_emoji", emoji_code: "1f642"},
+        {emoji_name: "small_airplane", reaction_type: "realm_emoji"},
     ];
     assert.deepEqual(sort_emojis(emoji_list, "SM"), [
         "slight_smile",
@@ -196,7 +196,10 @@ run_test("sort_emojis: SM", () => {
 });
 
 run_test("sort_emojis: prefix before midphrase, with underscore (traffic_li)", () => {
-    const emoji_list = [{emoji_name: "horizontal_traffic_light"}, {emoji_name: "traffic_light"}];
+    const emoji_list = [
+        {emoji_name: "horizontal_traffic_light", reaction_type: "realm_emoji"},
+        {emoji_name: "traffic_light", reaction_type: "realm_emoji"},
+    ];
     assert.deepEqual(sort_emojis(emoji_list, "traffic_li"), [
         "traffic_light",
         "horizontal_traffic_light",
@@ -204,9 +207,38 @@ run_test("sort_emojis: prefix before midphrase, with underscore (traffic_li)", (
 });
 
 run_test("sort_emojis: prefix before midphrase, with space (traffic li)", () => {
-    const emoji_list = [{emoji_name: "horizontal_traffic_light"}, {emoji_name: "traffic_light"}];
+    const emoji_list = [
+        {emoji_name: "horizontal_traffic_light", reaction_type: "realm_emoji"},
+        {emoji_name: "traffic_light", reaction_type: "realm_emoji"},
+    ];
     assert.deepEqual(sort_emojis(emoji_list, "traffic li"), [
         "traffic_light",
         "horizontal_traffic_light",
+    ]);
+});
+
+run_test("sort_emojis: remove duplicates", () => {
+    // notice the last 2 are aliases of the same emoji (same emoji code)
+    const emoji_list = [
+        {emoji_name: "laughter_tears", emoji_code: "1f602", reaction_type: "unicode_emoji"},
+        {emoji_name: "tear", emoji_code: "1f972", reaction_type: "unicode_emoji"},
+        {emoji_name: "smile_with_tear", emoji_code: "1f972", reaction_type: "unicode_emoji"},
+    ];
+    assert.deepEqual(typeahead.sort_emojis(emoji_list, "tear"), [emoji_list[1], emoji_list[0]]);
+});
+
+run_test("sort_emojis: prioritise realm emojis", () => {
+    const emoji_list = [
+        {emoji_name: "thank_you", emoji_code: "1f64f", reaction_type: "unicode_emoji"},
+        {
+            emoji_name: "thank_you_custom",
+            url: "something",
+            is_realm_emoji: true,
+            reaction_type: "realm_emoji",
+        },
+    ];
+    assert.deepEqual(typeahead.sort_emojis(emoji_list, "thank you"), [
+        emoji_list[1],
+        emoji_list[0],
     ]);
 });

@@ -33,7 +33,6 @@ def reverse_migrate_twenty_four_hour_time_to_realmuserdefault(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0351_user_topic_visibility_indexes"),
     ]

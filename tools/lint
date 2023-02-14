@@ -170,13 +170,6 @@ def run() -> None:
         description="Checks commit messages for common formatting errors (config: .gitlint)",
     )
     linter_config.external_linter(
-        "isort",
-        ["isort"],
-        ["py", "pyi"],
-        description="Sorts Python import statements",
-        check_arg=["--check-only", "--diff"],
-    )
-    linter_config.external_linter(
         "prettier",
         ["node_modules/.bin/prettier", "--cache", "--check", "--log-level=warn"],
         ["css", "flow", "js", "json", "md", "ts", "yaml", "yml"],

@@ -410,7 +410,6 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
     def test_ping_only(self) -> None:
-
         self.login("othello")
         req = dict(
             status="active",
@@ -479,7 +478,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_active(self) -> None:
+    def test_aggregated_presence_active(self) -> None:
         user = self.example_user("othello")
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(user, "active", validate_time)
@@ -491,7 +490,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_idle(self) -> None:
+    def test_aggregated_presence_idle(self) -> None:
         user = self.example_user("othello")
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(user, "idle", validate_time)
@@ -503,7 +502,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_mixed(self) -> None:
+    def test_aggregated_presence_mixed(self) -> None:
         user = self.example_user("othello")
         self.login_user(user)
         validate_time = timezone_now()
@@ -526,7 +525,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_offline(self) -> None:
+    def test_aggregated_presence_offline(self) -> None:
         user = self.example_user("othello")
         self.login_user(user)
         validate_time = timezone_now()

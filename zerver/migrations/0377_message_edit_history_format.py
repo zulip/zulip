@@ -1,14 +1,15 @@
 import time
-from typing import List, Optional, Type, TypedDict
+from typing import Any, List, Optional, Type, TypedDict
 
 import orjson
 from django.db import migrations, transaction
 from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from django.db.models import Min, Model
+from django.db.models import Min
 
 BATCH_SIZE = 10000
 STREAM = 2
+
 
 # Legacy TypedDict has "prev_topic" field for any edit_history entries that
 # were saved to the database after the legacy "prev_subject" field stopped
@@ -38,7 +39,7 @@ class EditHistoryEvent(TypedDict, total=False):
 
 @transaction.atomic
 def backfill_message_edit_history_chunk(
-    first_id: int, last_id: int, message_model: Type[Model]
+    first_id: int, last_id: int, message_model: Type[Any]
 ) -> None:
     """
     Migrate edit history events for the messages in the provided range to:

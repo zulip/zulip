@@ -169,6 +169,7 @@ class SendMessageRequest:
     delivery_type: Optional[str] = None
     limit_unread_user_ids: Optional[Set[int]] = None
     service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
+    disable_external_notifications: bool = False
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -205,7 +206,6 @@ def messages_for_ids(
     client_gravatar: bool,
     allow_edit_history: bool,
 ) -> List[Dict[str, Any]]:
-
     cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row["id"]
 
@@ -373,6 +373,13 @@ class MessageDict:
         if not skip_copy:
             obj = copy.copy(obj)
 
+        if obj["sender_email_address_visibility"] != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+            # If email address of the sender is only available to administrators,
+            # clients cannot compute gravatars, so we force-set it to false.
+            # If we plumbed the current user's role, we could allow client_gravatar=True
+            # here if the current user's role has access to the target user's email address.
+            client_gravatar = False
+
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj["content_type"] = "text/html"
@@ -390,6 +397,7 @@ class MessageDict:
         del obj["recipient_type"]
         del obj["recipient_type_id"]
         del obj["sender_is_mirror_dummy"]
+        del obj["sender_email_address_visibility"]
         return obj
 
     @staticmethod
@@ -521,7 +529,6 @@ class MessageDict:
         reactions: List[RawReactionRow],
         submessages: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-
         obj = dict(
             id=message_id,
             sender_id=sender_id,
@@ -570,10 +577,9 @@ class MessageDict:
         if rendered_content is not None:
             obj["rendered_content"] = rendered_content
         else:
-            obj["rendered_content"] = (
-                "<p>[Zulip note: Sorry, we could not "
-                + "understand the formatting of your message]</p>"
-            )
+            obj[
+                "rendered_content"
+            ] = "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
 
         if rendered_content is not None:
             obj["is_me_message"] = Message.is_status_message(content, rendered_content)
@@ -588,7 +594,6 @@ class MessageDict:
 
     @staticmethod
     def bulk_hydrate_sender_info(objs: List[Dict[str, Any]]) -> None:
-
         sender_ids = list({obj["sender_id"] for obj in objs})
 
         if not sender_ids:
@@ -603,6 +608,7 @@ class MessageDict:
             "avatar_source",
             "avatar_version",
             "is_mirror_dummy",
+            "email_address_visibility",
         )
 
         rows = query_for_ids(query, sender_ids, "zerver_userprofile.id")
@@ -619,6 +625,7 @@ class MessageDict:
             obj["sender_avatar_source"] = user_row["avatar_source"]
             obj["sender_avatar_version"] = user_row["avatar_version"]
             obj["sender_is_mirror_dummy"] = user_row["is_mirror_dummy"]
+            obj["sender_email_address_visibility"] = user_row["email_address_visibility"]
 
     @staticmethod
     def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientT) -> None:
@@ -769,21 +776,21 @@ def access_web_public_message(
     # message with the provided ID exists on the server if the client
     # shouldn't have access to it.
     if not realm.web_public_streams_enabled():
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     try:
         message = Message.objects.select_related().get(id=message_id)
     except Message.DoesNotExist:
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     if not message.is_stream_message():
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     queryset = get_web_public_streams_queryset(realm)
     try:
         stream = queryset.get(id=message.recipient.type_id)
     except Stream.DoesNotExist:
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     # These should all have been enforced by the code in
     # get_web_public_streams_queryset
@@ -827,7 +834,7 @@ def has_message_access(
     else:
         assert stream.recipient_id == message.recipient_id
 
-    if stream.realm != user_profile.realm:
+    if stream.realm_id != user_profile.realm_id:
         # You can't access public stream messages in other realms
         return False
 
@@ -867,8 +874,17 @@ def bulk_access_messages(
         )
     )
 
-    # TODO: Ideally, we'd do a similar bulk-stream-fetch if stream is
-    # None, so that this function is fast with
+    if stream is None:
+        streams = {
+            stream.recipient_id: stream
+            for stream in Stream.objects.filter(
+                id__in={
+                    message.recipient.type_id
+                    for message in messages
+                    if message.recipient.type == Recipient.STREAM
+                }
+            )
+        }
 
     subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
 
@@ -879,7 +895,7 @@ def bulk_access_messages(
             user_profile,
             message,
             has_user_message=has_user_message,
-            stream=stream,
+            stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
         ):
             filtered_messages.append(message)
@@ -1046,7 +1062,6 @@ def get_raw_unread_data(
 def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
-
     pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
@@ -1225,7 +1240,6 @@ def aggregate_huddles(*, input_dict: Dict[int, RawUnreadHuddleDict]) -> List[Unr
 
 
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
-
     pm_dict = raw_data["pm_dict"]
     stream_dict = raw_data["stream_dict"]
     unmuted_stream_msgs = raw_data["unmuted_stream_msgs"]
@@ -1276,10 +1290,12 @@ def apply_unread_message_event(
             topic=topic,
         )
 
-        if stream_id not in state["muted_stream_ids"]:
+        if (
+            stream_id not in state["muted_stream_ids"]
             # This next check hits the database.
-            if not topic_is_muted(user_profile, stream_id, topic):
-                state["unmuted_stream_msgs"].add(message_id)
+            and not topic_is_muted(user_profile, stream_id, topic)
+        ):
+            state["unmuted_stream_msgs"].add(message_id)
 
     elif message_type == "private":
         if len(others) == 1:
@@ -1303,9 +1319,8 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
-    if "wildcard_mentioned" in flags:
-        if message_id in state["unmuted_stream_msgs"]:
-            state["mentions"].add(message_id)
+    if "wildcard_mentioned" in flags and message_id in state["unmuted_stream_msgs"]:
+        state["mentions"].add(message_id)
 
 
 def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id: int) -> None:
@@ -1342,10 +1357,7 @@ def format_unread_message_details(
         unread_data[str(message_id)] = message_details
 
     for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
-        if message_id in raw_unread_data["unmuted_stream_msgs"]:
-            unmuted_stream_msg = True
-        else:
-            unmuted_stream_msg = False
+        unmuted_stream_msg = message_id in raw_unread_data["unmuted_stream_msgs"]
 
         message_details = MessageDetailsDict(
             type="stream",
@@ -1567,7 +1579,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         )
 
     # Now we need to map all the recipient_id objects to lists of user IDs
-    for (recipient_id, user_profile_id) in (
+    for recipient_id, user_profile_id in (
         Subscription.objects.filter(recipient_id__in=recipient_map.keys())
         .exclude(user_profile_id=user_profile.id)
         .values_list("recipient_id", "user_profile_id")
@@ -1612,13 +1624,13 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
     raise AssertionError("Invalid wildcard mention policy")
 
 
-def parse_message_content_edit_or_delete_limit(
+def parse_message_time_limit_setting(
     value: Union[int, str],
     special_values_map: Mapping[str, Optional[int]],
     *,
     setting_name: str,
 ) -> Optional[int]:
-    if isinstance(value, str) and value in special_values_map.keys():
+    if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
         raise RequestVariableConversionError(setting_name, value)

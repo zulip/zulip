@@ -12,6 +12,24 @@ def error(*args: Any) -> None:
     raise Exception("We cannot enqueue because settings.USING_RABBITMQ is False.")
 
 
+def enqueue_file(queue_name: str, f: IO[str]) -> None:
+    for line in f:
+        line = line.strip()
+        try:
+            payload = line.split("\t")[1]
+        except IndexError:
+            payload = line
+
+        print(f"Queueing to queue {queue_name}: {payload}")
+
+        # Verify that payload is valid json.
+        data = orjson.loads(payload)
+
+        # This is designed to use the `error` method rather than
+        # the call_consume_in_tests flow.
+        queue_json_publish(queue_name, data, error)
+
+
 class Command(BaseCommand):
     help = """Read JSON lines from a file and enqueue them to a worker queue.
 
@@ -36,26 +54,7 @@ You can use "-" to represent stdin.
         file_name = options["file_name"]
 
         if file_name == "-":
-            f: IO[str] = sys.stdin
+            enqueue_file(queue_name, sys.stdin)
         else:
-            f = open(file_name)
-
-        while True:
-            line = f.readline()
-            if not line:
-                break
-
-            line = line.strip()
-            try:
-                payload = line.split("\t")[1]
-            except IndexError:
-                payload = line
-
-            print(f"Queueing to queue {queue_name}: {payload}")
-
-            # Verify that payload is valid json.
-            data = orjson.loads(payload)
-
-            # This is designed to use the `error` method rather than
-            # the call_consume_in_tests flow.
-            queue_json_publish(queue_name, data, error)
+            with open(file_name) as f:
+                enqueue_file(queue_name, f)

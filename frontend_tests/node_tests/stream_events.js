@@ -26,10 +26,10 @@ const message_view_header = mock_esm("../../static/js/message_view_header", {
     maybe_rerender_title_area_for_stream() {},
 });
 mock_esm("../../static/js/recent_topics_ui", {
-    complete_rerender: () => {},
+    complete_rerender() {},
 });
 mock_esm("../../static/js/settings_notifications", {
-    update_page: () => {},
+    update_page() {},
 });
 
 mock_esm("../../static/js/overlays", {streams_open: () => true});
@@ -242,6 +242,17 @@ test("update_property", ({override}) => {
         const args = stub.get_args("sub", "val");
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 20);
+    }
+
+    // Test stream can_remove_subscribers_group_id change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_can_remove_subscribers_group_id", stub.f);
+        stream_events.update_property(stream_id, "can_remove_subscribers_group_id", 3);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, 3);
     }
 });
 

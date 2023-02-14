@@ -7,9 +7,10 @@ maxdepth: 3
 
 contributing
 ../code-of-conduct
+how-we-communicate
 asking-great-questions
 design-discussions
-version-control
+commit-discipline
 code-style
 reviewable-prs
 code-reviewing

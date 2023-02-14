@@ -9,7 +9,7 @@
 
 # Needed to build RTD docs
 sphinx
-sphinx-rtd-theme
+sphinx-rtd-theme>=1.2.0rc1
 
 # Needed to build Markdown docs
 MyST-Parser

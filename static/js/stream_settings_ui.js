@@ -14,6 +14,7 @@ import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -22,6 +23,7 @@ import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
@@ -38,6 +40,7 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 export function set_right_panel_title(sub) {
@@ -184,7 +187,7 @@ export function update_stream_name(sub, new_name) {
 
     // Update compose_state if needed
     if (compose_state.stream_name() === old_name) {
-        compose_state.stream_name(new_name);
+        compose_state.set_stream_name(new_name);
     }
 
     // Update navbar if needed
@@ -213,9 +216,9 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update UI elements
     update_left_panel_row(sub);
+    stream_ui_updates.update_setting_element(sub, "stream_privacy");
+    stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
-    stream_ui_updates.update_stream_subscription_type_text(sub);
-    stream_ui_updates.update_change_stream_privacy_settings(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_ui_updates.enable_or_disable_subscribers_tab(sub);
@@ -232,12 +235,18 @@ export function update_stream_privacy(slim_sub, values) {
 
 export function update_stream_post_policy(sub, new_value) {
     stream_data.update_stream_post_policy(sub, new_value);
-    stream_ui_updates.update_stream_subscription_type_text(sub);
+    stream_ui_updates.update_setting_element(sub, "stream_post_policy");
 }
 
 export function update_message_retention_setting(sub, new_value) {
     stream_data.update_message_retention_setting(sub, new_value);
-    stream_ui_updates.update_stream_subscription_type_text(sub);
+    stream_ui_updates.update_setting_element(sub, "message_retention_days");
+}
+
+export function update_can_remove_subscribers_group_id(sub, new_value) {
+    stream_data.update_can_remove_subscribers_group_id(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group_id");
+    stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
 export function set_color(stream_id, color) {
@@ -303,7 +312,7 @@ export function update_settings_for_subscribed(slim_sub) {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     $(
-        `.subscription_settings[data-stream-id='${CSS.escape(
+        `.stream_settings_header[data-stream-id='${CSS.escape(
             sub.stream_id,
         )}'] #preview-stream-button`,
     ).show();
@@ -313,7 +322,7 @@ export function update_settings_for_subscribed(slim_sub) {
         stream_ui_updates.update_toggler_for_sub(sub);
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
-        stream_ui_updates.update_change_stream_privacy_settings(sub);
+        stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     } else {
         add_sub_to_table(sub);
     }
@@ -341,7 +350,7 @@ export function update_settings_for_unsubscribed(slim_sub) {
     stream_ui_updates.update_toggler_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
-    stream_ui_updates.update_change_stream_privacy_settings(sub);
+    stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
 
     // If user unsubscribed from private stream then user cannot subscribe to
     // stream without invitation and cannot add subscribers to stream.
@@ -542,6 +551,8 @@ export function switch_stream_sort(tab_name) {
     redraw_left_panel();
 }
 
+export let new_stream_can_remove_subscribers_group_widget = null;
+
 export function setup_page(callback) {
     // We should strongly consider only setting up the page once,
     // but I am writing these comments write before a big release,
@@ -616,6 +627,15 @@ export function setup_page(callback) {
 
     function populate_and_fill() {
         $("#manage_streams_container").empty();
+
+        const opts = {
+            widget_name: "new_stream_can_remove_subscribers_group_id",
+            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true),
+            default_text: $t({defaultMessage: "No user groups"}),
+            include_current_item: false,
+            value: user_groups.get_user_group_from_name("@role:administrators").id,
+        };
+        new_stream_can_remove_subscribers_group_widget = new DropdownListWidget(opts);
 
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
@@ -745,10 +765,16 @@ export function change_state(section) {
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
-        // Guest users can not access unsubscribed streams
-        // So redirect guest users to 'subscribed' tab
-        // for any unsubscribed stream settings hash
-        if (page_params.is_guest && !stream_data.is_subscribed(stream_id)) {
+        const sub = sub_store.get(stream_id);
+        // There are a few situations where we can't display stream settings:
+        // 1. This is a stream that's been archived. (sub=undefined)
+        // 2. The stream ID is invalid. (sub=undefined)
+        // 3. The current user is a guest, and was unsubscribed from the stream
+        //    stream in the current session. (In future sessions, the stream will
+        //    not be in sub_store).
+        //
+        // In all these cases we redirect the user to 'subscribed' tab.
+        if (!sub || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
             toggler.goto("subscribed");
         } else {
             show_right_section();
@@ -971,10 +997,14 @@ export function open_create_stream() {
 }
 
 export function unsubscribe_from_private_stream(sub) {
+    const invite_only = sub.invite_only;
+    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
+
     const html_body = render_unsubscribe_private_stream_modal({
         message: $t({
             defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
         }),
+        display_stream_archive_warning: sub_count === 1 && invite_only,
     });
 
     function unsubscribe_from_stream() {
@@ -1015,29 +1045,44 @@ export function update_web_public_stream_privacy_option_state($container) {
     const $web_public_stream_elem = $container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
     );
+
+    const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
+    if (for_stream_edit_panel) {
+        const stream_id = Number.parseInt(
+            $container.closest(".subscription_settings.show").attr("data-stream-id"),
+            10,
+        );
+        const sub = sub_store.get(stream_id);
+        if (!stream_data.can_change_permissions(sub)) {
+            // We do not want to enable the already disabled web-public option
+            // in stream-edit panel if user is not allowed to change stream
+            // privacy at all.
+            return;
+        }
+    }
+
     if (
         !page_params.server_web_public_streams_enabled ||
         !page_params.realm_enable_spectator_access
     ) {
-        const for_change_privacy_modal = $container.attr("id") === "stream_privacy_modal";
-        if (for_change_privacy_modal && $web_public_stream_elem.is(":checked")) {
+        if (for_stream_edit_panel && $web_public_stream_elem.is(":checked")) {
             // We do not hide web-public option in the "Change privacy" modal if
             // stream is web-public already. The option is disabled in this case.
             $web_public_stream_elem.prop("disabled", true);
             return;
         }
-        $web_public_stream_elem.closest(".radio-input-parent").hide();
+        $web_public_stream_elem.closest(".settings-radio-input-parent").hide();
         $container
-            .find(".stream-privacy-values .radio-input-parent:visible")
+            .find(".stream-privacy-values .settings-radio-input-parent:visible")
             .last()
             .css("border-bottom", "none");
     } else {
         if (!$web_public_stream_elem.is(":visible")) {
             $container
-                .find(".stream-privacy-values .radio-input-parent:visible")
+                .find(".stream-privacy-values .settings-radio-input-parent:visible")
                 .last()
                 .css("border-bottom", "");
-            $web_public_stream_elem.closest(".radio-input-parent").show();
+            $web_public_stream_elem.closest(".settings-radio-input-parent").show();
         }
         $web_public_stream_elem.prop(
             "disabled",
@@ -1083,15 +1128,15 @@ export function update_stream_privacy_choices(policy) {
     if (!overlays.streams_open()) {
         return;
     }
-    const change_privacy_modal_opened = $("#stream_privacy_modal").is(":visible");
+    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
     const stream_creation_form_opened = $("#stream-creation").is(":visible");
 
-    if (!change_privacy_modal_opened && !stream_creation_form_opened) {
+    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
         return;
     }
     let $container = $("#stream-creation");
-    if (change_privacy_modal_opened) {
-        $container = $("#stream_privacy_modal");
+    if (stream_edit_panel_opened) {
+        $container = $("#stream_permission_settings");
     }
 
     if (policy === "create_private_stream_policy") {

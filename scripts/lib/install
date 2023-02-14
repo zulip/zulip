@@ -390,7 +390,6 @@ if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
 fi
 
 "$ZULIP_PATH"/scripts/lib/install-node
-"$ZULIP_PATH"/scripts/lib/install-yarn
 
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip

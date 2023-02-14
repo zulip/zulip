@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_esm("../../static/js/resize", {
-    resize_stream_filters_container: () => {},
+    resize_stream_filters_container() {},
 });
 
 const {Filter} = zrequire("../js/filter");

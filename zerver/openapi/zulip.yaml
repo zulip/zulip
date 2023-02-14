@@ -466,7 +466,7 @@ paths:
                                         bot_owner_id:
                                           type: integer
                                           description: |
-                                            The user id of the new bot owner.
+                                            The user ID of the new bot owner.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -504,9 +504,13 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the delivery email of a user changes.
+                                        When the value of the user's delivery email as visible to you changes,
+                                        either due to the email address changing or your access to the user's
+                                        email via their `email_address_visibility` policy changing.
 
-                                        Note: This event is only visible to admins.
+                                        **Changes**: Prior to Zulip 7.0 (feature level 163), this event was
+                                        sent only to the affected user, and this event would only be triggered
+                                        by changing the affected user's delivery email.
                                       properties:
                                         user_id:
                                           type: integer
@@ -514,8 +518,17 @@ paths:
                                             The ID of the user affected by this change.
                                         delivery_email:
                                           type: string
+                                          nullable: true
                                           description: |
                                             The new delivery email of the user.
+
+                                            This value can be `None` if user changes the
+                                            `email_address_visibility` value such that
+                                            you cannot access user's real email.
+
+                                            **Changes**: As of Zulip 7.0 (feature level 163),
+                                            `None` is a possible value as this event is also
+                                            sent on changing `email_address_visibility` setting.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -557,10 +570,10 @@ paths:
                                       description: |
                                         When the Zulip display email address of a user changes,
                                         either due to the user's email address changing, or
-                                        due to changes in the organization's
+                                        due to changes in the user's
                                         [email address visibility][help-email-visibility].
 
-                                        [help-email-visibility]: /help/restrict-visibility-of-email-addresses
+                                        [help-email-visibility]: /help/configure-email-visibility
                                       properties:
                                         user_id:
                                           type: integer
@@ -1475,7 +1488,7 @@ paths:
                                 attachment:
                                   type: object
                                   description: |
-                                    Dictionary containing the id of the deleted attachment.
+                                    Dictionary containing the ID of the deleted attachment.
                                   additionalProperties: false
                                   properties:
                                     id:
@@ -2014,7 +2027,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user id and timestamp of a muted user.
+                                      Object containing the user ID and timestamp of a muted user.
                                     properties:
                                       id:
                                         type: integer
@@ -2439,7 +2452,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user id and email of a recipient.
+                                      Object containing the user ID and email of a recipient.
                                     properties:
                                       user_id:
                                         type: integer
@@ -2555,7 +2568,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user id and email of a recipient.
+                                      Object containing the user ID and email of a recipient.
                                     properties:
                                       user_id:
                                         type: integer
@@ -2641,7 +2654,7 @@ paths:
                                 messages:
                                   type: array
                                   description: |
-                                    Array containing the ids of all messages to which
+                                    Array containing the IDs of all messages to which
                                     the flag was added.
                                   items:
                                     type: integer
@@ -3479,7 +3492,7 @@ paths:
                                   allOf:
                                     - description: |
                                         Object containing details about the changed bot.
-                                        It contains two properties: the user id of the bot and
+                                        It contains two properties: the user ID of the bot and
                                         the property to be changed. The changed property is one
                                         of the remaining properties listed below.
                                     - $ref: "#/components/schemas/BasicBot"
@@ -3611,6 +3624,7 @@ paths:
                                 value:
                                   description: |
                                     The new value of the property.
+                                  nullable: true
                                   oneOf:
                                     - type: string
                                     - type: boolean
@@ -3758,6 +3772,12 @@ paths:
                                 Unlike the simpler [realm/update](#realm-update) event format, this
                                 event type supports multiple properties being changed in a
                                 single event.
+
+                                **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
+                                It was replaced by a [user setting](/api/update-settings) with a
+                                [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
+                                values preserved. Clients can support all versions by supporting the current API and treating
+                                every user as having the realm's email address visibility value.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3802,7 +3822,7 @@ paths:
                                     allow_message_editing:
                                       type: boolean
                                       description: |
-                                        Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
+                                        Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
                                         allows editing the content of messages.
                                     authentication_methods:
                                       type: object
@@ -3825,7 +3845,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot have
                                         their topics edited by other users with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
+                                        [message edit policy](/help/restrict-message-editing-and-deletion).
 
                                         **Changes**: New in Zulip 3.0 (feature level 11). Previously this
                                         value was hardcoded to 86400 seconds (1 day).
@@ -3890,27 +3910,14 @@ paths:
                                         - 3 = [full members][calc-full-member] only
                                         - 4 = moderators only
                                         - 5 = everyone
+                                        - 6 = nobody
 
                                         **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                                        previous `allow_community_topic_editing` boolean.
+                                        previous `allow_community_topic_editing` boolean. Nobody added
+                                        as an option in Zulip 7.0 (feature level 159).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-                                    email_address_visibility:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for which users in this organization can see
-                                        the real email addresses of other users.
-
-                                        - 1 = Everyone
-                                        - 2 = Members only
-                                        - 3 = Administrators only
-                                        - 4 = Nobody (though note that administrators can change this setting)
-                                        - 5 = Moderators only
-
-                                        **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -4013,7 +4020,7 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be deleted
                                         with this organization's
-                                        [message deletion policy](/help/configure-message-editing-and-deletion).
+                                        [message deletion policy](/help/restrict-message-editing-and-deletion).
 
                                         Will not be 0. A 'null' value means no limit: messages can be deleted
                                         regardless of how long ago they were sent.
@@ -4026,10 +4033,38 @@ paths:
                                       description: |
                                         Messages sent more than this many seconds ago cannot be edited
                                         with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
+                                        [message edit policy](/help/restrict-message-editing-and-deletion).
 
                                         **Changes**: No limit was represented using the
                                         special value `0` before Zulip 6.0 (feature level 138).
+                                    move_messages_within_stream_limit_seconds:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        Messages sent more than this many seconds ago cannot be moved within a
+                                        stream by members with this organization's [message move
+                                        policy](/help/restrict-moving-messages). This setting does not
+                                        affect moderators and administrators.
+
+                                        Will not be 0. A 'null' value means no limit: messages can be moved
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
+                                        limit was always 72 hours.
+                                    move_messages_between_streams_limit_seconds:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        Messages sent more than this many seconds ago cannot be moved between
+                                        streams by members with this organization's [message move
+                                        policy](/help/restrict-moving-messages). This setting does not
+                                        affect moderators and administrators.
+
+                                        Will not be 0. A 'null' value means no limit: messages can be moved
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
+                                        was not possible to add a time limit for moving messages.
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -4040,8 +4075,10 @@ paths:
                                         - 2 = Administrators only
                                         - 3 = [Full members][calc-full-member] only
                                         - 4 = Moderators only
+                                        - 6 = Nobody
 
-                                        **Changes**: New in Zulip 4.0 (feature level 56)
+                                        **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
+                                        as an option in Zulip 7.0 (feature level 159).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -4348,7 +4385,7 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event containing the id of a deleted draft.
+                                Event containing the ID of a deleted draft.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4824,13 +4861,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: |
-                      When all of the drafts in the request are valid, this endpoint will return
-                      an array of the IDs for the drafts that were just created in the same
-                      order as they were requested. If any of the drafts failed the validation
-                      step, then none of the drafts will be created and we would not get this
-                      status code. The typical JSON response in such a case is:
                     properties:
                       result: {}
                       msg: {}
@@ -5062,6 +5094,7 @@ paths:
                 - client_gravatar
                 - apply_markdown
                 - use_first_unread_anchor
+                - include_anchor
       parameters:
         - name: anchor
           in: query
@@ -5074,9 +5107,6 @@ paths:
             - `oldest`: The oldest message.
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
-
-            The special values of `'newest'` and `'oldest'` are also supported
-            for anchoring the query at the most recent or oldest messages.
 
             **Changes**: String values are new in Zulip 3.0 (feature level 1). The
             `first_unread` functionality was supported in Zulip 2.1.x
@@ -5091,6 +5121,17 @@ paths:
               - type: string
               - type: integer
           example: 43
+        - name: include_anchor
+          in: query
+          description: |
+            Whether a message with the specified ID matching the narrow
+            should be included.
+
+            **Changes**: New in Zulip 6.0 (feature level 155).
+          schema:
+            type: boolean
+            default: true
+          example: false
         - name: num_before
           in: query
           description: |
@@ -5198,12 +5239,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: |
-                      When a request is successful, this endpoint returns a dictionary
-                      containing the following (in addition to the `msg` and `result` keys
-                      present in all Zulip API responses).
-                      A typical successful JSON response may look like:
                     properties:
                       result: {}
                       msg: {}
@@ -5229,8 +5266,9 @@ paths:
                         description: |
                           Whether the anchor message is included in the
                           response. If the message with the ID specified
-                          in the request does not exist or did not match
-                          the narrow, this will be false.
+                          in the request does not exist, did not match
+                          the narrow, or was excluded via
+                          `include_anchor=false`, this will be false.
                       history_limited:
                         type: boolean
                         description: |
@@ -5659,6 +5697,8 @@ paths:
         Add or remove personal message flags like `read` and `starred`
         on a collection of message IDs.
 
+        See also the endpoint for [updating flags on a range of
+        messages within a narrow](/api/update-message-flags-for-narrow).
         For updating the `read` flag on common collections of messages, see also
         the
         [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
@@ -5788,6 +5828,205 @@ paths:
                           An array with the IDs of the modified messages.
                     example:
                       {"msg": "", "messages": [4, 18, 15], "result": "success"}
+  /messages/flags/narrow:
+    post:
+      operationId: update-message-flags-for-narrow
+      summary: Update personal message flags for narrow
+      tags: ["messages"]
+      description: |
+        Add or remove personal message flags like `read` and `starred`
+        on a range of messages within a narrow.
+
+        See also [the endpoint for updating flags on specific message
+        IDs](/api/update-message-flags).
+
+        **Changes**: New in Zulip 6.0 (feature level 155).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - include_anchor
+      parameters:
+        - name: anchor
+          in: query
+          description: |
+            Integer message ID to anchor updating of flags. Supports special
+            string values for when the client wants the server to compute the anchor
+            to use:
+
+            - `newest`: The most recent message.
+            - `oldest`: The oldest message.
+            - `first_unread`: The oldest unread message matching the
+              query, if any; otherwise, the most recent message.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+          example: 43
+          required: true
+        - name: include_anchor
+          in: query
+          description: |
+            Whether a message with the specified ID matching the narrow
+            should be included in the update range.
+          schema:
+            type: boolean
+            default: true
+          example: false
+        - name: num_before
+          in: query
+          description: |
+            Limit the number of messages preceding the anchor in the
+            update range. The server may decrease this to bound
+            transaction sizes.
+          schema:
+            type: integer
+            minimum: 0
+          example: 4
+          required: true
+        - name: num_after
+          in: query
+          description: |
+            Limit the number of messages following the anchor in the
+            update range. The server may decrease this to bound
+            transaction sizes.
+          schema:
+            type: integer
+            minimum: 0
+          example: 8
+          required: true
+        - name: narrow
+          in: query
+          description: |
+            The narrow you want update flags within. See how to
+            [construct a narrow](/api/construct-narrow).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - type: object
+                      required:
+                        - operator
+                        - operand
+                      additionalProperties: false
+                      properties:
+                        operator:
+                          type: string
+                        operand:
+                          oneOf:
+                            - type: string
+                            - type: integer
+                            - type: array
+                              items:
+                                type: integer
+                        negated:
+                          type: boolean
+                    - type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
+                default: []
+              example: [{"operand": "Denmark", "operator": "stream"}]
+          required: true
+        - name: op
+          in: query
+          description: |
+            Whether to `add` the flag or `remove` it.
+          schema:
+            type: string
+            enum:
+              - add
+              - remove
+          example: add
+          required: true
+        - name: flag
+          in: query
+          description: |
+            The flag that should be added/removed. See [available
+            flags](/api/update-message-flags#available-flags).
+          schema:
+            type: string
+          example: read
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    required:
+                      - processed_count
+                      - updated_count
+                      - first_processed_id
+                      - last_processed_id
+                      - found_oldest
+                      - found_newest
+                    properties:
+                      result: {}
+                      msg: {}
+                      processed_count:
+                        type: integer
+                        description: |
+                          The number of messages that were within the
+                          update range (at most `num_before + 1 +
+                          num_after`).
+                      updated_count:
+                        type: integer
+                        description: |
+                          The number of messages where the flag's
+                          value was changed (at most
+                          `processed_count`).
+                      first_processed_id:
+                        type: integer
+                        nullable: true
+                        description: |
+                          The ID of the oldest message within the
+                          update range, or `null` if the range was
+                          empty.
+                      last_processed_id:
+                        type: integer
+                        nullable: true
+                        description: |
+                          The ID of the newest message within the
+                          update range, or `null` if the range was
+                          empty.
+                      found_oldest:
+                        type: boolean
+                        description: |
+                          Whether the update range reached backward
+                          far enough to include very oldest message
+                          matching the narrow (used by clients doing a
+                          bulk update to decide whether to issue
+                          another request anchored at
+                          `first_processed_id`).
+                      found_newest:
+                        type: boolean
+                        description: |
+                          Whether the update range reached forward far
+                          enough to include very oldest message
+                          matching the narrow (used by clients doing a
+                          bulk update to decide whether to issue
+                          another request anchored at
+                          `last_processed_id`).
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "processed_count": 11,
+                        "updated_count": 8,
+                        "first_processed_id": 35,
+                        "last_processed_id": 55,
+                        "found_oldest": false,
+                        "found_newest": true,
+                      }
   /messages/render:
     post:
       operationId: render-message
@@ -6254,7 +6493,21 @@ paths:
         **Note**: See [configuring message editing][config-message-editing]
         for detailed documentation on when users are allowed to edit topics.
 
-        [config-message-editing]: /help/configure-message-editing-and-deletion
+        **Changes**: Before Zulip 7.0 (feature level 162), users who were not
+        administrators or moderators could only edit topics if the target
+        message was sent within the last 3 days. That time limit is now
+        controlled by the `move_messages_within_stream_limit_seconds` setting. A
+        similar time limit for moving topics to different streams was added,
+        controlled by the `move_messages_between_streams_limit_seconds` setting.
+
+        **Changes**: Before Zulip 7.0 (feature level 159), editing
+        streams and topics of messages was forbidden if
+        `allow_message_editing` was `false`, regardless of the
+        `edit_topic_policy` or `move_messages_between_streams_policy`.
+        Before Zulip 7.0 (feature level 159), message senders were allowed
+        to edit the topic indefinitely.
+
+        [config-message-editing]: /help/restrict-message-editing-and-deletion
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -6488,7 +6741,7 @@ paths:
         - name: realm_id_str
           in: path
           description: |
-            The realm id.
+            The realm ID.
           schema:
             type: integer
           example: 1
@@ -6667,12 +6920,13 @@ paths:
             permission for a bot by contacting [Zulip Cloud support][support]
             with an explanation for why it is needed. Self-hosted installations
             can toggle `can_create_users` on an account using the `manage.py
-            change_user_role` command.
+            change_user_role` [management command][management-commands].
 
         **Changes**: Before Zulip 4.0 (feature level 36), this endpoint was
         available to all organization administrators.
 
         [support]: /help/contact-support
+        [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
       x-requires-administrator: true
       parameters:
         - name: email
@@ -6975,11 +7229,20 @@ paths:
                         example: 1
                       delivery_email:
                         type: string
+                        nullable: true
                         description: |
-                          The user's real email address. This field is present only if
-                          [email address visibility](/help/restrict-visibility-of-email-addresses) is
-                          limited and you are an administrator with access to real email addresses
-                          under the configured policy.
+                          The user's real email address. This value will be `None` if you cannot
+                          access this user's real email address. For bot users, this field is
+                          always set to the real email of the bot, because bot users always have
+                          `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+
+                          **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
+                          only when `email_address_visibility` was restricted and you had access to
+                          the user's real email. Now, this field is always present, including the case
+                          when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
+                          with the value being `None` if you don't have access to the user's real email.
+                          For bot users, this field is now always set to the real email irrespective of
+                          `email_address_visibility` setting.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
                     example:
@@ -7641,6 +7904,7 @@ paths:
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
           description: Success.
@@ -7813,14 +8077,23 @@ paths:
         Unsubscribe yourself or other users from one or more streams.
 
         In addition to managing the current user's subscriptions, this
-        endpoint can be used by organization administrators to remove
-        other users from streams, or to remove a bot that the current
-        user is the `bot_owner` for from any stream that the current
-        user can access.
+        endpoint can be used to remove other users from streams. This
+        is possible in 3 situations:
 
-        **Changes**: Before Zulip 6.0 (feature level 145), only
-        organization administrators could remove other users from
-        streams.
+        - Organization administrators can remove any user from any
+          stream.
+        - Users can remove a bot that they own from any stream that
+          the user can access.
+        - Users who can access a stream and are in the group with ID
+          `can_remove_subscribers_group_id` for that stream can
+          unsubscribe any user from that stream.
+
+        **Changes**: Before Zulip 7.0 (feature level 161),
+        `can_remove_subscribers_group_id` was always the system group
+        for organization administrators.
+
+        Before Zulip 6.0 (feature level 145), users had no special
+        privileges for managing bots that they own.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -8091,7 +8364,6 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
-                    description: MANUALLY
                     properties:
                       result: {}
                       msg: {}
@@ -8882,6 +9154,31 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: email_address_visibility
+          in: query
+          description: |
+            The [policy][permission-level] this user has selected for which other
+            users in this organization can see the real email address of this user.
+
+            - 1 = Everyone
+            - 2 = Members only
+            - 3 = Administrators only
+            - 4 = Nobody
+            - 5 = Moderators only
+
+            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            realm-level setting.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+          example: 1
       responses:
         "200":
           description: Success
@@ -9039,7 +9336,7 @@ paths:
 
         Note that this endpoint uses Zulip display emails addresses
         for organizations that have configured limited [email address
-        visibility](/help/restrict-visibility-of-email-addresses).
+        visibility](/help/configure-email-visibility).
 
         You can also fetch details on [all users in the organization](/api/get-users) or
         [by user ID](/api/get-user). Fetching by user ID is generally recommended
@@ -9605,6 +9902,12 @@ paths:
         if you need deeper details about how the Zulip event queue system
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
+
+        **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
+        It was replaced by a [user setting](/api/update-settings) with a
+        [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
+        values preserved. Clients can support all versions by supporting the current API and treating
+        every user as having the realm's email address visibility value.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -9801,7 +10104,7 @@ paths:
                       zulip_merge_base:
                         type: string
                         description: |
-                          The `git merge-base` between `zulip_verson` and official branches
+                          The `git merge-base` between `zulip_version` and official branches
                           in the public
                           [Zulip server and web app repository](https://github.com/zulip/zulip),
                           in the same format as `zulip_version`. This will equal
@@ -9827,7 +10130,7 @@ paths:
                           An array of dictionaries where each dictionary contains the
                           details of a single custom profile field that is available to users
                           in this Zulip organization. This must be combined with the custom profile
-                          field values on individual user objects to display users' full profiles.
+                          field values on individual user objects to display users' profiles.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
                       custom_profile_field_types:
@@ -9837,8 +10140,8 @@ paths:
 
                           An array of objects; each object describes a type of custom profile field
                           that could be configured on this Zulip server. Each custom profile type
-                          has a id and the `type` property of a custom profile field is equal
-                          to one of these ids.
+                          has an ID and the `type` property of a custom profile field is equal
+                          to one of these IDs.
 
                           This attribute is only useful for clients containing UI for changing
                           the set of configured custom profile fields in a Zulip organization.
@@ -9864,7 +10167,7 @@ paths:
                             id:
                               type: integer
                               description: |
-                                The id of the custom profile field type.
+                                The ID of the custom profile field type.
                             name:
                               type: string
                               description: |
@@ -9996,7 +10299,7 @@ paths:
                           type: object
                           additionalProperties: false
                           description: |
-                            Object containing the user id and timestamp of a muted user.
+                            Object containing the user ID and timestamp of a muted user.
                           properties:
                             id:
                               type: integer
@@ -10104,7 +10407,7 @@ paths:
 
                           The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
-                          is the id of the realm filter.
+                          is the ID of the realm filter.
 
                           **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
                           the `realm_linkifiers` key instead.
@@ -10205,7 +10508,7 @@ paths:
                             max_message_id:
                               type: integer
                               description: |
-                                The highest message id of the conversation, intended to support sorting
+                                The highest message ID of the conversation, intended to support sorting
                                 the conversations by recency.
                             user_ids:
                               type: array
@@ -10332,7 +10635,7 @@ paths:
                                 other_user_id:
                                   type: integer
                                   description: |
-                                    The user id of the other participant in this non-group private
+                                    The user ID of the other participant in this non-group private
                                     message conversation. Will be your own user ID for messages
                                     that you sent to only yourself.
                                 sender_id:
@@ -10349,7 +10652,7 @@ paths:
                                 message_ids:
                                   type: array
                                   description: |
-                                    The message ids of the recent unread PM messages sent by the other user.
+                                    The message IDs of the recent unread PM messages sent by the other user.
                                   items:
                                     type: integer
                           streams:
@@ -10376,11 +10679,11 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    The id of the stream to which the message was sent.
+                                    The ID of the stream to which the message was sent.
                                 unread_message_ids:
                                   type: array
                                   description: |
-                                    The message ids of the recent unread messages sent in this stream.
+                                    The message IDs of the recent unread messages sent in this stream.
                                   items:
                                     type: integer
                           huddles:
@@ -10405,14 +10708,14 @@ paths:
                                 message_ids:
                                   type: array
                                   description: |
-                                    The message ids of the recent unread messages which have been sent in
+                                    The message IDs of the recent unread messages which have been sent in
                                     this group.
                                   items:
                                     type: integer
                           mentions:
                             type: array
                             description: |
-                              Array containing the ids of all messages in which the user has been mentioned.
+                              Array containing the IDs of all messages in which the user has been mentioned.
                               For muted streams, wildcard mentions will not be considered for this array.
                             items:
                               type: integer
@@ -10435,7 +10738,7 @@ paths:
                         description: |
                           Present if `starred_messages` is present in `fetch_event_types`.
 
-                          Array containing the ids of all messages which have been
+                          Array containing the IDs of all messages which have been
                           [starred](/help/star-a-message) by the user.
                       streams:
                         type: array
@@ -10495,7 +10798,7 @@ paths:
                         additionalProperties:
                           description: |
                             `{user_id}`: Object containing the status details of a user
-                            with the key of the object being the id of the user.
+                            with the key of the object being the ID of the user.
                           type: object
                           additionalProperties: false
                           properties:
@@ -10837,6 +11140,8 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          email_address_visibility:
+                            $ref: "#/components/schemas/EmailAddressVisibility"
                       user_topics:
                         type: array
                         description: |
@@ -11648,23 +11953,6 @@ paths:
 
                           Whether the organization disallows disposable email
                           addresses.
-                      realm_email_address_visibility:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users in this organization can see
-                          the real email addresses of other users.
-
-                          - 1 = Everyone
-                          - 2 = Members only
-                          - 3 = Administrators only
-                          - 4 = Nobody (though note that administrators can change this setting)
-                          - 5 = Moderators only
-
-                          **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_email_changes_disabled:
                         type: boolean
                         description: |
@@ -11711,8 +11999,10 @@ paths:
                           - 2 = Administrators only
                           - 3 = [Full members][calc-full-member] only
                           - 4 = Moderators only
+                          - 6 = Nobody
 
-                          **Changes**: New in Zulip 4.0 (feature level 56)
+                          **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
+                          as an option in Zulip 7.0 (feature level 159).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -11915,7 +12205,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be deleted
                           with this organization's
-                          [message deletion policy](/help/configure-message-editing-and-deletion).
+                          [message deletion policy](/help/restrict-message-editing-and-deletion).
 
                           Will not be 0. A 'null' value means no limit: messages can be deleted
                           regardless of how long ago they were sent.
@@ -11940,7 +12230,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
+                          Whether this organizations [message edit policy](/help/restrict-message-editing-and-deletion)
                           allows editing the content of messages.
                       realm_edit_topic_policy:
                         type: integer
@@ -11954,9 +12244,11 @@ paths:
                           - 3 = [full members][calc-full-member] only
                           - 4 = moderators only
                           - 5 = everyone
+                          - 6 = nobody
 
                           **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                          previous `allow_community_topic_editing` boolean.
+                          previous `allow_community_topic_editing` boolean. Nobody added as
+                          an option in Zulip 7.0 (feature level 159).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -11968,13 +12260,45 @@ paths:
 
                           Messages sent more than this many seconds ago cannot be edited
                           with this organization's
-                          [message edit policy](/help/configure-message-editing-and-deletion).
+                          [message edit policy](/help/restrict-message-editing-and-deletion).
 
                           Will not be 0. A 'null' value means no limit: messages can be edited
                           regardless of how long ago they were sent.
 
                           **Changes**: No limit was represented using the
                           special value `0` before Zulip 6.0 (feature level 138).
+                      realm_move_messages_within_stream_limit_seconds:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Messages sent more than this many seconds ago cannot be moved within a
+                          stream by members with this organization's [message move
+                          policy](/help/restrict-moving-messages). This setting does not
+                          affect moderators and administrators.
+
+                          Will not be 0. A 'null' value means no limit: messages can be moved
+                          regardless of how long ago they were sent.
+
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
+                          limit was always 72 hours.
+                      realm_move_messages_between_streams_limit_seconds:
+                        type: integer
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Messages sent more than this many seconds ago cannot be moved between
+                          streams by members with this organization's [message move
+                          policy](/help/restrict-moving-messages). This setting does not
+                          affect moderators and administrators.
+
+                          Will not be 0. A 'null' value means no limit: messages can be moved
+                          regardless of how long ago they were sent.
+
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
+                          was not possible to add a time limit for moving messages.
                       realm_community_topic_editing_limit_seconds:
                         type: integer
                         description: |
@@ -11982,7 +12306,7 @@ paths:
 
                           Messages sent more than this many seconds ago cannot have
                           their topics edited by other users with this organization's
-                          [message edit policy](/help/configure-message-editing-and-deletion).
+                          [message edit policy](/help/restrict-message-editing-and-deletion).
 
                           **Changes**: New in Zulip 3.0 (feature level 11). Previously this
                           value was hardcoded to 86400 seconds (1 day).
@@ -12749,6 +13073,8 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          email_address_visibility:
+                            $ref: "#/components/schemas/EmailAddressVisibility"
                       realm_users:
                         type: array
                         description: |
@@ -13193,7 +13519,7 @@ paths:
                       zulip_merge_base:
                         type: string
                         description: |
-                          The `git merge-base` between `zulip_verson` and official branches
+                          The `git merge-base` between `zulip_version` and official branches
                           in the public
                           [Zulip server and web app repository](https://github.com/zulip/zulip),
                           in the same format as `zulip_version`. This will equal
@@ -13881,6 +14207,31 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: email_address_visibility
+          in: query
+          description: |
+            The [policy][permission-level] this user has selected for which other
+            users in this organization can see the real email address of this user.
+
+            - 1 = Everyone
+            - 2 = Members only
+            - 3 = Administrators only
+            - 4 = Nobody
+            - 5 = Moderators only
+
+            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            realm-level setting.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+          example: 1
       responses:
         "200":
           description: Success
@@ -14319,6 +14670,7 @@ paths:
           required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -14615,7 +14967,7 @@ paths:
         - name: delete
           in: query
           description: |
-            The list of user ids to be removed from the user group.
+            The list of user IDs to be removed from the user group.
           content:
             application/json:
               schema:
@@ -14627,7 +14979,7 @@ paths:
         - name: add
           in: query
           description: |
-            The list of user ids to be added to the user group.
+            The list of user IDs to be added to the user group.
           content:
             application/json:
               schema:
@@ -14741,7 +15093,7 @@ paths:
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response for an invalid user group id:
+                      An example JSON error response for an invalid user group ID:
 
   /user_groups:
     get:
@@ -14782,7 +15134,7 @@ paths:
                             id:
                               type: integer
                               description: |
-                                The user group's integer id.
+                                The user group's integer ID.
                             members:
                               type: array
                               description: |
@@ -14812,8 +15164,7 @@ paths:
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
                         description: |
-                          A list of `user_group` objects, which contain a `description`, a `name`,
-                          their `id` and the list of members of the user group.
+                          A list of `user_group` objects.
                     example:
                       {
                         "msg": "",
@@ -14858,7 +15209,7 @@ paths:
         - name: delete
           in: query
           description: |
-            The list of user group ids to be removed from the user group.
+            The list of user group IDs to be removed from the user group.
           content:
             application/json:
               schema:
@@ -14870,7 +15221,7 @@ paths:
         - name: add
           in: query
           description: |
-            The list of user group ids to be added to the user group.
+            The list of user group IDs to be added to the user group.
           content:
             application/json:
               schema:
@@ -15369,7 +15720,7 @@ components:
           type: integer
           nullable: true
           description: |
-            The id of the first message in the stream.
+            The ID of the first message in the stream.
 
             Intended to help clients determine whether they need to display
             UI like the "more topics" widget that would suggest the stream
@@ -15407,15 +15758,14 @@ components:
             avatar_url: {}
             owner_id:
               nullable: true
-            services:
-              items: {} # https://github.com/p1c2u/openapi-core/issues/380
+            services: {}
     BasicBotBase:
       type: object
       properties:
         user_id:
           type: integer
           description: |
-            The user id of the bot.
+            The user ID of the bot.
         full_name:
           type: string
           description: |
@@ -15448,7 +15798,7 @@ components:
           type: integer
           nullable: true
           description: |
-            The user id of the bot's owner.
+            The user ID of the bot's owner.
 
             Null if the bot has no owner.
         services:
@@ -15515,8 +15865,7 @@ components:
             avatar_url: {}
             owner_id:
               nullable: true
-            services:
-              items: {} # https://github.com/p1c2u/openapi-core/issues/380
+            services: {}
             email:
               type: string
               description: |
@@ -15603,7 +15952,7 @@ components:
         display_in_profile_summary:
           type: boolean
           description: |
-            Whether the custom profile field, display or not in the user profile summary.
+            Whether the custom profile field, display or not on the user card.
 
             Currently it's value not allowed to be `true` of `Long text` and `Person picker`
             [profile field types](/help/custom-profile-fields#profile-field-types).
@@ -15735,11 +16084,11 @@ components:
         id:
           type: integer
           description: |
-            The id of the export.
+            The ID of the export.
         acting_user_id:
           type: integer
           description: |
-            The id of the user who did the export.
+            The ID of the user who did the export.
         export_time:
           type: number
           description: |
@@ -15784,14 +16133,14 @@ components:
           items:
             type: integer
           description: |
-            Array containing the id of the users who are
+            Array containing the ID of the users who are
             members of this user group.
         direct_subgroup_ids:
           type: array
           items:
             type: integer
           description: |
-            Array containing the id of the direct_subgroups of
+            Array containing the ID of the direct_subgroups of
             this user group.
 
             **Changes**: New in Zulip 6.0 (feature level 131).
@@ -16003,7 +16352,7 @@ components:
           type: integer
           nullable: true
           description: |
-            The id of the first message in the stream.
+            The ID of the first message in the stream.
 
             Intended to help clients determine whether they need to display
             UI like the "more topics" widget that would suggest the stream
@@ -16044,7 +16393,7 @@ components:
         id:
           type: integer
           description: |
-            id of the default stream group.
+            The ID of the default stream group.
         streams:
           type: array
           description: |
@@ -16052,6 +16401,22 @@ components:
             in the default stream group.
           items:
             $ref: "#/components/schemas/BasicStream"
+    EmailAddressVisibility:
+      type: integer
+      description: |
+        The [policy][permission-level] this user has selected for which other
+        users in this organization can see the real email address of this user.
+
+        - 1 = Everyone
+        - 2 = Members only
+        - 3 = Administrators only
+        - 4 = Nobody
+        - 5 = Moderators only
+
+        **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+        realm-level setting.
+
+        [permission-level]: /api/roles-and-permissions#permission-levels
     EmojiReaction:
       allOf:
         - $ref: "#/components/schemas/EmojiReactionBase"
@@ -16521,7 +16886,8 @@ components:
         - additionalProperties: false
           properties:
             user_id: {}
-            delivery_email: {}
+            delivery_email:
+              nullable: true
             email: {}
             full_name: {}
             date_joined: {}
@@ -16552,11 +16918,20 @@ components:
             The unique ID of the user.
         delivery_email:
           type: string
+          nullable: true
           description: |
-            The user's real email address. This field is present only if
-            [email address visibility](/help/restrict-visibility-of-email-addresses) is
-            limited and you are an administrator with access to real email addresses
-            under the configured policy.
+            The user's real email address. This value will be `None` if you cannot
+            access user's real email address. For bot users, this field is always
+            set to the real email of the bot, because bot users always have
+            `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+
+            **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
+            only when `email_address_visibility` was restricted and you had access to the
+            user's real email. Now, this field is always present, including the case when
+            `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
+            with the value being `None` if you don't have access the user's real email.
+            For bot users, this field is now always set to the real email irrespective of
+            `email_address_visibility` setting.
         email:
           type: string
           description: |
@@ -16680,8 +17055,8 @@ components:
         type: object
         additionalProperties: false
         description: |
-          `{id}`: Object with data about what value user filled in the custom
-          profile field with id `id`.
+          `{id}`: Object with data about what value the user filled in the custom
+          profile field with that ID.
         properties:
           value:
             type: string
@@ -16818,7 +17193,7 @@ components:
           example:
             {
               "code": "BAD_EVENT_QUEUE_ID",
-              "msg": "Bad event queue id: fb67bf8a-c031-47cc-84cf-ed80accacda8",
+              "msg": "Bad event queue ID: fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "result": "error",
             }
@@ -17256,7 +17631,7 @@ components:
       name: principals
       in: query
       description: |
-        A list of user ids (preferred) or Zulip display email
+        A list of user IDs (preferred) or Zulip display email
         addresses of the users to be subscribed to or unsubscribed
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
@@ -17347,6 +17722,22 @@ components:
           - type: string
           - type: integer
       example: "20"
+      required: false
+    CanRemoveSubscribersGroupId:
+      name: can_remove_subscribers_group_id
+      in: query
+      description: |
+        ID of the user group whose members are allowed to unsubscribe others
+        from the stream, if they have access to this stream, even if
+        they are not an organization administrator.
+
+        This setting can currently only be set to system user groups
+        except `@role:internet` and `@role:owners` group.
+
+        **Changes**: New in Zulip 7.0 (feature level 161).
+      schema:
+        type: integer
+      example: 20
       required: false
     LinkifierPattern:
       name: pattern

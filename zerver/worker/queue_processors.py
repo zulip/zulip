@@ -54,16 +54,19 @@ from zerver.actions.presence import do_update_user_presence
 from zerver.actions.realm_export import notify_realm_export
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.context_processors import common_context
-from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
+from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitError, get_bot_handler
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db import reset_queries
 from zerver.lib.digest import bulk_handle_digest_email
-from zerver.lib.email_mirror import decode_stream_email_address, is_missed_message_address
+from zerver.lib.email_mirror import (
+    decode_stream_email_address,
+    is_missed_message_address,
+    rate_limit_mirror_by_realm,
+)
 from zerver.lib.email_mirror import process_message as mirror_email
-from zerver.lib.email_mirror import rate_limit_mirror_by_realm
 from zerver.lib.email_notifications import handle_missedmessage_emails
 from zerver.lib.error_notify import do_report_error
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.lib.push_notifications import (
@@ -76,7 +79,7 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import SimpleQueueClient, retry_event
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import (
-    EmailNotDeliveredException,
+    EmailNotDeliveredError,
     FromAddress,
     handle_send_email_format_changes,
     initialize_connection,
@@ -107,7 +110,7 @@ from zerver.models import (
 logger = logging.getLogger(__name__)
 
 
-class WorkerTimeoutException(Exception):
+class WorkerTimeoutError(Exception):
     def __init__(self, queue_name: str, limit: int, event_count: int) -> None:
         self.queue_name = queue_name
         self.limit = limit
@@ -117,17 +120,15 @@ class WorkerTimeoutException(Exception):
         return f"Timed out in {self.queue_name} after {self.limit * self.event_count} seconds processing {self.event_count} events"
 
 
-class InterruptConsumeException(Exception):
+class InterruptConsumeError(Exception):
     """
     This exception is to be thrown inside event consume function
     if the intention is to simply interrupt the processing
     of the current event and normally continue the work of the queue.
     """
 
-    pass
 
-
-class WorkerDeclarationException(Exception):
+class WorkerDeclarationError(Exception):
     pass
 
 
@@ -168,7 +169,7 @@ def get_active_worker_queues(only_test_queues: bool = False) -> List[str]:
     """Returns all (either test, or real) worker queues."""
     return [
         queue_name
-        for queue_name in worker_classes.keys()
+        for queue_name in worker_classes
         if bool(queue_name in test_queues) == only_test_queues
     ]
 
@@ -195,7 +196,7 @@ def retry_send_email_failures(
         except (
             socket.gaierror,
             socket.timeout,
-            EmailNotDeliveredException,
+            EmailNotDeliveredError,
         ) as e:
             error_class_name = type(e).__name__
 
@@ -227,7 +228,7 @@ class QueueProcessingWorker(ABC):
     def __init__(self) -> None:
         self.q: Optional[SimpleQueueClient] = None
         if not hasattr(self, "queue_name"):
-            raise WorkerDeclarationException("Queue worker declared without queue_name")
+            raise WorkerDeclarationError("Queue worker declared without queue_name")
 
         self.initialize_statistics()
 
@@ -339,16 +340,16 @@ class QueueProcessingWorker(ABC):
                 # especially since the queue might go idle until new events come in.
                 self.update_statistics()
                 self.idle = True
-                return
-
-            self.consume_iteration_counter += 1
-            if (
-                self.consume_iteration_counter >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
-                or time.time() - self.last_statistics_update_time
-                >= self.MAX_SECONDS_BEFORE_UPDATE_STATS
-            ):
-                self.consume_iteration_counter = 0
-                self.update_statistics()
+            else:
+                self.consume_iteration_counter += 1
+                if (
+                    self.consume_iteration_counter
+                    >= self.CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM
+                    or time.time() - self.last_statistics_update_time
+                    >= self.MAX_SECONDS_BEFORE_UPDATE_STATS
+                ):
+                    self.consume_iteration_counter = 0
+                    self.update_statistics()
 
     def consume_single_event(self, event: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
@@ -357,10 +358,10 @@ class QueueProcessingWorker(ABC):
     def timer_expired(
         self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
     ) -> None:
-        raise WorkerTimeoutException(self.queue_name, limit, len(events))
+        raise WorkerTimeoutError(self.queue_name, limit, len(events))
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
-        if isinstance(exception, InterruptConsumeException):
+        if isinstance(exception, InterruptConsumeError):
             # The exception signals that no further error handling
             # is needed and the worker can proceed.
             return
@@ -373,7 +374,7 @@ class QueueProcessingWorker(ABC):
                     "queue_name": self.queue_name,
                 },
             )
-            if isinstance(exception, WorkerTimeoutException):
+            if isinstance(exception, WorkerTimeoutError):
                 with sentry_sdk.push_scope() as scope:
                     scope.fingerprint = ["worker-timeout", self.queue_name]
                     logging.exception(exception, stack_info=True)
@@ -523,20 +524,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
         # deduplicate them for insertion into the database.
         for event in user_activity_events:
             user_profile_id = event["user_profile_id"]
-
-            if "client_id" not in event:
-                # This is for compatibility with older events still stuck in the queue,
-                # that used the client name in event["client"] instead of having
-                # event["client_id"] directly.
-                #
-                # TODO/compatibility: We can delete this once it is no
-                # longer possible to directly upgrade from 2.1 to main.
-                if event["client"] not in self.client_id_map:
-                    client = get_client(event["client"])
-                    self.client_id_map[event["client"]] = client.id
-                client_id = self.client_id_map[event["client"]]
-            else:
-                client_id = event["client_id"]
+            client_id = event["client_id"]
 
             key_tuple = (user_profile_id, client_id, event["query"])
             if key_tuple not in uncommitted_events:
@@ -677,7 +665,7 @@ class MissedMessageWorker(QueueProcessingWorker):
                     else:
                         events_by_recipient[event.user_profile_id] = [entry]
 
-                for user_profile_id in events_by_recipient.keys():
+                for user_profile_id in events_by_recipient:
                     events: List[Dict[str, Any]] = events_by_recipient[user_profile_id]
 
                     logging.info(
@@ -779,15 +767,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
     def consume(self, event: Dict[str, Any]) -> None:
         try:
             if event.get("type", "add") == "remove":
-                message_ids = event.get("message_ids")
-                if message_ids is None:
-                    # TODO/compatibility: Previously, we sent only one `message_id` in
-                    # a payload for notification remove events. This was later changed
-                    # to send a list of `message_ids` (with that field name), but we need
-                    # compatibility code for events present in the queue during upgrade.
-                    # Remove this when one can no longer upgrade from 1.9.2 (or earlier)
-                    # to any version after 2.0.0
-                    message_ids = [event["message_id"]]
+                message_ids = event["message_ids"]
                 handle_remove_push_notification(event["user_profile_id"], message_ids)
             else:
                 handle_push_notification(event["user_profile_id"], event)
@@ -843,7 +823,7 @@ class MirrorWorker(QueueProcessingWorker):
             recipient_realm = decode_stream_email_address(rcpt_to)[0].realm
             try:
                 rate_limit_mirror_by_realm(recipient_realm)
-            except RateLimited:
+            except RateLimitedError:
                 logger.warning(
                     "MirrorWorker: Rejecting an email from: %s to realm: %s - rate limited.",
                     msg["From"],
@@ -906,7 +886,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             event["message_id"],
             event["urls"],
         )
-        raise InterruptConsumeException
+        raise InterruptConsumeError
 
 
 @assign_queue("outgoing_webhooks")
@@ -957,7 +937,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                     message=message,
                     bot_handler=self.get_bot_api_client(user_profile),
                 )
-            except EmbeddedBotQuitException as e:
+            except EmbeddedBotQuitError as e:
                 logging.warning("%s", e)
 
 
@@ -978,6 +958,11 @@ class DeferredWorker(QueueProcessingWorker):
         start = time.time()
         if event["type"] == "mark_stream_messages_as_read":
             user_profile = get_user_profile_by_id(event["user_profile_id"])
+            logger.info(
+                "Marking messages as read for user %s, stream_recipient_ids %s",
+                user_profile.id,
+                event["stream_recipient_ids"],
+            )
 
             for recipient_id in event["stream_recipient_ids"]:
                 count = do_mark_stream_messages_as_read(user_profile, recipient_id)
@@ -988,6 +973,10 @@ class DeferredWorker(QueueProcessingWorker):
                     recipient_id,
                 )
         elif event["type"] == "mark_stream_messages_as_read_for_everyone":
+            logger.info(
+                "Marking messages as read for all users, stream_recipient_id %s",
+                event["stream_recipient_id"],
+            )
             # This event is generated by the stream deactivation code path.
             batch_size = 100
             offset = 0
@@ -1009,6 +998,10 @@ class DeferredWorker(QueueProcessingWorker):
                 event["stream_recipient_id"],
             )
         elif event["type"] == "clear_push_device_tokens":
+            logger.info(
+                "Clearing push device tokens for user_profile_id %s",
+                event["user_profile_id"],
+            )
             try:
                 clear_push_device_tokens(event["user_profile_id"])
             except PushNotificationBouncerRetryLaterError:
@@ -1025,6 +1018,12 @@ class DeferredWorker(QueueProcessingWorker):
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
             export_event = RealmAuditLog.objects.get(id=event["id"])
             user_profile = get_user_profile_by_id(event["user_profile_id"])
+            logger.info(
+                "Starting realm export for realm %s into %s, initiated by user_profile_id %s",
+                realm.string_id,
+                output_dir,
+                event["user_profile_id"],
+            )
 
             try:
                 public_url = export_realm_wrapper(
@@ -1088,11 +1087,19 @@ class DeferredWorker(QueueProcessingWorker):
             logger.info("Processing reupload_realm_emoji event for realm %s", realm.id)
             handle_reupload_emojis_event(realm, logger)
         elif event["type"] == "soft_reactivate":
+            logger.info(
+                "Starting soft reactivation for user_profile_id %s",
+                event["user_profile_id"],
+            )
             user_profile = get_user_profile_by_id(event["user_profile_id"])
             reactivate_user_if_soft_deactivated(user_profile)
 
         end = time.time()
-        logger.info("deferred_work processed %s event (%dms)", event["type"], (end - start) * 1000)
+        logger.info(
+            "deferred_work processed %s event (%dms)",
+            event["type"],
+            (end - start) * 1000,
+        )
 
 
 @assign_queue("test", is_test_queue=True)
@@ -1100,7 +1107,7 @@ class TestWorker(QueueProcessingWorker):
     # This worker allows you to test the queue worker infrastructure without
     # creating significant side effects.  It can be useful in development or
     # for troubleshooting prod/staging.  It pulls a message off the test queue
-    # and appends it to a file in /tmp.
+    # and appends it to a file in /var/log/zulip.
     def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
         fn = settings.ZULIP_WORKER_TEST_FILE
         message = orjson.dumps(event)

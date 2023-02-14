@@ -88,7 +88,6 @@ def update_user_status(
     emoji_code: Optional[str],
     reaction_type: Optional[str],
 ) -> None:
-
     timestamp = timezone_now()
 
     defaults = dict(

@@ -45,26 +45,6 @@ backend. To enable this backend, you need to do the following:
    For certain AWS regions, you may need to set the `S3_REGION`
    setting to your default AWS region's code (e.g. `"eu-central-1"`).
 
-1. You will need to configure `nginx` to direct requests for uploaded
-   files to the Zulip server (which will then serve a redirect to the
-   appropriate place in S3), rather than serving them directly.
-
-   With Zulip 1.9.0 and newer, you can do this automatically with the
-   following commands run as root:
-
-   ```bash
-   crudini --set /etc/zulip/zulip.conf application_server no_serve_uploads true
-   /home/zulip/deployments/current/scripts/zulip-puppet-apply
-   ```
-
-   (The first line will update your `/etc/zulip/zulip.conf`).
-
-   With older Zulip, you need to edit
-   `/etc/nginx/sites-available/zulip-enterprise` to comment out the
-   `nginx` configuration block for `/user_avatars` and the
-   `include /etc/nginx/zulip-include/uploads.route` line and then
-   reload the `nginx` service (`service nginx reload`).
-
 1. Finally, restart the Zulip server so that your settings changes
    take effect
    (`/home/zulip/deployments/current/scripts/restart-server`).
@@ -75,23 +55,52 @@ uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
 
-[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
+## S3 local caching
+
+For performance reasons, Zulip stores a cache of recently served user
+uploads on disk locally, even though the durable storage is kept in
+S3. There are a number of parameters which control the size and usage
+of this cache, which is maintained by nginx:
+
+- `s3_memory_cache_size` controls the in-memory size of the cache
+  _index_; the default is 1MB, which is enough to store about 8 thousand
+  entries.
+- `s3_disk_cache_size` controls the on-disk size of the cache
+  _contents_; the default is 200MB.
+- `s3_cache_inactive_time` controls the longest amount of time an
+  entry will be cached since last use; the default is 30 days. Since
+  the contents of the cache are immutable, this serves only as a
+  potential additional limit on the size of the contents on disk;
+  `s3_disk_cache_size` is expected to be the primary control for cache
+  sizing.
+
+These defaults are likely sufficient for small-to-medium deployments.
+Large deployments, or deployments with image-heavy use cases, will
+want to increase `s3_disk_cache_size`, potentially to be several
+gigabytes. `s3_memory_cache_size` should potentially be increased,
+based on estimating the number of files that the larger disk cache
+will hold.
+
+You may also wish to increase the cache sizes if the S3 storage (or
+S3-compatible equivalent) is not closely located to your Zulip server,
+as cache misses will be more expensive.
 
 ## S3 bucket policy
 
-The best way to do the S3 integration with Amazon is to create a new
-IAM user just for your Zulip server with limited permissions. For
-each of the two buckets, you'll want to
-[add an S3 bucket policy](https://awspolicygen.s3.amazonaws.com/policygen.html)
-entry that looks something like this:
+The best way to do the S3 integration with Amazon is to create a new IAM user
+just for your Zulip server with limited permissions. For both the user uploads
+bucket and the user avatars bucket, you'll need to adjust the [S3 bucket
+policy](https://awspolicygen.s3.amazonaws.com/policygen.html).
+
+The file uploads bucket should have a policy of:
 
 ```json
 {
     "Version": "2012-10-17",
-    "Id": "Policy1468991802321",
+    "Id": "Policy1468991802320",
     "Statement": [
         {
-            "Sid": "",
+            "Sid": "Stmt1468991795370",
             "Effect": "Allow",
             "Principal": {
                 "AWS": "ARN_PRINCIPAL_HERE"
@@ -104,7 +113,7 @@ entry that looks something like this:
             "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
         },
         {
-            "Sid": "Stmt1468991795389",
+            "Sid": "Stmt1468991795371",
             "Effect": "Allow",
             "Principal": {
                 "AWS": "ARN_PRINCIPAL_HERE"
@@ -116,24 +125,52 @@ entry that looks something like this:
 }
 ```
 
-The avatars bucket is intended to be world-readable, so you'll also
-need a block like this:
-
-```json
-{
-    "Sid": "Stmt1468991795389",
-    "Effect": "Allow",
-    "Principal": {
-        "AWS": "*"
-    },
-    "Action": "s3:GetObject",
-    "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
-}
-```
-
 The file-uploads bucket should not be world-readable. See the
 [documentation on the Zulip security model](security-model.md) for
 details on the security model for uploaded files.
+
+However, the avatars bucket is intended to be world-readable, so its
+policy should be:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1468991802321",
+    "Statement": [
+        {
+            "Sid": "Stmt1468991795380",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:PutObject"
+            ],
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
+        },
+        {
+            "Sid": "Stmt1468991795381",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE"
+        },
+        {
+            "Sid": "Stmt1468991795382",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
+        }
+    ]
+}
+```
 
 ## Migrating from local uploads to Amazon S3 backend
 

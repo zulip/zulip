@@ -90,7 +90,7 @@ test("activate", ({override}) => {
         message: {
             id: 2001,
         },
-        post_to_server: (data) => {
+        post_to_server(data) {
             assert.equal(data.msg_type, "widget");
             assert.equal(data.data, "test_data");
         },

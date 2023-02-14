@@ -182,13 +182,14 @@ from zerver.lib.event_schema import (
     check_user_topic,
 )
 from zerver.lib.events import (
-    RestartEventException,
+    RestartEventError,
     apply_events,
     fetch_initial_state_data,
     post_process_state,
 )
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import render_markdown
+from zerver.lib.muted_users import get_mute_object
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -200,7 +201,6 @@ from zerver.lib.test_helpers import (
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import create_user_group
-from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -440,20 +440,33 @@ class NormalActionsTest(BaseAction):
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
             self.verify_action(
-                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+                lambda: self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    capture_on_commit_callbacks=False,
+                ),
             )
 
     def test_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**all** hello " + str(i)
             self.verify_action(
-                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+                lambda: self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    capture_on_commit_callbacks=False,
+                ),
             )
 
     def test_pm_send_message_events(self) -> None:
         self.verify_action(
             lambda: self.send_personal_message(
-                self.example_user("cordelia"), self.example_user("hamlet"), "hola"
+                self.example_user("cordelia"),
+                self.example_user("hamlet"),
+                "hola",
+                capture_on_commit_callbacks=False,
             ),
         )
 
@@ -500,19 +513,32 @@ class NormalActionsTest(BaseAction):
             self.example_user("othello"),
         ]
         self.verify_action(
-            lambda: self.send_huddle_message(self.example_user("cordelia"), huddle, "hola"),
+            lambda: self.send_huddle_message(
+                self.example_user("cordelia"), huddle, "hola", capture_on_commit_callbacks=False
+            ),
         )
 
     def test_stream_send_message_events(self) -> None:
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(
+                self.example_user("hamlet"), "Verona", "hello", capture_on_commit_callbacks=False
+            ),
             client_gravatar=False,
         )
         check_message("events[0]", events[0])
         assert isinstance(events[0]["message"]["avatar_url"], str)
 
+        do_change_user_setting(
+            self.example_user("hamlet"),
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(
+                self.example_user("hamlet"), "Verona", "hello", capture_on_commit_callbacks=False
+            ),
             client_gravatar=True,
         )
         check_message("events[0]", events[0])
@@ -663,7 +689,6 @@ class NormalActionsTest(BaseAction):
         check_update_message_flags_remove("events[0]", events[0])
 
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
-
         user_profile = self.example_user("hamlet")
         mention = "@**" + user_profile.full_name + "**"
 
@@ -724,12 +749,16 @@ class NormalActionsTest(BaseAction):
             "hello 1",
         )
         self.verify_action(
-            lambda: self.send_stream_message(sender, "Verona", "hello 2"),
+            lambda: self.send_stream_message(
+                sender, "Verona", "hello 2", capture_on_commit_callbacks=False
+            ),
             state_change_expected=True,
         )
 
     def test_add_reaction(self) -> None:
-        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
+        message_id = self.send_stream_message(
+            self.example_user("hamlet"), "Verona", "hello", capture_on_commit_callbacks=False
+        )
         message = Message.objects.get(id=message_id)
         events = self.verify_action(
             lambda: do_add_reaction(self.user_profile, message, "tada", "1f389", "unicode_emoji"),
@@ -904,7 +933,7 @@ class NormalActionsTest(BaseAction):
             num_events=7,
         )
 
-        check_invites_changed("events[3]", events[3])
+        check_invites_changed("events[5]", events[5])
 
     def test_typing_events(self) -> None:
         events = self.verify_action(
@@ -1126,22 +1155,23 @@ class NormalActionsTest(BaseAction):
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
-        check_subscription_peer_add("events[1]", events[1])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[2]", events[2])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
-            events[2]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
-        check_user_group_add_members("events[3]", events[3])
-        check_user_group_add_members("events[4]", events[4])
+        check_user_group_add_members("events[1]", events[1])
+        check_user_group_add_members("events[2]", events[2])
 
     def test_register_events_email_address_visibility(self) -> None:
-        do_set_realm_property(
-            self.user_profile.realm,
+        realm_user_default = RealmUserDefault.objects.get(realm=self.user_profile.realm)
+        do_set_realm_user_default_setting(
+            realm_user_default,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 
@@ -1151,16 +1181,16 @@ class NormalActionsTest(BaseAction):
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
-        check_subscription_peer_add("events[1]", events[1])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[2]", events[2])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
-            events[2]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
-        check_user_group_add_members("events[3]", events[3])
-        check_user_group_add_members("events[4]", events[4])
+        check_user_group_add_members("events[1]", events[1])
+        check_user_group_add_members("events[2]", events[2])
 
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
@@ -1279,45 +1309,60 @@ class NormalActionsTest(BaseAction):
         othello = self.example_user("othello")
         events = self.verify_action(
             lambda: check_add_user_group(
-                self.user_profile.realm, "backend", [othello], "Backend team"
+                self.user_profile.realm, "backend", [othello], "Backend team", acting_user=None
             )
         )
         check_user_group_add("events[0]", events[0])
 
         # Test name update
         backend = UserGroup.objects.get(name="backend")
-        events = self.verify_action(lambda: do_update_user_group_name(backend, "backendteam"))
+        events = self.verify_action(
+            lambda: do_update_user_group_name(backend, "backendteam", acting_user=None)
+        )
         check_user_group_update("events[0]", events[0], "name")
 
         # Test description update
         description = "Backend team to deal with backend code."
-        events = self.verify_action(lambda: do_update_user_group_description(backend, description))
+        events = self.verify_action(
+            lambda: do_update_user_group_description(backend, description, acting_user=None)
+        )
         check_user_group_update("events[0]", events[0], "description")
 
         # Test add members
         hamlet = self.example_user("hamlet")
-        events = self.verify_action(lambda: bulk_add_members_to_user_group(backend, [hamlet.id]))
+        events = self.verify_action(
+            lambda: bulk_add_members_to_user_group(backend, [hamlet.id], acting_user=None)
+        )
         check_user_group_add_members("events[0]", events[0])
 
         # Test remove members
         hamlet = self.example_user("hamlet")
-        events = self.verify_action(lambda: remove_members_from_user_group(backend, [hamlet.id]))
+        events = self.verify_action(
+            lambda: remove_members_from_user_group(backend, [hamlet.id], acting_user=None)
+        )
+
         check_user_group_remove_members("events[0]", events[0])
 
         api_design = create_user_group(
-            "api-design", [hamlet], hamlet.realm, description="API design team"
+            "api-design", [hamlet], hamlet.realm, description="API design team", acting_user=None
         )
 
         # Test add subgroups
-        events = self.verify_action(lambda: add_subgroups_to_user_group(backend, [api_design]))
+        events = self.verify_action(
+            lambda: add_subgroups_to_user_group(backend, [api_design], acting_user=None)
+        )
         check_user_group_add_subgroups("events[0]", events[0])
 
         # Test remove subgroups
-        events = self.verify_action(lambda: remove_subgroups_from_user_group(backend, [api_design]))
+        events = self.verify_action(
+            lambda: remove_subgroups_from_user_group(backend, [api_design], acting_user=None)
+        )
         check_user_group_remove_subgroups("events[0]", events[0])
 
         # Test remove event
-        events = self.verify_action(lambda: check_delete_user_group(backend.id, othello))
+        events = self.verify_action(
+            lambda: check_delete_user_group(backend.id, othello, acting_user=None)
+        )
         check_user_group_remove("events[0]", events[0])
 
     def test_default_stream_groups_events(self) -> None:
@@ -1449,6 +1494,12 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[0]["person"]["avatar_url"], str)
         assert isinstance(events[0]["person"]["avatar_url_medium"], str)
 
+        do_change_user_setting(
+            self.user_profile,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=self.user_profile,
+        )
         events = self.verify_action(
             lambda: do_change_avatar_fields(
                 self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=self.user_profile
@@ -1465,10 +1516,10 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "full_name")
 
     def test_change_user_delivery_email_email_address_visibilty_admins(self) -> None:
-        do_set_realm_property(
-            self.user_profile.realm,
+        do_change_user_setting(
+            self.user_profile,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         # Important: We need to refresh from the database here so that
@@ -1484,10 +1535,10 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[1]["person"]["avatar_url_medium"], str)
 
     def test_change_user_delivery_email_email_address_visibility_everyone(self) -> None:
-        do_set_realm_property(
-            self.user_profile.realm,
+        do_change_user_setting(
+            self.user_profile,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         # Important: We need to refresh from the database here so that
@@ -1635,7 +1686,6 @@ class NormalActionsTest(BaseAction):
                 )
 
     def test_change_realm_notifications_stream(self) -> None:
-
         stream = get_stream("Rome", self.user_profile.realm)
 
         for notifications_stream, notifications_stream_id in ((stream, stream.id), (None, -1)):
@@ -2009,7 +2059,7 @@ class NormalActionsTest(BaseAction):
     def test_create_bot(self) -> None:
         action = lambda: self.create_bot("test")
         events = self.verify_action(action, num_events=4)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_add("events[3]", events[3])
 
         action = lambda: self.create_bot(
             "test_outgoing_webhook",
@@ -2021,7 +2071,7 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, num_events=4)
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_add("events[3]", events[3])
 
         action = lambda: self.create_bot(
             "test_embedded",
@@ -2031,7 +2081,7 @@ class NormalActionsTest(BaseAction):
             bot_type=UserProfile.EMBEDDED_BOT,
         )
         events = self.verify_action(action, num_events=4)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_add("events[3]", events[3])
 
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
@@ -2378,7 +2428,13 @@ class NormalActionsTest(BaseAction):
         assert uri is not None
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
+            lambda: self.send_stream_message(
+                self.example_user("hamlet"),
+                "Denmark",
+                body,
+                "test",
+                capture_on_commit_callbacks=False,
+            ),
             num_events=2,
         )
 
@@ -2499,7 +2555,7 @@ class NormalActionsTest(BaseAction):
         check_has_zoom_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:
-        with self.assertRaises(RestartEventException):
+        with self.assertRaises(RestartEventError):
             self.verify_action(lambda: send_restart_events(immediate=True))
 
     def test_display_setting_event_not_sent(self) -> None:
@@ -2546,7 +2602,6 @@ class RealmPropertyActionTest(BaseAction):
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
@@ -2557,11 +2612,13 @@ class RealmPropertyActionTest(BaseAction):
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
-            move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
+            move_messages_between_streams_policy=Realm.MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
             edit_topic_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
+            move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
+            move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
         )
 
         vals = test_values.get(name)
@@ -2587,12 +2644,6 @@ class RealmPropertyActionTest(BaseAction):
             state_change_expected = True
             old_value = vals[count]
             num_events = 1
-            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
-                old_value,
-                val,
-            ]:
-                # email update event is sent for each user.
-                num_events = 11
 
             events = self.verify_action(
                 lambda: do_set_realm_property(
@@ -2628,12 +2679,6 @@ class RealmPropertyActionTest(BaseAction):
             else:
                 check_realm_update("events[0]", events[0], name)
 
-            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
-                old_value,
-                val,
-            ]:
-                check_realm_user_update("events[1]", events[1], "email")
-
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
@@ -2650,6 +2695,7 @@ class RealmPropertyActionTest(BaseAction):
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -2722,6 +2768,7 @@ class UserDisplayActionTest(BaseAction):
             demote_inactive_streams=[2, 3, 1],
             user_list_style=[1, 2, 3],
             color_scheme=[2, 3, 1],
+            email_address_visibility=[5, 4, 1, 2, 3],
         )
 
         user_settings_object = True
@@ -2750,6 +2797,19 @@ class UserDisplayActionTest(BaseAction):
             raise AssertionError(f"No test created for {setting_name}")
 
         for value in values:
+            if setting_name == "email_address_visibility":
+                # When "email_address_visibility" setting is changed, there is at least
+                # one event with type "user_settings" sent to the modified user itself.
+                num_events = 1
+
+                old_value = getattr(self.user_profile, setting_name)
+                if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [old_value, value]:
+                    # In case when either the old value or new value of setting is
+                    # UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE, "email" field of
+                    # UserProfile object is updated and thus two additional events, for
+                    # changing email and avatar_url field, are sent.
+                    num_events = 3
+
             events = self.verify_action(
                 lambda: do_change_user_setting(
                     self.user_profile, setting_name, value, acting_user=self.user_profile
@@ -2787,6 +2847,40 @@ class UserDisplayActionTest(BaseAction):
             check_user_settings_update("events[0]", events[0])
             check_update_display_settings("events[1]", events[1])
             check_realm_user_update("events[2]", events[2], "timezone")
+
+    def test_delivery_email_events_on_changing_email_address_visibility(self) -> None:
+        cordelia = self.example_user("cordelia")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        do_change_user_setting(
+            cordelia,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            acting_user=None,
+        )
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                cordelia,
+                "email_address_visibility",
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                acting_user=self.user_profile,
+            ),
+            user_settings_object=True,
+        )
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        self.assertIsNone(events[0]["person"]["delivery_email"])
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                cordelia,
+                "email_address_visibility",
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+                acting_user=self.user_profile,
+            ),
+            user_settings_object=True,
+        )
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        self.assertEqual(events[0]["person"]["delivery_email"], cordelia.delivery_email)
 
 
 class SubscribeActionTest(BaseAction):

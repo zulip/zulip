@@ -21,7 +21,6 @@ def set_subdomain_of_default_realm(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0001_initial"),
     ]

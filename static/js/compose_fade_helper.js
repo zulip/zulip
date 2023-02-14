@@ -16,6 +16,11 @@ export function set_focused_recipient(recipient) {
     focused_recipient = recipient;
 }
 
+function is_pm_recipient(user_id) {
+    const recipients = focused_recipient.to_user_ids.split(",");
+    return recipients.includes(user_id.toString());
+}
+
 export function would_receive_message(user_id) {
     if (focused_recipient.type === "stream") {
         const sub = sub_store.get(focused_recipient.stream_id);
@@ -30,7 +35,7 @@ export function would_receive_message(user_id) {
     }
 
     // PM, so check if the given email is in the recipients list.
-    return util.is_pm_recipient(user_id, focused_recipient);
+    return is_pm_recipient(user_id);
 }
 
 export function want_normal_display() {

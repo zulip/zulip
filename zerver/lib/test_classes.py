@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 import urllib
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import timedelta
 from typing import (
     TYPE_CHECKING,
@@ -54,6 +54,7 @@ from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscript
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
@@ -66,12 +67,12 @@ from zerver.lib.streams import (
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.test_console_output import (
     ExtraConsoleOutputFinder,
-    ExtraConsoleOutputInTestException,
+    ExtraConsoleOutputInTestError,
     tee_stderr_and_find_extra_console_output,
     tee_stdout_and_find_extra_console_output,
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url, queries_captured
-from zerver.lib.topic import filter_by_topic_name_via_message
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_string
@@ -140,7 +141,7 @@ class UploadSerializeMixin(SerializeMixin):
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff: Optional[int] = None
+    maxDiff: Optional[int] = None  # noqa: N815
 
     def setUp(self) -> None:
         super().setUp()
@@ -192,7 +193,7 @@ Output:
 {extra_output_finder.full_extra_output.decode(errors="replace")}
 --------------------------------------------
 """
-            raise ExtraConsoleOutputInTestException(exception_message)
+            raise ExtraConsoleOutputInTestError(exception_message)
         return test_result
 
     """
@@ -225,9 +226,9 @@ Output:
         else:
             # A web app request; use a browser User-Agent string.
             default_user_agent = (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) "
-                + "Chrome/79.0.3945.130 Safari/537.36"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                " AppleWebKit/537.36 (KHTML, like Gecko)"
+                " Chrome/79.0.3945.130 Safari/537.36"
             )
         if skip_user_agent:
             # Provide a way to disable setting User-Agent if desired.
@@ -263,7 +264,7 @@ Output:
         extensive test coverage of corner cases in the API to ensure that we've properly
         documented those corner cases.
         """
-        if not (url.startswith("/json") or url.startswith("/api/v1")):
+        if not url.startswith(("/json", "/api/v1")):
             return
         try:
             content = orjson.loads(result.content)
@@ -462,7 +463,7 @@ Output:
     def client_post(
         self,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -732,7 +733,9 @@ Output:
     def register(self, email: str, password: str, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
         response = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], f"/accounts/send_confirm/{email}")
+        self.assertEqual(
+            response["Location"], f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+        )
         response = self.submit_reg_form_for_user(email, password, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], f"http://{Realm.host_for_subdomain(subdomain)}/")
@@ -822,8 +825,7 @@ Output:
 
                 [confirmation_url] = match.groups()
                 return confirmation_url
-        else:
-            raise AssertionError("Couldn't find a confirmation email.")
+        raise AssertionError("Couldn't find a confirmation email.")
 
     def encode_uuid(self, uuid: str) -> str:
         """
@@ -875,7 +877,7 @@ Output:
         self,
         identifier: str,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         **extra: str,
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
@@ -907,7 +909,7 @@ Output:
         self,
         user: UserProfile,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -965,18 +967,22 @@ Output:
         to_user: UserProfile,
         content: str = "test content",
         sending_client_name: str = "test suite",
+        capture_on_commit_callbacks: bool = True,
     ) -> int:
         recipient_list = [to_user.id]
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
-            from_user,
-            sending_client,
-            "private",
-            recipient_list,
-            None,
-            content,
-        )
+        with self.captureOnCommitCallbacks(
+            execute=True
+        ) if capture_on_commit_callbacks else nullcontext():
+            return check_send_message(
+                from_user,
+                sending_client,
+                "private",
+                recipient_list,
+                None,
+                content,
+            )
 
     def send_huddle_message(
         self,
@@ -984,20 +990,24 @@ Output:
         to_users: List[UserProfile],
         content: str = "test content",
         sending_client_name: str = "test suite",
+        capture_on_commit_callbacks: bool = True,
     ) -> int:
         to_user_ids = [u.id for u in to_users]
         assert len(to_user_ids) >= 2
 
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
-            from_user,
-            sending_client,
-            "private",
-            to_user_ids,
-            None,
-            content,
-        )
+        with self.captureOnCommitCallbacks(
+            execute=True
+        ) if capture_on_commit_callbacks else nullcontext():
+            return check_send_message(
+                from_user,
+                sending_client,
+                "private",
+                to_user_ids,
+                None,
+                content,
+            )
 
     def send_stream_message(
         self,
@@ -1008,21 +1018,28 @@ Output:
         recipient_realm: Optional[Realm] = None,
         sending_client_name: str = "test suite",
         allow_unsubscribed_sender: bool = False,
+        capture_on_commit_callbacks: bool = True,
     ) -> int:
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        message_id = check_send_stream_message(
-            sender=sender,
-            client=sending_client,
-            stream_name=stream_name,
-            topic=topic_name,
-            body=content,
-            realm=recipient_realm,
-        )
-        if not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists():
-            if not sender.is_bot and not allow_unsubscribed_sender:
-                raise AssertionError(
-                    f"""
+        with self.captureOnCommitCallbacks(
+            execute=True
+        ) if capture_on_commit_callbacks else nullcontext():
+            message_id = check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic=topic_name,
+                body=content,
+                realm=recipient_realm,
+            )
+        if (
+            not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists()
+            and not sender.is_bot
+            and not allow_unsubscribed_sender
+        ):
+            raise AssertionError(
+                f"""
     It appears that the sender did not get a UserMessage row, which is
     almost certainly an artificial symptom that in your test setup you
     have decided to send a message to a stream without the sender being
@@ -1034,7 +1051,7 @@ Output:
 
 {self.subscribed_stream_name_list(sender)}
         """
-                )
+            )
 
         return message_id
 
@@ -1044,12 +1061,14 @@ Output:
         num_before: int = 100,
         num_after: int = 100,
         use_first_unread_anchor: bool = False,
+        include_anchor: bool = True,
     ) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {
             "anchor": anchor,
             "num_before": num_before,
             "num_after": num_after,
             "use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode(),
+            "include_anchor": orjson.dumps(include_anchor).decode(),
         }
         result = self.client_get("/json/messages", dict(post_params))
         data = result.json()
@@ -1313,6 +1332,26 @@ Output:
         for x, y in zip(subscribed_streams, streams):
             self.assertEqual(x["name"], y.name)
 
+    def resolve_topic_containing_message(
+        self,
+        acting_user: UserProfile,
+        target_message_id: int,
+        **extra: str,
+    ) -> "TestHttpResponse":
+        """
+        Mark all messages within the topic associated with message `target_message_id` as resolved.
+        """
+        message, _ = access_message(acting_user, target_message_id)
+        return self.api_patch(
+            acting_user,
+            f"/api/v1/messages/{target_message_id}",
+            {
+                "topic": RESOLVED_TOPIC_PREFIX + message.topic_name(),
+                "propagate_mode": "change_all",
+            },
+            **extra,
+        )
+
     def send_webhook_payload(
         self,
         user_profile: UserProfile,
@@ -1517,7 +1556,6 @@ Output:
     def check_has_permission_policies(
         self, policy: str, validation_func: Callable[[UserProfile], bool]
     ) -> None:
-
         realm = get_realm("zulip")
         owner_user = self.example_user("desdemona")
         admin_user = self.example_user("iago")
@@ -1661,6 +1699,7 @@ Output:
             stream_email_notify=kwargs.get("stream_email_notify", False),
             stream_push_notify=kwargs.get("stream_push_notify", False),
             sender_is_muted=kwargs.get("sender_is_muted", False),
+            disable_external_notifications=kwargs.get("disable_external_notifications", False),
         )
 
     def get_maybe_enqueue_notifications_parameters(

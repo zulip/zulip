@@ -23,7 +23,7 @@ from django.utils.translation import gettext as _
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
-    ConfirmationKeyException,
+    ConfirmationKeyError,
     create_confirmation_link,
     get_object_from_key,
     one_click_unsubscribe_link,
@@ -40,6 +40,7 @@ from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
+    do_revoke_multi_use_invite,
 )
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -66,7 +67,7 @@ from zerver.lib.mobile_auth_otp import (
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.send_email import (
-    EmailNotDeliveredException,
+    EmailNotDeliveredError,
     FromAddress,
     deliver_scheduled_emails,
     send_future_email,
@@ -773,10 +774,10 @@ class PasswordResetTest(ZulipTestCase):
         result = self.client_get("/accounts/password/done/")
         self.assert_in_success_response(["We've reset your password!"], result)
 
-        result = self.client_get("/accounts/send_confirm/alice@example.com")
+        result = self.client_get("/accounts/send_confirm/?email=alice@example.com")
         self.assert_in_success_response(["/accounts/home/"], result)
 
-        result = self.client_get("/accounts/new/send_confirm/alice@example.com")
+        result = self.client_get("/accounts/new/send_confirm/?email=alice@example.com")
         self.assert_in_success_response(["/new/"], result)
 
     def test_password_reset_for_soft_deactivated_user(self) -> None:
@@ -957,7 +958,7 @@ class LoginTest(ZulipTestCase):
         ContentType.objects.clear_cache()
 
         # Ensure the number of queries we make is not O(streams)
-        with self.assert_database_query_count(96), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(95), cache_tries_captured() as cache_tries:
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -1347,9 +1348,10 @@ class InviteUserTest(InviteUserBase):
         result = self.invite(invitee_emails, ["Denmark"])
         self.assert_json_error(
             result,
-            "Some of those addresses are already using Zulip,"
-            + " so we didn't send them an invitation."
-            + " We did send invitations to everyone else!",
+            (
+                "Some of those addresses are already using Zulip, so we didn't send them an"
+                " invitation. We did send invitations to everyone else!"
+            ),
         )
 
     def test_invite_mirror_dummy_user(self) -> None:
@@ -1500,7 +1502,7 @@ class InviteUserTest(InviteUserBase):
         self.login("iago")
         invitee = self.nonreg_email("alice")
         response = self.invite(invitee, ["Denmark"], invite_as=10)
-        self.assert_json_error(response, "Must be invited as an valid type of user")
+        self.assert_json_error(response, "Invalid invite_as")
 
     def test_successful_invite_user_as_guest_from_normal_account(self) -> None:
         self.login("hamlet")
@@ -2159,9 +2161,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         registration_key = url.split("/")[-1]
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
-        with self.assertRaises(ConfirmationKeyException) as cm:
+        with self.assertRaises(ConfirmationKeyError) as cm:
             get_object_from_key(registration_key, [Confirmation.INVITATION], mark_object_used=True)
-        self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
+        self.assertEqual(cm.exception.error_type, ConfirmationKeyError.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path
         email_change_url = create_confirmation_link(prereg_user, Confirmation.EMAIL_CHANGE)
@@ -2710,10 +2712,13 @@ class InvitationsTestCase(InviteUserBase):
         )
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assertEqual(result.status_code, 200)
-        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
+        self.assertEqual(
+            MultiuseInvite.objects.get(id=multiuse_invite.id).status,
+            confirmation_settings.STATUS_REVOKED,
+        )
         # Test that trying to double-delete fails
         error_result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
-        self.assert_json_error(error_result, "No such invitation")
+        self.assert_json_error(error_result, "Invitation has already been revoked")
 
         # Test deleting owner mutiuse_invite.
         multiuse_invite = MultiuseInvite.objects.create(
@@ -2731,7 +2736,10 @@ class InvitationsTestCase(InviteUserBase):
         self.login("desdemona")
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assert_json_success(result)
-        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
+        self.assertEqual(
+            MultiuseInvite.objects.get(id=multiuse_invite.id).status,
+            confirmation_settings.STATUS_REVOKED,
+        )
 
         # Test deleting multiuse invite from another realm
         mit_realm = get_realm("zephyr")
@@ -2747,6 +2755,10 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_delete(
             "/json/invites/multiuse/" + str(multiuse_invite_in_mit.id)
         )
+        self.assert_json_error(error_result, "No such invitation")
+
+        non_existent_id = MultiuseInvite.objects.count() + 9999
+        error_result = self.client_delete(f"/json/invites/multiuse/{non_existent_id}")
         self.assert_json_error(error_result, "No such invitation")
 
     def test_successful_resend_invitation(self) -> None:
@@ -3010,9 +3022,13 @@ class MultiuseInviteTest(ZulipTestCase):
 
         result = self.client_post(invite_link, {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
@@ -3055,6 +3071,18 @@ class MultiuseInviteTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("The confirmation link has expired or been deactivated.", result)
+
+    def test_revoked_multiuse_link(self) -> None:
+        email = self.nonreg_email("newuser")
+        invite_link = self.generate_multiuse_invite_link()
+        multiuse_invite = MultiuseInvite.objects.last()
+        assert multiuse_invite is not None
+        do_revoke_multi_use_invite(multiuse_invite)
+
+        result = self.client_post(invite_link, {"email": email})
+
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("We couldn't find your confirmation link in the system.", result)
 
     def test_invalid_multiuse_link(self) -> None:
         email = self.nonreg_email("newuser")
@@ -3197,10 +3225,20 @@ class MultiuseInviteTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid stream ID 54321. No invites were sent.")
 
+    def test_create_multiuse_link_invalid_invite_as_api_call(self) -> None:
+        self.login("iago")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["GUEST_USER"] + 1).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        self.assert_json_error(result, "Invalid invite_as")
+
 
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self) -> None:
-
         # An invalid unsubscribe token "test123" produces an error.
         result = self.client_get("/accounts/unsubscribe/missed_messages/test123")
         self.assert_in_response("Unknown email unsubscribe request", result)
@@ -3361,9 +3399,13 @@ class RealmCreationTest(ZulipTestCase):
         # Create new realm with the email
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Check confirmation email has the correct subject and body, extract
         # confirmation link and visit it
@@ -3472,9 +3514,13 @@ class RealmCreationTest(ZulipTestCase):
         # Create new realm with the email
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -3512,9 +3558,13 @@ class RealmCreationTest(ZulipTestCase):
         # Create new realm with the email
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -3555,9 +3605,13 @@ class RealmCreationTest(ZulipTestCase):
         # Create new realm with the email
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -3609,9 +3663,13 @@ class RealmCreationTest(ZulipTestCase):
         # Create new realm with the email
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -3648,9 +3706,13 @@ class RealmCreationTest(ZulipTestCase):
         # Create new realm with the email
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -3683,9 +3745,13 @@ class RealmCreationTest(ZulipTestCase):
         # Create new realm with the email
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -3721,9 +3787,13 @@ class RealmCreationTest(ZulipTestCase):
 
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
@@ -3769,18 +3839,26 @@ class RealmCreationTest(ZulipTestCase):
         # Now we pre-generate two realm creation links
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
         first_confirmation_url = self.get_confirmation_url_from_outbox(email)
         self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 1)
 
         # Get a second realm creation link.
         result = self.client_post("/new/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
         second_confirmation_url = self.get_confirmation_url_from_outbox(email)
 
         self.assertNotEqual(first_confirmation_url, second_confirmation_url)
@@ -4037,9 +4115,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email}, **client_kwargs)
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"], **client_kwargs)
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -4070,13 +4152,13 @@ class UserSignUpTest(InviteUserBase):
 
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredException.
+        Make sure we redirect for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=EmailNotDeliveredException,
+            side_effect=EmailNotDeliveredError,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
@@ -4087,13 +4169,13 @@ class UserSignUpTest(InviteUserBase):
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
-        Make sure we redirect for EmailNotDeliveredException.
+        Make sure we redirect for EmailNotDeliveredError.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=EmailNotDeliveredException,
+            side_effect=EmailNotDeliveredError,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
@@ -4114,9 +4196,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -4145,9 +4231,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -4179,9 +4269,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -4272,9 +4366,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         from django.core.mail import outbox
 
@@ -4290,9 +4388,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -4320,9 +4422,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -4487,6 +4593,7 @@ class UserSignUpTest(InviteUserBase):
         hamlet_in_zulip.high_contrast_mode = True
         hamlet_in_zulip.enter_sends = True
         hamlet_in_zulip.tutorial_status = UserProfile.TUTORIAL_FINISHED
+        hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
 
         result = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
@@ -4526,6 +4633,7 @@ class UserSignUpTest(InviteUserBase):
         hamlet_in_zulip.high_contrast_mode = True
         hamlet_in_zulip.enter_sends = True
         hamlet_in_zulip.tutorial_status = UserProfile.TUTORIAL_FINISHED
+        hamlet_in_zulip.email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         hamlet_in_zulip.save()
 
         # Now we'll be making requests to another subdomain, so we need to logout
@@ -4549,7 +4657,7 @@ class UserSignUpTest(InviteUserBase):
         self.assert_in_success_response(
             [
                 "Import settings from existing Zulip account",
-                "selected >\n                            Zulip Dev",
+                "selected >\n                                Zulip Dev",
                 "We just need you to do one last thing.",
             ],
             result,
@@ -4570,6 +4678,9 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(hamlet_in_lear.enter_sends, True)
         self.assertEqual(hamlet_in_lear.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet_in_lear.tutorial_status, UserProfile.TUTORIAL_FINISHED)
+        self.assertEqual(
+            hamlet_in_lear.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
 
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
         lear_path_id = avatar_disk_path(hamlet_in_lear)
@@ -4591,9 +4702,13 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -4782,9 +4897,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
@@ -4865,9 +4984,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
@@ -4940,9 +5063,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -5007,9 +5134,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -5153,9 +5284,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -5204,9 +5339,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         # If the user's email is inside the LDAP directory and we just
         # have a wrong password, then we refuse to create an account
@@ -5326,9 +5465,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -5367,9 +5510,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
             LDAP_EMAIL_ATTR="mail",
@@ -5518,9 +5665,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
 
         with patch("zerver.views.registration.name_changes_disabled", return_value=True):
             result = self.submit_reg_form_for_user(
@@ -5547,9 +5698,13 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_post("/register/", {"email": email})
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
@@ -5608,9 +5763,13 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post("/register/", {"email": email}, subdomain="zephyr")
 
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        self.assertTrue(
+            result["Location"].endswith(
+                f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+            )
+        )
         result = self.client_get(result["Location"], subdomain="zephyr")
-        self.assert_in_response("Check your email so we can get started.", result)
+        self.assert_in_response("Check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
@@ -6139,7 +6298,6 @@ class TwoFactorAuthTest(ZulipTestCase):
             TWO_FACTOR_SMS_GATEWAY="two_factor.gateways.fake.Fake",
             TWO_FACTOR_AUTHENTICATION_ENABLED=True,
         ):
-
             first_step_data = {
                 "username": email,
                 "password": password,

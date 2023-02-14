@@ -4,7 +4,7 @@ import tippy from "tippy.js";
 
 import {$t} from "./i18n";
 
-export const status_classes = "alert-error alert-success alert-info alert-warning";
+export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 
 // TODO: Move this to the portico codebase.
 export function autofocus(selector: string): void {
@@ -44,27 +44,29 @@ export function copy_data_attribute_value($elem: JQuery, key: string): void {
     $elem.fadeIn(1000);
 }
 
+const keys_map = new Map([
+    ["Backspace", "Delete"],
+    ["Enter", "Return"],
+    ["Home", "←"],
+    ["End", "→"],
+    ["PgUp", "↑"],
+    ["PgDn", "↓"],
+    ["Ctrl", "⌘"],
+    ["Alt", "⌘"],
+]);
+
+const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
+
 export function has_mac_keyboard(): boolean {
     return /mac/i.test(navigator.platform);
 }
 
-export function adjust_mac_shortcuts(kbd_elem_class: string): void {
+// We convert the <kbd> tags used for keyboard shortcuts to mac equivalent
+// key combinations, when we detect that the user is using a mac-style keyboard.
+export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
     if (!has_mac_keyboard()) {
         return;
     }
-
-    const keys_map = new Map([
-        ["Backspace", "Delete"],
-        ["Enter", "Return"],
-        ["Home", "←"],
-        ["End", "→"],
-        ["PgUp", "↑"],
-        ["PgDn", "↓"],
-        ["Ctrl", "⌘"],
-        ["Alt", "⌘"],
-    ]);
-
-    const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
 
     $(kbd_elem_class).each(function () {
         let key_text = $(this).text();
@@ -81,6 +83,26 @@ export function adjust_mac_shortcuts(kbd_elem_class: string): void {
 
         $(this).text(key_text);
     });
+}
+
+// We convert the hotkey hints used in the tooltips to mac equivalent
+// key combinations, when we detect that the user is using a mac-style keyboard.
+export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
+    if (!has_mac_keyboard()) {
+        return;
+    }
+
+    for (const [index, hotkey] of hotkeys.entries()) {
+        const replace_key = keys_map.get(hotkey);
+
+        if (replace_key !== undefined) {
+            hotkeys[index] = replace_key;
+        }
+
+        if (fn_shortcuts.has(hotkey)) {
+            hotkeys.unshift("Fn");
+        }
+    }
 }
 
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation

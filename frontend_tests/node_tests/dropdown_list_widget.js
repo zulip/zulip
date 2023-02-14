@@ -14,7 +14,7 @@ mock_esm("../../static/js/list_widget", {
 });
 
 mock_esm("tippy.js", {
-    default: (arg) => {
+    default(arg) {
         arg._tippy = {setContent: noop, placement: noop, destroy: noop};
         return arg._tippy;
     },
@@ -39,7 +39,7 @@ run_test("basic_functions", () => {
         widget_name: "my_setting",
         data: ["one", "two", "three"].map((x) => ({name: x, value: x})),
         value: "one",
-        on_update: (val) => {
+        on_update(val) {
             updated_value = val;
         },
         default_text: $t({defaultMessage: "not set"}),
@@ -106,7 +106,7 @@ run_test("basic MDLW functions", () => {
         data: ["one", "two", "three", "four"].map((x) => ({name: x, value: x})),
         value: ["one"],
         limit: 2,
-        on_update: (val) => {
+        on_update(val) {
             updated_value = val;
         },
         default_text: $t({defaultMessage: "not set"}),

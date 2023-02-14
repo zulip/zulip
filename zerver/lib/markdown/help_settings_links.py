@@ -26,76 +26,80 @@ link_mapping = {
     ],
     "display-settings": ["Personal settings", "Display settings", "/#settings/display-settings"],
     "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
-    "your-bots": ["Personal settings", "your Bots", "/#settings/your-bots"],
+    "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
     "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
     "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
     "muted-topics": ["Personal settings", "Muted topics", "/#settings/muted-topics"],
     "muted-users": ["Personal settings", "Muted users", "/#settings/muted-users"],
     "organization-profile": [
-        "Manage organization",
+        "Organization settings",
         "Organization profile",
         "/#organization/organization-profile",
     ],
     "organization-settings": [
-        "Manage organization",
+        "Organization settings",
         "Organization settings",
         "/#organization/organization-settings",
     ],
     "organization-permissions": [
-        "Manage organization",
+        "Organization settings",
         "Organization permissions",
         "/#organization/organization-permissions",
     ],
     "default-user-settings": [
-        "Manage organization",
+        "Organization settings",
         "Default user settings",
         "/#organization/organization-level-user-defaults",
     ],
-    "emoji-settings": ["Manage organization", "Custom emoji", "/#organization/emoji-settings"],
+    "emoji-settings": ["Organization settings", "Custom emoji", "/#organization/emoji-settings"],
     "auth-methods": [
-        "Manage organization",
+        "Organization settings",
         "Authentication methods",
         "/#organization/auth-methods",
     ],
-    "user-groups-admin": ["Manage organization", "User groups", "/#organization/user-groups-admin"],
-    "user-list-admin": ["Manage organization", "Users", "/#organization/user-list-admin"],
+    "user-groups-admin": [
+        "Organization settings",
+        "User groups",
+        "/#organization/user-groups-admin",
+    ],
+    "user-list-admin": ["Organization settings", "Users", "/#organization/user-list-admin"],
     "deactivated-users-admin": [
-        "Manage organization",
+        "Organization settings",
         "Deactivated users",
         "/#organization/deactivated-users-admin",
     ],
     "bot-list-admin": [
-        "Manage organization",
-        "your organization's Bots",
+        "Organization settings",
+        "Bots",
         "/#organization/bot-list-admin",
     ],
     "default-streams-list": [
-        "Manage organization",
+        "Organization settings",
         "Default streams",
         "/#organization/default-streams-list",
     ],
     "linkifier-settings": [
-        "Manage organization",
+        "Organization settings",
         "Linkifiers",
         "/#organization/linkifier-settings",
     ],
     "playground-settings": [
-        "Manage organization",
+        "Organization settings",
         "Code playgrounds",
         "/#organization/playground-settings",
     ],
     "profile-field-settings": [
-        "Manage organization",
+        "Organization settings",
         "Custom profile fields",
         "/#organization/profile-field-settings",
     ],
     "invites-list-admin": [
-        "Manage organization",
+        "Organization settings",
         "Invitations",
         "/#organization/invites-list-admin",
     ],
     "data-exports-admin": [
-        "Manage organization",
+        "Organization settings",
         "Data exports",
         "/#organization/data-exports-admin",
     ],
@@ -109,6 +113,21 @@ settings_markdown = """
 
 1. On the left, click {setting_reference}.
 """
+
+
+def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) -> str:
+    if relative_settings_links:
+        relative_link = f"[{setting_name}]({setting_link})"
+        # The "Bots" label appears in both Personal and Organization settings
+        # in the user interface so we need special text for this setting.
+        if setting_name == "Bots":
+            return f"1. Navigate to the {relative_link} \
+                    tab of the **{setting_type_name}** menu."
+        return f"1. Go to {relative_link}."
+    return settings_markdown.format(
+        setting_type_name=setting_type_name,
+        setting_reference=f"**{setting_name}**",
+    )
 
 
 class SettingHelpExtension(Extension):
@@ -152,15 +171,7 @@ class Setting(Preprocessor):
 
     def handleMatch(self, match: Match[str]) -> str:
         setting_identifier = match.group("setting_identifier")
-        setting_type_name = link_mapping[setting_identifier][0]
-        setting_name = link_mapping[setting_identifier][1]
-        setting_link = link_mapping[setting_identifier][2]
-        if relative_settings_links:
-            return f"1. Go to [{setting_name}]({setting_link})."
-        return settings_markdown.format(
-            setting_type_name=setting_type_name,
-            setting_reference=f"**{setting_name}**",
-        )
+        return getMarkdown(*link_mapping[setting_identifier])
 
 
 def makeExtension(*args: Any, **kwargs: Any) -> SettingHelpExtension:

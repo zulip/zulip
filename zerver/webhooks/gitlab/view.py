@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Protocol, Union
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
@@ -458,7 +458,7 @@ def get_subject_based_on_event(
             if use_merge_request_title
             else "",
         )
-    elif event.startswith("Issue Hook") or event.startswith("Confidential Issue Hook"):
+    elif event.startswith(("Issue Hook", "Confidential Issue Hook")):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="issue",
@@ -508,13 +508,12 @@ def get_event(request: HttpRequest, payload: WildValue, branches: Optional[str])
     elif event in ["Confidential Note Hook", "Note Hook"]:
         action = payload["object_attributes"]["noteable_type"].tame(check_string)
         event = f"{event} {action}"
-    elif event == "Push Hook":
-        if branches is not None:
-            branch = get_branch_name(payload)
-            if branches.find(branch) == -1:
-                return None
+    elif event == "Push Hook" and branches is not None:
+        branch = get_branch_name(payload)
+        if branches.find(branch) == -1:
+            return None
 
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
         return event
 
-    raise UnsupportedWebhookEventType(event)
+    raise UnsupportedWebhookEventTypeError(event)

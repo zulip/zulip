@@ -2,6 +2,7 @@ import _ from "lodash";
 
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
+import * as people from "./people";
 
 // This class is only exported for unit testing purposes.
 // If we find reuse opportunities, we should just put it into
@@ -45,6 +46,9 @@ const stream_senders = new Map();
 
 // topic_senders[stream_id][topic_id][sender_id] = IdTracker
 const topic_senders = new Map();
+
+// pm_senders[user_ids_string][user_id] = IdTracker
+const pm_senders = new Map();
 
 export function clear_for_testing() {
     stream_senders.clear();
@@ -91,7 +95,7 @@ function add_topic_message({stream_id, topic, sender_id, message_id}) {
     id_tracker.add(message_id);
 }
 
-export function process_message_for_senders(message) {
+export function process_stream_message(message) {
     const stream_id = message.stream_id;
     const topic = message.topic;
     const sender_id = message.sender_id;
@@ -201,7 +205,7 @@ export function get_topic_recent_senders(stream_id, topic) {
     function by_max_message_id(item1, item2) {
         const list1 = item1[1];
         const list2 = item2[1];
-        return list1.max_id() - list2.max_id();
+        return list2.max_id() - list1.max_id();
     }
 
     const sorted_senders = Array.from(sender_dict.entries()).sort(by_max_message_id);
@@ -210,4 +214,39 @@ export function get_topic_recent_senders(stream_id, topic) {
         recent_senders.push(item[0]);
     }
     return recent_senders;
+}
+
+export function process_private_message({to_user_ids, sender_id, id}) {
+    const sender_dict = pm_senders.get(to_user_ids) || new Map();
+    const id_tracker = sender_dict.get(sender_id) || new IdTracker();
+    pm_senders.set(to_user_ids, sender_dict);
+    sender_dict.set(sender_id, id_tracker);
+    id_tracker.add(id);
+}
+
+export function get_pm_recent_senders(user_ids_string) {
+    const user_ids = user_ids_string.split(",").map((id) => Number.parseInt(id, 10));
+    const sender_dict = pm_senders.get(user_ids_string);
+    const pm_senders_info = {participants: [], non_participants: []};
+    if (!sender_dict) {
+        return pm_senders_info;
+    }
+
+    function compare_pm_user_ids_by_recency(user_id1, user_id2) {
+        const max_id1 = sender_dict.get(user_id1)?.max_id() || -1;
+        const max_id2 = sender_dict.get(user_id2)?.max_id() || -1;
+        return max_id2 - max_id1;
+    }
+
+    // Add current user to user_ids.
+    user_ids.push(people.my_current_user_id());
+    pm_senders_info.non_participants = user_ids.filter((user_id) => {
+        if (sender_dict.get(user_id)) {
+            pm_senders_info.participants.push(user_id);
+            return false;
+        }
+        return true;
+    });
+    pm_senders_info.participants.sort(compare_pm_user_ids_by_recency);
+    return pm_senders_info;
 }

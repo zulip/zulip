@@ -9,6 +9,7 @@ Query = Union[str, bytes, Composable]
 Params = Union[Sequence[object], Mapping[str, object], None]
 ParamsT = TypeVar("ParamsT")
 
+
 # Similar to the tracking done in Django's CursorDebugWrapper, but done at the
 # psycopg2 cursor level so it works with SQLAlchemy.
 def wrapper_execute(

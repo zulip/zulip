@@ -6,11 +6,12 @@ from collections import defaultdict
 
 import orjson
 
-from custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
-from emoji_setup_utils import get_emoji_code
-
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 sys.path.append(ZULIP_PATH)
+
+from tools.setup.emoji.custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
+from tools.setup.emoji.emoji_setup_utils import get_emoji_code
+
 CLDR_DATA_FILE = os.path.join(
     ZULIP_PATH, "node_modules", "cldr-annotations-modern", "annotations", "en", "annotations.json"
 )
@@ -78,6 +79,7 @@ def cleanup_name(name: str) -> str:
         "”": "",
         ":": "",
         ".": "",
+        ",": "",
         "&": "and",
         "‘": "'",
         "’": "'",
@@ -137,6 +139,9 @@ def main() -> None:
             emoji = "".join(
                 chr(int(h, 16))
                 for h in (emoji_dict["non_qualified"] or emoji_dict["unified"]).split("-")
+                # We have to do this check because of this upstream bug:
+                # https://github.com/iamcal/emoji-data/pull/217
+                if h != "FE0F"
             )
             if emoji not in CLDR_DATA:
                 print(
@@ -160,7 +165,7 @@ def main() -> None:
             all_canonical_names.add(canonical_name)
 
     # STEP 2: We don't support having aliases that collide with canonical names for emoji, so remove them.
-    for (emoji_code, emoji_names) in all_emojis.items():
+    for emoji_code, emoji_names in all_emojis.items():
         # Copy the list to not iterate while elements are being deleted.
         aliases = emoji_names["aliases"][:]
         for alias in aliases:
@@ -174,7 +179,7 @@ def main() -> None:
     # If the alias was specifically specified in custom_emoji_names, then we can keep just
     # that one, but otherwise there's no particular emoji that is an obvious candidate
     # for the alias so just remove the alias for all relevant emoji.
-    for alias in alias_to_emoji_code.keys():
+    for alias in alias_to_emoji_code:
         if len(alias_to_emoji_code[alias]) > 1:
             for emoji_code in alias_to_emoji_code[alias]:
                 if emoji_code not in CUSTOM_EMOJI_NAME_MAPS:
@@ -182,7 +187,7 @@ def main() -> None:
 
     # STEP 4: We keep non-ascii (non-"English") characters in some emoji names if that's the correct
     # way to spell that word, but always add an alias for an ascii-only version of the word.
-    for (emoji_code, emoji_names) in all_emojis.items():
+    for emoji_code, emoji_names in all_emojis.items():
         for name in [emoji_names["canonical_name"]] + emoji_names["aliases"]:
             # These are known names where we don't have an ascii-only version and there are ascii aliases
             # that a user can still enter instead to get the same emoji.
@@ -203,7 +208,7 @@ def main() -> None:
             "# Generated with `generate_emoji_names`.\n\n"
             "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {\n"
         )
-        for (key, emoji_names) in all_emojis.items():
+        for key, emoji_names in all_emojis.items():
             f.write(f"    {key!r}: {emoji_names!r},\n")
         f.write("}\n")
 

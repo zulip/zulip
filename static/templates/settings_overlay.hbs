@@ -115,7 +115,7 @@
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="deactivated-users-admin">
+                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="deactivated-users-admin">
                         <i class="icon fa fa-user-times" aria-hidden="true"></i>
                         <div class="text">{{t "Deactivated users" }}</div>
                         {{#unless is_admin}}

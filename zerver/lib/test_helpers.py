@@ -38,19 +38,19 @@ from django.urls import URLResolver
 from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
-import zerver.lib.upload
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_set_realm_user_default_setting
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib import cache
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.request import RequestNotes
-from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import (
     Client,
     Message,
-    Realm,
+    RealmUserDefault,
     Subscription,
     UserMessage,
     UserProfile,
@@ -73,13 +73,13 @@ class MockLDAP(fakeldap.MockLDAP):
     class LDAPError(ldap.LDAPError):
         pass
 
-    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):
+    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):  # noqa: N801
         pass
 
-    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):
+    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):  # noqa: N801
         pass
 
-    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):
+    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):  # noqa: N801
         pass
 
 
@@ -200,17 +200,26 @@ def stdout_suppressed() -> Iterator[IO[str]]:
 
 def reset_emails_in_zulip_realm() -> None:
     realm = get_realm("zulip")
-    do_set_realm_property(
-        realm,
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    do_set_realm_user_default_setting(
+        realm_user_default,
         "email_address_visibility",
-        Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         acting_user=None,
     )
+    users = UserProfile.objects.filter(realm=realm)
+    for user in users:
+        do_change_user_setting(
+            user,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
 
 
 def get_test_image_file(filename: str) -> IO[bytes]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
-    return open(os.path.join(test_avatar_dir, filename), "rb")
+    return open(os.path.join(test_avatar_dir, filename), "rb")  # noqa: SIM115
 
 
 def read_test_image_file(filename: str) -> bytes:
@@ -224,9 +233,9 @@ def avatar_disk_path(
     avatar_url_path = avatar_url(user_profile, medium)
     assert avatar_url_path is not None
     assert settings.LOCAL_UPLOADS_DIR is not None
+    assert settings.LOCAL_AVATARS_DIR is not None
     avatar_disk_path = os.path.join(
-        settings.LOCAL_UPLOADS_DIR,
-        "avatars",
+        settings.LOCAL_AVATARS_DIR,
         avatar_url_path.split("/")[-2],
         avatar_url_path.split("/")[-1].split("?")[0],
     )
@@ -453,7 +462,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             return url
 
         def find_pattern(pattern: Any, prefixes: List[str]) -> None:
-
             if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 
@@ -548,12 +556,11 @@ FuncT = TypeVar("FuncT", bound=Callable[..., None])
 def use_s3_backend(method: FuncT) -> FuncT:
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
+    @override_settings(LOCAL_AVATARS_DIR=None)
+    @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
-        zerver.lib.upload.upload_backend = S3UploadBackend()
-        try:
+        with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
             return method(*args, **kwargs)
-        finally:
-            zerver.lib.upload.upload_backend = LocalUploadBackend()
 
     return new_method
 

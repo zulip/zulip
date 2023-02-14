@@ -534,6 +534,27 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## "example.com"), otherwise leave this as None.
 # SSO_APPEND_DOMAIN = None
 
+## JWT authentication.
+##
+## JWT authentication is supported both to transparently log users
+## into Zulip or to fetch users' API keys. The JWT secret key and
+## algorithm must be configured here.
+##
+## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#jwt
+# JWT_AUTH_KEYS: Dict[str, Any] = {
+#     # Subdomain for which this JWT configuration will apply.
+#     "zulip": {
+#         # Shared secret key used to validate jwt tokens, which should be stored
+#         # in zulip-secrets.conf and is read by the get_secret call below.
+#         # The key needs to be securely, randomly generated. Note that if you're
+#         # using the default HS256 algorithm, per RFC 7518, the key needs
+#         # to have at least 256 bits of entropy.
+#         "key": get_secret("jwt_auth_key"),
+#         # Algorithm with which the JWT token are signed.
+#         "algorithms": ["HS256"],
+#     }
+# }
+
 ################
 ## Service configuration
 
@@ -763,6 +784,24 @@ CAMO_URI = "/external_content/"
 
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
+
+## Entries in this dictionary will override Zulip's default rate
+## limits. Rules which are not explicitly overridden here
+## will be as default. View the current rules using:
+##   /home/zulip/deployments/current/scripts/get-django-setting RATE_LIMITING_RULES
+##
+## The limits are tuples of a number of seconds and a number of
+## requests allowed over that many seconds. If multiple tuples are
+## given in a rule, a request breaching any of them will trigger a
+## rate-limited response to the client. For example, to change the
+## limits for total API requests by each user to be at most 100
+## requests per minute, and at most 200 requests per hour, add:
+##   "api_by_user": [(60, 100), (3600, 200)],
+# RATE_LIMITING_RULES = {
+#     "api_by_ip": [
+#         (60, 100),
+#     ],
+# }
 
 ## Fetch TOR exit node list every hour, and group all TOR exit nodes
 ## together into one bucket when applying rate-limiting.

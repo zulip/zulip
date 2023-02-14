@@ -36,13 +36,21 @@ preparing a new release.
   Transifex and commit them.
 - Use `build-release-tarball` to generate a pre-release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
-  release, on Ubuntu 20.04.
+  release, on Ubuntu 20.04 or 22.04.
 - Repeat until release is ready.
 - Send around the Paper blog post draft for review.
-- Move the blog post draft to Ghost:
-  - Use "··· > Export > Markdown" to get a pretty good markdown conversion, then insert that as a Markdown block in Ghost.
+- Move the blog post draft to Astro:
+  - Use "··· > Export > Markdown" to get a pretty good Markdown
+    conversion, and save it in `src/posts` with a filename appropriate
+    for a URL slug.
+  - Add the needed YAML frontmatter.
+  - Move any images into `public` and update their references.
   - Proofread, especially for formatting.
-  - Tag the post with "Release announcements" _first_, then any other tags (e.g. "Security").
+  - Tag the post with "Release announcements" _first_, then any other
+    tags (e.g. "Security").
+  - If the draft post should remain secret until release, avoid using
+    a guessable Git branch name for the pull request (the deployment
+    preview URL is based on the branch name).
 
 ### Executing the release
 
@@ -58,15 +66,20 @@ preparing a new release.
     level for the final release, and document a reserved range.
 - Run `tools/release` with the release version.
 - Update the [Docker image](https://github.com/zulip/docker-zulip):
-  - Update `ZULIP_GIT_REF` in `Dockerfile`
-  - Update `README.md`
-  - Update the image in `docker-compose.yml`, as well as the `ZULIP_GIT_REF`
-  - Update the image in `kubernetes/zulip-rc.yml`
+  - Commit the Docker updates:
+    - Update `ZULIP_GIT_REF` in `Dockerfile`
+    - Update `README.md`
+    - Update the image in `docker-compose.yml`, as well as the `ZULIP_GIT_REF`
+  - Commit the Helm updates:
+    - Add a new entry to `kubernetes/chart/zulip/CHANGELOG.md`
+    - Update the `appVersion` in `kubernetes/chart/zulip/Chart.yaml`
+    - Update the `tag` in `kubernetes/chart/zulip/values.yaml`
+    - Update the docs by running `helm-docs`
+    - Update the `image` in `kubernetes/manual/zulip-rc.yml`
   - Build the image: `docker build . -t zulip/docker-zulip:4.11-0 --no-cache`
   - Also tag it with `latest`: `docker build . -t zulip/docker-zulip:latest`
   - Push those tags: `docker push zulip/docker-zulip:4.11-0; docker push zulip/docker-zulip:latest`
-  - Update the latest version in [the README in Docker Hub](https://hub.docker.com/repository/docker/zulip/docker-zulip).
-  - Commit the changes and push them to `main`.
+  - Push the commits to `main`.
 - Publish the blog post; check the box to "send by email."
 - Announce the release, pointing to the blog post, via:
   - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
@@ -76,8 +89,8 @@ preparing a new release.
 ### Post-release
 
 - The DigitalOcean one-click image will report in an internal channel
-  once it is built, and how to test it. Verify it, then publish it
-  publish it to DigitalOcean marketplace.
+  once it is built, and how to test it. Verify it, then publish it to
+  DigitalOcean marketplace.
 - _Major releases only:_
   - Create a release branch (e.g. `4.x`).
   - On the release branch, update `ZULIP_VERSION` in `version.py` to
@@ -99,6 +112,5 @@ preparing a new release.
 - _Minor releases only (e.g. 3.2):_
   - On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g. `3.2+git`.
-  - On main, update `LATEST_RELEASE_VERSION` with the released version.
-  - On main, cherry-pick the changelog changes from the release
-    branch.
+  - On main, update `LATEST_RELEASE_VERSION` with the released
+    version, as well as the changelog changes from the release branch.

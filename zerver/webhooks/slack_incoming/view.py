@@ -1,6 +1,7 @@
 # Webhooks for external integrations.
 import re
-from typing import Optional
+from itertools import zip_longest
+from typing import Literal, Optional, TypedDict, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -14,6 +15,7 @@ from zerver.lib.validator import (
     WildValue,
     check_dict,
     check_int,
+    check_list,
     check_string,
     check_string_in,
     check_url,
@@ -30,7 +32,6 @@ def api_slack_incoming_webhook(
     user_profile: UserProfile,
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
-
     # Slack accepts webhook payloads as payload="encoded json" as
     # application/x-www-form-urlencoded, as well as in the body as
     # application/json.
@@ -98,17 +99,17 @@ def render_block(block: WildValue) -> str:
             if element_type == "image":
                 pieces.append(render_block_element(element))
             else:
-                pieces.append(element.tame(check_text_block()))
+                pieces.append(element.tame(check_text_block())["text"])
         return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
     elif block_type == "divider":
         return "----"
     elif block_type == "header":
-        return "## " + block["text"].tame(check_text_block(plain_text_only=True))
+        return "## " + block["text"].tame(check_text_block(plain_text_only=True))["text"]
     elif block_type == "image":
         image_url = block["image_url"].tame(check_url)
         alt_text = block["alt_text"].tame(check_string)
         if "title" in block:
-            alt_text = block["title"].tame(check_text_block(plain_text_only=True))
+            alt_text = block["title"].tame(check_text_block(plain_text_only=True))["text"]
         return f"[{alt_text}]({image_url})"
     elif block_type == "input":
         # Unhandled
@@ -116,30 +117,50 @@ def render_block(block: WildValue) -> str:
     elif block_type == "section":
         pieces = []
         if "text" in block:
-            pieces.append(block["text"].tame(check_text_block()))
+            pieces.append(block["text"].tame(check_text_block())["text"])
 
         if "accessory" in block:
             pieces.append(render_block_element(block["accessory"]))
 
         if "fields" in block:
-            # TODO -- these should be rendered in two columns,
-            # left-to-right.  We could render them sequentially,
-            # except some may be Title1 / Title2 / value1 / value2,
-            # which would be nonsensical when rendered sequentially.
-            pass
+            fields = block["fields"].tame(check_list(check_text_block()))
+            if len(fields) == 1:
+                # Special-case a single field to display a bit more
+                # nicely, without extraneous borders and limitations
+                # on its contents.
+                pieces.append(fields[0]["text"])
+            else:
+                # It is not possible to have newlines in a table, nor
+                # escape the pipes that make it up; replace them with
+                # whitespace.
+                field_text = [f["text"].replace("\n", " ").replace("|", " ") for f in fields]
+                # Because Slack formats this as two columns, but not
+                # necessarily a table with a bold header, we emit a
+                # blank header row first.
+                table = "| | |\n|-|-|\n"
+                # Then take the fields two-at-a-time to make the table
+                iters = [iter(field_text)] * 2
+                for left, right in zip_longest(*iters, fillvalue=""):
+                    table += f"| {left} | {right} |\n"
+                pieces.append(table)
 
         return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
     return ""
 
 
-def check_text_block(plain_text_only: bool = False) -> Validator[str]:
+class TextField(TypedDict):
+    text: str
+    type: Literal["plain_text", "mrkdwn"]
+
+
+def check_text_block(plain_text_only: bool = False) -> Validator[TextField]:
     if plain_text_only:
         type_validator = check_string_in(["plain_text"])
     else:
-        type_validator = check_string
+        type_validator = check_string_in(["plain_text", "mrkdwn"])
 
-    def f(var_name: str, val: object) -> str:
+    def f(var_name: str, val: object) -> TextField:
         block = check_dict(
             [
                 ("type", type_validator),
@@ -147,15 +168,7 @@ def check_text_block(plain_text_only: bool = False) -> Validator[str]:
             ],
         )(var_name, val)
 
-        # We can't use `value_validator=check_string` above to let
-        # mypy know this is a str, because there's an optional boolean
-        # `emoji` key which can appear -- hence the assert.
-        text = block["text"]
-        assert isinstance(text, str)
-
-        # Ideally we would escape the content if it was plain text,
-        # but out flavor of Markdown doesn't support escapes. :(
-        return text
+        return cast(TextField, block)
 
     return f
 
@@ -193,14 +206,14 @@ def render_attachment(attachment: WildValue) -> str:
     if "fields" in attachment:
         fields = []
         for field in attachment["fields"]:
-            if field["title"] and field["value"]:
+            if "title" in field and "value" in field and field["title"] and field["value"]:
                 title = field["title"].tame(check_string)
                 value = field["value"].tame(check_string)
                 fields.append(f"*{title}*: {value}")
-            elif field["title"]:
+            elif "title" in field and field["title"]:
                 title = field["title"].tame(check_string)
                 fields.append(f"*{title}*")
-            elif field["value"]:
+            elif "value" in field and field["value"]:
                 value = field["value"].tame(check_string)
                 fields.append(f"{value}")
         pieces.append("\n".join(fields))
@@ -224,8 +237,8 @@ def replace_links(text: str) -> str:
 
 def replace_formatting(text: str) -> str:
     # Slack uses *text* for bold, whereas Zulip interprets that as italics
-    text = re.sub(r"([^\w])\*(?!\s+)([^\*^\n]+)(?<!\s)\*([^\w])", r"\1**\2**\3", text)
+    text = re.sub(r"([^\w]|^)\*(?!\s+)([^\*\n]+)(?<!\s)\*((?=[^\w])|$)", r"\1**\2**\3", text)
 
     # Slack uses _text_ for emphasis, whereas Zulip interprets that as nothing
-    text = re.sub(r"([^\w])[_](?!\s+)([^\_\^\n]+)(?<!\s)[_]([^\w])", r"\1*\2*\3", text)
+    text = re.sub(r"([^\w]|^)[_](?!\s+)([^\_\n]+)(?<!\s)[_]((?=[^\w])|$)", r"\1*\2*\3", text)
     return text

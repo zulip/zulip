@@ -56,6 +56,8 @@ export function set_up() {
     settings_display.set_up(realm_default_settings_panel);
     settings_notifications.set_up(realm_default_settings_panel);
 
+    $("#realm_email_address_visibility").val(realm_user_settings_defaults.email_address_visibility);
+
     settings_org.register_save_discard_widget_handlers(
         $container,
         "/json/realm/user_settings_defaults",

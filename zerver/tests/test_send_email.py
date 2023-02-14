@@ -6,7 +6,7 @@ from django.core.mail.backends.smtp import EmailBackend as SMTPBackend
 from django.core.mail.message import sanitize_address
 
 from zerver.lib.send_email import (
-    EmailNotDeliveredException,
+    EmailNotDeliveredError,
     FromAddress,
     build_email,
     initialize_connection,
@@ -118,7 +118,7 @@ class TestSendEmail(ZulipTestCase):
         )
         self.assertEqual(mail.extra_headers["From"], f"{from_name} <{FromAddress.NOREPLY}>")
 
-        # We test the cases that should raise an EmailNotDeliveredException
+        # We test the cases that should raise an EmailNotDeliveredError
         errors = {
             f"Unknown error sending password_reset email to {mail.to}": [0],
             f"Error sending password_reset email to {mail.to}": [SMTPException()],
@@ -133,7 +133,7 @@ class TestSendEmail(ZulipTestCase):
         for message, side_effect in errors.items():
             with mock.patch.object(EmailBackend, "send_messages", side_effect=side_effect):
                 with self.assertLogs(logger=logger) as info_log:
-                    with self.assertRaises(EmailNotDeliveredException):
+                    with self.assertRaises(EmailNotDeliveredError):
                         send_email(
                             "zerver/emails/password_reset",
                             to_emails=[hamlet.email],

@@ -78,6 +78,12 @@
         }
     }
 
+    h5,
+    h6 {
+        margin: 10px 0;
+        line-height: 20px;
+    }
+
     /* Since markdown doesn't make it easy to put an HTML element around a
        markdown table, we instead have a model of putting an empty div
        before it to configure a specific table's styling. */

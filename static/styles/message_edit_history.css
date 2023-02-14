@@ -1,4 +1,8 @@
 #message-edit-history {
+    .message_top_line {
+        float: right;
+    }
+
     .message_time {
         position: static;
     }

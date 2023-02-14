@@ -14,7 +14,6 @@ import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
-import * as compose_error from "./compose_error";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
@@ -150,6 +149,14 @@ export function initialize() {
             return true;
         }
 
+        // Allow toggling of tasks in todo widget
+        if (
+            $target.is(".todo-widget label.checkbox") ||
+            $target.parents(".todo-widget label.checkbox").length > 0
+        ) {
+            return true;
+        }
+
         return false;
     }
 
@@ -242,11 +249,6 @@ export function initialize() {
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {
-        // Hide actions popover to keep its options
-        // in sync with revealed/hidden state of
-        // muted user's message.
-        popovers.hide_actions_popover();
-
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
@@ -334,11 +336,6 @@ export function initialize() {
         if (document.activeElement === this) {
             ui_util.blur_active_element();
         }
-    });
-    $(".message_edit_form .send-status-close").on("click", function () {
-        const row_id = rows.id($(this).closest(".message_row"));
-        const $send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
-        $send_status.stop(true).fadeOut(200);
     });
     $("body").on("click", ".message_edit_form .compose_upload_file", function (e) {
         e.preventDefault();
@@ -592,7 +589,12 @@ export function initialize() {
             $(".tooltip").remove();
         });
 
-    function do_render_buddy_list_tooltip($elem, title_data) {
+    function do_render_buddy_list_tooltip(
+        $elem,
+        title_data,
+        parent_element_to_append = null,
+        is_custom_observer_needed = true,
+    ) {
         let placement = "left";
         let observer;
         if (window.innerWidth < media_breakpoints_num.md) {
@@ -609,11 +611,16 @@ export function initialize() {
             arrow: true,
             placement,
             showOnCreate: true,
-            onHidden: (instance) => {
+            onHidden(instance) {
                 instance.destroy();
-                observer.disconnect();
+                if (is_custom_observer_needed) {
+                    observer.disconnect();
+                }
             },
-            onShow: (instance) => {
+            onShow(instance) {
+                if (!is_custom_observer_needed) {
+                    return;
+                }
                 // For both buddy list and top left corner pm list, `target_node`
                 // is their parent `ul` element. We cannot use MutationObserver
                 // directly on the reference element because it will be removed
@@ -638,7 +645,7 @@ export function initialize() {
                 observer = new MutationObserver(callback);
                 observer.observe(target_node, config);
             },
-            appendTo: () => document.body,
+            appendTo: () => parent_element_to_append || document.body,
         });
     }
 
@@ -661,6 +668,19 @@ export function initialize() {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
         do_render_buddy_list_tooltip($elem, title_data);
+    });
+
+    // Recent conversations PMs
+    $("body").on("mouseenter", ".recent_topic_stream .pm_status_icon", (e) => {
+        e.stopPropagation();
+        const $elem = $(e.currentTarget);
+        const user_ids_string = $elem.attr("data-user-ids-string");
+        // Don't show tooltip for group PMs.
+        if (!user_ids_string || user_ids_string.split(",").length !== 1) {
+            return;
+        }
+        const title_data = recent_topics_ui.get_pm_tooltip_data(user_ids_string);
+        do_render_buddy_list_tooltip($elem, title_data, undefined, false);
     });
 
     // MISC
@@ -696,10 +716,6 @@ export function initialize() {
     });
 
     // COMPOSE
-
-    $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
-        compose_error.hide();
-    });
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});
@@ -983,6 +999,7 @@ export function initialize() {
                 // filters or search widgets won't unnecessarily close
                 // compose.
                 !$(e.target).closest("input").length &&
+                !$(e.target).closest(".todo-widget label.checkbox").length &&
                 !$(e.target).closest("textarea").length &&
                 !$(e.target).closest("select").length &&
                 // Clicks inside an overlay, popover, custom

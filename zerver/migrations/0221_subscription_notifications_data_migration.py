@@ -53,7 +53,6 @@ def reverse_notification_settings(apps: StateApps, schema_editor: BaseDatabaseSc
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0220_subscription_notification_settings"),
     ]

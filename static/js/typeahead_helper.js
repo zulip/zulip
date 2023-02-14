@@ -10,7 +10,6 @@ import * as compose_state from "./compose_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -95,7 +94,7 @@ export function render_person(person) {
         status_emoji_info,
     };
 
-    typeahead_arguments.secondary = settings_data.email_for_user_settings(person);
+    typeahead_arguments.secondary = person.delivery_email;
     return render_typeahead_item(typeahead_arguments);
 }
 
@@ -234,7 +233,7 @@ export function compare_people_for_relevance(
 }
 
 export function sort_people_for_relevance(objs, current_stream_name, current_topic) {
-    // If sorting for recipientbox typeahead or compose state is private, then current_stream = ""
+    // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     let current_stream = false;
     if (current_stream_name) {
         current_stream = stream_data.get_sub(current_stream_name);
@@ -287,7 +286,7 @@ function retain_unique_language_aliases(matches) {
 }
 
 export function sort_languages(matches, query) {
-    const results = typeahead.triage(query, matches);
+    const results = typeahead.triage(query, matches, (x) => x);
 
     // Languages that start with the query
     results.matches = results.matches.sort(compare_by_popularity);

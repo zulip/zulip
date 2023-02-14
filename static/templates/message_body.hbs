@@ -1,38 +1,37 @@
-<div class="message_top_line">
-    {{#unless status_message}}
-    <span class="message_sender sender_info_hover no-select">
-        {{#if include_sender}}
-        <span title="{{t 'View user profile' }} (u)">
-            {{> message_avatar ~}}
-            <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info}}</span>
-            {{#if sender_is_bot}}
-            <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
-            {{/if}}
+{{#unless status_message}}
+<span class="message_sender sender_info_hover no-select">
+    {{#if include_sender}}
+    <span>
+        {{> message_avatar ~}}
+        <span class="sender_name auto-select" role="button" tabindex="0">
+            <span class="sender_name_padding view_user_card_tooltip"></span>
+            <span class="view_user_card_tooltip">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info}}</span>
         </span>
+        {{#if sender_is_bot}}
+        <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+        {{/if}}
+        {{#if edited_alongside_sender}}
+        {{> edited_notice}}
         {{/if}}
     </span>
+    {{/if}}
+</span>
+{{/unless}}
+
+{{#if status_message}}
+{{> me_message}}
+{{/if}}
+
+<span class="alert-msg"></span>
+
+<a href="{{ msg/url }}" class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">
+    {{#unless include_sender}}
+    <span class="copy-paste-text">&nbsp;</span>
     {{/unless}}
+    {{timestr}}
+</a>
 
-    {{#if status_message}}
-    {{> me_message}}
-    {{/if}}
-
-    <span class="alert-msg pull-right"></span>
-
-    <a href="{{ msg/url }}" class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">
-        {{#unless include_sender}}
-        <span class="copy-paste-text">&nbsp;</span>
-        {{/unless}}
-        {{timestr}}
-    </a>
-
-    {{#if edited_alongside_sender}}
-    {{> edited_notice}}
-    {{/if}}
-
-    {{> message_controls}}
-
-</div>
+{{> message_controls}}
 
 {{#unless status_message}}
     {{#unless is_hidden}}
@@ -44,7 +43,9 @@
         {{/if}}
     </div>
     {{else}}
-    {{> message_hidden_dialog}}
+    <div class="message_content rendered_markdown">
+        {{> message_hidden_dialog}}
+    </div>
     {{/unless}}
 {{/unless}}
 

@@ -5,6 +5,7 @@ import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -29,6 +30,7 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -286,7 +288,7 @@ export function process_escape_key(e) {
             return true;
         }
 
-        if (giphy.is_popped_from_edit_messsage()) {
+        if (giphy.is_popped_from_edit_message()) {
             giphy.focus_current_edit_message();
             // Hide after setting focus so that `edit_message_id` is
             // still set in giphy.
@@ -297,14 +299,15 @@ export function process_escape_key(e) {
         if (compose_state.composing()) {
             // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
-            if (!giphy.is_popped_from_edit_messsage() && giphy.hide_giphy_popover()) {
+            if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
                 $("#compose-textarea").trigger("focus");
                 return true;
             }
 
             // Check for errors in compose box; close errors if they exist
-            if ($("#compose-send-status").css("display") !== "none") {
-                $("#compose-send-status").hide();
+            if ($(".compose_banner").length) {
+                compose_banner.clear_errors();
+                compose_banner.clear_warnings();
                 return true;
             }
 
@@ -351,7 +354,7 @@ export function process_escape_key(e) {
 }
 
 function handle_popover_events(event_name) {
-    if (popovers.actions_popped()) {
+    if (popover_menus.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
     }
@@ -476,6 +479,26 @@ export function process_enter_key(e) {
     if ($("#preview_message_area").is(":visible")) {
         compose.enter_with_preview_open();
         return true;
+    }
+
+    if (recent_topics_util.is_visible()) {
+        if (e.target === $("body")[0]) {
+            // There's a race when using `Esc` and `Enter` to navigate to
+            // Recent Topics and then navigate to the next topic, wherein
+            // Recent Topics won't have applied focus to its table yet.
+            //
+            // Recent Topics's own navigation just lets `Enter` be
+            // treated as a click on the highlighted message, so we
+            // don't need to do anything there. But if nothing is
+            // focused (say, during the race or after clicking on the
+            // sidebars, it's worth focusing the table so that hitting
+            // `Enter` again will navigate you somewhere.
+            const focus_changed = recent_topics_ui.revive_current_focus();
+            return focus_changed;
+        }
+
+        // Never fall through to opening the compose box to reply.
+        return false;
     }
 
     // If we got this far, then we're presumably in the message
@@ -706,13 +729,10 @@ export function process_hotkey(e, hotkey) {
         }
 
         if (
-            (event_name === "up_arrow" ||
-                event_name === "down_arrow" ||
-                event_name === "page_up" ||
-                event_name === "page_down" ||
-                event_name === "home" ||
-                event_name === "end") &&
-            compose_state.focus_in_empty_compose()
+            ((event_name === "down_arrow" || event_name === "page_down" || event_name === "end") &&
+                compose_state.focus_in_empty_compose()) ||
+            ((event_name === "up_arrow" || event_name === "page_up" || event_name === "home") &&
+                compose_state.focus_in_empty_compose(true))
         ) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
@@ -918,7 +938,7 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
-            return popovers.open_message_menu(msg);
+            return popover_menus.toggle_message_actions_menu(msg);
         case "star_message":
             message_flags.toggle_starred_and_update_server(msg);
             return true;

@@ -17,7 +17,7 @@ from django.contrib.auth import get_backends
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from lxml.html import builder as E
+from lxml.html import builder as e
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.decorator import statsd_increment
@@ -27,6 +27,7 @@ from zerver.lib.notification_data import get_mentioned_user_group_name
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.topic import get_topic_resolution_and_bare_name
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.url_encoding import (
     huddle_narrow_url,
@@ -85,7 +86,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
         title_attr = {} if image_title is None else {"title": image_title}
         inner.clear()
         inner.tag = "p"
-        inner.append(E.A(image_link, href=image_link, target="_blank", **title_attr))
+        inner.append(e.A(image_link, href=image_link, target="_blank", **title_attr))
     else:
         # Inline images can't be displayed in the emails as the request
         # from the mail server can't be authenticated because it has no
@@ -111,7 +112,7 @@ def fix_emojis(fragment: lxml.html.HtmlElement, base_url: str, emojiset: str) ->
         emoji_name = emoji_span_elem.get("title")
         alt_code = emoji_span_elem.text
         image_url = base_url + f"/static/generated/emoji/images-{emojiset}-64/{emoji_code}.png"
-        img_elem = E.IMG(alt=alt_code, src=image_url, title=emoji_name, style="height: 20px;")
+        img_elem = e.IMG(alt=alt_code, src=image_url, title=emoji_name, style="height: 20px;")
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
@@ -135,13 +136,13 @@ def fix_spoilers_in_html(fragment: lxml.html.HtmlElement, language: str) -> None
         header_content = header.find("p")
         if header_content is None:
             # Create a new element to append the spoiler to)
-            header_content = E.P()
+            header_content = e.P()
             header.append(header_content)
         else:
             # Add a space.
             rear = header_content[-1] if len(header_content) else header_content
             rear.tail = (rear.tail or "") + " "
-        span_elem = E.SPAN(f"({spoiler_title})", **E.CLASS("spoiler-title"), title=spoiler_title)
+        span_elem = e.SPAN(f"({spoiler_title})", **e.CLASS("spoiler-title"), title=spoiler_title)
         header_content.append(span_elem)
         header.drop_tag()
         spoiler_content.drop_tree()
@@ -250,10 +251,12 @@ def build_message_list(
 
     def message_header(message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
+            grouping: Dict[str, Any] = {"user": message.sender_id}
             narrow_link = get_narrow_url(user, message)
             header = f"You and {message.sender.full_name}"
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         elif message.recipient.type == Recipient.HUDDLE:
+            grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
             assert not isinstance(display_recipient, str)
             narrow_link = get_narrow_url(user, message, display_recipient=display_recipient)
@@ -261,6 +264,7 @@ def build_message_list(
             header = "You and {}".format(", ".join(other_recipients))
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
         else:
+            grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
             stream_id = message.recipient.type_id
             stream = stream_map.get(stream_id, None)
             if stream is None:
@@ -272,6 +276,7 @@ def build_message_list(
             stream_link = stream_narrow_url(user.realm, stream)
             header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
         return {
+            "grouping": grouping,
             "plain": header,
             "html": header_html,
             "stream_message": message.recipient.type_name() == "stream",
@@ -308,7 +313,10 @@ def build_message_list(
         header = message_header(message)
 
         # If we want to collapse into the previous recipient block
-        if len(messages_to_render) > 0 and messages_to_render[-1]["header"] == header:
+        if (
+            len(messages_to_render) > 0
+            and messages_to_render[-1]["header"]["grouping"] == header["grouping"]
+        ):
             sender = sender_string(message)
             sender_block = messages_to_render[-1]["senders"]
 
@@ -389,7 +397,8 @@ def do_send_missedmessage_events_reply_in_zulip(
     from zerver.context_processors import common_context
 
     recipients = {
-        (msg["message"].recipient_id, msg["message"].topic_name()) for msg in missed_messages
+        (msg["message"].recipient_id, msg["message"].topic_name().lower())
+        for msg in missed_messages
     }
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
 
@@ -481,10 +490,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             )
         message = missed_messages[0]["message"]
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
-        stream_header = f"{stream.name} > {message.topic_name()}"
+        topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())
         context.update(
             stream_name=stream.name,
-            stream_header=stream_header,
+            topic_name=topic_name,
+            topic_resolved=topic_resolved,
         )
     else:
         raise AssertionError("Invalid messages!")
@@ -598,7 +608,7 @@ def handle_missedmessage_emails(
             # For PM's group using (recipient, sender).
             messages_by_bucket[(msg.recipient_id, msg.sender_id)].append(msg)
         else:
-            messages_by_bucket[(msg.recipient_id, msg.topic_name())].append(msg)
+            messages_by_bucket[(msg.recipient_id, msg.topic_name().lower())].append(msg)
 
     message_count_by_bucket = {
         bucket_tup: len(msgs) for bucket_tup, msgs in messages_by_bucket.items()
@@ -685,12 +695,11 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         is_realm_admin=user.is_realm_admin,
         is_demo_org=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
-    if user.is_realm_admin:
-        context["getting_started_link"] = (
-            user.realm.uri + "/help/getting-your-organization-started-with-zulip"
-        )
-    else:
-        context["getting_started_link"] = "https://zulip.com"
+
+    context["getting_organization_started_link"] = (
+        user.realm.uri + "/help/getting-your-organization-started-with-zulip"
+    )
+    context["getting_user_started_link"] = user.realm.uri + "/help/getting-started-with-zulip"
 
     # Imported here to avoid import cycles.
     from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap

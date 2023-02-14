@@ -15,6 +15,10 @@ html {
     margin: 10px;
 }
 
+.semi-bold {
+    font-weight: 600;
+}
+
 .white-box {
     position: relative;
     padding: 30px;
@@ -95,6 +99,20 @@ html {
 
             margin: 0 20px;
         }
+
+        select {
+            height: 30px;
+            padding: 4px 6px;
+            width: 220px;
+            font-size: 14px;
+            color: hsl(0, 0%, 33%);
+            border-radius: 4px;
+            border: 1px solid hsl(0, 0%, 80%);
+            margin-bottom: 10px;
+            cursor: pointer;
+            background-color: hsl(0, 0%, 100%);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
     }
 
     &.forgot-password-container {
@@ -163,27 +181,35 @@ html {
         display: inline-block;
     }
 
-    input[type="submit"] {
-        color: hsl(0, 0%, 67%);
-        border: 1px solid hsl(0, 0%, 87%);
+    .dev-button {
+        color: hsl(170, 41%, 52%);
+        border: 1px solid hsl(170, 41%, 52%);
         border-radius: 4px;
         background-color: transparent;
+        font-family: inherit;
+        font-weight: normal;
+        line-height: 20px;
+        vertical-align: middle;
+        margin: 0;
+        width: auto;
 
         transition: color 0.3s ease, border 0.3s ease;
 
         &:hover {
-            border-color: hsl(0, 0%, 53%);
-            color: hsl(0, 0%, 27%);
+            color: hsl(156, 62%, 61%);
+            border-color: hsl(156, 62%, 61%);
         }
 
-        &.btn-admin {
-            border-color: hsl(170, 41%, 52%);
-            color: hsl(170, 41%, 52%);
+        &.dev-login-button {
+            padding: 8px;
+            font-size: 19px;
+            min-width: 300px;
+        }
 
-            &:hover {
-                color: hsl(156, 62%, 61%);
-                border-color: hsl(156, 62%, 61%);
-            }
+        &.dev-create-button {
+            padding: 6px 12px;
+            margin-bottom: 4px;
+            font-size: 15px;
         }
     }
 }
@@ -484,6 +510,8 @@ html {
             border: 1px solid hsl(0, 0%, 87%);
             box-shadow: none;
             border-radius: 4px;
+            background-color: hsl(0, 0%, 100%);
+            color: hsl(0, 0%, 33%);
 
             transition: border 0.3s ease;
 
@@ -546,6 +574,7 @@ html {
            right above this one is also 326px. */
         select {
             width: 326px;
+            cursor: pointer;
         }
 
         p.text-error {
@@ -737,6 +766,7 @@ html {
 
 .confirm-email-change-page .white-box {
     max-width: 500px;
+    word-break: break-word;
 }
 
 .anonymous_access_form {
@@ -869,6 +899,16 @@ button#register_auth_button_gitlab {
             textarea {
                 width: 400px;
                 font-size: 1rem;
+            }
+
+            textarea {
+                color: hsl(0, 0%, 33%);
+                vertical-align: middle;
+                background-color: hsl(0, 0%, 100%);
+
+                &:focus {
+                    outline: 0;
+                }
             }
         }
     }
@@ -1030,16 +1070,6 @@ button#register_auth_button_gitlab {
     font-size: 22px;
 }
 
-#source_realm_select {
-    font-size: 1.2rem;
-    height: 45px;
-    width: 325px;
-
-    &:focus {
-        outline: none;
-    }
-}
-
 .goto-account-page {
     #realm_redirect_subdomain {
         text-align: right;
@@ -1076,7 +1106,7 @@ button#register_auth_button_gitlab {
         padding: 0;
         margin: 0;
 
-        &.form-horizontal:hover {
+        &.select-email-form:hover {
             background-color: hsl(202, 56%, 91%);
             cursor: pointer;
 
@@ -1251,5 +1281,15 @@ button#register_auth_button_gitlab {
 @media (width <= 400px) {
     .flex {
         min-height: calc(100vh - 560px);
+    }
+}
+
+.account-creation .white-box .user_email {
+    word-break: break-all;
+}
+
+@media (width >= 800px) {
+    .account-creation .white-box {
+        max-width: 800px;
     }
 }

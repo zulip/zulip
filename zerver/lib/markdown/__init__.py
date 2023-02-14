@@ -10,6 +10,7 @@ import urllib
 import urllib.parse
 from collections import deque
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import (
     Any,
     Callable,
@@ -25,8 +26,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from urllib.parse import urlencode, urljoin, urlsplit
-from xml.etree import ElementTree as etree
+from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -47,11 +47,11 @@ from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from soupsieve import escape as css_escape
 from tlds import tld_set
 
-from zerver.lib import mention as mention
+from zerver.lib import mention
 from zerver.lib.cache import cache_with_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
-from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
@@ -64,7 +64,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
-from zerver.lib.timeout import TimeoutExpired, timeout
+from zerver.lib.timeout import TimeoutExpiredError, timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
@@ -99,25 +99,7 @@ html_safelisted_schemes = (
     "wtai",
     "xmpp",
 )
-allowed_schemes = ("http", "https", "ftp", "file") + html_safelisted_schemes
-
-
-def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
-    """
-    Use this decorator with extreme caution.
-    The function you wrap should have no dependency
-    on any arguments (no args, no kwargs) nor should
-    it depend on any global state.
-    """
-    val = None
-
-    def cache_wrapper() -> ReturnT:
-        nonlocal val
-        if val is None:
-            val = method()
-        return val
-
-    return cache_wrapper
+allowed_schemes = ("http", "https", "ftp", "file", *html_safelisted_schemes)
 
 
 class LinkInfo(TypedDict):
@@ -175,7 +157,7 @@ STREAM_LINK_REGEX = rf"""
                     """
 
 
-@one_time
+@lru_cache(None)
 def get_compiled_stream_link_regex() -> Pattern[str]:
     # Not using verbose_compile as it adds ^(.*?) and
     # (.*?)$ which cause extra overhead of matching
@@ -198,7 +180,7 @@ STREAM_TOPIC_LINK_REGEX = rf"""
                    """
 
 
-@one_time
+@lru_cache(None)
 def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     # Not using verbose_compile as it adds ^(.*?) and
     # (.*?)$ which cause extra overhead of matching
@@ -211,17 +193,12 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     )
 
 
-LINK_REGEX: Optional[Pattern[str]] = None
-
-
+@lru_cache(None)
 def get_web_link_regex() -> Pattern[str]:
     # We create this one time, but not at startup.  So the
     # first message rendered in any process will have some
     # extra costs.  It's roughly 75ms to run this code, so
-    # caching the value in LINK_REGEX is super important here.
-    global LINK_REGEX
-    if LINK_REGEX is not None:
-        return LINK_REGEX
+    # caching the value is super important here.
 
     tlds = "|".join(list_of_tlds())
 
@@ -270,16 +247,14 @@ def get_web_link_regex() -> Pattern[str]:
             (?:\Z|\s)                  # followed by whitespace or end of string
         )
         """
-    LINK_REGEX = verbose_compile(REGEX)
-    return LINK_REGEX
+    return verbose_compile(REGEX)
 
 
 def clear_state_for_testing() -> None:
     # The link regex never changes in production, but our tests
     # try out both sides of ENABLE_FILE_LINKS, so we need
     # a way to clear it.
-    global LINK_REGEX
-    LINK_REGEX = None
+    get_web_link_regex.cache_clear()
 
 
 markdown_logger = logging.getLogger()
@@ -307,9 +282,8 @@ def url_embed_preview_enabled(
     if no_previews:
         return False
 
-    if realm is None:
-        if message is not None:
-            realm = message.get_realm()
+    if realm is None and message is not None:
+        realm = message.get_realm()
 
     if realm is None:
         # realm can be None for odd use cases
@@ -329,9 +303,8 @@ def image_preview_enabled(
     if no_previews:
         return False
 
-    if realm is None:
-        if message is not None:
-            realm = message.get_realm()
+    if realm is None and message is not None:
+        realm = message.get_realm()
 
     if realm is None:
         # realm can be None for odd use cases
@@ -386,7 +359,7 @@ class ResultWithFamily(Generic[T]):
     family: ElementFamily
     result: T
 
-    def __init__(self, family: ElementFamily, result: T):
+    def __init__(self, family: ElementFamily, result: T) -> None:
         self.family = family
         self.result = result
 
@@ -395,7 +368,7 @@ class ElementPair:
     parent: Optional["ElementPair"]
     value: Element
 
-    def __init__(self, parent: Optional["ElementPair"], value: Element):
+    def __init__(self, parent: Optional["ElementPair"], value: Element) -> None:
         self.parent = parent
         self.value = value
 
@@ -475,7 +448,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             # formatting timeout.
             tweet = timeout(3, lambda: api.GetStatus(tweet_id))
             res = tweet.AsDict()
-        except TimeoutExpired:
+        except TimeoutExpiredError:
             # We'd like to try again later and not cache the bad result,
             # so we need to re-raise the exception (just as though
             # we were being rate-limited)
@@ -629,7 +602,7 @@ IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
-    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 10
+    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 24
 
     def __init__(self, zmd: "ZulipMarkdown") -> None:
         super().__init__(zmd)
@@ -771,10 +744,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if parsed_url.netloc == "pasteboard.co":
             return False
 
-        for ext in IMAGE_EXTENSIONS:
-            if parsed_url.path.lower().endswith(ext):
-                return True
-        return False
+        return any(parsed_url.path.lower().endswith(ext) for ext in IMAGE_EXTENSIONS)
 
     def corrected_image_source(self, url: str) -> Optional[str]:
         # This function adjusts any URLs from linx.li and
@@ -841,28 +811,30 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_id(self, url: str) -> Optional[str]:
         if not self.zmd.image_preview_enabled:
             return None
-        # YouTube video id extraction regular expression from https://pastebin.com/KyKAFv1s
-        # Slightly modified to support URLs of the forms
-        #   - youtu.be/<id>
-        #   - youtube.com/playlist?v=<id>&list=<list-id>
-        #   - youtube.com/watch_videos?video_ids=<id1>,<id2>,<id3>
-        # If it matches, match.group(2) is the video id.
-        schema_re = r"(?:https?://)"
-        host_re = r"(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)"
-        param_re = (
-            r"(?:(?:(?:v|embed)/)|"
-            + r"(?:(?:(?:watch|playlist)(?:_popup|_videos)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v(?:ideo_ids)?=))"
-        )
-        id_re = r"([0-9A-Za-z_-]+)"
-        youtube_re = r"^({schema_re}?{host_re}{param_re}?)?{id_re}(?(1).+)?$"
-        youtube_re = youtube_re.format(
-            schema_re=schema_re, host_re=host_re, id_re=id_re, param_re=param_re
-        )
-        match = re.match(youtube_re, url)
-        # URLs of the form youtube.com/playlist?list=<list-id> are incorrectly matched
-        if match is None or match.group(2) == "playlist":
-            return None
-        return match.group(2)
+
+        id = None
+        split_url = urlsplit(url)
+        if split_url.scheme in ("http", "https"):
+            if split_url.hostname in (
+                "m.youtube.com",
+                "www.youtube.com",
+                "www.youtube-nocookie.com",
+                "youtube.com",
+                "youtube-nocookie.com",
+            ):
+                query = parse_qs(split_url.query)
+                if split_url.path in ("/watch", "/watch_popup") and "v" in query:
+                    id = query["v"][0]
+                elif split_url.path == "/watch_videos" and "video_ids" in query:
+                    id = query["video_ids"][0].split(",", 1)[0]
+                elif split_url.path.startswith(("/embed/", "/shorts/", "/v/")):
+                    id = split_url.path.split("/", 3)[2]
+            elif split_url.hostname == "youtu.be" and split_url.path.startswith("/"):
+                id = split_url.path[len("/") :]
+
+        if id is not None and re.fullmatch(r"[0-9A-Za-z_-]+", id):
+            return id
+        return None
 
     def youtube_title(self, extracted_data: UrlEmbedData) -> Optional[str]:
         if extracted_data.title is not None:
@@ -884,8 +856,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         vimeo_re = (
             r"^((http|https)?:\/\/(www\.)?vimeo.com\/"
-            + r"(?:channels\/(?:\w+\/)?|groups\/"
-            + r"([^\/]*)\/videos\/|)(\d+)(?:|\/\?))$"
+            r"(?:channels\/(?:\w+\/)?|groups\/"
+            r"([^\/]*)\/videos\/|)(\d+)(?:|\/\?))$"
         )
         match = re.match(vimeo_re, url)
         if match is None:
@@ -1095,7 +1067,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         root: Element,
         found_url: ResultWithFamily[Tuple[str, Optional[str]]],
     ) -> LinkInfo:
-
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
         ahref_element = found_url.family.child
@@ -1381,14 +1352,15 @@ class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         time_input_string = match.group("time")
-        timestamp = None
         try:
             timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
         except ValueError:
             try:
-                timestamp = datetime.datetime.fromtimestamp(float(time_input_string))
+                timestamp = datetime.datetime.fromtimestamp(
+                    float(time_input_string), tz=datetime.timezone.utc
+                )
             except ValueError:
-                pass
+                timestamp = None
 
         if not timestamp:
             error_element = Element("span")
@@ -1666,7 +1638,6 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     """
 
     def __init__(self, parser: BlockParser) -> None:
-
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
@@ -1693,7 +1664,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     """
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
-    RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))" r"[ ]{0,3}>[ ]?(.*)")
+    RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))[ ]{0,3}>[ ]?(.*)")
 
     # run() is very slightly forked from the base class; see notes below.
     def run(self, parent: Element, blocks: List[str]) -> None:
@@ -1713,7 +1684,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # a blank line intentionally.
         #
         # This is a new blockquote. Create a new parent element.
-        quote = etree.SubElement(parent, "blockquote")
+        quote = SubElement(parent, "blockquote")
 
         # Recursively parse block with blockquote as parent.
         # change parser state so blockquotes embedded in lists use p tags
@@ -1761,9 +1732,8 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
                 fence_str = m.group("fence")
                 lang: Optional[str] = m.group("lang")
                 is_code = lang not in ("quote", "quoted")
-                has_open_fences = not len(open_fences) == 0
                 matches_last_fence = (
-                    fence_str == open_fences[-1].fence_str if has_open_fences else False
+                    fence_str == open_fences[-1].fence_str if open_fences else False
                 )
                 closes_last_fence = not lang and matches_last_fence
 
@@ -1779,12 +1749,16 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
             # a newline.
             li1 = self.LI_RE.match(lines[i])
             li2 = self.LI_RE.match(lines[i + 1])
-            if not in_code_fence and lines[i]:
-                if (li2 and not li1) or (
-                    li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1)
-                ):
-                    copy.insert(i + inserts + 1, "")
-                    inserts += 1
+            if (
+                not in_code_fence
+                and lines[i]
+                and (
+                    (li2 and not li1)
+                    or (li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1))
+                )
+            ):
+                copy.insert(i + inserts + 1, "")
+                inserts += 1
         return copy
 
 
@@ -1864,9 +1838,8 @@ class UserMentionPattern(CompiledInlineProcessor):
                 # name matches the full_name of user in mention_data.
                 # This enforces our decision that
                 # @**user_1_name|id_for_user_2** should be invalid syntax.
-                if full_name:
-                    if user and user.full_name != full_name:
-                        return None, None, None
+                if full_name and user and user.full_name != full_name:
+                    return None, None, None
             else:
                 # For @**name** syntax.
                 user = db_data.mention_data.get_user_by_name(name)
@@ -2000,7 +1973,6 @@ def possible_linked_stream_names(content: str) -> Set[str]:
 
 
 class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
-
     allowed_before_punctuation = {" ", "\n", "(", '"', ".", ",", "'", ";", "[", "*", "`", ">"}
     allowed_after_punctuation = {
         " ",
@@ -2282,15 +2254,15 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
         return reg
 
-    def register_linkifiers(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
+    def register_linkifiers(self, registry: markdown.util.Registry) -> markdown.util.Registry:
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
-            inlinePatterns.register(
+            registry.register(
                 LinkifierPattern(pattern, linkifier["url_format"], self),
                 f"linkifiers/{pattern}",
                 45,
             )
-        return inlinePatterns
+        return registry
 
     def build_treeprocessors(self) -> markdown.util.Registry:
         # Here we build all the processors from upstream, plus a few of our own.
@@ -2298,6 +2270,7 @@ class ZulipMarkdown(markdown.Markdown):
         # We get priority 30 from 'hilite' extension
         treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
         treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
+        treeprocessors.register(markdown.treeprocessors.UnescapeTreeprocessor(self), "unescape", 18)  # type: ignore[attr-defined] # https://github.com/python/typeshed/pull/9671
         treeprocessors.register(
             InlineInterestingLinkProcessor(self), "inline_interesting_links", 15
         )
@@ -2312,7 +2285,6 @@ class ZulipMarkdown(markdown.Markdown):
         postprocessors.register(
             markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 15
         )
-        postprocessors.register(markdown.postprocessors.UnescapePostprocessor(), "unescape", 10)
         return postprocessors
 
     def handle_zephyr_mirror(self) -> None:
@@ -2373,13 +2345,22 @@ def percent_escape_format_string(format_string: str) -> str:
     return re.sub(r"(?<!%)(%%)*%([a-fA-F0-9][a-fA-F0-9])", r"\1%%\2", format_string)
 
 
+@dataclass
+class TopicLinkMatch:
+    url: str
+    text: str
+    index: int
+    precedence: Optional[int]
+
+
 # Security note: We don't do any HTML escaping in this
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
 def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
-    matches: List[Dict[str, Union[str, int]]] = []
+    matches: List[TopicLinkMatch] = []
     linkifiers = linkifiers_for_realm(linkifiers_key)
+    precedence = 0
 
     options = re2.Options()
     options.log_errors = False
@@ -2412,16 +2393,29 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             # Also, we include the matched text in the response, so that our clients
             # don't have to implement any logic of their own to get back the text.
             matches += [
-                dict(
+                TopicLinkMatch(
                     url=url_format_string % match_details,
                     text=match_text,
-                    index=topic_name.find(match_text),
+                    index=m.start(),
+                    precedence=precedence,
                 )
             ]
+        precedence += 1
 
+    # Sort the matches beforehand so we favor the match with a higher priority and tie-break with the starting index.
+    # Note that we sort it before processing the raw URLs so that linkifiers will be prioritized over them.
+    matches.sort(key=lambda k: (k.precedence, k.index))
+
+    pos = 0
     # Also make raw URLs navigable.
-    for sub_string in basic_link_splitter.split(topic_name):
-        link_match = re.match(get_web_link_regex(), sub_string)
+    while pos < len(topic_name):
+        # Assuming that basic_link_splitter matches 1 character,
+        # we match segments of the string for URL divided by the matched character.
+        next_split = basic_link_splitter.search(topic_name, pos)
+        end = next_split.start() if next_split is not None else len(topic_name)
+        # We have to match the substring because LINK_REGEX
+        # matches the start of the entire string with "^"
+        link_match = re.match(get_web_link_regex(), topic_name[pos:end])
         if link_match:
             actual_match_url = link_match.group("url")
             result = urlsplit(actual_match_url)
@@ -2433,18 +2427,43 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             else:
                 url = actual_match_url
             matches.append(
-                dict(url=url, text=actual_match_url, index=topic_name.find(actual_match_url))
+                TopicLinkMatch(
+                    url=url,
+                    text=actual_match_url,
+                    index=pos,
+                    precedence=None,
+                )
             )
+        # Move pass the next split point, and start matching the URL from there
+        pos = end + 1
 
-    # In order to preserve the order in which the links occur, we sort the matched text
-    # based on its starting index in the topic. We pop the index field before returning.
-    matches = sorted(matches, key=lambda k: k["index"])
-    return [{k: str(v) for k, v in match.items() if k != "index"} for match in matches]
+    def are_matches_overlapping(match_a: TopicLinkMatch, match_b: TopicLinkMatch) -> bool:
+        return (match_b.index <= match_a.index < match_b.index + len(match_b.text)) or (
+            match_a.index <= match_b.index < match_a.index + len(match_a.text)
+        )
+
+    # The following removes overlapping intervals depending on the precedence of linkifier patterns.
+    # This uses the same algorithm implemented in static/js/markdown.js.
+    # To avoid mutating matches inside the loop, the final output gets appended to another list.
+    applied_matches: List[TopicLinkMatch] = []
+    for current_match in matches:
+        # When the current match does not overlap with all existing matches,
+        # we are confident that the link should present in the final output because
+        #  1. Given that the links are sorted by precedence, the current match has the highest priority
+        #     among the matches to be checked.
+        #  2. None of the matches with higher priority overlaps with the current match.
+        # This might be optimized to search for overlapping matches in O(logn) time,
+        # but it is kept as-is since performance is not critical for this codepath and for simplicity.
+        if all(
+            not are_matches_overlapping(old_match, current_match) for old_match in applied_matches
+        ):
+            applied_matches.append(current_match)
+    # We need to sort applied_matches again because the links were previously ordered by precedence.
+    applied_matches.sort(key=lambda v: v.index)
+    return [{"url": match.url, "text": match.text} for match in applied_matches]
 
 
 def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:
-    global linkifier_data
-
     linkifiers = linkifiers_for_realm(linkifiers_key)
     if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
         # Linkifier data has changed, update `linkifier_data` and any
@@ -2490,9 +2509,8 @@ def do_convert(
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
     # * message is passed, but no realm is -> look up realm from message
     # * message_realm is passed -> use that realm for Markdown purposes
-    if message is not None:
-        if message_realm is None:
-            message_realm = message.get_realm()
+    if message is not None and message_realm is None:
+        message_realm = message.get_realm()
     if message_realm is None:
         linkifiers_key = DEFAULT_MARKDOWN_KEY
     else:
@@ -2503,12 +2521,15 @@ def do_convert(
     else:
         logging_message_id = "unknown"
 
-    if message is not None and message_realm is not None:
-        if message_realm.is_zephyr_mirror_realm:
-            if message.sending_client.name == "zephyr_mirror":
-                # Use slightly customized Markdown processor for content
-                # delivered via zephyr_mirror
-                linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
+    if (
+        message is not None
+        and message_realm is not None
+        and message_realm.is_zephyr_mirror_realm
+        and message.sending_client.name == "zephyr_mirror"
+    ):
+        # Use slightly customized Markdown processor for content
+        # delivered via zephyr_mirror
+        linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
 
     maybe_update_markdown_engines(linkifiers_key, email_gateway)
     md_engine_key = (linkifiers_key, email_gateway)
@@ -2540,7 +2561,6 @@ def do_convert(
 
     # Pre-fetch data from the DB that is used in the Markdown thread
     if message_realm is not None:
-
         # Here we fetch the data structures needed to render
         # mentions/stream mentions from the database, but only
         # if there is syntax in the message that might use them, since
@@ -2582,7 +2602,7 @@ def do_convert(
         # something huge.
         MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
         if len(rendering_result.rendered_content) > MAX_MESSAGE_LENGTH * 100:
-            raise MarkdownRenderingException(
+            raise MarkdownRenderingError(
                 f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 100} characters (message {logging_message_id})"
             )
         return rendering_result
@@ -2597,7 +2617,7 @@ def do_convert(
             logging_message_id,
         )
 
-        raise MarkdownRenderingException()
+        raise MarkdownRenderingError
     finally:
         # These next three lines are slightly paranoid, since
         # we always set these right before actually using the
@@ -2628,7 +2648,6 @@ def markdown_stats_start() -> None:
 def markdown_stats_finish() -> None:
     global markdown_total_time
     global markdown_total_requests
-    global markdown_time_start
     markdown_total_requests += 1
     markdown_total_time += time.time() - markdown_time_start
 

@@ -5,7 +5,6 @@ import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as drafts from "./drafts";
-import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as info_overlay from "./info_overlay";
@@ -26,7 +25,6 @@ import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_report from "./ui_report";
-import * as ui_util from "./ui_util";
 import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 
@@ -91,10 +89,8 @@ export function save_narrow(operators) {
 
 function show_all_message_view() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
-    ui_util.change_tab_to("#message_feed_container");
     narrow.deactivate(coming_from_recent_topics);
     top_left_corner.handle_narrow_deactivated();
-    floating_recipient_bar.update();
     search.update_button_visibility();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
@@ -138,7 +134,6 @@ function do_hashchange_normal(from_reload) {
     switch (hash[0]) {
         case "#narrow": {
             maybe_hide_recent_topics();
-            ui_util.change_tab_to("#message_feed_container");
             let operators;
             try {
                 // TODO: Show possible valid URLs to the user.
@@ -173,7 +168,6 @@ function do_hashchange_normal(from_reload) {
                 }
             }
             narrow.activate(operators, narrow_opts);
-            floating_recipient_bar.update();
             return true;
         }
         case "":

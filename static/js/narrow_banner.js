@@ -66,7 +66,7 @@ function retrieve_search_query_data() {
 
 function pick_empty_narrow_banner() {
     const default_banner = {
-        title: $t({defaultMessage: "Nothing's been sent here yet!"}),
+        title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
         html: page_params.is_spectator
             ? ""
@@ -328,7 +328,7 @@ function pick_empty_narrow_banner() {
                     };
                 }
                 return {
-                    title: $t_html(
+                    title: $t(
                         {
                             defaultMessage: "You have no private messages with {person} yet.",
                         },
@@ -348,7 +348,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             return {
-                title: $t({defaultMessage: "You have no private messages with these people yet."}),
+                title: $t({defaultMessage: "You have no private messages with these users yet."}),
                 html: $t_html(
                     {
                         defaultMessage: "Why not <z-link>start the conversation</z-link>?",
@@ -366,7 +366,7 @@ function pick_empty_narrow_banner() {
             const sender = people.get_by_email(first_operand);
             if (sender) {
                 return {
-                    title: $t_html(
+                    title: $t(
                         {
                             defaultMessage:
                                 "You haven't received any messages sent by {person} yet.",
@@ -398,7 +398,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             return {
-                title: $t_html(
+                title: $t(
                     {
                         defaultMessage: "You have no group private messages with {person} yet.",
                     },

@@ -9,14 +9,25 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 
-export let narrowed;
-
-export function set_narrowed(value) {
-    narrowed = value;
-}
-
 export class MessageList {
+    // A MessageList is the main interface for a message feed that is
+    // rendered in the DOM. Code outside the message feed rendering
+    // internals will directly call this module in order to manipulate
+    // a message feed.
+    //
+    // Each MessageList has an associated MessageListData, which
+    // manages the messages, and a MessageListView, which manages the
+    // the templates/HTML rendering as well as invisible pagination.
+    //
+    // TODO: The abstraction boundary between this and MessageListView
+    // is not particularly well-defined; it could be nice to figure
+    // out a good rule.
     constructor(opts) {
+        // The MessageListData keeps track of the actual sequence of
+        // messages displayed by this MessageList. Most
+        // configuration/logic questions in this module will be
+        // answered by calling a function from the MessageListData,
+        // its Filter, or its FetchStatus object.
         if (opts.data) {
             this.data = opts.data;
         } else {
@@ -28,12 +39,39 @@ export class MessageList {
             });
         }
 
-        const collapse_messages = this.data.filter.supports_collapsing_recipients();
+        // The table_name is the outer HTML element for this message
+        // list in the DOM.
         const table_name = opts.table_name;
-        this.view = new MessageListView(this, table_name, collapse_messages);
         this.table_name = table_name;
+
+        // TODO: This property should likely just be inlined into
+        // having the MessageListView code that needs to access it
+        // query .data.filter directly.
+        const collapse_messages = this.data.filter.supports_collapsing_recipients();
+
+        // The MessageListView object that is responsible for
+        // maintaining this message feed's HTML representation in the
+        // DOM.
+        this.view = new MessageListView(this, table_name, collapse_messages);
+
+        // Whether this is a narrowed message list. The only message
+        // list that is not is the home_msg_list global.
+        //
+        // TODO: It would probably be more readable to replace this
+        // with another property with an inverted meaning, since
+        // home_msg_list is the message list that is special/unique.
         this.narrowed = this.table_name === "zfilt";
+
+        // TODO: This appears to be unused and can be deleted.
         this.num_appends = 0;
+
+        // Keeps track of whether the user has done a UI interaction,
+        // such as "Mark as unread", that should disable marking
+        // messages as read until prevent_reading is called again.
+        //
+        // Distinct from filter.can_mark_messages_read(), which is a
+        // property of the type of narrow, regardless of actions by
+        // the user. Possibly this can be unified in some nice way.
         this.reading_prevented = false;
 
         return this;
@@ -74,14 +112,14 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this === narrowed && !this.empty()) {
+        if (this.narrowed && !this.empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (this === narrowed && !this.empty() && this.selected_id() === -1) {
+        if (this.narrowed && !this.empty() && this.selected_id() === -1) {
             // And also select the newly arrived message.
             this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -304,6 +342,7 @@ export class MessageList {
         $row.find(".message_edit_form").append(edit_obj.$form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".sender-status").toggleClass("sender-status-edit");
+        $row.find(".messagebox-content").addClass("content_edit_mode");
         $row.find(".message_edit").css("display", "block");
         autosize($row.find(".message_edit_content"));
     }
@@ -312,6 +351,7 @@ export class MessageList {
         $row.find(".message_content, .status-message, .message_controls").show();
         $row.find(".sender-status").toggleClass("sender-status-edit");
         $row.find(".message_edit_form").empty();
+        $row.find(".messagebox-content").removeClass("content_edit_mode");
         $row.find(".message_edit").hide();
         $row.trigger("mouseleave");
     }
@@ -365,7 +405,7 @@ export class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this === narrowed) {
+        if (this.narrowed) {
             if (this.empty()) {
                 narrow_banner.show_empty_narrow_message();
             } else {

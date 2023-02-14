@@ -3,7 +3,7 @@ import time
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
@@ -43,7 +43,7 @@ def api_raygun_webhook(
     elif event == "error_activity":
         message = compose_activity_message(payload)
     else:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     topic = "test"
 
@@ -232,7 +232,7 @@ def compose_notification_message(payload: WildValue) -> str:
     elif "FollowUp" in event_type:
         return notification_message_follow_up(payload)
     else:
-        raise UnsupportedWebhookEventType(event_type)
+        raise UnsupportedWebhookEventTypeError(event_type)
 
 
 def activity_message(payload: WildValue) -> str:
@@ -292,7 +292,7 @@ def compose_activity_message(payload: WildValue) -> str:
     ):
         return activity_message(payload)
     else:
-        raise UnsupportedWebhookEventType(event_type)
+        raise UnsupportedWebhookEventTypeError(event_type)
 
 
 def parse_time(timestamp: str) -> str:

@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Callable, Dict, Set, Tuple, Union
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
@@ -192,7 +192,7 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
     else:
         # Otherwise, throw an authentication error; our middleware
         # will generate the appropriate HTTP response.
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     if request.method in ["DELETE", "PATCH", "PUT"]:
         # process_as_post needs to be the outer decorator, because
@@ -205,6 +205,9 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
 
 def rest_path(
     route: str,
-    **handlers: Union[Callable[..., HttpResponse], Tuple[Callable[..., HttpResponse], Set[str]]],
+    **handlers: Union[
+        Callable[..., HttpResponseBase],
+        Tuple[Callable[..., HttpResponseBase], Set[str]],
+    ],
 ) -> URLPattern:
     return path(route, rest_dispatch, handlers)

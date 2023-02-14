@@ -19,7 +19,8 @@ from zerver.lib.transfer import (
     transfer_message_files_to_s3,
     transfer_uploads_to_s3,
 )
-from zerver.lib.upload import resize_emoji, upload_message_file
+from zerver.lib.upload import upload_message_file
+from zerver.lib.upload.base import resize_emoji
 from zerver.models import Attachment, RealmEmoji
 
 

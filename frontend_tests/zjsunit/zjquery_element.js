@@ -215,9 +215,6 @@ function FakeElement(selector, opts) {
             shown = true;
             return $self;
         },
-        stop() {
-            return $self;
-        },
         text(...args) {
             if (args.length !== 0) {
                 if (args[0] !== undefined) {
@@ -230,6 +227,14 @@ function FakeElement(selector, opts) {
         toggle(show) {
             assert.ok([true, false].includes(show));
             shown = show;
+            return $self;
+        },
+        toggleClass(class_name, add) {
+            if (add) {
+                classes.set(class_name, true);
+            } else {
+                classes.delete(class_name);
+            }
             return $self;
         },
         trigger(ev) {

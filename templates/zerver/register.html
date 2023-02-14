@@ -28,7 +28,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {% endtrans %}
         </div>
 
-        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('accounts_register') }}">
+        <form method="post" class="white-box" id="registration" action="{{ url('accounts_register') }}">
             {{ csrf_input }}
 
             <fieldset class="org-registration">
@@ -124,24 +124,24 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 
                 {% if accounts %}
                 <div class="input-box">
+                    <div class="inline-block relative">
+                        <select class="select" name="source_realm_id" id="source_realm_select">
+                            <option value=""
+                              {% if "source_realm_id" in form.data and form.data["source_realm_id"] == "" %}selected {% endif %}>
+                                {{ _('Don&rsquo;t import settings') }}
+                            </option>
+                            {% for account in accounts %}
+                            <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
+                              {% if ("source_realm_id" in form.data and account.realm_id == form.data["source_realm_id"]|int)
+                              or ("source_realm_id" not in form.data and loop.index0 == 0) %} selected {% endif %}>
+                                {{ account.realm_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}
                         <a href="{{ root_domain_uri }}/help/import-your-settings"><i class="fa fa-question-circle"></i></a>
                     </label>
-                </div>
-                <div id="source_realm_select_section" class="input-group m-10 inline-block">
-                    <select class="select" name="source_realm_id" id="source_realm_select">
-                        <option value=""
-                          {% if "source_realm_id" in form.data and form.data["source_realm_id"] == "" %}selected {% endif %}>
-                            {{ _('Don&rsquo;t import settings') }}
-                        </option>
-                        {% for account in accounts %}
-                        <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
-                          {% if ("source_realm_id" in form.data and account.realm_id == form.data["source_realm_id"]|int)
-                          or ("source_realm_id" not in form.data and loop.index0 == 0) %} selected {% endif %}>
-                            {{ account.realm_name }}
-                        </option>
-                        {% endfor %}
-                    </select>
                 </div>
                 {% endif %}
 

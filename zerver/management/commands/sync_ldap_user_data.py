@@ -9,11 +9,12 @@ from django.db import transaction
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
-from zproject.backends import ZulipLDAPException, sync_user_from_ldap
+from zproject.backends import ZulipLDAPError, sync_user_from_ldap
 
 ## Setup ##
 logger = logging.getLogger("zulip.sync_ldap_user_data")
 log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
+
 
 # Run this on a cron job to pick up on name changes.
 @transaction.atomic
@@ -29,7 +30,7 @@ def sync_ldap_user_data(
             # does not exist.
             try:
                 sync_user_from_ldap(u, logger)
-            except ZulipLDAPException as e:
+            except ZulipLDAPError as e:
                 logger.error("Error attempting to update user %s:", u.delivery_email)
                 logger.error(e.args[0])
 
@@ -54,7 +55,7 @@ def sync_ldap_user_data(
                         "Use the --force option if the mass deactivation is intended."
                     )
     except Exception:
-        logger.error("LDAP sync failed", exc_info=True)
+        logger.exception("LDAP sync failed")
         raise
 
     logger.info("Finished update.")

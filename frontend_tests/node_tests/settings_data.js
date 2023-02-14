@@ -23,37 +23,18 @@ const isaac = {
     full_name: "Isaac",
 };
 
-run_test("email_for_user_settings", () => {
-    const email = settings_data.email_for_user_settings;
-
-    page_params.realm_email_address_visibility =
-        settings_config.email_address_visibility_values.admins_only.code;
-    assert.equal(email(isaac), undefined);
+run_test("user_can_change_email", () => {
+    const can_change_email = settings_data.user_can_change_email;
 
     page_params.is_admin = true;
-    assert.equal(email(isaac), isaac.delivery_email);
-
-    page_params.realm_email_address_visibility =
-        settings_config.email_address_visibility_values.nobody.code;
-    assert.equal(email(isaac), undefined);
+    assert.equal(can_change_email(), true);
 
     page_params.is_admin = false;
-    assert.equal(email(isaac), undefined);
+    page_params.realm_email_changes_disabled = true;
+    assert.equal(can_change_email(), false);
 
-    page_params.realm_email_address_visibility =
-        settings_config.email_address_visibility_values.everyone.code;
-    assert.equal(email(isaac), isaac.email);
-
-    page_params.realm_email_address_visibility =
-        settings_config.email_address_visibility_values.moderators.code;
-    assert.equal(email(isaac), undefined);
-
-    page_params.is_moderator = true;
-    assert.equal(email(isaac), isaac.delivery_email);
-
-    page_params.is_moderator = false;
-    page_params.is_admin = true;
-    assert.equal(email(isaac), isaac.delivery_email);
+    page_params.realm_email_changes_disabled = false;
+    assert.equal(can_change_email(), true);
 });
 
 run_test("user_can_change_name", () => {
@@ -114,14 +95,6 @@ run_test("user_can_change_logo", () => {
     page_params.is_admin = false;
     page_params.zulip_plan_is_not_limited = true;
     assert.equal(can_change_logo(), false);
-});
-
-run_test("user_can_unsubscribe_other_users", () => {
-    page_params.is_admin = true;
-    assert.equal(settings_data.user_can_unsubscribe_other_users(), true);
-
-    page_params.is_admin = false;
-    assert.equal(settings_data.user_can_unsubscribe_other_users(), false);
 });
 
 function test_policy(label, policy, validation_func) {
@@ -243,10 +216,25 @@ function test_message_policy(label, policy, validation_func) {
 }
 
 test_message_policy(
-    "user_can_edit_topic_of_any_message",
+    "user_can_move_messages_to_another_topic",
     "realm_edit_topic_policy",
-    settings_data.user_can_edit_topic_of_any_message,
+    settings_data.user_can_move_messages_to_another_topic,
 );
+
+run_test("user_can_move_messages_to_another_topic_nobody_case", () => {
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    page_params.realm_edit_topic_policy = settings_config.edit_topic_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_move_messages_to_another_topic(), false);
+});
+
+run_test("user_can_move_messages_between_streams_nobody_case", () => {
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    page_params.realm_move_messages_between_streams_policy =
+        settings_config.move_messages_between_streams_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_move_messages_between_streams(), false);
+});
 
 test_message_policy(
     "user_can_delete_own_message",

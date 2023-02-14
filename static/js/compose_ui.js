@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
-import {set, wrapSelection} from "text-field-edit";
+import {insert, replace, set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -10,6 +10,7 @@ import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as user_status from "./user_status";
 
+export let compose_spinner_visible = false;
 let full_size_status = false; // true or false
 
 // Some functions to handle the full size status explicitly
@@ -60,14 +61,9 @@ export function smart_insert($textarea, syntax) {
         syntax += " ";
     }
 
-    $textarea.trigger("focus");
-
-    // We prefer to use insertText, which supports things like undo better
-    // for rich-text editing features like inserting links.  But we fall
-    // back to textarea.caret if the browser doesn't support insertText.
-    if (!document.execCommand("insertText", false, syntax)) {
-        $textarea.caret(syntax);
-    }
+    // text-field-edit ensures `$textarea` is focused before inserting
+    // the new syntax.
+    insert($textarea[0], syntax);
 
     autosize_textarea($textarea);
 }
@@ -80,21 +76,39 @@ export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea
 }
 
 export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {
+    // The following couple lines are needed to later restore the initial
+    // logical position of the cursor after the replacement
+    const prev_caret = $textarea.caret();
+    const replacement_offset = $textarea.val().indexOf(old_syntax);
+
     // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
     // the way that JavaScript handles string replacements, if `old_syntax` is
     // a string it will only replace the first instance. If `old_syntax` is
     // a RegExp with a global flag, it will replace all instances.
-    $textarea.val(
-        $textarea.val().replace(
-            old_syntax,
-            () =>
-                // We need this anonymous function to avoid JavaScript's
-                // replace() function treating `$`s in new_syntax as special syntax.  See
-                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
-                // for details.
-                new_syntax,
-        ),
-    );
+
+    // We need use anonymous function for `new_syntax` to avoid JavaScript's
+    // replace() function treating `$`s in new_syntax as special syntax.  See
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
+    // for details.
+
+    replace($textarea[0], old_syntax, () => new_syntax, "after-replacement");
+
+    // When replacing content in a textarea, we need to move the cursor
+    // to preserve its logical position if and only if the content we
+    // just added was before the current cursor position. If it was,
+    // we need to move the cursor forward by the increase in the
+    // length of the content after the replacement.
+    if (prev_caret >= replacement_offset + old_syntax.length) {
+        $textarea.caret(prev_caret + new_syntax.length - old_syntax.length);
+    } else if (prev_caret > replacement_offset) {
+        // In the rare case that our cursor was inside the
+        // placeholder, we treat that as though the cursor was
+        // just after the placeholder.
+        $textarea.caret(replacement_offset + new_syntax.length + 1);
+    } else {
+        // Otherwise we simply restore it to it's original position
+        $textarea.caret(prev_caret);
+    }
 }
 
 export function compute_placeholder_text(opts) {
@@ -391,12 +405,14 @@ export function format_text($textarea, type) {
 }
 
 export function hide_compose_spinner() {
+    compose_spinner_visible = false;
     $("#compose-send-button .loader").hide();
     $("#compose-send-button span").show();
     $("#compose-send-button").removeClass("disable-btn");
 }
 
 export function show_compose_spinner() {
+    compose_spinner_visible = true;
     // Always use white spinner.
     loading.show_button_spinner($("#compose-send-button .loader"), true);
     $("#compose-send-button span").hide();

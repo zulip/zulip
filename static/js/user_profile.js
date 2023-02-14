@@ -18,7 +18,6 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
-import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -36,7 +35,7 @@ function initialize_bot_owner(element_id, bot_id) {
     const user_pills = new Map();
     const bot = people.get_by_user_id(bot_id);
     const bot_owner = people.get_bot_owner_user(bot);
-    // Bot owner's pill displaying on bots full profile modal.
+    // Bot owner's pill displaying on bot's profile modal.
     if (bot_owner) {
         const $pill_container = $(element_id)
             .find(
@@ -55,7 +54,7 @@ function initialize_bot_owner(element_id, bot_id) {
 
 function format_user_stream_list_item(stream, user) {
     const show_unsubscribe_button =
-        people.can_admin_user(user) || settings_data.user_can_unsubscribe_other_users();
+        people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
     return render_user_stream_list_item({
@@ -190,7 +189,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const args = {
         user_id: user.user_id,
         full_name: user.full_name,
-        email: people.get_visible_email(user),
+        email: user.delivery_email,
         profile_data,
         user_avatar: people.medium_avatar_url_for_person(user),
         is_me: people.is_current_user(user.email),
@@ -198,7 +197,6 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         date_joined: dateFormat.format(parseISO(user.date_joined)),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
-        show_email: settings_data.show_email(),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
@@ -212,7 +210,6 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         } else if (bot_owner_id) {
             const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
-            args.show_email = true;
         }
         args.bot_type = settings_bots.type_id_to_string(user.bot_type);
     }

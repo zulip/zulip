@@ -34,7 +34,7 @@ REMAPPED_EMOJIS = {
 }
 
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
-# Changes here should be mimicked in `templates/zerver/help/enable-emoticon-translations.md`.
+# Changes here should be mimicked in `help/enable-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
     ":)": ":smile:",
     "(:": ":smile:",
@@ -103,10 +103,7 @@ def generate_emoji_catalog(
 # Use only those names for which images are present in all
 # the emoji sets so that we can switch emoji sets seamlessly.
 def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
-    for emoji_set in EMOJISETS:
-        if not emoji_dict["has_img_" + emoji_set]:
-            return False
-    return True
+    return all(emoji_dict["has_img_" + emoji_set] for emoji_set in EMOJISETS)
 
 
 def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:

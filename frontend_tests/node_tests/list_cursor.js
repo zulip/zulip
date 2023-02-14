@@ -17,7 +17,7 @@ run_test("config errors", () => {
 function basic_conf({first_key, prev_key, next_key}) {
     const list = {
         scroll_container_sel: "whatever",
-        find_li: () => {},
+        find_li() {},
         first_key,
         prev_key,
         next_key,
@@ -72,7 +72,7 @@ run_test("single item list", ({override}) => {
 
     const $li_stub = {
         length: 1,
-        addClass: () => {},
+        addClass() {},
     };
 
     override(conf.list, "find_li", () => $li_stub);

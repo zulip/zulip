@@ -1,14 +1,23 @@
-<div class="overlay-modal hide" id="search-operators" tabindex="-1" role="dialog" aria-label="{{t 'Search operators' }}">
+<div class="overlay-modal hide" id="search-operators" tabindex="-1" role="dialog" aria-label="{{t 'Search filters' }}">
     <div class="modal-body" data-simplebar data-simplebar-auto-hide="false">
         <div id="operators-instructions">
             <table class="table table-striped table-condensed table-rounded table-bordered help-table">
                 <thead>
                     <tr>
-                        <th>{{t "Operator" }}</th>
+                        <th>{{t "Filter" }}</th>
                         <th>{{t "Effect" }}</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr>
+                        <td class="operator"><span class="operator_value">keyword</span></td>
+                        <td class="definition">
+                            {{#tr}}
+                                Search for <z-value></z-value> in the topic or message content.
+                                {{#*inline "z-value"}}<span class="operator_value">keyword</span>{{/inline}}
+                            {{/tr}}
+                        </td>
+                    </tr>
                     <tr>
                         <td class="operator">stream:<span class="operator_value">stream</span></td>
                         <td class="definition">
@@ -28,29 +37,41 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="operator">pm-with:<span class="operator_value">email</span></td>
+                        <td class="operator">is:private</td>
+                        <td class="definition">
+                            {{t 'Narrow to private messages.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">pm-with:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
                                 Narrow to private messages with <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">email</span>{{/inline}}
+                                {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
                     <tr>
-                        <td class="operator">group-pm-with:<span class="operator_value">email</span></td>
+                        <td class="operator">group-pm-with:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
                                 Narrow to group private messages with <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">email</span>{{/inline}}
+                                {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
                     <tr>
-                        <td class="operator">sender:<span class="operator_value">email</span></td>
+                        <td class="operator">streams:public</td>
+                        <td class="definition">
+                            {{t 'Search all public streams in the organization.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">sender:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
                                 Narrow to messages sent by <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">email</span>{{/inline}}
+                                {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -58,6 +79,54 @@
                         <td class="operator">sender:me</td>
                         <td class="definition">
                             {{t 'Narrow to messages sent by you.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">has:link</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages containing links.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">has:attachment</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages containing uploads.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">has:image</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages containing images.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">is:alerted</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages with alert words.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">is:mentioned</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages that mention you.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">is:starred</td>
+                        <td class="definition">
+                            {{t 'Narrow to starred messages.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">is:resolved</td>
+                        <td class="definition">
+                            {{t 'Narrow to messages in resolved topics.'}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">is:unread</td>
+                        <td class="definition">
+                            {{t 'Narrow to unread messages.'}}
                         </td>
                     </tr>
                     <tr>
@@ -79,75 +148,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="operator">streams:public</td>
-                        <td class="definition">
-                            {{t 'Search all public streams in the organization.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">is:alerted</td>
-                        <td class="definition">
-                            {{t 'Narrow to messages with alert words.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">is:mentioned</td>
-                        <td class="definition">
-                            {{t 'Narrow to messages that mention you.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">is:private</td>
-                        <td class="definition">
-                            {{t 'Narrow to private messages.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">is:starred</td>
-                        <td class="definition">
-                            {{t 'Narrow to starred messages.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">is:unread</td>
-                        <td class="definition">
-                            {{t 'Narrow to unread messages.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">is:resolved</td>
-                        <td class="definition">
-                            {{t 'Narrow to messages in resolved topics.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">has:link</td>
-                        <td class="definition">
-                            {{t 'Narrow to messages containing links.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">has:image</td>
-                        <td class="definition">
-                            {{t 'Narrow to messages containing images.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator">has:attachment</td>
-                        <td class="definition">
-                            {{t 'Narrow to messages containing uploads.'}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="operator"><span class="operator_value">keyword</span></td>
-                        <td class="definition">
-                            {{#tr}}
-                                Search for <z-value></z-value> in the topic or message content.
-                                {{#*inline "z-value"}}<span class="operator_value">keyword</span>{{/inline}}
-                            {{/tr}}
-                        </td>
-                    </tr>
-                    <tr>
                         <td class="operator">-topic:<span class="operator_value">topic</span></td>
                         <td class="definition">
                             {{#tr}}
@@ -158,9 +158,9 @@
                     </tr>
                 </tbody>
             </table>
-            <p>{{t "You can combine search operators as needed." }}</p>
+            <p>{{t "You can combine search filters as needed." }}</p>
             <hr />
-            <a href="help/search-for-messages#search-operators" target="_blank" rel="noopener noreferrer">{{t "Detailed search operators documentation" }}</a>
+            <a href="help/search-for-messages#search-filters" target="_blank" rel="noopener noreferrer">{{t "Detailed search filters documentation" }}</a>
         </div>
     </div>
 </div>

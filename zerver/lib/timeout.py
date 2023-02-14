@@ -9,7 +9,7 @@ from typing import Callable, Optional, Tuple, Type, TypeVar
 # Based on https://code.activestate.com/recipes/483752/
 
 
-class TimeoutExpired(Exception):
+class TimeoutExpiredError(Exception):
     """Exception raised when a function times out."""
 
     def __str__(self) -> str:
@@ -24,7 +24,7 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     Return its return value, or raise an exception,
     within approximately 'timeout' seconds.
 
-    The function may receive a TimeoutExpired exception
+    The function may receive a TimeoutExpiredError exception
     anywhere in its code, which could have arbitrary
     unsafe effects (resources not released, etc.).
     It might also fail to receive the exception and
@@ -57,11 +57,11 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
 
         def raise_async_timeout(self) -> None:
             # This function is called from another thread; we attempt
-            # to raise a TimeoutExpired in _this_ thread.
+            # to raise a TimeoutExpiredError in _this_ thread.
             assert self.ident is not None
             ctypes.pythonapi.PyThreadState_SetAsyncExc(
                 ctypes.c_ulong(self.ident),
-                ctypes.py_object(TimeoutExpired),
+                ctypes.py_object(TimeoutExpiredError),
             )
 
     thread = TimeoutThread()
@@ -86,7 +86,7 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
         # we just ignore it.
         if thread.is_alive():
             logging.warning("Failed to time out backend thread")
-        raise TimeoutExpired
+        raise TimeoutExpiredError
 
     if thread.exc_info[1] is not None:
         # Died with some other exception; re-raise it

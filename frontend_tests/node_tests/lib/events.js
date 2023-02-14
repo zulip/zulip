@@ -296,13 +296,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__email_addresses_visibility: {
-        type: "realm",
-        op: "update",
-        property: "email_address_visibility",
-        value: 3,
-    },
-
     realm__update__emails_restricted_to_domains: {
         type: "realm",
         op: "update",
@@ -380,6 +373,7 @@ exports.fixtures = {
         data: {
             allow_message_editing: true,
             message_content_edit_limit_seconds: 5,
+            edit_topic_policy: 4,
             authentication_methods: {
                 Google: true,
             },
@@ -546,6 +540,7 @@ exports.fixtures = {
             profile_data: {},
             timezone: "America/New_York",
             date_joined: "2020-01-01",
+            delivery_email: "test-delivery@example.com",
         },
     },
 
@@ -895,13 +890,6 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "high_contrast_mode",
-        value: true,
-    },
-
-    user_settings__left_side_userlist: {
-        type: "user_settings",
-        op: "update",
-        property: "left_side_userlist",
         value: true,
     },
 

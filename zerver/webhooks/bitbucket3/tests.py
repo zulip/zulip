@@ -25,15 +25,15 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     # Core repo events:
     def test_commit_comment_added(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) commented on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit.\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) commented on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit.\n~~~"""
         self.check_webhook("commit_comment_added", TOPIC, expected_message)
 
     def test_commit_comment_edited(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) edited their comment on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit. Nothing to see here...\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) edited their comment on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit. Nothing to see here...\n~~~"""
         self.check_webhook("commit_comment_edited", TOPIC, expected_message)
 
     def test_commit_comment_deleted(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted their comment on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\n~~Just an arbitrary comment on a commit. Nothing to see here...~~\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted their comment on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\n~~Just an arbitrary comment on a commit. Nothing to see here...~~\n~~~"""
         self.check_webhook("commit_comment_deleted", TOPIC, expected_message)
 
     def test_bitbucket3_repo_forked(self) -> None:

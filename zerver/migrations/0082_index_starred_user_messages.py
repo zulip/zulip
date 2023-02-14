@@ -3,7 +3,6 @@ from django.db.models import Q
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0081_make_emoji_lowercase"),
     ]

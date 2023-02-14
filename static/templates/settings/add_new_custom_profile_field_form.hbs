@@ -1,8 +1,8 @@
-<form class="form-horizontal admin-profile-field-form new-style" id="add-new-custom-profile-field-form">
+<form class="admin-profile-field-form new-style" id="add-new-custom-profile-field-form">
     <div class="new-profile-field-form wrapper">
         <div class="input-group">
             <label for="profile_field_type" >{{t "Type" }}</label>
-            <select id="profile_field_type" name="field_type">
+            <select id="profile_field_type" name="field_type" class="bootstrap-focus-style">
                 {{#each custom_profile_field_types}}
                     <option value='{{this.id}}'>{{this.name}}</option>
                 {{/each}}
@@ -10,7 +10,7 @@
         </div>
         <div class="input-group" id="profile_field_external_accounts">
             <label for="profile_field_external_accounts_type" >{{t "External account type" }}</label>
-            <select id="profile_field_external_accounts_type" name="external_acc_field_type">
+            <select id="profile_field_external_accounts_type" name="external_acc_field_type" class="bootstrap-focus-style">
                 {{#each realm_default_external_accounts}}
                     <option value='{{@key}}'>{{this.text}}</option>
                 {{/each}}
@@ -40,7 +40,7 @@
             <label class="checkbox profile_field_display_label" for="profile_field_display_in_profile_summary">
                 <input type="checkbox" id="profile_field_display_in_profile_summary" name="display_in_profile_summary"/>
                 <span></span>
-                {{t 'Display in profile summary' }}
+                {{t 'Display on user card' }}
             </label>
         </div>
     </div>

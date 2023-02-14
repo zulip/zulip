@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params, user_settings} = require("../zjsunit/zpage_params");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -26,11 +26,6 @@ const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history
 
 let autosize_called;
 
-mock_esm("../../static/js/compose_ui", {
-    autosize_textarea() {
-        autosize_called = true;
-    },
-});
 let set_timeout_called;
 set_global("setTimeout", (f, time) => {
     f();
@@ -48,6 +43,7 @@ const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 const compose_pm_pill = zrequire("compose_pm_pill");
+const compose_ui = zrequire("compose_ui");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -168,6 +164,7 @@ const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
     reaction_type: "unicode_emoji",
+    is_realm_emoji: false,
 }));
 
 const me_slash = {
@@ -330,6 +327,7 @@ const call_center = {
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
+    reaction_type: "unicode_emoji",
 });
 
 function test(label, f) {
@@ -382,6 +380,10 @@ test("topics_seen_for", ({override}) => {
 });
 
 test("content_typeahead_selected", ({override}) => {
+    compose_ui.autosize_textarea = () => {
+        autosize_called = true;
+    };
+
     const fake_this = {
         query: "",
         $element: {},
@@ -735,7 +737,7 @@ test("initialize", ({override, mock_template}) => {
             return topics;
         };
 
-        $("#stream_message_recipient_stream").val("Sweden");
+        compose_state.set_stream_name("Sweden");
         let actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
         let expected_value = topics;
@@ -792,7 +794,7 @@ test("initialize", ({override, mock_template}) => {
         topic_typeahead_called = true;
 
         // Unset the stream name.
-        $("#stream_message_recipient_stream").val("");
+        compose_state.set_stream_name("");
     };
 
     let pm_recipient_typeahead_called = false;
@@ -859,12 +861,10 @@ test("initialize", ({override, mock_template}) => {
         assert.equal(matcher(query, cordelia), false);
 
         query = "oth";
-        page_params.realm_email_address_visibility =
-            settings_config.email_address_visibility_values.admins_only.code;
-        page_params.is_admin = false;
+        deactivated_user.delivery_email = null;
         assert.equal(matcher(query, deactivated_user), false);
 
-        page_params.is_admin = true;
+        deactivated_user.delivery_email = "other@zulip.com";
         assert.equal(matcher(query, deactivated_user), true);
 
         function sorter(query, people) {
@@ -963,6 +963,7 @@ test("initialize", ({override, mock_template}) => {
         assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
         assert.ok(caret_called);
 
+        othello.delivery_email = "othello@zulip.com";
         // options.highlighter()
         //
         // Again, here we only verify that the highlighter has been set to
@@ -975,6 +976,8 @@ test("initialize", ({override, mock_template}) => {
             `<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n` +
             `<small class="autocomplete_secondary">othello@zulip.com</small>\n`;
         assert.equal(actual_value, expected_value);
+        // Reset the email such that this does not affect further tests.
+        othello.delivery_email = null;
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
@@ -1274,6 +1277,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@zulip :ta", emoji_list);
     assert_stream_list(":tada: #foo");
     assert_typeahead_equals("#foo\n~~~py", lang_list);
+    assert_typeahead_equals(":tada: <time:", ["translated: Mention a time-zone-aware time"]);
 
     assert_typeahead_equals("@", all_mentions);
     assert_typeahead_equals("@_", people_only);
@@ -1576,22 +1580,52 @@ test("typeahead_results", () => {
         assert.deepEqual(returned, expected);
     }
     assert_emoji_matches("da", [
-        {emoji_name: "tada", emoji_code: "1f389", reaction_type: "unicode_emoji"},
-        {emoji_name: "panda_face", emoji_code: "1f43c", reaction_type: "unicode_emoji"},
+        {
+            emoji_name: "tada",
+            emoji_code: "1f389",
+            reaction_type: "unicode_emoji",
+            is_realm_emoji: false,
+        },
+        {
+            emoji_name: "panda_face",
+            emoji_code: "1f43c",
+            reaction_type: "unicode_emoji",
+            is_realm_emoji: false,
+        },
     ]);
     assert_emoji_matches("da_", []);
     assert_emoji_matches("da ", []);
     assert_emoji_matches("panda ", [
-        {emoji_name: "panda_face", emoji_code: "1f43c", reaction_type: "unicode_emoji"},
+        {
+            emoji_name: "panda_face",
+            emoji_code: "1f43c",
+            reaction_type: "unicode_emoji",
+            is_realm_emoji: false,
+        },
     ]);
     assert_emoji_matches("panda_", [
-        {emoji_name: "panda_face", emoji_code: "1f43c", reaction_type: "unicode_emoji"},
+        {
+            emoji_name: "panda_face",
+            emoji_code: "1f43c",
+            reaction_type: "unicode_emoji",
+            is_realm_emoji: false,
+        },
     ]);
     assert_emoji_matches("japanese_post_", [
-        {emoji_name: "japanese_post_office", emoji_code: "1f3e3", reaction_type: "unicode_emoji"},
+        {
+            emoji_name: "japanese_post_office",
+            emoji_code: "1f3e3",
+            reaction_type: "unicode_emoji",
+            is_realm_emoji: false,
+        },
     ]);
     assert_emoji_matches("japanese post ", [
-        {emoji_name: "japanese_post_office", emoji_code: "1f3e3", reaction_type: "unicode_emoji"},
+        {
+            emoji_name: "japanese_post_office",
+            emoji_code: "1f3e3",
+            reaction_type: "unicode_emoji",
+            is_realm_emoji: false,
+        },
     ]);
     assert_emoji_matches("notaemoji", []);
 
@@ -1704,4 +1738,30 @@ test("muted users excluded from results", () => {
     results = ct.get_person_suggestions("all", opts);
     const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(results, [mention_all, call_center]);
+});
+
+test("PM recipients sorted according to stream / topic being viewed", ({override_rewire}) => {
+    // This tests that PM recipient results are sorted with subscribers of
+    // the stream / topic being viewed being given priority. If no stream
+    // is being viewed, the sort is alphabetical (for testing, since we do not
+    // simulate PM history)
+    let results;
+
+    // Simulating just cordelia being subscribed to denmark.
+    override_rewire(
+        stream_data,
+        "is_user_subscribed",
+        (stream_id, user_id) =>
+            stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
+    );
+
+    // When viewing no stream, sorting is alphabetical
+    compose_state.set_stream_name("");
+    results = ct.get_pm_people("li");
+    assert.deepEqual(results, [alice, cordelia]);
+
+    // When viewing denmark stream, subscriber twin2 is placed higher
+    compose_state.set_stream_name("Denmark");
+    results = ct.get_pm_people("li");
+    assert.deepEqual(results, [cordelia, alice]);
 });

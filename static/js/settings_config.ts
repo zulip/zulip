@@ -108,7 +108,6 @@ export const get_all_display_settings = (): DisplaySettings => ({
         user_display_settings: [
             "dense_mode",
             "high_contrast_mode",
-            "left_side_userlist",
             "fluid_layout_width",
             "starred_message_counts",
         ],
@@ -124,11 +123,10 @@ export const email_address_visibility_values = {
         code: 1,
         description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
-    // // Backend support for this configuration is not available yet.
-    // admins_and_members: {
-    //     code: 2,
-    //     description: $t({defaultMessage: "Members and admins"}),
-    // },
+    members: {
+        code: 2,
+        description: $t({defaultMessage: "Admins, moderators and members"}),
+    },
     moderators: {
         code: 5,
         description: $t({defaultMessage: "Admins and moderators"}),
@@ -291,6 +289,17 @@ export const common_message_policy_values = {
     },
 };
 
+export const edit_topic_policy_values = {
+    ...common_message_policy_values,
+    nobody: {
+        order: 6,
+        code: 6,
+        description: $t({defaultMessage: "Nobody"}),
+    },
+};
+
+export const move_messages_between_streams_policy_values = invite_to_realm_policy_values;
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
@@ -338,6 +347,22 @@ export const time_limit_dropdown_values = [
 ];
 export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
+export const msg_move_limit_dropdown_values = time_limit_dropdown_values;
+
+export const waiting_period_threshold_dropdown_values = [
+    {
+        description: $t({defaultMessage: "None"}),
+        code: 0,
+    },
+    {
+        description: $t({defaultMessage: "3 days"}),
+        code: 3,
+    },
+    {
+        description: $t({defaultMessage: "Custom"}),
+        code: "custom_period",
+    },
+];
 
 export const retain_message_forever = -1;
 
@@ -479,9 +504,6 @@ export const display_settings_labels = {
     dense_mode: $t({defaultMessage: "Dense mode"}),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
-    left_side_userlist: $t({
-        defaultMessage: "Show user list on left sidebar in narrow windows",
-    }),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
@@ -779,3 +801,34 @@ export const desktop_icon_count_display_values = {
         description: $t({defaultMessage: "None"}),
     },
 };
+
+export const system_user_groups_list = [
+    {
+        name: "@role:internet",
+        display_name: $t({defaultMessage: "Everyone on the internet"}),
+    },
+    {
+        name: "@role:everyone",
+        display_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
+    },
+    {
+        name: "@role:members",
+        display_name: $t({defaultMessage: "Admins, moderators and members"}),
+    },
+    {
+        name: "@role:fullmembers",
+        display_name: $t({defaultMessage: "Admins, moderators and full members"}),
+    },
+    {
+        name: "@role:moderators",
+        display_name: $t({defaultMessage: "Admins and moderators"}),
+    },
+    {
+        name: "@role:administrators",
+        display_name: $t({defaultMessage: "Admins"}),
+    },
+    {
+        name: "@role:owners",
+        display_name: $t({defaultMessage: "Owners"}),
+    },
+];

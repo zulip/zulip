@@ -2,7 +2,7 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_string, to_wild_value
@@ -59,7 +59,6 @@ def api_statuspage_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     if "incident" in payload:
         event = "incident"
         topic = get_incident_topic(payload)
@@ -69,7 +68,7 @@ def api_statuspage_webhook(
         topic = get_component_topic(payload)
         body = get_components_update_body(payload)
     else:
-        raise UnsupportedWebhookEventType("unknown-event")
+        raise UnsupportedWebhookEventTypeError("unknown-event")
 
     check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success(request)

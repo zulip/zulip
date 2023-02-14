@@ -19,7 +19,7 @@ To run a Zulip server, you will need:
 
 For details on each of these requirements, see below.
 
-[upgrade-from-git]: upgrade-or-modify.md#upgrading-from-a-git-repository
+[upgrade-from-git]: upgrade.md#upgrading-from-a-git-repository
 
 ## Server
 
@@ -55,7 +55,7 @@ sudo apt update
 ```
 
 [docker-zulip-homepage]: https://github.com/zulip/docker-zulip#readme
-[upgrade-os]: upgrade-or-modify.md#upgrading-the-operating-system
+[upgrade-os]: upgrade.md#upgrading-the-operating-system
 [ubuntu-repositories]: https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
 
@@ -112,6 +112,9 @@ on hardware requirements for larger organizations.
   which prevents user from making the Zulip server make requests to
   private resources. If your network has its own outgoing HTTP proxy,
   Zulip supports using that instead.
+
+Zulip does not, itself, require SSH, but most installations will also require
+access to incoming port 22 for SSH access for remote access.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-proxy]: deployment.md#customizing-the-outgoing-http-proxy

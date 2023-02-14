@@ -9,9 +9,9 @@ const channel = mock_esm("../../static/js/channel");
 const ui = mock_esm("../../static/js/ui");
 
 mock_esm("../../static/js/starred_messages", {
-    add: () => {},
+    add() {},
     get_starred_msg_ids: () => [1, 2, 3, 4, 5],
-    remove: () => {},
+    remove() {},
 });
 
 const message_flags = zrequire("message_flags");

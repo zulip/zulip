@@ -287,6 +287,11 @@ export function get_user_time(user_id) {
     const user_pref = get_user_time_preferences(user_id);
     if (user_pref) {
         const current_date = utcToZonedTime(new Date(), user_pref.timezone);
+        // This could happen if the timezone is invalid.
+        if (Number.isNaN(current_date.getTime())) {
+            blueslip.error(`Got invalid date for timezone: ${user_pref.timezone}`);
+            return undefined;
+        }
         return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
     }
     return undefined;
@@ -820,6 +825,23 @@ export function is_active_user_for_popover(user_id) {
     return false;
 }
 
+export function is_current_user_only_owner() {
+    if (!page_params.is_owner || page_params.is_bot) {
+        return false;
+    }
+
+    let active_owners = 0;
+    for (const person of active_user_dict.values()) {
+        if (person.is_owner && !person.is_bot) {
+            active_owners += 1;
+        }
+        if (active_owners > 1) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function filter_all_persons(pred) {
     const ret = [];
     for (const person of people_by_user_id_dict.values()) {
@@ -867,6 +889,18 @@ export function get_non_active_human_ids() {
     }
 
     return human_ids;
+}
+
+export function get_bot_ids() {
+    const bot_ids = [];
+
+    for (const user of people_by_user_id_dict.values()) {
+        if (user.is_bot) {
+            bot_ids.push(user.user_id);
+        }
+    }
+
+    return bot_ids;
 }
 
 export function get_active_human_count() {
@@ -1267,7 +1301,7 @@ function safe_lower(s) {
 }
 
 export function matches_user_settings_search(person, value) {
-    const email = settings_data.email_for_user_settings(person);
+    const email = person.delivery_email;
 
     return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
 }

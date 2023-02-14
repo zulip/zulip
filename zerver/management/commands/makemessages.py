@@ -75,7 +75,6 @@ def strip_whitespaces(src: str) -> str:
 
 
 class Command(makemessages.Command):
-
     xgettext_options = makemessages.Command.xgettext_options
     for func, tag in tags:
         xgettext_options += [f'--keyword={func}:1,"{tag}"']
@@ -193,7 +192,7 @@ class Command(makemessages.Command):
         for dirpath, dirnames, filenames in itertools.chain(
             os.walk("static/js"), os.walk("static/shared/js")
         ):
-            for filename in [f for f in filenames if f.endswith(".js") or f.endswith(".ts")]:
+            for filename in [f for f in filenames if f.endswith((".js", ".ts"))]:
                 if filename.startswith("."):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:

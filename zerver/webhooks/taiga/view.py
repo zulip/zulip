@@ -59,12 +59,12 @@ templates = {
     },
     "relateduserstory": {
         "create": (
-            "[{user}]({user_link}) added a related user story "
-            "{userstory_subject} to the epic {epic_subject}."
+            "[{user}]({user_link}) added a related user story"
+            " {userstory_subject} to the epic {epic_subject}."
         ),
         "delete": (
-            "[{user}]({user_link}) removed a related user story "
-            + "{userstory_subject} from the epic {epic_subject}."
+            "[{user}]({user_link}) removed a related user story"
+            " {userstory_subject} from the epic {epic_subject}."
         ),
     },
     "userstory": {
@@ -90,7 +90,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted user story {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of user story {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of user story {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of user story {subject} to {new}.",
     },
     "milestone": {
         "create": "[{user}]({user_link}) created sprint {subject}.",
@@ -121,9 +121,8 @@ templates = {
         "commented": "[{user}]({user_link}) commented on task {subject}.",
         "delete": "[{user}]({user_link}) deleted task {subject}.",
         "changed_us": "[{user}]({user_link}) moved task {subject} from user story {old} to {new}.",
-        "due_date": "[{user}]({user_link}) changed due date of task {subject}"
-        " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of task {subject}" " to {new}.",
+        "due_date": "[{user}]({user_link}) changed due date of task {subject} from {old} to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of task {subject} to {new}.",
     },
     "issue": {
         "create": "[{user}]({user_link}) created issue {subject}.",
@@ -146,7 +145,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted issue {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of issue {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of issue {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of issue {subject} to {new}.",
         "blocked": "[{user}]({user_link}) blocked issue {subject}.",
         "unblocked": "[{user}]({user_link}) unblocked issue {subject}.",
     },
@@ -264,7 +263,7 @@ def parse_change_event(change_type: str, message: WildValue) -> Optional[EventTy
         if not tamed_old:
             event_type = "set_" + change_type
             values["new"] = tamed_new
-        elif not tamed_old == tamed_new:
+        elif tamed_old != tamed_new:
             event_type = change_type
             values.update(old=tamed_old, new=tamed_new)
         else:
@@ -309,7 +308,7 @@ def parse_message(
         events.append(parse_create_or_delete(message))
     elif message["action"].tame(check_string) == "change":
         if message["change"]["diff"]:
-            for value in message["change"]["diff"].keys():
+            for value in message["change"]["diff"].keys():  # noqa: SIM118
                 parsed_event = parse_change_event(value, message)
                 if parsed_event:
                     events.append(parsed_event)

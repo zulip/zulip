@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, cast
 from unittest import mock
 
 import orjson
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
@@ -21,8 +22,9 @@ from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
-from zerver.lib.exceptions import JsonableError, MarkdownRenderingException
+from zerver.lib.exceptions import JsonableError, MarkdownRenderingError
 from zerver.lib.markdown import (
+    InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
     clear_state_for_testing,
@@ -535,14 +537,12 @@ class MarkdownTest(ZulipTestCase):
             '<p><a href="https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo">https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo</a></p>',
         )
 
-        msg = (
-            "https://www.youtube.com/playlist?v=O5nskjZ_GoI&list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo"
-        )
+        msg = "https://www.youtube.com/watch?v=O5nskjZ_GoI&list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo"
         converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(
             converted,
-            f"""<p><a href="https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo">https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo</a></p>\n<div class="youtube-video message_inline_image"><a data-id="O5nskjZ_GoI" href="https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo"><img src="{get_camo_url("https://i.ytimg.com/vi/O5nskjZ_GoI/default.jpg")}"></a></div>""",
+            f"""<p><a href="https://www.youtube.com/watch?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo">https://www.youtube.com/watch?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo</a></p>\n<div class="youtube-video message_inline_image"><a data-id="O5nskjZ_GoI" href="https://www.youtube.com/watch?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo"><img src="{get_camo_url("https://i.ytimg.com/vi/O5nskjZ_GoI/default.jpg")}"></a></div>""",
         )
 
         msg = "http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"
@@ -660,6 +660,38 @@ class MarkdownTest(ZulipTestCase):
         thumbnail_img = f"""<div class="message_inline_image"><a href="{ content }"><img src="{ get_camo_url(content) }"></a></div>"""
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
+
+    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    def test_max_inline_preview(self) -> None:
+        image_links = []
+        # Add a youtube link within a spoiler to ensure other link types are counted
+        image_links.append(
+            """```spoiler Check out this PyCon video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
+        )
+        # Add a link within blockquote to test that it does NOT get counted
+        image_links.append("> http://cdn.wallpapersafari.com/spoiler/dont_count.jpeg\n")
+        # Using INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1 because of the one link in a spoiler added already
+        for x in range(InlineInterestingLinkProcessor.INLINE_PREVIEW_LIMIT_PER_MESSAGE - 1):
+            image_links.append(f"http://cdn.wallpapersafari.com/{x}/6/16eVjx.jpeg")
+        within_limit_content = "\n".join(image_links)
+        above_limit_content = (
+            within_limit_content + "\nhttp://cdn.wallpapersafari.com/above/0/6/16eVjx.jpeg"
+        )
+
+        # When the number of image links is within the preview limit, the
+        # output should contain the same number of inline images.
+        converted = markdown_convert_wrapper(within_limit_content)
+        soup = BeautifulSoup(converted, "html.parser")
+        self.assert_length(
+            soup(class_="message_inline_image"),
+            InlineInterestingLinkProcessor.INLINE_PREVIEW_LIMIT_PER_MESSAGE,
+        )
+
+        # When the number of image links is over the limit, then there should
+        # be zero inline images.
+        converted = markdown_convert_wrapper(above_limit_content)
+        soup = BeautifulSoup(converted, "html.parser")
+        self.assert_length(soup(class_="message_inline_image"), 0)
 
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_quoted_blocks(self) -> None:
@@ -1301,16 +1333,26 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
+    def check_add_linkifiers(
+        self, linkifiers: List[RealmFilter], expected_linkifier_strs: List[str]
+    ) -> None:
+        self.assert_length(linkifiers, len(expected_linkifier_strs))
+        for linkifier, expected_linkifier_str in zip(linkifiers, expected_linkifier_strs):
+            linkifier.clean()
+            linkifier.save()
+            self.assertEqual(str(linkifier), expected_linkifier_str)
+
     def test_realm_patterns(self) -> None:
         realm = get_realm("zulip")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        linkifier = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
-        )
-        linkifier.save()
-        self.assertEqual(
-            str(linkifier),
-            "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern=r"#(?P<id>[0-9]{2,8})",
+                    url_format_string=r"https://trac.example.com/ticket/%(id)s",
+                )
+            ],
+            ["<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>"],
         )
 
         msg = Message(sender=self.example_user("othello"))
@@ -1337,6 +1379,21 @@ class MarkdownTest(ZulipTestCase):
             [
                 {"url": "https://trac.example.com/ticket/444", "text": "#444"},
                 {"url": "https://google.com", "text": "https://google.com"},
+            ],
+        )
+
+        msg.set_topic_name("#111 https://google.com #111 #222 #111 https://google.com #222")
+        converted_topic = topic_links(realm.id, msg.topic_name())
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://trac.example.com/ticket/111", "text": "#111"},
+                {"url": "https://google.com", "text": "https://google.com"},
+                {"url": "https://trac.example.com/ticket/111", "text": "#111"},
+                {"url": "https://trac.example.com/ticket/222", "text": "#222"},
+                {"url": "https://trac.example.com/ticket/111", "text": "#111"},
+                {"url": "https://google.com", "text": "https://google.com"},
+                {"url": "https://trac.example.com/ticket/222", "text": "#222"},
             ],
         )
 
@@ -1443,29 +1500,29 @@ class MarkdownTest(ZulipTestCase):
 
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        linkifier_1 = RealmFilter(
-            realm=realm,
-            pattern=r"(?P<id>ABC\-[0-9]+)",
-            url_format_string=url_format_string,
-        )
-        linkifier_1.save()
-        self.assertEqual(
-            str(linkifier_1),
-            r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
-        )
-
-        url_format_string = r"https://other-trac.example.com/ticket/%(id)s"
-        linkifier_2 = RealmFilter(
-            realm=realm,
-            pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)",
-            url_format_string=url_format_string,
-        )
-        linkifier_2.save()
-        self.assertEqual(
-            str(linkifier_2),
-            r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)"
-            " https://other-trac.example.com/ticket/%(id)s>",
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern="(?P<id>ABC-[0-9]+)",
+                    url_format_string="https://trac.example.com/ticket/%(id)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="(?P<id>[A-Z][A-Z0-9]*-[0-9]+)",
+                    url_format_string="https://other-trac.example.com/ticket/%(id)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="(?P<id>[A-Z][A-Z0-9]+)",
+                    url_format_string="https://yet-another-trac.example.com/ticket/%(id)s",
+                ),
+            ],
+            [
+                "<RealmFilter(zulip): (?P<id>ABC-[0-9]+) https://trac.example.com/ticket/%(id)s>",
+                "<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*-[0-9]+) https://other-trac.example.com/ticket/%(id)s>",
+                "<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]+) https://yet-another-trac.example.com/ticket/%(id)s>",
+            ],
         )
 
         msg = Message(sender=self.example_user("othello"))
@@ -1485,12 +1542,136 @@ class MarkdownTest(ZulipTestCase):
             converted.rendered_content,
             '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>',
         )
-        # But both the links should be generated in topics.
+        # Only the older linkifier should be used in the topic, because the two patterns overlap.
         self.assertEqual(
             converted_topic,
             [
                 {"url": "https://trac.example.com/ticket/ABC-123", "text": "ABC-123"},
-                {"url": "https://other-trac.example.com/ticket/ABC-123", "text": "ABC-123"},
+            ],
+        )
+
+        # linkifier 3 matches ASD, ABC and QWE, but because it has lower priority
+        # than linkifier 1 and linkifier 2 because it is created last, the former
+        # two matches will not be chosen.
+        # Both linkifier 1 and linkifier 2 matches ABC-123, similarly, as linkifier 2
+        # has a lower priority, only linkifier 1's URL will be generated.
+        converted_topic = topic_links(realm.id, "ASD-123 ABC-123 QWE")
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://other-trac.example.com/ticket/ASD-123", "text": "ASD-123"},
+                {"url": "https://trac.example.com/ticket/ABC-123", "text": "ABC-123"},
+                {"url": "https://yet-another-trac.example.com/ticket/QWE", "text": "QWE"},
+            ],
+        )
+
+    def test_links_and_linkifiers_in_topic_name(self) -> None:
+        realm = get_realm("zulip")
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern="ABC-42",
+                    url_format_string="https://google.com",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern=r"com.+(?P<id>ABC\-[0-9]+)",
+                    url_format_string="https://trac.example.com/ticket/%(id)s",
+                ),
+            ],
+            [
+                "<RealmFilter(zulip): ABC-42 https://google.com>",
+                r"<RealmFilter(zulip): com.+(?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
+            ],
+        )
+
+        # This verifies that second linkifier has a lower priority than the first one.
+        # It helps us to later ensure that even with a low priority, the linkifier can take effect
+        # when it appears earlier than a raw URL.
+        converted_topic = topic_links(realm.id, "com ABC-42")
+        self.assertEqual(
+            converted_topic,
+            [{"url": "https://google.com", "text": "ABC-42"}],
+        )
+        # The linkifier matches "com/ABC-123", which is after where the raw URL starts
+        converted_topic = topic_links(realm.id, "https://foo.com/ABC-123")
+        self.assertEqual(
+            converted_topic,
+            [{"url": "https://foo.com/ABC-123", "text": "https://foo.com/ABC-123"}],
+        )
+
+        # The linkifier matches "com https://foo.com/ABC-123", which is before where the raw URL starts
+        converted_topic = topic_links(realm.id, "com https://foo.com/ABC-123")
+        self.assertEqual(
+            converted_topic,
+            [
+                {
+                    "url": "https://trac.example.com/ticket/ABC-123",
+                    "text": "com https://foo.com/ABC-123",
+                }
+            ],
+        )
+
+    def test_topic_links_ordering_by_priority(self) -> None:
+        # The same test case is also implemented in frontend_tests/node_tests/markdown_parse.js
+        realm = get_realm("zulip")
+        self.check_add_linkifiers(
+            [
+                RealmFilter(
+                    realm=realm,
+                    pattern="http",
+                    url_format_string="http://example.com/",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="b#(?P<id>[a-z]+)",
+                    url_format_string="http://example.com/b/%(id)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+)",
+                    url_format_string="http://example.com/a/%(aid)s/b/%(bid)s",
+                ),
+                RealmFilter(
+                    realm=realm,
+                    pattern="a#(?P<id>[a-z]+)",
+                    url_format_string="http://example.com/a/%(id)s",
+                ),
+            ],
+            [
+                "<RealmFilter(zulip): http http://example.com/>",
+                "<RealmFilter(zulip): b#(?P<id>[a-z]+) http://example.com/b/%(id)s>",
+                "<RealmFilter(zulip): a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+) http://example.com/a/%(aid)s/b/%(bid)s>",
+                "<RealmFilter(zulip): a#(?P<id>[a-z]+) http://example.com/a/%(id)s>",
+            ],
+        )
+        # There should be 5 link matches in the topic, if ordered from the most priortized to the least:
+        # 1. "http" (linkifier)
+        # 2. "b#bar" (linkifier)
+        # 3. "a#asd b#bar" (linkifier)
+        # 4. "a#asd" (linkifier)
+        # 5. "http://foo.com" (raw URL)
+        # When there are overlapping matches, the one that appears earlier in the list should
+        # have a topic link generated.
+        # For this test case, while "a#asd" and "a#asd b#bar" both match and they overlap,
+        # there is a match "b#bar" with a higher priority, preventing "a#asd b#bar" from being matched.
+        converted_topic = topic_links(realm.id, "http://foo.com a#asd b#bar")
+        self.assertEqual(
+            converted_topic,
+            [
+                {
+                    "text": "http",
+                    "url": "http://example.com/",
+                },
+                {
+                    "text": "a#asd",
+                    "url": "http://example.com/a/asd",
+                },
+                {
+                    "text": "b#bar",
+                    "url": "http://example.com/b/bar",
+                },
             ],
         )
 
@@ -1530,6 +1711,23 @@ class MarkdownTest(ZulipTestCase):
         # and flush it one more time, to make sure we don't get a KeyError
         flush()
         self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
+
+    def test_linkifier_precedence(self) -> None:
+        realm = self.example_user("hamlet").realm
+        # The insertion order should not affect the fact that the linkifiers are ordered by id.
+        # Note that we might later switch to a different field to order the linkifiers.
+        sequence = (10, 3, 11, 2, 4, 5, 6)
+        for cur_precedence in sequence:
+            linkifier = RealmFilter(
+                id=cur_precedence,
+                realm=realm,
+                pattern=f"abc{cur_precedence}",
+                url_format_string="http://foo.com",
+            )
+            linkifier.save()
+        linkifiers = linkifiers_for_realm(realm.id)
+        for index, cur_precedence in enumerate(sorted(sequence)):
+            self.assertEqual(linkifiers[index]["id"], cur_precedence)
 
     def test_realm_patterns_negative(self) -> None:
         realm = get_realm("zulip")
@@ -1607,7 +1805,7 @@ class MarkdownTest(ZulipTestCase):
             "aaron": ["hey"],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1641,7 +1839,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": ["last"],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1679,7 +1877,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": ["last"],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1711,7 +1909,7 @@ class MarkdownTest(ZulipTestCase):
             "aaron": [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1745,7 +1943,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1764,7 +1962,6 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
-
         alert_words_for_users: Dict[str, List[str]] = {
             "hamlet": ["issue124"],
             "cordelia": self.get_mock_alert_words(500, 10),
@@ -1772,7 +1969,7 @@ class MarkdownTest(ZulipTestCase):
             "othello": self.get_mock_alert_words(500, 10),
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for (username, alert_words) in alert_words_for_users.items():
+        for username, alert_words in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             do_add_alert_words(user_profile, alert_words)
@@ -1861,7 +2058,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">' "@all" "</span> test</p>",
+            '<p><span class="user-mention" data-user-id="*">@all</span> test</p>',
         )
         self.assertTrue(rendering_result.mentions_wildcard)
 
@@ -1873,7 +2070,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">' "@everyone" "</span> test</p>",
+            '<p><span class="user-mention" data-user-id="*">@everyone</span> test</p>',
         )
         self.assertTrue(rendering_result.mentions_wildcard)
 
@@ -1885,7 +2082,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">' "@stream" "</span> test</p>",
+            '<p><span class="user-mention" data-user-id="*">@stream</span> test</p>',
         )
         self.assertTrue(rendering_result.mentions_wildcard)
 
@@ -1939,7 +2136,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
+            f'<p><span class="user-mention" data-user-id="{user_id}">@King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
 
@@ -1947,7 +2144,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
+            f'<p><span class="user-mention" data-user-id="{user_id}">@King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
 
@@ -2265,7 +2462,7 @@ class MarkdownTest(ZulipTestCase):
 
     def create_user_group_for_test(self, user_group_name: str) -> UserGroup:
         othello = self.example_user("othello")
-        return create_user_group(user_group_name, [othello], get_realm("zulip"))
+        return create_user_group(user_group_name, [othello], get_realm("zulip"), acting_user=None)
 
     def test_user_group_mention_single(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2728,13 +2925,15 @@ class MarkdownTest(ZulipTestCase):
     def test_disabled_code_block_processor(self) -> None:
         msg = (
             "Hello,\n\n"
-            + "    I am writing this message to test something. I am writing this message to test something."
+            "    I am writing this message to test something. I am writing this message to test"
+            " something."
         )
         converted = markdown_convert_wrapper(msg)
         expected_output = (
             "<p>Hello,</p>\n"
-            + '<div class="codehilite"><pre><span></span><code>I am writing this message to test something. I am writing this message to test something.\n'
-            + "</code></pre></div>"
+            '<div class="codehilite"><pre><span></span><code>I am writing this message to test'
+            " something. I am writing this message to test something.\n"
+            "</code></pre></div>"
         )
         self.assertEqual(converted, expected_output)
 
@@ -2745,7 +2944,8 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = markdown_convert(msg, message_realm=realm, email_gateway=True)
         expected_output = (
             "<p>Hello,</p>\n"
-            + "<p>I am writing this message to test something. I am writing this message to test something.</p>"
+            "<p>I am writing this message to test something. I am writing this message to test"
+            " something.</p>"
         )
         self.assertEqual(rendering_result.rendered_content, expected_output)
 
@@ -2900,11 +3100,10 @@ class MarkdownApiTests(ZulipTestCase):
 class MarkdownErrorTests(ZulipTestCase):
     def test_markdown_error_handling(self) -> None:
         with self.simulated_markdown_failure():
-            with self.assertRaises(MarkdownRenderingException):
+            with self.assertRaises(MarkdownRenderingError):
                 markdown_convert_wrapper("")
 
     def test_send_message_errors(self) -> None:
-
         message = "whatever"
         with self.simulated_markdown_failure():
             # We don't use assertRaisesRegex because it seems to not
@@ -2921,7 +3120,7 @@ class MarkdownErrorTests(ZulipTestCase):
         with mock.patch("zerver.lib.markdown.timeout", return_value=msg), mock.patch(
             "zerver.lib.markdown.markdown_logger"
         ):
-            with self.assertRaises(MarkdownRenderingException):
+            with self.assertRaises(MarkdownRenderingError):
                 markdown_convert_wrapper(msg)
 
     def test_curl_code_block_validation(self) -> None:
@@ -2936,7 +3135,7 @@ class MarkdownErrorTests(ZulipTestCase):
             "```",
         ]
 
-        with self.assertRaises(MarkdownRenderingException):
+        with self.assertRaises(MarkdownRenderingError):
             processor.run(markdown_input)
 
     def test_curl_code_block_without_validation(self) -> None:

@@ -87,7 +87,7 @@ from markdown.preprocessors import Preprocessor
 from pygments.lexers import find_lexer_class_by_name
 from pygments.util import ClassNotFound
 
-from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 from zerver.lib.tex import render_tex
 
@@ -135,9 +135,8 @@ Missing required -X argument in curl command:
 
     for line in lines:
         regex = r'curl [-](sS)?X "?(GET|DELETE|PATCH|POST)"?'
-        if line.startswith("curl"):
-            if re.search(regex, line) is None:
-                raise MarkdownRenderingException(error_msg.format(command=line.strip()))
+        if line.startswith("curl") and re.search(regex, line) is None:
+            raise MarkdownRenderingError(error_msg.format(command=line.strip()))
 
 
 CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {
@@ -211,7 +210,7 @@ class ZulipBaseHandler:
         """Returns a formatted text.
         Subclasses should override this method.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 def generic_handler(

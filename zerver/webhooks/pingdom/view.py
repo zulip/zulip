@@ -2,7 +2,7 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_string, to_wild_value
@@ -51,7 +51,7 @@ def api_pingdom_webhook(
         subject = get_subject_for_http_request(payload)
         body = get_body_for_http_request(payload)
     else:
-        raise UnsupportedWebhookEventType(check_type)
+        raise UnsupportedWebhookEventTypeError(check_type)
 
     check_send_webhook_message(request, user_profile, subject, body, check_type)
     return json_success(request)

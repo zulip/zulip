@@ -14,7 +14,7 @@ def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
     try:
         return RemoteZulipServer.objects.get(uuid=uuid)
     except ValidationError:
-        raise RemoteZulipServer.DoesNotExist()
+        raise RemoteZulipServer.DoesNotExist
 
 
 class RemoteZulipServer(models.Model):
