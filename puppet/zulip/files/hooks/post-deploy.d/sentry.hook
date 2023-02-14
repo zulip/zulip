@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 # Arguments: OLD_COMMIT NEW_COMMIT ...where both are `git describe`
 # output or tag names.  The CWD will be the new deploy directory.
 
