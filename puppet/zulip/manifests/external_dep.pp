@@ -42,7 +42,7 @@ define zulip::external_dep(
       before       => File[$path],
     }
     file { $path:
-      ensure => directory,
+      ensure => present,
     }
   }
 
