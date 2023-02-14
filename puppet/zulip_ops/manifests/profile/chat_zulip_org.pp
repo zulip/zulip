@@ -1,6 +1,7 @@
 class zulip_ops::profile::chat_zulip_org {
   include zulip::profile::standalone
   include zulip::postfix_localmail
+  include zulip::hooks::sentry
 
   include zulip_ops::profile::base
   include zulip_ops::app_frontend_monitoring
