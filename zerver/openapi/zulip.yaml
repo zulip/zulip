@@ -12722,7 +12722,7 @@ paths:
                           defaults to `True`; self-hosted servers default to `False`).
 
                           Clients should use this to determine whether to offer UI for the
-                          realm-level setting for enabling we-public streams
+                          realm-level setting for enabling web-public streams
                           (`realm_enable_spectator_access`).
 
                           **Changes**: New in Zulip 5.0 (feature level 110).
