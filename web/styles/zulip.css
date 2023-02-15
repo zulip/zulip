@@ -1174,6 +1174,7 @@ td.pointer {
     line-height: 17px; /* identical to box height, or 131% */
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    cursor: default;
 
     /* Display the date when unchanged only for sticky headers. */
     &.recipient_row_date_unchanged {
@@ -1481,6 +1482,7 @@ div.message_table {
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0;
+        cursor: default;
 
         & span {
             font-size: calc(12em / 14);
