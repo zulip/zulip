@@ -10254,12 +10254,12 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a message. Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
+                          The maximum allowed length for a message, in Unicode code points.
+                          Clients should use this property rather than hardcoding field
+                          sizes.
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
-                          this always had value 10000.
+                          this property always had a value of 10000.
                       muted_topics:
                         type: array
                         deprecated: true
@@ -17518,7 +17518,11 @@ components:
       name: content
       in: query
       description: |
-        The content of the message. Maximum message size of 10000 bytes.
+        The content of the message.
+
+        Clients should use the `max_message_length` returned by the
+        [`POST /register`](/api/register-queue) endpoint to determine
+        the maximum message size.
       schema:
         type: string
       example: Hello
@@ -17527,8 +17531,11 @@ components:
       name: content
       in: query
       description: |
-        The updated content of the target message. Maximum message size of
-        10000 bytes.
+        The updated content of the target message.
+
+        Clients should use the `max_message_length` returned by the
+        [`POST /register`](/api/register-queue) endpoint to determine
+        the maximum message size.
 
         Note that a message's content and stream cannot be changed at the
         same time, so sending both `content` and `stream_id` parameters will
