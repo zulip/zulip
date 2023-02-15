@@ -1500,10 +1500,6 @@ def _internal_prep_message(
     messages together as one database query.
     Call do_send_messages with a list of the return values of this method.
     """
-    # Remove any null bytes from the content
-    if len(content) > settings.MAX_MESSAGE_LENGTH:
-        content = content[0:3900] + "\n\n[message was too long and has been truncated]"
-
     # If we have a stream name, and the stream doesn't exist, we
     # create it here (though this code path should probably be removed
     # eventually, moving that responsibility to the caller).  If

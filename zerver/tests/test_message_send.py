@@ -2258,14 +2258,15 @@ class InternalPrepTest(ZulipTestCase):
     def test_error_handling(self) -> None:
         sender = self.example_user("cordelia")
         recipient_user = self.example_user("hamlet")
-        content = "x" * 15000
+        MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
+        content = "x" * (MAX_MESSAGE_LENGTH + 10)
 
         result = internal_prep_private_message(
             sender=sender, recipient_user=recipient_user, content=content
         )
         assert result is not None
         message = result.message
-        self.assertIn("message was too long", message.content)
+        self.assertIn("message truncated", message.content)
 
         # Simulate sending a message to somebody not in the
         # realm of the sender.
