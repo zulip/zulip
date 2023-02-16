@@ -1435,18 +1435,6 @@ td.pointer {
     visibility: visible;
 }
 
-/* Brighten text because of the dark background */
-.dark_background a,
-.dark_background a:hover,
-a.dark_background:hover,
-.dark_background {
-    color: hsl(0deg 0% 100%) !important;
-}
-
-.dark_background a.message_label_clickable:hover {
-    color: hsl(200deg 99% 60%);
-}
-
 .small {
     font-size: 80%;
 }

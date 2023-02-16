@@ -338,9 +338,6 @@
         color: inherit;
     }
 
-    .dark_background a,
-    a.dark_background:hover,
-    .dark_background,
     .message_reactions .message_reaction_count,
     .message_reactions .reaction_button i,
     .message_reactions:hover .message_reaction + .reaction_button {
