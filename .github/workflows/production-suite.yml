@@ -102,7 +102,7 @@ jobs:
         with:
           name: production-tarball
           path: /tmp/production-build
-          retention-days: 14
+          retention-days: 1
 
       - name: Generate failure report string
         id: failure_report_string
