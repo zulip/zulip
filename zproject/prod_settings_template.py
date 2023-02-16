@@ -553,10 +553,12 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ########
 ## RabbitMQ configuration.
 ##
-## By default, Zulip connects to RabbitMQ running locally on the machine,
-## but Zulip also supports connecting to RabbitMQ over the network;
-## to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
+## By default, Zulip connects to RabbitMQ running locally on the
+## machine, but Zulip also supports connecting to RabbitMQ over the
+## network; to use a remote RabbitMQ instance, set RABBITMQ_HOST, and
+## optionally RABBITMQ_PORT, to the hostname and port here.
 # RABBITMQ_HOST = "127.0.0.1"
+# RABBITMQ_PORT = 5672
 ## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = "zulip"
 
