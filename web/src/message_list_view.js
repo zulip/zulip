@@ -1556,4 +1556,13 @@ export class MessageListView {
             }
         }
     }
+
+    update_recipient_bar_background_color() {
+        const $table = rows.get_table(this.table_name);
+        const $stream_headers = $table.find(".message_header_stream");
+        for (const stream_header of $stream_headers) {
+            const $stream_header = $(stream_header);
+            stream_color.update_stream_recipient_color($stream_header);
+        }
+    }
 }

@@ -364,6 +364,8 @@ export function format_draft(draft) {
             is_stream: true,
             stream_name,
             recipient_bar_color: stream_color.get_recipient_bar_color(draft_stream_color),
+            stream_privacy_icon_color:
+                stream_color.get_stream_privacy_icon_color(draft_stream_color),
             topic: draft_topic,
             raw_content: draft.content,
             time_stamp,

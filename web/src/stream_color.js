@@ -5,9 +5,23 @@ import $ from "jquery";
 import {$t} from "./i18n";
 import * as message_view_header from "./message_view_header";
 import * as settings_data from "./settings_data";
+import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 
 extend([lchPlugin]);
+
+export function update_stream_recipient_color($stream_header) {
+    if ($stream_header.length) {
+        const stream_id = Number.parseInt($($stream_header).attr("data-stream-id"), 10);
+        const stream_name = stream_data.maybe_get_stream_name(stream_id);
+        if (!stream_name) {
+            return;
+        }
+        const stream_color = stream_data.get_color(stream_name);
+        const recipient_bar_color = get_recipient_bar_color(stream_color);
+        $stream_header.css("background-color", recipient_bar_color);
+    }
+}
 
 export function get_stream_privacy_icon_color(color) {
     // LCH stands for Lightness, Chroma, and Hue.
@@ -41,7 +55,7 @@ function update_table_stream_color(table, stream_name, color) {
     for (const label of $stream_labels) {
         const $label = $(label);
         if ($label.text().trim() === stream_name) {
-            $label.css({background: recipient_bar_color, "border-left-color": recipient_bar_color});
+            $label.closest(".message_header_stream").css({background: recipient_bar_color});
         }
     }
 }

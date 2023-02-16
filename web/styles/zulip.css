@@ -58,15 +58,33 @@ body,
     --right-sidebar-width: 250px;
 
     /* Colors used across the app */
-    --color-background-private-message-header: hsl(0deg 0% 27%);
+    --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
+    --color-background-private-message-content: hsl(45deg 20% 96%);
+    --color-text-message-header: hsl(0deg 0% 15%);
+    /* stylelint-disable color-no-hex */
+    /* These colors change how they look when converted to hsl. */
+    /* For example d7d7d7 to hsl and back becomes d6d6d6. */
+    --color-stream-message-header-box-shadow: #e5e5e5;
+    --color-message-list-border: #d7d7d7;
+    /* stylelint-enable color-no-hex */
+    --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
+    --color-message-header-icon-interactive: hsl(0deg 0% 0%);
+    --color-background: hsl(0deg 0% 100%);
 }
 
 %dark-theme {
     --color-default-text: hsl(0deg 0% 100%);
     --color-date: hsl(0deg 0% 100% / 75%);
-    --color-background-private-message-header: hsl(0deg 0% 27%);
+    --color-background-private-message-header: hsl(46deg 25% 20%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
+    --color-background-private-message-content: hsl(46deg 25% 14%);
+    --color-text-message-header: hsl(0deg 0% 100%);
+    --color-stream-message-header-box-shadow: hsl(0deg 0% 10%);
+    --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
+    --color-message-header-icon-interactive: hsl(0deg 0% 100%);
+    --color-message-list-border: hsl(0deg 0% 10%);
+    --color-background: hsl(212deg 28% 18%);
 }
 
 :root.dark-theme {
@@ -735,10 +753,6 @@ strong {
     position: relative;
 }
 
-.message_header_stream a.message_label_clickable {
-    color: inherit;
-}
-
 #gear-menu .light-theme {
     display: none;
 }
@@ -1100,38 +1114,90 @@ td.pointer {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;
-    line-height: 14px;
+    font-weight: 500;
+    font-size: calc(15em / 14);
+    line-height: 120%;
     position: relative;
     z-index: 0;
+    border: 1px solid var(--color-message-list-border);
+    border-bottom: 0;
+    border-radius: 5px 5px 0 0;
+
+    .message-header-contents {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 30px;
+    }
+
+    &.message_header_stream {
+        /* Add box shadow to hide message border (first one) and message
+           selected box shadow (second one) that are visible
+           due to top borders of sticky recipient bar being curved. */
+        box-shadow: 0 1px 0 var(--color-stream-message-header-box-shadow),
+            -1px -5px 0 5px var(--color-background),
+            1px -5px 0 0 var(--color-background);
+
+        & a.message_label_clickable {
+            color: var(--color-text-message-header);
+
+            &:hover {
+                color: var(--color-text-message-header) !important;
+                text-decoration: none;
+            }
+        }
+
+        .stream_topic_separator {
+            line-height: 0;
+            color: var(--color-message-header-icon-non-interactive);
+        }
+
+        .stream_topic {
+            display: inline-block;
+            padding: 5px 6px 5px 2px;
+            height: 17px;
+            line-height: 17px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
 }
 
 .message_list {
     .recipient_row {
-        border-bottom: 1px solid hsl(0deg 0% 88%);
         /* This value should be in sync with `margin_between_recipient_rows`
-           in `message_list_view`. */
+        in `message_list_view`. */
         margin-bottom: 10px;
+        border-radius: 5px;
+
+        .message_row:last-of-type {
+            border-radius: 0 0 5px 5px;
+            border-bottom: 1px solid var(--color-message-list-border);
+        }
     }
 
     .message_header {
         position: sticky;
         top: var(--sidebar-top);
         z-index: 3;
-        box-shadow: 0 -1px 0 0 hsl(0deg 0% 100%);
+        box-shadow: 0 -1px 0 0 var(--color-background);
+
+        &.sticky_header {
+            .recipient_row_date {
+                display: block;
+            }
+        }
     }
 }
 
 .stream_label {
-    display: inline-block;
-    padding: 4px 6px 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 2px 5px 10px;
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    border-color: hsl(0deg 0% 0% / 0%) hsl(0deg 0% 0% / 0%) hsl(0deg 0% 0% / 0%)
-        hsl(0deg 0% 88%);
-    background-color: hsl(0deg 0% 88%);
-    border-width: 0;
     position: relative;
     text-decoration: none;
 
@@ -1149,30 +1215,19 @@ td.pointer {
         text-decoration: none;
     }
 
-    &::after {
-        left: 100%;
-        top: 50%;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-        margin-top: -11px;
-        border-style: solid;
-        border-width: 11px 0 11px 5px;
-        border-color: inherit;
-        z-index: 2;
-        transform: scale(0.9999);
-    }
-}
+    .stream-privacy {
+        min-width: unset;
+        width: 16px;
+        height: 16px;
 
-.stream_topic {
-    display: inline-block;
-    padding: 3px 3px 2px 9px;
-    height: 17px;
-    line-height: 17px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+        .hashtag {
+            padding-right: 0;
+
+            &::after {
+                font-size: 16px;
+            }
+        }
+    }
 }
 
 .recipient_bar_controls {
@@ -1209,8 +1264,14 @@ td.pointer {
 }
 
 .recipient_bar_icon {
-    padding-left: 4px;
-    padding-right: 4px;
+    color: var(--color-message-header-icon-interactive);
+    opacity: 0.2;
+    padding-left: 6px;
+    padding-right: 6px;
+
+    &:hover {
+        opacity: 0.4 !important;
+    }
 }
 
 #mark_as_read_turned_off_banner {
@@ -1278,25 +1339,38 @@ td.pointer {
 }
 
 .message_header_private_message {
-    background-color: hsl(0deg 0% 100%);
+    /* This is required for box-shadow appear above the message content. */
+    z-index: 1;
+    box-shadow: 0 1px 0 var(--color-message-list-border),
+        -1px -5px 0 5px var(--color-background),
+        1px -5px 0 0 var(--color-background);
+    background-color: var(--color-background-private-message-header);
 
+    .message-header-contents,
     .message_label_clickable {
         background-color: var(--color-background-private-message-header);
-        display: inline-block;
-        padding: 3px 6px 2px;
-        font-weight: normal;
-        height: 17px;
-        line-height: 17px;
-        border-left-color: var(--color-background-private-message-header);
-        color: var(--color-text-private-message-header);
     }
 
-    /* Base color backgrounds for message boxes,
-       private messages, mentions, and unread messages */
+    .message_label_clickable {
+        display: flex;
+        padding: 5px 0 5px 10px;
+        font-weight: 600;
+        height: 17px;
+        line-height: 17px;
+        color: var(--color-text-message-header);
 
-    .message-header-contents {
-        background-color: hsl(192deg 19% 75% / 20%);
-        box-shadow: inset 1px 1px 0 hsl(0deg 0% 88%);
+        &:hover {
+            color: var(--color-text-message-header) !important;
+            text-decoration: none;
+        }
+
+        .private_message_header_icon {
+            font-size: 15px;
+            position: relative;
+            top: 1px;
+            width: 16px;
+            height: 16px;
+        }
     }
 }
 
@@ -1307,16 +1381,9 @@ td.pointer {
 
     .messagebox,
     .date_row {
-        background-color: hsl(192deg 19% 75% / 20%);
+        background-color: var(--color-background-private-message-content);
+        border-radius: 0 0 5px 5px;
     }
-}
-
-.message-header-contents {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-right: 1px solid hsl(0deg 0% 88%);
-    background-color: hsl(0deg 0% 88%);
 }
 
 .group_mention .messagebox,
@@ -1459,8 +1526,8 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsl(0deg 0% 0% / 10%);
-    border-right: 1px solid hsl(0deg 0% 0% / 10%);
+    border-left: 1px solid var(--color-message-list-border);
+    border-right: 1px solid var(--color-message-list-border);
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */

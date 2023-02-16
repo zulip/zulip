@@ -85,6 +85,9 @@ message_lists.current = {
     data: {
         get_messages_sent_by_user: () => [],
     },
+    view: {
+        update_recipient_bar_background_color: () => [],
+    },
 };
 message_lists.home = {
     rerender_view: noop,
