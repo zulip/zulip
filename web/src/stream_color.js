@@ -36,29 +36,11 @@ export function get_recipient_bar_color(color) {
 }
 
 function update_table_stream_color(table, stream_name, color) {
-    // This is ugly, but temporary, as the new design will make it
-    // so that we only have color in the headers.
-    const style = color;
     const recipient_bar_color = get_recipient_bar_color(color);
-
     const $stream_labels = table.find(".stream_label");
-
     for (const label of $stream_labels) {
         const $label = $(label);
         if ($label.text().trim() === stream_name) {
-            const $messages = $label.closest(".recipient_row").children(".message_row");
-            $messages
-                .children(".messagebox")
-                .css(
-                    "box-shadow",
-                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
-                );
-            $messages
-                .children(".date_row")
-                .css(
-                    "box-shadow",
-                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
-                );
             $label.css({background: recipient_bar_color, "border-left-color": recipient_bar_color});
         }
     }
