@@ -56,11 +56,17 @@ body,
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
+
+    /* Colors used across the app */
+    --color-background-private-message-header: hsl(0deg 0% 27%);
+    --color-text-private-message-header: hsl(0deg 0% 100%);
 }
 
 %dark-theme {
     --color-default-text: hsl(0deg 0% 100%);
     --color-date: hsl(0deg 0% 100% / 75%);
+    --color-background-private-message-header: hsl(0deg 0% 27%);
+    --color-text-private-message-header: hsl(0deg 0% 100%);
 }
 
 :root.dark-theme {
@@ -1275,13 +1281,14 @@ td.pointer {
     background-color: hsl(0deg 0% 100%);
 
     .message_label_clickable {
-        background-color: hsl(0deg 0% 27%);
+        background-color: var(--color-background-private-message-header);
         display: inline-block;
         padding: 3px 6px 2px;
         font-weight: normal;
         height: 17px;
         line-height: 17px;
-        border-left-color: hsl(0deg 0% 27%);
+        border-left-color: var(--color-background-private-message-header);
+        color: var(--color-text-private-message-header);
     }
 
     /* Base color backgrounds for message boxes,
