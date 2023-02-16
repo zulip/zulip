@@ -64,6 +64,7 @@ administrator can access private stream messages:
 | Join                  | &#10004;          | &#10004;   | &#10004;  |
 | Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
 | Add others            | &#10004;          | &#10004;   | &#10004;  |
+| Remove others         | &#10004;          | &#10038;   | &#10038;  | &#10038;
 | See subscriber list   | &#10004;          | &#10004;   | &#10004;  | &#9726;
 | See full history      | &#10004;          | &#10004;   | &#10004;  | &#9726;
 | See estimated traffic | &#10004;          | &#10004;   | &#10004;  | &#9726;
@@ -71,17 +72,17 @@ administrator can access private stream messages:
 | Change the privacy    | &#10004;          |            |           |
 | Rename                | &#10004;          |            |           |
 | Edit the description  | &#10004;          |            |           |
-| Remove others         | &#10004;          |            |           |
 | Delete                | &#10004;          |            |           |
 
 <span class="legend_symbol">&#10004;</span><span class="legend_label">Always</span>
 
 <span class="legend_symbol">&#9726;</span><span class="legend_label">If subscribed to the stream</span>
 
-<span class="legend_symbol">&#10038;</span><span class="legend_label">[Configurable](/help/stream-sending-policy).  Owners,
-administrators, and members can, by default, post to any public
-stream, and guests can only post to public streams if they are
-subscribed.</span>
+<span class="legend_symbol">&#10038;</span><span class="legend_label">
+Configurable. See [Stream posting policy](/help/stream-sending-policy) and
+[Configure who can remove users](/help/add-or-remove-users-from-a-stream#configure-who-can-remove-users)
+for details.
+</span>
 
 ### Private streams
 
@@ -92,6 +93,7 @@ subscribed.</span>
 | Join                  |                   |            |           |
 | Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
 | Add others            | &#9726;           | &#9726;    | &#9726;   |
+| Remove others         | &#10004;          | &#10038;   | &#10038;  | &#10038;
 | See subscriber list   | &#10004;          | &#9726;    | &#9726;   | &#9726;
 | See full history      | &#10038;          | &#10038;   | &#10038;  | &#10038;
 | See estimated traffic | &#10004;          | &#9726;    | &#9726;   | &#9726;
@@ -99,15 +101,18 @@ subscribed.</span>
 | Change the privacy    | &#9726;           |            |           |
 | Rename                | &#10004;          |            |           |
 | Edit the description  | &#10004;          |            |           |
-| Remove others         | &#10004;          |            |           |
 | Delete                | &#10004;          |            |           |
 
 <span class="legend_symbol">&#10004;</span><span class="legend_label">Always</span>
 
 <span class="legend_symbol">&#9726;</span><span class="legend_label">If subscribed to the stream</span>
 
-<span class="legend_symbol">&#10038;</span><span class="legend_label">[Configurable](/help/stream-sending-policy), but at minimum
-must be subscribed to the stream.</span>
+<span class="legend_symbol">&#10038;</span><span class="legend_label">
+Configurable, but at minimum must be subscribed to the stream.
+See [Stream posting policy](/help/stream-sending-policy) and
+[Configure who can remove users](/help/add-or-remove-users-from-a-stream#configure-who-can-remove-users)
+for details.
+</span>
 
 ## Related articles
 
