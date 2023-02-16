@@ -315,12 +315,6 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .dark .message_label_clickable.stream_label,
-    .dark .stream_label,
-    .stream_label {
-        color: hsl(212deg 28% 18%);
-    }
-
     .new-style label.checkbox input[type="checkbox"] ~ span {
         border-color: hsl(0deg 0% 100% / 40%);
     }
@@ -370,13 +364,6 @@
         #hide_more_private_messages {
             background-color: hsl(199deg 33% 46% / 20%);
         }
-    }
-
-    /* do not turn the .message_header .stream_label text dark on hover because they're
-       on a dark background, and don't change the dark labels dark either. */
-    .message_header:not(.dark_background)
-        a.stream_label:not(.dark_background):hover {
-        color: hsl(212deg 28% 18%);
     }
 
     .message_header {

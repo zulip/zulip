@@ -1,14 +1,28 @@
+import {colord} from "colord";
 import $ from "jquery";
 
 import * as color_class from "./color_class";
 import {$t} from "./i18n";
 import * as message_view_header from "./message_view_header";
+import * as settings_data from "./settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
+
+export function get_recipient_bar_color(color) {
+    // Mixes 20% of color to 80% of white (light theme) / black (dark theme).
+    const using_dark_theme = settings_data.using_dark_theme();
+    const {r, g, b} = colord(color).toRgb();
+    return colord({
+        r: 0.8 * (using_dark_theme ? 0 : 255) + 0.2 * r,
+        g: 0.8 * (using_dark_theme ? 0 : 255) + 0.2 * g,
+        b: 0.8 * (using_dark_theme ? 0 : 255) + 0.2 * b,
+    }).toHex();
+}
 
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
     // so that we only have color in the headers.
     const style = color;
+    const recipient_bar_color = get_recipient_bar_color(color);
 
     const $stream_labels = table.find(".stream_label");
 
@@ -28,9 +42,9 @@ function update_table_stream_color(table, stream_name, color) {
                     "box-shadow",
                     "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
                 );
-            $label.css({background: style, "border-left-color": style});
             $label.removeClass("dark_background");
             $label.addClass(color_class.get_css_class(color));
+            $label.css({background: recipient_bar_color, "border-left-color": recipient_bar_color});
         }
     }
 }

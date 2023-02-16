@@ -9,7 +9,6 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
@@ -25,6 +24,7 @@ import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
+import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
@@ -363,8 +363,7 @@ export function format_draft(draft) {
             draft_id: draft.id,
             is_stream: true,
             stream_name,
-            stream_color: draft_stream_color,
-            dark_background: color_class.get_css_class(draft_stream_color),
+            recipient_bar_color: stream_color.get_recipient_bar_color(draft_stream_color),
             topic: draft_topic,
             raw_content: draft.content,
             time_stamp,
