@@ -867,10 +867,6 @@ input[type="checkbox"] {
         margin: 10px 0 5px;
     }
 
-    #bot-role-select:disabled {
-        opacity: 1;
-    }
-
     #current_bot_avatar_image {
         margin: 5px 0 8px;
     }

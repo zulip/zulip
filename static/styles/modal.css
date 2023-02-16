@@ -335,6 +335,9 @@
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0, 0%, 93%);
+
+        /* The background-color of select elements inside modal is different than the others in
+        settings pages, because the background of the modal is brighter than the setting page. */
+        background-color: hsla(0, 0%, 90%, 1);
     }
 }
