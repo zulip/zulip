@@ -46,6 +46,7 @@ export function update_is_muted(sub, value) {
             message_lists.home.select_id(message_lists.home.selected_id(), {
                 use_closest: true,
                 empty_ok: true,
+                mark_read: false,
             });
             if (message_lists.current.selected_id() !== -1) {
                 message_lists.current.view.set_message_offset(msg_offset);
