@@ -450,6 +450,16 @@
     flex: 1;
 }
 
+@keyframes message-limit-flash {
+    0% {
+        box-shadow: none;
+    }
+
+    100% {
+        box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
+    }
+}
+
 textarea.new_message_textarea {
     display: table-cell;
     width: calc(100% - 12px);
@@ -463,22 +473,12 @@ textarea.new_message_textarea {
     color: hsl(0, 0%, 33%);
     background-color: hsl(0, 0%, 100%);
 
-    @keyframes flash {
-        0% {
-            box-shadow: none;
-        }
-
-        100% {
-            box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
-        }
-    }
-
     &.over_limit,
     &.over_limit:focus {
         box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
 
         &.flash {
-            animation: flash 0.5s ease-in-out infinite;
+            animation: message-limit-flash 0.5s ease-in-out infinite;
         }
     }
 
