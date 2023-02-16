@@ -175,6 +175,7 @@ function populate_group_from_message_container(group, message_container) {
     if (group.is_stream) {
         const color = stream_data.get_color(message_container.msg.stream);
         group.recipient_bar_color = stream_color.get_recipient_bar_color(color);
+        group.stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
         group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
         group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
         group.topic = message_container.msg.topic;

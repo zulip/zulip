@@ -6,7 +6,7 @@
           style="background: {{recipient_bar_color}}; border-left-color: {{recipient_bar_color}};"
           href="{{stream_url}}"
           title="{{t 'Narrow to stream "{display_recipient}"' }}">
-            <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon">
+            <span class="stream-privacy-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
                 {{> stream_privacy}}
             </span>
 

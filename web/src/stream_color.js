@@ -1,4 +1,5 @@
-import {colord} from "colord";
+import {colord, extend} from "colord";
+import lchPlugin from "colord/plugins/lch";
 import $ from "jquery";
 
 import * as color_class from "./color_class";
@@ -7,9 +8,26 @@ import * as message_view_header from "./message_view_header";
 import * as settings_data from "./settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 
+extend([lchPlugin]);
+
+export function get_stream_privacy_icon_color(color) {
+    // LCH stands for Lightness, Chroma, and Hue.
+    // This function restricts Lightness of a color to be between 20 to 75.
+    color = colord(color).toLch();
+    const min_color_l = 20;
+    const max_color_l = 75;
+    if (color.l < min_color_l) {
+        color.l = min_color_l;
+    } else if (color.l > max_color_l) {
+        color.l = max_color_l;
+    }
+    return colord(color).toHex();
+}
+
 export function get_recipient_bar_color(color) {
     // Mixes 20% of color to 80% of white (light theme) / black (dark theme).
     const using_dark_theme = settings_data.using_dark_theme();
+    color = get_stream_privacy_icon_color(color);
     const {r, g, b} = colord(color).toRgb();
     return colord({
         r: 0.8 * (using_dark_theme ? 0 : 255) + 0.2 * r,
@@ -50,6 +68,7 @@ function update_table_stream_color(table, stream_name, color) {
 }
 
 function update_stream_privacy_color(id, color) {
+    color = get_stream_privacy_icon_color(color);
     $(`.stream-privacy-${CSS.escape(id)}`).css("color", color);
 }
 
