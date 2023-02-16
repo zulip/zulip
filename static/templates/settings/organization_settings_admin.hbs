@@ -23,7 +23,7 @@
                     <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
                     <select name="realm_digest_weekday"
                       id="id_realm_digest_weekday"
-                      class="setting-widget prop-element bootstrap-focus-style"
+                      class="setting-widget prop-element settings_select bootstrap-focus-style"
                       data-setting-widget-type="number">
                         <option value="0">{{t "Monday" }}</option>
                         <option value="1">{{t "Tuesday" }}</option>
@@ -74,7 +74,7 @@
                     <label for="id_realm_message_retention_days" class="dropdown-title">{{t "Message retention period" }}
                     </label>
                     <select name="realm_message_retention_days"
-                      id="id_realm_message_retention_days" class="prop-element bootstrap-focus-style"
+                      id="id_realm_message_retention_days" class="prop-element settings_select bootstrap-focus-style"
                       data-setting-widget-type="message-retention-setting"
                       {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
                         <option value="unlimited">{{t 'Retain forever' }}</option>
@@ -105,7 +105,7 @@
                     <label for="realm_video_chat_provider" class="dropdown-title">
                         {{t 'Video call provider' }}
                     </label>
-                    <select name="realm_video_chat_provider" class ="setting-widget prop-element bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
+                    <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
                         {{#each realm_available_video_chat_providers}}
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
@@ -116,7 +116,7 @@
                         {{t 'GIPHY integration' }}
                         {{> ../help_link_widget link=giphy_help_link }}
                     </label>
-                    <select name="realm_giphy_rating" class ="setting-widget prop-element bootstrap-focus-style" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if giphy_api_key_empty}}disabled{{/if}}>
+                    <select name="realm_giphy_rating" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if giphy_api_key_empty}}disabled{{/if}}>
                         {{#each giphy_rating_options}}
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
