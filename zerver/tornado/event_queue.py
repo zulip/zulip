@@ -9,7 +9,6 @@ import traceback
 import uuid
 from collections import deque
 from contextlib import suppress
-from dataclasses import asdict
 from functools import lru_cache
 from typing import (
     AbstractSet,
@@ -987,7 +986,11 @@ def process_message_event(
             all_bot_user_ids=all_bot_user_ids,
         )
 
-        internal_data = asdict(user_notifications_data)
+        # Calling asdict would be slow, as it does a deep copy; pull
+        # the attributes out directly and perform a shallow copy, as
+        # we do intend to adjust the dict.
+        internal_data = {**vars(user_notifications_data)}
+
         # Remove fields sent through other pipes to save some space.
         internal_data.pop("user_id")
         internal_data["mentioned_user_group_id"] = mentioned_user_group_id
