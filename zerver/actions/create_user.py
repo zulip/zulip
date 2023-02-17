@@ -18,6 +18,7 @@ from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_
 from zerver.actions.user_groups import do_send_user_group_members_update_event
 from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
 from zerver.lib.avatar import avatar_url
+from zerver.lib.cache import flush_user_profile
 from zerver.lib.create_user import create_user
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.mention import silent_mention_syntax_for_user
@@ -410,6 +411,7 @@ def do_create_user(
         source_profile=source_profile,
         enable_marketing_emails=enable_marketing_emails,
     )
+    transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
 
     event_time = user_profile.date_joined
     if not acting_user:
