@@ -14,6 +14,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
 from django.db.models import F
+from django.db.models.signals import post_delete
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
@@ -59,6 +60,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    flush_alert_word,
     get_client,
     get_or_create_huddle,
     get_realm,
@@ -103,9 +105,15 @@ def clear_database() -> None:
         ).flush_all()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes
+
+    # The after-delete signal on this just updates caches, and slows
+    # down the deletion noticeably.  Remove the signal and replace it
+    # after we're done.
+    post_delete.disconnect(flush_alert_word, sender=AlertWord)
     for model in [
         Message,
         Stream,
+        AlertWord,
         UserProfile,
         Recipient,
         Realm,
@@ -117,6 +125,7 @@ def clear_database() -> None:
     ]:
         model.objects.all().delete()
     Session.objects.all().delete()
+    post_delete.connect(flush_alert_word, sender=AlertWord)
 
 
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
