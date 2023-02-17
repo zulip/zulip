@@ -19,14 +19,18 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypeVar,
+    Union,
 )
 
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
-from django.db.models import Q
+from django.db import transaction
+from django.db.models import Model, Q
 from django.db.models.query import QuerySet
+from django.db.models.signals import ModelSignal
 from django.http import HttpRequest
 from typing_extensions import ParamSpec
 
@@ -829,3 +833,15 @@ def items_tuple_to_dict(user_function: Callable[..., Any]) -> Callable[..., Any]
         return user_function(*new_args, **new_kwargs)
 
     return wrapper
+
+
+def deferred_hook(
+    signal: ModelSignal, flush_func: Callable[..., Any], sender: Union[Type[Model], str, None]
+) -> None:
+    def inner(*args: Any, **kwargs: Any) -> None:
+        if transaction.get_connection().in_atomic_block and not settings.TEST_SUITE:
+            transaction.on_commit(lambda: flush_func(*args, **kwargs))
+        else:
+            flush_func(*args, **kwargs)
+
+    signal.connect(inner, sender=sender)

@@ -65,6 +65,7 @@ from zerver.lib.cache import (
     cache_delete,
     cache_set,
     cache_with_key,
+    deferred_hook,
     flush_message,
     flush_muting_users_cache,
     flush_realm,
@@ -989,7 +990,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         return self.has_web_public_streams()
 
 
-post_save.connect(flush_realm, sender=Realm)
+deferred_hook(post_save, flush_realm, sender=Realm)
 
 
 # We register realm cache flushing in a duplicate way to be run both
@@ -1197,8 +1198,8 @@ def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
     )
 
 
-post_save.connect(flush_realm_emoji, sender=RealmEmoji)
-post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
+deferred_hook(post_save, flush_realm_emoji, sender=RealmEmoji)
+deferred_hook(post_delete, flush_realm_emoji, sender=RealmEmoji)
 
 
 def filter_pattern_validator(value: str) -> Pattern[str]:
@@ -1362,8 +1363,8 @@ def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
         per_request_linkifiers_cache.pop(realm_id)
 
 
-post_save.connect(flush_linkifiers, sender=RealmFilter)
-post_delete.connect(flush_linkifiers, sender=RealmFilter)
+deferred_hook(post_save, flush_linkifiers, sender=RealmFilter)
+deferred_hook(post_delete, flush_linkifiers, sender=RealmFilter)
 
 
 def flush_per_request_caches() -> None:
@@ -2260,7 +2261,7 @@ def remote_user_to_email(remote_user: str) -> str:
 
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
-post_save.connect(flush_user_profile, sender=UserProfile)
+deferred_hook(post_save, flush_user_profile, sender=UserProfile)
 
 
 class PreregistrationUser(models.Model):
@@ -2604,8 +2605,8 @@ class Stream(models.Model):
         ]
 
 
-post_save.connect(flush_stream, sender=Stream)
-post_delete.connect(flush_stream, sender=Stream)
+deferred_hook(post_save, flush_stream, sender=Stream)
+deferred_hook(post_delete, flush_stream, sender=Stream)
 
 
 class UserTopic(models.Model):
@@ -2683,8 +2684,8 @@ class MutedUser(models.Model):
         return f"<MutedUser: {self.user_profile.email} -> {self.muted_user.email}>"
 
 
-post_save.connect(flush_muting_users_cache, sender=MutedUser)
-post_delete.connect(flush_muting_users_cache, sender=MutedUser)
+deferred_hook(post_save, flush_muting_users_cache, sender=MutedUser)
+deferred_hook(post_delete, flush_muting_users_cache, sender=MutedUser)
 
 
 class Client(models.Model):
@@ -3020,7 +3021,7 @@ def get_context_for_message(message: Message) -> QuerySet[Message]:
     ).order_by("-id")[:10]
 
 
-post_save.connect(flush_message, sender=Message)
+deferred_hook(post_save, flush_message, sender=Message)
 
 
 class AbstractSubMessage(models.Model):
@@ -3052,7 +3053,7 @@ class ArchivedSubMessage(AbstractSubMessage):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
 
-post_save.connect(flush_submessage, sender=SubMessage)
+deferred_hook(post_save, flush_submessage, sender=SubMessage)
 
 
 class Draft(models.Model):
@@ -3496,8 +3497,8 @@ class Attachment(AbstractAttachment):
         }
 
 
-post_save.connect(flush_used_upload_space_cache, sender=Attachment)
-post_delete.connect(flush_used_upload_space_cache, sender=Attachment)
+deferred_hook(post_save, flush_used_upload_space_cache, sender=Attachment)
+deferred_hook(post_delete, flush_used_upload_space_cache, sender=Attachment)
 
 
 def validate_attachment_request_for_spectator_access(
@@ -4744,5 +4745,5 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
     flush_realm_alert_words(realm)
 
 
-post_save.connect(flush_alert_word, sender=AlertWord)
-post_delete.connect(flush_alert_word, sender=AlertWord)
+deferred_hook(post_save, flush_alert_word, sender=AlertWord)
+deferred_hook(post_delete, flush_alert_word, sender=AlertWord)
