@@ -203,10 +203,11 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
 }
 
 export function get_realm_user_groups_for_dropdown_list_widget(
+    require_system_group: boolean,
     exclude_internet_group: boolean,
     exclude_owners_group: boolean,
 ): UserGroupForDropdownListWidget[] {
-    return settings_config.system_user_groups_list
+    const system_user_groups = settings_config.system_user_groups_list
         .filter((group) => {
             if (exclude_internet_group && group.name === "@role:internet") {
                 return false;
@@ -228,4 +229,15 @@ export function get_realm_user_groups_for_dropdown_list_widget(
                 value: user_group.id.toString(),
             };
         });
+
+    if (require_system_group) {
+        return system_user_groups;
+    }
+
+    const user_groups_excluding_system_groups = get_realm_user_groups().map((group) => ({
+        name: group.name,
+        value: group.id.toString(),
+    }));
+
+    return system_user_groups.concat(user_groups_excluding_system_groups);
 }

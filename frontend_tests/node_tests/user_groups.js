@@ -299,11 +299,22 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         is_system_group: true,
         direct_subgroup_ids: new Set([5]),
     };
+    const students = {
+        description: "Students group",
+        name: "Students",
+        id: 8,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4, 5]),
+    };
 
-    assert.throws(() => user_groups.get_realm_user_groups_for_dropdown_list_widget(false, false), {
-        name: "Error",
-        message: "Unknown group name: @role:internet",
-    });
+    assert.throws(
+        () => user_groups.get_realm_user_groups_for_dropdown_list_widget(true, false, false),
+        {
+            name: "Error",
+            message: "Unknown group name: @role:internet",
+        },
+    );
 
     let expected_groups_list = [
         {name: "translated: Admins, moderators, members and guests", value: "5"},
@@ -315,11 +326,20 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     ];
 
     user_groups.initialize({
-        realm_user_groups: [owners, admins, moderators, members, everyone, full_members, internet],
+        realm_user_groups: [
+            owners,
+            admins,
+            moderators,
+            members,
+            everyone,
+            full_members,
+            internet,
+            students,
+        ],
     });
 
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, false),
+        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true, false),
         expected_groups_list,
     );
 
@@ -332,7 +352,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         {name: "translated: Admins", value: "2"},
     ];
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(false, true),
+        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, false, true),
         expected_groups_list,
     );
 
@@ -344,7 +364,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         {name: "translated: Admins", value: "2"},
     ];
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true),
+        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true, true),
         expected_groups_list,
     );
 
@@ -358,7 +378,20 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         {name: "translated: Owners", value: "1"},
     ];
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(false, false),
+        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, false, false),
+        expected_groups_list,
+    );
+
+    expected_groups_list = [
+        {name: "translated: Admins, moderators, members and guests", value: "5"},
+        {name: "translated: Admins, moderators and members", value: "4"},
+        {name: "translated: Admins, moderators and full members", value: "6"},
+        {name: "translated: Admins and moderators", value: "3"},
+        {name: "translated: Admins", value: "2"},
+        {name: "Students", value: "8"},
+    ];
+    assert.deepEqual(
+        user_groups.get_realm_user_groups_for_dropdown_list_widget(false, true, true),
         expected_groups_list,
     );
 });
