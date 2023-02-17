@@ -91,6 +91,7 @@ from zerver.lib.types import (
     ExtendedFieldElement,
     ExtendedValidator,
     FieldElement,
+    GroupPermissionSetting,
     LinkifierDict,
     ProfileData,
     ProfileDataElementBase,
@@ -2541,6 +2542,14 @@ class Stream(models.Model):
     # stream based on what messages they have cached.
     first_message_id = models.IntegerField(null=True, db_index=True)
 
+    stream_permission_group_settings = {
+        "can_remove_subscribers_group": GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=False,
+        ),
+    }
+
     def __str__(self) -> str:
         return f"<Stream: {self.name}>"
 
@@ -4382,7 +4391,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_REACTIVATED = 604
     STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
     STREAM_PROPERTY_CHANGED = 607
-    STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED = 608
+    STREAM_GROUP_BASED_SETTING_CHANGED = 608
 
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding

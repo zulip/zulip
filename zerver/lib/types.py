@@ -272,3 +272,10 @@ class RealmPlaygroundDict(TypedDict):
     name: str
     pygments_language: str
     url_prefix: str
+
+
+@dataclass
+class GroupPermissionSetting:
+    require_system_group: bool
+    allow_internet_group: bool
+    allow_owners_group: bool

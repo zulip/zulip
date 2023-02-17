@@ -1317,33 +1317,39 @@ def do_change_stream_message_retention_days(
     )
 
 
-def do_change_can_remove_subscribers_group(
-    stream: Stream, user_group: UserGroup, *, acting_user: Optional[UserProfile] = None
+def do_change_stream_group_based_setting(
+    stream: Stream,
+    setting_name: str,
+    user_group: UserGroup,
+    *,
+    acting_user: Optional[UserProfile] = None,
 ) -> None:
-    old_user_group = stream.can_remove_subscribers_group
+    old_user_group = getattr(stream, setting_name)
     old_user_group_id = None
     if old_user_group is not None:
         old_user_group_id = old_user_group.id
 
-    stream.can_remove_subscribers_group = user_group
+    setattr(stream, setting_name, user_group)
     stream.save()
+
     RealmAuditLog.objects.create(
         realm=stream.realm,
         acting_user=acting_user,
         modified_stream=stream,
-        event_type=RealmAuditLog.STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED,
+        event_type=RealmAuditLog.STREAM_GROUP_BASED_SETTING_CHANGED,
         event_time=timezone_now(),
         extra_data=orjson.dumps(
             {
                 RealmAuditLog.OLD_VALUE: old_user_group_id,
                 RealmAuditLog.NEW_VALUE: user_group.id,
+                "property": setting_name,
             }
         ).decode(),
     )
     event = dict(
         op="update",
         type="stream",
-        property="can_remove_subscribers_group_id",
+        property=setting_name + "_id",
         value=user_group.id,
         stream_id=stream.id,
         name=stream.name,
