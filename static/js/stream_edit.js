@@ -206,7 +206,7 @@ export function show_settings_for(node) {
 
     const opts = {
         widget_name: "can_remove_subscribers_group_id",
-        data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true),
+        data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true, true),
         default_text: $t({defaultMessage: "No user groups"}),
         include_current_item: false,
         value: sub.can_remove_subscribers_group_id,

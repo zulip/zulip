@@ -630,7 +630,7 @@ export function setup_page(callback) {
 
         const opts = {
             widget_name: "new_stream_can_remove_subscribers_group_id",
-            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true),
+            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true, true),
             default_text: $t({defaultMessage: "No user groups"}),
             include_current_item: false,
             value: user_groups.get_user_group_from_name("@role:administrators").id,
