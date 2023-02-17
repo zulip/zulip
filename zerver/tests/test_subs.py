@@ -29,7 +29,7 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    do_change_can_remove_subscribers_group,
+    do_change_stream_group_based_setting,
     do_change_stream_post_policy,
     do_deactivate_stream,
 )
@@ -2585,8 +2585,11 @@ class StreamAdminTest(ZulipTestCase):
         ) -> None:
             self.login_user(user)
             self.subscribe(cordelia, stream.name)
-            do_change_can_remove_subscribers_group(
-                stream, can_remove_subscribers_group, acting_user=None
+            do_change_stream_group_based_setting(
+                stream,
+                "can_remove_subscribers_group",
+                can_remove_subscribers_group,
+                acting_user=None,
             )
             result = self.client_delete(
                 "/json/users/me/subscriptions",
