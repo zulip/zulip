@@ -51,11 +51,12 @@ You can also [upload](/help/share-and-upload-files) and
 
 ## Code blocks
 
-{!code-blocks.md!}
+You can write [snippets of code](/help/code-blocks) or other text in a
+fixed-width font and preserve its original formatting.
+For more features, see [syntax highlighting](/help/code-blocks#language-tagging)
+and [code playgrounds](/help/code-blocks#code-playgrounds).
 
-See the main [code blocks article](/help/code-blocks) for details on
-[syntax highlighting](/help/code-blocks#language-tagging), [code
-playgrounds](/help/code-blocks#code-playgrounds), and other features.
+{!code-blocks.md!}
 
 ## LaTeX
 
@@ -64,6 +65,9 @@ You can [write LaTeX expressions](/help/latex) in Zulip.
 {!latex.md!}
 
 ## Quote and reply
+
+You can [quote and reply](/help/quote-and-reply) to indicate that a piece of
+text is a quote from a previous message.
 
 {!quotes.md!}
 
@@ -76,9 +80,16 @@ be visible until the user interacts with it.
 
 ## Emoji and emoticons
 
+You can [add emoji](/help/emoji-and-emoticons) to your messages and
+[enable emoticon translations](/help/enable-emoticon-translations) to translate
+emoticons into emoji. You can also [add custom emoji](/help/custom-emoji).
+
 {!emoji-and-emoticons.md!}
 
 ## Mention a user or group
+
+You can [@-mention](/help/mention-a-user-or-group) users or user groups to draw
+their attention to a particular message or conversation.
 
 {!mentions.md!}
 

@@ -1,15 +1,15 @@
-# Code spans and blocks
+# Code blocks
 
-Zulip supports the standard [Markdown formatting][markdown] for inline
-code spans and code blocks:
+Zulip supports the standard Markdown formatting for inline code spans and code
+blocks.
 
 {!code-blocks.md!}
 
 ## Language tagging
 
 Tagging a code block with a language enables syntax highlighting and
-(if configured) [code playgrounds](#code-playgrounds). Zulip supports syntax highlighting
-for hundreds of languages.
+(if configured) [code playgrounds](#code-playgrounds). Zulip supports syntax
+highlighting for hundreds of languages.
 
 A code block can be tagged by typing the language name after the fence
 (` ``` `) that begins a code block, as shown here.  Typeahead will
@@ -96,19 +96,16 @@ you can just get the prefix from your browser's URL bar.
 For example, a code block tagged with the "language" `send_tweet` could be
 used with a "playground" that sends the content of the code block as a Tweet.
 
-If you have any trouble setting in setting up a code playground, please [contact
+If you have any trouble setting up a code playground, please [contact
 us](/help/contact-support) with details on what you're trying to do, and we'll
 be happy to help you out.
 
 ## Related articles
 
-[Math blocks][math-block], [spoiler blocks][spoiler-block], and [quote
-blocks][quote-block] use similar fenced block syntax.
+* [Message formatting](/help/format-your-message-using-markdown)
+* [LaTeX](/help/latex)
+* [Spoilers](/help/quote-and-reply)
+* [Quote and reply](/help/spoilers)
 
 [pygments-lexers]: https://pygments.org/docs/lexers/
 [get_lexer_by_name]: https://pygments-doc.readthedocs.io/en/latest/lexers/lexers.html#pygments.lexers.get_lexer_by_name
-
-[markdown]: /help/format-your-message-using-markdown
-[math-block]: /help/format-your-message-using-markdown#latex
-[quote-block]: /help/format-your-message-using-markdown#quote-and-reply
-[spoiler-block]: /help/format-your-message-using-markdown#spoilers

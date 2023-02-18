@@ -57,3 +57,5 @@ dropping, pasting, and attaching images.
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Resize the compose box](/help/resize-the-compose-box)
+* [Animated GIFs](/help/animated-gifs-from-giphy)
+* [Video calls](/help/start-a-call)

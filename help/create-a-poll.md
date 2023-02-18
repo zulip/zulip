@@ -28,3 +28,4 @@ send a message that both has a poll and has any other content.
 ## Related articles
 
 * [Message formatting](/help/format-your-message-using-markdown)
+* [Collaborative to-do lists](/help/collaborative-to-do-lists)
