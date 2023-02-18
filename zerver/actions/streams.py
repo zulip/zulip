@@ -297,9 +297,7 @@ def send_subscription_add_events(
 
         # Send a notification to the user who subscribed.
         event = dict(type="subscription", op="add", subscriptions=sub_dicts)
-        transaction.on_commit(
-            lambda event=event, user_id=user_id: send_event(realm, event, [user_id])
-        )
+        send_event(realm, event, [user_id])
 
 
 # This function contains all the database changes as part of
