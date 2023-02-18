@@ -941,11 +941,7 @@ def do_send_messages(
             event["local_id"] = send_request.local_id
         if send_request.sender_queue_id is not None:
             event["sender_queue_id"] = send_request.sender_queue_id
-        transaction.on_commit(
-            lambda event=event, users=users, realm=send_request.realm: send_event(
-                realm, event, users
-            )
-        )
+        send_event(send_request.realm, event, users)
 
         if send_request.links_for_embed:
             event_data = {
@@ -954,9 +950,7 @@ def do_send_messages(
                 "message_realm_id": send_request.realm.id,
                 "urls": list(send_request.links_for_embed),
             }
-            transaction.on_commit(
-                lambda event_data=event_data: queue_json_publish("embed_links", event_data)
-            )
+            queue_json_publish("embed_links", event_data)
 
         if send_request.message.recipient.type == Recipient.PERSONAL:
             welcome_bot_id = get_system_bot(
@@ -973,15 +967,13 @@ def do_send_messages(
         assert send_request.service_queue_events is not None
         for queue_name, events in send_request.service_queue_events.items():
             for event in events:
-                transaction.on_commit(
-                    lambda event=event, queue_name=queue_name, wide_message_dict=wide_message_dict: queue_json_publish(
-                        queue_name,
-                        {
-                            "message": wide_message_dict,
-                            "trigger": event["trigger"],
-                            "user_profile_id": event["user_profile_id"],
-                        },
-                    )
+                queue_json_publish(
+                    queue_name,
+                    {
+                        "message": wide_message_dict,
+                        "trigger": event["trigger"],
+                        "user_profile_id": event["user_profile_id"],
+                    },
                 )
 
     return [send_request.message.id for send_request in send_message_requests]
