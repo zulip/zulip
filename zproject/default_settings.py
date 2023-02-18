@@ -488,10 +488,8 @@ LOG_API_EVENT_TYPES = False
 STAGING = False
 
 # How long to wait before presence should treat a user as offline.
-# TODO: Figure out why this is different from the corresponding
-# value in static/js/presence.js.  Also, probably move it out of
-# default_settings, since it likely isn't usefully user-configurable.
-OFFLINE_THRESHOLD_SECS = 5 * 60
+# Should match the presence.js constant.
+OFFLINE_THRESHOLD_SECS = 140
 
 # Specifies the number of active users in the realm
 # above which sending of presence update events will be disabled.

@@ -696,10 +696,7 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     if not user_ids:
         return []
 
-    # Matches presence.js constant
-    OFFLINE_THRESHOLD_SECS = 140
-
-    recent = timezone_now() - datetime.timedelta(seconds=OFFLINE_THRESHOLD_SECS)
+    recent = timezone_now() - datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
     rows = (
         UserPresence.objects.filter(
             user_profile_id__in=user_ids,
