@@ -1695,7 +1695,6 @@ class StreamMessagesTest(ZulipTestCase):
                 user,
                 stream_name,
                 content=content,
-                capture_on_commit_callbacks=False,
             )
         users = events[0]["users"]
         user_ids = {u["id"] for u in users}

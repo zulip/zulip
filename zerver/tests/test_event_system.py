@@ -321,17 +321,16 @@ class GetEventsTest(ZulipTestCase):
         self.assert_length(events, 0)
 
         local_id = "10.01"
-        with self.captureOnCommitCallbacks(execute=True):
-            check_send_message(
-                sender=user_profile,
-                client=get_client("whatever"),
-                message_type_name="private",
-                message_to=[recipient_email],
-                topic_name=None,
-                message_content="hello",
-                local_id=local_id,
-                sender_queue_id=queue_id,
-            )
+        check_send_message(
+            sender=user_profile,
+            client=get_client("whatever"),
+            message_type_name="private",
+            message_to=[recipient_email],
+            topic_name=None,
+            message_content="hello",
+            local_id=local_id,
+            sender_queue_id=queue_id,
+        )
 
         result = self.tornado_call(
             get_events,
@@ -355,17 +354,16 @@ class GetEventsTest(ZulipTestCase):
         last_event_id = events[0]["id"]
         local_id = "10.02"
 
-        with self.captureOnCommitCallbacks(execute=True):
-            check_send_message(
-                sender=user_profile,
-                client=get_client("whatever"),
-                message_type_name="private",
-                message_to=[recipient_email],
-                topic_name=None,
-                message_content="hello",
-                local_id=local_id,
-                sender_queue_id=queue_id,
-            )
+        check_send_message(
+            sender=user_profile,
+            client=get_client("whatever"),
+            message_type_name="private",
+            message_to=[recipient_email],
+            topic_name=None,
+            message_content="hello",
+            local_id=local_id,
+            sender_queue_id=queue_id,
+        )
 
         result = self.tornado_call(
             get_events,
