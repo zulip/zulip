@@ -273,13 +273,6 @@ $user_status_emoji_width: 24px;
     }
 }
 
-@media (width < $md_min) {
-    #user_search_section .user-list-filter {
-        /* input should be 100% - 6px padding x2 - 1px border x2. */
-        width: calc(100% - 12px - 2px);
-    }
-}
-
 #user_search_section {
     input {
         white-space: nowrap;
