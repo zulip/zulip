@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_stream_privacy from "../templates/stream_privacy.hbs";
+import render_announce_stream from "../templates/stream_settings/announce_stream.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
@@ -153,6 +155,33 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
     stream_settings_ui.update_web_public_stream_privacy_option_state(
         $("#stream_permission_settings"),
     );
+}
+
+export function update_notifications_stream_in_settings() {
+    if (!hash_util.is_create_new_stream_narrow()) {
+        return;
+    }
+
+    if (!stream_data.realm_has_notifications_stream()) {
+        $("#announce-new-stream .checkbox").hide();
+        return;
+    }
+
+    $("#announce-new-stream .checkbox").show();
+
+    const notifications_stream = stream_data.get_notifications_stream();
+    const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+    const stream_privacy_symbol_html = render_stream_privacy({
+        invite_only: notifications_stream_sub.invite_only,
+        is_web_public: notifications_stream_sub.is_web_public,
+    });
+
+    const rendered_announce_stream = render_announce_stream({
+        notifications_stream,
+        stream_privacy_symbol_html,
+    });
+
+    $("#announce-new-stream").expectOne().html(rendered_announce_stream);
 }
 
 export function update_stream_privacy_icon_in_settings(sub) {

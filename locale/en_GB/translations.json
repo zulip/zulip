@@ -137,7 +137,7 @@
   "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.": "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.",
   "An hour ago": "An hour ago",
   "An unknown error occurred.": "An unknown error occurred.",
-  "Announce stream": "Announce stream",
+  "Announce new stream in": "Announce new stream in",
   "Any member of this organization can add custom emoji.": "Any member of this organisation can add custom emoji.",
   "Any organization administrator can conduct an export.": "Any organisation administrator can conduct an export.",
   "Any time": "Any time",

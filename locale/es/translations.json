@@ -137,7 +137,7 @@
   "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.": "Una clave de API puede ser usada para acceder de forma automática a una cuenta de Zulip. Cualquiera con acceso a tu clave de API puede leer tus mensajes, enviar mensajes en tu nombre, e impersonarte en general en Zulip, así que deberías proteger tu clave de API tan cuidadosamente como proteges tu contraseña. <br /> Te recomendamos crear bots, y usar sus cuentas y claves de API para acceder a la API de Zulip, a no ser que la tarea requiera acceso a tu cuenta.",
   "An hour ago": "Hace una hora",
   "An unknown error occurred.": "Ha ocurrido un error desconocido.",
-  "Announce stream": "Anunciar canal",
+  "Announce new stream in": "Anunciar nuevo canal en",
   "Any member of this organization can add custom emoji.": "Cualquiera en esta organización puede añadir emoticonos personalizados.",
   "Any organization administrator can conduct an export.": "Cualquier administrador de organización puede exportar.",
   "Any time": "Cualquier momento",

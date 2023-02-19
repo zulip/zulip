@@ -128,7 +128,7 @@ function update_announce_stream_state() {
         return;
     }
 
-    // If the stream is invite only, disable the "Announce stream" option.
+    // If the stream is invite only, disable the "Announce stream in" option.
     // Otherwise enable it.
     const $announce_stream_checkbox = $("#announce-new-stream input");
     const $announce_stream_label = $("#announce-new-stream");
@@ -352,7 +352,7 @@ export function show_new_stream_modal() {
         }
     }
 
-    // set default state for "announce stream" option.
+    // set default state for "Announce stream in" option.
     update_announce_stream_state();
     clear_error_display();
 }
