@@ -363,10 +363,16 @@
     }
 
     code {
-        /* Copied from rendered_markdown.css */
+        /* Different from zulip.css */
+        font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+        /* Same as base rules for code elements in rendered_markdown.css */
         font-size: 0.825em;
         unicode-bidi: embed;
         direction: ltr;
+        color: hsl(0, 0%, 0%);
+        border: 1px solid hsl(240, 13%, 90%);
+        border-radius: 3px;
+        /* Different from base rules for code elements in rendered_markdown.css */
         white-space: initial;
         padding: 0;
         padding-right: 4px;
@@ -378,6 +384,9 @@
             font-size: 14px;
             white-space: pre-wrap;
             padding: 0;
+            color: inherit;
+            background-color: transparent;
+            border: 0;
         }
     }
 
