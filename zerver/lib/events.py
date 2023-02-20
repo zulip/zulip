@@ -354,6 +354,10 @@ def fetch_initial_state_data(
                 realm.demo_organization_scheduled_deletion_date
             )
 
+        # Presence system parameters for client behavior.
+        state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
+        state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}

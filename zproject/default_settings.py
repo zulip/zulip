@@ -491,6 +491,9 @@ STAGING = False
 # Should match the presence.js constant.
 OFFLINE_THRESHOLD_SECS = 140
 
+# How often a client should ping by asking for presence data of all users.
+PRESENCE_PING_INTERVAL_SECS = 50
+
 # Specifies the number of active users in the realm
 # above which sending of presence update events will be disabled.
 USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100

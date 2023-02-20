@@ -10260,6 +10260,31 @@ paths:
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
                           this property always had a value of 10000.
+                      server_presence_ping_interval_seconds:
+                        type: integer
+                        description: |
+                          For clients implementing the [presence](/api/get-presence) system,
+                          the time interval the client should use for sending presence requests
+                          to the server (and thus receive presence updates from the server).
+
+                          It is important for presence implementatios to use both this and
+                          `server_presence_offline_threshold_seconds` correctly, so that a Zulip
+                          server can change these values to manage the trade-off between load and
+                          freshness of presence data.
+
+                          **Changes**: New in Zulip 7.0 (feature level 164). Clients should use 60
+                          for older Zulip servers, since that's the value that was hardcoded in the
+                          the Zulip mobile apps prior to this parameter being introduced.
+                      server_presence_offline_threshold_seconds:
+                        type: integer
+                        description: |
+                          How old a presence timestamp for a given user can be before the user
+                          should be displayed as offline by clients displaying Zulip presence
+                          data. See the related `server_presence_ping_interval_seconds` for details.
+
+                          **Changes**: New in Zulip 7.0 (feature level 164). Clients should use 140
+                          for older Zulip servers, since that's the value that was hardcoded in the
+                          Zulip client apps prior to this parameter being introduced.
                       muted_topics:
                         type: array
                         deprecated: true
