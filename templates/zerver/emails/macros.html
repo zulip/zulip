@@ -9,3 +9,11 @@
 {% macro link_tag(url, text) -%}
     <a href="{{ url }}">{{ text | default(url) }}</a>
 {%- endmacro %}
+
+{% macro contact_us_self_hosted(email) -%}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at <a href="{{ email }}">{{ email }}</a>.{% endtrans %}
+{%- endmacro %}
+
+{% macro contact_us_zulip_cloud(email) -%}
+    {% trans %}Do you have questions or feedback to share? <a href="{{ email }}">Contact us</a> — we'd love to help!{% endtrans %}
+{%- endmacro %}
