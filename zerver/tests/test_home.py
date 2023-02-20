@@ -196,6 +196,8 @@ class HomeTest(ZulipTestCase):
         "server_inline_url_embed_preview",
         "server_name_changes_disabled",
         "server_needs_upgrade",
+        "server_presence_offline_threshold_seconds",
+        "server_presence_ping_interval_seconds",
         "server_timestamp",
         "server_web_public_streams_enabled",
         "settings_send_digest_emails",

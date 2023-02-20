@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 164**
+
+* [`POST /register`](/api/register-queue) Added the
+  `server_presence_ping_interval_seconds` and `server_presence_offline_threshold_seconds`
+  attributes.
+
 **Feature level 163**
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
