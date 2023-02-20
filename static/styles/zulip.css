@@ -1167,10 +1167,6 @@ td.pointer {
     padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
-
-    &.hide-date {
-        display: none;
-    }
 }
 
 .recipient_bar_icon {
