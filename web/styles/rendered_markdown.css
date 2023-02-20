@@ -613,6 +613,10 @@ code {
     direction: ltr;
     color: hsl(0, 0%, 0%);
     white-space: pre;
+    padding: 2px 4px;
+    background-color: hsl(240, 14%, 97%);
+    border: 1px solid hsl(240, 13%, 90%);
+    border-radius: 3px;
 }
 
 .rendered_markdown code {
@@ -673,6 +677,10 @@ pre {
 pre code {
     overflow-x: scroll;
     white-space: pre;
+    padding: 0;
+    color: inherit;
+    background-color: transparent;
+    border: 0;
 }
 
 /* Style inline code inside a link
