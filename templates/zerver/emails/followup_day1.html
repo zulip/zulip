@@ -53,7 +53,10 @@
 </p>
 
 <p>
-    {% trans support_email=macros.email_tag(support_email) %}Questions? Contact
-us any time at {{ support_email }}.{% endtrans %}
+    {% if corporate_enabled %}
+        {% trans %}Questions? <a href="{{ support_email }}">Contact us</a> — we'd love to help!{% endtrans %}
+    {% else %}
+        {{macros.contact_us_self_hosted(support_email)}}
+    {% endif %}
 </p>
 {% endblock %}
