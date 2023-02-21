@@ -577,8 +577,8 @@ test("update_presence_info", ({override}) => {
     override(pm_list, "update_private_messages", () => {});
 
     page_params.realm_presence_disabled = false;
-    page_params.server_presence_ping_interval_seconds = 50;
-    page_params.server_presence_offline_threshold_seconds = 140;
+    page_params.server_presence_ping_interval_seconds = 60;
+    page_params.server_presence_offline_threshold_seconds = 200;
 
     const server_time = 500;
     const info = {

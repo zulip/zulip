@@ -422,7 +422,7 @@ test("always show me", () => {
 });
 
 test("level", () => {
-    page_params.server_presence_offline_threshold_seconds = 140;
+    page_params.server_presence_offline_threshold_seconds = 200;
 
     add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
