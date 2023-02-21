@@ -50,29 +50,7 @@
         <li>{{ user_type }}</li>
     {{/if}}
     {{!-- Display selected custom profile fields in this popover. --}}
-    {{#each display_profile_fields}}
-        <li data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
-            {{#if this.is_link}}
-                <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</a>
-            {{else if this.is_external_account}}
-                <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">
-                    {{#if (eq this.subtype "github") }}
-                    <i class="fa fa-github" aria-hidden="true"></i>
-                    {{else if (eq this.subtype "twitter") }}
-                    <i class="fa fa-twitter" aria-hidden="true"></i>
-                    {{/if}}
-                    {{this.value}}
-                </a>
-            {{else}}
-                {{#if this.rendered_value}}
-                <span class="value rendered_markdown tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>
-                {{else}}
-                <span class="value tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</span>
-                {{/if}}
-            {{/if}}
-        </li>
-    {{/each}}
-
+    {{> user_custom_profile_fields profile_fields=display_profile_fields for_user_info_popover=true}}
 
     <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
 
