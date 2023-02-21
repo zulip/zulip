@@ -1236,6 +1236,7 @@ class RealmAPITest(ZulipTestCase):
         bool_tests: List[bool] = [False, True]
         test_values: Dict[str, Any] = dict(
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
+            emoji_animation_config=UserProfile.EMOJI_ANIMATION_CONFIG_CHOICES,
             default_view=["recent_topics", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,

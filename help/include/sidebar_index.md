@@ -53,6 +53,7 @@
 * [Configure emoticon translations](/help/configure-emoticon-translations)
 * [Configure default view](/help/configure-default-view)
 * [Enable full width display](/help/enable-full-width-display)
+* [Configure message view emoji animation behavior](/help/configure-message-view-emoji-animation)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 
 ## Sending messages

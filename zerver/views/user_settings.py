@@ -158,6 +158,9 @@ def json_change_settings(
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    emoji_animation_config: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.EMOJI_ANIMATION_CONFIG_CHOICES), default=None
+    ),
     color_scheme: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),

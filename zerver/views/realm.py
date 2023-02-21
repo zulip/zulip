@@ -408,6 +408,9 @@ def update_realm_user_settings_defaults(
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),
+    emoji_animation_config: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.EMOJI_ANIMATION_CONFIG_CHOICES), default=None
+    ),
     escape_navigates_to_default_view: Optional[bool] = REQ(json_validator=check_bool, default=None),
     left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
     emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),

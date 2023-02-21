@@ -872,6 +872,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__emoji_animation_config: {
+        type: "user_settings",
+        op: "update",
+        property: "emoji_animation_config",
+        value: 2,
+    },
+
     user_settings__emojiset: {
         type: "user_settings",
         op: "update",

@@ -1165,12 +1165,14 @@ class UserProfileTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
         hamlet.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
+        hamlet.emoji_animation_config = UserProfile.EMOJI_ANIMATION_CONFIG_NEVER
 
         cordelia.default_language = "de"
         cordelia.default_view = "all_messages"
         cordelia.emojiset = "twitter"
         cordelia.timezone = "America/Phoenix"
         cordelia.color_scheme = UserProfile.COLOR_SCHEME_NIGHT
+        cordelia.emoji_animation_config = UserProfile.EMOJI_ANIMATION_CONFIG_ALWAYS
         cordelia.enable_offline_email_notifications = False
         cordelia.enable_stream_push_notifications = True
         cordelia.enter_sends = False

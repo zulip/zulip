@@ -955,6 +955,11 @@ run_test("user_settings", ({override}) => {
         assert_same(args.name, event.property);
         assert_same(args.setting, event.value);
     }
+
+    event = event_fixtures.user_settings__emoji_animation_config;
+    user_settings.emoji_animation_config = 1;
+    dispatch(event);
+    assert_same(user_settings.emoji_animation_config, 2);
 });
 
 run_test("update_message (read)", ({override}) => {

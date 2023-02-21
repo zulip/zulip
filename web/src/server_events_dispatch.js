@@ -625,6 +625,7 @@ export function dispatch_normal_event(event) {
                 "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
+                "emoji_animation_config",
                 "emojiset",
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
@@ -674,6 +675,9 @@ export function dispatch_normal_event(event) {
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
                 $("body").toggleClass("more_dense_mode");
+            }
+            if (event.property === "emoji_animation_config") {
+                // reset emoji animations
             }
             if (event.property === "color_scheme") {
                 $("body").fadeOut(300);

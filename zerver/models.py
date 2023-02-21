@@ -1517,6 +1517,17 @@ class UserBaseSettings(models.Model):
     display_emoji_reaction_users = models.BooleanField(default=True)
     twenty_four_hour_time = models.BooleanField(default=False)
     starred_message_counts = models.BooleanField(default=True)
+    EMOJI_ANIMATION_CONFIG_NEVER = 1
+    EMOJI_ANIMATION_CONFIG_ON_HOVER = 2
+    EMOJI_ANIMATION_CONFIG_ALWAYS = 3
+    EMOJI_ANIMATION_CONFIG_CHOICES = [
+        EMOJI_ANIMATION_CONFIG_NEVER,
+        EMOJI_ANIMATION_CONFIG_ON_HOVER,
+        EMOJI_ANIMATION_CONFIG_ALWAYS,
+    ]
+    emoji_animation_config = models.PositiveSmallIntegerField(
+        default=EMOJI_ANIMATION_CONFIG_ON_HOVER
+    )
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_NIGHT = 2
     COLOR_SCHEME_LIGHT = 3
@@ -1688,6 +1699,7 @@ class UserBaseSettings(models.Model):
 
     modern_settings = dict(
         # Add new general settings here.
+        emoji_animation_config=int,
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
         escape_navigates_to_default_view=bool,

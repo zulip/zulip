@@ -61,6 +61,14 @@
             </div>
         </div>
 
+        <div class="input-group">
+            <label for="emoji_animation_config" class="dropdown-title">{{t "When should emoji in the message feed be animated?"
+                }}</label>
+            <select name="emoji_animation_config" class="setting_emoji_animation_config prop-element settings_select bootstrap-focus-style" id="{{prefix}}emoji_animation_config" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=emoji_animation_config_values}}
+            </select>
+        </div>
+
         {{> settings_checkbox
           setting_name="translate_emoticons"
           is_checked=settings_object.translate_emoticons

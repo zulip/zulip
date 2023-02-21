@@ -357,6 +357,7 @@ class ChangeSettingsTest(ZulipTestCase):
             timezone="America/Denver",
             demote_inactive_streams=2,
             user_list_style=2,
+            emoji_animation_config=3,
             color_scheme=2,
             email_notifications_batching_period_seconds=100,
             notification_sound="ding",
