@@ -383,6 +383,10 @@ ul {
 
     #profile-tab {
         margin: 1px 5px 0;
+
+        li.custom_user_field {
+            display: block;
+        }
     }
 
     .top {
