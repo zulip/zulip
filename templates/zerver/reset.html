@@ -14,7 +14,7 @@
 
         <div class="app-main forgot-password-container white-box new-style">
 
-            <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
+            <p>{{ _("Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.") }}</p>
 
             <form method="post" action="{{ url('password_reset') }}">
                 {{ csrf_input }}
