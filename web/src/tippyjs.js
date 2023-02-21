@@ -624,3 +624,22 @@ export function initialize() {
         appendTo: () => document.body,
     });
 }
+
+export function show_copied_confirmation($copy_button) {
+    // Display a tooltip to notify the user the message or code was copied.
+    const instance = tippy($copy_button, {
+        placement: "top",
+        appendTo: () => document.body,
+        onUntrigger() {
+            remove_instance();
+        },
+    });
+    instance.setContent($t({defaultMessage: "Copied!"}));
+    instance.show();
+    function remove_instance() {
+        if (!instance.state.isDestroyed) {
+            instance.destroy();
+        }
+    }
+    setTimeout(remove_instance, 1000);
+}
