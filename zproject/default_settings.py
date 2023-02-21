@@ -487,14 +487,26 @@ LOG_API_EVENT_TYPES = False
 # TODO: Replace this with a smarter "run on only one server" system.
 STAGING = False
 
-# How long to wait before presence should treat a user as offline.
-OFFLINE_THRESHOLD_SECS = 140
-
+# Presence tuning parameters. These values were hardcoded in clients
+# before Zulip 7.0 (feature level 164); modern clients should get them
+# via the /register API response, making it possible to tune these to
+# adjust the trade-off between freshness and presence-induced load.
+#
+# The default for OFFLINE_THRESHOLD_SECS is chosen as
+# `PRESENCE_PING_INTERVAL_SECS * 3 + 20`, which is designed to allow 2
+# round trips, plus an extra in case an update fails. See
+# https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
+# details on the presence architecture.
+#
+# How long to wait before clients should treat a user as offline.
+OFFLINE_THRESHOLD_SECS = 200
 # How often a client should ping by asking for presence data of all users.
-PRESENCE_PING_INTERVAL_SECS = 50
-
-# Specifies the number of active users in the realm
-# above which sending of presence update events will be disabled.
+PRESENCE_PING_INTERVAL_SECS = 60
+# Zulip sends immediate presence updates via the events system when a
+# user joins or becomes online. In larger organizations, this can
+# become prohibitively expensive, so we limit how many active users an
+# organization can have before these presence update events are
+# disabled.
 USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100
 
 # How many days deleted messages data should be kept before being

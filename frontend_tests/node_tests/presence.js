@@ -15,7 +15,7 @@ const people = zrequire("people");
 const watchdog = zrequire("watchdog");
 const presence = zrequire("presence");
 
-const OFFLINE_THRESHOLD_SECS = 140;
+const OFFLINE_THRESHOLD_SECS = 200;
 
 const me = {
     email: "me@zulip.com",
