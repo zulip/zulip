@@ -29,6 +29,7 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -397,14 +398,13 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
             document.querySelector(`#edit_form_${CSS.escape(message_id)} .message_edit_content`),
     });
 
-    clipboard.on("success", () => {
-        end_message_row_edit($row);
-        $row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
-        $row.find(".alert-msg").css("display", "block");
-        $row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
+    clipboard.on("success", (e) => {
+        e.clearSelection();
+        source._tippy.setContent($t({defaultMessage: "Copied!"}));
+        show_copied_confirmation(source);
+        setTimeout(() => {
+            end_message_row_edit($row);
+        }, "2000");
     });
 }
 
