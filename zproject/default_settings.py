@@ -488,7 +488,6 @@ LOG_API_EVENT_TYPES = False
 STAGING = False
 
 # How long to wait before presence should treat a user as offline.
-# Should match the presence.js constant.
 OFFLINE_THRESHOLD_SECS = 140
 
 # How often a client should ping by asking for presence data of all users.

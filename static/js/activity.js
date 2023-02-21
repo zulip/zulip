@@ -27,8 +27,6 @@ export let user_filter;
 
 /* Broadcast "idle" to server after 5 minutes of local inactivity */
 const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
-/* Time between keep-alive pings */
-const ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
 /* Keep in sync with views.py:update_active_status_backend() */
 export const ACTIVE = "active";
@@ -246,7 +244,9 @@ export function initialize() {
         send_presence_to_server(true);
     }
 
-    util.call_function_periodically(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
+    /* Time between keep-alive pings */
+    const active_ping_interval_ms = page_params.server_presence_ping_interval_seconds * 1000;
+    util.call_function_periodically(get_full_presence_list_update, active_ping_interval_ms);
 
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
