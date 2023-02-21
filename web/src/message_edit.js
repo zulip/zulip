@@ -32,6 +32,7 @@ import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -398,12 +399,12 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
 
     clipboard.on("success", () => {
         end_message_row_edit($row);
-        $row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
-        $row.find(".alert-msg").css("display", "block");
-        $row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
+        // We get the actions_menu to show the "copied!" tooltip on it after the
+        // message is copied and message source is closed.
+        const actions_menu = $($row.get()[0]).find(".zulip-icon-ellipsis-v-solid")[0];
+        setTimeout(() => {
+            show_copied_confirmation(actions_menu);
+        }, 0);
     });
 }
 
