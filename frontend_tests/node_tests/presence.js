@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-const {user_settings} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const reload_state = mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
@@ -78,6 +78,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, ({override}) => {
+        page_params.server_presence_offline_threshold_seconds = OFFLINE_THRESHOLD_SECS;
         user_settings.presence_enabled = true;
         presence.clear_internal_data();
         f({override});
