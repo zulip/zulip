@@ -9,6 +9,14 @@ for new users in the organization.
 
 {start_tabs}
 
+{tab|on-sign-up}
+
+1. After confirming your email, click **Change** below your email address.
+
+1. Configure **Who can access your email address**, and click **Confirm**.
+
+{tab|desktop-web}
+
 {settings_tab|account-and-privacy}
 
 1. Under **Privacy**, configure **Who can access your email address**.
