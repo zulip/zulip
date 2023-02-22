@@ -27,10 +27,10 @@ os.environ.pop("https_proxy", "")
 
 usage = """test-js-with-puppeteer [options]
     test-js-with-puppeteer # Run all test files
-    test-js-with-puppeteer navigation.ts # Run a single test file
-    test-js-with-puppeteer navi # Run a single test file navigation.ts
-    test-js-with-puppeteer login.ts compose.ts # Run a few test files
-    test-js-with-puppeteer login compose # Run a few test files, login.ts and compose.ts here"""
+    test-js-with-puppeteer navigation.test.ts # Run a single test file
+    test-js-with-puppeteer navi # Run a single test file navigation.test.ts
+    test-js-with-puppeteer login.test.ts compose.test.ts # Run a few test files
+    test-js-with-puppeteer login compose # Run a few test files, login.test.ts and compose.test.ts here"""
 
 sys.path.insert(0, ZULIP_PATH)
 
@@ -92,7 +92,7 @@ def run_single_test(test_file: str, test_number: int, total_tests: int) -> int:
 
 
 def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
-    test_dir = os.path.join(ZULIP_PATH, "frontend_tests/puppeteer_tests")
+    test_dir = os.path.join(ZULIP_PATH, "web/e2e-tests")
     test_files = find_js_test_files(test_dir, files)
     total_tests = len(test_files)
 

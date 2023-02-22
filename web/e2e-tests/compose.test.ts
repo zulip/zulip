@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import * as common from "../puppeteer_lib/common";
+import * as common from "./lib/common";
 
 async function check_compose_form_empty(page: Page): Promise<void> {
     await common.check_compose_state(page, {

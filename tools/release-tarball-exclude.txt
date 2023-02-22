@@ -11,4 +11,3 @@ puppet/zulip_ops
 zproject/dev_settings.py
 zproject/test_settings.py
 zerver/tests
-frontend_tests

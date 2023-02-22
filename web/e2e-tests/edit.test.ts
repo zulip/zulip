@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import * as common from "../puppeteer_lib/common";
+import * as common from "./lib/common";
 
 async function trigger_edit_last_message(page: Page): Promise<void> {
     const msg = (await page.$$("#zhome .message_row")).at(-1);

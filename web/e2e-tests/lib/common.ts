@@ -8,9 +8,9 @@ import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 
-import {test_credentials} from "../../var/puppeteer/test_credentials";
+import {test_credentials} from "../../../var/puppeteer/test_credentials";
 
-const root_dir = path.resolve(__dirname, "../../");
+const root_dir = path.resolve(__dirname, "../../..");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
 type Message = Record<string, string | boolean> & {recipient?: string; content: string};

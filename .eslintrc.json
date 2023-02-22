@@ -131,7 +131,7 @@
             }
         },
         {
-            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
+            "files": ["web/e2e-tests/**"],
             "globals": {
                 "zulip_test": false
             }
@@ -202,7 +202,7 @@
             }
         },
         {
-            "files": ["frontend_tests/**", "web/tests/**"],
+            "files": ["web/e2e-tests/**", "web/tests/**"],
             "globals": {
                 "CSS": false,
                 "document": false,

@@ -60,7 +60,7 @@ organization in Zulip). The following files are involved in the process:
 
 **Frontend testing**
 
-- `frontend_tests/puppeteer_tests/admin.ts`: end-to-end tests for the organization
+- `web/e2e-tests/admin.test.ts`: end-to-end tests for the organization
   admin settings pages.
 - `web/tests/dispatch.test.js`
 
@@ -144,7 +144,7 @@ or JavaScript/TypeScript/Python code that generates user-facing strings, be sure
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
 headless Chromium browser using Puppeteer and are located in
-`frontend_tests/puppeteer_tests/`. The unit tests use Node's `assert`
+`web/e2e-tests/`. The unit tests use Node's `assert`
 module are located in `web/tests/`. For more
 information on writing and running tests, see the
 [testing documentation](../testing/testing.md).

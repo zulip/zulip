@@ -79,7 +79,7 @@ templating systems.
 
 - `web/tests/` Node Frontend unit tests.
 
-- `frontend_tests/puppeteer_tests/` Puppeteer frontend integration tests.
+- `web/e2e-tests/` Puppeteer frontend integration tests.
 
 - `tools/test-*` Developer-facing test runner scripts.
 
