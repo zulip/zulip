@@ -2742,8 +2742,8 @@ select.invite-as {
         margin-right: 7px;
     }
 
-    .top-navbar-container {
-        width: calc(100% - 84px);
+    #navbar-middle {
+        margin-right: 87px;
     }
 
     .search_closed .zulip-icon-search {
@@ -2803,7 +2803,6 @@ select.invite-as {
 
     .column-middle-inner {
         margin-left: 0;
-        margin-right: 15px;
     }
 
     .app-main .column-middle .column-middle-inner {
@@ -2816,7 +2815,6 @@ select.invite-as {
 
     .top-navbar-border {
         margin-left: 40px;
-        width: calc(100% - 108px);
     }
 
     .search_closed .zulip-icon-search {
