@@ -23,7 +23,7 @@ on supporting the productivity of the design team. The more we are able to
 incorporate a variety of ideas, experiences, and perspectives into the
 discussion, the better decisions we'll be able to make.
 
-Please start be reviewing the guide to [how we
+Please start by reviewing the guide to [how we
 communicate](how-we-communicate.md) in the Zulip community. Also, when sharing
 your ideas:
 
