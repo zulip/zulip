@@ -216,13 +216,13 @@ export class BuddyList extends BuddyListConf {
 
     insert_new_html(opts) {
         const new_key = opts.new_key;
-        const html = opts.html;
+        const $html = $(opts.html);
         const pos = opts.pos;
 
         if (new_key === undefined) {
             if (pos === this.render_count) {
                 this.render_count += 1;
-                this.$container.append(html);
+                this.$container.append($html);
                 this.update_padding();
             }
             return;
@@ -231,7 +231,7 @@ export class BuddyList extends BuddyListConf {
         if (pos < this.render_count) {
             this.render_count += 1;
             const $li = this.find_li({key: new_key});
-            $li.before(html);
+            $li.before($html);
             this.update_padding();
         }
     }
