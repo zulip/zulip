@@ -23,6 +23,27 @@ configure whether messages are marked as read automatically when you scroll.
 
 {end_tabs}
 
+## Do not mark messages as read
+
+You may want to configure the Zulip mobile app to never mark messages as read
+automatically. For example, this can be useful if you often want to follow up
+on messages when you are at your computer. You will still be able to
+[manually](#mark-all-messages-as-read) mark messages as read.
+
+{start_tabs}
+
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Settings**.
+
+1. Tap **Mark messages as read on scroll**.
+
+1. Select **Never**.
+
+{end_tabs}
+
 ## Mark a message as read
 
 {start_tabs}
