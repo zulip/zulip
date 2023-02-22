@@ -90,7 +90,7 @@ export function initialize() {
             search_map = suggestions.lookup_table;
             return suggestions.strings;
         },
-        fixed: true,
+        parentElement: "#searchbox_legacy",
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,

@@ -86,7 +86,6 @@ run_test("initialize", ({mock_template}) => {
 
     search_suggestion.max_num_of_search_results = 999;
     $search_query_box.typeahead = (opts) => {
-        assert.equal(opts.fixed, true);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
