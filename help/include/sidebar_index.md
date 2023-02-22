@@ -42,10 +42,10 @@
 * [Logging out](/help/logging-out)
 * [Switching between organizations](/help/switching-between-organizations)
 * [Import your settings](/help/import-your-settings)
+* [Review your settings](/help/review-your-settings)
 * [Deactivate your account](/help/deactivate-your-account)
 
 ## Display settings
-* [Review your settings](/help/review-your-settings)
 * [Dark theme](/help/dark-theme)
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
