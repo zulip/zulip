@@ -162,7 +162,7 @@ messages.
   properties (at the very least, message ID and timestamp) and
   rerenders it in any message lists where it appears. This is
   primarily done in the `process_from_server` function in
-  `static/js/echo.js`.
+  `web/src/echo.js`.
 
 ### Local echo in message editing
 

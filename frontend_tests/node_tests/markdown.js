@@ -30,10 +30,10 @@ user_settings.translate_emoticons = false;
 set_global("document", {compatMode: "CSS1Compat"});
 
 const emoji = zrequire("emoji");
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const linkifiers = zrequire("linkifiers");
 const pygments_data = zrequire("../generated/pygments_data.json");
-const fenced_code = zrequire("../shared/js/fenced_code");
+const fenced_code = zrequire("../shared/src/fenced_code");
 const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
 const people = zrequire("people");

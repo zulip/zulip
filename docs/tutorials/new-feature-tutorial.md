@@ -44,11 +44,11 @@ organization in Zulip). The following files are involved in the process:
 
 **Frontend**
 
-- `static/templates/settings/organization_permissions_admin.hbs`: defines
+- `web/templates/settings/organization_permissions_admin.hbs`: defines
   the structure of the admin permissions page (checkboxes for each organization
   permission setting).
-- `static/js/settings_org.js`: handles organization setting form submission.
-- `static/js/server_events_dispatch.js`: handles events coming from the server
+- `web/src/settings_org.js`: handles organization setting form submission.
+- `web/src/server_events_dispatch.js`: handles events coming from the server
   (ex: pushing an organization change to other open browsers and updating
   the application's state).
 
@@ -124,17 +124,17 @@ Realm setting, in `test_realm.py`).
 ### Frontend changes
 
 **JavaScript/TypeScript:** Zulip's JavaScript and TypeScript sources are
-located in the directory `static/js/`. The exact files you may need to change
+located in the directory `web/src/`. The exact files you may need to change
 depend on your feature. If you've added a new event that is sent to clients,
-be sure to add a handler for it in `static/js/server_events_dispatch.js`.
+be sure to add a handler for it in `web/src/server_events_dispatch.js`.
 
-**CSS:** The primary CSS file is `static/styles/zulip.css`. If your new
+**CSS:** The primary CSS file is `web/styles/zulip.css`. If your new
 feature requires UI changes, you may need to add additional CSS to this
 file.
 
 **Templates:** The initial page structure is rendered via Jinja2
 templates located in `templates/zerver/app`. For JavaScript, Zulip uses
-Handlebars templates located in `static/templates`. Templates are
+Handlebars templates located in `web/templates`. Templates are
 precompiled as part of the build/deploy process.
 
 Zulip is fully internationalized, so when writing both HTML templates
@@ -532,7 +532,7 @@ to server when a realm is updated) and the change event needs to be
 handled on the client.
 
 To add the checkbox to the admin page, modify the relevant template in
-`static/templates/settings/`, which can be
+`web/templates/settings/`, which can be
 `organization_permissions_admin.hbs` or `organization_settings_admin.hbs`
 (omitted here since it is relatively straightforward).
 
@@ -540,10 +540,10 @@ If you're adding a non-checkbox field, you'll need to specify the type
 of the field via the `data-setting-widget-type` attribute in the HTML
 template.
 
-Then add the new form control in `static/js/admin.js`.
+Then add the new form control in `web/src/admin.js`.
 
 ```diff
- // static/js/admin.js
+ // web/src/admin.js
 
  export function build_page() {
      const options = {
@@ -556,7 +556,7 @@ Then add the new form control in `static/js/admin.js`.
 ```
 
 The JavaScript code for organization settings and permissions can be found in
-`static/js/settings_org.js`.
+`web/src/settings_org.js`.
 
 In frontend, we have split the `property_types` into three objects:
 
@@ -616,7 +616,7 @@ setting has changed, your function should be referenced in the
 `settings_emoji.update_custom_emoji_ui`.
 
 ```diff
- // static/js/server_events_dispatch.js
+ // web/src/server_events_dispatch.js
 
  function dispatch_normal_event(event) {
      switch (event.type) {

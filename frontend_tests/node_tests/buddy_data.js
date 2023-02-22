@@ -9,7 +9,7 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
-const timerender = mock_esm("../../static/js/timerender");
+const timerender = mock_esm("../../web/src/timerender");
 
 const compose_fade_helper = zrequire("compose_fade_helper");
 const muted_users = zrequire("muted_users");

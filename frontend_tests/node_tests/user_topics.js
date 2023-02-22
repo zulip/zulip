@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {visibility_policy} = require("../../static/js/user_topics");
+const {visibility_policy} = require("../../web/src/user_topics");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");

@@ -107,7 +107,7 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
-    # This implementation should agree with the similar function in static/js/hash_util.js.
+    # This implementation should agree with the similar function in web/src/hash_util.js.
     for element in narrow:
         operator = element["operator"]
         if "operand" not in element:
@@ -668,7 +668,7 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
 
         if isinstance(elem, dict):
             # Make sure to sync this list to frontend also when adding a new operator.
-            # that supports user IDs. Relevant code is located in static/js/message_fetch.js
+            # that supports user IDs. Relevant code is located in web/src/message_fetch.js
             # in handle_operators_supporting_id_based_api function where you will need to update
             # operators_supporting_id, or operators_supporting_ids array.
             operators_supporting_id = ["sender", "group-pm-with", "stream"]

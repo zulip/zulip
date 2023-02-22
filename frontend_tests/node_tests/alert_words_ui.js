@@ -7,7 +7,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const channel = mock_esm("../../static/js/channel");
+const channel = mock_esm("../../web/src/channel");
 
 const alert_words = zrequire("alert_words");
 const alert_words_ui = zrequire("alert_words_ui");
@@ -20,7 +20,7 @@ const noop = () => {};
 run_test("rerender_alert_words_ui", ({mock_template}) => {
     let list_widget_create_called = false;
     alert_words_ui.reset();
-    const ListWidget = mock_esm("../../static/js/list_widget", {
+    const ListWidget = mock_esm("../../web/src/list_widget", {
         modifier: noop,
         create(container, words, opts) {
             const alert_words = [];

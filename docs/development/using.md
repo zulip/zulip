@@ -75,8 +75,8 @@ the development environment][authentication-dev-server].
 - Most changes will take effect automatically. Details:
   - If you change CSS files, your changes will appear immediately via
     webpack hot module replacement.
-  - If you change JavaScript code (`static/js`) or Handlebars
-    templates (`static/templates`), the browser window will be
+  - If you change JavaScript code (`web/src`) or Handlebars
+    templates (`web/templates`), the browser window will be
     reloaded automatically.
   - For Jinja2 backend templates (`templates/*`), you'll need to reload
     the browser window to see your changes.

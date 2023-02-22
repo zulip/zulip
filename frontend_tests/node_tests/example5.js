@@ -20,15 +20,15 @@ const {run_test} = require("../zjsunit/test");
 
 // First we tell the compiler to skip certain modules and just
 // replace them with {}.
-const huddle_data = mock_esm("../../static/js/huddle_data");
-const message_lists = mock_esm("../../static/js/message_lists");
-const message_util = mock_esm("../../static/js/message_util");
-const notifications = mock_esm("../../static/js/notifications");
-const pm_list = mock_esm("../../static/js/pm_list");
-const recent_topics_data = mock_esm("../../static/js/recent_topics_data");
-const stream_list = mock_esm("../../static/js/stream_list");
-const unread_ops = mock_esm("../../static/js/unread_ops");
-const unread_ui = mock_esm("../../static/js/unread_ui");
+const huddle_data = mock_esm("../../web/src/huddle_data");
+const message_lists = mock_esm("../../web/src/message_lists");
+const message_util = mock_esm("../../web/src/message_util");
+const notifications = mock_esm("../../web/src/notifications");
+const pm_list = mock_esm("../../web/src/pm_list");
+const recent_topics_data = mock_esm("../../web/src/recent_topics_data");
+const stream_list = mock_esm("../../web/src/stream_list");
+const unread_ops = mock_esm("../../web/src/unread_ops");
+const unread_ui = mock_esm("../../web/src/unread_ui");
 
 message_lists.home = {};
 

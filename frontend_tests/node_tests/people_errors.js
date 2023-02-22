@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
-const reload_state = mock_esm("../../static/js/reload_state", {
+const reload_state = mock_esm("../../web/src/reload_state", {
     is_in_progress: () => false,
 });
 

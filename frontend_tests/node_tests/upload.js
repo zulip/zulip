@@ -19,8 +19,8 @@ mock_esm("@uppy/core", {
 });
 mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
 
-const compose_actions = mock_esm("../../static/js/compose_actions");
-mock_esm("../../static/js/csrf", {csrf_token: "csrf_token"});
+const compose_actions = mock_esm("../../web/src/compose_actions");
+mock_esm("../../web/src/csrf", {csrf_token: "csrf_token"});
 
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");

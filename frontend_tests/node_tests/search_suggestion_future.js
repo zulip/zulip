@@ -6,8 +6,8 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const narrow_state = mock_esm("../../static/js/narrow_state");
-const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history_util");
+const narrow_state = mock_esm("../../web/src/narrow_state");
+const stream_topic_history_util = mock_esm("../../web/src/stream_topic_history_util");
 
 const huddle_data = zrequire("huddle_data");
 

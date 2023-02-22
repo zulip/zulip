@@ -13,7 +13,7 @@ const template = fs.readFileSync("templates/analytics/realm_details.html", "utf8
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-zrequire("../js/analytics/support");
+zrequire("../src/analytics/support");
 
 run_test("scrub_realm", () => {
     $.get_initialize_function()();

@@ -10,31 +10,31 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-const color_data = mock_esm("../../static/js/color_data");
-const stream_color = mock_esm("../../static/js/stream_color");
-const stream_list = mock_esm("../../static/js/stream_list");
-const stream_muting = mock_esm("../../static/js/stream_muting");
-const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui", {
+const color_data = mock_esm("../../web/src/color_data");
+const stream_color = mock_esm("../../web/src/stream_color");
+const stream_list = mock_esm("../../web/src/stream_list");
+const stream_muting = mock_esm("../../web/src/stream_muting");
+const stream_settings_ui = mock_esm("../../web/src/stream_settings_ui", {
     update_settings_for_subscribed: noop,
 });
-const unread_ui = mock_esm("../../static/js/unread_ui");
+const unread_ui = mock_esm("../../web/src/unread_ui");
 
-const message_lists = mock_esm("../../static/js/message_lists", {
+const message_lists = mock_esm("../../web/src/message_lists", {
     current: {},
 });
-const message_view_header = mock_esm("../../static/js/message_view_header", {
+const message_view_header = mock_esm("../../web/src/message_view_header", {
     maybe_rerender_title_area_for_stream() {},
 });
-mock_esm("../../static/js/recent_topics_ui", {
+mock_esm("../../web/src/recent_topics_ui", {
     complete_rerender() {},
 });
-mock_esm("../../static/js/settings_notifications", {
+mock_esm("../../web/src/settings_notifications", {
     update_page() {},
 });
 
-mock_esm("../../static/js/overlays", {streams_open: () => true});
+mock_esm("../../web/src/overlays", {streams_open: () => true});
 
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");

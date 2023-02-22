@@ -15,21 +15,21 @@ class Clipboard {
 }
 mock_cjs("clipboard", Clipboard);
 
-const rows = mock_esm("../../static/js/rows");
-mock_esm("../../static/js/emoji_picker", {
+const rows = mock_esm("../../web/src/rows");
+mock_esm("../../web/src/emoji_picker", {
     hide_emoji_popover: noop,
 });
-mock_esm("../../static/js/giphy", {
+mock_esm("../../web/src/giphy", {
     hide_giphy_popover: noop,
 });
-const message_lists = mock_esm("../../static/js/message_lists", {
+const message_lists = mock_esm("../../web/src/message_lists", {
     current: {
         view: {
             message_containers: {},
         },
     },
 });
-mock_esm("../../static/js/stream_popover", {
+mock_esm("../../web/src/stream_popover", {
     hide_stream_popover: noop,
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,

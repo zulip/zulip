@@ -13,7 +13,7 @@ set_global("document", "document-stub");
 const noop = () => {};
 
 // timerender calls setInterval when imported
-mock_esm("../../static/js/timerender", {
+mock_esm("../../web/src/timerender", {
     render_date(time) {
         return [{outerHTML: String(time.getTime())}];
     },
@@ -22,7 +22,7 @@ mock_esm("../../static/js/timerender", {
     },
 });
 
-mock_esm("../../static/js/rows", {
+mock_esm("../../web/src/rows", {
     get_table() {
         return {
             children() {
@@ -34,14 +34,14 @@ mock_esm("../../static/js/rows", {
     },
 });
 
-mock_esm("../../static/js/people", {
+mock_esm("../../web/src/people", {
     sender_is_bot: () => false,
     sender_is_guest: () => false,
     small_avatar_url: () => "fake/small/avatar/url",
 });
 
-const {Filter} = zrequire("../js/filter");
-const {MessageListView} = zrequire("../js/message_list_view");
+const {Filter} = zrequire("../src/filter");
+const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
 const muted_users = zrequire("muted_users");
 

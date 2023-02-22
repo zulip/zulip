@@ -28,19 +28,19 @@ set_global(
 
 const fake_now = 555;
 
-const channel = mock_esm("../../static/js/channel");
-const compose_actions = mock_esm("../../static/js/compose_actions");
-const compose_fade = mock_esm("../../static/js/compose_fade");
-const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
-const loading = mock_esm("../../static/js/loading");
-const markdown = mock_esm("../../static/js/markdown");
-const reminder = mock_esm("../../static/js/reminder");
-const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
-const resize = mock_esm("../../static/js/resize");
-const sent_messages = mock_esm("../../static/js/sent_messages");
-const server_events = mock_esm("../../static/js/server_events");
-const transmit = mock_esm("../../static/js/transmit");
-const upload = mock_esm("../../static/js/upload");
+const channel = mock_esm("../../web/src/channel");
+const compose_actions = mock_esm("../../web/src/compose_actions");
+const compose_fade = mock_esm("../../web/src/compose_fade");
+const compose_pm_pill = mock_esm("../../web/src/compose_pm_pill");
+const loading = mock_esm("../../web/src/loading");
+const markdown = mock_esm("../../web/src/markdown");
+const reminder = mock_esm("../../web/src/reminder");
+const rendered_markdown = mock_esm("../../web/src/rendered_markdown");
+const resize = mock_esm("../../web/src/resize");
+const sent_messages = mock_esm("../../web/src/sent_messages");
+const server_events = mock_esm("../../web/src/server_events");
+const transmit = mock_esm("../../web/src/transmit");
+const upload = mock_esm("../../web/src/upload");
 
 const compose_ui = zrequire("compose_ui");
 const compose_banner = zrequire("compose_banner");

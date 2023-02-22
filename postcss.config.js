@@ -2,7 +2,7 @@
 
 const path = require("path");
 
-const {media_breakpoints} = require("./static/js/css_variables");
+const {media_breakpoints} = require("./web/src/css_variables");
 
 module.exports = ({file}) => ({
     plugins: [

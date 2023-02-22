@@ -7,13 +7,13 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-mock_esm("../../static/js/recent_topics_util", {
+mock_esm("../../web/src/recent_topics_util", {
     is_visible: () => false,
 });
 const noop = () => {};
 // Mocking and stubbing things
 set_global("document", "document-stub");
-const message_lists = mock_esm("../../static/js/message_lists");
+const message_lists = mock_esm("../../web/src/message_lists");
 function MessageListView() {
     return {
         maybe_rerender: noop,
@@ -21,7 +21,7 @@ function MessageListView() {
         prepend: noop,
     };
 }
-mock_esm("../../static/js/message_list_view", {
+mock_esm("../../web/src/message_list_view", {
     MessageListView,
 });
 // Code we're actually using/testing

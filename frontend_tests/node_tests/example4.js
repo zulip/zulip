@@ -55,10 +55,10 @@ const {run_test} = require("../zjsunit/test");
 */
 
 // We are going to use mock versions of some of our libraries.
-const activity = mock_esm("../../static/js/activity");
-const message_live_update = mock_esm("../../static/js/message_live_update");
-const pm_list = mock_esm("../../static/js/pm_list");
-const settings_users = mock_esm("../../static/js/settings_users");
+const activity = mock_esm("../../web/src/activity");
+const message_live_update = mock_esm("../../web/src/message_live_update");
+const pm_list = mock_esm("../../web/src/pm_list");
+const settings_users = mock_esm("../../web/src/settings_users");
 
 // Use real versions of these modules.
 const people = zrequire("people");

@@ -239,7 +239,7 @@ $("#foo").html(
 
 The only HTML tags allowed directly in translated strings are the
 simple HTML tags enumerated in `default_html_elements`
-(`static/js/i18n.js`) with no attributes. This helps to avoid
+(`web/src/i18n.js`) with no attributes. This helps to avoid
 exposing HTML details to translators. If you need to include more
 complex markup such as a link, you can define a custom HTML tag
 locally to the translation:

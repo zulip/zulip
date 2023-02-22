@@ -18,15 +18,15 @@ const _document = {
     },
 };
 
-const channel = mock_esm("../../static/js/channel");
-const compose_state = mock_esm("../../static/js/compose_state");
-const narrow = mock_esm("../../static/js/narrow");
-const padded_widget = mock_esm("../../static/js/padded_widget");
-const pm_list = mock_esm("../../static/js/pm_list");
-const popovers = mock_esm("../../static/js/popovers");
-const resize = mock_esm("../../static/js/resize");
-const scroll_util = mock_esm("../../static/js/scroll_util");
-const watchdog = mock_esm("../../static/js/watchdog");
+const channel = mock_esm("../../web/src/channel");
+const compose_state = mock_esm("../../web/src/compose_state");
+const narrow = mock_esm("../../web/src/narrow");
+const padded_widget = mock_esm("../../web/src/padded_widget");
+const pm_list = mock_esm("../../web/src/pm_list");
+const popovers = mock_esm("../../web/src/popovers");
+const resize = mock_esm("../../web/src/resize");
+const scroll_util = mock_esm("../../web/src/scroll_util");
+const watchdog = mock_esm("../../web/src/watchdog");
 
 set_global("document", _document);
 

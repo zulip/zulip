@@ -12,7 +12,7 @@ const message_edit = zrequire("message_edit");
 
 const is_content_editable = message_edit.is_content_editable;
 
-const settings_data = mock_esm("../../static/js/settings_data");
+const settings_data = mock_esm("../../web/src/settings_data");
 
 run_test("is_content_editable", () => {
     // You can't edit a null message

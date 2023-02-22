@@ -6,9 +6,9 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
-const channel = mock_esm("../../static/js/channel");
-const message_store = mock_esm("../../static/js/message_store");
-const widgetize = mock_esm("../../static/js/widgetize");
+const channel = mock_esm("../../web/src/channel");
+const message_store = mock_esm("../../web/src/message_store");
+const widgetize = mock_esm("../../web/src/widgetize");
 
 const submessage = zrequire("submessage");
 

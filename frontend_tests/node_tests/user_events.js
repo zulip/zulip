@@ -7,41 +7,41 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const message_live_update = mock_esm("../../static/js/message_live_update");
-const settings_account = mock_esm("../../static/js/settings_account", {
+const message_live_update = mock_esm("../../web/src/message_live_update");
+const settings_account = mock_esm("../../web/src/settings_account", {
     update_email() {},
     update_full_name() {},
     update_account_settings_display() {},
 });
 
-mock_esm("../../static/js/activity", {
+mock_esm("../../web/src/activity", {
     redraw() {},
 });
-mock_esm("../../static/js/compose", {
+mock_esm("../../web/src/compose", {
     update_email() {},
 });
-mock_esm("../../static/js/narrow_state", {
+mock_esm("../../web/src/narrow_state", {
     update_email() {},
 });
-mock_esm("../../static/js/pm_list", {
+mock_esm("../../web/src/pm_list", {
     update_private_messages() {},
 });
-mock_esm("../../static/js/settings_linkifiers", {
+mock_esm("../../web/src/settings_linkifiers", {
     maybe_disable_widgets() {},
 });
-mock_esm("../../static/js/settings_org", {
+mock_esm("../../web/src/settings_org", {
     maybe_disable_widgets() {},
 });
-mock_esm("../../static/js/settings_profile_fields", {
+mock_esm("../../web/src/settings_profile_fields", {
     maybe_disable_widgets() {},
 });
-mock_esm("../../static/js/settings_realm_user_settings_defaults", {
+mock_esm("../../web/src/settings_realm_user_settings_defaults", {
     maybe_disable_widgets() {},
 });
-mock_esm("../../static/js/settings_streams", {
+mock_esm("../../web/src/settings_streams", {
     maybe_disable_widgets() {},
 });
-mock_esm("../../static/js/settings_users", {
+mock_esm("../../web/src/settings_users", {
     update_user_data() {},
 });
 

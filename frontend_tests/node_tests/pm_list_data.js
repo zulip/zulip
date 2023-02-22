@@ -5,9 +5,9 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const unread = mock_esm("../../static/js/unread");
+const unread = mock_esm("../../web/src/unread");
 
-mock_esm("../../static/js/user_status", {
+mock_esm("../../web/src/user_status", {
     get_status_emoji: () => ({
         emoji_code: 20,
     }),

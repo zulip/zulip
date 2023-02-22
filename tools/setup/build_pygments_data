@@ -7,7 +7,7 @@ from pygments.lexers import get_all_lexers
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 # The current priorities data set is based on StackOverflow's 2020 survey.
 DATA_PATH = os.path.join(ZULIP_PATH, "tools", "setup", "lang.json")
-OUT_PATH = os.path.join(ZULIP_PATH, "static", "generated", "pygments_data.json")
+OUT_PATH = os.path.join(ZULIP_PATH, "web", "generated", "pygments_data.json")
 
 with open(DATA_PATH) as f:
     pygments_data = json.load(f)

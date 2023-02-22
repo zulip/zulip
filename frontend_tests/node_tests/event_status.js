@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const event_status = zrequire("billing/event_status");
-const helpers = mock_esm("../../static/js/billing/helpers");
+const helpers = mock_esm("../../web/src/billing/helpers");
 
 run_test("initialize_retry_with_another_card_link_click_handler", ({override}) => {
     override(helpers, "create_ajax_request", (url, form_name, ignored_inputs, method, callback) => {

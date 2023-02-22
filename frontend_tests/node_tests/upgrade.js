@@ -16,8 +16,8 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 const location = set_global("location", {});
 
-const helpers = zrequire("../js/billing/helpers");
-zrequire("../js/billing/upgrade");
+const helpers = zrequire("../src/billing/helpers");
+zrequire("../src/billing/upgrade");
 
 run_test("initialize", ({override_rewire}) => {
     page_params.annual_price = 8000;

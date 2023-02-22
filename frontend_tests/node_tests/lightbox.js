@@ -7,18 +7,18 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("Image", class Image {});
-mock_esm("../../static/js/overlays", {
+mock_esm("../../web/src/overlays", {
     close_overlay() {},
 
     close_active() {},
     open_overlay() {},
 });
-mock_esm("../../static/js/popovers", {
+mock_esm("../../web/src/popovers", {
     hide_all() {},
 });
-const rows = mock_esm("../../static/js/rows");
+const rows = mock_esm("../../web/src/rows");
 
-const message_store = mock_esm("../../static/js/message_store");
+const message_store = mock_esm("../../web/src/message_store");
 
 const lightbox = zrequire("lightbox");
 

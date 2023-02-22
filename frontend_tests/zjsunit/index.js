@@ -27,9 +27,9 @@ global.navigator = {
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
     only: [
-        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../static/js") + path.sep)),
+        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../web/src") + path.sep)),
         new RegExp(
-            "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js") + path.sep),
+            "^" + _.escapeRegExp(path.resolve(__dirname, "../../web/shared/src") + path.sep),
         ),
     ],
     plugins: [
@@ -90,7 +90,7 @@ function short_tb(tb) {
     return lines.splice(0, i + 1).join("\n") + "\n(...)\n";
 }
 
-require("../../static/js/templates"); // register Zulip extensions
+require("../../web/src/templates"); // register Zulip extensions
 
 async function run_one_module(file) {
     zjquery.clear_initialize_function();
@@ -121,16 +121,16 @@ test.set_verbose(files.length === 1);
         _.debounce = immediate;
         zpage_params.reset();
 
-        namespace.mock_esm("../../static/js/blueslip", blueslip);
-        require("../../static/js/blueslip");
-        namespace.mock_esm("../../static/js/i18n", stub_i18n);
-        require("../../static/js/i18n");
-        namespace.mock_esm("../../static/js/page_params", zpage_params);
-        require("../../static/js/page_params");
-        namespace.mock_esm("../../static/js/user_settings", zpage_params);
-        require("../../static/js/user_settings");
-        namespace.mock_esm("../../static/js/realm_user_settings_defaults", zpage_params);
-        require("../../static/js/realm_user_settings_defaults");
+        namespace.mock_esm("../../web/src/blueslip", blueslip);
+        require("../../web/src/blueslip");
+        namespace.mock_esm("../../web/src/i18n", stub_i18n);
+        require("../../web/src/i18n");
+        namespace.mock_esm("../../web/src/page_params", zpage_params);
+        require("../../web/src/page_params");
+        namespace.mock_esm("../../web/src/user_settings", zpage_params);
+        require("../../web/src/user_settings");
+        namespace.mock_esm("../../web/src/realm_user_settings_defaults", zpage_params);
+        require("../../web/src/realm_user_settings_defaults");
 
         await run_one_module(file);
 

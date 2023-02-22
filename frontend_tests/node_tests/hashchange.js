@@ -11,24 +11,24 @@ const {user_settings} = require("../zjsunit/zpage_params");
 let $window_stub;
 set_global("to_$", () => $window_stub);
 
-mock_esm("../../static/js/search", {
+mock_esm("../../web/src/search", {
     update_button_visibility() {},
 });
 set_global("document", "document-stub");
 const history = set_global("history", {});
 
-const admin = mock_esm("../../static/js/admin");
-const drafts = mock_esm("../../static/js/drafts");
-const info_overlay = mock_esm("../../static/js/info_overlay");
-const message_viewport = mock_esm("../../static/js/message_viewport");
-const narrow = mock_esm("../../static/js/narrow");
-const overlays = mock_esm("../../static/js/overlays");
-const recent_topics_ui = mock_esm("../../static/js/recent_topics_ui");
-const settings = mock_esm("../../static/js/settings");
-const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
-const ui_util = mock_esm("../../static/js/ui_util");
-const ui_report = mock_esm("../../static/js/ui_report");
-mock_esm("../../static/js/top_left_corner", {
+const admin = mock_esm("../../web/src/admin");
+const drafts = mock_esm("../../web/src/drafts");
+const info_overlay = mock_esm("../../web/src/info_overlay");
+const message_viewport = mock_esm("../../web/src/message_viewport");
+const narrow = mock_esm("../../web/src/narrow");
+const overlays = mock_esm("../../web/src/overlays");
+const recent_topics_ui = mock_esm("../../web/src/recent_topics_ui");
+const settings = mock_esm("../../web/src/settings");
+const stream_settings_ui = mock_esm("../../web/src/stream_settings_ui");
+const ui_util = mock_esm("../../web/src/ui_util");
+const ui_report = mock_esm("../../web/src/ui_report");
+mock_esm("../../web/src/top_left_corner", {
     handle_narrow_deactivated() {},
 });
 set_global("favicon", {});

@@ -11,8 +11,8 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const {mock_banners} = require("./lib/compose_banner");
 
-const channel = mock_esm("../../static/js/channel");
-const compose_actions = mock_esm("../../static/js/compose_actions");
+const channel = mock_esm("../../web/src/channel");
+const compose_actions = mock_esm("../../web/src/compose_actions");
 
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -20,9 +20,9 @@ const compose_state = zrequire("compose_state");
 const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const resolved_topic = zrequire("../shared/js/resolved_topic");
+const resolved_topic = zrequire("../shared/src/resolved_topic");
 const settings_config = zrequire("settings_config");
-const settings_data = mock_esm("../../static/js/settings_data");
+const settings_data = mock_esm("../../web/src/settings_data");
 const stream_data = zrequire("stream_data");
 
 const me = {

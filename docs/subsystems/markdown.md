@@ -17,7 +17,7 @@ authoritatively render messages to HTML (and implements
 slow/expensive/complex features like querying the Twitter API to
 render tweets nicely). The frontend implementation is in JavaScript,
 based on [marked.js](https://github.com/chjj/marked)
-(`static/js/echo.js`), and is used to preview and locally echo
+(`web/src/echo.js`), and is used to preview and locally echo
 messages the moment the sender hits Enter, without waiting for round
 trip from the server. Those frontend renderings are only shown to the
 sender of a message, and they are (ideally) identical to the backend
@@ -101,12 +101,12 @@ When changing Zulip's Markdown syntax, you need to update several
 places:
 
 - The backend Markdown processor (`zerver/lib/markdown/__init__.py`).
-- The frontend Markdown processor (`static/js/markdown.js` and sometimes
-  `static/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
+- The frontend Markdown processor (`web/src/markdown.js` and sometimes
+  `web/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
-- If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
+- If desired, the typeahead logic in `web/src/composebox_typeahead.js`.
 - The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
-- The in-app Markdown documentation (`markdown_help_rows` in `static/js/info_overlay.js`).
+- The in-app Markdown documentation (`markdown_help_rows` in `web/src/info_overlay.js`).
 - The list of changes to Markdown at the end of this document.
 
 Important considerations for any changes are:

@@ -21,14 +21,14 @@ const fake_buddy_list = {
     next_key() {},
 };
 
-mock_esm("../../static/js/buddy_list", {
+mock_esm("../../web/src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
 
-const popovers = mock_esm("../../static/js/popovers");
-const presence = mock_esm("../../static/js/presence");
-const stream_popover = mock_esm("../../static/js/stream_popover");
-const resize = mock_esm("../../static/js/resize");
+const popovers = mock_esm("../../web/src/popovers");
+const presence = mock_esm("../../web/src/presence");
+const stream_popover = mock_esm("../../web/src/stream_popover");
+const resize = mock_esm("../../web/src/resize");
 
 set_global("document", _document);
 

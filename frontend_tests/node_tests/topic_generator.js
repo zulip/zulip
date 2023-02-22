@@ -5,10 +5,10 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const user_topics = mock_esm("../../static/js/user_topics");
-const stream_data = mock_esm("../../static/js/stream_data");
-const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
-const unread = mock_esm("../../static/js/unread");
+const user_topics = mock_esm("../../web/src/user_topics");
+const stream_data = mock_esm("../../web/src/stream_data");
+const stream_topic_history = mock_esm("../../web/src/stream_topic_history");
+const unread = mock_esm("../../web/src/unread");
 
 const pm_conversations = zrequire("pm_conversations");
 pm_conversations.recent = {};

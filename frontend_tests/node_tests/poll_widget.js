@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
-const {PollData} = zrequire("../../static/shared/js/poll_data");
+const {PollData} = zrequire("../../web/shared/src/poll_data");
 
 const poll_widget = zrequire("poll_widget");
 

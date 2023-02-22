@@ -13,7 +13,7 @@ sys.path.insert(0, ZULIP_PATH)
 
 from zerver.lib.timezone import get_canonical_timezone_map
 
-OUT_PATH = os.path.join(ZULIP_PATH, "static", "generated", "timezones.json")
+OUT_PATH = os.path.join(ZULIP_PATH, "web", "generated", "timezones.json")
 
 with open(OUT_PATH, "w") as f:
     json.dump(

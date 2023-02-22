@@ -23,10 +23,10 @@ function make_stream_message({stream_id, topic, sender_id}) {
     return message;
 }
 
-mock_esm("../../static/js/message_store", {
+mock_esm("../../web/src/message_store", {
     get: (message_id) => messages.get(message_id),
 });
-mock_esm("../../static/js/people", {
+mock_esm("../../web/src/people", {
     my_current_user_id: () => 1,
 });
 

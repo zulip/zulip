@@ -242,7 +242,7 @@ reasoning here.
   release tarball.
 - **Checked-in packages**. In contrast with Python, we have a few
   JavaScript dependencies that we have copied into the main Zulip
-  repository under `static/third`, often with patches. These date
+  repository under `web/third`, often with patches. These date
   from an era before `npm` existed. It is a project goal to eliminate
   these checked-in versions of dependencies and instead use versions
   managed by the npm repositories.
@@ -317,7 +317,7 @@ implementation of that tool.
 
 The list of languages supported by our Markdown syntax highlighting
 comes from the [pygments][] package. `tools/setup/build_pygments_data` is
-responsible for generating `static/generated/pygments_data.json` so that
+responsible for generating `web/generated/pygments_data.json` so that
 our JavaScript Markdown processor has access to the supported list.
 
 ## Modifying provisioning

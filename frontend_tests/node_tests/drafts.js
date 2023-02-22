@@ -29,10 +29,10 @@ set_global("setTimeout", (f, delay) => {
     assert.equal(delay, setTimeout_delay);
     f();
 });
-mock_esm("../../static/js/markdown", {
+mock_esm("../../web/src/markdown", {
     apply_markdown: noop,
 });
-mock_esm("../../static/js/overlays", {
+mock_esm("../../web/src/overlays", {
     open_overlay: noop,
 });
 

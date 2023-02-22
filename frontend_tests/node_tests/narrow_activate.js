@@ -6,34 +6,34 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-mock_esm("../../static/js/resize", {
+mock_esm("../../web/src/resize", {
     resize_stream_filters_container() {},
 });
 
-const all_messages_data = mock_esm("../../static/js/all_messages_data");
-const channel = mock_esm("../../static/js/channel");
-const compose_actions = mock_esm("../../static/js/compose_actions");
-const compose_banner = mock_esm("../../static/js/compose_banner");
-const compose_closed_ui = mock_esm("../../static/js/compose_closed_ui");
-const hashchange = mock_esm("../../static/js/hashchange");
-const message_fetch = mock_esm("../../static/js/message_fetch");
-const message_list = mock_esm("../../static/js/message_list");
-const message_lists = mock_esm("../../static/js/message_lists", {
+const all_messages_data = mock_esm("../../web/src/all_messages_data");
+const channel = mock_esm("../../web/src/channel");
+const compose_actions = mock_esm("../../web/src/compose_actions");
+const compose_banner = mock_esm("../../web/src/compose_banner");
+const compose_closed_ui = mock_esm("../../web/src/compose_closed_ui");
+const hashchange = mock_esm("../../web/src/hashchange");
+const message_fetch = mock_esm("../../web/src/message_fetch");
+const message_list = mock_esm("../../web/src/message_list");
+const message_lists = mock_esm("../../web/src/message_lists", {
     home: {},
     current: {},
     set_current(msg_list) {
         message_lists.current = msg_list;
     },
 });
-const message_scroll = mock_esm("../../static/js/message_scroll");
-const message_view_header = mock_esm("../../static/js/message_view_header");
-const notifications = mock_esm("../../static/js/notifications");
-const search = mock_esm("../../static/js/search");
-const stream_list = mock_esm("../../static/js/stream_list");
-const top_left_corner = mock_esm("../../static/js/top_left_corner");
-const typing_events = mock_esm("../../static/js/typing_events");
-const unread_ops = mock_esm("../../static/js/unread_ops");
-mock_esm("../../static/js/recent_topics_util", {
+const message_scroll = mock_esm("../../web/src/message_scroll");
+const message_view_header = mock_esm("../../web/src/message_view_header");
+const notifications = mock_esm("../../web/src/notifications");
+const search = mock_esm("../../web/src/search");
+const stream_list = mock_esm("../../web/src/stream_list");
+const top_left_corner = mock_esm("../../web/src/top_left_corner");
+const typing_events = mock_esm("../../web/src/typing_events");
+const unread_ops = mock_esm("../../web/src/unread_ops");
+mock_esm("../../web/src/recent_topics_util", {
     is_visible() {},
 });
 
@@ -45,7 +45,7 @@ set_global("setTimeout", (f, t) => {
     f();
 });
 
-mock_esm("../../static/js/user_topics", {
+mock_esm("../../web/src/user_topics", {
     is_topic_muted: () => false,
 });
 

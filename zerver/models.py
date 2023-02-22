@@ -607,7 +607,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     PLAN_TYPE_PLUS = 10
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
-    # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
+    # This value is also being used in web/src/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
     BOT_CREATION_EVERYONE = 1
     BOT_CREATION_LIMIT_GENERIC_BOTS = 2
@@ -1723,7 +1723,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     since they can't be used to read messages.
     """
     INCOMING_WEBHOOK_BOT = 2
-    # This value is also being used in static/js/settings_bots.js.
+    # This value is also being used in web/src/settings_bots.js.
     # On updating it here, update it there as well.
     OUTGOING_WEBHOOK_BOT = 3
     """

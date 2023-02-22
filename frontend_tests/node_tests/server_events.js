@@ -18,9 +18,9 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-const channel = mock_esm("../../static/js/channel");
-const message_lists = mock_esm("../../static/js/message_lists");
-mock_esm("../../static/js/reload_state", {
+const channel = mock_esm("../../web/src/channel");
+const message_lists = mock_esm("../../web/src/message_lists");
+mock_esm("../../web/src/reload_state", {
     is_in_progress() {
         return false;
     },
@@ -36,19 +36,19 @@ page_params.test_suite = false;
 // we also directly write to pointer
 set_global("pointer", {});
 
-mock_esm("../../static/js/ui_report", {
+mock_esm("../../web/src/ui_report", {
     hide_error() {
         return false;
     },
 });
 
-mock_esm("../../static/js/stream_events", {
+mock_esm("../../web/src/stream_events", {
     update_property() {
         throw new Error("subs update error");
     },
 });
 
-const message_events = mock_esm("../../static/js/message_events", {
+const message_events = mock_esm("../../web/src/message_events", {
     insert_new_messages() {
         throw new Error("insert error");
     },

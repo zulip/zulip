@@ -19,7 +19,7 @@ const dom = new JSDOM(template, {
 const jquery = jQueryFactory(dom.window);
 
 const history = set_global("history", {});
-const loading = mock_esm("../../static/js/loading");
+const loading = mock_esm("../../web/src/loading");
 set_global("document", {
     title: "Zulip",
 });

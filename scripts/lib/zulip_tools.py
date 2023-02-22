@@ -348,7 +348,7 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
     sha = hashlib.sha1()
 
     filenames = [
-        "static/assets/zulip-emoji/zulip.png",
+        "web/images/zulip-emoji/zulip.png",
         "tools/setup/emoji/emoji_map.json",
         "tools/setup/emoji/build_emoji",
         "tools/setup/emoji/emoji_setup_utils.py",

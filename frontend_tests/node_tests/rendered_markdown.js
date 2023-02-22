@@ -17,7 +17,7 @@ class Clipboard {
 
 mock_cjs("clipboard", Clipboard);
 
-const realm_playground = mock_esm("../../static/js/realm_playground");
+const realm_playground = mock_esm("../../web/src/realm_playground");
 user_settings.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");

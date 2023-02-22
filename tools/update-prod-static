@@ -49,21 +49,7 @@ run(["./tools/setup/build_timezone_values"])
 run(["./tools/webpack", "--quiet"])
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
-run(
-    [
-        "./manage.py",
-        "collectstatic",
-        "--no-default-ignore",
-        "-v0",
-        "--noinput",
-        "--ignore=assets",
-        "--ignore=emoji-styles",
-        "--ignore=html",
-        "--ignore=js",
-        "--ignore=styles",
-        "--ignore=templates",
-    ]
-)
+run(["./manage.py", "collectstatic", "-v0", "--noinput"])
 
 # Compile translation strings to generate `.mo` files.
 run(["./manage.py", "compilemessages", "-v0"])

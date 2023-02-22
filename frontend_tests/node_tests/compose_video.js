@@ -9,10 +9,10 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const events = require("./lib/events");
 
-const channel = mock_esm("../../static/js/channel");
-const compose_ui = mock_esm("../../static/js/compose_ui");
-const upload = mock_esm("../../static/js/upload");
-mock_esm("../../static/js/resize", {
+const channel = mock_esm("../../web/src/channel");
+const compose_ui = mock_esm("../../web/src/compose_ui");
+const upload = mock_esm("../../web/src/upload");
+mock_esm("../../web/src/resize", {
     watch_manual_resize() {},
 });
 set_global("document", {

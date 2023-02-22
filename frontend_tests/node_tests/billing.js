@@ -14,7 +14,7 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 const location = set_global("location", {});
 
-const helpers = mock_esm("../../static/js/billing/helpers", {
+const helpers = mock_esm("../../web/src/billing/helpers", {
     set_tab() {},
 });
 

@@ -9,8 +9,8 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
-const padded_widget = mock_esm("../../static/js/padded_widget");
-const message_viewport = mock_esm("../../static/js/message_viewport");
+const padded_widget = mock_esm("../../web/src/padded_widget");
+const message_viewport = mock_esm("../../web/src/message_viewport");
 
 const people = zrequire("people");
 const {BuddyList} = zrequire("buddy_list");

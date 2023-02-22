@@ -8,9 +8,9 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import type webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
-import DebugRequirePlugin from "./tools/debug-require-webpack-plugin";
-import assets from "./tools/webpack.assets.json";
-import dev_assets from "./tools/webpack.dev-assets.json";
+import DebugRequirePlugin from "./web/debug-require-webpack-plugin";
+import assets from "./web/webpack.assets.json";
+import dev_assets from "./web/webpack.dev-assets.json";
 
 export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.Configuration[] => {
     const production: boolean = argv.mode === "production";
@@ -37,18 +37,18 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             : Object.fromEntries(
                   Object.entries({...assets, ...dev_assets}).map(([name, paths]) => [
                       name,
-                      [...paths, "./static/js/debug"],
+                      [...paths, "./web/src/debug"],
                   ]),
               ),
         module: {
             rules: [
                 {
-                    test: require.resolve("./static/js/zulip_test"),
+                    test: require.resolve("./web/src/zulip_test"),
                     loader: "expose-loader",
                     options: {exposes: "zulip_test"},
                 },
                 {
-                    test: require.resolve("./tools/debug-require"),
+                    test: require.resolve("./web/debug-require"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
                 },
@@ -83,15 +83,15 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                 {
                     test: /\.(js|ts)$/,
                     include: [
-                        path.resolve(__dirname, "static/shared/js"),
-                        path.resolve(__dirname, "static/js"),
+                        path.resolve(__dirname, "web/shared/src"),
+                        path.resolve(__dirname, "web/src"),
                     ],
                     loader: "babel-loader",
                 },
                 // regular css files
                 {
                     test: /\.css$/,
-                    exclude: path.resolve(__dirname, "static/styles"),
+                    exclude: path.resolve(__dirname, "web/styles"),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -105,7 +105,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                 // PostCSS loader
                 {
                     test: /\.css$/,
-                    include: path.resolve(__dirname, "static/styles"),
+                    include: path.resolve(__dirname, "web/styles"),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -134,7 +134,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                             "unless",
                             "each",
                             "with",
-                            // The ones below are defined in static/js/templates.js
+                            // The ones below are defined in web/src/templates.js
                             "plural",
                             "eq",
                             "and",
@@ -149,7 +149,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                         // This replaces relative image resources with
                         // a computed require() path to them, so their
                         // webpack-hashed URLs are used.
-                        inlineRequires: /^(\.\.\/)+(images|generated\/emoji\/images)\//,
+                        inlineRequires: /^(\.\.\/)+(images|static)\//,
                     },
                 },
                 // load fonts and files
@@ -207,7 +207,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             }),
             new HtmlWebpackPlugin({
                 filename: "5xx.html",
-                template: "static/html/5xx.html",
+                template: "web/html/5xx.html",
                 chunks: ["error-styles"],
             }),
         ],

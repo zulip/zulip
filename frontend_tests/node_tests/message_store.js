@@ -9,11 +9,11 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-mock_esm("../../static/js/stream_topic_history", {
+mock_esm("../../web/src/stream_topic_history", {
     add_message: noop,
 });
 
-mock_esm("../../static/js/recent_senders", {
+mock_esm("../../web/src/recent_senders", {
     process_stream_message: noop,
     process_private_message: noop,
 });

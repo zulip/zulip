@@ -9,24 +9,24 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-const narrow = mock_esm("../../static/js/narrow");
-const narrow_state = mock_esm("../../static/js/narrow_state", {
+const narrow = mock_esm("../../web/src/narrow");
+const narrow_state = mock_esm("../../web/src/narrow_state", {
     filter: () => false,
 });
-const search_suggestion = mock_esm("../../static/js/search_suggestion");
+const search_suggestion = mock_esm("../../web/src/search_suggestion");
 
-mock_esm("../../static/js/search_pill_widget", {
+mock_esm("../../web/src/search_pill_widget", {
     widget: {
         getByElement: () => true,
     },
 });
-mock_esm("../../static/js/ui_util", {
+mock_esm("../../web/src/ui_util", {
     place_caret_at_end: noop,
 });
 
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 
 function test(label, f) {
     run_test(label, ({override, mock_template}) => {

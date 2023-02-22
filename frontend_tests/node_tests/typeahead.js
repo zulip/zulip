@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const typeahead = zrequire("../shared/js/typeahead");
+const typeahead = zrequire("../shared/src/typeahead");
 
 const unicode_emojis = [
     ["1f43c", "panda_face"],

@@ -2,13 +2,13 @@
 
 ## Zulip CSS organization
 
-The Zulip application's CSS can be found in the `static/styles/`
+The Zulip application's CSS can be found in the `web/styles/`
 directory. Zulip uses [Bootstrap](https://getbootstrap.com/) as its
 main third-party CSS library.
 
 Zulip uses PostCSS for its CSS files. There are two high-level sections
 of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
-and the app. The portico CSS lives under the `static/styles/portico`
+and the app. The portico CSS lives under the `web/styles/portico`
 subdirectory.
 
 ## Editing Zulip CSS
@@ -111,7 +111,7 @@ path('config-error/google', TemplateView.as_view(
 
 For text generated in the frontend, live-rendering HTML from
 JavaScript for things like the main message feed, we use the
-[Handlebars][] template engine (files in `static/templates/`) and
+[Handlebars][] template engine (files in `web/templates/`) and
 sometimes work directly from JavaScript code (though as a policy
 matter, we try to avoid generating HTML directly in JavaScript
 wherever possible).
@@ -150,13 +150,13 @@ relevant background as well.
 
 ### Primary build process
 
-Zulip's frontend is primarily JavaScript in the `static/js` directory;
+Zulip's frontend is primarily JavaScript in the `web/src` directory;
 we are working on migrating these to TypeScript modules. Stylesheets
 are written in CSS extended by various PostCSS plugins; they are
 converted from plain CSS, and we have yet to take full advantage of
 the features PostCSS offers. We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
-points specified in `tools/webpack.*assets.json`; source maps are
+points specified in `web/webpack.*assets.json`; source maps are
 generated in the process for better debugging experience.
 
 In development mode, bundles are built and served on the fly using
@@ -169,7 +169,7 @@ ready for deployment.
 
 You can trace which source files are included in which HTML templates
 by comparing the `entrypoint` variables in the HTML templates under
-`templates/` with the bundles declared in `tools/webpack.*assets.json`.
+`templates/` with the bundles declared in `web/webpack.*assets.json`.
 
 ### Adding static files
 
@@ -187,34 +187,34 @@ first add it to the appropriate place under `static/`.
   We update those versions periodically to ensure we're running a recent
   version of third-party libraries.
 - Third-party files that we have patched should all go in
-  `static/third/`. Tag the commit with "[third]" when adding or
+  `web/third/`. Tag the commit with "[third]" when adding or
   modifying a third-party package. Our goal is to the extent possible
   to eliminate patched third-party code from the project.
-- Our own JavaScript and TypeScript files live under `static/js`. Ideally,
+- Our own JavaScript and TypeScript files live under `web/src`. Ideally,
   new modules should be written in TypeScript (details on this policy below).
-- CSS files live under `static/styles`.
+- CSS files live under `web/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
-  `static/js/portico`.
-- Custom SVG graphics living under `static/assets/icons` are compiled into
+  `web/src/portico`.
+- Custom SVG graphics living under `web/images/icons` are compiled into
   custom icon webfonts by webfont-loader according to the
-  `static/assets/icons/template.hbs` template.
+  `web/images/icons/template.hbs` template.
 
 For your asset to be included in a development/production bundle, it
 needs to be accessible from one of the entry points defined either in
-`tools/webpack.assets.json` or `tools/webpack.dev-assets.json`.
+`web/webpack.assets.json` or `web/webpack.dev-assets.json`.
 
 - If you plan to only use the file within the app proper, and not on the login
   page or other standalone pages, put it in the `app` bundle by importing it
-  in `static/js/bundles/app.js`.
+  in `web/src/bundles/app.js`.
 - If it needs to be available both in the app and all
   logged-out/portico pages, import it to
-  `static/js/bundles/common.js` which itself is imported to the
+  `web/src/bundles/common.js` which itself is imported to the
   `app` and `common` bundles.
 - If it's just used on a single standalone page which is only used in
   a development environment (e.g. `/devlogin`) create a new entry
-  point in `tools/webpack.dev-assets.json` or it's used in both
+  point in `web/webpack.dev-assets.json` or it's used in both
   production and development (e.g. `/stats`) create a new entry point
-  in `tools/webpack.assets.json`. Use the `bundle` macro (defined in
+  in `web/webpack.assets.json`. Use the `bundle` macro (defined in
   `templates/zerver/base.html`) in the relevant Jinja2 template to
   inject the compiled JS and CSS.
 
@@ -267,11 +267,11 @@ TypeScript also uses the ES6 module system. See our documentation on
 
 Webpack does not ordinarily allow modules to be accessed directly from
 the browser console, but for debugging convenience, we have a custom
-webpack plugin (`tools/debug-require-webpack-plugin.ts`) that exposes
+webpack plugin (`web/debug-require-webpack-plugin.ts`) that exposes
 a version of the `require()` function to the development environment
 browser console for this purpose. For example, you can access our
 `people` module by evaluating
-`people = require("./static/js/people")`, or the third-party `lodash`
+`people = require("./web/src/people")`, or the third-party `lodash`
 module with `_ = require("lodash")`. This mechanism is **not** a
 stable API and should not be used for any purpose other than
 interactive debugging.

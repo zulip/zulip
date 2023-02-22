@@ -45,8 +45,8 @@ You can also run them individually or pass specific files:
 
 ```bash
 ./tools/lint
-./tools/lint static/js/compose.js
-./tools/lint static/js/
+./tools/lint web/src/compose.js
+./tools/lint web/src/
 ```
 
 `./tools/lint` has many useful options; you can read about them in its

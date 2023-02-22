@@ -8,7 +8,7 @@ const blueslip = require("../zjsunit/zblueslip");
 
 const user_topics = zrequire("user_topics");
 const muted_users = zrequire("muted_users");
-const {MessageListData} = zrequire("../js/message_list_data");
+const {MessageListData} = zrequire("../src/message_list_data");
 const {Filter} = zrequire("filter");
 
 function make_msg(msg_id) {

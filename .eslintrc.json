@@ -137,7 +137,7 @@
             }
         },
         {
-            "files": ["static/js/**"],
+            "files": ["web/src/**"],
             "globals": {
                 "StripeCheckout": false
             }
@@ -217,7 +217,7 @@
             }
         },
         {
-            "files": ["tools/debug-require.js"],
+            "files": ["web/debug-require.js"],
             "env": {
                 "browser": true,
                 "es2020": false
@@ -231,7 +231,7 @@
             }
         },
         {
-            "files": ["static/**"],
+            "files": ["web/shared/**", "web/src/**", "web/third/**"],
             "env": {
                 "browser": true,
                 "node": false
@@ -244,7 +244,7 @@
             }
         },
         {
-            "files": ["static/shared/**"],
+            "files": ["web/shared/**"],
             "env": {
                 "browser": false,
                 "shared-node-browser": true
@@ -255,9 +255,9 @@
                     {
                         "zones": [
                             {
-                                "target": "./static/shared",
+                                "target": "./web/shared",
                                 "from": ".",
-                                "except": ["./node_modules", "./static/shared"]
+                                "except": ["./node_modules", "./web/shared"]
                             }
                         ]
                     }

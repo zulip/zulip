@@ -79,8 +79,8 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         # We did a chdir to the root of the Zulip checkout above.
         for filepath in [
             "webpack.config.ts",
-            "tools/webpack.assets.json",
-            "tools/webpack.dev-assets.json",
+            "web/webpack.assets.json",
+            "web/webpack.dev-assets.json",
         ]:
             watch_manager.add_watch(filepath, pyinotify.IN_MODIFY)
         event_notifier.loop()
@@ -100,10 +100,10 @@ def build_for_most_tests() -> None:
     # configuration for ALL tests, but figuring out the full history here
     # was out of the scope of the effort here to add some comments and
     # clean up names.
-    with open("tools/webpack.assets.json") as json_data:
+    with open("web/webpack.assets.json") as json_data:
         entries = json.load(json_data)
 
-    with open("tools/webpack.dev-assets.json") as json_data:
+    with open("web/webpack.dev-assets.json") as json_data:
         entries.update(json.load(json_data))
 
     stat_data = {

@@ -11,7 +11,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 // narrows more broadly, but first let's test out a core piece of
 // code that makes things work.
 
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 
 // This is the first time we have to deal with page_params.

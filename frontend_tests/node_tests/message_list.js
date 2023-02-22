@@ -9,7 +9,7 @@ const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-// These unit tests for static/js/message_list.js emphasize the model-ish
+// These unit tests for web/src/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
@@ -23,8 +23,8 @@ set_global("document", {
     },
 });
 
-const narrow_state = mock_esm("../../static/js/narrow_state");
-const stream_data = mock_esm("../../static/js/stream_data");
+const narrow_state = mock_esm("../../web/src/narrow_state");
+const stream_data = mock_esm("../../web/src/stream_data");
 
 const {MessageList} = zrequire("message_list");
 function MessageListView() {
@@ -35,7 +35,7 @@ function MessageListView() {
         clear_rendering_state: noop,
     };
 }
-mock_esm("../../static/js/message_list_view", {
+mock_esm("../../web/src/message_list_view", {
     MessageListView,
 });
 const {Filter} = zrequire("filter");

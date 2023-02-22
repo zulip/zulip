@@ -10,12 +10,12 @@ const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const message_store = mock_esm("../../static/js/message_store");
+const message_store = mock_esm("../../web/src/message_store");
 
-const resolved_topic = zrequire("../shared/js/resolved_topic");
+const resolved_topic = zrequire("../shared/src/resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 
 const me = {
     email: "me@example.com",

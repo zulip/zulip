@@ -11,14 +11,14 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-mock_esm("../../static/js/resize", {
+mock_esm("../../web/src/resize", {
     resize_page_components: noop,
 
     resize_stream_filters_container: noop,
 });
 
-const popovers = mock_esm("../../static/js/popovers");
-const stream_popover = mock_esm("../../static/js/stream_popover");
+const popovers = mock_esm("../../web/src/popovers");
+const stream_popover = mock_esm("../../web/src/stream_popover");
 
 const stream_list = zrequire("stream_list");
 

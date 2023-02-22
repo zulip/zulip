@@ -1,0 +1,17 @@
+{
+    "dev-login": ["./web/src/bundles/portico", "./web/src/portico/dev-login"],
+    "dev-integrations-panel": [
+        "./web/src/bundles/portico",
+        "./web/src/portico/integrations_dev_panel",
+        "./web/styles/portico/integrations_dev_panel.css",
+        "./web/src/reload_state",
+        "./web/src/channel"
+    ],
+    "dev-email-log": [
+        "./web/src/bundles/common",
+        "./web/src/portico/email_log",
+        "./web/styles/portico/email_log.css",
+        "./web/src/reload_state",
+        "./web/src/channel"
+    ]
+}

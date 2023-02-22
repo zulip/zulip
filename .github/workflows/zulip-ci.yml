@@ -155,9 +155,9 @@ jobs:
           # Ban check-database-compatibility.py from transitively
           # relying on static/generated, because it might not be
           # up-to-date at that point in upgrade-zulip-stage-2.
-          chmod 000 static/generated
+          chmod 000 static/generated web/generated
           ./scripts/lib/check-database-compatibility.py
-          chmod 755 static/generated
+          chmod 755 static/generated web/generated
 
       - name: Run documentation and api tests
         if: ${{ matrix.include_documentation_tests }}

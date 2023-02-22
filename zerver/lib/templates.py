@@ -209,7 +209,7 @@ def webpack_entry(entrypoint: str) -> List[str]:
         ]
     except KeyError:
         raise KeyError(
-            f"'{entrypoint}' entrypoint could not be found. Please define it in tools/webpack.assets.json."
+            f"'{entrypoint}' entrypoint could not be found. Please define it in web/webpack.assets.json."
         )
 
     return files_from_entrypoints

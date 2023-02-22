@@ -24,64 +24,64 @@ const typing_person1 = events.typing_person1;
 
 set_global("setTimeout", (func) => func());
 
-const activity = mock_esm("../../static/js/activity");
-const alert_words_ui = mock_esm("../../static/js/alert_words_ui");
-const attachments_ui = mock_esm("../../static/js/attachments_ui");
-const bot_data = mock_esm("../../static/js/bot_data");
-const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
-const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
-const dark_theme = mock_esm("../../static/js/dark_theme");
-const emoji_picker = mock_esm("../../static/js/emoji_picker");
-const hotspots = mock_esm("../../static/js/hotspots");
-const linkifiers = mock_esm("../../static/js/linkifiers");
-const message_events = mock_esm("../../static/js/message_events");
-const message_lists = mock_esm("../../static/js/message_lists");
-const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
-const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
-const notifications = mock_esm("../../static/js/notifications");
-const pm_list = mock_esm("../../static/js/pm_list");
-const reactions = mock_esm("../../static/js/reactions");
-const realm_icon = mock_esm("../../static/js/realm_icon");
-const realm_logo = mock_esm("../../static/js/realm_logo");
-const realm_playground = mock_esm("../../static/js/realm_playground");
-const reload = mock_esm("../../static/js/reload");
-const scroll_bar = mock_esm("../../static/js/scroll_bar");
-const settings_account = mock_esm("../../static/js/settings_account");
-const settings_bots = mock_esm("../../static/js/settings_bots");
-const settings_display = mock_esm("../../static/js/settings_display");
-const settings_emoji = mock_esm("../../static/js/settings_emoji");
-const settings_exports = mock_esm("../../static/js/settings_exports");
-const settings_invites = mock_esm("../../static/js/settings_invites");
-const settings_linkifiers = mock_esm("../../static/js/settings_linkifiers");
-const settings_playgrounds = mock_esm("../../static/js/settings_playgrounds");
-const settings_notifications = mock_esm("../../static/js/settings_notifications");
-const settings_org = mock_esm("../../static/js/settings_org");
-const settings_profile_fields = mock_esm("../../static/js/settings_profile_fields");
+const activity = mock_esm("../../web/src/activity");
+const alert_words_ui = mock_esm("../../web/src/alert_words_ui");
+const attachments_ui = mock_esm("../../web/src/attachments_ui");
+const bot_data = mock_esm("../../web/src/bot_data");
+const compose_pm_pill = mock_esm("../../web/src/compose_pm_pill");
+const composebox_typeahead = mock_esm("../../web/src/composebox_typeahead");
+const dark_theme = mock_esm("../../web/src/dark_theme");
+const emoji_picker = mock_esm("../../web/src/emoji_picker");
+const hotspots = mock_esm("../../web/src/hotspots");
+const linkifiers = mock_esm("../../web/src/linkifiers");
+const message_events = mock_esm("../../web/src/message_events");
+const message_lists = mock_esm("../../web/src/message_lists");
+const muted_topics_ui = mock_esm("../../web/src/muted_topics_ui");
+const muted_users_ui = mock_esm("../../web/src/muted_users_ui");
+const notifications = mock_esm("../../web/src/notifications");
+const pm_list = mock_esm("../../web/src/pm_list");
+const reactions = mock_esm("../../web/src/reactions");
+const realm_icon = mock_esm("../../web/src/realm_icon");
+const realm_logo = mock_esm("../../web/src/realm_logo");
+const realm_playground = mock_esm("../../web/src/realm_playground");
+const reload = mock_esm("../../web/src/reload");
+const scroll_bar = mock_esm("../../web/src/scroll_bar");
+const settings_account = mock_esm("../../web/src/settings_account");
+const settings_bots = mock_esm("../../web/src/settings_bots");
+const settings_display = mock_esm("../../web/src/settings_display");
+const settings_emoji = mock_esm("../../web/src/settings_emoji");
+const settings_exports = mock_esm("../../web/src/settings_exports");
+const settings_invites = mock_esm("../../web/src/settings_invites");
+const settings_linkifiers = mock_esm("../../web/src/settings_linkifiers");
+const settings_playgrounds = mock_esm("../../web/src/settings_playgrounds");
+const settings_notifications = mock_esm("../../web/src/settings_notifications");
+const settings_org = mock_esm("../../web/src/settings_org");
+const settings_profile_fields = mock_esm("../../web/src/settings_profile_fields");
 const settings_realm_user_settings_defaults = mock_esm(
-    "../../static/js/settings_realm_user_settings_defaults",
+    "../../web/src/settings_realm_user_settings_defaults",
 );
-const settings_realm_domains = mock_esm("../../static/js/settings_realm_domains");
-const settings_streams = mock_esm("../../static/js/settings_streams");
-const settings_user_groups_legacy = mock_esm("../../static/js/settings_user_groups_legacy");
-const settings_users = mock_esm("../../static/js/settings_users");
-const stream_data = mock_esm("../../static/js/stream_data");
-const stream_events = mock_esm("../../static/js/stream_events");
-const stream_list = mock_esm("../../static/js/stream_list");
-const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
-const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
-const submessage = mock_esm("../../static/js/submessage");
-mock_esm("../../static/js/top_left_corner", {
+const settings_realm_domains = mock_esm("../../web/src/settings_realm_domains");
+const settings_streams = mock_esm("../../web/src/settings_streams");
+const settings_user_groups_legacy = mock_esm("../../web/src/settings_user_groups_legacy");
+const settings_users = mock_esm("../../web/src/settings_users");
+const stream_data = mock_esm("../../web/src/stream_data");
+const stream_events = mock_esm("../../web/src/stream_events");
+const stream_list = mock_esm("../../web/src/stream_list");
+const stream_settings_ui = mock_esm("../../web/src/stream_settings_ui");
+const stream_topic_history = mock_esm("../../web/src/stream_topic_history");
+const submessage = mock_esm("../../web/src/submessage");
+mock_esm("../../web/src/top_left_corner", {
     update_starred_count() {},
 });
-const typing_events = mock_esm("../../static/js/typing_events");
-const ui = mock_esm("../../static/js/ui");
-const unread_ops = mock_esm("../../static/js/unread_ops");
-const user_events = mock_esm("../../static/js/user_events");
-const user_groups = mock_esm("../../static/js/user_groups");
-const user_group_edit = mock_esm("../../static/js/user_group_edit");
-const overlays = mock_esm("../../static/js/overlays");
-const user_groups_settings_ui = mock_esm("../../static/js/user_groups_settings_ui");
-mock_esm("../../static/js/giphy");
+const typing_events = mock_esm("../../web/src/typing_events");
+const ui = mock_esm("../../web/src/ui");
+const unread_ops = mock_esm("../../web/src/unread_ops");
+const user_events = mock_esm("../../web/src/user_events");
+const user_groups = mock_esm("../../web/src/user_groups");
+const user_group_edit = mock_esm("../../web/src/user_group_edit");
+const overlays = mock_esm("../../web/src/overlays");
+const user_groups_settings_ui = mock_esm("../../web/src/user_groups_settings_ui");
+mock_esm("../../web/src/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
 
@@ -125,7 +125,7 @@ people.add_active_user(test_user);
 message_helper.process_new_message(test_message);
 
 const realm_emoji = {};
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
 emoji.initialize({realm_emoji, emoji_codes});
 

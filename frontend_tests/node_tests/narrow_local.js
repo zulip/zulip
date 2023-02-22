@@ -5,13 +5,13 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const all_messages_data = mock_esm("../../static/js/all_messages_data");
+const all_messages_data = mock_esm("../../web/src/all_messages_data");
 
-const {Filter} = zrequire("../js/filter");
-const {MessageListData} = zrequire("../js/message_list_data");
+const {Filter} = zrequire("../src/filter");
+const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const narrow = zrequire("narrow");
-const resolved_topic = zrequire("../shared/js/resolved_topic");
+const resolved_topic = zrequire("../shared/src/resolved_topic");
 
 function test_with(fixture) {
     const filter = new Filter(fixture.filter_terms);

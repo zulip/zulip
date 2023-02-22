@@ -5,10 +5,10 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = mock_esm("../../static/js/channel");
-const ui = mock_esm("../../static/js/ui");
+const channel = mock_esm("../../web/src/channel");
+const ui = mock_esm("../../web/src/ui");
 
-mock_esm("../../static/js/starred_messages", {
+mock_esm("../../web/src/starred_messages", {
     add() {},
     get_starred_msg_ids: () => [1, 2, 3, 4, 5],
     remove() {},

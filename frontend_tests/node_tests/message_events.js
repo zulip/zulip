@@ -7,13 +7,13 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const condense = mock_esm("../../static/js/condense");
-const message_edit = mock_esm("../../static/js/message_edit");
-const message_lists = mock_esm("../../static/js/message_lists");
-const notifications = mock_esm("../../static/js/notifications");
-const pm_list = mock_esm("../../static/js/pm_list");
-const stream_list = mock_esm("../../static/js/stream_list");
-const unread_ui = mock_esm("../../static/js/unread_ui");
+const condense = mock_esm("../../web/src/condense");
+const message_edit = mock_esm("../../web/src/message_edit");
+const message_lists = mock_esm("../../web/src/message_lists");
+const notifications = mock_esm("../../web/src/notifications");
+const pm_list = mock_esm("../../web/src/pm_list");
+const stream_list = mock_esm("../../web/src/stream_list");
+const unread_ui = mock_esm("../../web/src/unread_ui");
 message_lists.current = {};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 

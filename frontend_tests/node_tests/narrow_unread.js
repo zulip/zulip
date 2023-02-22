@@ -6,11 +6,11 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
-mock_esm("../../static/js/user_topics", {
+mock_esm("../../web/src/user_topics", {
     is_topic_muted: () => false,
 });
 
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");

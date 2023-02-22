@@ -39,7 +39,7 @@ in `frontend_tests/node_tests`. Here is an example test from
 ```
 
 The names of the node tests generally align with the names of the
-modules they test. If you modify a JS module in `static/js` you should
+modules they test. If you modify a JS module in `web/src` you should
 see if there are corresponding test in `frontend_tests/node_tests`. If
 there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
@@ -120,7 +120,7 @@ For modules that you want to completely stub out, use a pattern like
 this:
 
 ```js
-const reminder = mock_esm("../../static/js/reminder", {
+const reminder = mock_esm("../../web/src/reminder", {
     is_deferred_delivery: noop,
 });
 

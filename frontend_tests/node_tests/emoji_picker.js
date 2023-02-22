@@ -10,7 +10,7 @@ const {run_test} = require("../zjsunit/test");
 const emoji = zrequire("emoji");
 const emoji_picker = zrequire("emoji_picker");
 
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
 run_test("initialize", () => {
     emoji.initialize({

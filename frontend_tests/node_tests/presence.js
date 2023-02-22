@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
-const reload_state = mock_esm("../../static/js/reload_state", {
+const reload_state = mock_esm("../../web/src/reload_state", {
     is_in_progress: () => false,
 });
 

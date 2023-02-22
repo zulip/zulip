@@ -6,8 +6,8 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const list_widget = mock_esm("../../static/js/list_widget");
-const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
+const list_widget = mock_esm("../../web/src/list_widget");
+const muted_users_ui = mock_esm("../../web/src/muted_users_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
 const muted_users = zrequire("muted_users");

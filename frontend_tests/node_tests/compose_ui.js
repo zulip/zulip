@@ -13,15 +13,15 @@ const noop = () => {};
 
 set_global("navigator", {});
 
-mock_esm("../../static/js/message_lists", {
+mock_esm("../../web/src/message_lists", {
     current: {},
 });
 
 const compose_ui = zrequire("compose_ui");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const hash_util = mock_esm("../../static/js/hash_util");
-const channel = mock_esm("../../static/js/channel");
+const hash_util = mock_esm("../../web/src/hash_util");
+const channel = mock_esm("../../web/src/channel");
 const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");

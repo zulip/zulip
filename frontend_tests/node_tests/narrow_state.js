@@ -6,7 +6,7 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const people = zrequire("people");
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const narrow_state = zrequire("narrow_state");
 

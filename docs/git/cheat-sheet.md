@@ -79,7 +79,7 @@ See also [fixing commits][fix-commit]
   - `git fetch origin`: fetch origin repository
   - `git fetch upstream`: fetch upstream repository
 - grep
-  - `git grep update_unread_counts static/js`: Search our JS for references to update_unread_counts.
+  - `git grep update_unread_counts web/src`: Search our JS for references to update_unread_counts.
 - log
   - `git log`: show commit logs
   - `git log --oneline | head`: To quickly see the latest ten commits on a branch.

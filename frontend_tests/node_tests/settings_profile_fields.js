@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const loading = mock_esm("../../static/js/loading");
+const loading = mock_esm("../../web/src/loading");
 
 const SHORT_TEXT_ID = 1;
 

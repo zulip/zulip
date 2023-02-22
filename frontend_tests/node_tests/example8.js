@@ -90,7 +90,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     const two_typing_users_rendered_html = "Two typing users rendered html stub";
 
     // As you can see below, the first argument of mock_template takes
-    // the relative path of the template we want to mock w.r.t static/templates/
+    // the relative path of the template we want to mock w.r.t web/templates/
     //
     // The second argument takes a boolean determining whether to render html.
     // We mostly set this to `false` and recommend you avoid setting this to `true`

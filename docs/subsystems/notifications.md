@@ -97,7 +97,7 @@ as follows:
     debugging this system, since it has so much complexity.
 - Desktop notifications are the simplest; they are implemented
   client-side by the web/desktop app's logic
-  (`static/js/notifications.js`) inspecting the `flags` fields that
+  (`web/src/notifications.js`) inspecting the `flags` fields that
   were spliced into `message` events by the Tornado system, as well as
   the user's notification settings.
 - The queue processors for those queues make the final determination

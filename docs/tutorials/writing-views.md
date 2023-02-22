@@ -282,7 +282,7 @@ Zulip realm).
 
 You should always use `channel.<method>` to make an `HTTP <method>` call
 to the Zulip JSON API. As an example, in
-[static/js/admin.js](https://github.com/zulip/zulip/blob/main/static/js/admin.js)
+[web/src/admin.js](https://github.com/zulip/zulip/blob/main/web/src/admin.js)
 
 ```js
 var url = "/json/realm";

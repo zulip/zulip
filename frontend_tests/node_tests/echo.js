@@ -9,23 +9,23 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const markdown = mock_esm("../../static/js/markdown");
-const message_lists = mock_esm("../../static/js/message_lists");
-const notifications = mock_esm("../../static/js/notifications");
+const markdown = mock_esm("../../web/src/markdown");
+const message_lists = mock_esm("../../web/src/message_lists");
+const notifications = mock_esm("../../web/src/notifications");
 
 let disparities = [];
 
-mock_esm("../../static/js/ui", {
+mock_esm("../../web/src/ui", {
     show_failed_message_success() {},
 });
 
-mock_esm("../../static/js/sent_messages", {
+mock_esm("../../web/src/sent_messages", {
     mark_disparity(local_id) {
         disparities.push(local_id);
     },
 });
 
-const message_store = mock_esm("../../static/js/message_store", {
+const message_store = mock_esm("../../web/src/message_store", {
     get: () => ({failed_request: true}),
 
     update_booleans() {},

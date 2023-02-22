@@ -12,7 +12,7 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
-const message_user_ids = mock_esm("../../static/js/message_user_ids");
+const message_user_ids = mock_esm("../../web/src/message_user_ids");
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");

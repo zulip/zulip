@@ -10,8 +10,8 @@ const blueslip_stacktrace = zrequire("blueslip_stacktrace");
 run_test("clean_path", () => {
     // Local file
     assert.strictEqual(
-        blueslip_stacktrace.clean_path("webpack:///static/js/upload.js"),
-        "/static/js/upload.js",
+        blueslip_stacktrace.clean_path("webpack:///web/src/upload.js"),
+        "/web/src/upload.js",
     );
 
     // Third party library (jQuery)
@@ -36,9 +36,9 @@ run_test("clean_function_name", () => {
 
     // Local file
     assert.deepEqual(
-        blueslip_stacktrace.clean_function_name("Object../static/js/upload.js.exports.options"),
+        blueslip_stacktrace.clean_function_name("Object../web/src/upload.js.exports.options"),
         {
-            scope: "Object../static/js/upload.js.exports.",
+            scope: "Object../web/src/upload.js.exports.",
             name: "options",
         },
     );

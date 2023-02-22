@@ -6,8 +6,8 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const compose_actions = mock_esm("../../static/js/compose_actions");
-const input_pill = mock_esm("../../static/js/input_pill");
+const compose_actions = mock_esm("../../web/src/compose_actions");
+const input_pill = mock_esm("../../web/src/input_pill");
 const people = zrequire("people");
 
 const compose_pm_pill = zrequire("compose_pm_pill");

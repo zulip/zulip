@@ -51,25 +51,25 @@ Files: static/audio/notification_sounds/zulip.*
 Copyright: 2011 Vidsyn
 License: CC0-1.0
 
-Files: static/third/bootstrap/css/bootstrap-btn.css
+Files: web/third/bootstrap/css/bootstrap-btn.css
 Copyright: 2011-2014 Twitter, Inc
 License: Expat
 
-Files: static/third/bootstrap/css/bootstrap.css
+Files: web/third/bootstrap/css/bootstrap.css
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 Comment: The software has been modified.
 
-Files: static/third/bootstrap/js/bootstrap.js
+Files: web/third/bootstrap/js/bootstrap.js
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 
-Files: static/third/bootstrap-typeahead/*
+Files: web/third/bootstrap-typeahead/*
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 Comment: Bootstrap typeahead.  The software has been modified.
 
-Files: static/third/bootstrap-tooltip/*
+Files: web/third/bootstrap-tooltip/*
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 Comment: Bootstrap tooltip and bootstrap popover.  The software has been modified.
@@ -78,16 +78,16 @@ Files: static/generated/emoji/images/emoji/unicode/*
 Copyright: Google, Inc.
 License: Apache-2.0
 
-Files: static/third/jquery-idle/jquery.idle.js
+Files: web/third/jquery-idle/jquery.idle.js
 Copyright: 2011-2013 Henrique Boaventura
 License: Expat
 Comment: The software has been modified.
 
-Files: static/third/marked/*
+Files: web/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
-Files: static/shared/icons/ellipsis-v-solid.svg
+Files: web/shared/icons/ellipsis-v-solid.svg
 Copyright: 2017 Fonticons, Inc.
 License: CC-BY-4.0
 Comment: This icon is picked from Version 5.13.0 of Font Awesome
@@ -109,7 +109,7 @@ Files: static/audio/notification_sounds/*
 Copyright: 2021 Stefan Mertens
 License: CC0-1.0
 
-Files: static/shared/icons/globe.svg
+Files: web/shared/icons/globe.svg
 Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, modified to increase the width of the globe outline.
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
@@ -118,7 +118,7 @@ Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
 
-Files: static/shared/icons/mute.svg
+Files: web/shared/icons/mute.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_mute
 Copyright: Google, Inc.
 License: Apache-2.0

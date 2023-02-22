@@ -241,7 +241,7 @@ Use non-Mac keyboard keys; for example `Enter`, instead of `Return`. Zulip will
 automatically translate non-Mac keys to the Mac versions for users with a Mac
 user agent. If you want to confirm that your documentation is rendering Mac keys
 correctly when writing documentation in Windows or Linux, you can temporarily
-change `has_mac_keyboard` in `/static/js/common.ts` to always return `True`.
+change `has_mac_keyboard` in `/web/src/common.ts` to always return `True`.
 Then when you view your documentation changes in the development environment,
 the keyboard shortcuts should be rendered with Mac keys where appropriate.
 

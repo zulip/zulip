@@ -1,6 +1,6 @@
 "use strict";
 
-const compose_banner = require("../../../static/js/compose_banner");
+const compose_banner = require("../../../web/src/compose_banner");
 const $ = require("../../zjsunit/zjquery");
 
 exports.mock_banners = () => {

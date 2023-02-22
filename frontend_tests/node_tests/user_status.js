@@ -5,10 +5,10 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = mock_esm("../../static/js/channel");
+const channel = mock_esm("../../web/src/channel");
 
 const user_status = zrequire("user_status");
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 
 const emoji_params = {

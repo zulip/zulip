@@ -17,38 +17,38 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const channel = mock_esm("../../static/js/channel");
-const compose_fade = mock_esm("../../static/js/compose_fade", {
+const channel = mock_esm("../../web/src/channel");
+const compose_fade = mock_esm("../../web/src/compose_fade", {
     clear_compose: noop,
 });
-const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
-const compose_ui = mock_esm("../../static/js/compose_ui", {
+const compose_pm_pill = mock_esm("../../web/src/compose_pm_pill");
+const compose_ui = mock_esm("../../web/src/compose_ui", {
     autosize_textarea: noop,
     is_full_size: () => false,
 });
-const hash_util = mock_esm("../../static/js/hash_util");
-const narrow_state = mock_esm("../../static/js/narrow_state", {
+const hash_util = mock_esm("../../web/src/hash_util");
+const narrow_state = mock_esm("../../web/src/narrow_state", {
     set_compose_defaults: noop,
 });
 
-mock_esm("../../static/js/reload_state", {
+mock_esm("../../web/src/reload_state", {
     is_in_progress: () => false,
 });
-mock_esm("../../static/js/recent_topics_util", {
+mock_esm("../../web/src/recent_topics_util", {
     is_visible: noop,
 });
-mock_esm("../../static/js/drafts", {
+mock_esm("../../web/src/drafts", {
     update_draft: noop,
 });
-mock_esm("../../static/js/unread_ops", {
+mock_esm("../../web/src/unread_ops", {
     notify_server_message_read: noop,
 });
-mock_esm("../../static/js/message_lists", {
+mock_esm("../../web/src/message_lists", {
     current: {
         can_mark_messages_read: () => true,
     },
 });
-mock_esm("../../static/js/resize", {
+mock_esm("../../web/src/resize", {
     reset_compose_message_max_height: noop,
 });
 

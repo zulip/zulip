@@ -47,7 +47,7 @@ about that data structure:
 - Users can disable their own presence updates in user settings
   (`UserProfile.presence_enabled` is the flag storing [this user
   preference](https://zulip.com/help/status-and-availability#disable-updating-availability)).
-- The `status_from_timestamp` function in `static/js/presence.js` is
+- The `status_from_timestamp` function in `web/src/presence.js` is
   useful sample code; the `OFFLINE_THRESHOLD_SECS` check is critical
   to correct output.
 - We provide the data for e.g. whether the user was online on their

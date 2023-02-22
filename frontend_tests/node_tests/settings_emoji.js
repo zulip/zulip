@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const upload_widget = mock_esm("../../static/js/upload_widget");
+const upload_widget = mock_esm("../../web/src/upload_widget");
 const settings_emoji = zrequire("settings_emoji");
 
 run_test("add_custom_emoji_post_render", () => {

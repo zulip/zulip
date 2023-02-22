@@ -23,7 +23,7 @@ const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
 let in_mid_render = false;
 let jquery_function;
 
-const template_path = "/static/templates/";
+const template_path = "/web/templates/";
 
 /* istanbul ignore next */
 function need_to_mock_template_error(filename) {
@@ -268,10 +268,10 @@ exports.zrequire = function (short_fn) {
         `,
     );
 
-    return require(`../../static/js/${short_fn}`);
+    return require(`../../web/src/${short_fn}`);
 };
 
-const staticPath = path.resolve(__dirname, "../../static") + path.sep;
+const webPath = path.resolve(__dirname, "../../web") + path.sep;
 
 exports.complain_about_unused_mocks = function () {
     for (const filename of module_mocks.keys()) {
@@ -301,7 +301,7 @@ exports.finish = function () {
     used_module_mocks.clear();
 
     for (const path of Object.keys(require.cache)) {
-        if (path.startsWith(staticPath)) {
+        if (path.startsWith(webPath)) {
             delete require.cache[path];
         }
     }

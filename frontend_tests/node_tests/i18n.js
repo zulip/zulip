@@ -22,13 +22,13 @@ page_params.translation_data = {
 
 // Re-register Zulip extensions so extensions registered previously with
 // mocked i18n.ts do not interfere with following tests.
-require("../../static/js/templates");
+require("../../web/src/templates");
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
 // `i18n.js` initializes FormatJS and is imported by
 // `templates.js`.
-unmock_module("../../static/js/i18n");
+unmock_module("../../web/src/i18n");
 const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");
 
 run_test("$t", () => {
@@ -89,7 +89,7 @@ run_test("t_tag", ({mock_template}) => {
         assert.ok(html.indexOf("Citer et répondre ou transférer") > 0);
     });
 
-    require("../../static/templates/actions_popover_content.hbs")(args);
+    require("../../web/templates/actions_popover_content.hbs")(args);
 });
 
 run_test("tr_tag", ({mock_template}) => {
@@ -117,7 +117,7 @@ run_test("tr_tag", ({mock_template}) => {
         assert.equal(data, args);
         assert.ok(html.indexOf("Déclencheurs de notification") > 0);
     });
-    require("../../static/templates/settings_tab.hbs")(args);
+    require("../../web/templates/settings_tab.hbs")(args);
 });
 
 run_test("language_list", () => {

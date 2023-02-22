@@ -9,7 +9,7 @@ const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-mock_esm("../../static/js/list_widget", {
+mock_esm("../../web/src/list_widget", {
     create: () => ({init: noop}),
 });
 

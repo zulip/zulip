@@ -191,7 +191,7 @@ might use). In development, this means displaying a highly visible
 overlay over the message view area, to make exceptions in testing a
 new feature hard to miss.
 
-- Blueslip is implemented in `static/js/blueslip.js`.
+- Blueslip is implemented in `web/src/blueslip.js`.
 - In order to capture essentially any error occurring in the browser,
   Blueslip listens for the `error` event on `window`, and has methods
   for being manually triggered by Zulip JavaScript code for warnings
@@ -200,7 +200,7 @@ new feature hard to miss.
   browser session, and includes them in reports to the server, so that
   one can see cases where exceptions chained together. You can print
   this log from the browser console using
-  `blueslip = require("./static/js/blueslip"); blueslip.get_log()`.
+  `blueslip = require("./web/src/blueslip"); blueslip.get_log()`.
 
 Blueslip supports several error levels:
 
@@ -236,7 +236,7 @@ and report to the server the following whenever a message is sent:
   the server-rendered content, which can be used for statistics on how
   effective our [local echo system](markdown.md) is.
 
-The code is all in `zerver/lib/report.py` and `static/js/sent_messages.js`.
+The code is all in `zerver/lib/report.py` and `web/src/sent_messages.js`.
 
 We have similar reporting for the time it takes to narrow / switch to
 a new view:

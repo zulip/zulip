@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const resolved_topic = zrequire("../shared/js/resolved_topic");
+const resolved_topic = zrequire("../shared/src/resolved_topic");
 
 const topic_name = "asdf";
 const resolved_name = "✔ " + topic_name;

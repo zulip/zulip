@@ -45,7 +45,7 @@ repeated updates to the server, so that downstream clients know that the
 user is still typing. (Zulip messages tend to be longer than
 messages in other chat/text clients, so this detail is important.)
 
-We have a small state machine in `static/shared/js/typing_status.js` that
+We have a small state machine in `web/shared/src/typing_status.js` that
 makes sure subsequent "start" requests get sent out every ten
 seconds. (This document is intended to describe the high level
 architecture; the actual time values may be tuned in future releases.
@@ -107,15 +107,15 @@ structures, and then it eventually shows or hides status messages.
 We'll describe the flow of data through the web app
 as a concrete example.
 
-The events will come in to `static/js/server_events_dispatch.js`.
+The events will come in to `web/src/server_events_dispatch.js`.
 The `stop` and `start` operations get further handled by
-`static/js/typing_events.js`.
+`web/src/typing_events.js`.
 
 The main goal is then to triage which events should lead to
 display changes.
 
 The web app client maintains a list of incoming "typists" using
-code in `static/js/typing_data.js`. The API here has functions
+code in `web/src/typing_data.js`. The API here has functions
 like the following:
 
 - `add_typist`

@@ -10,7 +10,7 @@ const blueslip = require("../zjsunit/zblueslip");
 // The ListWidget library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
-const ui = mock_esm("../../static/js/ui");
+const ui = mock_esm("../../web/src/ui");
 
 // We only need very simple jQuery wrappers for when the
 

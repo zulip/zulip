@@ -2,9 +2,9 @@
 /corporate/tests/stripe_fixtures
 /help/**/*.md
 /locale
-/static/third
 /templates/**/*.md
 /tools/setup/emoji/emoji_map.json
+/web/third
 /zerver/tests/fixtures
 /zerver/webhooks/*/doc.md
 /zerver/webhooks/*/fixtures

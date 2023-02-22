@@ -20,27 +20,27 @@ function MessageListView() {
         prepend: noop,
     };
 }
-mock_esm("../../static/js/message_list_view", {
+mock_esm("../../web/src/message_list_view", {
     MessageListView,
 });
 
-mock_esm("../../static/js/recent_topics_ui", {
+mock_esm("../../web/src/recent_topics_ui", {
     process_messages: noop,
     show_loading_indicator: noop,
     hide_loading_indicator: noop,
 });
-mock_esm("../../static/js/ui_report", {
+mock_esm("../../web/src/ui_report", {
     hide_error: noop,
 });
 
-const channel = mock_esm("../../static/js/channel");
-const message_helper = mock_esm("../../static/js/message_helper");
-const message_lists = mock_esm("../../static/js/message_lists");
-const message_util = mock_esm("../../static/js/message_util");
-const stream_list = mock_esm("../../static/js/stream_list", {
+const channel = mock_esm("../../web/src/channel");
+const message_helper = mock_esm("../../web/src/message_helper");
+const message_lists = mock_esm("../../web/src/message_lists");
+const message_util = mock_esm("../../web/src/message_util");
+const stream_list = mock_esm("../../web/src/stream_list", {
     maybe_scroll_narrow_into_view() {},
 });
-mock_esm("../../static/js/message_scroll", {
+mock_esm("../../web/src/message_scroll", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
@@ -52,7 +52,7 @@ set_global("document", "document-stub");
 const message_fetch = zrequire("message_fetch");
 
 const {all_messages_data} = zrequire("all_messages_data");
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 const message_list = zrequire("message_list");
 const people = zrequire("people");
 

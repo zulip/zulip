@@ -5,10 +5,10 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
+const compose_pm_pill = mock_esm("../../web/src/compose_pm_pill");
 
 const typing = zrequire("typing");
-const typing_status = zrequire("../shared/js/typing_status");
+const typing_status = zrequire("../shared/src/typing_status");
 
 function make_time(secs) {
     // make times semi-realistic

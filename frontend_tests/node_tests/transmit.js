@@ -9,10 +9,10 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-const channel = mock_esm("../../static/js/channel");
-const reload = mock_esm("../../static/js/reload");
-const reload_state = mock_esm("../../static/js/reload_state");
-const sent_messages = mock_esm("../../static/js/sent_messages", {
+const channel = mock_esm("../../web/src/channel");
+const reload = mock_esm("../../web/src/reload");
+const reload_state = mock_esm("../../web/src/reload_state");
+const sent_messages = mock_esm("../../web/src/sent_messages", {
     start_tracking_message: noop,
     report_server_ack: noop,
 });

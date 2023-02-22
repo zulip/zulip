@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-mock_esm("../../static/js/ui", {
+mock_esm("../../web/src/ui", {
     get_scroll_element: (element) => element,
 });
 

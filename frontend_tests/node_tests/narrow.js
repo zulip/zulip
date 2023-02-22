@@ -14,15 +14,15 @@ const narrow_banner = zrequire("narrow_banner");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
 const settings_config = zrequire("settings_config");
 
-const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
-mock_esm("../../static/js/spectators", {
+const compose_pm_pill = mock_esm("../../web/src/compose_pm_pill");
+mock_esm("../../web/src/spectators", {
     login_to_access() {},
 });
-const recent_topics_util = mock_esm("../../static/js/recent_topics_util", {
+const recent_topics_util = mock_esm("../../web/src/recent_topics_util", {
     is_visible() {},
 });
 
@@ -32,7 +32,7 @@ function empty_narrow_html(title, html, search_data) {
         html,
         search_data,
     };
-    return require("../../static/templates/empty_feed_notice.hbs")(opts);
+    return require("../../web/templates/empty_feed_notice.hbs")(opts);
 }
 
 function set_filter(operators) {

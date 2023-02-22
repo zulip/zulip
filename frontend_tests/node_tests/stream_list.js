@@ -17,23 +17,23 @@ let num_unread_for_stream;
 let stream_has_any_unread_mentions;
 const noop = () => {};
 
-mock_esm("../../static/js/narrow_state", {
+mock_esm("../../web/src/narrow_state", {
     active: () => false,
 });
-const topic_list = mock_esm("../../static/js/topic_list");
-mock_esm("../../static/js/keydown_util", {
+const topic_list = mock_esm("../../web/src/topic_list");
+mock_esm("../../web/src/keydown_util", {
     handle: noop,
 });
-const scroll_util = mock_esm("../../static/js/scroll_util", {
+const scroll_util = mock_esm("../../web/src/scroll_util", {
     scroll_element_into_container() {},
 });
-mock_esm("../../static/js/ui", {get_scroll_element: ($element) => $element});
-mock_esm("../../static/js/unread", {
+mock_esm("../../web/src/ui", {get_scroll_element: ($element) => $element});
+mock_esm("../../web/src/unread", {
     num_unread_for_stream: () => num_unread_for_stream,
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
 });
 
-const {Filter} = zrequire("../js/filter");
+const {Filter} = zrequire("../src/filter");
 const stream_sort = zrequire("stream_sort");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");

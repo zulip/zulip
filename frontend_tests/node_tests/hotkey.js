@@ -31,24 +31,24 @@ set_global("navigator", {
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
-const browser_history = mock_esm("../../static/js/browser_history");
-const compose_actions = mock_esm("../../static/js/compose_actions");
-const condense = mock_esm("../../static/js/condense");
-const drafts = mock_esm("../../static/js/drafts");
-const emoji_picker = mock_esm("../../static/js/emoji_picker", {
+const browser_history = mock_esm("../../web/src/browser_history");
+const compose_actions = mock_esm("../../web/src/compose_actions");
+const condense = mock_esm("../../web/src/condense");
+const drafts = mock_esm("../../web/src/drafts");
+const emoji_picker = mock_esm("../../web/src/emoji_picker", {
     reactions_popped: () => false,
 });
-const gear_menu = mock_esm("../../static/js/gear_menu", {
+const gear_menu = mock_esm("../../web/src/gear_menu", {
     is_open: () => false,
 });
-const lightbox = mock_esm("../../static/js/lightbox");
-const list_util = mock_esm("../../static/js/list_util");
-const message_edit = mock_esm("../../static/js/message_edit");
-const message_lists = mock_esm("../../static/js/message_lists");
-const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
-const narrow = mock_esm("../../static/js/narrow");
-const navigate = mock_esm("../../static/js/navigate");
-const overlays = mock_esm("../../static/js/overlays", {
+const lightbox = mock_esm("../../web/src/lightbox");
+const list_util = mock_esm("../../web/src/list_util");
+const message_edit = mock_esm("../../web/src/message_edit");
+const message_lists = mock_esm("../../web/src/message_lists");
+const muted_topics_ui = mock_esm("../../web/src/muted_topics_ui");
+const narrow = mock_esm("../../web/src/narrow");
+const navigate = mock_esm("../../web/src/navigate");
+const overlays = mock_esm("../../web/src/overlays", {
     is_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
@@ -58,31 +58,31 @@ const overlays = mock_esm("../../static/js/overlays", {
     is_modal_open: () => false,
     is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
-const popovers = mock_esm("../../static/js/popovers", {
+const popovers = mock_esm("../../web/src/popovers", {
     user_info_manage_menu_popped: () => false,
     message_info_popped: () => false,
     user_sidebar_popped: () => false,
     user_info_popped: () => false,
 });
-const popover_menus = mock_esm("../../static/js/popover_menus", {
+const popover_menus = mock_esm("../../web/src/popover_menus", {
     actions_popped: () => false,
 });
-const reactions = mock_esm("../../static/js/reactions");
-const search = mock_esm("../../static/js/search");
-const settings_data = mock_esm("../../static/js/settings_data");
-const stream_list = mock_esm("../../static/js/stream_list");
-const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
+const reactions = mock_esm("../../web/src/reactions");
+const search = mock_esm("../../web/src/search");
+const settings_data = mock_esm("../../web/src/settings_data");
+const stream_list = mock_esm("../../web/src/stream_list");
+const stream_settings_ui = mock_esm("../../web/src/stream_settings_ui");
 
-mock_esm("../../static/js/hotspots", {
+mock_esm("../../web/src/hotspots", {
     is_open: () => false,
 });
 
-mock_esm("../../static/js/recent_topics_util", {
+mock_esm("../../web/src/recent_topics_util", {
     is_visible: () => false,
     is_in_focus: () => false,
 });
 
-const stream_popover = mock_esm("../../static/js/stream_popover", {
+const stream_popover = mock_esm("../../web/src/stream_popover", {
     stream_popped: () => false,
     topic_popped: () => false,
     all_messages_popped: () => false,
@@ -109,7 +109,7 @@ message_lists.current = {
 
 const activity = zrequire("activity");
 const emoji = zrequire("emoji");
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
 
 emoji.initialize({

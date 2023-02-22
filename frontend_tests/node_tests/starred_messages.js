@@ -7,10 +7,10 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
-const top_left_corner = mock_esm("../../static/js/top_left_corner", {
+const top_left_corner = mock_esm("../../web/src/top_left_corner", {
     update_starred_count() {},
 });
-const stream_popover = mock_esm("../../static/js/stream_popover", {
+const stream_popover = mock_esm("../../web/src/stream_popover", {
     hide_topic_popover() {},
     hide_starred_messages_popover() {},
 });

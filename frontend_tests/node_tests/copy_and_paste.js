@@ -14,7 +14,7 @@ const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 const {document} = window;
 const $ = jquery(window);
 
-const compose_ui = mock_esm("../../static/js/compose_ui");
+const compose_ui = mock_esm("../../web/src/compose_ui");
 set_global("document", document);
 
 const copy_and_paste = zrequire("copy_and_paste");

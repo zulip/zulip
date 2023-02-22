@@ -13,7 +13,7 @@ const xhr_401 = {
 };
 
 let login_to_access_shown = false;
-mock_esm("../../static/js/spectators", {
+mock_esm("../../web/src/spectators", {
     login_to_access() {
         login_to_access_shown = true;
     },

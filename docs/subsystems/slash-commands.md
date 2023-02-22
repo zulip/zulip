@@ -52,4 +52,4 @@ send a message with the raw content.
 ## Typeahead
 
 Typeahead for both slash commands (and widgets) is implemented
-via the `slash_commands` object in `static/js/composebox_typeahead.js`.
+via the `slash_commands` object in `web/src/composebox_typeahead.js`.

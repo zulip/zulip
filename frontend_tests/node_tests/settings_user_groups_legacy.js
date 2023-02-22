@@ -17,17 +17,17 @@ const pills = {
 
 let create_item_handler;
 
-const channel = mock_esm("../../static/js/channel");
-const confirm_dialog = mock_esm("../../static/js/confirm_dialog");
-const dialog_widget = mock_esm("../../static/js/dialog_widget");
-const input_pill = mock_esm("../../static/js/input_pill");
-const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
-const user_groups = mock_esm("../../static/js/user_groups", {
+const channel = mock_esm("../../web/src/channel");
+const confirm_dialog = mock_esm("../../web/src/confirm_dialog");
+const dialog_widget = mock_esm("../../web/src/dialog_widget");
+const input_pill = mock_esm("../../web/src/input_pill");
+const typeahead_helper = mock_esm("../../web/src/typeahead_helper");
+const user_groups = mock_esm("../../web/src/user_groups", {
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 });
-const ui_report = mock_esm("../../static/js/ui_report");
+const ui_report = mock_esm("../../web/src/ui_report");
 
 const people = zrequire("people");
 const settings_data = zrequire("settings_data");

@@ -49,11 +49,11 @@ const {run_test} = require("../zjsunit/test");
           value.)
 */
 
-const channel = mock_esm("../../static/js/channel");
-const message_lists = mock_esm("../../static/js/message_lists");
-const message_viewport = mock_esm("../../static/js/message_viewport");
-const notifications = mock_esm("../../static/js/notifications");
-const unread_ui = mock_esm("../../static/js/unread_ui");
+const channel = mock_esm("../../web/src/channel");
+const message_lists = mock_esm("../../web/src/message_lists");
+const message_viewport = mock_esm("../../web/src/message_viewport");
+const notifications = mock_esm("../../web/src/notifications");
+const unread_ui = mock_esm("../../web/src/unread_ui");
 
 message_lists.current = {};
 message_lists.home = {};

@@ -38,13 +38,13 @@ const sample_message = {
     ],
 };
 
-const channel = mock_esm("../../static/js/channel");
-const emoji_picker = mock_esm("../../static/js/emoji_picker", {
+const channel = mock_esm("../../web/src/channel");
+const emoji_picker = mock_esm("../../web/src/emoji_picker", {
     hide_emoji_popover() {},
 });
-const message_lists = mock_esm("../../static/js/message_lists");
-const message_store = mock_esm("../../static/js/message_store");
-const spectators = mock_esm("../../static/js/spectators", {
+const message_lists = mock_esm("../../web/src/message_lists");
+const message_store = mock_esm("../../web/src/message_store");
+const spectators = mock_esm("../../web/src/spectators", {
     login_to_access() {},
 });
 
@@ -59,7 +59,7 @@ message_lists.current = {
 set_global("document", "document-stub");
 
 const emoji = zrequire("emoji");
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
 

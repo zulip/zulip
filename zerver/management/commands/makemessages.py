@@ -83,7 +83,7 @@ class Command(makemessages.Command):
         super().add_arguments(parser)
         parser.add_argument(
             "--frontend-source",
-            default="static/templates",
+            default="web/templates",
             help="Name of the Handlebars template directory",
         )
         parser.add_argument(
@@ -190,7 +190,7 @@ class Command(makemessages.Command):
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
         for dirpath, dirnames, filenames in itertools.chain(
-            os.walk("static/js"), os.walk("static/shared/js")
+            os.walk("web/src"), os.walk("web/shared/src")
         ):
             for filename in [f for f in filenames if f.endswith((".js", ".ts"))]:
                 if filename.startswith("."):
@@ -207,8 +207,8 @@ class Command(makemessages.Command):
                 "--additional-function-names=$t,$t_html",
                 "--format=simple",
                 "--ignore=**/*.d.ts",
-                "static/js/**/*.js",
-                "static/js/**/*.ts",
+                "web/src/**/*.js",
+                "web/src/**/*.ts",
             ]
         )
         translation_strings.extend(json.loads(extracted).values())

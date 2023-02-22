@@ -9,20 +9,20 @@ const {user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-const compose = mock_esm("../../static/js/compose", {
+const compose = mock_esm("../../web/src/compose", {
     finish: noop,
 });
-const compose_validate = mock_esm("../../static/js/compose_validate", {
+const compose_validate = mock_esm("../../web/src/compose_validate", {
     warn_for_text_overflow_when_tries_to_send: () => true,
 });
-const input_pill = mock_esm("../../static/js/input_pill");
-const message_user_ids = mock_esm("../../static/js/message_user_ids", {
+const input_pill = mock_esm("../../web/src/input_pill");
+const message_user_ids = mock_esm("../../web/src/message_user_ids", {
     user_ids: () => [],
 });
-const stream_topic_history = mock_esm("../../static/js/stream_topic_history", {
+const stream_topic_history = mock_esm("../../web/src/stream_topic_history", {
     stream_has_topics: () => false,
 });
-const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history_util");
+const stream_topic_history_util = mock_esm("../../web/src/stream_topic_history_util");
 
 let autosize_called;
 
@@ -34,7 +34,7 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-const typeahead = zrequire("../shared/js/typeahead");
+const typeahead = zrequire("../shared/src/typeahead");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const typeahead_helper = zrequire("typeahead_helper");

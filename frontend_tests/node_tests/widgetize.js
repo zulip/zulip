@@ -54,9 +54,9 @@ const fake_poll_widget = {
     },
 };
 
-const message_lists = mock_esm("../../static/js/message_lists", {current: {}});
-const narrow_state = mock_esm("../../static/js/narrow_state");
-mock_esm("../../static/js/poll_widget", fake_poll_widget);
+const message_lists = mock_esm("../../web/src/message_lists", {current: {}});
+const narrow_state = mock_esm("../../web/src/narrow_state");
+mock_esm("../../web/src/poll_widget", fake_poll_widget);
 
 set_global("document", "document-stub");
 

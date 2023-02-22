@@ -26,7 +26,7 @@ from tools.setup.emoji.emoji_setup_utils import (
 )
 
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
-TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "static", "generated", "emoji-styles")
+TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, "web", "generated", "emoji-styles")
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, "tools", "setup", "emoji")
 NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")
@@ -61,7 +61,7 @@ span.emoji
 
 .emoji-1f419
 {{
-    background-image: url(../emoji/images-google-64/1f419.png) !important;
+    background-image: url(../../../static/generated/emoji/images-google-64/1f419.png) !important;
     background-position: 0% 0% !important;
     background-size: contain !important;
 }}
@@ -305,7 +305,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
                         ensure_emoji_image(img_info, src_emoji_farm, target_emoji_farm)
 
         # Copy zulip.png to the emoji farm.
-        zulip_image = os.path.join(ZULIP_PATH, "static", "assets", "zulip-emoji")
+        zulip_image = os.path.join(ZULIP_PATH, "web", "images", "zulip-emoji")
         for f in os.listdir(zulip_image):
             shutil.copy2(os.path.join(zulip_image, f), target_emoji_farm, follow_symlinks=False)
 

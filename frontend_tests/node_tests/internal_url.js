@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const internal_url = zrequire("../shared/js/internal_url");
+const internal_url = zrequire("../shared/src/internal_url");
 
 run_test("test encodeHashComponent", () => {
     const decoded = "https://www.zulipexample.com";

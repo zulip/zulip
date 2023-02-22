@@ -13,15 +13,15 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-const compose_fade = mock_esm("../../static/js/compose_fade");
-const message_lists = mock_esm("../../static/js/message_lists");
-const narrow_state = mock_esm("../../static/js/narrow_state");
-const overlays = mock_esm("../../static/js/overlays");
-const settings_org = mock_esm("../../static/js/settings_org");
-const settings_streams = mock_esm("../../static/js/settings_streams");
-const stream_events = mock_esm("../../static/js/stream_events");
-const stream_list = mock_esm("../../static/js/stream_list");
-const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
+const compose_fade = mock_esm("../../web/src/compose_fade");
+const message_lists = mock_esm("../../web/src/message_lists");
+const narrow_state = mock_esm("../../web/src/narrow_state");
+const overlays = mock_esm("../../web/src/overlays");
+const settings_org = mock_esm("../../web/src/settings_org");
+const settings_streams = mock_esm("../../web/src/settings_streams");
+const stream_events = mock_esm("../../web/src/stream_events");
+const stream_list = mock_esm("../../web/src/stream_list");
+const stream_settings_ui = mock_esm("../../web/src/stream_settings_ui");
 message_lists.current = {};
 
 const peer_data = zrequire("peer_data");

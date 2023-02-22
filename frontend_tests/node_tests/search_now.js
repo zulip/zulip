@@ -9,13 +9,13 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.search_pills_enabled = false;
 
-const narrow = mock_esm("../../static/js/narrow");
-const narrow_state = mock_esm("../../static/js/narrow_state");
-const search_suggestion = mock_esm("../../static/js/search_suggestion");
+const narrow = mock_esm("../../web/src/narrow");
+const narrow_state = mock_esm("../../web/src/narrow_state");
+const search_suggestion = mock_esm("../../web/src/search_suggestion");
 
 const Filter = {};
 
-mock_esm("../../static/js/filter", {
+mock_esm("../../web/src/filter", {
     Filter,
 });
 

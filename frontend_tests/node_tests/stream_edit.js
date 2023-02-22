@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {get_stream_email_address} = require("../../static/js/stream_edit");
+const {get_stream_email_address} = require("../../web/src/stream_edit");
 const {run_test} = require("../zjsunit/test");
 
 run_test("get_stream_email_address", () => {

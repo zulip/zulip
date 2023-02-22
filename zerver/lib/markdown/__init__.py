@@ -2445,7 +2445,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
         )
 
     # The following removes overlapping intervals depending on the precedence of linkifier patterns.
-    # This uses the same algorithm implemented in static/js/markdown.js.
+    # This uses the same algorithm implemented in web/src/markdown.js.
     # To avoid mutating matches inside the loop, the final output gets appended to another list.
     applied_matches: List[TopicLinkMatch] = []
     for current_match in matches:

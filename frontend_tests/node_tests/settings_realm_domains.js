@@ -6,9 +6,9 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const channel = mock_esm("../../static/js/channel");
+const channel = mock_esm("../../web/src/channel");
 const noop = () => {};
-mock_esm("../../static/js/ui_report", {
+mock_esm("../../web/src/ui_report", {
     success(msg, elem) {
         elem.val(msg);
     },

@@ -7,7 +7,7 @@ const _ = require("lodash");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-mock_esm("../../static/js/message_store", {
+mock_esm("../../web/src/message_store", {
     get() {
         return {
             stream_id: 556,
@@ -15,16 +15,16 @@ mock_esm("../../static/js/message_store", {
         };
     },
 });
-const user_topics = mock_esm("../../static/js/user_topics", {
+const user_topics = mock_esm("../../web/src/user_topics", {
     is_topic_muted() {
         return false;
     },
 });
-const narrow_state = mock_esm("../../static/js/narrow_state", {
+const narrow_state = mock_esm("../../web/src/narrow_state", {
     topic() {},
 });
 
-const topic_list = mock_esm("../../static/js/topic_list", {
+const topic_list = mock_esm("../../web/src/topic_list", {
     get_topic_search_term() {},
 });
 

@@ -11,15 +11,15 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-const realm_icon = mock_esm("../../static/js/realm_icon");
+const realm_icon = mock_esm("../../web/src/realm_icon");
 
-const channel = mock_esm("../../static/js/channel");
+const channel = mock_esm("../../web/src/channel");
 
-mock_esm("../../static/js/csrf", {csrf_token: "token-stub"});
-mock_esm("../../static/js/list_widget", {
+mock_esm("../../web/src/csrf", {csrf_token: "token-stub"});
+mock_esm("../../web/src/list_widget", {
     create: () => ({init: noop}),
 });
-mock_esm("../../static/js/loading", {
+mock_esm("../../web/src/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });

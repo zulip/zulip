@@ -14,9 +14,8 @@ on:
       - puppet/**
       - requirements/**
       - scripts/**
-      - static/assets/**
-      - static/third/**
       - tools/**
+      - web/third/**
       - webpack.config.ts
       - yarn.lock
       - zerver/worker/queue_processors.py

@@ -147,7 +147,7 @@ def setup_bash_profile() -> None:
 
 
 def need_to_run_build_pygments_data() -> bool:
-    if not os.path.exists("static/generated/pygments_data.json"):
+    if not os.path.exists("web/generated/pygments_data.json"):
         return True
 
     return is_digest_obsolete(
@@ -158,7 +158,7 @@ def need_to_run_build_pygments_data() -> bool:
 
 
 def need_to_run_build_timezone_data() -> bool:
-    if not os.path.exists("static/generated/timezones.json"):
+    if not os.path.exists("web/generated/timezones.json"):
         return True
 
     return is_digest_obsolete(

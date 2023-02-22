@@ -12,7 +12,7 @@ set_global("document", {});
 const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
-mock_esm("../../static/js/ui_util", {
+mock_esm("../../web/src/ui_util", {
     place_caret_at_end: noop,
 });
 
@@ -40,7 +40,7 @@ function pill_html(value, img_src, status_emoji_info) {
         opts.status_emoji_info = status_emoji_info;
     }
 
-    return require("../../static/templates/input_pill.hbs")(opts);
+    return require("../../web/templates/input_pill.hbs")(opts);
 }
 
 run_test("basics", ({mock_template}) => {

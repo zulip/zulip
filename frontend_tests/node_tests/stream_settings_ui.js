@@ -8,11 +8,11 @@ const $ = require("../zjsunit/zjquery");
 
 const denmark_stream_id = 101;
 
-const ui = mock_esm("../../static/js/ui", {
+const ui = mock_esm("../../web/src/ui", {
     get_content_element: ($element) => $element,
 });
 
-mock_esm("../../static/js/hash_util", {
+mock_esm("../../web/src/hash_util", {
     by_stream_url() {},
     get_current_hash_section: () => denmark_stream_id,
 });

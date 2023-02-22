@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
-const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
+const stream_topic_history = mock_esm("../../web/src/stream_topic_history");
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");

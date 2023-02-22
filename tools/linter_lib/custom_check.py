@@ -116,7 +116,7 @@ js_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude": {"static/js/types.ts", "static/js/util.ts", "frontend_tests/"},
+            "exclude": {"web/src/types.ts", "web/src/util.ts", "frontend_tests/"},
             "exclude_pattern": "emails",
             "description": "avoid subject in JS code",
             "good_lines": ["topic_name"],
@@ -135,10 +135,10 @@ js_rules = RuleList(
             "pattern": "[.]html[(]",
             "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
-                "static/js/portico",
-                "static/js/lightbox.js",
-                "static/js/ui_report.ts",
-                "static/js/dialog_widget.js",
+                "web/src/portico",
+                "web/src/lightbox.js",
+                "web/src/ui_report.ts",
+                "web/src/dialog_widget.js",
                 "frontend_tests/",
             },
             "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from Handlebars and thus is already sanitized.",
@@ -190,12 +190,12 @@ js_rules = RuleList(
             "description": "Use channel module for AJAX calls",
             "exclude": {
                 # Internal modules can do direct network calls
-                "static/js/blueslip.ts",
-                "static/js/channel.js",
+                "web/src/blueslip.ts",
+                "web/src/channel.js",
                 # External modules that don't include channel.js
-                "static/js/stats/",
-                "static/js/portico/",
-                "static/js/billing/",
+                "web/src/stats/",
+                "web/src/portico/",
+                "web/src/billing/",
             },
             "good_lines": ["channel.get(...)"],
             "bad_lines": ["$.get()", "$.post()", "$.ajax()"],
@@ -547,7 +547,7 @@ html_rules: List["Rule"] = [
             "templates/analytics/support.html",
             # We have URL prefix and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
-            "static/templates/settings/playground_settings_admin.hbs",
+            "web/templates/settings/playground_settings_admin.hbs",
         },
         "good_lines": [
             '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
@@ -624,7 +624,7 @@ html_rules: List["Rule"] = [
         "exclude_line": {
             (
                 # Emoji should not be tagged for translation.
-                "static/templates/keyboard_shortcuts.hbs",
+                "web/templates/keyboard_shortcuts.hbs",
                 '<img alt=":thumbs_up:"',
             ),
         },
@@ -664,12 +664,12 @@ html_rules: List["Rule"] = [
         "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*""",
         "exclude": {
             # 5xx page doesn't have external CSS
-            "static/html/5xx.html",
+            "web/html/5xx.html",
             # exclude_pattern above handles color, but have other issues:
-            "static/templates/draft.hbs",
-            "static/templates/stream_settings/browse_streams_list_item.hbs",
-            "static/templates/user_group_settings/browse_user_groups_list_item.hbs",
-            "static/templates/single_message.hbs",
+            "web/templates/draft.hbs",
+            "web/templates/stream_settings/browse_streams_list_item.hbs",
+            "web/templates/user_group_settings/browse_user_groups_list_item.hbs",
+            "web/templates/single_message.hbs",
             # Old-style email templates need to use inline style
             # attributes; it should be possible to clean these up
             # when we convert these templates to use premailer.
@@ -681,10 +681,10 @@ html_rules: List["Rule"] = [
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
             # Needs the width cleaned up; display: none is fine
-            "static/templates/dialog_change_password.hbs",
+            "web/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
-            "static/templates/user_profile_modal.hbs",
-            "static/templates/pm_list_item.hbs",
+            "web/templates/user_profile_modal.hbs",
+            "web/templates/pm_list_item.hbs",
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
             "templates/zerver/billing_nav.html",
@@ -693,8 +693,8 @@ html_rules: List["Rule"] = [
             "templates/corporate/billing.html",
             "templates/corporate/upgrade.html",
             # Miscellaneous violations to be cleaned up
-            "static/templates/user_info_popover_title.hbs",
-            "static/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
+            "web/templates/user_info_popover_title.hbs",
+            "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
             "templates/zerver/config_error.html",
             "templates/zerver/dev_env_email_access_details.html",
@@ -722,7 +722,7 @@ handlebars_rules = RuleList(
         *html_rules,
         {
             "pattern": "[<]script",
-            "description": "Do not use inline <script> tags here; put JavaScript in static/js instead.",
+            "description": "Do not use inline <script> tags here; put JavaScript in web/src instead.",
         },
         {
             "pattern": "{{ t (\"|')",
@@ -759,7 +759,7 @@ handlebars_rules = RuleList(
         {
             "pattern": r'href="#"',
             "description": 'Avoid href="#" for elements with a JavaScript click handler.',
-            "exclude": {"static/templates/navbar.hbs"},
+            "exclude": {"web/templates/navbar.hbs"},
         },
     ],
 )

@@ -39,7 +39,7 @@ const topic10 = "topic-10";
 
 let expected_data_to_replace_in_list_widget;
 
-const ListWidget = mock_esm("../../static/js/list_widget", {
+const ListWidget = mock_esm("../../web/src/list_widget", {
     modifier: noop,
 
     create(container, mapped_topic_values, opts) {
@@ -75,25 +75,25 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
     },
 });
 
-mock_esm("../../static/js/compose_closed_ui", {
+mock_esm("../../web/src/compose_closed_ui", {
     set_standard_text_for_reply_button: noop,
     update_buttons_for_recent_topics: noop,
 });
-mock_esm("../../static/js/hash_util", {
+mock_esm("../../web/src/hash_util", {
     by_stream_url: test_url,
     by_stream_topic_url: test_url,
     by_conversation_and_time_url: test_url,
 });
-mock_esm("../../static/js/message_list_data", {
+mock_esm("../../web/src/message_list_data", {
     MessageListData: class {},
 });
-mock_esm("../../static/js/message_store", {
+mock_esm("../../web/src/message_store", {
     get: (msg_id) => messages[msg_id - 1],
 });
-mock_esm("../../static/js/message_view_header", {
+mock_esm("../../web/src/message_view_header", {
     render_title_area: noop,
 });
-mock_esm("../../static/js/user_topics", {
+mock_esm("../../web/src/user_topics", {
     is_topic_muted(stream_id, topic) {
         if (stream_id === stream1 && topic === topic7) {
             return true;
@@ -101,33 +101,33 @@ mock_esm("../../static/js/user_topics", {
         return false;
     },
 });
-const narrow = mock_esm("../../static/js/narrow", {
+const narrow = mock_esm("../../web/src/narrow", {
     update_narrow_title: noop,
     hide_mark_as_read_turned_off_banner: noop,
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
 });
-mock_esm("../../static/js/pm_list", {
+mock_esm("../../web/src/pm_list", {
     update_private_messages: noop,
     handle_narrow_deactivated: noop,
 });
-mock_esm("../../static/js/recent_senders", {
+mock_esm("../../web/src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
 });
-mock_esm("../../static/js/stream_data", {
+mock_esm("../../web/src/stream_data", {
     is_muted: () =>
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
 });
-mock_esm("../../static/js/stream_list", {
+mock_esm("../../web/src/stream_list", {
     handle_narrow_deactivated: noop,
 });
-mock_esm("../../static/js/timerender", {
+mock_esm("../../web/src/timerender", {
     last_seen_status_from_date: () => "Just now",
     get_full_datetime: () => "date at time",
 });
-mock_esm("../../static/js/sub_store", {
+mock_esm("../../web/src/sub_store", {
     get(stream) {
         if (stream === stream5) {
             // No data is available for deactivated streams
@@ -142,10 +142,10 @@ mock_esm("../../static/js/sub_store", {
         };
     },
 });
-mock_esm("../../static/js/top_left_corner", {
+mock_esm("../../web/src/top_left_corner", {
     narrow_to_recent_topics: noop,
 });
-mock_esm("../../static/js/unread", {
+mock_esm("../../web/src/unread", {
     num_unread_for_topic(stream_id, topic) {
         if (stream_id === 1 && topic === "topic-1") {
             return 0;
