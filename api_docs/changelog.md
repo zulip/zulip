@@ -22,7 +22,7 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 164**
 
-* [`POST /register`](/api/register-queue) Added the
+* [`POST /register`](/api/register-queue): Added the
   `server_presence_ping_interval_seconds` and `server_presence_offline_threshold_seconds`
   attributes.
 
@@ -32,7 +32,7 @@ format used by the Zulip server that they are interacting with.
   [`GET /users/{email}`](/api/get-user-by-email),
   [`GET /users/me`](/api/get-own-user) and [`GET /events`](/api/get-events):
   The `delivery_email` field is always present in user objects, including the case
-  when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE,`
+  when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
   with the value being `None` if the requestor does not have access to the user's
   real email. For bot users, the `delivery_email` field is always set to the real email.
 * [`GET /events`](/api/get-events): Event for updating `delivery_email`  is now sent to
@@ -43,7 +43,7 @@ format used by the Zulip server that they are interacting with.
   /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults): Added
   user setting `email_address_visibility`  which will replace the existing realm
   setting `email_address_visibility`.
-* [`POST /register`](/api/register-queue), [`PATCH /realm`]: Removed realm-level
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Removed realm-level
   `email_address_visibility` setting.
 
 **Feature level 162**
@@ -71,9 +71,9 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 160**
 
-* [`POST /api/v1/jwt/fetch_api_key`]: New API endpoint to fetch API
+* `POST /api/v1/jwt/fetch_api_key`: New API endpoint to fetch API
   keys using JSON Web Token (JWT) authentication.
-* [`accounts/login/jwt/`]: Adjusted format of requests to this
+* `accounts/login/jwt/`: Adjusted format of requests to this
   previously undocumented, optional endpoint for
   JWT authentication log in support.
 
@@ -147,7 +147,7 @@ No changes; feature level used for Zulip 6.0 release.
   `allow_message_editing`, `message_content_edit_limit_seconds` and
   `edit_topic_policy` settings, whereas previously one event was sent including
   all of these setting values irrespective of which of them were actually changed.
-* [`PATCH /realm`]: Only changed settings are included in the response data now
+* `PATCH /realm`: Only changed settings are included in the response data now
   when changing `allow_message_editing`, `edit_topic_policy` and
   `message_content_edit_limit_seconds` settings, instead of including all the
   fields even if one of these settings was changed.
@@ -161,7 +161,7 @@ No changes; feature level used for Zulip 6.0 release.
 
 **Feature level 148**
 
-* [`POST /users/me/status`](/api/update-status):
+* [`POST /users/me/status`](/api/update-status),
   [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
   The user status `away` field/parameter is deprecated, and as of this
   feature level are a legacy way to access the user's `presence_enabled`
@@ -961,8 +961,8 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 43**
 
-* [`GET /users/{user_id_or_email}/presence`]: Added support for
- passing the `user_id` to identify the target user.
+* [`GET /users/{user_id_or_email}/presence`](/api/get-user-presence):
+  Added support for passing the `user_id` to identify the target user.
 
 **Feature level 42**
 
