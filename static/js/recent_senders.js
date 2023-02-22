@@ -232,14 +232,23 @@ export function get_pm_recent_senders(user_ids_string) {
         return pm_senders_info;
     }
 
+    if (!(user_ids.length === 1 && user_ids[0] === people.my_current_user_id())) {
+        // For group PMs or 1:1 private messages, the user_ids_string
+        // contains just the other user, so we need to add ourselves if not
+        // already present. For PM to self, the current user is already present,
+        // in user_ids_string, so we don't need to add it.
+        //
+        // TODO: Replace this logic with a people.js common function for parsing
+        // user_ids_string and returning the set of user_ids, self included.
+        user_ids.push(people.my_current_user_id());
+    }
+
     function compare_pm_user_ids_by_recency(user_id1, user_id2) {
         const max_id1 = sender_dict.get(user_id1)?.max_id() || -1;
         const max_id2 = sender_dict.get(user_id2)?.max_id() || -1;
         return max_id2 - max_id1;
     }
 
-    // Add current user to user_ids.
-    user_ids.push(people.my_current_user_id());
     pm_senders_info.non_participants = user_ids.filter((user_id) => {
         if (sender_dict.get(user_id)) {
             pm_senders_info.participants.push(user_id);

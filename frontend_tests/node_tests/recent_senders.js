@@ -347,4 +347,14 @@ test("process_pms", () => {
         participants: [],
         non_participants: [],
     });
+
+    rs.process_private_message({
+        to_user_ids: "1",
+        sender_id: sender1,
+        id: 4,
+    });
+    assert.deepEqual(rs.get_pm_recent_senders("1"), {
+        participants: [1],
+        non_participants: [],
+    });
 });
