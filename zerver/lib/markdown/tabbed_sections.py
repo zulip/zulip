@@ -92,6 +92,7 @@ TAB_SECTION_LABELS = {
     "logged-out": "If you are logged out",
     "user": "User",
     "bot": "Bot",
+    "on-sign-up": "On sign-up",
 }
 
 
