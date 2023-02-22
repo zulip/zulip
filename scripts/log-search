@@ -448,7 +448,7 @@ def print_line(
         url,
     ]
 
-    print(color + " ".join([p for p in parts if p is not None]) + ENDC if use_color else "")
+    print(color + " ".join([p for p in parts if p is not None]) + (ENDC if use_color else ""))
 
 
 if __name__ == "__main__":
