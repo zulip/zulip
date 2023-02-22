@@ -20,7 +20,7 @@ sanity_check.check_venv(__file__)
 import orjson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
-INDEX_JS = os.path.join(ROOT_DIR, "frontend_tests/zjsunit/index.js")
+INDEX_JS = os.path.join(ROOT_DIR, "web/tests/lib/index.js")
 NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.json")
 
 # Ideally, we wouldn't need this line, but it seems to be required to
@@ -28,9 +28,9 @@ NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.js
 os.chdir(ROOT_DIR)
 
 USAGE = """
-    tools/test-js-with-node                      - to run all tests
-    tools/test-js-with-node util.js activity.js  - to run just a couple tests
-    tools/test-js-with-node --coverage           - to generate coverage report
+    tools/test-js-with-node                                - to run all tests
+    tools/test-js-with-node util.test.js activity.test.js  - to run just a couple tests
+    tools/test-js-with-node --coverage                     - to generate coverage report
     """
 
 
@@ -44,8 +44,6 @@ def make_set(files: List[str]) -> Set[str]:
 # We do not yet require 100% line coverage for these files:
 EXEMPT_FILES = make_set(
     [
-        "frontend_tests/zjsunit/mdiff.js",
-        "frontend_tests/zjsunit/zjquery_element.js",
         "web/shared/src/poll_data.js",
         "web/src/about_zulip.js",
         "web/src/add_subscribers_pill.js",
@@ -225,6 +223,8 @@ EXEMPT_FILES = make_set(
         "web/src/zform.js",
         "web/src/zulip.js",
         "web/src/zulip_test.js",
+        "web/tests/lib/mdiff.js",
+        "web/tests/lib/zjquery_element.js",
     ]
 )
 
@@ -288,10 +288,10 @@ def print_error(msg: str) -> None:
 
 def clean_file(orig_fn: str) -> str:
     fn = orig_fn
-    if not fn.endswith(".js"):
-        fn += ".js"
-    if "frontend_tests/" not in fn:
-        fn = os.path.join(ROOT_DIR, "frontend_tests", "node_tests", fn)
+    if not fn.endswith(".test.js"):
+        fn += ".test.js"
+    if "web/tests/" not in fn:
+        fn = os.path.join(ROOT_DIR, "web", "tests", fn)
     fn = os.path.abspath(fn)
     if not os.path.exists(fn):
         print(f"Cannot find {orig_fn} ({fn})")
@@ -319,7 +319,7 @@ def run_tests_via_node_js() -> int:
         parallel = 1
         files = individual_files
     else:
-        files = sorted(glob.glob(os.path.join(ROOT_DIR, "frontend_tests/node_tests/*.js")))
+        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.js")))
 
     test_files = clean_files(files)
 
@@ -394,13 +394,13 @@ def read_coverage() -> Any:
 
 def enforce_proper_coverage(coverage_json: Any) -> bool:
     all_js_files = {
-        *glob.glob("frontend_tests/node_tests/*.js"),
-        *glob.glob("frontend_tests/zjsunit/*.js"),
         *glob.glob("web/shared/src/*.js"),
         *glob.glob("web/shared/src/*.ts"),
         *glob.glob("web/src/*.js"),
         *glob.glob("web/src/*.ts"),
         *glob.glob("web/src/billing/*.js"),
+        *glob.glob("web/tests/*.js"),
+        *glob.glob("web/tests/lib/*.js"),
     }
     enforce_fully_covered = sorted(all_js_files - EXEMPT_FILES)
 

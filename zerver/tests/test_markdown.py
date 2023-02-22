@@ -1614,7 +1614,7 @@ class MarkdownTest(ZulipTestCase):
         )
 
     def test_topic_links_ordering_by_priority(self) -> None:
-        # The same test case is also implemented in frontend_tests/node_tests/markdown_parse.js
+        # The same test case is also implemented in web/tests/markdown_parse.test.js
         realm = get_realm("zulip")
         self.check_add_linkifiers(
             [

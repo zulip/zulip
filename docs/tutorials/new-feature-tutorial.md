@@ -62,7 +62,7 @@ organization in Zulip). The following files are involved in the process:
 
 - `frontend_tests/puppeteer_tests/admin.ts`: end-to-end tests for the organization
   admin settings pages.
-- `frontend_tests/node_tests/dispatch.js`
+- `web/tests/dispatch.test.js`
 
 **Documentation**
 
@@ -145,7 +145,7 @@ or JavaScript/TypeScript/Python code that generates user-facing strings, be sure
 tests and blackbox end-to-end tests. The blackbox tests are run in a
 headless Chromium browser using Puppeteer and are located in
 `frontend_tests/puppeteer_tests/`. The unit tests use Node's `assert`
-module are located in `frontend_tests/node_tests/`. For more
+module are located in `web/tests/`. For more
 information on writing and running tests, see the
 [testing documentation](../testing/testing.md).
 
@@ -668,11 +668,11 @@ frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
 
 At the minimum, if you created a new function to update UI in
 `settings_org.js`, you will need to mock that function in
-`frontend_tests/node_tests/dispatch.js`. Add the name of the UI
+`web/tests/dispatch.test.js`. Add the name of the UI
 function you created to the following object with `noop` as the value:
 
 ```js
-// frontend_tests/node_tests/dispatch.js
+// web/tests/dispatch.test.js
 
 set_global('settings_org', {
     update_email_change_display: noop,

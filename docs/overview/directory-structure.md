@@ -77,7 +77,7 @@ templating systems.
 
 - `zerver/tests/` Backend tests.
 
-- `frontend_tests/node_tests/` Node Frontend unit tests.
+- `web/tests/` Node Frontend unit tests.
 
 - `frontend_tests/puppeteer_tests/` Puppeteer frontend integration tests.
 

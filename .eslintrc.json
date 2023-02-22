@@ -125,7 +125,7 @@
     },
     "overrides": [
         {
-            "files": ["frontend_tests/node_tests/**", "frontend_tests/zjsunit/**"],
+            "files": ["web/tests/**"],
             "rules": {
                 "no-jquery/no-selector-prop": "off"
             }
@@ -202,7 +202,7 @@
             }
         },
         {
-            "files": ["frontend_tests/**"],
+            "files": ["frontend_tests/**", "web/tests/**"],
             "globals": {
                 "CSS": false,
                 "document": false,

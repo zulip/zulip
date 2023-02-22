@@ -84,7 +84,7 @@ whitespace_rules: List["Rule"] = [
 comma_whitespace_rule: List["Rule"] = [
     {
         "pattern": ", {2,}[^#/ ]",
-        "exclude": {"zerver/tests", "frontend_tests/node_tests", "corporate/tests"},
+        "exclude": {"zerver/tests", "web/tests", "corporate/tests"},
         "description": "Remove multiple whitespaces after ','",
         "good_lines": ["foo(1, 2, 3)", "foo = bar  # some inline comment"],
         "bad_lines": ["foo(1,  2, 3)", "foo(1,    2, 3)"],
@@ -116,7 +116,7 @@ js_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude": {"web/src/types.ts", "web/src/util.ts", "frontend_tests/"},
+            "exclude": {"web/src/types.ts", "web/src/util.ts", "web/tests/"},
             "exclude_pattern": "emails",
             "description": "avoid subject in JS code",
             "good_lines": ["topic_name"],
@@ -139,7 +139,7 @@ js_rules = RuleList(
                 "web/src/lightbox.js",
                 "web/src/ui_report.ts",
                 "web/src/dialog_widget.js",
-                "frontend_tests/",
+                "web/tests/",
             },
             "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from Handlebars and thus is already sanitized.",
         },
@@ -150,7 +150,7 @@ js_rules = RuleList(
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
             "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
-            "exclude": {"frontend_tests/node_tests/"},
+            "exclude": {"web/tests/"},
         },
         {
             "pattern": r"ui.report_success\(",
@@ -205,7 +205,7 @@ js_rules = RuleList(
             "exclude_pattern": r"(const |\S)style ?=",
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
-                "frontend_tests/node_tests/copy_and_paste.js",
+                "web/tests/copy_and_paste.test.js",
             },
             "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
