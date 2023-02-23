@@ -30,7 +30,17 @@ const stream_list = mock_esm("../src/stream_list");
 const unread_ops = mock_esm("../src/unread_ops");
 const unread_ui = mock_esm("../src/unread_ui");
 
-message_lists.home = {};
+message_lists.current = {
+    data: {
+        filter: {
+            can_apply_locally() {
+                return true;
+            },
+        },
+    },
+};
+message_lists.home = message_lists.current;
+message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 // And we will also test some real code, of course.
 const message_events = zrequire("message_events");
@@ -108,6 +118,7 @@ run_test("insert_message", ({override}) => {
     assert.deepEqual(helper.events, [
         [huddle_data, "process_loaded_messages"],
         [message_util, "add_new_messages_data"],
+        [message_util, "add_new_messages"],
         [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],
         [unread_ops, "process_visible"],
