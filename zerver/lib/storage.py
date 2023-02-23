@@ -64,4 +64,4 @@ class ZulipStorage(IgnoreBundlesManifestStaticFilesStorage):
     # deployment, which ensures that we always use the correct static
     # assets for each deployment.
     def __init__(self) -> None:
-        return super().__init__(manifest_storage=FileSystemStorage(location=settings.DEPLOY_ROOT))
+        super().__init__(manifest_storage=FileSystemStorage(location=settings.DEPLOY_ROOT))
