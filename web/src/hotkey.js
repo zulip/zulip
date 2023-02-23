@@ -662,6 +662,13 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (hotkey.message_view_only && gear_menu.is_open()) {
+        // Inside the gear menu, we don't process most hotkeys; the
+        // exception is that the gear_menu hotkey should toggle the
+        // menu closed again.
+        if (event_name === "gear_menu") {
+            gear_menu.close();
+            return true;
+        }
         return false;
     }
 
