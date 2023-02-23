@@ -28,6 +28,7 @@ import * as rendered_markdown from "./rendered_markdown";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
@@ -690,30 +691,29 @@ function drafts_scroll($next_focus_draft_row) {
     }
     activate_element($next_focus_draft_row[0].children[0]);
 
+    const scroll_element = ui.get_scroll_element($(".drafts-list"));
+
     // If focused draft is first draft, scroll to the top.
     if ($(".draft-info-box").first()[0].parentElement === $next_focus_draft_row[0]) {
-        $(".drafts-list")[0].scrollTop = 0;
+        scroll_element.scrollTop(0);
     }
 
     // If focused draft is the last draft, scroll to the bottom.
     if ($(".draft-info-box").last()[0].parentElement === $next_focus_draft_row[0]) {
-        $(".drafts-list")[0].scrollTop =
-            $(".drafts-list")[0].scrollHeight - $(".drafts-list").height();
+        scroll_element.scrollTop($(scroll_element).prop("scrollHeight"));
     }
 
     // If focused draft is cut off from the top, scroll up halfway in draft modal.
-    if ($next_focus_draft_row.position().top < 55) {
-        // 55 is the minimum distance from the top that will require extra scrolling.
-        $(".drafts-list")[0].scrollTop -= $(".drafts-list")[0].clientHeight / 2;
+    if ($next_focus_draft_row.position().top < 0) {
+        scroll_element.scrollTop(scroll_element.scrollTop() - $(".drafts-list").height() / 2);
     }
 
     // If focused draft is cut off from the bottom, scroll down halfway in draft modal.
     const dist_from_top = $next_focus_draft_row.position().top;
-    const total_dist = dist_from_top + $next_focus_draft_row[0].clientHeight;
-    const dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
-    if (dist_from_bottom < -4) {
-        // -4 is the min dist from the bottom that will require extra scrolling.
-        $(".drafts-list")[0].scrollTop += $(".drafts-list")[0].clientHeight / 2;
+    const total_dist = dist_from_top + $next_focus_draft_row.height();
+    const dist_from_bottom = $(".drafts-list").height() - total_dist;
+    if (dist_from_bottom < 0) {
+        scroll_element.scrollTop(scroll_element.scrollTop() + $(".drafts-list").height() / 2);
     }
 }
 

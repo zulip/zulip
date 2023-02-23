@@ -52,6 +52,7 @@
     .drafts-list {
         padding: 10px 25px;
         overflow: auto;
+        height: 100%;
 
         .no-drafts {
             display: block;
