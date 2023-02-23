@@ -47,8 +47,8 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
         },
         timeout: 5000,
         success(data) {
-            if (msg_list !== message_lists.current) {
-                // We unnarrowed in the mean time
+            if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
+                // We unnarrowed or moved to Recent Topics in the meantime.
                 return;
             }
 
@@ -81,7 +81,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
-            if (msg_list.narrowed && msg_list !== message_lists.current) {
+            if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
                 return;
             }
             if (xhr.status === 400) {
