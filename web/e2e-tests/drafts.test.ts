@@ -5,11 +5,13 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common";
 
 async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
-    await page.waitForSelector("#draft_overlay.show", {hidden: true});
+    await page.waitForFunction("is_draft_overlay_transition_finished");
+    await page.evaluate("is_draft_overlay_transition_finished = false");
 }
 
 async function wait_for_drafts_to_appear(page: Page): Promise<void> {
-    await page.waitForSelector("#draft_overlay.show");
+    await page.waitForFunction("is_draft_overlay_transition_finished");
+    await page.evaluate("is_draft_overlay_transition_finished = false");
 }
 
 async function get_drafts_count(page: Page): Promise<number> {
@@ -198,6 +200,15 @@ async function test_delete_draft(page: Page): Promise<void> {
     await page.click("body");
 }
 
+async function add_page_listeners(page: Page): Promise<void> {
+    await page.evaluate(
+        `let is_draft_overlay_transition_finished = false;
+        $("body").on("webkitTransitionEnd", "#draft_overlay", () => {
+            is_draft_overlay_transition_finished = true;
+        });`,
+    );
+}
+
 async function test_save_draft_by_reloading(page: Page): Promise<void> {
     console.log("Saving draft by reloading.");
     await page.keyboard.press("KeyX");
@@ -213,6 +224,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     await page.click("#compose_close");
 
     console.log("Reloading finished. Opening drafts again now.");
+    await add_page_listeners(page);
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
 
@@ -240,6 +252,7 @@ async function drafts_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click(".top_left_all_messages");
     await page.waitForSelector("#zhome .message_row", {visible: true});
+    await add_page_listeners(page);
 
     await test_empty_drafts(page);
 
