@@ -45,7 +45,7 @@ They also do not contribute to stream unread counts.
 
 1. Tap the **Streams**
    (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="mobile-icon"/>)
-   tab in the upper left corner of the app.
+   tab at the bottom of the app.
 
 1. Select a stream containing topics you want to unmute.
 
