@@ -1,3 +1,10 @@
+$blue1: #3a87ad;
+$text1: #23688a;
+$blue2: #04254e;
+$text2: hsl(209, 79%, 25%);
+$blue3: #0e3c91;
+$text3: #0c3074;
+
 body {
     background-color: hsl(0, 0%, 98%);
     font-family: "Source Sans 3", sans-serif;
@@ -129,7 +136,7 @@ html {
         border-right: 1px solid hsl(219, 10%, 97%);
         overflow: auto;
 
-        background-color: hsl(153, 32%, 55%);
+        background: $blue2;
         color: hsl(0, 0%, 100%);
 
         -webkit-overflow-scrolling: touch;
@@ -221,7 +228,7 @@ html {
 
         a {
             &.highlighted {
-                background-color: hsl(152, 40%, 42%);
+                background-color: $text2;
 
                 /* Extend highlight to entire width of sidebar, not just link area */
                 /* This has been changed from "+" to "- -" because of issue #8403.
@@ -1310,7 +1317,7 @@ label.label-title {
 
 .documentation-footer {
     font-size: 0.85rem;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 #devtools-wrapper {
