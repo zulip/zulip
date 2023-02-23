@@ -585,6 +585,11 @@ li,
     icon is clickable and is needed because of reduced
     opacity of readonly textarea */
     z-index: 2;
+    background: transparent;
+
+    &:hover {
+        background: transparent;
+    }
 
     &:hover svg path {
         fill: hsl(200, 100%, 40%);
