@@ -881,7 +881,7 @@ class Command(BaseCommand):
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
-                    # 조리법 - Recipes (Korean) , Пельмени - Dumplings (Russian)
+                    # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
                     "조리법 "
                     + raw_emojis[0]: {"description": "Everything cooking, from pasta to Пельмени"},
                 }

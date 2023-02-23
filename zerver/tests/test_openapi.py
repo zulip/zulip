@@ -322,7 +322,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         val = 6
         for t in types:
             if isinstance(t, tuple):
-                return t  # e.g. (list, dict) or (list ,str)
+                return t  # e.g. (list, dict) or (list, str)
             v = priority.get(t, 6)
             if v < val:
                 val = v

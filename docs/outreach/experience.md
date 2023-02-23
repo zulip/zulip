@@ -135,7 +135,7 @@ You can find many examples in the
     elsewhere, please link to it. Please post each question/problem in a
     separate message to make it convenient to quote-and-reply to address it.
     Note that discussions about your work will happen in all the usual places
-    (#**frontend** , #**backend** , #**design** , etc.), and those are the
+    (#**frontend**, #**backend**, #**design**, etc.), and those are the
     streams where you should be _starting_ conversations. Your check-ins are a
     place to point out where you're feeling stuck, e.g., there was some
     discussion in a stream or on GitHub, but it seems to have petered out

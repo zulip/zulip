@@ -6,7 +6,7 @@ Below are the events that {{ integration_display_name }} bot supports:
 
 {% set comma = joiner(", ") %}
 
-{% for event_type in all_event_types %} {{- comma() -}} `{{ event_type }}` {% endfor %}
+{% for event_type in all_event_types -%} {{- comma() -}} `{{ event_type }}` {%- endfor %}
 
 Note that you can also use UNIX-style wildcards like `*` to include
 multiple events. E.g., `test*` matches every event that starts with

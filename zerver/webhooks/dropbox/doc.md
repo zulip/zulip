@@ -10,7 +10,7 @@ Get Dropbox notifications in Zulip!
    redirected to the **Settings** tab for your app. Scroll down to the
    **Webhooks** section.
 
-1. Go to the **Oauth 2** section , at the bottom of which you'll find a **Generate**
+1. Go to the **Oauth 2** section, at the bottom of which you'll find a **Generate**
    button. Click on it to activate the app for your account.
 
 ![](/static/images/integrations/dropbox/oauth2_generate.png)
