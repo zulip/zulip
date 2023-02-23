@@ -1195,7 +1195,7 @@ export class MessageListView {
         // Ideally, we'd maintain this data structure with a hash
         // table or at least a pointer from the message containers (in
         // either case, updating the data structure when message
-        // groups are merged etc.) , but we only call this from flows
+        // groups are merged etc.), but we only call this from flows
         // like message editing, so it's not a big performance
         // problem.
         return this._message_groups.find(

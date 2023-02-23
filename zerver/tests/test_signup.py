@@ -5499,7 +5499,7 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(result["Location"], "/accounts/login/?email=newuser_email%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
 
-        # If the user's email is not in the LDAP directory , though, we
+        # If the user's email is not in the LDAP directory, though, we
         # successfully create an account with a password in the Zulip
         # database.
         password = "nonldappassword"

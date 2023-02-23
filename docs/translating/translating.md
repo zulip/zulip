@@ -195,7 +195,7 @@ translators can understand and preserve those decisions:
 
 Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
-style guide as they work , since it's easy to take notes as you
+style guide as they work, since it's easy to take notes as you
 translate, and doing so greatly increases the ability of future
 translators to update the translations in a consistent way. See [our
 docs on this documentation](../documentation/overview.md) for how to
