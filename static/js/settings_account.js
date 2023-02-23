@@ -267,9 +267,9 @@ export function append_custom_profile_fields(element_id, user_id) {
 
 export function initialize_custom_date_type_fields(element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
-        altInput: true,
         altFormat: "F j, Y",
         allowInput: true,
+        allowInvalidPreload: true,      
     });
 
     $(element_id)
