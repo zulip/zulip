@@ -160,9 +160,10 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         the callback with no arguments."""
         if self.connection is None or not self.connection.is_open:
             self._connect()
-
-        assert self.channel is not None
-        self.channel.basic_qos(prefetch_count=self.prefetch)
+            assert self.channel is not None
+            self.channel.basic_qos(prefetch_count=self.prefetch)
+        else:
+            assert self.channel is not None
 
         if queue_name not in self.queues:
             self.channel.queue_declare(queue=queue_name, durable=True)
