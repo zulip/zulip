@@ -1,4 +1,3 @@
-import calendar
 import datetime
 
 
@@ -47,4 +46,4 @@ def timestamp_to_datetime(timestamp: float) -> datetime.datetime:
 
 def datetime_to_timestamp(dt: datetime.datetime) -> int:
     verify_UTC(dt)
-    return calendar.timegm(dt.timetuple())
+    return int(dt.timestamp())
