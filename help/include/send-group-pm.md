@@ -13,7 +13,7 @@
 
 {tab|mobile}
 
-1. Tap the private messages
+1. Tap the **Private messages**
    ( <img src="/static/images/help/mobile-pm-tab-icon.svg" alt="private messages" class="mobile-icon"/> )
    tab at the bottom of the app.
 
@@ -23,11 +23,11 @@
    select their name from the list of suggestions. You can continue
    adding as many message recipients as you like.
 
-4. Approve by tapping the checkmark
+4. Approve by tapping the **checkmark**
    (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
    button in the bottom right corner of the app.
 
-5. Compose your message, and tap the send
+5. Compose your message, and tap the **send**
    (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="mobile-icon"/>)
    button in the bottom right corner of the app.
 

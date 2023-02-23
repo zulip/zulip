@@ -35,7 +35,7 @@ and do not appear in your list of streams.
 
 {tab|mobile}
 
-1. Tap the private messages
+1. Tap the **Private messages**
    ( <img src="/static/images/help/mobile-pm-tab-icon.svg" alt="private messages" class="mobile-icon"/> )
    tab at the bottom of the app.
 
@@ -44,7 +44,7 @@ and do not appear in your list of streams.
 1. Start typing the name of the person you want to message, and
    select their name from the list of suggestions.
 
-1. Compose your message, and tap the send
+1. Compose your message, and tap the **send**
    (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="mobile-icon"/>)
    button in the bottom right corner of the app.
 
