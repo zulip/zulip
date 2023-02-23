@@ -1,2 +1,6 @@
-puppetlabs-stdlib: 8.5.0
-puppetlabs-concat: 7.3.0
+puppetlabs-stdlib:
+  version: 8.5.0
+  sha256sum: 6ec37b310d76dc2ecf3b6b553c39466583d519652a058e12a0986843e350898f
+puppetlabs-concat:
+  version: 7.3.0
+  sha256sum: d8076f45d33769647ba5f4d10bbb9a8343cc70097f6957c2c84377d8ce4ed8d4
