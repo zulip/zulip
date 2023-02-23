@@ -134,7 +134,15 @@ export const update_elements = ($content) => {
                 // If the stream has been deleted,
                 // stream_data.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
-                $(this).text("#" + stream_name);
+                let stream_icon = "#";
+                if (stream_data.get_invite_only(stream_name)) {
+                    stream_icon = $("<i>", {class:"fa fa-lock"});
+                }
+                $(this).empty()
+                $(this).append($("<span>", {class:"icon"}));
+                $(this).append($("<span>", {class:"text"}));
+                $(this).children("span:nth-of-type(1)").html(stream_icon);
+                $(this).children("span:nth-of-type(2)").text(" " + stream_name);
             }
         }
     });
@@ -150,7 +158,16 @@ export const update_elements = ($content) => {
                 // stream_data.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
                 const text = $(this).text();
-                $(this).text("#" + stream_name + text.slice(text.indexOf(" > ")));
+                let stream_icon = "#";
+                if (stream_data.get_invite_only(stream_name)) {
+                    stream_icon = $("<i>", {class:"fa fa-lock"});
+                }
+                $(this).empty()
+                for (let i = 0; i < 2; i++) {
+                    $(this).append($("<span>"));
+                }
+                $(this).children('span:nth-of-type(1)').html(stream_icon);
+                $(this).children('span:nth-of-type(2)').text(" " + stream_name + text.slice(text.indexOf(" > ")));
             }
         }
     });
