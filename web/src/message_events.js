@@ -122,33 +122,35 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // other lists, so we always update this
     message_util.add_new_messages_data(messages, all_messages_data);
 
-    let render_info;
-
-    if (narrow_state.active()) {
-        // We do this NOW even though the home view is not active,
-        // because we want the home view to load fast later.
-        message_util.add_new_messages(messages, message_lists.home);
-
-        if (narrow_state.filter().can_apply_locally()) {
-            render_info = message_util.add_new_messages(messages, message_lists.current);
-        } else {
-            // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(
-                messages,
-                message_lists.current,
-                message_util.add_new_messages,
-            );
+    let need_user_to_scroll = false;
+    for (const list of message_lists.all_rendered_message_lists()) {
+        if (!list.data.filter.can_apply_locally()) {
+            // If we cannot locally calculate whether the new messages
+            // match the message list, we ask the server whether the
+            // new messages match the narrow, and use that to
+            // determine which new messages to add to the current
+            // message list (or display a notification).
+            maybe_add_narrowed_messages(messages, list, message_util.add_new_messages);
+            continue;
         }
-    } else {
-        // we're in the home view, so update its list
-        render_info = message_util.add_new_messages(messages, message_lists.home);
+
+        // Update the message list's rendering for the newly arrived messages.
+        const render_info = message_util.add_new_messages(messages, list);
+
+        // The render_info.need_user_to_scroll calculation, which
+        // looks at message feed scroll positions to see whether the
+        // newly arrived message will be visible, is only valid if
+        // this message list is the currently visible message list.
+        const is_currently_visible = list === message_lists.current;
+        if (is_currently_visible && render_info && render_info.need_user_to_scroll) {
+            need_user_to_scroll = true;
+        }
     }
 
+    // sent_by_this_client will be true if ANY of the messages
+    // were sent by this client; notifications.notify_local_mixes
+    // will filter out any not sent by us.
     if (sent_by_this_client) {
-        const need_user_to_scroll = render_info && render_info.need_user_to_scroll;
-        // sent_by_this_client will be true if ANY of the messages
-        // were sent by this client; notifications.notify_local_mixes
-        // will filter out any not sent by us.
         notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
