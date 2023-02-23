@@ -59,6 +59,14 @@ function hide_tooltip_if_reference_removed(
     observer.observe(target_node, config);
 }
 
+// We use two delay settings for tooltips. The default "instant"
+// version has just a tiny bit of delay to create a natural feeling
+// transition, while the "long" version is intended for elements where
+// we want to avoid distracting the user with the tooltip
+// unnecessarily.
+const INSTANT_HOVER_DELAY = [100, 20];
+const LONG_HOVER_DELAY = [750, 20];
+
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
 // documentation for default properties.
@@ -68,9 +76,7 @@ tippy.setDefaultProps({
     // mobile widths ever.
     maxWidth: 300,
 
-    // Some delay to showing / hiding the tooltip makes
-    // it look less forced and more natural.
-    delay: [100, 20],
+    delay: INSTANT_HOVER_DELAY,
     placement: "top",
 
     // disable animations to make the
@@ -149,7 +155,7 @@ export function initialize() {
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
-        delay: [300, 20],
+        delay: LONG_HOVER_DELAY,
         // This ensures that the upload files tooltip
         // doesn't hide behind the left sidebar.
         appendTo: () => document.body,
@@ -163,7 +169,7 @@ export function initialize() {
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
-        delay: [300, 20],
+        delay: LONG_HOVER_DELAY,
         onShow(instance) {
             // Handle dynamic "starred messages" and "edit" widgets.
             const $elem = $(instance.reference);
@@ -443,7 +449,7 @@ export function initialize() {
             }
             return true;
         },
-        delay: [500, 20],
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
 
@@ -461,7 +467,7 @@ export function initialize() {
         content: $t({
             defaultMessage: "View user card (u)",
         }),
-        delay: [500, 20],
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
 }
