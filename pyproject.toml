@@ -197,6 +197,9 @@ prod = [
 
   # For captchas on unauth'd pages which can generate emails
   "altcha",
+
+  # SMTP server for accepting incoming email
+  "aiosmtpd>=1.4.6",
 ]
 docs = [
   # Needed to build RTD docs
@@ -379,6 +382,7 @@ plugins = [
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
+    "aiosmtpd.*",
     "bitfield.*",
     "bmemcached.*",
     "circuitbreaker.*",
