@@ -141,7 +141,8 @@ export function insert_new_messages(messages, sent_by_this_client) {
         // looks at message feed scroll positions to see whether the
         // newly arrived message will be visible, is only valid if
         // this message list is the currently visible message list.
-        const is_currently_visible = list === message_lists.current;
+        const is_currently_visible =
+            narrow_state.is_message_feed_visible() && list === message_lists.current;
         if (is_currently_visible && render_info && render_info.need_user_to_scroll) {
             need_user_to_scroll = true;
         }
