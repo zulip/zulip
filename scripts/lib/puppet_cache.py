@@ -3,6 +3,8 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
+from urllib.request import urlopen
 
 import yaml
 
@@ -50,28 +52,57 @@ def do_puppet_module_install(
     target_path: str,
     success_stamp: str,
 ) -> None:
-    # This is to suppress Puppet warnings with ruby 2.7.
-    distro_info = parse_os_release()
-    puppet_env = os.environ.copy()
-    if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
-        puppet_env["RUBYOPT"] = "-W0"
-
     os.makedirs(target_path, exist_ok=True)
     with open(PUPPET_DEPS_FILE_PATH) as yaml_file:
         deps = yaml.safe_load(yaml_file)
-        for module, version in deps.items():
-            run(
-                [
-                    "puppet",
-                    "module",
-                    "--modulepath",
-                    target_path,
-                    "install",
-                    module,
-                    "--version",
-                    version,
-                ],
-                env=puppet_env,
-            )
+    for module, metadata in deps.items():
+        install_puppet_module(target_path, module, metadata["version"], metadata["sha256sum"])
     with open(success_stamp, "w"):
         pass
+
+
+def install_puppet_module(
+    target_path: str, module: str, version: str, expected_sha256sum: str
+) -> None:
+    with urlopen(f"https://forgeapi.puppet.com/v3/releases/{module}-{version}") as forge_resp:
+        forge_data = json.load(forge_resp)
+
+    forge_sha256sum = forge_data["file_sha256"]
+    if forge_sha256sum != expected_sha256sum:
+        raise Exception(
+            f"Forge API returned unexpected SHA256 sum for {module}-{version}: "
+            f"expected {expected_sha256sum}, got {forge_sha256sum}"
+        )
+
+    with tempfile.NamedTemporaryFile(
+        prefix=f"zulip-puppet-{module}-{version}-",
+        suffix=".tar.gz",
+    ) as tarball:
+        with urlopen("https://forgeapi.puppet.com" + forge_data["file_uri"]) as tarball_resp:
+            tarball_content = tarball_resp.read()
+            local_sha256sum = hashlib.sha256(tarball_content).hexdigest()
+            if local_sha256sum != expected_sha256sum:
+                raise Exception(
+                    f"Downloaded file had unexpected SHA256 sum for {module}-{version}: "
+                    f"expected {expected_sha256sum}, got {forge_sha256sum}"
+                )
+            tarball.write(tarball_content)
+            tarball.flush()
+
+        # This is to suppress Puppet warnings with ruby 2.7.
+        distro_info = parse_os_release()
+        puppet_env = os.environ.copy()
+        if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
+            puppet_env["RUBYOPT"] = "-W0"
+        run(
+            [
+                "puppet",
+                "module",
+                "--modulepath",
+                target_path,
+                "install",
+                tarball.name,
+                "--ignore-dependencies",
+            ],
+            env=puppet_env,
+        )
