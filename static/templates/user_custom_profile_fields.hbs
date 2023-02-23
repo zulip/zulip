@@ -7,12 +7,10 @@
             <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link {{#if ../for_user_info_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{this.value}}</a>
         {{else if this.is_external_account}}
             <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link {{#if ../for_user_info_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
-                {{#if ../for_user_info_popover}}
-                    {{#if (eq this.subtype "github") }}
-                    <i class="fa fa-github" aria-hidden="true"></i>
-                    {{else if (eq this.subtype "twitter") }}
-                    <i class="fa fa-twitter" aria-hidden="true"></i>
-                    {{/if}}
+                {{#if (eq this.subtype "github") }}
+                <i class="fa fa-github" aria-hidden="true"></i>
+                {{else if (eq this.subtype "twitter") }}
+                <i class="fa fa-twitter" aria-hidden="true"></i>
                 {{/if}}
                 {{this.value}}
             </a>
