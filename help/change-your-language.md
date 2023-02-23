@@ -19,6 +19,22 @@ messages you receive.
 
 1. Click **Reload**.
 
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Settings**.
+
+1. Tap **Language**.
+
+1. Use the search bar or scroll through the list of languages.
+
+1. Select a language.
+
+1. Tap the **arrow**
+   (<img src="/static/images/help/mobile-chevron-left.svg" alt="back" class="mobile-icon"/>)
+   in the upper left corner of the app to exit the language selection menu.
+
 {end_tabs}
 
 ## Related articles
