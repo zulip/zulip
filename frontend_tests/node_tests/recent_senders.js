@@ -26,10 +26,8 @@ function make_stream_message({stream_id, topic, sender_id}) {
 mock_esm("../../static/js/message_store", {
     get: (message_id) => messages.get(message_id),
 });
-mock_esm("../../static/js/people", {
-    my_current_user_id: () => 1,
-});
-
+const people = zrequire("people");
+people.initialize_current_user(1);
 const rs = zrequire("recent_senders");
 zrequire("message_util.js");
 

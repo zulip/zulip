@@ -232,6 +232,19 @@ export function user_ids_string_to_ids_array(user_ids_string) {
     return ids;
 }
 
+export function get_participants_from_user_ids_string(user_ids_string) {
+    let user_ids = user_ids_string_to_ids_array(user_ids_string);
+    // Convert to set to ensure there are no duplicate ids.
+    user_ids = new Set(user_ids);
+    // For group PMs or 1:1 private messages, the user_ids_string
+    // contains just the other user, so we need to add ourselves if not
+    // already present. For PM to self, the current user is already present,
+    // in user_ids_string, so we don't need to add it which is take care of
+    // by user_ids being a `Set`.
+    user_ids.add(my_user_id);
+    return user_ids;
+}
+
 export function emails_strings_to_user_ids_array(emails_string) {
     const user_ids_string = emails_strings_to_user_ids_string(emails_string);
     if (user_ids_string === undefined) {
