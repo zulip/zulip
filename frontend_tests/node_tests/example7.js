@@ -55,7 +55,7 @@ const message_viewport = mock_esm("../../static/js/message_viewport");
 const notifications = mock_esm("../../static/js/notifications");
 const unread_ui = mock_esm("../../static/js/unread_ui");
 
-message_lists.current = {};
+message_lists.current = {view: () => {}};
 message_lists.home = {};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
@@ -104,7 +104,7 @@ run_test("unread_ops", ({override}) => {
     override(message_viewport, "bottom_message_visible", () => true);
 
     // Set message_lists.current containing messages that can be marked read
-    override(message_lists.current, "all_messages", () => test_messages);
+    override(message_lists.current.view, "get_rendered_message_ids", () => test_messages);
 
     // Ignore these interactions for now:
     override(message_lists.current, "show_message_as_read", () => {});
