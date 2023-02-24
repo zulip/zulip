@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
-import render_stream_privacy from "../templates/stream_privacy.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
@@ -595,20 +595,16 @@ export function initialize() {
         }
 
         const stream = sub_store.get(stream_id);
-        const stream_privacy_symbol_html = render_stream_privacy({
-            invite_only: stream.invite_only,
-            is_web_public: stream.is_web_public,
-        });
-        const stream_name = stream_data.maybe_get_stream_name(stream_id);
+
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
         const html_body = render_settings_deactivation_stream_modal({
-            stream_name,
-            stream_privacy_symbol_html,
+            stream_name_with_privacy_symbol_html,
         });
 
         confirm_dialog.launch({
             html_heading: $t_html(
-                {defaultMessage: "Archive <z-link></z-link>{stream}?"},
-                {stream: stream_name, "z-link": () => stream_privacy_symbol_html},
+                {defaultMessage: "Archive <z-link></z-link>?"},
+                {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
             id: "archive-stream-modal",
             help_link: "/help/archive-a-stream",
