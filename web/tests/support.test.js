@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 const fs = require("fs");
+const path = require("path");
 
 const {JSDOM} = require("jsdom");
 
@@ -9,7 +10,10 @@ const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-const template = fs.readFileSync("templates/analytics/realm_details.html", "utf8");
+const template = fs.readFileSync(
+    path.resolve(__dirname, "../../templates/analytics/realm_details.html"),
+    "utf8",
+);
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 

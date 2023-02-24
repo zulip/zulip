@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 const fs = require("fs");
+const path = require("path");
 
 const {JSDOM} = require("jsdom");
 
@@ -11,7 +12,10 @@ const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const noop = () => {};
-const template = fs.readFileSync("templates/corporate/upgrade.html", "utf8");
+const template = fs.readFileSync(
+    path.resolve(__dirname, "../../templates/corporate/upgrade.html"),
+    "utf8",
+);
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 const location = set_global("location", {});
