@@ -116,14 +116,24 @@ def get_prereg_key_and_redirect(
     accidentally adding an extra character after pasting).
     """
     try:
-        check_prereg_key(request, confirmation_key)
+        prereg_user = check_prereg_key(request, confirmation_key)
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
+
+    realm_creation = prereg_user.realm_creation
+
+    registration_url = reverse("accounts_register")
+    if realm_creation:
+        registration_url = reverse("realm_register")
 
     return render(
         request,
         "confirmation/confirm_preregistrationuser.html",
-        context={"key": confirmation_key, "full_name": full_name},
+        context={
+            "key": confirmation_key,
+            "full_name": full_name,
+            "registration_url": registration_url,
+        },
     )
 
 
@@ -150,8 +160,17 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
 
 @add_google_analytics
 @require_post
+def realm_register(*args: Any, **kwargs: Any) -> HttpResponse:
+    return registration_helper(*args, **kwargs)
+
+
+@require_post
+def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
+    return registration_helper(*args, **kwargs)
+
+
 @has_request_variables
-def accounts_register(
+def registration_helper(
     request: HttpRequest,
     key: str = REQ(default=""),
     timezone: str = REQ(default="", converter=to_timezone_or_empty),

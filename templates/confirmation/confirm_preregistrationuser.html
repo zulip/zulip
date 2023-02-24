@@ -13,7 +13,7 @@ requisite context to make a useful signup form. Therefore, we immediately
 post to another view which executes in our code to produce the desired form.
 #}
 
-<form id="register" action="/accounts/register/" method="post">
+<form id="register" action="{{ registration_url }}" method="post">
     {{ csrf_input }}
     <input type="hidden" value="{{ key }}" name="key"/>
     <input type="hidden" value="1" name="from_confirmation"/>
