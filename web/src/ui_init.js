@@ -31,6 +31,7 @@ import * as drafts from "./drafts";
 import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
+import * as emoji_ui from "./emoji_ui";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
@@ -190,23 +191,11 @@ function initialize_right_sidebar() {
     }
 
     $("#user_presences").on("mouseenter", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
-        if ($status_emoji.length) {
-            const animated_url = $status_emoji.attr("data-animated-url");
-            if (animated_url) {
-                $status_emoji.attr("src", animated_url);
-            }
-        }
+        emoji_ui.handle_mouseenter_for_status_emoji(e);
     });
 
     $("#user_presences").on("mouseleave", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
-        if ($status_emoji.length) {
-            const still_url = $status_emoji.attr("data-still-url");
-            if (still_url) {
-                $status_emoji.attr("src", still_url);
-            }
-        }
+        emoji_ui.handle_mouseleave_for_status_emoji(e);
     });
 }
 
