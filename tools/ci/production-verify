@@ -141,6 +141,9 @@ for consumer in $consumer_list; do
     fi
 done
 
+# Create a root realm
+su zulip -c "/home/zulip/deployments/current/manage.py create_realm Testing user@example.com 'Some User'"
+
 # Some of the Nagios tests have been temporarily disabled to work
 # around a Travis CI infrastructure issue.
 echo
