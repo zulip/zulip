@@ -90,10 +90,6 @@ const emoji_map = new Map();
 emoji_map.set("smile", "1f642");
 emoji_map.set("alien", "1f47d");
 
-function get_emoji_codepoint(emoji_name) {
-    return emoji_map.get(emoji_name);
-}
-
 function get_emoji_name(codepoint) {
     for (const [emoji_name, _codepoint] of emoji_map.entries()) {
         if (codepoint === _codepoint) {
@@ -108,8 +104,16 @@ function get_emoji_name(codepoint) {
 const realm_emoji_map = new Map();
 realm_emoji_map.set("heart", "/images/emoji/heart.bmp");
 
-function get_realm_emoji_url(emoji_name) {
-    return realm_emoji_map.get(emoji_name);
+function get_emoji_details_by_name(emoji_name) {
+    const realm_emoji = realm_emoji_map.get(emoji_name);
+    if (realm_emoji) {
+        return {name: emoji_name, reaction_type: "realm_emoji"};
+    }
+    return {name: emoji_name, emoji_code: emoji_map.get(emoji_name)};
+}
+
+function get_emoji_details_for_rendering(emoji_details) {
+    return {...emoji_details, url: realm_emoji_map.get(emoji_details.name)};
 }
 
 const regex = /#foo(\d+)(?!\w)/g;
@@ -141,10 +145,10 @@ const helper_config = {
     should_translate_emoticons: () => true,
 
     // emojis
-    get_emoji_codepoint,
     get_emoji_name,
     get_emoticon_translations,
-    get_realm_emoji_url,
+    get_emoji_details_by_name,
+    get_emoji_details_for_rendering,
 
     // linkifiers
     get_linkifier_map,

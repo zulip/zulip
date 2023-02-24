@@ -382,7 +382,7 @@ function handleUnicodeEmoji({unicode_emoji, get_emoji_name}) {
     return unicode_emoji;
 }
 
-function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
+function handleEmoji({emoji_name, get_emoji_details_by_name, get_emoji_details_for_rendering}) {
     const alt_text = ":" + emoji_name + ":";
     const title = emoji_name.replace(/_/g, " ");
 
@@ -393,17 +393,28 @@ function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
     // Otherwise we'll look at Unicode emoji to render with an emoji
     // span using the spritesheet; and if it isn't one of those
     // either, we pass through the plain text syntax unmodified.
-    const emoji_url = get_realm_emoji_url(emoji_name);
 
-    if (emoji_url) {
+    // this will just throw if something fails, we'll handle the error later on.
+    let emoji_details;
+    try {
+        emoji_details = get_emoji_details_by_name(emoji_name);
+    } catch {
+        emoji_details = "";
+    }
+
+    if (
+        emoji_details &&
+        (emoji_details.reaction_type === "realm_emoji" ||
+            emoji_details.reaction_type === "zulip_extra_emoji")
+    ) {
+        emoji_details = get_emoji_details_for_rendering(emoji_details);
         return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
-            emoji_url,
+            emoji_details.url,
         )}" title="${_.escape(title)}">`;
     }
 
-    const codepoint = get_emoji_codepoint(emoji_name);
-    if (codepoint) {
-        return make_emoji_span(codepoint, title, alt_text);
+    if (emoji_details && emoji_details.emoji_code) {
+        return make_emoji_span(emoji_details.emoji_code, title, alt_text);
     }
 
     return alt_text;
@@ -573,8 +584,8 @@ export function parse({raw_content, helper_config}) {
     function emojiHandler(emoji_name) {
         return handleEmoji({
             emoji_name,
-            get_realm_emoji_url: helper_config.get_realm_emoji_url,
-            get_emoji_codepoint: helper_config.get_emoji_codepoint,
+            get_emoji_details_by_name: helper_config.get_emoji_details_by_name,
+            get_emoji_details_for_rendering: helper_config.get_emoji_details_for_rendering,
         });
     }
 

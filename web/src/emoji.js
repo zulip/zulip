@@ -96,6 +96,7 @@ export function get_emoji_codepoint(emoji_name) {
     return undefined;
 }
 
+// no longer used by the web app except in tests
 export function get_realm_emoji_url(emoji_name) {
     // If the emoji name is a realm emoji, returns the URL for it.
     // Returns undefined for Unicode emoji.

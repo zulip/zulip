@@ -83,6 +83,8 @@ export const get_helpers = () => ({
     get_emoji_codepoint: emoji.get_emoji_codepoint,
     get_emoticon_translations: emoji.get_emoticon_translations,
     get_realm_emoji_url: emoji.get_realm_emoji_url,
+    get_emoji_details_by_name: emoji.get_emoji_details_by_name,
+    get_emoji_details_for_rendering: emoji.get_emoji_details_for_rendering,
 
     // linkifiers
     get_linkifier_map: () => abstract_map(linkifiers.get_linkifier_map()),
