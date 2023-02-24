@@ -193,6 +193,7 @@
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/unified-signatures": "error",
+                "import/no-cycle": "error",
                 "no-undef": "error"
             }
         },
