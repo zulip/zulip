@@ -4,7 +4,6 @@ import posixpath
 import random
 import secrets
 import shutil
-import subprocess
 import zipfile
 from collections import defaultdict
 from email.headerregistry import Address
@@ -1418,7 +1417,6 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
     # Clean up the directory if we unpacked it ourselves.
     if original_path != slack_data_dir:
         rm_tree(slack_data_dir)
-    subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
     logging.info("Zulip data dump created at %s", output_dir)

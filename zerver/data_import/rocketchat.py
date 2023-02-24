@@ -2,7 +2,6 @@ import logging
 import os
 import random
 import secrets
-import subprocess
 import uuid
 from typing import Any, Dict, List, Set, Tuple
 
@@ -1257,7 +1256,3 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     attachment: Dict[str, List[Any]] = {"zerver_attachment": zerver_attachment}
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
-
-    logging.info("Start making tarball")
-    subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
-    logging.info("Done making tarball")

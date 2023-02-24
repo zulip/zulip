@@ -1151,8 +1151,6 @@ class SlackImporter(ZulipTestCase):
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
         remove_folder(output_dir)
-        # remove tar file created in 'do_convert_data' function
-        os.remove(output_dir + ".tar.gz")
         self.assertFalse(os.path.exists(output_dir))
 
     def test_message_files(self) -> None:

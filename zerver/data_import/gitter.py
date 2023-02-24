@@ -1,6 +1,5 @@
 import logging
 import os
-import subprocess
 from typing import Any, Dict, List, Set, Tuple
 
 import dateutil.parser
@@ -387,8 +386,6 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int = 6) ->
     create_converted_data_files([], output_dir, "/uploads/records.json")
     # IO attachments records
     create_converted_data_files(attachment, output_dir, "/attachment.json")
-
-    subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
     logging.info("Zulip data dump created at %s", output_dir)

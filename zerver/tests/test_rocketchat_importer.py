@@ -887,8 +887,6 @@ class RocketChatImporter(ZulipTestCase):
                 "INFO:root:Starting to process custom emoji",
                 "INFO:root:Done processing emoji",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
-                "INFO:root:Start making tarball",
-                "INFO:root:Done making tarball",
             ],
         )
 
