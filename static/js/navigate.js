@@ -1,5 +1,7 @@
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
 import * as rows from "./rows";
 import * as unread_ops from "./unread_ops";
 
@@ -48,8 +50,20 @@ export function to_home() {
 }
 
 export function to_end() {
-    const next_id = message_lists.current.last().id;
     message_viewport.set_last_movement_direction(1);
+    if (
+        narrow_state.narrowed_to_topic() &&
+        !message_lists.current.data.fetch_status.has_found_newest()
+    ) {
+        const narrowed_topic = narrow_state.topic();
+        const narrowed_stream = narrow_state.stream();
+        narrow.activate([
+            {operator: "stream", operand: narrowed_stream},
+            {operator: "topic", operand: narrowed_topic},
+        ]);
+    }
+
+    const next_id = message_lists.current.last().id;
     message_lists.current.select_id(next_id, {then_scroll: true, from_scroll: true});
     unread_ops.process_scrolled_to_bottom();
 }
