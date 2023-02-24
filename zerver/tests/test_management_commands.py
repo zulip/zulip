@@ -306,7 +306,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
         # Bypass sending mail for confirmation, go straight to creation form
         result = self.client_get(result["Location"])
-        self.assert_in_response('action="/accounts/register/"', result)
+        self.assert_in_response('action="/realm/register/"', result)
 
         # Original link is now dead
         result = self.client_get(generated_link)

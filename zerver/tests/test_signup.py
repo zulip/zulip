@@ -3625,7 +3625,7 @@ class RealmCreationTest(ZulipTestCase):
             "key": find_key_by_email(email),
             "from_confirmation": "1",
         }
-        result = self.client_post("/accounts/register/", payload)
+        result = self.client_post("/realm/register/", payload)
         # Assert that the form did not prompt the user for enabling
         # marketing emails.
         self.assert_not_in_success_response(['input id="id_enable_marketing_emails"'], result)
