@@ -274,13 +274,9 @@ export function initialize() {
         }
         if (new_name !== group.name) {
             data.name = new_name;
-        } else {
-            data.name = group.name;
         }
         if (new_description !== group.description) {
             data.description = new_description;
-        } else {
-            data.description = group.description;
         }
 
         const $status_element = $(".group_change_property_info");
