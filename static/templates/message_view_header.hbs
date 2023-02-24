@@ -13,6 +13,14 @@
     {{t "(no description)"}}
     {{/if}}
 </span>
+{{else if user_status}}
+<span>
+    {{> navbar_icon_and_title }}
+    <span class="narrow_description rendered_markdown">
+        {{> status_emoji status_emoji_info}}
+        {{user_status}}
+    </span>
+</span>
 {{else}}
 <span class="navbar-click-opens-search">
     {{> navbar_icon_and_title }}
