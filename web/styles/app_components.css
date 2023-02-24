@@ -824,3 +824,21 @@ div.overlay {
         }
     }
 }
+
+.stream-privacy-type-icon {
+    &.zulip-icon-globe {
+        position: relative;
+        top: 1px;
+        padding-right: 1px;
+        font-size: 0.75em;
+    }
+
+    &.fa-lock {
+        padding-right: 1px;
+        font-size: 0.865em;
+    }
+
+    &.hashtag:empty::after {
+        font-size: 1em;
+    }
+}
