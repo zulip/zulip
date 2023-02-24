@@ -225,22 +225,11 @@ export function process_private_message({to_user_ids, sender_id, id}) {
 }
 
 export function get_pm_recent_senders(user_ids_string) {
-    const user_ids = user_ids_string.split(",").map((id) => Number.parseInt(id, 10));
+    const user_ids = [...people.get_participants_from_user_ids_string(user_ids_string)];
     const sender_dict = pm_senders.get(user_ids_string);
     const pm_senders_info = {participants: [], non_participants: []};
     if (!sender_dict) {
         return pm_senders_info;
-    }
-
-    if (!(user_ids.length === 1 && user_ids[0] === people.my_current_user_id())) {
-        // For group PMs or 1:1 private messages, the user_ids_string
-        // contains just the other user, so we need to add ourselves if not
-        // already present. For PM to self, the current user is already present,
-        // in user_ids_string, so we don't need to add it.
-        //
-        // TODO: Replace this logic with a people.js common function for parsing
-        // user_ids_string and returning the set of user_ids, self included.
-        user_ids.push(people.my_current_user_id());
     }
 
     function compare_pm_user_ids_by_recency(user_id1, user_id2) {
