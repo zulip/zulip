@@ -419,10 +419,10 @@ test("mouseenter/mouseleave handlers", () => {
 
     let handler = alice_stub.get_on_handler("mouseenter");
     handler({target: alice_stub});
-    assert.equal(fake_emoji.attr("src"), CSS.escape(fake_animated_url));
+    assert.equal(fake_emoji.attr("src"), fake_animated_url);
     handler = alice_stub.get_on_handler("mouseleave");
     handler({target: alice_stub});
-    assert.equal(fake_emoji.attr("src"), CSS.escape(fake_still_url));
+    assert.equal(fake_emoji.attr("src"), fake_still_url);
 });
 
 test("first/prev/next", ({override, mock_template}) => {

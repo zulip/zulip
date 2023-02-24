@@ -5,6 +5,9 @@ import _ from "lodash";
 import * as fenced_code from "../shared/src/fenced_code";
 import marked from "../third/marked/lib/marked";
 
+import * as settings_config from "./settings_config";
+import {user_settings} from "./user_settings";
+
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering Markdown client-side is
@@ -408,6 +411,28 @@ function handleEmoji({emoji_name, get_emoji_details_by_name, get_emoji_details_f
             emoji_details.reaction_type === "zulip_extra_emoji")
     ) {
         emoji_details = get_emoji_details_for_rendering(emoji_details);
+        if (emoji_details.still_url) {
+            let src;
+            switch (user_settings.emoji_animation_config) {
+                case settings_config.emoji_animation_config_values.always.code:
+                    src = emoji_details.url;
+                    break;
+                case settings_config.emoji_animation_config_values.on_hover.code:
+                case settings_config.emoji_animation_config_values.never.code:
+                    src = emoji_details.still_url;
+                    break;
+                default:
+                    throw new Error(
+                        `Unexpected value for emoji_animation_config: '${user_settings.emoji_animation_config}'.`,
+                    );
+            }
+            return `<img alt="${_.escape(alt_text)}" class="emoji" data-animated-url="${_.escape(
+                emoji_details.url,
+            )}" data-still-url="${_.escape(emoji_details.still_url)}" src="${_.escape(
+                src,
+            )}" title="${_.escape(title)}">`;
+        }
+        // else
         return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
             emoji_details.url,
         )}" title="${_.escape(title)}">`;

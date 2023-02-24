@@ -1445,9 +1445,12 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     return span
 
 
-def make_realm_emoji(src: str, display_string: str) -> Element:
+def make_realm_emoji(urls: Dict[str, str], display_string: str) -> Element:
     elt = Element("img")
-    elt.set("src", src)
+    if "still_url" in urls and urls["still_url"] != "":
+        elt.set("data-animated-url", urls["source_url"])
+        elt.set("data-still-url", urls["still_url"])
+    elt.set("src", urls["source_url"])
     elt.set("class", "emoji")
     elt.set("alt", display_string)
     elt.set("title", display_string[1:-1].replace("_", " "))
@@ -1503,12 +1506,17 @@ class Emoji(markdown.inlinepatterns.Pattern):
             active_realm_emoji = db_data.active_realm_emoji
 
         if name in active_realm_emoji:
-            return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
+            urls = {
+                "source_url": active_realm_emoji[name]["source_url"],
+                "still_url": str(active_realm_emoji[name]["still_url"] or ""),
+            }
+            return make_realm_emoji(urls, orig_syntax)
         elif name == "zulip":
             # We explicitly do not use staticfiles to generate the URL
             # for this, so that it is portable if exported.
             return make_realm_emoji(
-                "/static/generated/emoji/images/emoji/unicode/zulip.png", orig_syntax
+                {"source_url": "/static/generated/emoji/images/emoji/unicode/zulip.png"},
+                orig_syntax,
             )
         elif name in name_to_codepoint:
             return make_emoji(name_to_codepoint[name], orig_syntax)

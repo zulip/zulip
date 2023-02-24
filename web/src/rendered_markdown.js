@@ -7,6 +7,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
+import * as emoji_ui from "./emoji_ui";
 import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
@@ -241,5 +242,11 @@ export const update_elements = ($content) => {
             const text = $(this).attr("title");
             return ":" + text + ":";
         });
+    }
+
+    // call .animate or .stop_animation based on user_settings.emoji_animation_config
+    const $emojis = $content.find(".emoji");
+    for (const emoji of $emojis) {
+        emoji_ui.reset_emoji_animation(emoji);
     }
 };

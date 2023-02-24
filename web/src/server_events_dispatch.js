@@ -15,6 +15,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
+import * as emoji_ui from "./emoji_ui";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
 import * as linkifiers from "./linkifiers";
@@ -677,7 +678,7 @@ export function dispatch_normal_event(event) {
                 $("body").toggleClass("more_dense_mode");
             }
             if (event.property === "emoji_animation_config") {
-                // reset emoji animations
+                emoji_ui.reset_message_feed_emoji_animations();
             }
             if (event.property === "color_scheme") {
                 $("body").fadeOut(300);

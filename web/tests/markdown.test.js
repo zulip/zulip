@@ -40,6 +40,9 @@ const markdown = zrequire("markdown");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const settings_config = zrequire("settings_config");
+
+user_settings.emoji_animation_config = settings_config.emoji_animation_config_values.on_hover.code;
 
 const emoji_params = {
     realm_emoji: {
@@ -47,6 +50,13 @@ const emoji_params = {
             id: 1,
             name: "burrito",
             source_url: "/static/generated/emoji/images/emoji/burrito.png",
+            deactivated: false,
+        },
+        991: {
+            id: "991",
+            name: "example_animated_emoji",
+            source_url: "/url/for/991",
+            still_url: "/url/still/991",
             deactivated: false,
         },
     },
@@ -840,6 +850,93 @@ test("missing unicode emojis", ({override}) => {
     markdown.initialize(markdown_config.get_helpers());
     markdown.apply_markdown(message);
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
+});
+
+test("animated emoji", () => {
+    const message = {raw_content: ":example_animated_emoji:"};
+    user_settings.emoji_animation_config =
+        settings_config.emoji_animation_config_values.always.code;
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><img alt=":example_animated_emoji:" class="emoji" data-animated-url="/url/for/991" data-still-url="/url/still/991" src="/url/for/991" title="example animated emoji"></p>',
+    );
+
+    delete message.content;
+    user_settings.emoji_animation_config =
+        settings_config.emoji_animation_config_values.on_hover.code;
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><img alt=":example_animated_emoji:" class="emoji" data-animated-url="/url/for/991" data-still-url="/url/still/991" src="/url/still/991" title="example animated emoji"></p>',
+    );
+
+    delete message.content;
+    user_settings.emoji_animation_config = settings_config.emoji_animation_config_values.never.code;
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><img alt=":example_animated_emoji:" class="emoji" data-animated-url="/url/for/991" data-still-url="/url/still/991" src="/url/still/991" title="example animated emoji"></p>',
+    );
+
+    delete message.content;
+    user_settings.emoji_animation_config = "some_strange_value";
+    try {
+        markdown.apply_markdown(message);
+    } catch (error) {
+        assert.equal(
+            error.message.split("\n")[0],
+            "Unexpected value for emoji_animation_config: 'some_strange_value'.",
+        );
+    }
+    assert.equal(message.content, undefined);
+});
+
+test("get_emoji_details_by_name exception handling", ({override_rewire}) => {
+    override_rewire(emoji, "get_emoji_details_by_name", () => ({
+        emoji_name: "unknown_emoji",
+        emoji_code: "991",
+        reaction_type: "realm_emoji",
+    }));
+    const test_emoji_name = "unknown_emoji";
+    const message = {raw_content: ":" + test_emoji_name + ":"};
+    markdown.initialize(markdown_config.get_helpers());
+    user_settings.emoji_animation_config =
+        settings_config.emoji_animation_config_values.always.code;
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><img alt=":unknown_emoji:" class="emoji" data-animated-url="/url/for/991" data-still-url="/url/still/991" src="/url/for/991" title="unknown emoji"></p>',
+    );
+
+    delete message.content;
+    user_settings.emoji_animation_config =
+        settings_config.emoji_animation_config_values.on_hover.code;
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><img alt=":unknown_emoji:" class="emoji" data-animated-url="/url/for/991" data-still-url="/url/still/991" src="/url/still/991" title="unknown emoji"></p>',
+    );
+
+    delete message.content;
+    user_settings.emoji_animation_config = settings_config.emoji_animation_config_values.never.code;
+    markdown.apply_markdown(message);
+    assert.equal(
+        message.content,
+        '<p><img alt=":unknown_emoji:" class="emoji" data-animated-url="/url/for/991" data-still-url="/url/still/991" src="/url/still/991" title="unknown emoji"></p>',
+    );
+
+    delete message.content;
+    user_settings.emoji_animation_config = "some_strange_value";
+    try {
+        markdown.apply_markdown(message);
+    } catch (error) {
+        assert.equal(
+            error.message.split("\n")[0],
+            "Unexpected value for emoji_animation_config: 'some_strange_value'.",
+        );
+    }
+    assert.equal(message.content, undefined);
 });
 
 test("katex_throws_unexpected_exceptions", ({override_rewire}) => {

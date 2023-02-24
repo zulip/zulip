@@ -3,9 +3,25 @@ import $ from "jquery";
 import {emoji_animation_config_values} from "./settings_config";
 import {user_settings} from "./user_settings";
 
+export function reset_emoji_animation(emoji_elt) {
+    if (user_settings.emoji_animation_config === emoji_animation_config_values.always.code) {
+        animate($(emoji_elt));
+    } else {
+        stop_animation($(emoji_elt));
+    }
+}
+
+export function reset_message_feed_emoji_animations() {
+    const $emojis = $(".message_table .message_row img.emoji");
+    for (const emoji_elt of $emojis) {
+        reset_emoji_animation(emoji_elt);
+    }
+}
+
 export function stop_animation($emoji) {
     if ($emoji.length) {
-        const still_url = CSS.escape($emoji.attr("data-still-url"));
+        // make sure we're not double escaping here again
+        const still_url = $emoji.attr("data-still-url");
         if (still_url) {
             $emoji.attr("src", still_url);
         }
@@ -14,7 +30,8 @@ export function stop_animation($emoji) {
 
 export function animate($emoji) {
     if ($emoji.length) {
-        const animated_url = CSS.escape($emoji.attr("data-animated-url"));
+        // make sure we're not double escaping here again
+        const animated_url = $emoji.attr("data-animated-url");
         if (animated_url) {
             $emoji.attr("src", animated_url);
         }
