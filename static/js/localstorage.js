@@ -32,6 +32,7 @@ const ls = {
 
     getData(version, name) {
         const key = this.formGetter(version, name);
+
         let data = localStorage.getItem(key);
         data = ls.parseJSON(data);
 
@@ -114,6 +115,9 @@ export const localstorage = function () {
         },
 
         get(name) {
+            if (!localstorage.supported()) {
+                return undefined;
+            }
             const data = ls.getData(_data.VERSION, name);
 
             if (data) {
