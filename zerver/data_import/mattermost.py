@@ -1002,7 +1002,3 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         attachment: Dict[str, List[Any]] = {"zerver_attachment": zerver_attachment}
         create_converted_data_files(uploads_list, realm_output_dir, "/uploads/records.json")
         create_converted_data_files(attachment, realm_output_dir, "/attachment.json")
-
-        logging.info("Start making tarball")
-        subprocess.check_call(["tar", "-czf", realm_output_dir + ".tar.gz", realm_output_dir, "-P"])
-        logging.info("Done making tarball")
