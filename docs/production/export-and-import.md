@@ -13,7 +13,10 @@ service (or back):
     version (most precisely, one where `manage.py showmigrations` has
     the same output).
   - Backups must be restored on a server running the same PostgreSQL
-    version.
+    version. To install Zulip with the same version of PostgreSQL that
+    the backup was taken on, pass the desired version with [the
+    `--postgresql-version` argument][installer-options] when
+    installing.
   - Backups aren't useful for migrating organizations between
     self-hosting and Zulip Cloud (which may require renumbering all
     the users/messages/etc.).
@@ -55,6 +58,8 @@ service (or back):
   and the [S3 file upload
   backend](upload-backends.md#s3-backend-configuration)
   as part of a high availability environment.
+
+[installer-options]: deployment.md#advanced-installer-options
 
 ## Backups
 
