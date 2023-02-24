@@ -271,7 +271,7 @@ webpack plugin (`web/debug-require-webpack-plugin.ts`) that exposes
 a version of the `require()` function to the development environment
 browser console for this purpose. For example, you can access our
 `people` module by evaluating
-`people = require("./web/src/people")`, or the third-party `lodash`
+`people = require("./src/people")`, or the third-party `lodash`
 module with `_ = require("lodash")`. This mechanism is **not** a
 stable API and should not be used for any purpose other than
 interactive debugging.

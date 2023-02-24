@@ -34,7 +34,7 @@ require("@babel/register")({
         "babel-plugin-rewire-ts",
         ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
     ],
-    root: path.resolve(__dirname, "../../.."),
+    root: path.resolve(__dirname, "../.."),
 });
 
 // Create a helper function to avoid sneaky delays in tests.

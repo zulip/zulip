@@ -2,7 +2,7 @@
 
 // This module is included from webpack in development mode.  To access it from
 // the browser console, run:
-//   var debug = require("./web/src/debug");
+//   var debug = require("./src/debug");
 
 /*
       debug.print_elapsed_time("foo", foo)
