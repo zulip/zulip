@@ -24,6 +24,7 @@
     "autosize": "^5.0.1",
     "babel-loader": "^9.1.0",
     "babel-plugin-formatjs": "^10.2.6",
+    "babel-plugin-istanbul": "^6.1.1",
     "blueimp-md5": "^2.10.0",
     "clean-css": "^5.1.0",
     "clipboard": "^2.0.4",

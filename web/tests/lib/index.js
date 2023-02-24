@@ -31,6 +31,7 @@ require("@babel/register")({
         new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep)),
     ],
     plugins: [
+        ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),
         "babel-plugin-rewire-ts",
         ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
     ],
@@ -75,19 +76,6 @@ const localStorage = {
 handlebars.hook_require();
 
 const noop = function () {};
-
-/* istanbul ignore next */
-function short_tb(tb) {
-    const lines = tb.split("\n");
-
-    const i = lines.findIndex((line) => line.includes("run_one_module"));
-
-    if (i === -1) {
-        return tb;
-    }
-
-    return lines.splice(0, i + 1).join("\n") + "\n(...)\n";
-}
 
 require("../../src/templates"); // register Zulip extensions
 
@@ -140,16 +128,6 @@ test.set_verbose(files.length === 1);
         namespace.finish();
     }
 })().catch((error) => /* istanbul ignore next */ {
-    if (process.env.USING_INSTRUMENTED_CODE) {
-        console.info(`
-    TEST FAILED! Before using the --coverage option please make sure that your
-    tests work under normal conditions.
-
-        `);
-    } else if (error.stack) {
-        console.info(short_tb(error.stack));
-    } else {
-        console.info(error);
-    }
+    console.error(error);
     process.exit(1);
 });
