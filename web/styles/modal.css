@@ -50,7 +50,6 @@
     font-size: 1.375rem;
     font-weight: 600;
     line-height: 1.25;
-    display: flex;
 
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
@@ -61,6 +60,7 @@
 .user_profile_name_heading {
     padding-right: 1rem;
     max-width: 80%;
+    display: flex;
 
     .user_profile_name {
         white-space: nowrap;
