@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 const fs = require("fs");
+const path = require("path");
 
 const {JSDOM} = require("jsdom");
 
@@ -11,7 +12,10 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
-const template = fs.readFileSync("templates/corporate/upgrade.html", "utf8");
+const template = fs.readFileSync(
+    path.resolve(__dirname, "../../templates/corporate/upgrade.html"),
+    "utf8",
+);
 const dom = new JSDOM(template, {
     pretendToBeVisual: true,
     url: "http://zulip.zulipdev.com/upgrade/#billing",
