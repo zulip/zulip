@@ -15,6 +15,7 @@
     ],
     "parser": "@babel/eslint-parser",
     "parserOptions": {
+        "requireConfigFile": false,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
@@ -240,7 +241,11 @@
                 "no-console": "error"
             },
             "settings": {
-                "import/resolver": "webpack"
+                "import/resolver": {
+                    "webpack": {
+                        "config": "./web/webpack.config.ts"
+                    }
+                }
             }
         },
         {

@@ -200,7 +200,7 @@ new feature hard to miss.
   browser session, and includes them in reports to the server, so that
   one can see cases where exceptions chained together. You can print
   this log from the browser console using
-  `blueslip = require("./web/src/blueslip"); blueslip.get_log()`.
+  `blueslip = require("./src/blueslip"); blueslip.get_log()`.
 
 Blueslip supports several error levels:
 

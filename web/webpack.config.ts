@@ -8,9 +8,9 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import type webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
-import DebugRequirePlugin from "./web/debug-require-webpack-plugin";
-import assets from "./web/webpack.assets.json";
-import dev_assets from "./web/webpack.dev-assets.json";
+import DebugRequirePlugin from "./debug-require-webpack-plugin";
+import assets from "./webpack.assets.json";
+import dev_assets from "./webpack.dev-assets.json";
 
 export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.Configuration[] => {
     const production: boolean = argv.mode === "production";
@@ -37,18 +37,18 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             : Object.fromEntries(
                   Object.entries({...assets, ...dev_assets}).map(([name, paths]) => [
                       name,
-                      [...paths, "./web/src/debug"],
+                      [...paths, "./src/debug"],
                   ]),
               ),
         module: {
             rules: [
                 {
-                    test: require.resolve("./web/src/zulip_test"),
+                    test: require.resolve("./src/zulip_test"),
                     loader: "expose-loader",
                     options: {exposes: "zulip_test"},
                 },
                 {
-                    test: require.resolve("./web/debug-require"),
+                    test: require.resolve("./debug-require"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
                 },
@@ -83,15 +83,15 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                 {
                     test: /\.(js|ts)$/,
                     include: [
-                        path.resolve(__dirname, "web/shared/src"),
-                        path.resolve(__dirname, "web/src"),
+                        path.resolve(__dirname, "shared/src"),
+                        path.resolve(__dirname, "src"),
                     ],
                     loader: "babel-loader",
                 },
                 // regular css files
                 {
                     test: /\.css$/,
-                    exclude: path.resolve(__dirname, "web/styles"),
+                    exclude: path.resolve(__dirname, "styles"),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -105,7 +105,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                 // PostCSS loader
                 {
                     test: /\.css$/,
-                    include: path.resolve(__dirname, "web/styles"),
+                    include: path.resolve(__dirname, "styles"),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -160,7 +160,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             ],
         },
         output: {
-            path: path.resolve(__dirname, "static/webpack-bundles"),
+            path: path.resolve(__dirname, "../static/webpack-bundles"),
             publicPath: "",
             filename: production ? "[name].[contenthash].js" : "[name].js",
             assetModuleFilename: production
@@ -197,8 +197,8 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
-                    ? "webpack-stats-production.json"
-                    : "var/webpack-stats-dev.json",
+                    ? "../webpack-stats-production.json"
+                    : "../var/webpack-stats-dev.json",
             }),
             // Extract CSS from files
             new MiniCssExtractPlugin({
@@ -207,7 +207,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             }),
             new HtmlWebpackPlugin({
                 filename: "5xx.html",
-                template: "web/html/5xx.html",
+                template: "html/5xx.html",
                 chunks: ["error-styles"],
             }),
         ],
@@ -247,7 +247,7 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             "katex-cli": "shebang-loader!katex/cli",
         },
         output: {
-            path: path.resolve(__dirname, "static/webpack-bundles"),
+            path: path.resolve(__dirname, "../static/webpack-bundles"),
         },
     };
 

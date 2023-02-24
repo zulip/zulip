@@ -8,15 +8,15 @@ on:
     paths:
       - .github/workflows/production-suite.yml
       - "**/migrations/**"
-      - babel.config.js
       - manage.py
-      - postcss.config.js
       - puppet/**
       - requirements/**
       - scripts/**
       - tools/**
+      - web/babel.config.js
+      - web/postcss.config.js
       - web/third/**
-      - webpack.config.ts
+      - web/webpack.config.ts
       - yarn.lock
       - zerver/worker/queue_processors.py
       - zerver/lib/push_notifications.py

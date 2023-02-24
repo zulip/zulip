@@ -5,7 +5,7 @@ import os
 import subprocess
 from typing import NoReturn
 
-os.chdir(os.path.join(os.path.dirname(__file__), ".."))
+os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
 
 
 def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
@@ -15,7 +15,7 @@ def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     with open("/proc/meminfo") as meminfo:
         if int(next(meminfo).split()[1]) < 3 * 1024 * 1024:
             webpack_args += ["--max-old-space-size=1536"]
-    webpack_args += ["node_modules/.bin/webpack-cli", "--mode=production"]
+    webpack_args += ["../node_modules/.bin/webpack-cli", "--mode=production"]
     if quiet:
         webpack_args += ["--stats=errors-only"]
     os.execvp(webpack_args[0], webpack_args)
@@ -27,7 +27,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # This is our most dynamic configuration, which we use for our
     # dev server.  The key piece here is that we identify changes to
     # files as devs make edits and serve new assets on the fly.
-    webpack_args = ["node", "node_modules/.bin/webpack-cli", "serve"]
+    webpack_args = ["node", "../node_modules/.bin/webpack-cli", "serve"]
     webpack_args += [
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex-cli part anyway.
@@ -79,8 +79,8 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         # We did a chdir to the root of the Zulip checkout above.
         for filepath in [
             "webpack.config.ts",
-            "web/webpack.assets.json",
-            "web/webpack.dev-assets.json",
+            "webpack.assets.json",
+            "webpack.dev-assets.json",
         ]:
             watch_manager.add_watch(filepath, pyinotify.IN_MODIFY)
         event_notifier.loop()
@@ -100,17 +100,17 @@ def build_for_most_tests() -> None:
     # configuration for ALL tests, but figuring out the full history here
     # was out of the scope of the effort here to add some comments and
     # clean up names.
-    with open("web/webpack.assets.json") as json_data:
+    with open("webpack.assets.json") as json_data:
         entries = json.load(json_data)
 
-    with open("web/webpack.dev-assets.json") as json_data:
+    with open("webpack.dev-assets.json") as json_data:
         entries.update(json.load(json_data))
 
     stat_data = {
         "status": "done",
         "chunks": {entry: [f"{entry}-stubentry.js"] for entry in entries},
     }
-    directory = "var"
+    directory = "../var"
     if not os.path.exists(directory):
         os.makedirs(directory)
     with open(os.path.join(directory, "webpack-stats-test.json"), "w") as outfile:
