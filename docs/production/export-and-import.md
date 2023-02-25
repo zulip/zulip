@@ -410,24 +410,11 @@ and then once you're ready, you can email them to everyone using e.g.
 If you did a test import of a Zulip organization, you may want to
 delete the test import data from your Zulip server before doing a
 final import. You can **permanently delete** all data from a Zulip
-organization using the following procedure:
-
-- Start a [Zulip management shell](management-commands.md#managepy-shell)
-- In the management shell, run the following commands, replacing `""`
-  with the subdomain if [you are hosting the organization on a
-  subdomain](multiple-organizations.md):
-
-```python
-realm = Realm.objects.get(string_id="")
-realm.delete()
-```
-
-The output contains details on the objects deleted from the database.
-
-Now, exit the management shell and run this to clear Zulip's cache:
+organization by running (replacing `''` with the subdomain if [you are
+hosting the organization on a subdomain](multiple-organizations.md)):
 
 ```bash
-/home/zulip/deployments/current/scripts/setup/flush-memcached
+./manage.py delete_realm -r ''
 ```
 
 Assuming you're using the
