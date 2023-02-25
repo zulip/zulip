@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import * as typeahead from "../shared/src/typeahead";
+import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -1130,6 +1131,7 @@ export function initialize() {
             }
             return sorted;
         },
+        header: render_topic_typeahead_hint,
     });
 
     $("#private_message_recipient").typeahead({
