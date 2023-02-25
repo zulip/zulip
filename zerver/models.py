@@ -3169,10 +3169,7 @@ class AbstractEmoji(models.Model):
 class AbstractReaction(AbstractEmoji):
     class Meta:
         abstract = True
-        unique_together = (
-            ("user_profile", "message", "emoji_name"),
-            ("user_profile", "message", "reaction_type", "emoji_code"),
-        )
+        unique_together = ("user_profile", "message", "reaction_type", "emoji_code")
 
 
 class Reaction(AbstractReaction):
