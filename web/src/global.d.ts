@@ -16,6 +16,7 @@ type JQueryCaretRange = {
 interface JQuery {
     expectOne(): JQuery;
     tab(action?: string): this; // From web/third/bootstrap
+    modal(action?: string): this; // From web/third/bootstrap
 
     // Types for jquery-caret-plugin
     caret(): number;
