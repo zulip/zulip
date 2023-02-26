@@ -464,4 +464,19 @@ export function initialize() {
         delay: [500, 20],
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: ".about_version",
+        onMount(instance) {
+            const $version_el = $(instance.reference);
+            $version_el.on("click", () => {
+                instance.setContent("Copied");
+                instance.show();
+            });
+        },
+        onHidden(instance) {
+            instance.setContent("Copy version");
+        },
+        appendTo: () => document.body,
+    });
 }

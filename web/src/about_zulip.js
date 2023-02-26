@@ -16,7 +16,7 @@ export function launch() {
         },
     });
 
-    new ClipboardJS("#about-zulip .fa-copy");
+    new ClipboardJS("#about-zulip .about_version");
 }
 
 export function initialize() {
