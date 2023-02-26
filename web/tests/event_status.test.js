@@ -24,6 +24,11 @@ run_test("initialize_retry_with_another_card_link_click_handler", ({override}) =
         });
         callback({stripe_session_url: "stripe_session_url"});
     });
+    override(helpers, "stripe_session_url_schema", {
+        parse(obj) {
+            return obj;
+        },
+    });
     event_status.initialize_retry_with_another_card_link_click_handler();
     const retry_click_handler = $("#retry-with-another-card-link").get_on_handler("click");
     retry_click_handler({preventDefault() {}});
@@ -37,6 +42,7 @@ run_test("check_status", async ({override}) => {
         return {
             session: {
                 status: "created",
+                type: "upgrade_from_billing_page",
             },
         };
     });
@@ -49,6 +55,7 @@ run_test("check_status", async ({override}) => {
         return {
             session: {
                 status: "completed",
+                type: "upgrade_from_billing_page",
                 event_handler: {
                     status: "started",
                 },

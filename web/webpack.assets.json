@@ -32,7 +32,7 @@
         "./src/billing/page_params",
         "./src/bundles/portico",
         "./styles/portico/landing_page.css",
-        "./src/billing/event_status.js",
+        "./src/billing/event_status",
         "./src/billing/helpers",
         "./styles/portico/billing.css"
     ],
