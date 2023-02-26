@@ -283,6 +283,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info={})
         self.assert_json_error(result, "No new data supplied")
 
+        # Test when only one of name or description is supplied.
+        params = {"name": "help team"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_success(result)
+
         # Test when invalid user group is supplied
         params = {"name": "help"}
         result = self.client_patch("/json/user_groups/1111", info=params)

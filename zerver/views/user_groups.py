@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -62,18 +62,18 @@ def edit_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    name: str = REQ(default=""),
-    description: str = REQ(default=""),
+    name: Optional[str] = REQ(default=None),
+    description: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
-    if not (name or description):
+    if name is None and description is None:
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
-    if name != user_group.name:
+    if name is not None and name != user_group.name:
         do_update_user_group_name(user_group, name, acting_user=user_profile)
 
-    if description != user_group.description:
+    if description is not None and description != user_group.description:
         do_update_user_group_description(user_group, description, acting_user=user_profile)
 
     return json_success(request)
