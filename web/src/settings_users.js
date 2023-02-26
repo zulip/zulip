@@ -230,6 +230,8 @@ function bot_info(bot_user_id) {
 
     info.is_current_user = false;
     info.can_modify = page_params.is_admin;
+    info.cannot_deactivate = bot_user.is_system_bot;
+    info.cannot_edit = bot_user.is_system_bot;
 
     // It's always safe to show the real email addresses for bot users
     info.display_email = bot_user.email;
