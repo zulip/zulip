@@ -15061,18 +15061,22 @@ paths:
           in: query
           description: |
             The new name of the group.
+
+            **Changes**: Before Zulip 7.0 (feature level 165), this was
+            a required field.
           schema:
             type: string
           example: marketing team
-          required: true
         - name: description
           in: query
           description: |
             The new description of the group.
+
+            **Changes**: Before Zulip 7.0 (feature level 165), this was
+            a required field.
           schema:
             type: string
           example: The marketing team.
-          required: true
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
