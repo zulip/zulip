@@ -686,6 +686,7 @@ DELIVER_SCHEDULED_MESSAGES_LOG_PATH = zulip_path("/var/log/zulip/deliver_schedul
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
+GROUP_STREAM_SYNC_LOG_PATH = zulip_path("/var/log/zulip/sync_group_stream.log")
 
 ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
 
