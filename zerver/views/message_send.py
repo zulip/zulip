@@ -237,7 +237,7 @@ def send_message_backend(
     if forged and not can_forge_sender:
         raise JsonableError(_("User not authorized for this query"))
 
-    realm = None
+    realm = user_profile.realm
     if realm_str and realm_str != user_profile.realm.string_id:
         # The realm_str parameter does nothing, because it has to match
         # the user's realm - but we keep it around for backward compatibility.
