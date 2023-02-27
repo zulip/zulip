@@ -2,7 +2,8 @@ import io
 import os
 import re
 import unicodedata
-from typing import IO, Any, Callable, List, Optional, Tuple
+from datetime import datetime
+from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
 
 from django.utils.translation import gettext as _
 from markupsafe import Markup
@@ -209,6 +210,9 @@ class ZulipUploadBackend:
     def delete_message_attachments(self, path_ids: List[str]) -> None:
         for path_id in path_ids:
             self.delete_message_attachment(path_id)
+
+    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+        raise NotImplementedError
 
     # Avatar image uploads
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:

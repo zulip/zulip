@@ -3,11 +3,13 @@ import os
 import random
 import secrets
 import shutil
-from typing import IO, Any, Callable, Literal, Optional
+from datetime import datetime
+from typing import IO, Any, Callable, Iterator, Literal, Optional, Tuple
 
 from django.conf import settings
 
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload.base import (
     MEDIUM_AVATAR_SIZE,
     ZulipUploadBackend,
@@ -98,6 +100,16 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def delete_message_attachment(self, path_id: str) -> bool:
         return delete_local_file("files", path_id)
+
+    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        for dirname, _, files in os.walk(settings.LOCAL_UPLOADS_DIR + "/files"):
+            for f in files:
+                fullpath = os.path.join(dirname, f)
+                yield (
+                    os.path.relpath(fullpath, settings.LOCAL_UPLOADS_DIR + "/files"),
+                    timestamp_to_datetime(os.path.getmtime(fullpath)),
+                )
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         medium_suffix = "-medium" if medium else ""
