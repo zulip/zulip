@@ -71,7 +71,9 @@ EXTERNAL_HOST = "zulip.example.com"
 ## advice for troubleshooting, see the Zulip documentation:
 ##   https://zulip.readthedocs.io/en/latest/production/email.html
 
-## EMAIL_HOST and EMAIL_HOST_USER are generally required.
+## EMAIL_HOST and EMAIL_HOST_USER are generally required.  If your
+## SMTP server does not require authentication, leave EMAIL_HOST_USER
+## commented out.
 # EMAIL_HOST = "smtp.example.com"
 # EMAIL_HOST_USER = ""
 
