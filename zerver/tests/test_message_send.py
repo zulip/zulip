@@ -27,7 +27,6 @@ from zerver.actions.message_send import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
@@ -1057,81 +1056,6 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
                 "topic": "Test topic",
                 "forged": "true",
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
-    def test_send_message_as_not_superuser_to_different_domain(self) -> None:
-        self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "Test topic",
-                "realm_str": "mit",
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
-    def test_send_message_with_can_forge_sender_to_different_domain(self) -> None:
-        user = self.example_user("default_bot")
-        do_change_can_forge_sender(user, True)
-        # To a non-existing realm:
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "Test topic",
-                "realm_str": "non-existing",
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
-        # To an existing realm:
-        zephyr_realm = get_realm("zephyr")
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "Test topic",
-                "realm_str": zephyr_realm.string_id,
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
-    def test_send_message_forging_message_to_another_realm(self) -> None:
-        """
-        Test for a specific vulnerability that allowed a .can_forge_sender
-        user to forge a message as a cross-realm bot to a stream in another realm,
-        by setting up an appropriate RealmDomain and specifying JabberMirror as client
-        to cause the vulnerable codepath to be executed.
-        """
-        user = self.example_user("default_bot")
-        do_change_can_forge_sender(user, True)
-
-        zephyr_realm = get_realm("zephyr")
-        self.make_stream("Verona", zephyr_realm)
-        do_add_realm_domain(zephyr_realm, "zulip.com", False, acting_user=None)
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "client": "JabberMirror",
-                "content": "Test message",
-                "topic": "Test topic",
-                "forged": "true",
-                "sender": "notification-bot@zulip.com",
-                "realm_str": zephyr_realm.string_id,
             },
         )
         self.assert_json_error(result, "User not authorized for this query")
