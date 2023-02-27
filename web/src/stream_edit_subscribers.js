@@ -14,6 +14,7 @@ import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as sub_store from "./sub_store";
@@ -121,6 +122,11 @@ function make_list_widget({$parent_container, name, user_ids, user_can_remove_su
 
                 return match;
             },
+        },
+        $parent_container: $("#stream_members_list").expectOne(),
+        sort_fields: {
+            email: settings_users.sort_email,
+            id: settings_users.sort_user_id,
         },
         $simplebar_container,
     });

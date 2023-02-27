@@ -40,7 +40,7 @@ function compare_a_b(a, b) {
     return -1;
 }
 
-function sort_email(a, b) {
+export function sort_email(a, b) {
     const email_a = a.delivery_email;
     const email_b = b.delivery_email;
 
@@ -87,7 +87,7 @@ function sort_last_active(a, b) {
     );
 }
 
-function sort_user_id(a, b) {
+export function sort_user_id(a, b) {
     return compare_a_b(a.user_id, b.user_id);
 }
 

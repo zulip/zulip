@@ -7,6 +7,7 @@ import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_users from "./settings_users";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
 
 let pill_widget;
@@ -83,28 +84,30 @@ export function build_widgets() {
 
     all_users_list_widget = ListWidget.create($("#create_stream_subscribers"), [current_user_id], {
         name: "new_stream_add_users",
+        get_item: people.get_by_user_id,
         $parent_container: $add_people_container,
-        modifier(user_id) {
-            const user = people.get_by_user_id(user_id);
+        modifier(user) {
             const item = {
                 email: user.delivery_email,
-                user_id,
+                user_id: user.user_id,
                 full_name: user.full_name,
-                is_current_user: user_id === current_user_id,
-                disabled: stream_create_subscribers_data.must_be_subscribed(user_id),
+                is_current_user: user.user_id === current_user_id,
+                disabled: stream_create_subscribers_data.must_be_subscribed(user.user_id),
             };
             return render_new_stream_user(item);
         },
+        sort_fields: {
+            email: settings_users.sort_email,
+            id: settings_users.sort_user_id,
+        },
         filter: {
             $element: $("#people_to_add .add-user-list-filter"),
-            predicate(user_id, search_term) {
-                const user = people.get_by_user_id(user_id);
+            predicate(user, search_term) {
                 return people.build_person_matcher(search_term)(user);
             },
         },
         $simplebar_container,
-        html_selector(user_id) {
-            const user = people.get_by_user_id(user_id);
+        html_selector(user) {
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
         },
     });
