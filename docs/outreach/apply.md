@@ -66,8 +66,10 @@ We recommend taking the following steps before diving into the issue tracker:
 
 - Join the [Zulip development
   community](https://zulip.com/development-community/), and introduce yourself
-  in the stream for the program you are participating in. Before you jump in, be
-  sure to review the [Zulip community
+  in the stream for the program you are participating in
+  ([#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
+  [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)). Before you
+  jump in, be sure to review the [Zulip community
   norms](https://zulip.com/development-community/).
 
 - Follow our instructions to [install the development
