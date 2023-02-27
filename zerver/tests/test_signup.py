@@ -772,7 +772,7 @@ class PasswordResetTest(ZulipTestCase):
         self.assert_in_success_response(["Check your email"], result)
 
         result = self.client_get("/accounts/password/done/")
-        self.assert_in_success_response(["We've reset your password!"], result)
+        self.assert_in_success_response(["You've set a new password!"], result)
 
         result = self.client_get("/accounts/send_confirm/?email=alice@example.com")
         self.assert_in_success_response(["/accounts/home/"], result)
