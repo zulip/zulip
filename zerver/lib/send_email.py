@@ -596,5 +596,6 @@ def log_email_config_errors() -> None:
     """
     if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD is None:
         logger.error(
-            "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD)."
+            "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD).  "
+            "To disable SMTP authentication, set EMAIL_HOST_USER to an empty string."
         )
