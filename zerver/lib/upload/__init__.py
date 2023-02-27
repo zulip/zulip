@@ -1,8 +1,9 @@
 import io
 import logging
 import urllib
+from datetime import datetime
 from mimetypes import guess_type
-from typing import IO, Any, Callable, List, Optional, Tuple
+from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -112,6 +113,10 @@ def delete_message_attachment(path_id: str) -> bool:
 
 def delete_message_attachments(path_ids: List[str]) -> None:
     return upload_backend.delete_message_attachments(path_ids)
+
+
+def all_message_attachments() -> Iterator[Tuple[str, datetime]]:
+    return upload_backend.all_message_attachments()
 
 
 # Avatar image uploads

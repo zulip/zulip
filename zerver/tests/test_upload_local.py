@@ -17,6 +17,7 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
 )
 from zerver.lib.upload import (
+    all_message_attachments,
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
@@ -116,6 +117,14 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         for path_id in path_ids:
             file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
             self.assertFalse(os.path.isfile(file_path))
+
+    def test_all_message_attachments(self) -> None:
+        write_local_file("files", "foo", b"content")
+        write_local_file("files", "bar/baz", b"content")
+        write_local_file("files", "bar/troz", b"content")
+        write_local_file("files", "test/other/file", b"content")
+        found_files = [r[0] for r in all_message_attachments()]
+        self.assertEqual(sorted(found_files), ["bar/baz", "bar/troz", "foo", "test/other/file"])
 
     def test_avatar_url(self) -> None:
         self.login("hamlet")
