@@ -458,10 +458,6 @@ input.text-error {
     .footer-section ul {
         margin: 0;
     }
-
-    @media (width <= 500px) {
-        flex-direction: column;
-    }
 }
 
 /* -- end new footer -- */
