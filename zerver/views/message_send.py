@@ -198,7 +198,6 @@ def send_message_backend(
     topic_name: Optional[str] = REQ_topic(),
     message_content: str = REQ("content"),
     widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
-    realm_str: Optional[str] = REQ("realm_str", default=None, documentation_pending=True),
     local_id: Optional[str] = REQ(default=None),
     queue_id: Optional[str] = REQ(default=None),
     delivery_type: str = REQ("delivery_type", default="send_now", documentation_pending=True),
@@ -238,10 +237,6 @@ def send_message_backend(
         raise JsonableError(_("User not authorized for this query"))
 
     realm = user_profile.realm
-    if realm_str and realm_str != user_profile.realm.string_id:
-        # The realm_str parameter does nothing, because it has to match
-        # the user's realm - but we keep it around for backward compatibility.
-        raise JsonableError(_("User not authorized for this query"))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:

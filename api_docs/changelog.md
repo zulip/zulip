@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 166**
+* [`POST /messages`](/api/send-message): Eliminated the `realm_str` parameter. This parameter
+  was already redundant due to it needing to match the realm of the user making the request,
+  otherwise returning an authorization error. With this, the parameter is removed, meaning
+  that if provided in the API request, it'll be ignored.
+
 **Feature level 165**
 
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): The
