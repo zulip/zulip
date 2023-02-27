@@ -995,7 +995,8 @@ div.settings-radio-input-parent {
     .dropdown-list-widget {
         .dropdown-toggle {
             margin-bottom: 10px;
-            width: 325px;
+            min-width: 325px;
+            max-width: 100%;
         }
 
         ul.dropdown-menu {
