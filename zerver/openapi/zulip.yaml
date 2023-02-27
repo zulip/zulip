@@ -9157,8 +9157,9 @@ paths:
         - name: email_address_visibility
           in: query
           description: |
-            The [policy][permission-level] this user has selected for which other
-            users in this organization can see the real email address of this user.
+            The [policy][permission-level] this user has selected for [which other
+            users][help-email-visibility] in this organization can see the real email
+            address of this user.
 
             - 1 = Everyone
             - 2 = Members only
@@ -9170,6 +9171,7 @@ paths:
             realm-level setting.
 
             [permission-level]: /api/roles-and-permissions#permission-levels
+            [help-email-visibility]: /help/configure-email-visibility
           schema:
             type: integer
             enum:
@@ -14235,8 +14237,9 @@ paths:
         - name: email_address_visibility
           in: query
           description: |
-            The [policy][permission-level] this user has selected for which other
-            users in this organization can see the real email address of this user.
+            The [policy][permission-level] this user has selected for [which other
+            users][help-email-visibility] in this organization can see the real email
+            address of this user.
 
             - 1 = Everyone
             - 2 = Members only
@@ -14248,6 +14251,7 @@ paths:
             realm-level setting.
 
             [permission-level]: /api/roles-and-permissions#permission-levels
+            [help-email-visibility]: /help/configure-email-visibility
           schema:
             type: integer
             enum:
@@ -16433,8 +16437,9 @@ components:
     EmailAddressVisibility:
       type: integer
       description: |
-        The [policy][permission-level] this user has selected for which other
-        users in this organization can see the real email address of this user.
+        The [policy][permission-level] this user has selected for [which other
+        users][help-email-visibility] in this organization can see the real email
+        address of this user.
 
         - 1 = Everyone
         - 2 = Members only
@@ -16446,6 +16451,7 @@ components:
         realm-level setting.
 
         [permission-level]: /api/roles-and-permissions#permission-levels
+        [help-email-visibility]: /help/configure-email-visibility
     EmojiReaction:
       allOf:
         - $ref: "#/components/schemas/EmojiReactionBase"
