@@ -72,16 +72,6 @@ $category-text: hsl(219, 23%, 33%);
         list-style: circle;
     }
 
-    code {
-        display: inline-block;
-        vertical-align: middle;
-        max-width: 100%;
-        overflow: auto;
-
-        font-family: "Source Code Pro", monospace;
-        font-size: 0.85em;
-    }
-
     .integration-main-text {
         padding: 0 15px;
     }
