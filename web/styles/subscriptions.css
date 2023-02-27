@@ -982,8 +982,9 @@ div.settings-radio-input-parent {
     }
 
     .settings_select {
-        /* Match .setting_desktop_icon_count_display */
-        width: 325px;
+        /* Match with select elements in settings page */
+        min-width: 325px;
+        max-width: 100%;
         height: fit-content;
     }
 
