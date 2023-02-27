@@ -7,8 +7,10 @@ priority.
 - All Zulip clients (web, mobile, desktop, terminal, and integrations)
   require TLS encryption and authentication over HTTPS for all data
   transmission between clients and the server, both on LAN and the Internet.
-  Encryption-at-rest is available with Zulip on-premise, via hardware and
-  software disk encryption of the database and other data storage media.
+- All Zulip Cloud customer data is encrypted at rest. Self-hosted Zulip can be
+  configured for encryption at rest via your hosting provider, or by setting up
+  hardware and software disk encryption of the database and other data storage
+  media.
 - Zulip’s on-premise offerings can be hosted entirely behind your firewall,
   or even on an air-gapped network (disconnected from the Internet).
 - Every Zulip authenticated API endpoint has built in rate limiting to
