@@ -12,11 +12,11 @@ Get Zulip notifications from Alertmanager!
 
 1. In your Alertmanager config, set up a new webhook receiver, like so:
 
-```
-- name: ops-zulip
-  webhook_configs:
-    - url: "<the URL constructed above>"
-```
+    ```
+    - name: ops-zulip
+      webhook_configs:
+        - url: "<the URL constructed above>"
+    ```
 
 {!congrats.md!}
 
