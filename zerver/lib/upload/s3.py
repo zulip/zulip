@@ -2,8 +2,9 @@ import logging
 import os
 import secrets
 import urllib
+from datetime import datetime
 from mimetypes import guess_type
-from typing import IO, Any, Callable, List, Optional
+from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
 
 import boto3
 import botocore
@@ -237,6 +238,21 @@ class S3UploadBackend(ZulipUploadBackend):
         self.uploads_bucket.delete_objects(
             Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
         )
+
+    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+        client = self.session.client(
+            "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
+        )
+        paginator = client.get_paginator("list_objects_v2")
+        page_iterator = paginator.paginate(Bucket=self.uploads_bucket.name)
+
+        for page in page_iterator:
+            if page["KeyCount"] > 0:
+                for item in page["Contents"]:
+                    yield (
+                        item["Key"],
+                        item["LastModified"],
+                    )
 
     def write_avatar_images(
         self,

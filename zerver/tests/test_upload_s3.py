@@ -21,6 +21,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.upload import (
+    all_message_attachments,
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
@@ -146,6 +147,20 @@ class S3Test(ZulipTestCase):
                 "WARNING:root:non-existent-file does not exist. Its entry in the database will be removed."
             ],
         )
+
+    @use_s3_backend
+    def test_all_message_attachments(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        user_profile = self.example_user("hamlet")
+        path_ids = []
+        for n in range(1, 5):
+            uri = upload_message_attachment(
+                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+            )
+            path_ids.append(re.sub("/user_uploads/", "", uri))
+        found_paths = [r[0] for r in all_message_attachments()]
+        self.assertEqual(sorted(found_paths), sorted(path_ids))
 
     @use_s3_backend
     def test_user_uploads_authed(self) -> None:
