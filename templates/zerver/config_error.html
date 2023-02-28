@@ -48,23 +48,26 @@
                     {% endif %}
 
                     {% if error_name == "dev_not_supported_error" %}
-                    {{ render_markdown_path('zerver/dev-not-supported-error.md', {"settings_path": settings_path}) }}
+                        {% include "zerver/authentication_backends/dev-not-supported-error.html" %}
                     {% endif %}
 
-                    {% if has_markdown_file %}
+                    {% if has_error_template %}
                         {% if development_environment %}
-                        {{ render_markdown_path('zerver/'+social_backend_name+'-error.md',
-                          {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path,
-                          "client_id_key_name": "social_auth_" + social_backend_name + "_key"}) }}
+                        {% with %}
+                            {% set settings_path = secrets_path %}
+                            {% set client_id_key_name = "social_auth_" + social_backend_name + "_key" %}
+                            {% include "zerver/authentication_backends/" + social_backend_name + "-error.html" %}
+                        {% endwith %}
                         <p>
                             For more information, have a look at
                             the <a href="https://zulip.readthedocs.io/en/latest/development/authentication.html#{{ social_backend_name }}">authentication
                             setup guide</a> for the development environment.
                         </p>
                         {% else %}
-                        {{ render_markdown_path('zerver/'+social_backend_name+'-error.md',
-                          {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path,
-                          "client_id_key_name": "SOCIAL_AUTH_" + social_backend_name.upper() + "_KEY"}) }}
+                        {% with %}
+                            {% set client_id_key_name = "SOCIAL_AUTH_" + social_backend_name.upper() + "_KEY" %}
+                            {% include "zerver/authentication_backends/" + social_backend_name + "-error.html" %}
+                        {% endwith %}
                         <p>
                             For more information, have a look at
                             our <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html">authentication
