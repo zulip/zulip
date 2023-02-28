@@ -1534,5 +1534,31 @@ export class MessageListView {
         const today = new Date();
         const rendered_date = timerender.render_date(time, undefined, today);
         $sticky_header.find(".recipient_row_date").html(rendered_date);
+
+        // The following prevents a broken looking situation where
+        // there's a recipient row (possibly partially) visible just
+        // above the sticky recipient row, with an identical
+        // date. (E.g., both displaying "today"). We avoid this by
+        // hiding the date display on the non-sticky previous
+        // recipient row.
+        $(".hide-date-separator-header").removeClass("hide-date-separator-header");
+        // The hide-date CSS class is set on recipient_row_date
+        // elements where the previous row had the same date; these
+        // will only display the date when sticky. Since this corner
+        // case only is relevant with an identical date, we start by
+        // checking whether the hide-date class is present.
+        if ($sticky_header.find(".recipient_row_date.hide-date").length) {
+            const $prev_recipient_row = $sticky_header
+                .closest(".recipient_row")
+                .prev(".recipient_row");
+            if (!$prev_recipient_row.length) {
+                return;
+            }
+            const $prev_header_date_row = $prev_recipient_row.find(".recipient_row_date");
+            // Check if the recipient row before sticky header is a date separator.
+            if (!$prev_header_date_row.hasClass("hide-date")) {
+                $prev_header_date_row.addClass("hide-date-separator-header");
+            }
+        }
     }
 }
