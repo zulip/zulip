@@ -3,40 +3,32 @@
 
         <p>
             {{#tr}}
-            Configure regular expression patterns that will be
-            automatically linkified when used in Zulip message bodies or
-            topics.  For example to automatically linkify commit IDs and
-            issue numbers (e.g. #123) to the corresponding items in a GitHub
-            project, you could use the following:
+            Configure regular expression patterns that will be used to
+            automatically transform any matching text in Zulip messages
+            and topics into links.
+            {{/tr}}
+        </p>
+        <p>
+            {{#tr}}
+            Linkifiers make it easy to refer to issues or tickets in
+            third party issue trackers, like GitHub, Salesforce, Zendesk,
+            and others. For instance, you can add a linkifier that
+            automatically turns #2468 into a link to the GitHub issue
+            in the Zulip repository with:
             {{/tr}}
         </p>
         <ul>
             <li>
-                <code>#(?P&lt;id&gt;[0-9]+)</code>
-                {{t "and" }}
-                <code>https://github.com/zulip/zulip/issues/%(id)s</code>
+                {{t "Pattern" }}: <span class="rendered_markdown"><code>#(?P&lt;id&gt;[0-9]+)</code></span>
             </li>
             <li>
-                <code>(?P&lt;id&gt;[0-9a-f]{40})</code>
-                {{t "and" }}
-                <code>https://github.com/zulip/zulip/commit/%(id)s</code>
+                {{t "URL format string" }}: <span class="rendered_markdown"><code>https://github.com/zulip/zulip/issues/%(id)s</code></span>
             </li>
         </ul>
         <p>
             {{#tr}}
-            Or, to automatically linkify GitHub's <code>org/repo#1234</code> syntax:
-            {{/tr}}
-        </p>
-        <ul>
-            <li>
-                <code>(?P&lt;org&gt;[a-zA-Z0-9_-]+)/(?P&lt;repo&gt;[a-zA-Z0-9_-]+)#(?P&lt;id&gt;[0-9]+)</code>
-                {{t "and" }}
-                <code>https://github.com/%(org)s/%(repo)s/issues/%(id)s</code>
-            </li>
-        </ul>
-        <p>
-            {{#tr}}
-                More details are available <z-link>in the Help Center article</z-link>.
+                For more examples, see the <z-link>help center documentation</z-link>
+                on adding linkifiers.
                 {{#*inline "z-link"}}<a href="/help/add-a-custom-linkifier" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
@@ -45,7 +37,10 @@
         <form class="admin-linkifier-form">
             <div class="add-new-linkifier-box grey-box">
                 <div class="new-linkifier-form wrapper">
-                    <div class="settings-section-title new-linkifier-section-title">{{t "Add a new linkifier" }}</div>
+                    <div class="settings-section-title new-linkifier-section-title">
+                        {{t "Add a new linkifier" }}
+                        {{> ../help_link_widget link="/help/add-a-custom-linkifier" }}
+                    </div>
                     <div class="alert" id="admin-linkifier-status"></div>
                     <div class="input-group">
                         <label for="linkifier_pattern">{{t "Pattern" }}</label>
