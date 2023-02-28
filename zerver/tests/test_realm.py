@@ -16,6 +16,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_change_realm_plan_type,
     do_deactivate_realm,
+    do_delete_all_realm_attachments,
     do_reactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
@@ -27,7 +28,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.upload import upload_message_attachment
+from zerver.lib.upload import delete_message_attachments, upload_message_attachment
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -1417,6 +1418,42 @@ class RealmAPITest(ZulipTestCase):
 
 
 class ScrubRealmTest(ZulipTestCase):
+    def test_do_delete_all_realm_attachments(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        Attachment.objects.filter(realm=realm).delete()
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+
+        path_ids = []
+        for n in range(1, 4):
+            content = f"content{n}".encode()
+            url = upload_message_attachment(
+                f"dummy{n}.txt", len(content), "text/plain", content, hamlet
+            )
+            base = "/user_uploads/"
+            self.assertEqual(base, url[: len(base)])
+            path_id = re.sub("/user_uploads/", "", url)
+            self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
+            path_ids.append(path_id)
+
+        with mock.patch(
+            "zerver.actions.realm_settings.delete_message_attachments",
+            side_effect=delete_message_attachments,
+        ) as p:
+            do_delete_all_realm_attachments(realm, batch_size=2)
+
+            self.assertEqual(p.call_count, 2)
+            p.assert_has_calls(
+                [
+                    mock.call([path_ids[0], path_ids[1]]),
+                    mock.call([path_ids[2]]),
+                ]
+            )
+        self.assertEqual(Attachment.objects.filter(realm=realm).count(), 0)
+        for file_path in path_ids:
+            self.assertFalse(os.path.isfile(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
+
     def test_scrub_realm(self) -> None:
         zulip = get_realm("zulip")
         lear = get_realm("lear")

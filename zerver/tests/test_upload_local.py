@@ -19,6 +19,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.upload import (
     delete_export_tarball,
     delete_message_attachment,
+    delete_message_attachments,
     upload_emoji_image,
     upload_export_tarball,
     upload_message_attachment,
@@ -86,7 +87,35 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         response_dict = self.assert_json_success(result)
         path_id = re.sub("/user_uploads/", "", response_dict["uri"])
+
+        assert settings.LOCAL_FILES_DIR is not None
+        file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
+        self.assertTrue(os.path.isfile(file_path))
+
         self.assertTrue(delete_message_attachment(path_id))
+        self.assertFalse(os.path.isfile(file_path))
+
+    def test_delete_message_attachments(self) -> None:
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+
+        user_profile = self.example_user("hamlet")
+        path_ids = []
+        for n in range(1, 1005):
+            uri = upload_message_attachment(
+                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+            )
+            base = "/user_uploads/"
+            self.assertEqual(base, uri[: len(base)])
+            path_id = re.sub("/user_uploads/", "", uri)
+            path_ids.append(path_id)
+            file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
+            self.assertTrue(os.path.isfile(file_path))
+
+        delete_message_attachments(path_ids)
+        for path_id in path_ids:
+            file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
+            self.assertFalse(os.path.isfile(file_path))
 
     def test_avatar_url(self) -> None:
         self.login("hamlet")
