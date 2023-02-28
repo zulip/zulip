@@ -751,16 +751,6 @@ input.search-query {
 .form-inline .input-append {
   margin-bottom: 0;
 }
-.form-inline .checkbox {
-  padding-left: 0;
-  margin-bottom: 0;
-  vertical-align: middle;
-}
-.form-inline .checkbox input[type="checkbox"] {
-  float: left;
-  margin-right: 3px;
-  margin-left: 0;
-}
 .nav {
   margin-left: 0;
   margin-bottom: 20px;
