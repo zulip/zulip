@@ -109,6 +109,11 @@
     }
 
     .poll-vote {
+        /* This is to ensure that even when the list of poll-names overflows,
+        the voting button remains clickable and on top of all other containers. */
+        position: relative;
+        z-index: 1;
+
         color: hsl(156, 41%, 40%);
         border-color: hsl(156, 28%, 70%);
         border-style: solid;
