@@ -220,11 +220,9 @@ export function is_mobile(): boolean {
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 }
 
-export function sorted_ids(ids: string[]): number[] {
-    // This mapping makes sure we are using ints, and
-    // it also makes sure we don't mutate the list.
-    let id_list = ids.map((s) => Number.parseInt(s, 10));
-    id_list = [...new Set(id_list)];
+export function sorted_ids(ids: number[]): number[] {
+    // This makes sure we don't mutate the list.
+    const id_list = [...new Set(ids)];
     id_list.sort((a, b) => a - b);
 
     return id_list;
