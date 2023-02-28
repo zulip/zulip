@@ -4,6 +4,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import CommandError
 
+from zerver.actions.realm_settings import do_delete_all_realm_attachments
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, UserProfile
 
@@ -50,6 +51,10 @@ realms used for testing; consider using deactivate_realm instead."""
         confirmation = input("Type the name of the realm to confirm: ")
         if confirmation != realm.string_id:
             raise CommandError("Aborting!")
+
+        # Explicitly remove the attachments and their files in backend
+        # storage; failing to do this leaves dangling files
+        do_delete_all_realm_attachments(realm)
 
         # TODO: This approach leaks Recipient and Huddle objects,
         # because those don't have a foreign key to the Realm or any
