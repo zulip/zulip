@@ -7,6 +7,7 @@
         display: inline-block;
         position: relative;
         vertical-align: top;
+        min-height: 20px;
 
         input[type="checkbox"] {
             position: absolute;
