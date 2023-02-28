@@ -14,18 +14,18 @@
 1. To run Hubot locally, first, set the following environment
    variables by running:
 
-```
-export HUBOT_ZULIP_SITE="{{ api_url }}"
-export HUBOT_ZULIP_BOT="hubot-bot@example.com"
-export HUBOT_ZULIP_API_KEY="your_key"
-```
+    ```
+    export HUBOT_ZULIP_SITE="{{ api_url }}"
+    export HUBOT_ZULIP_BOT="hubot-bot@example.com"
+    export HUBOT_ZULIP_API_KEY="your_key"
+    ```
 
-Then, run:
+    Then, run:
 
-`bin/hubot --adapter zulip --name "myhubot"`
+    `bin/hubot --adapter zulip --name "myhubot"`
 
-The `--name` parameter must match the name you gave the bot on
-the settings page.
+    The `--name` parameter must match the name you gave the bot on
+    the settings page.
 
 Hubot will automatically listen for commands on all public streams.
 You can also invite Hubot to private streams.
