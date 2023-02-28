@@ -17,14 +17,16 @@ Mirror an IRC channel in Zulip!
    at the end of the output of the previous step.
 
 1. Go to the directory containing the bridge script if you haven't already done so
-   ```
-   cd zulip/integrations/bridge_with_irc
-   ```
+
+    ```
+    cd zulip/integrations/bridge_with_irc
+    ```
 
 1. Install the bridge dependencies in your virtualenv, by running:
-    ```
-    pip install -r requirements.txt
-    ```
+
+     ```
+     pip install -r requirements.txt
+     ```
 
 ### Configure the bridge
 
@@ -34,17 +36,19 @@ Mirror an IRC channel in Zulip!
 1. [Subscribe the bot](/help/add-or-remove-users-from-a-stream) to the Zulip
    stream that will contain the mirror.
 
-1. Inside the virtualenv you created above, run
-   ```
-   python irc-mirror.py --irc-server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> \
-   --stream=<STREAM> [--topic=<TOPIC>] \
-   --site=<zulip.site> --user=<bot-email> \
-   --api-key=<api-key>
-   ```
+1. Inside the virtualenv you created above, run:
+
+    ```
+    python irc-mirror.py --irc-server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> \
+    --stream=<STREAM> [--topic=<TOPIC>] \
+    --site=<zulip.site> --user=<bot-email> \
+    --api-key=<api-key>
+    ```
 
     `--topic` is a Zulip topic, is optionally specified, defaults to "IRC".
 
 Example command:
+
 ```
 ./irc-mirror.py --irc-server=irc.freenode.net --channel='#python-mypy' --nick-prefix=irc_mirror \
 --stream='test here' --topic='#mypy' \
