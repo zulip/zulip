@@ -16,8 +16,10 @@ from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.upload import delete_message_attachment
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
+    ArchivedAttachment,
     Attachment,
     Realm,
     RealmAuditLog,
@@ -332,6 +334,17 @@ def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
     realm.save(update_fields=["deactivated_redirect"])
 
 
+def do_delete_all_realm_attachments(realm: Realm) -> None:
+    # Delete attachment files from the storage backend, so that we
+    # don't leave them dangling.
+    for obj_class in Attachment, ArchivedAttachment:
+        for path_id in obj_class.objects.filter(realm_id=realm.id).values_list(
+            "path_id", flat=True
+        ):
+            delete_message_attachment(path_id)
+        obj_class.objects.filter(realm=realm).delete()
+
+
 def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices(realm)
@@ -349,7 +362,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
         user.save(update_fields=["full_name", "email", "delivery_email"])
 
     do_remove_realm_custom_profile_fields(realm)
-    Attachment.objects.filter(realm=realm).delete()
+    do_delete_all_realm_attachments(realm)
 
     RealmAuditLog.objects.create(
         realm=realm,

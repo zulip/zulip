@@ -1,4 +1,5 @@
 import datetime
+import os
 import re
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Union
@@ -26,6 +27,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.upload import upload_message_attachment
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -1419,6 +1421,7 @@ class ScrubRealmTest(ZulipTestCase):
         zulip = get_realm("zulip")
         lear = get_realm("lear")
 
+        hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         othello = self.example_user("othello")
 
@@ -1440,12 +1443,20 @@ class ScrubRealmTest(ZulipTestCase):
             self.send_stream_message(king, "Shakespeare")
 
         Attachment.objects.filter(realm=zulip).delete()
-        Attachment.objects.create(realm=zulip, owner=iago, path_id="a/b/temp1.txt", size=512)
-        Attachment.objects.create(realm=zulip, owner=othello, path_id="a/b/temp2.txt", size=512)
-
         Attachment.objects.filter(realm=lear).delete()
-        Attachment.objects.create(realm=lear, owner=cordelia, path_id="c/d/temp1.txt", size=512)
-        Attachment.objects.create(realm=lear, owner=king, path_id="c/d/temp2.txt", size=512)
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+        file_paths = []
+        for n, owner in enumerate([iago, othello, hamlet, cordelia, king]):
+            content = f"content{n}".encode()
+            url = upload_message_attachment(
+                f"dummy{n}.txt", len(content), "text/plain", content, owner
+            )
+            base = "/user_uploads/"
+            self.assertEqual(base, url[: len(base)])
+            file_path = os.path.join(settings.LOCAL_FILES_DIR, re.sub("/user_uploads/", "", url))
+            self.assertTrue(os.path.isfile(file_path))
+            file_paths.append(file_path)
 
         CustomProfileField.objects.create(realm=lear)
 
@@ -1466,6 +1477,13 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertEqual(Attachment.objects.filter(realm=zulip).count(), 0)
         self.assertEqual(Attachment.objects.filter(realm=lear).count(), 2)
+
+        # Zulip realm files don't exist on disk, Lear ones do
+        self.assertFalse(os.path.isfile(file_paths[0]))
+        self.assertFalse(os.path.isfile(file_paths[1]))
+        self.assertFalse(os.path.isfile(file_paths[2]))
+        self.assertTrue(os.path.isfile(file_paths[3]))
+        self.assertTrue(os.path.isfile(file_paths[4]))
 
         self.assertEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
         self.assertNotEqual(CustomProfileField.objects.filter(realm=lear).count(), 0)
