@@ -103,7 +103,7 @@ def upload_emoji_image(
     return upload_backend.upload_emoji_image(emoji_file, emoji_file_name, user_profile)
 
 
-def upload_message_file(
+def upload_message_attachment(
     uploaded_file_name: str,
     uploaded_file_size: int,
     content_type: Optional[str],
@@ -111,7 +111,7 @@ def upload_message_file(
     user_profile: UserProfile,
     target_realm: Optional[Realm] = None,
 ) -> str:
-    return upload_backend.upload_message_file(
+    return upload_backend.upload_message_attachment(
         uploaded_file_name,
         uploaded_file_size,
         content_type,
@@ -140,7 +140,7 @@ def upload_message_image_from_request(
     user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
 ) -> str:
     uploaded_file_name, content_type = get_file_info(user_file)
-    return upload_message_file(
+    return upload_message_attachment(
         uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
     )
 

@@ -191,7 +191,7 @@ class ZulipUploadBackend:
     def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
         raise NotImplementedError
 
-    def upload_message_file(
+    def upload_message_attachment(
         self,
         uploaded_file_name: str,
         uploaded_file_size: int,

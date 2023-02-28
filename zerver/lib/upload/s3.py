@@ -203,7 +203,7 @@ class S3UploadBackend(ZulipUploadBackend):
             ]
         )
 
-    def upload_message_file(
+    def upload_message_attachment(
         self,
         uploaded_file_name: str,
         uploaded_file_size: int,

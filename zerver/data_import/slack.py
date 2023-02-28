@@ -1100,7 +1100,7 @@ def process_message_files(
 
 def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str, str]:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
-    # 'upload_message_file'
+    # 'upload_message_attachment'
     s3_path = "/".join(
         [
             str(realm_id),
