@@ -50,7 +50,7 @@ from zerver.lib.upload import (
     delete_message_image,
     upload_emoji_image,
     upload_export_tarball,
-    upload_message_file,
+    upload_message_attachment,
 )
 from zerver.lib.upload.base import (
     DEFAULT_AVATAR_SIZE,
@@ -1844,9 +1844,9 @@ class RealmNightLogoTest(RealmLogoTest):
 
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
-    def test_file_upload_local(self) -> None:
+    def test_upload_message_attachment_local(self) -> None:
         user_profile = self.example_user("hamlet")
-        uri = upload_message_file(
+        uri = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
 
@@ -1861,7 +1861,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assert_length(b"zulip!", uploaded_file.size)
 
-    def test_file_upload_local_cross_realm_path(self) -> None:
+    def test_upload_message_attachment_local_cross_realm_path(self) -> None:
         """
         Verifies that the path of a file uploaded by a cross-realm bot to another
         realm is correct.
@@ -1872,7 +1872,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         self.assertEqual(user_profile.realm, internal_realm)
 
-        uri = upload_message_file(
+        uri = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
         )
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
@@ -2039,11 +2039,11 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
 class S3Test(ZulipTestCase):
     @use_s3_backend
-    def test_file_upload_s3(self) -> None:
+    def test_upload_message_attachment_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        uri = upload_message_file(
+        uri = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
 
@@ -2061,7 +2061,7 @@ class S3Test(ZulipTestCase):
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
     @use_s3_backend
-    def test_file_upload_s3_cross_realm_path(self) -> None:
+    def test_upload_message_attachment_s3_cross_realm_path(self) -> None:
         """
         Verifies that the path of a file uploaded by a cross-realm bot to another
         realm is correct.
@@ -2073,18 +2073,18 @@ class S3Test(ZulipTestCase):
         user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         self.assertEqual(user_profile.realm, internal_realm)
 
-        uri = upload_message_file(
+        uri = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
         )
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(uri.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
     @use_s3_backend
-    def test_file_upload_s3_with_undefined_content_type(self) -> None:
+    def test_upload_message_attachment_s3_with_undefined_content_type(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
-        uri = upload_message_file("dummy.txt", len(b"zulip!"), None, b"zulip!", user_profile)
+        uri = upload_message_attachment("dummy.txt", len(b"zulip!"), None, b"zulip!", user_profile)
 
         path_id = re.sub("/user_uploads/", "", uri)
         self.assertEqual(b"zulip!", bucket.Object(path_id).get()["Body"].read())
@@ -2096,7 +2096,7 @@ class S3Test(ZulipTestCase):
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user("hamlet")
-        uri = upload_message_file(
+        uri = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
 
@@ -2115,7 +2115,7 @@ class S3Test(ZulipTestCase):
         )
 
     @use_s3_backend
-    def test_file_upload_authed(self) -> None:
+    def test_user_uploads_authed(self) -> None:
         """
         A call to /json/user_uploads should return a uri and actually create an object.
         """
@@ -2507,14 +2507,14 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(0, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
 
         data = b"zulip!"
-        upload_message_file("dummy.txt", len(data), "text/plain", data, self.user_profile)
+        upload_message_attachment("dummy.txt", len(data), "text/plain", data, self.user_profile)
         # notify_attachment_update function calls currently_used_upload_space_bytes which
         # updates the cache.
         self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
         self.assert_length(data, self.realm.currently_used_upload_space_bytes())
 
         data2 = b"more-data!"
-        upload_message_file("dummy2.txt", len(data2), "text/plain", data2, self.user_profile)
+        upload_message_attachment("dummy2.txt", len(data2), "text/plain", data2, self.user_profile)
         self.assertEqual(
             len(data) + len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0]
         )

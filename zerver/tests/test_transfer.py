@@ -19,7 +19,7 @@ from zerver.lib.transfer import (
     transfer_message_files_to_s3,
     transfer_uploads_to_s3,
 )
-from zerver.lib.upload import upload_message_file
+from zerver.lib.upload import upload_message_attachment
 from zerver.lib.upload.base import resize_emoji
 from zerver.models import Attachment, RealmEmoji
 
@@ -67,8 +67,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        upload_message_file("dummy1.txt", len(b"zulip1!"), "text/plain", b"zulip1!", hamlet)
-        upload_message_file("dummy2.txt", len(b"zulip2!"), "text/plain", b"zulip2!", othello)
+        upload_message_attachment("dummy1.txt", len(b"zulip1!"), "text/plain", b"zulip1!", hamlet)
+        upload_message_attachment("dummy2.txt", len(b"zulip2!"), "text/plain", b"zulip2!", othello)
 
         with self.assertLogs(level="INFO"):
             transfer_message_files_to_s3(1)

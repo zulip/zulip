@@ -26,7 +26,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.string_validation import is_character_printable
-from zerver.lib.upload import upload_message_file
+from zerver.lib.upload import upload_message_attachment
 from zerver.models import (
     Message,
     MissedMessageEmailAddress,
@@ -337,7 +337,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
-                s3_url = upload_message_file(
+                s3_url = upload_message_attachment(
                     filename,
                     len(attachment),
                     content_type,

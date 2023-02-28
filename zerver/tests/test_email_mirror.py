@@ -601,11 +601,11 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
         with mock.patch(
-            "zerver.lib.email_mirror.upload_message_file",
+            "zerver.lib.email_mirror.upload_message_attachment",
             return_value="https://test_url",
-        ) as upload_message_file:
+        ) as upload_message_attachment:
             process_message(incoming_valid_message)
-            upload_message_file.assert_called_with(
+            upload_message_attachment.assert_called_with(
                 "image.png",
                 len(image_bytes),
                 "image/png",
@@ -728,11 +728,11 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
         with mock.patch(
-            "zerver.lib.email_mirror.upload_message_file",
+            "zerver.lib.email_mirror.upload_message_attachment",
             return_value="https://test_url",
-        ) as upload_message_file:
+        ) as upload_message_attachment:
             process_message(incoming_valid_message)
-            upload_message_file.assert_called_with(
+            upload_message_attachment.assert_called_with(
                 utf8_filename,
                 len(image_bytes),
                 "image/png",
@@ -775,11 +775,11 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
         with mock.patch(
-            "zerver.lib.email_mirror.upload_message_file",
+            "zerver.lib.email_mirror.upload_message_attachment",
             return_value="https://test_url",
-        ) as upload_message_file:
+        ) as upload_message_attachment:
             process_message(incoming_valid_message)
-            upload_message_file.assert_called_with(
+            upload_message_attachment.assert_called_with(
                 "image.png",
                 len(image_bytes),
                 "image/png",
