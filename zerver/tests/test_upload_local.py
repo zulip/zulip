@@ -145,27 +145,6 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         with open(output_path, "rb") as original_file:
             self.assertEqual(resized_avatar, original_file.read())
 
-    def test_emoji_upload(self) -> None:
-        user_profile = self.example_user("hamlet")
-        file_name = "emoji.png"
-
-        with get_test_image_file("img.png") as image_file:
-            upload_emoji_image(image_file, file_name, user_profile)
-
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=user_profile.realm_id,
-            emoji_file_name=file_name,
-        )
-
-        assert settings.LOCAL_AVATARS_DIR is not None
-        file_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path)
-        with open(file_path + ".original", "rb") as original_file:
-            self.assertEqual(read_test_image_file("img.png"), original_file.read())
-
-        expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
-        with Image.open(file_path) as resized_image:
-            self.assertEqual(expected_size, resized_image.size)
-
     def test_get_emoji_url(self) -> None:
         user_profile = self.example_user("hamlet")
         file_name = "emoji.png"
@@ -202,6 +181,27 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(expected_url, url)
         expected_still_url = f"/user_avatars/{still_emoji_path}"
         self.assertEqual(expected_still_url, still_url)
+
+    def test_emoji_upload(self) -> None:
+        user_profile = self.example_user("hamlet")
+        file_name = "emoji.png"
+
+        with get_test_image_file("img.png") as image_file:
+            upload_emoji_image(image_file, file_name, user_profile)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+
+        assert settings.LOCAL_AVATARS_DIR is not None
+        file_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path)
+        with open(file_path + ".original", "rb") as original_file:
+            self.assertEqual(read_test_image_file("img.png"), original_file.read())
+
+        expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
+        with Image.open(file_path) as resized_image:
+            self.assertEqual(expected_size, resized_image.size)
 
     def test_tarball_upload_and_deletion(self) -> None:
         user_profile = self.example_user("iago")
