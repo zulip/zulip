@@ -1397,8 +1397,7 @@ $option_title_width: 180px;
             height: calc(100% - $settings_header_height);
 
             float: left;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: auto;
 
             background-color: hsla(0, 0%, 0%, 0.02);
         }
