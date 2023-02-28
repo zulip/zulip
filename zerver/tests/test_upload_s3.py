@@ -3,6 +3,7 @@ import os
 import re
 import urllib
 from io import StringIO
+from unittest.mock import patch
 
 import botocore.exceptions
 from django.conf import settings
@@ -22,6 +23,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.upload import (
     delete_export_tarball,
     delete_message_attachment,
+    delete_message_attachments,
     upload_export_tarball,
     upload_message_attachment,
 )
@@ -31,6 +33,7 @@ from zerver.lib.upload.base import (
     MEDIUM_AVATAR_SIZE,
     resize_avatar,
 )
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import (
     Attachment,
     RealmEmoji,
@@ -96,7 +99,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_delete_message_attachment(self) -> None:
-        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
         uri = upload_message_attachment(
@@ -104,10 +107,37 @@ class S3Test(ZulipTestCase):
         )
 
         path_id = re.sub("/user_uploads/", "", uri)
+        self.assertIsNotNone(bucket.Object(path_id).get())
         self.assertTrue(delete_message_attachment(path_id))
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(path_id).load()
+
+    @use_s3_backend
+    def test_delete_message_attachments(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        path_ids = []
+        for n in range(1, 5):
+            uri = upload_message_attachment(
+                "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+            )
+            path_id = re.sub("/user_uploads/", "", uri)
+            self.assertIsNotNone(bucket.Object(path_id).get())
+            path_ids.append(path_id)
+
+        with patch.object(S3UploadBackend, "delete_message_attachment") as single_delete:
+            delete_message_attachments(path_ids)
+            single_delete.assert_not_called()
+        for path_id in path_ids:
+            with self.assertRaises(botocore.exceptions.ClientError):
+                bucket.Object(path_id).load()
 
     @use_s3_backend
     def test_delete_message_attachment_when_file_doesnt_exist(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object("non-existent-file").load()
         with self.assertLogs(level="WARNING") as warn_log:
             self.assertEqual(False, delete_message_attachment("non-existent-file"))
         self.assertEqual(

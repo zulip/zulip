@@ -2,7 +2,7 @@ import io
 import os
 import re
 import unicodedata
-from typing import IO, Any, Callable, Optional, Tuple
+from typing import IO, Any, Callable, List, Optional, Tuple
 
 from django.utils.translation import gettext as _
 from markupsafe import Markup
@@ -205,6 +205,10 @@ class ZulipUploadBackend:
 
     def delete_message_attachment(self, path_id: str) -> bool:
         raise NotImplementedError
+
+    def delete_message_attachments(self, path_ids: List[str]) -> None:
+        for path_id in path_ids:
+            self.delete_message_attachment(path_id)
 
     # Avatar image uploads
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
