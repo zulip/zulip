@@ -48,12 +48,32 @@ You can set a status emoji, status message, or both.
 ### View a status
 
 Status emoji are shown next to a user's name in the sidebars, message feed,
-and compose box.
+and compose box. Status emoji and status messages are also shown on
+[user cards](/help/user-cards).
 
-You can view status messages by hovering over your or anyone else's name in the
-left or right sidebar, or by clicking the user's name or avatar in the main
-message feed to open their **user card**. If someone hasn't set a message as
-part of their status, then no status message will appear.
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Hover over a user's name in the right sidebar, or in the **Direct messages**
+   section in the left sidebar, to view their status message if they have one
+   set.
+
+!!! tip ""
+
+    You can also click on a user's profile picture or name on a message they
+    sent to view their status in their **user card**.
+
+{tab|mobile}
+
+1. Tap on a user's profile picture or name to open their profile.
+
+1. Look for their status below the user's role (e.g., Member) if they have one
+   set.
+
+{!mobile-view-user-profile-tip.md!}
+
+{end_tabs}
 
 ## Availability
 
