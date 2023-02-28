@@ -73,12 +73,6 @@ html {
     }
 }
 
-/* The Help Center tabbed content tends to be a lot short sentences.
-   We also want the Help Center tabbed content to pop more. */
-.help-center .code-section .blocks {
-    max-width: 500px;
-}
-
 .digest-container {
     padding-top: 100px;
 }
