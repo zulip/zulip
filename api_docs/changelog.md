@@ -21,6 +21,7 @@ format used by the Zulip server that they are interacting with.
 ## Changes in Zulip 7.0
 
 **Feature level 165**
+
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): The
   `name` and `description` parameters are now optional.
 
