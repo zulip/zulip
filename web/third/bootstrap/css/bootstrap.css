@@ -614,15 +614,6 @@ input::-webkit-input-placeholder {
   float: left;
   margin-left: -20px;
 }
-.checkbox.inline {
-  display: inline-block;
-  padding-top: 5px;
-  margin-bottom: 0;
-  vertical-align: middle;
-}
-.checkbox.inline + .checkbox.inline {
-  margin-left: 10px;
-}
 .input-large {
   width: 210px;
 }
