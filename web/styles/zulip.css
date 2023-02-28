@@ -1181,7 +1181,8 @@ td.pointer {
     letter-spacing: 0.04em;
     text-transform: uppercase;
 
-    &.hide-date {
+    &.hide-date,
+    &.hide-date-separator-header {
         display: none;
     }
 }
