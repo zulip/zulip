@@ -62,8 +62,8 @@ def get_public_upload_root_url() -> str:
     return upload_backend.get_public_upload_root_url()
 
 
-def delete_message_image(path_id: str) -> bool:
-    return upload_backend.delete_message_image(path_id)
+def delete_message_attachment(path_id: str) -> bool:
+    return upload_backend.delete_message_attachment(path_id)
 
 
 def get_avatar_url(hash_key: str, medium: bool = False) -> str:

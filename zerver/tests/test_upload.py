@@ -47,7 +47,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import (
     delete_export_tarball,
-    delete_message_image,
+    delete_message_attachment,
     upload_emoji_image,
     upload_export_tarball,
     upload_message_attachment,
@@ -439,7 +439,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         do_delete_old_unclaimed_attachments(2)
         self.assertTrue(not Attachment.objects.filter(path_id=d2_path_id).exists())
         with self.assertLogs(level="WARNING") as warn_log:
-            self.assertTrue(not delete_message_image(d2_path_id))
+            self.assertTrue(not delete_message_attachment(d2_path_id))
         self.assertEqual(
             warn_log.output,
             ["WARNING:root:dummy_2.txt does not exist. Its entry in the database will be removed."],
@@ -1878,7 +1878,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(uri.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
-    def test_delete_message_image_local(self) -> None:
+    def test_delete_message_attachment_local(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -1886,7 +1886,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         response_dict = self.assert_json_success(result)
         path_id = re.sub("/user_uploads/", "", response_dict["uri"])
-        self.assertTrue(delete_message_image(path_id))
+        self.assertTrue(delete_message_attachment(path_id))
 
     def test_avatar_url_local(self) -> None:
         self.login("hamlet")
@@ -2092,7 +2092,7 @@ class S3Test(ZulipTestCase):
         self.assert_length(b"zulip!", uploaded_file.size)
 
     @use_s3_backend
-    def test_message_image_delete_s3(self) -> None:
+    def test_delete_message_attachment_s3(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user("hamlet")
@@ -2101,12 +2101,12 @@ class S3Test(ZulipTestCase):
         )
 
         path_id = re.sub("/user_uploads/", "", uri)
-        self.assertTrue(delete_message_image(path_id))
+        self.assertTrue(delete_message_attachment(path_id))
 
     @use_s3_backend
-    def test_message_image_delete_when_file_doesnt_exist(self) -> None:
+    def test_delete_message_attachment_when_file_doesnt_exist(self) -> None:
         with self.assertLogs(level="WARNING") as warn_log:
-            self.assertEqual(False, delete_message_image("non-existent-file"))
+            self.assertEqual(False, delete_message_attachment("non-existent-file"))
         self.assertEqual(
             warn_log.output,
             [
