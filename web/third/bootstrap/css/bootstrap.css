@@ -593,10 +593,6 @@ input:-ms-input-placeholder {
 input::-webkit-input-placeholder {
   color: #999999;
 }
-.checkbox {
-  min-height: 20px;
-  padding-left: 20px;
-}
 .input-large {
   width: 210px;
 }
