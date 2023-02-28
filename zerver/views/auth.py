@@ -1128,10 +1128,10 @@ def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
 
 def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse:
     contexts: Dict[str, Dict[str, object]] = {
-        "apple": {"social_backend_name": "apple", "has_markdown_file": True},
-        "google": {"social_backend_name": "google", "has_markdown_file": True},
-        "github": {"social_backend_name": "github", "has_markdown_file": True},
-        "gitlab": {"social_backend_name": "gitlab", "has_markdown_file": True},
+        "apple": {"social_backend_name": "apple", "has_error_template": True},
+        "google": {"social_backend_name": "google", "has_error_template": True},
+        "github": {"social_backend_name": "github", "has_error_template": True},
+        "gitlab": {"social_backend_name": "gitlab", "has_error_template": True},
         "ldap": {"error_name": "ldap_error_realm_is_none"},
         "dev": {"error_name": "dev_not_supported_error"},
         "saml": {"social_backend_name": "saml"},
