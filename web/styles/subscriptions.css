@@ -782,6 +782,8 @@ h4.user_group_setting_subsection_title {
     .stream-header {
         white-space: nowrap;
         padding-top: 10px;
+        display: flex;
+        align-items: center;
 
         .group-name-wrapper,
         .stream-name {
@@ -792,20 +794,18 @@ h4.user_group_setting_subsection_title {
             margin-left: -3px;
             margin-top: -5px;
             white-space: nowrap;
-            max-width: 260px;
 
             .group-name,
             .sub-stream-name {
                 display: block;
-                max-width: 20ch;
+                max-width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                float: left;
             }
         }
 
         .button-group {
-            float: right;
+            margin-left: 1rem;
 
             .deactivate {
                 margin-right: 3px;
