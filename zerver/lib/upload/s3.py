@@ -230,7 +230,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
         return url
 
-    def delete_message_image(self, path_id: str) -> bool:
+    def delete_message_attachment(self, path_id: str) -> bool:
         return self.delete_file_from_s3(path_id, self.uploads_bucket)
 
     def write_avatar_images(

@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, List
 
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.upload import claim_attachment, delete_message_image
+from zerver.lib.upload import claim_attachment, delete_message_attachment
 from zerver.models import (
     Attachment,
     Message,
@@ -69,10 +69,10 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     )
 
     for attachment in old_unclaimed_attachments:
-        delete_message_image(attachment.path_id)
+        delete_message_attachment(attachment.path_id)
         attachment.delete()
     for archived_attachment in old_unclaimed_archived_attachments:
-        delete_message_image(archived_attachment.path_id)
+        delete_message_attachment(archived_attachment.path_id)
         archived_attachment.delete()
 
 

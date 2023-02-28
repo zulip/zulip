@@ -214,7 +214,7 @@ class ZulipUploadBackend:
     def delete_avatar_image(self, user: UserProfile) -> None:
         raise NotImplementedError
 
-    def delete_message_image(self, path_id: str) -> bool:
+    def delete_message_attachment(self, path_id: str) -> bool:
         raise NotImplementedError
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:

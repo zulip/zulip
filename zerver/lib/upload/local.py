@@ -96,7 +96,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         create_attachment(uploaded_file_name, path, user_profile, target_realm, uploaded_file_size)
         return "/user_uploads/" + path
 
-    def delete_message_image(self, path_id: str) -> bool:
+    def delete_message_attachment(self, path_id: str) -> bool:
         return delete_local_file("files", path_id)
 
     def write_avatar_images(self, file_path: str, image_data: bytes) -> None:
