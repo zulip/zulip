@@ -18,7 +18,7 @@ from zerver.actions.realm_playgrounds import do_add_realm_playground
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.upload import upload_message_file
+from zerver.lib.upload import upload_message_attachment
 from zerver.lib.users import get_api_key
 from zerver.models import Client, Message, UserGroup, UserPresence, get_realm, get_user
 
@@ -345,7 +345,9 @@ def deactivate_own_user() -> Dict[str, object]:
 @openapi_param_value_generator(["/attachments/{attachment_id}:delete"])
 def remove_attachment() -> Dict[str, object]:
     user_profile = helpers.example_user("iago")
-    url = upload_message_file("dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile)
+    url = upload_message_attachment(
+        "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+    )
     attachment_id = url.replace("/user_uploads/", "").split("/")[0]
 
     return {"attachment_id": attachment_id}
