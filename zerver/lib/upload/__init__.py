@@ -136,7 +136,7 @@ def claim_attachment(
     return attachment
 
 
-def upload_message_image_from_request(
+def upload_message_attachment_from_request(
     user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
 ) -> str:
     uploaded_file_name, content_type = get_file_info(user_file)
