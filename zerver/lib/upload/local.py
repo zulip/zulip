@@ -99,6 +99,10 @@ class LocalUploadBackend(ZulipUploadBackend):
     def delete_message_attachment(self, path_id: str) -> bool:
         return delete_local_file("files", path_id)
 
+    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
+        medium_suffix = "-medium" if medium else ""
+        return f"/user_avatars/{hash_key}{medium_suffix}.png"
+
     def write_avatar_images(self, file_path: str, image_data: bytes) -> None:
         write_local_file("avatars", file_path + ".original", image_data)
 
@@ -120,57 +124,12 @@ class LocalUploadBackend(ZulipUploadBackend):
         image_data = user_file.read()
         self.write_avatar_images(file_path, image_data)
 
-    def delete_avatar_image(self, user: UserProfile) -> None:
-        path_id = user_avatar_path(user)
-
-        delete_local_file("avatars", path_id + ".original")
-        delete_local_file("avatars", path_id + ".png")
-        delete_local_file("avatars", path_id + "-medium.png")
-
-    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        medium_suffix = "-medium" if medium else ""
-        return f"/user_avatars/{hash_key}{medium_suffix}.png"
-
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         source_file_path = user_avatar_path(source_profile)
         target_file_path = user_avatar_path(target_profile)
 
         image_data = read_local_file("avatars", source_file_path + ".original")
         self.write_avatar_images(target_file_path, image_data)
-
-    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
-        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
-        image_data = icon_file.read()
-        write_local_file("avatars", os.path.join(upload_path, "icon.original"), image_data)
-
-        resized_data = resize_avatar(image_data)
-        write_local_file("avatars", os.path.join(upload_path, "icon.png"), resized_data)
-
-    def get_realm_icon_url(self, realm_id: int, version: int) -> str:
-        return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
-
-    def upload_realm_logo_image(
-        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
-    ) -> None:
-        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
-        if night:
-            original_file = "night_logo.original"
-            resized_file = "night_logo.png"
-        else:
-            original_file = "logo.original"
-            resized_file = "logo.png"
-        image_data = logo_file.read()
-        write_local_file("avatars", os.path.join(upload_path, original_file), image_data)
-
-        resized_data = resize_logo(image_data)
-        write_local_file("avatars", os.path.join(upload_path, resized_file), resized_data)
-
-    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        if night:
-            file_name = "night_logo.png"
-        else:
-            file_name = "logo.png"
-        return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
 
     def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
         file_extension = "-medium.png" if is_medium else ".png"
@@ -195,6 +154,64 @@ class LocalUploadBackend(ZulipUploadBackend):
             resized_avatar = resize_avatar(image_data)
         write_local_file("avatars", file_path + file_extension, resized_avatar)
 
+    def delete_avatar_image(self, user: UserProfile) -> None:
+        path_id = user_avatar_path(user)
+
+        delete_local_file("avatars", path_id + ".original")
+        delete_local_file("avatars", path_id + ".png")
+        delete_local_file("avatars", path_id + "-medium.png")
+
+    def get_realm_icon_url(self, realm_id: int, version: int) -> str:
+        return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
+
+    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
+        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
+        image_data = icon_file.read()
+        write_local_file("avatars", os.path.join(upload_path, "icon.original"), image_data)
+
+        resized_data = resize_avatar(image_data)
+        write_local_file("avatars", os.path.join(upload_path, "icon.png"), resized_data)
+
+    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
+        if night:
+            file_name = "night_logo.png"
+        else:
+            file_name = "logo.png"
+        return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
+
+    def upload_realm_logo_image(
+        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
+    ) -> None:
+        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
+        if night:
+            original_file = "night_logo.original"
+            resized_file = "night_logo.png"
+        else:
+            original_file = "logo.original"
+            resized_file = "logo.png"
+        image_data = logo_file.read()
+        write_local_file("avatars", os.path.join(upload_path, original_file), image_data)
+
+        resized_data = resize_logo(image_data)
+        write_local_file("avatars", os.path.join(upload_path, resized_file), resized_data)
+
+    def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
+        if still:
+            return os.path.join(
+                "/user_avatars",
+                RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+                    realm_id=realm_id,
+                    emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
+                ),
+            )
+        else:
+            return os.path.join(
+                "/user_avatars",
+                RealmEmoji.PATH_ID_TEMPLATE.format(
+                    realm_id=realm_id, emoji_file_name=emoji_file_name
+                ),
+            )
+
     def upload_emoji_image(
         self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> bool:
@@ -216,22 +233,9 @@ class LocalUploadBackend(ZulipUploadBackend):
             write_local_file("avatars", still_path, still_image_data)
         return is_animated
 
-    def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
-        if still:
-            return os.path.join(
-                "/user_avatars",
-                RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
-                    realm_id=realm_id,
-                    emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
-                ),
-            )
-        else:
-            return os.path.join(
-                "/user_avatars",
-                RealmEmoji.PATH_ID_TEMPLATE.format(
-                    realm_id=realm_id, emoji_file_name=emoji_file_name
-                ),
-            )
+    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
+        # export_path has a leading `/`
+        return realm.uri + export_path
 
     def upload_export_tarball(
         self,
@@ -258,7 +262,3 @@ class LocalUploadBackend(ZulipUploadBackend):
         if delete_local_file("avatars", file_path):
             return export_path
         return None
-
-    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
-        # export_path has a leading `/`
-        return realm.uri + export_path

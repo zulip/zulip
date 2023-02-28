@@ -123,6 +123,34 @@ class S3UploadBackend(ZulipUploadBackend):
         self._boto_client: Optional[S3Client] = None
         self.public_upload_url_base = self.construct_public_upload_url_base()
 
+    def get_boto_client(self) -> S3Client:
+        """
+        Creating the client takes a long time so we need to cache it.
+        """
+        if self._boto_client is None:
+            config = Config(signature_version=botocore.UNSIGNED)
+            self._boto_client = self.session.client(
+                "s3",
+                region_name=settings.S3_REGION,
+                endpoint_url=settings.S3_ENDPOINT_URL,
+                config=config,
+            )
+        return self._boto_client
+
+    def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
+        key = bucket.Object(path_id)
+
+        try:
+            key.load()
+        except botocore.exceptions.ClientError:
+            file_name = path_id.split("/")[-1]
+            logging.warning(
+                "%s does not exist. Its entry in the database will be removed.", file_name
+            )
+            return False
+        key.delete()
+        return True
+
     def construct_public_upload_url_base(self) -> str:
         # Return the pattern for public URL for a key in the S3 Avatar bucket.
         # For Amazon S3 itself, this will return the following:
@@ -156,43 +184,15 @@ class S3UploadBackend(ZulipUploadBackend):
             (split_url.scheme, split_url.netloc, split_url.path[: -len(DUMMY_KEY)], "", "")
         )
 
+    def get_public_upload_root_url(self) -> str:
+        return self.public_upload_url_base
+
     def get_public_upload_url(
         self,
         key: str,
     ) -> str:
         assert not key.startswith("/")
         return urllib.parse.urljoin(self.public_upload_url_base, key)
-
-    def get_boto_client(self) -> S3Client:
-        """
-        Creating the client takes a long time so we need to cache it.
-        """
-        if self._boto_client is None:
-            config = Config(signature_version=botocore.UNSIGNED)
-            self._boto_client = self.session.client(
-                "s3",
-                region_name=settings.S3_REGION,
-                endpoint_url=settings.S3_ENDPOINT_URL,
-                config=config,
-            )
-        return self._boto_client
-
-    def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
-        key = bucket.Object(path_id)
-
-        try:
-            key.load()
-        except botocore.exceptions.ClientError:
-            file_name = path_id.split("/")[-1]
-            logging.warning(
-                "%s does not exist. Its entry in the database will be removed.", file_name
-            )
-            return False
-        key.delete()
-        return True
-
-    def get_public_upload_root_url(self) -> str:
-        return self.public_upload_url_base
 
     def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
         return "/".join(
@@ -269,6 +269,14 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
+    def get_avatar_key(self, file_name: str) -> Object:
+        key = self.avatar_bucket.Object(file_name)
+        return key
+
+    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
+        medium_suffix = "-medium.png" if medium else ""
+        return self.get_public_upload_url(f"{hash_key}{medium_suffix}")
+
     def upload_avatar_image(
         self,
         user_file: IO[bytes],
@@ -283,17 +291,6 @@ class S3UploadBackend(ZulipUploadBackend):
         image_data = user_file.read()
         self.write_avatar_images(s3_file_name, target_user_profile, image_data, content_type)
 
-    def delete_avatar_image(self, user: UserProfile) -> None:
-        path_id = user_avatar_path(user)
-
-        self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
-        self.delete_file_from_s3(path_id + "-medium.png", self.avatar_bucket)
-        self.delete_file_from_s3(path_id, self.avatar_bucket)
-
-    def get_avatar_key(self, file_name: str) -> Object:
-        key = self.avatar_bucket.Object(file_name)
-        return key
-
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         s3_source_file_name = user_avatar_path(source_profile)
         s3_target_file_name = user_avatar_path(target_profile)
@@ -304,13 +301,38 @@ class S3UploadBackend(ZulipUploadBackend):
 
         self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)
 
-    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        medium_suffix = "-medium.png" if medium else ""
-        return self.get_public_upload_url(f"{hash_key}{medium_suffix}")
+    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
+        # BUG: The else case should be user_avatar_path(user_profile) + ".png".
+        # See #12852 for details on this bug and how to migrate it.
+        file_extension = "-medium.png" if is_medium else ""
+        file_path = user_avatar_path(user_profile)
+        s3_file_name = file_path
 
-    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
-        # export_path has a leading /
-        return self.get_public_upload_url(export_path[1:])
+        key = self.avatar_bucket.Object(file_path + ".original")
+        image_data = key.get()["Body"].read()
+
+        if is_medium:
+            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        else:
+            resized_avatar = resize_avatar(image_data)
+        upload_image_to_s3(
+            self.avatar_bucket,
+            s3_file_name + file_extension,
+            "image/png",
+            user_profile,
+            resized_avatar,
+        )
+
+    def delete_avatar_image(self, user: UserProfile) -> None:
+        path_id = user_avatar_path(user)
+
+        self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
+        self.delete_file_from_s3(path_id + "-medium.png", self.avatar_bucket)
+        self.delete_file_from_s3(path_id, self.avatar_bucket)
+
+    def get_realm_icon_url(self, realm_id: int, version: int) -> str:
+        public_url = self.get_public_upload_url(f"{realm_id}/realm/icon.png")
+        return public_url + f"?version={version}"
 
     def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
@@ -336,8 +358,12 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
-    def get_realm_icon_url(self, realm_id: int, version: int) -> str:
-        public_url = self.get_public_upload_url(f"{realm_id}/realm/icon.png")
+    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
+        if not night:
+            file_name = "logo.png"
+        else:
+            file_name = "night_logo.png"
+        public_url = self.get_public_upload_url(f"{realm_id}/realm/{file_name}")
         return public_url + f"?version={version}"
 
     def upload_realm_logo_image(
@@ -370,35 +396,18 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
-    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        if not night:
-            file_name = "logo.png"
+    def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
+        if still:
+            emoji_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+                realm_id=realm_id,
+                emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
+            )
+            return self.get_public_upload_url(emoji_path)
         else:
-            file_name = "night_logo.png"
-        public_url = self.get_public_upload_url(f"{realm_id}/realm/{file_name}")
-        return public_url + f"?version={version}"
-
-    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
-        # BUG: The else case should be user_avatar_path(user_profile) + ".png".
-        # See #12852 for details on this bug and how to migrate it.
-        file_extension = "-medium.png" if is_medium else ""
-        file_path = user_avatar_path(user_profile)
-        s3_file_name = file_path
-
-        key = self.avatar_bucket.Object(file_path + ".original")
-        image_data = key.get()["Body"].read()
-
-        if is_medium:
-            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        else:
-            resized_avatar = resize_avatar(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name + file_extension,
-            "image/png",
-            user_profile,
-            resized_avatar,
-        )
+            emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+                realm_id=realm_id, emoji_file_name=emoji_file_name
+            )
+            return self.get_public_upload_url(emoji_path)
 
     def upload_emoji_image(
         self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
@@ -442,18 +451,9 @@ class S3UploadBackend(ZulipUploadBackend):
 
         return is_animated
 
-    def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
-        if still:
-            emoji_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
-                realm_id=realm_id,
-                emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
-            )
-            return self.get_public_upload_url(emoji_path)
-        else:
-            emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-                realm_id=realm_id, emoji_file_name=emoji_file_name
-            )
-            return self.get_public_upload_url(emoji_path)
+    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
+        # export_path has a leading /
+        return self.get_public_upload_url(export_path[1:])
 
     def upload_export_tarball(
         self,
