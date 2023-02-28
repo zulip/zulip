@@ -482,6 +482,20 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
+            function set_email_field_visibility() {
+                const $send_email_checkbox = $("#dialog_widget_modal").find(".send_email");
+                const $email_field = $("#dialog_widget_modal").find(".email_field");
+
+                $email_field.hide();
+                $send_email_checkbox.on("change", () => {
+                    if ($send_email_checkbox.is(":checked")) {
+                        $email_field.show();
+                    } else {
+                        $email_field.hide();
+                    }
+                });
+            }
+
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
@@ -492,6 +506,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
+                post_render: set_email_field_visibility,
                 loading_spinner,
             });
         },
