@@ -23,7 +23,7 @@ from zerver.lib.create_user import create_user
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import floor_to_day
-from zerver.lib.upload import upload_message_image_from_request
+from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.models import Client, Realm, Recipient, Stream, Subscription, UserGroup, UserProfile
 
 
@@ -132,7 +132,7 @@ class Command(BaseCommand):
         file_info = os.stat(IMAGE_FILE_PATH)
         file_size = file_info.st_size
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            upload_message_image_from_request(UploadedFile(fp), shylock, file_size)
+            upload_message_attachment_from_request(UploadedFile(fp), shylock, file_size)
 
         FixtureData = Mapping[Union[str, int, None], List[int]]
 
