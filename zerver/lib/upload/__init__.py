@@ -2,7 +2,7 @@ import io
 import logging
 import urllib
 from mimetypes import guess_type
-from typing import IO, Any, Callable, Optional, Tuple
+from typing import IO, Any, Callable, List, Optional, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -108,6 +108,10 @@ def upload_message_attachment_from_request(
 
 def delete_message_attachment(path_id: str) -> bool:
     return upload_backend.delete_message_attachment(path_id)
+
+
+def delete_message_attachments(path_ids: List[str]) -> None:
+    return upload_backend.delete_message_attachments(path_ids)
 
 
 # Avatar image uploads

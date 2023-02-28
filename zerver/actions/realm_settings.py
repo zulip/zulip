@@ -16,7 +16,7 @@ from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
-from zerver.lib.upload import delete_message_attachment
+from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     ArchivedAttachment,
@@ -334,14 +334,22 @@ def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
     realm.save(update_fields=["deactivated_redirect"])
 
 
-def do_delete_all_realm_attachments(realm: Realm) -> None:
+def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> None:
     # Delete attachment files from the storage backend, so that we
     # don't leave them dangling.
     for obj_class in Attachment, ArchivedAttachment:
-        for path_id in obj_class.objects.filter(realm_id=realm.id).values_list(
-            "path_id", flat=True
-        ):
-            delete_message_attachment(path_id)
+        last_id = 0
+        while True:
+            to_delete = (
+                obj_class.objects.filter(realm_id=realm.id, id__gt=last_id)  # type: ignore[misc]  # Does not recognize shared 'id' PK column
+                .order_by("id")
+                .values_list("id", "path_id")[:batch_size]
+            )
+            if len(to_delete) > 0:
+                delete_message_attachments([row[1] for row in to_delete])
+                last_id = to_delete[len(to_delete) - 1][0]
+            if len(to_delete) < batch_size:
+                break
         obj_class.objects.filter(realm=realm).delete()
 
 

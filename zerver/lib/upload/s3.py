@@ -3,7 +3,7 @@ import os
 import secrets
 import urllib
 from mimetypes import guess_type
-from typing import IO, Any, Callable, Optional
+from typing import IO, Any, Callable, List, Optional
 
 import boto3
 import botocore
@@ -232,6 +232,11 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def delete_message_attachment(self, path_id: str) -> bool:
         return self.delete_file_from_s3(path_id, self.uploads_bucket)
+
+    def delete_message_attachments(self, path_ids: List[str]) -> None:
+        self.uploads_bucket.delete_objects(
+            Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
+        )
 
     def write_avatar_images(
         self,
