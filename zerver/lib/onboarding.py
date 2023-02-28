@@ -59,13 +59,14 @@ def send_initial_pms(user: UserProfile) -> None:
         welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
         demo_org_warning = ""
         if user.realm.demo_organization_scheduled_deletion_date is not None:
+            demo_org_help_url = user.realm.uri + "/help/demo-organizations"
             demo_org_warning = (
                 _(
                     "Note that this is a [demo organization]({demo_org_help_url}) and will be "
                     "**automatically deleted** in 30 days."
                 )
                 + "\n\n"
-            )
+            ).format(demo_org_help_url=demo_org_help_url)
 
         content = "".join(
             [
@@ -88,7 +89,6 @@ def send_initial_pms(user: UserProfile) -> None:
     content = content.format(
         organization_setup_text=organization_setup_text,
         demo_org_warning=demo_org_warning,
-        demo_org_help_url="/help/demo-organizations",
         getting_started_url="/help/getting-started-with-zulip",
     )
 
