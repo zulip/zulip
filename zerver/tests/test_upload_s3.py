@@ -289,6 +289,35 @@ class S3Test(ZulipTestCase):
         self.assertEqual(source_medium_image_data, target_medium_image_data)
 
     @use_s3_backend
+    def test_ensure_avatar_image(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        base_file_path = user_avatar_path(user_profile)
+        # Bug: This should have + ".png", but the implementation is wrong.
+        file_path = base_file_path
+        original_file_path = base_file_path + ".original"
+        medium_file_path = base_file_path + "-medium.png"
+
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_avatar_image(
+                image_file, user_profile, user_profile
+            )
+
+        key = bucket.Object(original_file_path)
+        image_data = key.get()["Body"].read()
+
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        resized_avatar = resize_avatar(image_data)
+        key = bucket.Object(file_path)
+        self.assertEqual(resized_avatar, key.get()["Body"].read())
+
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        key = bucket.Object(medium_file_path)
+        self.assertEqual(resized_avatar, key.get()["Body"].read())
+
+    @use_s3_backend
     def test_delete_avatar_image(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
@@ -363,57 +392,6 @@ class S3Test(ZulipTestCase):
         self._test_upload_logo_image(night=True, file_name="night_logo")
 
     @use_s3_backend
-    def test_upload_emoji_image(self) -> None:
-        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
-
-        user_profile = self.example_user("hamlet")
-        emoji_name = "emoji.png"
-        with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_emoji_image(
-                image_file, emoji_name, user_profile
-            )
-
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=user_profile.realm_id,
-            emoji_file_name=emoji_name,
-        )
-        original_key = bucket.Object(emoji_path + ".original")
-        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
-
-        resized_data = bucket.Object(emoji_path).get()["Body"].read()
-        resized_image = Image.open(io.BytesIO(resized_data))
-        self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
-
-    @use_s3_backend
-    def test_ensure_avatar_image(self) -> None:
-        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
-
-        user_profile = self.example_user("hamlet")
-        base_file_path = user_avatar_path(user_profile)
-        # Bug: This should have + ".png", but the implementation is wrong.
-        file_path = base_file_path
-        original_file_path = base_file_path + ".original"
-        medium_file_path = base_file_path + "-medium.png"
-
-        with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_avatar_image(
-                image_file, user_profile, user_profile
-            )
-
-        key = bucket.Object(original_file_path)
-        image_data = key.get()["Body"].read()
-
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
-        resized_avatar = resize_avatar(image_data)
-        key = bucket.Object(file_path)
-        self.assertEqual(resized_avatar, key.get()["Body"].read())
-
-        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
-        resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        key = bucket.Object(medium_file_path)
-        self.assertEqual(resized_avatar, key.get()["Body"].read())
-
-    @use_s3_backend
     def test_get_emoji_url(self) -> None:
         emoji_name = "emoji.png"
         realm_id = 1
@@ -441,6 +419,28 @@ class S3Test(ZulipTestCase):
         self.assertEqual(expected_url, url)
         expected_still_url = f"https://{bucket}.s3.amazonaws.com/{still_path}"
         self.assertEqual(expected_still_url, still_url)
+
+    @use_s3_backend
+    def test_upload_emoji_image(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        emoji_name = "emoji.png"
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_emoji_image(
+                image_file, emoji_name, user_profile
+            )
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=emoji_name,
+        )
+        original_key = bucket.Object(emoji_path + ".original")
+        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
+
+        resized_data = bucket.Object(emoji_path).get()["Body"].read()
+        resized_image = Image.open(io.BytesIO(resized_data))
+        self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:
