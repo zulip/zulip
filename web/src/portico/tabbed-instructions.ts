@@ -2,9 +2,9 @@ import $ from "jquery";
 
 import * as common from "../common";
 
-type User_OS = "android" | "ios" | "mac" | "windows" | "linux";
+type UserOS = "android" | "ios" | "mac" | "windows" | "linux";
 
-export function detect_user_os(): User_OS {
+export function detect_user_os(): UserOS {
     if (/android/i.test(navigator.userAgent)) {
         return "android";
     }

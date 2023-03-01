@@ -27,7 +27,7 @@ export function decodeHashComponent(str: string): string {
 }
 
 export function stream_id_to_slug(
-    stream_id: number | string,
+    stream_id: number,
     maybe_get_stream_name: GetStreamNameFunction,
 ): string {
     let name = maybe_get_stream_name(stream_id) || "unknown";
@@ -43,7 +43,7 @@ export function stream_id_to_slug(
 }
 
 export function encode_stream_id(
-    stream_id: number | string,
+    stream_id: number,
     maybe_get_stream_name: GetStreamNameFunction,
 ): string {
     // stream_id_to_slug appends the stream name, but it does not do the
@@ -54,14 +54,14 @@ export function encode_stream_id(
 }
 
 export function by_stream_url(
-    stream_id: number | string,
+    stream_id: number,
     maybe_get_stream_name: GetStreamNameFunction,
 ): string {
     return "#narrow/stream/" + encode_stream_id(stream_id, maybe_get_stream_name);
 }
 
 export function by_stream_topic_url(
-    stream_id: number | string,
+    stream_id: number,
     topic: string,
     maybe_get_stream_name: GetStreamNameFunction,
 ): string {
