@@ -46,8 +46,17 @@ import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
+import {localstorage} from "./localstorage";
 
 export function initialize() {
+    const ls = localstorage();
+
+    // Setting default font size after app loaded
+    let current_font_size = ls.get('font-size');
+    if (current_font_size) {
+        $("html").addClass("font-size-" + current_font_size);
+    }
+
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -827,6 +836,13 @@ export function initialize() {
         // Allow propagation to close gear menu.
         e.preventDefault();
         dark_theme.enable();
+    });
+
+    $("body").on("change", "#user_default_font_size", (e) => {
+        $("html").removeClass("font-size-" + current_font_size);
+        $("html").addClass("font-size-" + e.target.value);
+        current_font_size = e.target.value;
+        ls.set("font-size", current_font_size);
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {

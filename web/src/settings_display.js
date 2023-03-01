@@ -15,6 +15,7 @@ import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
+import {localstorage} from "./localstorage";
 
 const meta = {
     loaded: false,
@@ -150,6 +151,15 @@ export function launch_default_language_setting_modal() {
 
 export function set_up(settings_panel) {
     meta.loaded = true;
+
+    const ls = localstorage();
+    setTimeout(() => {
+        let font_size = ls.get("font-size");
+        if (font_size) {
+            $('#user_default_font_size').val(font_size)
+        }
+    }, 0)
+
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     const for_realm_settings = settings_panel.for_realm_settings;

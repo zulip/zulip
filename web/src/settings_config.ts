@@ -66,6 +66,21 @@ export const default_view_values = {
     },
 };
 
+export const default_font_size_values = {
+    small: {
+        code: "14",
+        description: $t({defaultMessage: "Small (14px)"}),
+    },
+    medium: {
+        code: "15",
+        description: $t({defaultMessage: "Medium (15px)"}),
+    },
+    large: {
+        code: '18',
+        description: $t({defaultMessage: "Large (18px)"})
+    }
+};
+
 export const color_scheme_values = {
     automatic: {
         code: 1,

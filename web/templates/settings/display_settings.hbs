@@ -115,6 +115,13 @@
         </div>
 
         <div class="input-group thinner setting-next-is-related">
+            <label for="default_font_size" class="dropdown-title">{{t "Default font size" }}</label>
+            <select name="default_font_size" class="default_font_size prop-element settings_select bootstrap-focus-style" id="{{prefix}}default_font_size" data-setting-widget-type="string">
+                {{> dropdown_options_widget option_values=default_font_size_values}}
+            </select>
+        </div>
+
+        <div class="input-group thinner setting-next-is-related">
             <label for="default_view" class="dropdown-title">{{t "Default view" }}
                 {{> ../help_link_widget link="/help/configure-default-view" }}
             </label>
