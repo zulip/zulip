@@ -67,14 +67,6 @@ class zulip::app_frontend_once {
     source => 'puppet:///modules/zulip/cron.d/archive-messages',
   }
 
-  file { '/etc/cron.d/delete-old-unclaimed-attachments':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/delete-old-unclaimed-attachments',
-  }
-
   file { '/etc/cron.d/clearsessions':
     ensure => file,
     owner  => 'root',
