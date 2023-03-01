@@ -7,7 +7,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.message_send import create_mirror_user_if_needed
 from zerver.lib.create_user import create_user_profile
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.models import UserProfile, get_client, get_realm, get_user
 from zerver.views.message_send import InvalidMirrorInputError, create_mirrored_message_users
 
@@ -94,7 +94,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(mirror_sender.is_mirror_dummy)
 
     def test_irc_mirror(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         user = self.example_user("hamlet")
         sender = user
@@ -123,7 +123,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
     def test_jabber_mirror(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         user = self.example_user("hamlet")
         sender = user
