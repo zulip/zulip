@@ -246,7 +246,7 @@ $user_status_emoji_width: 24px;
 #keyboard-icon {
     position: relative;
     cursor: pointer;
-    font-size: 20px;
+    font-size: var(--font-size-20);
     margin-right: 15px;
 }
 

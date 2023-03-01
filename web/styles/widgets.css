@@ -22,7 +22,7 @@
     /* For the box-shadow to be visible on the left */
     .add-task,
     .add-desc {
-        font-size: 14px;
+        font-size: var(--font-size-14);
         font-weight: 400;
         margin-right: 4px;
     }
@@ -72,12 +72,12 @@
 .todo-widget,
 .poll-widget {
     h4 {
-        font-size: 18px;
+        font-size: var(--font-size-18);
         font-weight: 600;
 
         /* for example in help `?` widget */
         &.reduced-font-size {
-            font-size: 16px;
+            font-size: var(--font-size-16);
         }
     }
 
@@ -95,7 +95,7 @@
 .poll-widget {
     .poll-option {
         font-weight: 400;
-        font-size: 14px;
+        font-size: var(--font-size-14);
     }
 
     /* For the box-shadow to be visible on the left */
@@ -124,7 +124,7 @@
         padding-right: 2px;
         min-width: 25px;
         height: 25px;
-        font-size: 13px;
+        font-size: var(--font-size-13);
         background-color: hsl(0, 0%, 100%);
 
         &:hover {
@@ -141,7 +141,7 @@
         color: hsl(0, 0%, 45%);
         padding-left: 4px;
         padding-top: 28px;
-        font-size: 14px;
+        font-size: var(--font-size-14);
     }
 }
 
@@ -198,7 +198,7 @@ button {
 
 .widget-error {
     color: hsl(1, 45%, 50%);
-    font-size: 12px;
+    font-size: var(--font-size-12);
 }
 
 .poll-question-check,

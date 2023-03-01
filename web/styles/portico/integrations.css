@@ -149,7 +149,7 @@ $category-text: hsl(219, 23%, 33%);
                     position: absolute;
                     left: 20px;
                     top: 13px;
-                    font-size: 19px;
+                    font-size: var(--font-size-19);
                     color: $border-green;
                 }
 
@@ -246,7 +246,7 @@ $category-text: hsl(219, 23%, 33%);
 
             i {
                 margin-right: 10px;
-                font-size: 24px;
+                font-size: var(--font-size-24);
             }
 
             .dropdown-list {
@@ -357,7 +357,7 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         .fa-plus {
-            font-size: 59px;
+            font-size: var(--font-size-59);
         }
 
         .integration-name {
@@ -381,7 +381,7 @@ $category-text: hsl(219, 23%, 33%);
             }
 
             .fa-plus {
-                font-size: 45px;
+                font-size: var(--font-size-45);
             }
 
             .integration-name {
@@ -540,7 +540,7 @@ $category-text: hsl(219, 23%, 33%);
                 }
 
                 @media (width <= 768px) {
-                    font-size: 22px;
+                    font-size: var(--font-size-22);
                 }
             }
 
@@ -570,7 +570,7 @@ $category-text: hsl(219, 23%, 33%);
             }
 
             .logos_disclaimer {
-                font-size: 14px;
+                font-size: var(--font-size-14);
                 font-style: italic;
             }
 
@@ -601,7 +601,7 @@ $category-text: hsl(219, 23%, 33%);
 
     .portico-page-heading {
         color: hsl(0, 0%, 0%);
-        font-size: 44px;
+        font-size: var(--font-size-44);
     }
 
     .portico-page-subheading {
@@ -614,7 +614,7 @@ $category-text: hsl(219, 23%, 33%);
 
     .integration-categories-sidebar h3 {
         color: hsl(0, 0%, 0%);
-        font-size: 20px;
+        font-size: var(--font-size-20);
         font-weight: 600;
     }
 
@@ -652,7 +652,7 @@ $category-text: hsl(219, 23%, 33%);
 
                 .eligible_realm_name {
                     font-weight: 400;
-                    font-size: 21px;
+                    font-size: var(--font-size-21);
                     color: hsl(220.6, 20%, 33.3%);
                     line-height: 23px;
                     margin: 0 0 2px;
@@ -660,7 +660,7 @@ $category-text: hsl(219, 23%, 33%);
 
                 .eligible_realm_description {
                     font-weight: 400;
-                    font-size: 15px;
+                    font-size: var(--font-size-15);
                     color: hsl(220, 2.7%, 56.5%);
                     line-height: 19px;
                     margin: 0;
@@ -680,7 +680,7 @@ $category-text: hsl(219, 23%, 33%);
 
         .eligible_realm_end_notice {
             text-align: center;
-            font-size: 18px;
+            font-size: var(--font-size-18);
         }
     }
 }

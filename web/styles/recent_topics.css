@@ -388,7 +388,7 @@
 
             .recent_topic_actions {
                 margin-right: 5px;
-                font-size: 15px;
+                font-size: var(--font-size-15);
             }
         }
 

@@ -575,7 +575,7 @@ div.overlay {
     padding: 0 4px;
     height: 16px;
     line-height: 16px;
-    font-size: 12px;
+    font-size: var(--font-size-12);
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
@@ -814,7 +814,7 @@ div.overlay {
         .save-discard-widget-button-icon {
             vertical-align: middle;
             margin-right: 3px;
-            font-size: 15px;
+            font-size: var(--font-size-15);
             font-weight: 500;
         }
 

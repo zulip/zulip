@@ -20,7 +20,7 @@
             display: flex;
             align-items: center;
             padding: 5px 10px;
-            font-size: 14px;
+            font-size: var(--font-size-14);
             line-height: 20px;
             color: hsla(0, 0%, 100%, 1);
         }

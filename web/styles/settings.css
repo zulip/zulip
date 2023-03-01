@@ -196,7 +196,7 @@ h3,
     margin-right: 4px;
 
     i {
-        font-size: 22px;
+        font-size: var(--font-size-22);
         cursor: pointer;
     }
 }
@@ -318,7 +318,7 @@ td .button {
     }
 
     .loading_indicator_text {
-        font-size: 12px;
+        font-size: var(--font-size-12);
         font-weight: 400;
         vertical-align: middle;
         line-height: 20px;
@@ -659,7 +659,7 @@ input[type="checkbox"] {
     }
 
     #emoji-file-name {
-        font-size: 14px;
+        font-size: var(--font-size-14);
         white-space: nowrap;
         height: 1rem;
         font-style: italic;

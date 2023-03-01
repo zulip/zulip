@@ -907,7 +907,7 @@ nav {
         th {
             font-weight: 600;
             padding: 15px 0;
-            font-size: 18px;
+            font-size: var(--font-size-18);
 
             color: hsl(0, 0%, 100%);
 
@@ -1643,7 +1643,7 @@ nav {
     color: hsl(0, 0%, 100%);
     opacity: 0.5;
     position: absolute;
-    font-size: 36px;
+    font-size: var(--font-size-36);
     top: 40%;
 }
 
@@ -1908,7 +1908,7 @@ nav {
 
 .portico-landing.hello .integrations .integration-name {
     margin-top: 20px;
-    font-size: 22px;
+    font-size: var(--font-size-22);
     font-weight: 400;
 }
 
@@ -1916,7 +1916,7 @@ nav {
     width: 120px;
     margin: 0 auto 20px;
     font-weight: 400;
-    font-size: 14px;
+    font-size: var(--font-size-14);
 }
 
 .portico-landing.hello .call-to-action-bottom {
@@ -2690,7 +2690,7 @@ nav {
     margin: auto;
 
     &.plans_top_faq {
-        font-size: 17px;
+        font-size: var(--font-size-17);
         font-weight: 400;
         color: hsl(0, 0%, 53%);
         padding-top: 0;
@@ -3714,7 +3714,7 @@ nav {
 #download-mac-arm64 {
     display: inline-block;
     color: hsl(0, 0%, 100%);
-    font-size: 13px;
+    font-size: var(--font-size-13);
     padding-left: 10px;
 }
 
@@ -3772,7 +3772,7 @@ nav {
 
     .feature-text {
         h1 {
-            font-size: 30px;
+            font-size: var(--font-size-30);
             font-weight: 600;
         }
 
@@ -3798,7 +3798,7 @@ nav {
             .list-content {
                 margin-left: 22px;
                 line-height: 1.6;
-                font-size: 18px;
+                font-size: var(--font-size-18);
             }
         }
     }
@@ -3863,7 +3863,7 @@ nav {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    font-size: 15px;
+    font-size: var(--font-size-15);
     margin: 10px 20px;
     float: left;
     width: 200px;
@@ -3929,11 +3929,11 @@ nav {
     }
 
     blockquote {
-        font-size: 18px;
+        font-size: var(--font-size-18);
     }
 
     blockquote::before {
-        font-size: 20px;
+        font-size: var(--font-size-20);
         font-weight: 800;
     }
 
@@ -3944,7 +3944,7 @@ nav {
 
 .intro_quote {
     blockquote {
-        font-size: 17px;
+        font-size: var(--font-size-17);
         font-weight: 400;
         color: hsl(223, 6%, 25%);
         border-left: 6px solid hsl(218, 46%, 43%);
@@ -3969,7 +3969,7 @@ nav {
         width: 80%;
         max-width: 700px;
         margin: 40px auto;
-        font-size: 20px;
+        font-size: var(--font-size-20);
         text-align: center;
         font-weight: bolder;
         opacity: 0.9;
@@ -3989,7 +3989,7 @@ nav {
         a {
             color: hsl(170, 47%, 33%);
             font-weight: 600;
-            font-size: 15px;
+            font-size: var(--font-size-15);
             margin: 10px;
 
             &:hover {
@@ -4030,7 +4030,7 @@ nav {
         text-align: center;
         margin-top: 0 !important;
         padding-top: 0 !important;
-        font-size: 15px;
+        font-size: var(--font-size-15);
         opacity: 0.8;
         max-width: 560px !important;
     }
@@ -4088,7 +4088,7 @@ nav {
                 margin-top: 90px;
 
                 .pricing-details {
-                    font-size: 34px;
+                    font-size: var(--font-size-34);
                 }
 
                 a {
@@ -4099,7 +4099,7 @@ nav {
             .standard-price-box {
                 flex-flow: row wrap;
                 height: 90px;
-                font-size: 15px;
+                font-size: var(--font-size-15);
 
                 &:first-child {
                     padding-bottom: 10px;
@@ -4130,7 +4130,7 @@ nav {
     padding: 0 4vw;
 
     h1 {
-        font-size: 36px;
+        font-size: var(--font-size-36);
         font-weight: 600;
     }
 }
@@ -4230,7 +4230,7 @@ nav {
             a {
                 margin: 10px calc(5vw - 10px);
                 width: clamp(130px, 40vw, 200px);
-                font-size: 13px;
+                font-size: var(--font-size-13);
             }
         }
     }
@@ -4287,10 +4287,10 @@ nav {
         blockquote {
             max-width: 700px;
             margin: auto;
-            font-size: 24px;
+            font-size: var(--font-size-24);
 
             .author {
-                font-size: 18px;
+                font-size: var(--font-size-18);
             }
         }
     }

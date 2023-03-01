@@ -433,7 +433,7 @@
         position: absolute;
         margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
         padding: 5px 8px 5px 10px;
-        font-size: 12px;
+        font-size: var(--font-size-12);
         border-radius: 4px;
         background-color: hsl(0, 0%, 0%);
         color: hsl(0, 0%, 100%);
@@ -542,7 +542,7 @@
         position: absolute;
         right: 23px;
         margin-top: -3px;
-        font-size: 17px;
+        font-size: var(--font-size-17);
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
         color: hsl(0, 0%, 47%);

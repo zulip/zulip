@@ -45,7 +45,7 @@
 
             .smiley_icon {
                 display: block;
-                font-size: 18px;
+                font-size: var(--font-size-18);
                 position: relative;
                 top: -2px;
                 left: 2px;

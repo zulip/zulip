@@ -104,7 +104,7 @@ html {
             height: 30px;
             padding: 4px 6px;
             width: 220px;
-            font-size: 14px;
+            font-size: var(--font-size-14);
             color: hsl(0, 0%, 33%);
             border-radius: 4px;
             border: 1px solid hsl(0, 0%, 80%);
@@ -161,7 +161,7 @@ html {
         }
 
         p {
-            font-size: 19px;
+            font-size: var(--font-size-19);
         }
     }
 }
@@ -202,14 +202,14 @@ html {
 
         &.dev-login-button {
             padding: 8px;
-            font-size: 19px;
+            font-size: var(--font-size-19);
             min-width: 300px;
         }
 
         &.dev-create-button {
             padding: 6px 12px;
             margin-bottom: 4px;
-            font-size: 15px;
+            font-size: var(--font-size-15);
         }
     }
 }
@@ -322,7 +322,7 @@ html {
 
     .description {
         margin-bottom: 20px;
-        font-size: 16px;
+        font-size: var(--font-size-16);
         font-weight: 400;
     }
 
@@ -661,7 +661,7 @@ html {
     select {
         margin-bottom: 10px;
         width: auto;
-        font-size: 16px;
+        font-size: var(--font-size-16);
         font-family: inherit;
     }
 }
@@ -1031,7 +1031,7 @@ button#register_auth_button_gitlab {
         width: 100%;
         padding: 0;
         margin-bottom: 0;
-        font-size: 21px;
+        font-size: var(--font-size-21);
         line-height: 40px;
         color: hsla(0, 0%, 0%, 0.5);
         border: 0;
@@ -1098,7 +1098,7 @@ button#register_auth_button_gitlab {
     position: relative;
     top: 15px;
     margin-bottom: 20px;
-    font-size: 22px;
+    font-size: var(--font-size-22);
 }
 
 .goto-account-page {
@@ -1109,7 +1109,7 @@ button#register_auth_button_gitlab {
     }
 
     #realm_redirect_external_host {
-        font-size: 20px;
+        font-size: var(--font-size-20);
         top: 13px;
         left: 5px;
         position: relative;
@@ -1182,7 +1182,7 @@ button#register_auth_button_gitlab {
             line-height: 38px;
 
             &::before {
-                font-size: 30px;
+                font-size: var(--font-size-30);
             }
         }
     }

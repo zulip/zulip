@@ -95,7 +95,7 @@ input[type="search"]::-webkit-search-cancel-button {
 body {
   margin: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-size: var(--font-size-14);
   line-height: 20px;
   color: #333333;
   background-color: #ffffff;
@@ -144,7 +144,7 @@ p {
 }
 .lead {
   margin-bottom: 20px;
-  font-size: 21px;
+  font-size: var(--font-size-21);
   font-weight: 200;
   line-height: 30px;
 }
@@ -197,28 +197,28 @@ h3 {
   line-height: 40px;
 }
 h1 {
-  font-size: 38.5px;
+  font-size: var(--font-size-39);
 }
 h2 {
-  font-size: 31.5px;
+  font-size: var(--font-size-32);
 }
 h3 {
-  font-size: 24.5px;
+  font-size: var(--font-size-25);
 }
 h4 {
-  font-size: 17.5px;
+  font-size: var(--font-size-18);
 }
 h1 small {
-  font-size: 24.5px;
+  font-size: var(--font-size-25);
 }
 h2 small {
-  font-size: 17.5px;
+  font-size: var(--font-size-18);
 }
 h3 small {
-  font-size: 14px;
+  font-size: var(--font-size-14);
 }
 h4 small {
-  font-size: 14px;
+  font-size: var(--font-size-14);
 }
 ul,
 ol {
@@ -286,7 +286,7 @@ code,
 pre {
   padding: 0 3px 2px;
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  font-size: 12px;
+  font-size: var(--font-size-12);
   color: #333333;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -303,7 +303,7 @@ pre {
   display: block;
   padding: 9.5px;
   margin: 0 0 10px;
-  font-size: 13px;
+  font-size: var(--font-size-13);
   line-height: 20px;
   word-break: break-all;
   word-wrap: break-word;
@@ -783,7 +783,7 @@ input.search-query {
 .nav-header {
   display: block;
   padding: 3px 15px;
-  font-size: 11px;
+  font-size: var(--font-size-11);
   font-weight: bold;
   line-height: 20px;
   color: #999999;
@@ -1050,7 +1050,7 @@ input.search-query {
   height: 100%;
   color: #ffffff;
   float: left;
-  font-size: 12px;
+  font-size: var(--font-size-12);
   text-align: center;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
   background-color: #0e90d2;
@@ -1109,7 +1109,7 @@ input.search-query {
   z-index: 1030;
   display: block;
   visibility: visible;
-  font-size: 11px;
+  font-size: var(--font-size-11);
   line-height: 1.4;
   opacity: 0;
   filter: alpha(opacity=0);
@@ -1605,7 +1605,7 @@ input.search-query {
   width: 40px;
   height: 40px;
   margin-top: -20px;
-  font-size: 60px;
+  font-size: var(--font-size-60);
   font-weight: 100;
   line-height: 30px;
   color: #ffffff;

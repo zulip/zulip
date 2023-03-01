@@ -4,7 +4,7 @@ body {
     line-height: 150%;
     height: 100%;
     font-weight: 300;
-    font-size: 17px;
+    font-size: var(--font-size-17);
 }
 
 html {
@@ -19,7 +19,7 @@ html {
 .digest-address-link {
     margin-top: 10px;
     color: hsl(0, 0%, 60%);
-    font-size: 12px;
+    font-size: var(--font-size-12);
     text-align: center;
 }
 
@@ -383,7 +383,7 @@ input.text-error {
     z-index: 100;
     width: calc(100%);
     text-align: center;
-    font-size: 16px;
+    font-size: var(--font-size-16);
     background-color: hsl(33, 34%, 96%);
     display: grid;
     grid-template-columns: repeat(4, max-content);
@@ -447,7 +447,7 @@ input.text-error {
         padding: 0;
         padding-top: 10px;
         opacity: 0.9;
-        font-size: 15px;
+        font-size: var(--font-size-15);
     }
 
     .footer-section {
@@ -558,7 +558,7 @@ input.text-error {
                 &.nav-header {
                     background-color: transparent;
                     cursor: default;
-                    font-size: 14px;
+                    font-size: var(--font-size-14);
                 }
             }
 
@@ -626,7 +626,7 @@ input.text-error {
     margin-bottom: 20px;
     padding-top: 0;
     text-align: center;
-    font-size: 16px;
+    font-size: var(--font-size-16);
 }
 
 .table.table-striped {
@@ -880,7 +880,7 @@ input.new-organization-button {
         color: hsl(0, 0%, 100%);
         padding: 2px 7px 1px 8px;
         font-weight: 600;
-        font-size: 16px;
+        font-size: var(--font-size-16);
         transition: all 0.2s ease-in;
         border-radius: 4px;
 
@@ -1034,7 +1034,7 @@ input.new-organization-button {
         margin-top: 20px;
         padding: 5px 10px;
         border-radius: 2px;
-        font-size: 16px;
+        font-size: var(--font-size-16);
         font-weight: 300;
     }
 }
@@ -1068,7 +1068,7 @@ input.new-organization-button {
     max-width: 500px;
     background-color: hsl(0, 0%, 100%);
     box-shadow: 0 0 4px hsl(163, 43%, 46%);
-    font-size: 18px;
+    font-size: var(--font-size-18);
 
     &.config-error {
         max-width: 750px;
@@ -1086,7 +1086,7 @@ input.new-organization-button {
 
 .error_page .lead {
     color: hsl(163, 49%, 44%);
-    font-size: 35px;
+    font-size: var(--font-size-35);
     margin-bottom: 20px;
     line-height: normal;
 }
@@ -1358,7 +1358,7 @@ label.label-title {
     .api-field-type {
         text-transform: lowercase;
         font-weight: 600;
-        font-size: 14px;
+        font-size: var(--font-size-14);
     }
 
     .api-argument-example-label {
@@ -1368,21 +1368,21 @@ label.label-title {
     .api-argument-required {
         text-transform: uppercase;
         font-weight: 600;
-        font-size: 12px;
+        font-size: var(--font-size-12);
         color: hsl(14, 75%, 60%);
     }
 
     .api-argument-optional {
         text-transform: uppercase;
         font-weight: 400;
-        font-size: 12px;
+        font-size: var(--font-size-12);
         color: hsl(0, 0%, 47%);
     }
 
     .api-argument-deprecated {
         text-transform: uppercase;
         font-weight: 600;
-        font-size: 12px;
+        font-size: var(--font-size-12);
         color: hsl(0, 50%, 60%);
     }
 }

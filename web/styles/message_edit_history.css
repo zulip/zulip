@@ -25,7 +25,7 @@
 
     .author_details {
         display: block;
-        font-size: 12px;
+        font-size: var(--font-size-12);
         padding: 1px;
         text-align: right;
     }

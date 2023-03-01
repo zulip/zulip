@@ -38,7 +38,7 @@ html {
 }
 
 body {
-    font-size: 14px;
+    font-size: var(--base-font-size);
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
 }
@@ -191,7 +191,7 @@ p.n-margin {
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
-    font-size: 16px;
+    font-size: var(--font-size-16);
     margin: 0 auto 12px;
     padding: 5px;
     /* Difference should be 16px to accommodate the icon. */
@@ -419,7 +419,7 @@ p.n-margin {
     }
 
     .small-font-size {
-        font-size: 12px;
+        font-size: var(--font-size-12);
     }
 }
 
@@ -477,7 +477,7 @@ p.n-margin {
 
         .divider {
             color: hsl(0, 0%, 88%);
-            font-size: 20px;
+            font-size: var(--font-size-20);
             line-height: 1;
         }
     }
@@ -702,7 +702,7 @@ strong {
 
 .tooltip {
     &.in {
-        font-size: 12px;
+        font-size: var(--font-size-12);
         line-height: 1.3;
 
         opacity: 1;
@@ -944,7 +944,7 @@ td.pointer {
 }
 
 .message_edit_notice {
-    font-size: 10px;
+    font-size: var(--font-size-10);
     opacity: 0.5;
     user-select: none;
     white-space: nowrap;
@@ -954,7 +954,7 @@ td.pointer {
 
 .messagebox-content .message_time {
     display: block;
-    font-size: 12px;
+    font-size: var(--font-size-12);
     font-weight: normal;
     text-align: right;
     opacity: 0.6;
@@ -1033,7 +1033,7 @@ td.pointer {
     }
 
     > .view_read_receipts {
-        font-size: 14px;
+        font-size: var(--font-size-14);
         height: 16px;
 
         &:hover {
@@ -1178,7 +1178,7 @@ td.pointer {
     text-decoration: none;
 
     .recipient-row-stream-icon {
-        font-size: 12px;
+        font-size: var(--font-size-12);
         line-height: 12px;
     }
 
@@ -1428,7 +1428,7 @@ td.pointer {
 
 .message_sender {
     i.zulip-icon.zulip-icon-bot {
-        font-size: 12px;
+        font-size: var(--font-size-12);
     }
 }
 
@@ -1779,7 +1779,7 @@ div.focused_table {
     height: $header_height;
     width: 100%;
     line-height: $header_height;
-    font-size: 16px;
+    font-size: var(--font-size-16);
     display: flex;
     align-content: flex-start;
     flex-wrap: nowrap;
@@ -1793,7 +1793,7 @@ div.focused_table {
     }
 
     .zulip-icon.zulip-icon-globe {
-        font-size: 14px;
+        font-size: var(--font-size-14);
         position: relative;
         top: 1px;
     }
@@ -1807,7 +1807,7 @@ div.focused_table {
         vertical-align: top;
         position: relative;
         font-weight: 600;
-        font-size: 16px;
+        font-size: var(--font-size-16);
         line-height: 16px;
         margin: 0 -4px 0 0;
         padding: 12px 6px;
@@ -1828,7 +1828,7 @@ div.focused_table {
             }
 
             .fa-envelope {
-                font-size: 14px;
+                font-size: var(--font-size-14);
                 margin: 0 5px;
             }
 
@@ -1850,14 +1850,14 @@ div.focused_table {
 
     .divider {
         color: hsl(0, 0%, 88%);
-        font-size: 20px;
+        font-size: var(--font-size-20);
         margin: 0 3px;
     }
 
     .sub_count,
     .narrow_description {
         background: none;
-        font-size: 14px;
+        font-size: var(--font-size-14);
         color: hsl(0, 0%, 40%);
         font-weight: 400;
         line-height: 20px;
@@ -1881,7 +1881,7 @@ div.focused_table {
             top: 25%;
             height: 50%;
             color: hsl(0, 0%, 88%);
-            font-size: 20px;
+            font-size: var(--font-size-20);
             @media (width < $sm_min) {
                 top: 10%;
             }
@@ -1929,7 +1929,7 @@ div.focused_table {
         flex: 0; /* makes sure search icon is always visible */
 
         cursor: pointer;
-        font-size: 20px;
+        font-size: var(--font-size-20);
 
         padding: 10px 15px 0 0;
         @media (width < $sm_min) {
@@ -1984,7 +1984,7 @@ div.focused_table {
 
         .fa-search {
             padding: 0;
-            font-size: 20px;
+            font-size: var(--font-size-20);
             position: absolute;
             left: 10px;
             top: 10px;
@@ -1998,7 +1998,7 @@ div.focused_table {
 
     #search_query {
         width: 100%;
-        font-size: 16px;
+        font-size: var(--font-size-16);
         height: $header_height;
         padding: 0;
         padding-left: 5px;
@@ -2030,7 +2030,7 @@ div.focused_table {
         padding: 4px;
         color: inherit;
         opacity: 0.5;
-        font-size: 18px;
+        font-size: var(--font-size-18);
         box-shadow: none;
         text-shadow: none;
         z-index: 5;
@@ -2049,7 +2049,7 @@ div.focused_table {
         height: 100%;
         text-decoration: none;
         padding: 0 10px;
-        font-size: 20px;
+        font-size: var(--font-size-20);
         z-index: 5;
         left: 0;
     }
@@ -2071,7 +2071,7 @@ div.focused_table {
     @media (width >= $sm_min) {
         .pill {
             padding: 2px 0 !important;
-            font-size: 14px;
+            font-size: var(--font-size-14);
         }
     }
     @media (width < $sm_min) {
@@ -2117,7 +2117,7 @@ div.focused_table {
 
         .dropdown-toggle,
         li.active .dropdown-toggle {
-            font-size: 20px;
+            font-size: var(--font-size-20);
             color: inherit;
             opacity: 0.5;
             text-shadow: none;
@@ -2189,7 +2189,7 @@ div.focused_table {
     box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.2);
     border-radius: 12px;
     padding: 1px;
-    font-size: 9px;
+    font-size: var(--font-size-9);
     z-index: 15;
     font-weight: normal;
     color: hsl(0, 0%, 100%);
@@ -2261,7 +2261,7 @@ div.focused_table {
     border-radius: 4px;
 
     /* For FontAwesome icons used in place of images for some users. */
-    font-size: 19px;
+    font-size: var(--font-size-19);
     text-align: center;
 
     &.no-presence-circle {
@@ -2366,7 +2366,7 @@ nav {
 .small_square_button {
     padding: 0;
     border: none;
-    font-size: 12px;
+    font-size: var(--font-size-12);
     width: 18px;
     height: 18px;
     border-radius: 4px;
@@ -2752,7 +2752,7 @@ select.invite-as {
     .flatpickr-confirm {
         color: hsl(0, 0%, 100%);
         background-color: hsl(213, 90%, 65%);
-        font-size: 18px;
+        font-size: var(--font-size-18);
         font-weight: 600;
     }
 
@@ -3089,7 +3089,7 @@ select.invite-as {
             i {
                 color: hsl(0, 0%, 100%);
                 margin: 0 auto;
-                font-size: 21px;
+                font-size: var(--font-size-21);
                 position: relative;
                 top: 8px;
             }

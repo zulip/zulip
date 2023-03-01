@@ -75,7 +75,7 @@
 
 .create_user_group_plus_button,
 .create_stream_plus_button {
-    font-size: 24px;
+    font-size: var(--font-size-24);
     font-weight: 500;
     position: relative;
     top: 2px;
@@ -261,7 +261,7 @@ h4.user_group_setting_subsection_title {
 }
 
 #subscriptions h1 {
-    font-size: 25px;
+    font-size: var(--font-size-25);
     font-weight: 300;
     padding-top: 40px;
 }
@@ -419,7 +419,7 @@ h4.user_group_setting_subsection_title {
                 }
 
                 .zulip-icon-globe {
-                    font-size: 15px;
+                    font-size: var(--font-size-15);
                 }
             }
         }
@@ -836,7 +836,7 @@ h4.user_group_setting_subsection_title {
             }
 
             .zulip-icon-globe {
-                font-size: 15px;
+                font-size: var(--font-size-15);
             }
         }
 

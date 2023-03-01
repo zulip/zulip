@@ -104,7 +104,7 @@ i.zulip-icon.zulip-icon-bot {
      * tooltips; popovers should define
      * font-size of their own.
      */
-    font-size: 12px;
+    font-size: var(--font-size-12);
 }
 
 /* Hide the somewhat buggy browser show password feature in IE, Edge,

@@ -141,7 +141,7 @@
                 border: 1px solid hsl(0, 0%, 80%);
                 border-radius: 4px;
                 color: hsl(0, 0%, 25%);
-                font-size: 12px;
+                font-size: var(--font-size-12);
                 padding: 6px;
                 text-transform: capitalize;
                 text-align: center;
@@ -195,7 +195,7 @@ ul {
             margin-bottom: 5px;
 
             .fa-chevron-right {
-                font-size: 12px;
+                font-size: var(--font-size-12);
             }
         }
     }
@@ -227,7 +227,7 @@ ul {
             display: inline;
             float: unset;
             line-height: 14px;
-            font-size: 11px;
+            font-size: var(--font-size-11);
             font-weight: 550;
             margin-right: 2px;
             background-color: hsl(200, 100%, 40%);
@@ -415,7 +415,7 @@ ul {
     }
 
     #edit-button {
-        font-size: 18px;
+        font-size: var(--font-size-18);
         margin-left: 10px;
     }
 
@@ -727,7 +727,7 @@ ul {
             position: absolute;
             top: 5px;
             right: 3px;
-            font-size: 16px;
+            font-size: var(--font-size-16);
 
             &:focus {
                 .fa-remove {

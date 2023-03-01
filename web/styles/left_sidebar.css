@@ -20,20 +20,20 @@ $before_unread_count_padding: 3px;
         &::after {
             content: "#";
             line-height: 0;
-            font-size: 18px;
+            font-size: var(--font-size-18);
             font-weight: 800;
         }
     }
 }
 
 .stream-privacy {
-    font-size: 15px;
+    font-size: var(--font-size-15);
     font-weight: 800;
     min-width: $left_col_size;
     text-align: center;
 
     .zulip-icon.zulip-icon-globe {
-        font-size: 12px;
+        font-size: var(--font-size-12);
         position: relative;
         top: 1px;
     }
@@ -57,7 +57,7 @@ $before_unread_count_padding: 3px;
 
 li.show-more-topics {
     a {
-        font-size: 12px;
+        font-size: var(--font-size-12);
         margin-left: $topic_resolve_width;
     }
 }
@@ -257,7 +257,7 @@ li.show-more-topics {
             padding-left: 6px;
 
             a {
-                font-size: 12px;
+                font-size: var(--font-size-12);
             }
 
             .unread_count {
@@ -415,12 +415,12 @@ li.top_left_recent_topics {
 
 .top_left_all_messages i.fa-align-left {
     position: relative;
-    font-size: 15px;
+    font-size: var(--font-size-15);
 }
 
 .top_left_mentions i.fa-at,
 .top_left_starred_messages i.fa-star {
-    font-size: 13px;
+    font-size: var(--font-size-13);
 }
 
 .topic-box {
@@ -432,7 +432,7 @@ li.top_left_recent_topics {
     display: flex;
     align-items: center;
     min-width: $topic_resolve_width;
-    font-size: 15px;
+    font-size: var(--font-size-15);
     height: 20px;
 }
 
@@ -713,7 +713,7 @@ li.topic-list-item {
         display: block;
         text-decoration: none;
         color: inherit;
-        font-size: 12px;
+        font-size: var(--font-size-12);
 
         span {
             display: block;
