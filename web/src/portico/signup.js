@@ -45,7 +45,7 @@ $(() => {
         "#id_new_password2 ~ .password_visibility_toggle",
     );
 
-    $("#registration, #password_reset").validate({
+    $("#registration, #password_reset", "#create_realm").validate({
         rules: {
             password: "password_strength",
             new_password1: "password_strength",
@@ -133,7 +133,7 @@ $(() => {
         $("input[name='next']").attr("value", next_value + window.location.hash);
     }
 
-    $("#send_confirm", "#create_realm").validate({
+    $("#send_confirm").validate({
         errorElement: "div",
         errorPlacement($error) {
             $(".email-frontend-error").empty();

@@ -34,7 +34,10 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             <fieldset class="org-registration">
                 {% if creating_new_realm %}
                 <legend>{{ _('Your organization') }}</legend>
-                {% include 'zerver/realm_creation_form.html' %}
+                {% with %}
+                    {% set user_registration_form = "true" %}
+                    {% include 'zerver/realm_creation_form.html' %}
+                {% endwith %}
                 {% endif %}
             </fieldset>
 

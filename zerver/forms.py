@@ -259,9 +259,39 @@ def email_is_not_disposable(email: str) -> None:
         raise ValidationError(_("Please use your real email address."))
 
 
-class RealmCreationForm(forms.Form):
+class RealmDetailsForm(forms.Form):
+    realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
+    realm_type = forms.TypedChoiceField(
+        coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
+    )
+    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.realm_creation = kwargs["realm_creation"]
+        del kwargs["realm_creation"]
+
+        super().__init__(*args, **kwargs)
+
+    def clean_realm_subdomain(self) -> str:
+        if not self.realm_creation:
+            # This field is only used if realm_creation
+            return ""
+
+        subdomain = self.cleaned_data["realm_subdomain"]
+        if "realm_in_root_domain" in self.data:
+            subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+
+        check_subdomain_available(subdomain)
+        return subdomain
+
+
+class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        kwargs["realm_creation"] = True
+        super().__init__(*args, **kwargs)
 
 
 class LoggingSetPasswordForm(SetPasswordForm):

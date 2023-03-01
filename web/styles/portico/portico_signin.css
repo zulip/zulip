@@ -46,6 +46,12 @@ html {
     }
 }
 
+#new-realm-creation {
+    .get-started {
+        font-size: 2rem;
+    }
+}
+
 .bottom-text-large {
     text-align: center;
     margin-top: 20px;
@@ -877,7 +883,8 @@ button#register_auth_button_gitlab {
     }
 }
 
-#registration {
+#registration,
+#new-realm-creation {
     width: auto;
     padding: 0;
     margin: 30px;
