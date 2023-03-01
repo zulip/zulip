@@ -2,8 +2,8 @@ import $ from "jquery";
 
 const t1 = performance.now();
 export const page_params: {
-    zulip_version: any;
-    zulip_merge_base: any;
+    zulip_version: number;
+    zulip_merge_base:  number;
     language_list: {
         code: string;
         locale: string;
