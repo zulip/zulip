@@ -71,26 +71,20 @@ const LONG_HOVER_DELAY = [750, 20];
 // so make sure to check this too after checking tippyjs
 // documentation for default properties.
 tippy.setDefaultProps({
-    // We don't want tooltips
-    // to take more space than
-    // mobile widths ever.
+    // Tooltips shouldn't take more space than mobile widths.
     maxWidth: 300,
-
     delay: INSTANT_HOVER_DELAY,
     placement: "top",
-
-    // disable animations to make the
-    // tooltips feel snappy
+    // Disable animations to make the tooltips feel snappy.
     animation: false,
-
-    // Show tooltips on long press on touch based
-    // devices.
+    // Show tooltips on long press on touch based devices.
     touch: ["hold", 750],
-
-    // This has the side effect of some properties of parent applying to
-    // tooltips.
+    // Create the tooltip inside the parent element. This has the
+    // undesirable side effect of CSS properties of the parent elements
+    // applying to tooltips, which causes ugly clipping if the parent
+    // element has overflow rules. We override this in many specific
+    // tooltips, and may want to change the default.
     appendTo: "parent",
-
     // To add a text tooltip, override this by setting data-tippy-content.
     // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
