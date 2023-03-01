@@ -34,7 +34,11 @@ from zerver.actions.user_settings import (
     do_change_password,
     do_change_user_setting,
 )
-from zerver.context_processors import get_realm_from_request, login_context
+from zerver.context_processors import (
+    get_realm_create_form_context,
+    get_realm_from_request,
+    login_context,
+)
 from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
     FindMyTeamForm,
@@ -698,10 +702,18 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             return HttpResponseRedirect(url)
     else:
         form = RealmCreationForm()
+
+    context = get_realm_create_form_context()
+    context.update(
+        {
+            "form": form,
+            "current_url": request.get_full_path,
+        }
+    )
     return TemplateResponse(
         request,
         "zerver/create_realm.html",
-        context={"form": form, "current_url": request.get_full_path},
+        context=context,
     )
 
 

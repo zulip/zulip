@@ -5,7 +5,6 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common";
 
 const email = "alice@test.example.com";
-const subdomain = "testsubdomain";
 const organization_name = "Awesome Organization";
 const host = "zulipdev.com:9981";
 
@@ -15,6 +14,9 @@ async function realm_creation_tests(page: Page): Promise<void> {
     // submit the email for realm creation.
     await page.waitForSelector("#email");
     await page.type("#email", email);
+    await page.type("#id_team_name", organization_name);
+    await page.$eval("#realm_in_root_domain", (el) => (el as HTMLInputElement).click());
+
     await Promise.all([
         page.waitForNavigation(),
         page.$eval("#create_realm", (form) => (form as HTMLFormElement).submit()),
@@ -50,15 +52,12 @@ async function realm_creation_tests(page: Page): Promise<void> {
 
     // fill the form.
     const params = {
-        realm_name: organization_name,
-        realm_subdomain: subdomain,
         full_name: "Alice",
         password: "passwordwhichisnotreallycomplex",
         terms: true,
     };
     // For some reason, page.click() does not work this for particular checkbox
     // so use page.$eval here to call the .click method in the browser.
-    await page.$eval("#realm_in_root_domain", (el) => (el as HTMLInputElement).click());
     await common.fill_form(page, "#registration", params);
     await page.$eval("#registration", (form) => (form as HTMLFormElement).submit());
 
