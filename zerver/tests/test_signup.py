@@ -87,7 +87,7 @@ from zerver.lib.test_helpers import (
     most_recent_message,
     most_recent_usermessage,
     queries_captured,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.models import (
     CustomProfileField,
@@ -932,7 +932,7 @@ class LoginTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_register(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")

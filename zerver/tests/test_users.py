@@ -41,7 +41,7 @@ from zerver.lib.test_helpers import (
     cache_tries_captured,
     get_subscription,
     get_test_image_file,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
 from zerver.lib.upload import upload_avatar_image
@@ -300,7 +300,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_api_hide_emails(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         user = self.example_user("hamlet")
         admin = self.example_user("iago")
@@ -1095,7 +1095,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(result[webhook_bot.email].email, webhook_bot.email)
 
     def test_get_accounts_for_email(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         def check_account_present_in_accounts(user: UserProfile, accounts: List[Accounts]) -> None:
             for account in accounts:
@@ -1139,7 +1139,7 @@ class UserProfileTest(ZulipTestCase):
             check_account_present_in_accounts(user, accounts)
 
     def test_get_source_profile(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         zulip_realm_id = get_realm("zulip").id
         iago = get_source_profile("iago@zulip.com", zulip_realm_id)
         assert iago is not None
@@ -1979,7 +1979,7 @@ class RecipientInfoTest(ZulipTestCase):
 
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         self.login("cordelia")
 
         hamlet = self.example_user("hamlet")

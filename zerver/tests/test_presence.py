@@ -8,7 +8,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.presence import get_presence_dict_by_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import make_client, reset_emails_in_zulip_realm
+from zerver.lib.test_helpers import make_client, reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     PushDeviceToken,
@@ -346,7 +346,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assert_json_error(result, "No presence data for email@zulip.com")
 
     def test_single_user_get(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # First, we set up the test with some data
         user = self.example_user("othello")

@@ -74,7 +74,7 @@ from zerver.lib.test_helpers import (
     get_subscription,
     most_recent_message,
     most_recent_usermessage,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.types import (
     APIStreamDict,
@@ -392,7 +392,7 @@ class TestCreateStreams(ZulipTestCase):
     def test_auto_mark_stream_created_message_as_read_for_stream_creator(self) -> None:
         # This test relies on email == delivery_email for
         # convenience.
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         realm = Realm.objects.get(name="Zulip Dev")
         iago = self.example_user("iago")
