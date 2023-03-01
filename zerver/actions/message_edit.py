@@ -127,8 +127,8 @@ def maybe_send_resolve_topic_notifications(
     old_topic: str,
     new_topic: str,
     changed_messages: List[Message],
-) -> bool:
-    """Returns True if resolve topic notifications were in fact sent."""
+) -> Optional[int]:
+    """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
     #
     # This logic is designed to treat removing a weird "✔ ✔✔ "
@@ -154,7 +154,7 @@ def maybe_send_resolve_topic_notifications(
         # administrator can the messages in between. We consider this
         # to be a fundamental risk of irresponsible message deletion,
         # not a bug with the "resolve topics" feature.
-        return False
+        return None
 
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
@@ -172,7 +172,7 @@ def maybe_send_resolve_topic_notifications(
         elif topic_unresolved:
             notification_string = _("{user} has marked this topic as unresolved.")
 
-        internal_send_stream_message(
+        resolved_topic_message_id = internal_send_stream_message(
             sender,
             stream,
             new_topic,
@@ -182,7 +182,7 @@ def maybe_send_resolve_topic_notifications(
             limit_unread_user_ids=affected_participant_ids,
         )
 
-    return True
+    return resolved_topic_message_id
 
 
 def send_message_moved_breadcrumbs(
@@ -813,7 +813,7 @@ def do_update_message(
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
-    sent_resolve_topic_notification = False
+    sent_resolve_topic_notification = None
     if topic_name is not None and content is None and len(changed_messages) > 0:
         # When stream is changed and topic is marked as resolved or unresolved
         # in the same API request, resolved or unresolved notification should
