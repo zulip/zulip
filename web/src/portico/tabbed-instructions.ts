@@ -2,7 +2,9 @@ import $ from "jquery";
 
 import * as common from "../common";
 
-export function detect_user_os() {
+type UserOS = "android" | "ios" | "mac" | "windows" | "linux";
+
+export function detect_user_os(): UserOS {
     if (/android/i.test(navigator.userAgent)) {
         return "android";
     }
@@ -21,7 +23,7 @@ export function detect_user_os() {
     return "mac"; // if unable to determine OS return Mac by default
 }
 
-export function activate_correct_tab($codeSection) {
+export function activate_correct_tab($codeSection: JQuery<HTMLElement>): void {
     const user_os = detect_user_os();
     const desktop_os = new Set(["mac", "linux", "windows"]);
     const $li = $codeSection.find("ul.nav li");
@@ -55,8 +57,8 @@ export function activate_correct_tab($codeSection) {
     const $active_list_items = $li.filter(".active");
     if (!$active_list_items.length) {
         $li.first().addClass("active");
-        const language = $li.first()[0].dataset.language;
-        $blocks.filter("[data-language=" + language + "]").addClass("active");
+        const language = $li.first()[0].dataset.language || "";
+        $blocks.filter(`[data-language=${language}]`).addClass("active");
     }
 }
 
