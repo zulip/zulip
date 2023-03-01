@@ -195,7 +195,7 @@ from zerver.lib.test_helpers import (
     create_dummy_file,
     get_subscription,
     get_test_image_file,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
@@ -881,7 +881,7 @@ class NormalActionsTest(BaseAction):
         check_invites_changed("events[0]", events[0])
 
     def test_invitation_accept_invite_event(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         self.user_profile = self.example_user("iago")
         streams = []
@@ -1694,7 +1694,7 @@ class NormalActionsTest(BaseAction):
             check_realm_update("events[0]", events[0], "signup_notifications_stream_id")
 
     def test_change_is_admin(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1719,7 +1719,7 @@ class NormalActionsTest(BaseAction):
                 check_user_group_add_members("events[3]", events[3])
 
     def test_change_is_billing_admin(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1731,7 +1731,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["person"]["is_billing_admin"], True)
 
     def test_change_is_owner(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1756,7 +1756,7 @@ class NormalActionsTest(BaseAction):
                 check_user_group_add_members("events[3]", events[3])
 
     def test_change_is_moderator(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1784,7 +1784,7 @@ class NormalActionsTest(BaseAction):
         stream = Stream.objects.get(name="Denmark")
         do_add_default_stream(stream)
 
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value

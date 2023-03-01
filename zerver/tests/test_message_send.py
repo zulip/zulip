@@ -42,7 +42,7 @@ from zerver.lib.test_helpers import (
     message_stream_count,
     most_recent_message,
     most_recent_usermessage,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.models import (
@@ -1152,7 +1152,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Mirroring not allowed with recipient user IDs")
 
     def test_send_message_irc_mirror(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         self.login("hamlet")
         bot_info = {
             "full_name": "IRC bot",
@@ -1215,7 +1215,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
 
     def test_unsubscribed_can_forge_sender(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         cordelia = self.example_user("cordelia")
         stream_name = "private_stream"

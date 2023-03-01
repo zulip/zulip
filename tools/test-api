@@ -34,7 +34,7 @@ with test_server_running(
     from zerver.actions.create_user import do_create_user, do_reactivate_user
     from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
     from zerver.actions.users import change_user_is_active
-    from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+    from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
     from zerver.lib.users import get_api_key
     from zerver.models import get_realm, get_user
     from zerver.openapi.javascript_examples import test_js_bindings
@@ -48,7 +48,7 @@ with test_server_running(
 
     print("Running API tests...")
 
-    reset_emails_in_zulip_realm()
+    reset_email_visibility_to_everyone_in_zulip_realm()
 
     # Prepare the admin client
     email = "iago@zulip.com"  # Iago is an admin
