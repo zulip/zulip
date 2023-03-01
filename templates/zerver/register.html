@@ -17,7 +17,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
     <div class="center-block new-style" style="padding: 20px 0px">
 
         <div class="pitch">
-            {% if creating_new_team %}
+            {% if creating_new_realm %}
             <h1>{{ _('Create your organization') }}</h1>
             {% else %}
             <h1>{{ _('Create your account') }}</h1>
@@ -32,7 +32,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {{ csrf_input }}
 
             <fieldset class="org-registration">
-                {% if creating_new_team %}
+                {% if creating_new_realm %}
                 <legend>{{ _('Your organization') }}</legend>
                 <div class="input-box">
                     <div class="inline-block relative">
@@ -104,10 +104,10 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             </fieldset>
 
             <fieldset class="user-registration">
-                {% if creating_new_team %}
+                {% if creating_new_realm %}
                 <legend>{{ _('Your account') }}</legend>
                 {% endif %}
-                {% if realm_name and not creating_new_team %}
+                {% if realm_name and not creating_new_realm %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
                     <div class="organization-name">{{ realm_name }}</div>
@@ -121,7 +121,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     <input type="hidden" name="email_address_visibility" id="email_address_visibility"/>
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
                     <div id="id_email">{{ email }}</div>
-                    {% if not creating_new_team %}
+                    {% if not creating_new_realm %}
                     <p id="new-user-email-address-visibility">
                         <span class="current-selected-option">
                             {% if default_email_address_visibility == email_address_visibility_admins_only %}
@@ -298,7 +298,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
     </div>
 </div>
 
-{% if not creating_new_team %}
+{% if not creating_new_realm %}
 <div class="micromodal" id="change-email-address-visibility-modal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
