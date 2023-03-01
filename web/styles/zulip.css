@@ -55,6 +55,49 @@ body,
 
     --color-default-text: hsl(0, 0%, 15%);
     --color-date: hsl(0, 0%, 15%, 0.75);
+
+    /* FONTS */
+    --base-font-size: 14px;
+    font-size: var(--base-font-size);
+
+    --font-size-9: 0.643rem;  /* 1 usage */
+    --font-size-10: 0.714rem; /* 1 */
+    --font-size-11: 0.786rem; /* 6 */
+    --font-size-12: 0.857rem; /* 30 */
+    --font-size-13: 0.929rem; /* 5 */
+    --font-size-14: 1rem;     /* 12 */
+    --font-size-15: 1.071rem; /* 19 */
+    --font-size-16: 1.143rem; /* 14 */
+    --font-size-17: 1.214rem; /* 7 */
+    --font-size-18: 1.286rem; /* 17 */
+    --font-size-19: 1.357rem; /* 5 */
+    --font-size-20: 1.429rem; /* 15 */
+    --font-size-21: 1.5rem;   /* 4 */
+    --font-size-22: 1.571rem; /* 5 */
+    --font-size-24: 1.714rem; /* 3 */
+    --font-size-25: 1.786rem; /* 1 */
+    --font-size-30: 2.143rem; /* 3 */
+    --font-size-32: 2.286rem; /* 31*/
+    --font-size-34: 2.429rem; /* 1 */
+    --font-size-35: 2.5rem;   /* 1 */
+    --font-size-36: 2.571rem; /* 2 */
+    --font-size-39: 2.786rem; /* 1 */
+    --font-size-44: 3.143rem; /* 1 */
+    --font-size-45: 3.214rem; /* 1 */
+    --font-size-59: 4.214rem; /* 1 */
+    --font-size-60: 4.218rem; /* 1 */
+
+    &.font-size-14 {
+        --base-font-size: 14px;
+    }
+
+    &.font-size-15 {
+        --base-font-size: 15px;
+    }
+
+    &.font-size-18 {
+        --base-font-size: 18px;
+    }
 }
 
 :root.dark-theme {
