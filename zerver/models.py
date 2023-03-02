@@ -2286,6 +2286,42 @@ def remote_user_to_email(remote_user: str) -> str:
 post_save.connect(flush_user_profile, sender=UserProfile)
 
 
+class PreregistrationRealm(models.Model):
+    """Data on a partially created realm entered by a user who has
+    completed the "new organization" form. Used to transfer the user's
+    selections from the pre-confirmation "new organization" form to
+    the post-confirmation user registration form.
+
+    Note that the values stored here may not match those of the
+    created realm (in the event the user creates a realm at all),
+    because we allow the user to edit these values in the registration
+    form (and in fact the user will be required to do so if the
+    `string_id` is claimed by another realm before registraiton is
+    completed).
+    """
+
+    name = models.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    org_type = models.PositiveSmallIntegerField(
+        default=Realm.ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
+    string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+    email = models.EmailField()
+
+    confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_realm")
+    status = models.IntegerField(default=0)
+
+    # The Realm created upon completion of the registration
+    # for this PregistrationRealm
+    created_realm = models.ForeignKey(Realm, null=True, related_name="+", on_delete=models.SET_NULL)
+
+    # The UserProfile created upon completion of the registration
+    # for this PregistrationRealm
+    created_user = models.ForeignKey(
+        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
+    )
+
+
 class PreregistrationUser(models.Model):
     # Data on a partially created user, before the completion of
     # registration.  This is used in at least three major code paths:
