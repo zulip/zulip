@@ -97,7 +97,7 @@ export function enable_member_management({group, $parent_container}) {
     member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",
-        user_ids: Array.from(group.members),
+        user_ids: [...group.members],
     });
 }
 
@@ -179,13 +179,13 @@ function add_new_members({pill_user_ids}) {
     let ignored_deactivated_users;
     let ignored_already_added_users;
     if (deactivated_users.size > 0) {
-        ignored_deactivated_users = Array.from(deactivated_users);
+        ignored_deactivated_users = [...deactivated_users];
         ignored_deactivated_users = ignored_deactivated_users.map((user_id) =>
             people.get_by_user_id(user_id),
         );
     }
     if (already_added_users.size > 0) {
-        ignored_already_added_users = Array.from(already_added_users);
+        ignored_already_added_users = [...already_added_users];
         ignored_already_added_users = ignored_already_added_users.map((user_id) =>
             people.get_by_user_id(user_id),
         );
@@ -201,7 +201,7 @@ function add_new_members({pill_user_ids}) {
         });
         return;
     }
-    const user_ids = Array.from(user_id_set);
+    const user_ids = [...user_id_set];
 
     function invite_success() {
         pill_widget.clear();

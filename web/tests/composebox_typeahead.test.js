@@ -160,7 +160,7 @@ const emojis_by_name = new Map(
         headphones: emoji_headphones,
     }),
 );
-const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => ({
+const emoji_list = [...emojis_by_name.values()].map((emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
     reaction_type: "unicode_emoji",
@@ -221,7 +221,7 @@ for (const [key, val] of emojis_by_name.entries()) {
 
 const emoji_codes = {
     name_to_codepoint,
-    names: Array.from(emojis_by_name.keys()),
+    names: [...emojis_by_name.keys()],
     emoji_catalog: {},
     emoticon_conversions: {},
     codepoint_to_name: {},

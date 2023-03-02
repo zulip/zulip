@@ -116,7 +116,6 @@
         "unicorn/numeric-separators-style": "off",
         "unicorn/prefer-module": "off",
         "unicorn/prefer-node-protocol": "off",
-        "unicorn/prefer-spread": "off",
         "unicorn/prefer-ternary": "off",
         "unicorn/prefer-top-level-await": "off",
         "unicorn/prevent-abbreviations": "off",

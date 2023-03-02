@@ -466,7 +466,7 @@ export function get_person_suggestions(query, opts) {
         persons = muted_users.filter_muted_users(persons);
 
         if (opts.want_broadcast) {
-            persons = persons.concat(broadcast_mentions());
+            persons = [...persons, ...broadcast_mentions()];
         }
 
         return persons.filter((item) => query_matches_person(query, item));

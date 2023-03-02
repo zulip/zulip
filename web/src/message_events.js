@@ -217,7 +217,7 @@ export function update_messages(events) {
                 if (msg.edit_history === undefined) {
                     msg.edit_history = [];
                 }
-                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+                msg.edit_history = [edit_history_entry, ...msg.edit_history];
             }
             any_message_content_edited = true;
 
@@ -312,7 +312,7 @@ export function update_messages(events) {
                     if (msg.edit_history === undefined) {
                         msg.edit_history = [];
                     }
-                    msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+                    msg.edit_history = [edit_history_entry, ...msg.edit_history];
                 }
                 msg.last_edit_timestamp = event.edit_timestamp;
 

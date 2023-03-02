@@ -864,7 +864,7 @@ export function filter_all_users(pred) {
 
 export function get_realm_users() {
     // includes humans and bots from your realm
-    return Array.from(active_user_dict.values());
+    return [...active_user_dict.values()];
 }
 
 export function get_active_human_ids() {
@@ -915,11 +915,11 @@ export function get_active_human_count() {
 
 export function get_active_user_ids() {
     // This includes active users and active bots.
-    return Array.from(active_user_dict.keys());
+    return [...active_user_dict.keys()];
 }
 
 export function get_non_active_realm_users() {
-    return Array.from(non_active_user_dict.values());
+    return [...non_active_user_dict.values()];
 }
 
 export function is_cross_realm_email(email) {

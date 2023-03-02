@@ -53,7 +53,7 @@ export const send_read = (function () {
     start = _.throttle(server_request, 1000);
 
     function add(messages) {
-        queue = queue.concat(messages);
+        queue = [...queue, ...messages];
         start();
     }
 

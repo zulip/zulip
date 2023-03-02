@@ -197,7 +197,7 @@ export function load_messages(opts, attempt = 1) {
     } else {
         let operators = opts.msg_list.data.filter.public_operators();
         if (page_params.narrow !== undefined) {
-            operators = operators.concat(page_params.narrow);
+            operators = [...operators, ...page_params.narrow];
         }
         data.narrow = JSON.stringify(operators);
     }

@@ -85,7 +85,7 @@ test("activate", ({override}) => {
     override(narrow_state, "active", () => narrow_active);
 
     const opts = {
-        events: events.slice(),
+        events: [...events],
         extra_data: "",
         message: {
             id: 2001,

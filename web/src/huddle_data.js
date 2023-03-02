@@ -23,7 +23,7 @@ export function process_loaded_messages(messages) {
 }
 
 export function get_huddles() {
-    let huddles = Array.from(huddle_timestamps.keys());
+    let huddles = [...huddle_timestamps.keys()];
     huddles = _.sortBy(huddles, (huddle) => huddle_timestamps.get(huddle));
     return huddles.reverse();
 }

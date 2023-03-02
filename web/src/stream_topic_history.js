@@ -199,7 +199,7 @@ export class PerStreamHistory {
     }
 
     get_recent_topic_names() {
-        const my_recents = Array.from(this.topics.values());
+        const my_recents = [...this.topics.values()];
 
         /* Add any older topics with unreads that may not be present
          * in our local cache. */
@@ -208,7 +208,7 @@ export class PerStreamHistory {
             topic_dict: this.topics,
         });
 
-        const recents = my_recents.concat(missing_topics);
+        const recents = [...my_recents, ...missing_topics];
 
         recents.sort((a, b) => b.message_id - a.message_id);
 

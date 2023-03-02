@@ -88,12 +88,13 @@ export function sort_groups(streams, search_term) {
         previous_muted_active = muted_active_streams;
         previous_dormant = dormant_streams;
 
-        all_streams = pinned_streams.concat(
-            muted_pinned_streams,
-            normal_streams,
-            muted_active_streams,
-            dormant_streams,
-        );
+        all_streams = [
+            ...pinned_streams,
+            ...muted_pinned_streams,
+            ...normal_streams,
+            ...muted_active_streams,
+            ...dormant_streams,
+        ];
     }
 
     return {

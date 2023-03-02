@@ -207,7 +207,7 @@ export function extract_property_name($elem, for_realm_default_settings) {
 }
 
 export function get_subsection_property_elements(subsection) {
-    return Array.from($(subsection).find(".prop-element"));
+    return [...$(subsection).find(".prop-element")];
 }
 
 const simple_dropdown_properties = [
@@ -1059,7 +1059,7 @@ function check_maximum_valid_value($custom_input_elem, property_name) {
 }
 
 function enable_or_disable_save_button($subsection_elem) {
-    const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
+    const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
         const $dropdown_elem = $(setting_elem).find("select");

@@ -224,7 +224,7 @@ export function sorted_ids(ids: string[]): number[] {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
     let id_list = ids.map((s) => Number.parseInt(s, 10));
-    id_list = Array.from(new Set(id_list));
+    id_list = [...new Set(id_list)];
     id_list.sort((a, b) => a - b);
 
     return id_list;

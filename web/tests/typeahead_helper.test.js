@@ -420,7 +420,7 @@ test("sort_recipients all mention", () => {
     assert.equal(all_obj.idx, 0);
 
     // Test person email is "all" or "everyone"
-    const test_objs = matches.concat([all_obj]);
+    const test_objs = [...matches, all_obj];
 
     const results = th.sort_recipients({
         users: test_objs,
@@ -482,7 +482,7 @@ test("sort_recipients pm counts", () => {
 });
 
 test("sort_recipients dup bots", () => {
-    const dup_objects = matches.concat([a_bot]);
+    const dup_objects = [...matches, a_bot];
 
     const recipients = th.sort_recipients({
         users: dup_objects,
@@ -583,7 +583,7 @@ test("sort broadcast mentions for stream message type", () => {
     // Reverse the list to test actual sorting
     // and ensure test coverage for the defensive
     // code.  Also, add in some people users.
-    const test_objs = Array.from(ct.broadcast_mentions()).reverse();
+    const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
 
@@ -604,7 +604,7 @@ test("sort broadcast mentions for private message type", () => {
         ["all", "everyone"],
     );
 
-    const test_objs = Array.from(ct.broadcast_mentions()).reverse();
+    const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
 
