@@ -284,35 +284,55 @@ def process_new_human_user(
 
 def notify_created_user(user_profile: UserProfile) -> None:
     user_row = user_profile_to_user_row(user_profile)
-    person = format_user_row(
-        user_profile.realm,
-        user_profile,
-        user_row,
+
+    format_user_row_kwargs: Dict[str, Any] = {
+        "realm": user_profile.realm,
+        "row": user_row,
         # Since we don't know what the client
         # supports at this point in the code, we
         # just assume client_gravatar and
         # user_avatar_url_field_optional = False :(
-        client_gravatar=False,
-        user_avatar_url_field_optional=False,
+        "client_gravatar": False,
+        "user_avatar_url_field_optional": False,
         # We assume there's no custom profile
         # field data for a new user; initial
         # values are expected to be added in a
         # later event.
-        custom_profile_field_data={},
-    )
+        "custom_profile_field_data": {},
+    }
 
     active_users = user_profile.realm.get_active_users()
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
-    for user in active_users:
-        if can_access_delivery_email(user, user_profile.id, user_row["email_address_visibility"]):
-            user_ids_with_real_email_access.append(user.id)
+
+    person_for_real_email_access_users = None
+    person_for_without_real_email_access_users = None
+    for recipient_user in active_users:
+        if can_access_delivery_email(
+            recipient_user, user_profile.id, user_row["email_address_visibility"]
+        ):
+            user_ids_with_real_email_access.append(recipient_user.id)
+            if person_for_real_email_access_users is None:
+                # This caller assumes that "format_user_row" only depends on
+                # specific value of "acting_user" among users in a realm in
+                # email_address_visibility.
+                person_for_real_email_access_users = format_user_row(
+                    **format_user_row_kwargs,
+                    acting_user=recipient_user,
+                )
         else:
-            user_ids_without_real_email_access.append(user.id)
+            user_ids_without_real_email_access.append(recipient_user.id)
+            if person_for_without_real_email_access_users is None:
+                person_for_without_real_email_access_users = format_user_row(
+                    **format_user_row_kwargs,
+                    acting_user=recipient_user,
+                )
 
     if user_ids_with_real_email_access:
-        person["delivery_email"] = user_profile.delivery_email
-        event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
+        assert person_for_real_email_access_users is not None
+        event: Dict[str, Any] = dict(
+            type="realm_user", op="add", person=person_for_real_email_access_users
+        )
         transaction.on_commit(
             lambda event=event: send_event(
                 user_profile.realm, event, user_ids_with_real_email_access
@@ -320,8 +340,8 @@ def notify_created_user(user_profile: UserProfile) -> None:
         )
 
     if user_ids_without_real_email_access:
-        person["delivery_email"] = None
-        event = dict(type="realm_user", op="add", person=person)
+        assert person_for_without_real_email_access_users is not None
+        event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
         transaction.on_commit(
             lambda event=event: send_event(
                 user_profile.realm, event, user_ids_without_real_email_access
