@@ -189,7 +189,7 @@
 
     .content {
         padding: 30px;
-        max-width: 768px;
+        max-width: 700px;
         background-color: hsl(0, 0%, 100%);
 
         ol li p:not(:first-child) {
