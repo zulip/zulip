@@ -6,14 +6,9 @@
           style="background: {{background_color}}; border-left-color: {{background_color}};"
           href="{{stream_url}}"
           title="{{t 'Narrow to stream "{display_recipient}"' }}">
-            {{~! Icons for invite-only/web-public streams ~}}
-            {{~#if invite_only ~}}
-                <i class="fa fa-lock recipient-row-stream-icon" title="{{t 'This is a private stream' }}" aria-label="{{t 'This is a private stream' }}"></i>
-            {{/if}}
-
-            {{~#if is_web_public ~}}
-                <i class="zulip-icon zulip-icon-globe recipient-row-stream-icon" title="{{t 'This is a web-public stream' }}" aria-label="{{t 'This is a web-public stream' }}"></i>
-            {{/if}}
+            <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon">
+                {{> stream_privacy}}
+            </span>
 
             {{~! Recipient (e.g. stream/topic or topic) ~}}
             {{~display_recipient~}}
