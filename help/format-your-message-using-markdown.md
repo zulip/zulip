@@ -65,20 +65,14 @@ whenever you need a reminder of the formatting syntax below.
 
 ## Quotes
 
-~~~
-> a multi-line
-quote on two lines
+{!quotes-intro.md!}
 
-normal text
+{!quotes-examples.md!}
 
-```quote
-A multi-paragraph
+!!! tip ""
 
-quote in two paragraphs
-```
-~~~
-
-![Markdown quotes](/static/images/help/markdown-quotes.png)
+    There is a handy option to [quote and reply](/help/quote-and-reply) to a
+    message in Zulip.
 
 ## Spoilers
 
