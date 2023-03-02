@@ -2,11 +2,17 @@ import * as blueslip from "./blueslip";
 
 const linkifier_map = new Map(); // regex -> url
 
-export function get_linkifier_map() {
+type Linkifier = {
+    pattern: string;
+    url_format: string;
+    id: number;
+};
+
+export function get_linkifier_map(): Map<RegExp, string> {
     return linkifier_map;
 }
 
-function python_to_js_linkifier(pattern, url) {
+function python_to_js_linkifier(pattern: string, url: string): [RegExp | null, string] {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
     const named_group_re = /\(?P<([^>]+?)>/g;
@@ -17,7 +23,7 @@ function python_to_js_linkifier(pattern, url) {
         // Replace named group with regular matching group
         pattern = pattern.replace("(?P<" + name + ">", "(");
         // Replace named reference in URL to numbered reference
-        url = url.replace("%(" + name + ")s", "\\" + current_group);
+        url = url.replace("%(" + name + ")s", `\\${current_group}`);
 
         // Reset the RegExp state
         named_group_re.lastIndex = 0;
@@ -59,12 +65,17 @@ function python_to_js_linkifier(pattern, url) {
         // We have an error computing the generated regex syntax.
         // We'll ignore this linkifier for now, but log this
         // failure for debugging later.
-        blueslip.error("python_to_js_linkifier: " + error.message);
+        if (error instanceof SyntaxError) {
+            blueslip.error("python_to_js_linkifier: " + error.message);
+        } else {
+            // Don't swallow any other (unexpected) exceptions.
+            throw error;
+        }
     }
     return [final_regex, url];
 }
 
-export function update_linkifier_rules(linkifiers) {
+export function update_linkifier_rules(linkifiers: Linkifier[]): void {
     linkifier_map.clear();
 
     for (const linkifier of linkifiers) {
@@ -78,6 +89,6 @@ export function update_linkifier_rules(linkifiers) {
     }
 }
 
-export function initialize(linkifiers) {
+export function initialize(linkifiers: Linkifier[]): void {
     update_linkifier_rules(linkifiers);
 }
