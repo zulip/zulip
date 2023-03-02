@@ -1,8 +1,3 @@
-## Quote blocks
-
-Here is an example of how you can create quotes with multiple lines and
-paragraphs in Zulip.
-
 ### What you type
 
 ~~~

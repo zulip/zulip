@@ -19,7 +19,7 @@ whenever you need a reminder of the formatting syntax below.
 * [Links](#links)
 * [Code blocks](#code-blocks)
 * [LaTeX](#latex)
-* [Quote and reply](#quote-and-reply)
+* [Quotes](#quotes)
 * [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mention a user or group](#mention-a-user-or-group)
@@ -63,12 +63,16 @@ whenever you need a reminder of the formatting syntax below.
 
 {!latex-examples.md!}
 
-## Quote and reply
+## Quotes
 
-You can [quote and reply](/help/quote-and-reply) to indicate that a piece of
-text is a quote from a previous message.
+{!quotes-intro.md!}
 
-{!quotes.md!}
+{!quotes-examples.md!}
+
+!!! tip ""
+
+    There is a handy option to [quote and reply](/help/quote-and-reply) to a
+    message in Zulip.
 
 ## Spoilers
 
