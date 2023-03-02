@@ -149,8 +149,7 @@ def render_python_code_example(
 
     snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
-    code_example = ["{tab|python}\n"]
-    code_example.append("```python")
+    code_example = ["```python"]
     code_example.extend(config)
 
     for snippet in snippets:
@@ -183,7 +182,6 @@ def render_javascript_code_example(
         config = JS_CLIENT_CONFIG.splitlines()
 
     code_example = [
-        "{tab|js}\n",
         "More examples and documentation can be found [here](https://github.com/zulip/zulip-js).",
     ]
 

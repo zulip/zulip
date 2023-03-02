@@ -4,7 +4,11 @@
 
 {start_tabs}
 
+{tab|python}
+
 {generate_code_example(python)|/messages:post|example}
+
+{tab|js}
 
 {generate_code_example(javascript)|/messages:post|example}
 

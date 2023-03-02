@@ -4,7 +4,11 @@
 
 {start_tabs}
 
+{tab|python}
+
 {generate_code_example(python)|API_ENDPOINT_NAME|example}
+
+{tab|js}
 
 {generate_code_example(javascript)|API_ENDPOINT_NAME|example}
 

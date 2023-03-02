@@ -4,7 +4,11 @@
 
 {start_tabs}
 
+{tab|python}
+
 {generate_code_example(python)|/mark_all_as_read:post|example}
+
+{tab|js}
 
 {generate_code_example(javascript)|/mark_all_as_read:post|example}
 
@@ -34,7 +38,11 @@
 
 {start_tabs}
 
+{tab|python}
+
 {generate_code_example(python)|/mark_stream_as_read:post|example}
+
+{tab|js}
 
 {generate_code_example(javascript)|/mark_all_as_read:post|example}
 
@@ -64,7 +72,11 @@
 
 {start_tabs}
 
+{tab|python}
+
 {generate_code_example(python)|/mark_topic_as_read:post|example}
+
+{tab|js}
 
 {generate_code_example(javascript)|/mark_all_as_read:post|example}
 
