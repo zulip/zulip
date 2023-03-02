@@ -285,7 +285,7 @@ run_test("read_empty_data", ({override}) => {
     }
 
     // send read to obtain success callback
-    send_read({locally_echoed: false, id: 1});
+    send_read([{locally_echoed: false, id: 1}]);
 
     // verify early return on empty data
     const success_callback = channel_post_opts.success;
