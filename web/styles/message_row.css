@@ -1,7 +1,7 @@
 $avatar_column_width: 46px;
-$distance_of_text_elements_from_message_box_top: 5px;
+$distance_of_text_elements_from_message_box_top: 6px;
 $distance_of_non_text_elements_from_message_box_top_with_sender_info: 5px;
-$distance_of_non_text_elements_from_message_box_top_without_sender_info: 2px;
+$distance_of_non_text_elements_from_message_box_top_without_sender_info: 3px;
 $sender_name_distance_below_flex_center: 2px;
 
 /* The time column usually just needs enough space to display the
