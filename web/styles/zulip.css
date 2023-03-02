@@ -1150,6 +1150,8 @@ td.pointer {
         .stream_topic_separator {
             line-height: 0;
             color: var(--color-message-header-icon-non-interactive);
+            position: relative;
+            top: 0.5px;
         }
 
         .stream_topic {
@@ -1159,6 +1161,11 @@ td.pointer {
             line-height: 17px;
             overflow: hidden;
             text-overflow: ellipsis;
+
+            .message_label_clickable.narrows_by_topic {
+                position: relative;
+                top: 0.5px;
+            }
         }
     }
 }
@@ -1199,6 +1206,7 @@ td.pointer {
     height: 17px;
     line-height: 17px;
     position: relative;
+    top: 0.5px;
     text-decoration: none;
 
     .recipient-row-stream-icon {
