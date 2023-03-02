@@ -82,8 +82,12 @@ tippy.setDefaultProps({
     // Create the tooltip inside the parent element. This has the
     // undesirable side effect of CSS properties of the parent elements
     // applying to tooltips, which causes ugly clipping if the parent
-    // element has overflow rules. We override this in many specific
-    // tooltips, and may want to change the default.
+    // element has overflow rules. Even with that, we prefer to have
+    // tooltips appended to the parent so that the tooltip gets removed
+    // if the parent is hidden / removed from DOM; which is not the case
+    // with appending it to `body` which has side effect of tooltips
+    // sticking around due to browser not communicating to tippy that
+    // the element has been removed without having a Mutation Observer.
     appendTo: "parent",
     // To add a text tooltip, override this by setting data-tippy-content.
     // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
