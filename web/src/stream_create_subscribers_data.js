@@ -10,7 +10,7 @@ export function initialize_with_current_user() {
 }
 
 export function sorted_user_ids() {
-    const users = people.get_users_from_ids(Array.from(user_id_set));
+    const users = people.get_users_from_ids([...user_id_set]);
     people.sort_but_pin_current_user_on_top(users);
     return users.map((user) => user.user_id);
 }
@@ -25,7 +25,7 @@ export function get_all_user_ids() {
 
 export function get_principals() {
     // Return list of user ids which were selected by user.
-    return Array.from(user_id_set);
+    return [...user_id_set];
 }
 
 export function get_potential_subscribers() {

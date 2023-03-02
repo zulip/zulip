@@ -54,7 +54,7 @@ export function get_pygments_typeahead_list_for_composebox() {
     const playground_pygment_langs = [...map_language_to_playground_info.keys()];
     const generated_pygment_langs = Object.keys(generated_pygments_data.langs);
 
-    return playground_pygment_langs.concat(generated_pygment_langs);
+    return [...playground_pygment_langs, ...generated_pygment_langs];
 }
 
 // This gets the candidate list for showing autocomplete in settings when
@@ -78,7 +78,7 @@ export function get_pygments_typeahead_list_for_settings(query) {
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        language_labels.set(key, key + " (" + Array.from(values).join(", ") + ")");
+        language_labels.set(key, key + " (" + values.join(", ") + ")");
     }
 
     return language_labels;

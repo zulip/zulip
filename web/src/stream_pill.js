@@ -42,7 +42,7 @@ function get_user_ids_from_subs(items) {
     for (const item of items) {
         // only some of our items have streams (for copy-from-stream)
         if (item.stream_id !== undefined) {
-            user_ids = user_ids.concat(peer_data.get_subscribers(item.stream_id));
+            user_ids = [...user_ids, ...peer_data.get_subscribers(item.stream_id)];
         }
     }
     return user_ids;
@@ -51,7 +51,7 @@ function get_user_ids_from_subs(items) {
 export function get_user_ids(pill_widget) {
     const items = pill_widget.items();
     let user_ids = get_user_ids_from_subs(items);
-    user_ids = Array.from(new Set(user_ids));
+    user_ids = [...new Set(user_ids)];
 
     user_ids = user_ids.filter(Boolean);
     user_ids.sort((a, b) => a - b);

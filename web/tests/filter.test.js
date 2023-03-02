@@ -276,41 +276,41 @@ test("basics", () => {
 function assert_not_mark_read_with_has_operands(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
     let has_operator = [{operator: "has", operand: "link"}];
-    let filter = new Filter(additional_operators_to_test.concat(has_operator));
+    let filter = new Filter([...additional_operators_to_test, ...has_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     has_operator = [{operator: "has", operand: "link", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    filter = new Filter([...additional_operators_to_test, ...has_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     has_operator = [{operator: "has", operand: "image"}];
-    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    filter = new Filter([...additional_operators_to_test, ...has_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     has_operator = [{operator: "has", operand: "image", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    filter = new Filter([...additional_operators_to_test, ...has_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     has_operator = [{operator: "has", operand: "attachment", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    filter = new Filter([...additional_operators_to_test, ...has_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     has_operator = [{operator: "has", operand: "attachment"}];
-    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    filter = new Filter([...additional_operators_to_test, ...has_operator]);
     assert.ok(!filter.can_mark_messages_read());
 }
 function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
     let is_operator = [{operator: "is", operand: "starred"}];
-    let filter = new Filter(additional_operators_to_test.concat(is_operator));
+    let filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "starred", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "mentioned"}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     if (additional_operators_to_test.length === 0) {
         assert.ok(filter.can_mark_messages_read());
     } else {
@@ -318,27 +318,27 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
     }
 
     is_operator = [{operator: "is", operand: "mentioned", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "alerted"}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "alerted", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "unread"}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "unread", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 
     is_operator = [{operator: "is", operand: "resolved"}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     if (additional_operators_to_test.length === 0) {
         assert.ok(filter.can_mark_messages_read());
     } else {
@@ -346,18 +346,18 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
     }
 
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    filter = new Filter([...additional_operators_to_test, ...is_operator]);
     assert.ok(!filter.can_mark_messages_read());
 }
 
 function assert_not_mark_read_when_searching(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
     let search_op = [{operator: "search", operand: "keyword"}];
-    let filter = new Filter(additional_operators_to_test.concat(search_op));
+    let filter = new Filter([...additional_operators_to_test, ...search_op]);
     assert.ok(!filter.can_mark_messages_read());
 
     search_op = [{operator: "search", operand: "keyword", negated: true}];
-    filter = new Filter(additional_operators_to_test.concat(search_op));
+    filter = new Filter([...additional_operators_to_test, ...search_op]);
     assert.ok(!filter.can_mark_messages_read());
 }
 

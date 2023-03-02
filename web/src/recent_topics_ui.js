@@ -103,7 +103,7 @@ export function clear_for_tests() {
 }
 
 export function save_filters() {
-    ls.set(ls_key, Array.from(filters));
+    ls.set(ls_key, [...filters]);
 }
 
 export function set_default_focus() {
@@ -784,7 +784,7 @@ export function complete_rerender() {
     }
 
     // Show topics list
-    const mapped_topic_values = Array.from(get().values()).map((value) => value);
+    const mapped_topic_values = [...get().values()];
 
     if (topics_widget) {
         topics_widget.replace_list_data(mapped_topic_values);

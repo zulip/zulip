@@ -35,7 +35,7 @@ const stream_colors = [
 export const colors = _.shuffle(stream_colors);
 
 export function reset(): void {
-    unused_colors = colors.slice();
+    unused_colors = [...colors];
 }
 
 reset();

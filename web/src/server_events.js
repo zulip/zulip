@@ -48,12 +48,12 @@ function get_events_success(events) {
     }
 
     if (waiting_on_homeview_load) {
-        events_stored_while_loading = events_stored_while_loading.concat(events);
+        events_stored_while_loading = [...events_stored_while_loading, ...events];
         return;
     }
 
     if (events_stored_while_loading.length > 0) {
-        events = events_stored_while_loading.concat(events);
+        events = [...events_stored_while_loading, ...events];
         events_stored_while_loading = [];
     }
 

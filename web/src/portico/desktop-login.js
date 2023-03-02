@@ -43,7 +43,7 @@ async function decrypt_manual() {
             ? window.electron_bridge.decrypt_clipboard(1)
             : await decrypt_manual();
 
-    const keyHex = Array.from(key, (b) => b.toString(16).padStart(2, "0")).join("");
+    const keyHex = [...key].map((b) => b.toString(16).padStart(2, "0")).join("");
     window.open(
         (window.location.search ? window.location.search + "&" : "?") +
             "desktop_flow_otp=" +

@@ -258,13 +258,13 @@ run_test("set_up", ({mock_template}) => {
                 })
                 .filter(Boolean);
             if (opts.user_group) {
-                expected_result = expected_result.concat(groups);
+                expected_result = [...expected_result, ...groups];
             }
             if (opts.user) {
                 if (opts.user_source) {
-                    expected_result = expected_result.concat(opts.user_source());
+                    expected_result = [...expected_result, ...opts.user_source()];
                 } else {
-                    expected_result = expected_result.concat(persons);
+                    expected_result = [...expected_result, ...persons];
                 }
             }
             expected_result = expected_result

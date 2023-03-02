@@ -160,7 +160,7 @@ export function group_edit_url(group) {
 
 export function search_public_streams_notice_url(operators) {
     const public_operator = {operator: "streams", operand: "public"};
-    return operators_to_hash([public_operator].concat(operators));
+    return operators_to_hash([public_operator, ...operators]);
 }
 
 export function parse_narrow(hash) {

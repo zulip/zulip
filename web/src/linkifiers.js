@@ -33,7 +33,7 @@ function python_to_js_linkifier(pattern, url) {
     // JS regexes only support i (case insensitivity) and m (multiline)
     // flags, so keep those and ignore the rest
     if (match) {
-        const py_flags = match[1].split("");
+        const py_flags = match[1];
 
         for (const flag of py_flags) {
             if ("im".includes(flag)) {

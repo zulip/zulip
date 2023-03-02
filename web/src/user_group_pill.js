@@ -31,19 +31,16 @@ export function get_group_name_from_item(item) {
 }
 
 function get_user_ids_from_user_groups(items) {
-    let user_ids = [];
     const group_ids = items.map((item) => item.id).filter(Boolean);
-    for (const group_id of group_ids) {
-        const user_group = user_groups.get_user_group_from_id(group_id);
-        user_ids = user_ids.concat(Array.from(user_group.members));
-    }
-    return user_ids;
+    return group_ids.flatMap((group_id) => [
+        ...user_groups.get_user_group_from_id(group_id).members,
+    ]);
 }
 
 export function get_user_ids(pill_widget) {
     const items = pill_widget.items();
     let user_ids = get_user_ids_from_user_groups(items);
-    user_ids = Array.from(new Set(user_ids));
+    user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
 
     user_ids = user_ids.filter(Boolean);

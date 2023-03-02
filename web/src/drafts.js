@@ -641,7 +641,7 @@ export function launch() {
     $("#draft_overlay").css("opacity");
 
     open_overlay();
-    set_initial_element(formatted_narrow_drafts.concat(formatted_other_drafts));
+    set_initial_element([...formatted_narrow_drafts, ...formatted_other_drafts]);
     setup_event_handlers();
 }
 

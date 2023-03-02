@@ -541,9 +541,10 @@ export class MessageListView {
             ) {
                 first_msg_container.include_sender = false;
             }
-            first_group.message_containers = first_group.message_containers.concat(
-                second_group.message_containers,
-            );
+            first_group.message_containers = [
+                ...first_group.message_containers,
+                ...second_group.message_containers,
+            ];
             return true;
         }
 
@@ -626,7 +627,7 @@ export class MessageListView {
                 message_actions.rerender_groups.push(second_group);
             }
             message_actions.prepend_groups = new_message_groups;
-            this._message_groups = new_message_groups.concat(this._message_groups);
+            this._message_groups = [...new_message_groups, ...this._message_groups];
         } else {
             if (was_joined) {
                 // rerender the last message
@@ -642,7 +643,7 @@ export class MessageListView {
                 }
             }
             message_actions.append_groups = new_message_groups;
-            this._message_groups = this._message_groups.concat(new_message_groups);
+            this._message_groups = [...this._message_groups, ...new_message_groups];
         }
 
         return message_actions;
@@ -787,7 +788,7 @@ export class MessageListView {
 
         const new_message_groups = this.build_message_groups(message_containers, this.table_name);
         const message_actions = this.merge_message_groups(new_message_groups, where);
-        let new_dom_elements = [];
+        const new_dom_elements = [];
         let $rendered_groups;
         let $dom_messages;
         let $last_message_row;
@@ -808,7 +809,7 @@ export class MessageListView {
             });
 
             $dom_messages = $rendered_groups.find(".message_row");
-            new_dom_elements = new_dom_elements.concat($rendered_groups);
+            new_dom_elements.push($rendered_groups);
 
             this._post_process($dom_messages);
 
@@ -857,7 +858,7 @@ export class MessageListView {
             $last_group_row.append($dom_messages);
 
             condense.condense_and_collapse($dom_messages);
-            new_dom_elements = new_dom_elements.concat($dom_messages);
+            new_dom_elements.push($dom_messages);
         }
 
         // Add new message groups to the end
@@ -872,7 +873,7 @@ export class MessageListView {
             });
 
             $dom_messages = $rendered_groups.find(".message_row");
-            new_dom_elements = new_dom_elements.concat($rendered_groups);
+            new_dom_elements.push($rendered_groups);
 
             this._post_process($dom_messages);
 

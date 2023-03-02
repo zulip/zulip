@@ -147,7 +147,7 @@ export function triage<T>(
         }
     }
     return {
-        matches: exactMatch.concat(beginswithCaseSensitive.concat(beginswithCaseInsensitive)),
+        matches: [...exactMatch, ...beginswithCaseSensitive, ...beginswithCaseInsensitive],
         rest: noMatch,
     };
 }

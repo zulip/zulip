@@ -332,9 +332,7 @@ function test_sync_realm_settings() {
             settings_config.common_policy_values.by_members.code;
         $property_elem.val(settings_config.common_policy_values.by_members.code);
 
-        for (const policy_value of Array.from(
-            Object.values(settings_config.common_policy_values),
-        )) {
+        for (const policy_value of Object.values(settings_config.common_policy_values)) {
             page_params[`realm_${property_name}`] = policy_value.code;
             settings_org.sync_realm_settings(property_name);
             assert.equal($property_elem.val(), policy_value.code);

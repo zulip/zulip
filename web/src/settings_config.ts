@@ -688,22 +688,25 @@ const other_email_settings = [
     "enable_marketing_emails",
 ];
 
-const email_notification_settings = other_email_settings.concat(
-    email_message_notification_settings,
-);
+const email_notification_settings = [
+    ...other_email_settings,
+    ...email_message_notification_settings,
+];
 
-const other_notification_settings = desktop_notification_settings.concat(
-    ["desktop_icon_count_display"],
-    mobile_notification_settings,
-    email_notification_settings,
-    ["email_notifications_batching_period_seconds"],
-    ["notification_sound"],
-);
+const other_notification_settings = [
+    ...desktop_notification_settings,
+    "desktop_icon_count_display",
+    ...mobile_notification_settings,
+    ...email_notification_settings,
+    "email_notifications_batching_period_seconds",
+    "notification_sound",
+];
 
-export const all_notification_settings = other_notification_settings.concat(
-    pm_mention_notification_settings,
-    stream_notification_settings,
-);
+export const all_notification_settings = [
+    ...other_notification_settings,
+    ...pm_mention_notification_settings,
+    ...stream_notification_settings,
+];
 
 type Settings = UserSettings | RealmDefaultSettings;
 type PageParamsItem = keyof Settings;
