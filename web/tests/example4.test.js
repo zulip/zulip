@@ -68,6 +68,7 @@ const bob = {
     email: "bob@example.com",
     user_id: 33,
     full_name: "Bob Roberts",
+    is_bot: true,
 };
 
 run_test("add users with event", ({override}) => {
@@ -117,6 +118,7 @@ run_test("update user with event", ({override}) => {
         email: "bob@example.com",
         user_id: bob.user_id,
         full_name: "The Artist Formerly Known as Bob",
+        is_bot: true,
     };
 
     const event = {

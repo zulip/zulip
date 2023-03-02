@@ -678,6 +678,11 @@ export function sender_is_guest(message) {
     return false;
 }
 
+export function user_is_bot(user_id) {
+    const user = get_by_user_id(user_id);
+    return user.is_bot;
+}
+
 function gravatar_url_for_email(email) {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
