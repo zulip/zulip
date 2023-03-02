@@ -947,7 +947,7 @@ export class Filter {
             return util.strcmp(a, b);
         };
 
-        return term_types.slice().sort(compare);
+        return [...term_types].sort(compare);
     }
 
     static operator_to_prefix(operator, negated) {
@@ -1060,7 +1060,7 @@ export class Filter {
             }
             return "unknown operator";
         });
-        return parts.concat(more_parts).join(", ");
+        return [...parts, ...more_parts].join(", ");
     }
 
     static describe(operators) {

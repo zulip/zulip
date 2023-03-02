@@ -14,7 +14,7 @@ function make_zblueslip() {
         warn: true,
         error: true,
     };
-    const names = Array.from(Object.keys(opts));
+    const names = Object.keys(opts);
 
     // For fatal messages, we should use assert.throws
     /* istanbul ignore next */

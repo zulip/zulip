@@ -159,7 +159,7 @@ function get_group_suggestions(last, operators) {
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
-    const parts = all_but_last_part.split(",").concat(people.my_current_email());
+    const parts = [...all_but_last_part.split(","), people.my_current_email()];
 
     const person_matcher = people.build_person_matcher(last_part);
     let persons = people.filter_all_persons((person) => {
@@ -421,7 +421,7 @@ function get_topic_suggestions(last, operators) {
 
     return topics.map((topic) => {
         const topic_term = {operator: "topic", operand: topic, negated};
-        const operators = suggest_operators.concat([topic_term]);
+        const operators = [...suggest_operators, topic_term];
         return format_as_suggestion(operators);
     });
 }

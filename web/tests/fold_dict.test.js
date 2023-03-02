@@ -12,7 +12,7 @@ run_test("basic", () => {
 
     assert.equal(d.size, 0);
 
-    assert.deepEqual(Array.from(d.keys()), []);
+    assert.deepEqual([...d.keys()], []);
 
     d.set("foo", "bar");
     assert.equal(d.get("foo"), "bar");
@@ -30,18 +30,21 @@ run_test("basic", () => {
     assert.equal(d.has("bar"), true);
     assert.equal(d.has("baz"), false);
 
-    assert.deepEqual(Array.from(d.keys()), ["foo", "bar"]);
-    assert.deepEqual(Array.from(d.values()), ["baz", "qux"]);
-    assert.deepEqual(Array.from(d), [
-        ["foo", "baz"],
-        ["bar", "qux"],
-    ]);
+    assert.deepEqual([...d.keys()], ["foo", "bar"]);
+    assert.deepEqual([...d.values()], ["baz", "qux"]);
+    assert.deepEqual(
+        [...d],
+        [
+            ["foo", "baz"],
+            ["bar", "qux"],
+        ],
+    );
 
     d.delete("bar");
     assert.equal(d.has("bar"), false);
     assert.strictEqual(d.get("bar"), undefined);
 
-    assert.deepEqual(Array.from(d.keys()), ["foo"]);
+    assert.deepEqual([...d.keys()], ["foo"]);
 
     const val = ["foo"];
     const res = d.set("abc", val);
@@ -51,7 +54,7 @@ run_test("basic", () => {
 run_test("case insensitivity", () => {
     const d = new FoldDict();
 
-    assert.deepEqual(Array.from(d.keys()), []);
+    assert.deepEqual([...d.keys()], []);
 
     assert.ok(!d.has("foo"));
     d.set("fOO", "Hello world");
@@ -60,12 +63,12 @@ run_test("case insensitivity", () => {
     assert.ok(d.has("FOO"));
     assert.ok(!d.has("not_a_key"));
 
-    assert.deepEqual(Array.from(d.keys()), ["fOO"]);
+    assert.deepEqual([...d.keys()], ["fOO"]);
 
     d.delete("Foo");
     assert.equal(d.has("foo"), false);
 
-    assert.deepEqual(Array.from(d.keys()), []);
+    assert.deepEqual([...d.keys()], []);
 });
 
 run_test("clear", () => {

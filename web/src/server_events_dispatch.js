@@ -133,7 +133,7 @@ export function dispatch_normal_event(event) {
         case "hotspots":
             hotspots.load_new(event.hotspots);
             page_params.hotspots = page_params.hotspots
-                ? page_params.hotspots.concat(event.hotspots)
+                ? [...page_params.hotspots, ...event.hotspots]
                 : event.hotspots;
             break;
 

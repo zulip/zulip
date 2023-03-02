@@ -41,7 +41,7 @@ export function get_status(user_id) {
 }
 
 export function get_user_ids() {
-    return Array.from(presence_info.keys());
+    return [...presence_info.keys()];
 }
 
 export function status_from_raw(raw) {

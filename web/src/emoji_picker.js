@@ -122,7 +122,7 @@ export function rebuild_catalog() {
     const catalog = new Map();
     catalog.set(
         "Custom",
-        Array.from(realm_emojis.keys(), (realm_emoji_name) =>
+        [...realm_emojis.keys()].map((realm_emoji_name) =>
             emoji.emojis_by_name.get(realm_emoji_name),
         ),
     );

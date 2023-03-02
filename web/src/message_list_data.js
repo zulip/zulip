@@ -337,10 +337,10 @@ export class MessageListData {
 
         const viewable_messages = this.unmuted_messages(messages);
 
-        this._all_items = messages.concat(this._all_items);
+        this._all_items = [...messages, ...this._all_items];
         this._all_items.sort((a, b) => a.id - b.id);
 
-        this._items = viewable_messages.concat(this._items);
+        this._items = [...viewable_messages, ...this._items];
         this._items.sort((a, b) => a.id - b.id);
 
         this._add_to_hash(messages);
@@ -351,8 +351,8 @@ export class MessageListData {
         // Caller should have already filtered
         const viewable_messages = this.unmuted_messages(messages);
 
-        this._all_items = this._all_items.concat(messages);
-        this._items = this._items.concat(viewable_messages);
+        this._all_items = [...this._all_items, ...messages];
+        this._items = [...this._items, ...viewable_messages];
 
         this._add_to_hash(messages);
         return viewable_messages;
@@ -362,8 +362,8 @@ export class MessageListData {
         // Caller should have already filtered
         const viewable_messages = this.unmuted_messages(messages);
 
-        this._all_items = messages.concat(this._all_items);
-        this._items = viewable_messages.concat(this._items);
+        this._all_items = [...messages, ...this._all_items];
+        this._items = [...viewable_messages, ...this._items];
 
         this._add_to_hash(messages);
         return viewable_messages;

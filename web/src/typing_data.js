@@ -52,7 +52,7 @@ export function get_group_typists(group) {
 }
 
 export function get_all_typists() {
-    let typists = Array.from(typist_dct.values()).flat();
+    let typists = [...typist_dct.values()].flat();
     typists = util.sorted_ids(typists);
     return muted_users.filter_muted_user_ids(typists);
 }

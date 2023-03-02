@@ -209,7 +209,7 @@ class UnreadPMCounter {
             return [];
         }
 
-        const ids = Array.from(bucket);
+        const ids = [...bucket];
         return util.sorted_ids(ids);
     }
 }
@@ -309,12 +309,12 @@ class UnreadTopicCounter {
             return [];
         }
 
-        let topic_names = Array.from(per_stream_bucketer.keys());
+        let topic_names = [...per_stream_bucketer.keys()];
 
         /* Include topics that have at least one unread. It would likely
          * be better design for buckets to be deleted when emptied. */
         topic_names = topic_names.filter((topic_name) => {
-            const messages = Array.from(per_stream_bucketer.get_bucket(topic_name));
+            const messages = [...per_stream_bucketer.get_bucket(topic_name)];
             return messages.length > 0;
         });
         /* And aren't already present in topic_dict. */
@@ -325,7 +325,7 @@ class UnreadTopicCounter {
 
             return {
                 pretty_name: topic_name,
-                message_id: Math.max(...Array.from(msgs)),
+                message_id: Math.max(...msgs),
             };
         });
 
@@ -396,7 +396,7 @@ class UnreadTopicCounter {
             return [];
         }
 
-        const ids = Array.from(topic_bucket);
+        const ids = [...topic_bucket];
         return util.sorted_ids(ids);
     }
 
@@ -707,7 +707,7 @@ export function get_counts() {
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
-    res.streams_with_mentions = Array.from(streams_with_mentions);
+    res.streams_with_mentions = [...streams_with_mentions];
 
     const pm_res = unread_pm_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
@@ -797,13 +797,13 @@ export function get_msg_ids_for_private() {
 }
 
 export function get_msg_ids_for_mentions() {
-    const ids = Array.from(unread_mentions_counter);
+    const ids = [...unread_mentions_counter];
 
     return util.sorted_ids(ids);
 }
 
 export function get_all_msg_ids() {
-    const ids = Array.from(unread_messages);
+    const ids = [...unread_messages];
 
     return util.sorted_ids(ids);
 }

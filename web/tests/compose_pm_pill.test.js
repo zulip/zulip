@@ -53,7 +53,7 @@ run_test("pills", ({override}) => {
         assert.ok(!all_pills.has(id));
         all_pills.set(id, item);
     };
-    pills.items = () => Array.from(all_pills.values());
+    pills.items = () => [...all_pills.values()];
 
     let text_cleared;
     pills.clear_text = () => {

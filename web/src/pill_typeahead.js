@@ -44,7 +44,7 @@ export function set_up($input, pills, opts) {
             }
 
             if (include_user_groups) {
-                source = source.concat(user_group_pill.typeahead_source(pills));
+                source = [...source, ...user_group_pill.typeahead_source(pills)];
             }
 
             if (include_users) {
@@ -52,9 +52,9 @@ export function set_up($input, pills, opts) {
                     // If user_source is specified in opts, it
                     // is given priority. Otherwise we use
                     // default user_pill.typeahead_source.
-                    source = source.concat(opts.user_source());
+                    source = [...source, ...opts.user_source()];
                 } else {
-                    source = source.concat(user_pill.typeahead_source(pills));
+                    source = [...source, ...user_pill.typeahead_source(pills)];
                 }
             }
             return source;

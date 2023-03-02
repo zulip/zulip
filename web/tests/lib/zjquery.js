@@ -159,7 +159,7 @@ function make_zjquery() {
     /* istanbul ignore next */
     zjquery.state = function () {
         // useful for debugging
-        let res = Array.from(elems.values(), ($v) => $v.debug());
+        let res = [...elems.values()].map(($v) => $v.debug());
 
         res = res.map((v) => [v.selector, v.value, v.shown]);
 

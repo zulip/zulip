@@ -22,7 +22,7 @@ export class TaskData {
     }
 
     get_widget_data() {
-        const all_tasks = Array.from(this.task_map.values());
+        const all_tasks = [...this.task_map.values()];
         all_tasks.sort((a, b) => util.strcmp(a.task, b.task));
 
         const pending_tasks = [];

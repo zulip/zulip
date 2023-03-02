@@ -37,7 +37,7 @@ export function get_count() {
 }
 
 export function get_starred_msg_ids() {
-    return Array.from(starred_ids);
+    return [...starred_ids];
 }
 
 export function get_count_in_topic(stream_id, topic) {
@@ -45,7 +45,7 @@ export function get_count_in_topic(stream_id, topic) {
         return 0;
     }
 
-    const messages = Array.from(starred_ids).filter((id) => {
+    const messages = [...starred_ids].filter((id) => {
         const message = message_store.get(id);
 
         if (message === undefined) {

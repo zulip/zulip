@@ -141,7 +141,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
             `#compose_banners .${compose_banner.CLASSNAMES.recipient_not_subscribed}`,
         );
 
-        const existing_invites = Array.from($existing_invites_area, (user_row) =>
+        const existing_invites = [...$existing_invites_area].map((user_row) =>
             Number.parseInt($(user_row).data("user-id"), 10),
         );
 

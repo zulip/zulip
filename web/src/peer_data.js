@@ -39,7 +39,7 @@ export function is_subscriber_subset(stream_id1, stream_id2) {
     const sub1_set = get_user_set(stream_id1);
     const sub2_set = get_user_set(stream_id2);
 
-    return Array.from(sub1_set.keys()).every((key) => sub2_set.has(key));
+    return [...sub1_set.keys()].every((key) => sub2_set.has(key));
 }
 
 export function potential_subscribers(stream_id) {
@@ -86,7 +86,7 @@ export function get_subscribers(stream_id) {
     // want an array of user_ids who are subscribed to a stream.
     const subscribers = get_user_set(stream_id);
 
-    return Array.from(subscribers.keys());
+    return [...subscribers.keys()];
 }
 
 export function set_subscribers(stream_id, user_ids) {

@@ -108,7 +108,7 @@ export function populate_user_groups() {
         function is_user_group_changed() {
             const draft_group = get_pill_user_ids();
             const group_data = user_groups.get_user_group_from_id(data.id);
-            const original_group = Array.from(group_data.members);
+            const original_group = [...group_data.members];
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             const description = $(`#user-groups #${CSS.escape(data.id)} .description`)
                 .text()
@@ -172,7 +172,7 @@ export function populate_user_groups() {
         function save_members() {
             const draft_group = get_pill_user_ids();
             const group_data = user_groups.get_user_group_from_id(data.id);
-            const original_group = Array.from(group_data.members);
+            const original_group = [...group_data.members];
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             if (!draft_group.length || same_groups) {
                 return;

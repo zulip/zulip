@@ -20,7 +20,7 @@ function make_tab(i) {
     $self.addClass = (c) => {
         $self.class += " " + c;
         const tokens = $self.class.trim().split(/ +/);
-        $self.class = Array.from(new Set(tokens)).join(" ");
+        $self.class = [...new Set(tokens)].join(" ");
     };
 
     $self.removeClass = (c) => {

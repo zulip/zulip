@@ -411,7 +411,7 @@ test("test_filter_all", ({mock_template}) => {
         {last_msg_id: 1, participated: true, type: "stream"},
     ];
 
-    row_data = row_data.concat(generate_topic_data([[1, "topic-7", 1, true, true]]));
+    row_data = [...row_data, ...generate_topic_data([[1, "topic-7", 1, true, true]])];
     i = row_data.length;
     // topic is muted (=== hidden)
     stub_out_filter_buttons();
@@ -754,7 +754,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     // total 8 topics, 1 muted
     assert.equal(all_topics.size, 8);
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 
@@ -766,7 +766,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     all_topics = rt_data.get();
     assert.equal(all_topics.size, 9);
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1,6,7,8",
     );
 
@@ -790,7 +790,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 
     all_topics = rt_data.get();
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "1:topic-3,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
     );
     verify_topic_data(all_topics, stream1, topic3, id, true);
@@ -807,7 +807,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 
     all_topics = rt_data.get();
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "1:topic-7,1:topic-3,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
     );
 
@@ -885,14 +885,14 @@ test("test_delete_messages", ({override}) => {
 
     let all_topics = rt_data.get();
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
     rt.update_topics_of_deleted_message_ids([messages[0].id]);
 
     all_topics = rt_data.get();
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2",
     );
 
@@ -903,7 +903,7 @@ test("test_delete_messages", ({override}) => {
 
     all_topics = rt_data.get();
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3",
     );
     // test deleting a message which is not locally
@@ -923,7 +923,7 @@ test("test_topic_edit", ({override}) => {
 
     let all_topics = rt_data.get();
     assert.equal(
-        Array.from(all_topics.keys()).toString(),
+        [...all_topics.keys()].toString(),
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 

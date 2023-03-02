@@ -403,7 +403,7 @@ export function get_emojis_used_by_user_for_message_id(message_id) {
 
 export function get_message_reactions(message) {
     set_clean_reactions(message);
-    return Array.from(message.clean_reactions.values());
+    return [...message.clean_reactions.values()];
 }
 
 export function set_clean_reactions(message) {

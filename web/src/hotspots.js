@@ -252,7 +252,7 @@ export function close_hotspot_icon(elem) {
 
 function close_read_hotspots(new_hotspots) {
     const unwanted_hotspots = _.difference(
-        Array.from(HOTSPOT_LOCATIONS.keys()),
+        [...HOTSPOT_LOCATIONS.keys()],
         new_hotspots.map((hotspot) => hotspot.name),
     );
 

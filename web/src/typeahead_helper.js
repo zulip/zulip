@@ -146,7 +146,7 @@ export function render_emoji(item) {
 
 export function sorter(query, objs, get_item) {
     const results = typeahead.triage(query, objs, get_item);
-    return results.matches.concat(results.rest);
+    return [...results.matches, ...results.rest];
 }
 
 export function compare_by_pms(user_a, user_b) {
@@ -353,7 +353,7 @@ export function sort_languages(matches, query) {
 
     // Languages that have the query somewhere in their name
     results.rest = results.rest.sort(compare_language);
-    return retain_unique_language_aliases(results.matches.concat(results.rest));
+    return retain_unique_language_aliases([...results.matches, ...results.rest]);
 }
 
 export function sort_recipients({
@@ -394,7 +394,7 @@ export function sort_recipients({
 
     for (const getter of getters) {
         if (items.length < max_num_items) {
-            items = items.concat(getter());
+            items = [...items, ...getter()];
         }
     }
 
@@ -418,7 +418,7 @@ export function sort_slash_commands(matches, query) {
 
     results.matches = results.matches.sort(slash_command_comparator);
     results.rest = results.rest.sort(slash_command_comparator);
-    return results.matches.concat(results.rest);
+    return [...results.matches, ...results.rest];
 }
 
 // Gives stream a score from 0 to 3 based on its activity
@@ -465,5 +465,5 @@ export function sort_streams(matches, query) {
     // Streams with names and descriptions that don't start with the query.
     desc_results.rest = desc_results.rest.sort(compare_by_activity);
 
-    return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
+    return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
 }
