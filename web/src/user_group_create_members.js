@@ -7,6 +7,7 @@ import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_users from "./settings_users";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 
 let pill_widget;
@@ -92,26 +93,28 @@ export function build_widgets() {
     all_users_list_widget = ListWidget.create($("#create_user_group_members"), [current_user_id], {
         name: "new_user_group_add_users",
         $parent_container: $add_people_container,
-        modifier(user_id) {
-            const user = people.get_by_user_id(user_id);
+        get_item: people.get_by_user_id,
+        sort_fields: {
+            email: settings_users.sort_email,
+            id: settings_users.sort_user_id,
+        },
+        modifier(user) {
             const item = {
                 email: user.delivery_email,
-                user_id,
+                user_id: user.user_id,
                 full_name: user.full_name,
-                is_current_user: user_id === current_user_id,
+                is_current_user: user.user_id === current_user_id,
             };
             return render_new_user_group_user(item);
         },
         filter: {
             $element: $("#people_to_add_in_group .add-user-list-filter"),
-            predicate(user_id, search_term) {
-                const user = people.get_by_user_id(user_id);
+            predicate(user, search_term) {
                 return people.build_person_matcher(search_term)(user);
             },
         },
         $simplebar_container,
-        html_selector(user_id) {
-            const user = people.get_by_user_id(user_id);
+        html_selector(user) {
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
         },
     });
