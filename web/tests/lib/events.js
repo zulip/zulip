@@ -544,6 +544,27 @@ exports.fixtures = {
         },
     },
 
+    realm_user__add_bot: {
+        type: "realm_user",
+        op: "add",
+        person: {
+            ...test_user,
+            avatar_url: "/some/path/to/avatar",
+            avatar_version: 1,
+            is_admin: false,
+            is_active: true,
+            is_owner: false,
+            is_billing_admin: false,
+            role: 400,
+            is_bot: true,
+            is_guest: false,
+            profile_data: {},
+            timezone: "America/New_York",
+            date_joined: "2020-01-01",
+            delivery_email: "test-delivery@example.com",
+        },
+    },
+
     realm_user__remove: {
         type: "realm_user",
         op: "remove",
