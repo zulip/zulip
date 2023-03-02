@@ -650,7 +650,7 @@ class Attacher {
         }
     }
 
-    concat(suggestions) {
+    push_many(suggestions) {
         for (const suggestion of suggestions) {
             this.push(suggestion);
         }
@@ -790,7 +790,7 @@ export function get_search_result(base_query, query) {
         attacher.result.length < max_items
     ) {
         const subset_suggestions = get_operator_subset_suggestions(search_operators);
-        attacher.concat(subset_suggestions);
+        attacher.push_many(subset_suggestions);
     }
 
     return attacher.result.slice(0, max_items);
