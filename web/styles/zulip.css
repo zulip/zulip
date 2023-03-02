@@ -1399,7 +1399,6 @@ td.pointer {
     display: block;
     position: absolute;
     height: 100%;
-    left: 1px;
     top: 0;
     opacity: 0;
     z-index: 2;
