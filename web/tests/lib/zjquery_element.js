@@ -23,6 +23,12 @@ function FakeElement(selector, opts) {
     const event_store = make_event_store(selector);
 
     const $self = {
+        *[Symbol.iterator]() {
+            // eslint-disable-next-line unicorn/no-for-loop
+            for (let i = 0; i < $self.length; i += 1) {
+                yield $self[i];
+            }
+        },
         addClass(class_name) {
             classes.set(class_name, true);
             return $self;
