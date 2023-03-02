@@ -16,9 +16,9 @@
     <div class="member_list_container" data-simplebar>
         <table class="member-list table table-striped">
             <thead class="table-sticky-headers">
-                <th>{{t "Name" }}</th>
-                <th>{{t "Email" }}</th>
-                <th>{{t "User ID" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+                <th data-sort="email">{{t "Email" }}</th>
+                <th data-sort="id">{{t "User ID" }}</th>
                 <th>{{t "Action" }}</th>
             </thead>
             <tbody id="create_user_group_members" class="member_table"></tbody>

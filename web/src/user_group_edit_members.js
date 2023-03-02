@@ -13,6 +13,7 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_users from "./settings_users";
 import * as ui from "./ui";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
@@ -65,6 +66,11 @@ function make_list_widget({$parent_container, name, user_ids}) {
 
     return ListWidget.create($list_container, users, {
         name,
+        $parent_container,
+        sort_fields: {
+            email: settings_users.sort_email,
+            id: settings_users.sort_user_id,
+        },
         modifier(item) {
             return format_member_list_elem(item);
         },

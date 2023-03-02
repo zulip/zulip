@@ -20,9 +20,9 @@
             <div class="member_list_loading_indicator"></div>
             <table class="member-list table table-striped">
                 <thead class="table-sticky-headers">
-                    <th>{{t "Name" }}</th>
-                    <th>{{t "Email" }}</th>
-                    <th>{{t "User ID" }}</th>
+                    <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+                    <th data-sort="email">{{t "Email" }}</th>
+                    <th data-sort="id">{{t "User ID" }}</th>
                     <th class="actions" {{#unless can_edit}}style="display:none"{{/unless}}>{{t "Actions" }}</th>
                 </thead>
                 <tbody class="member_table"></tbody>
