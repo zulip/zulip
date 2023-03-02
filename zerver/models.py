@@ -650,33 +650,42 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    # Please access this via get_giphy_rating_options.
     GIPHY_RATING_OPTIONS = {
         "disabled": {
-            "name": "GIPHY integration disabled",
+            "name": gettext_lazy("GIPHY integration disabled"),
             "id": 0,
         },
         # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
         "y": {
-            "name": "Allow GIFs rated Y (Very young audience)",
+            "name": gettext_lazy("Allow GIFs rated Y (Very young audience)"),
             "id": 1,
         },
         "g": {
-            "name": "Allow GIFs rated G (General audience)",
+            "name": gettext_lazy("Allow GIFs rated G (General audience)"),
             "id": 2,
         },
         "pg": {
-            "name": "Allow GIFs rated PG (Parental guidance)",
+            "name": gettext_lazy("Allow GIFs rated PG (Parental guidance)"),
             "id": 3,
         },
         "pg-13": {
-            "name": "Allow GIFs rated PG13 (Parental guidance - under 13)",
+            "name": gettext_lazy("Allow GIFs rated PG13 (Parental guidance - under 13)"),
             "id": 4,
         },
         "r": {
-            "name": "Allow GIFs rated R (Restricted)",
+            "name": gettext_lazy("Allow GIFs rated R (Restricted)"),
             "id": 5,
         },
     }
+
+    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
+        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
+        of the lazily evaluated `name` field without modifying the original."""
+        return {
+            rating_type: {"name": str(rating["name"]), "id": rating["id"]}
+            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
+        }
 
     # maximum rating of the GIFs that will be retrieved from GIPHY
     giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
