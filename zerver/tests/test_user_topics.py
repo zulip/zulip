@@ -4,12 +4,11 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import (
-    add_topic_mute,
     get_topic_mutes,
-    remove_topic_mute,
     topic_is_muted,
 )
 from zerver.models import UserProfile, UserTopic, get_stream
@@ -21,16 +20,13 @@ class MutedTopicsTests(ZulipTestCase):
         self.login_user(user)
 
         stream = get_stream("Verona", user.realm)
-        recipient = stream.recipient
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        assert recipient is not None
-        add_topic_mute(
-            user_profile=user,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name="Verona3",
+        do_mute_topic(
+            user,
+            stream,
+            "Verona3",
             date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
         )
 
@@ -45,7 +41,6 @@ class MutedTopicsTests(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         realm = hamlet.realm
         stream = get_stream("Verona", realm)
-        recipient = stream.recipient
         topic_name = "teST topic"
 
         stream_topic_target = StreamTopicTarget(
@@ -57,12 +52,10 @@ class MutedTopicsTests(ZulipTestCase):
         self.assertEqual(user_ids, set())
 
         def mute_topic_for_user(user: UserProfile) -> None:
-            assert recipient is not None
-            add_topic_mute(
-                user_profile=user,
-                stream_id=stream.id,
-                recipient_id=recipient.id,
-                topic_name="test TOPIC",
+            do_mute_topic(
+                user,
+                stream,
+                "test TOPIC",
                 date_muted=timezone_now(),
             )
 
@@ -107,10 +100,10 @@ class MutedTopicsTests(ZulipTestCase):
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
             self.assertTrue(topic_is_muted(user, stream.id, "verona3"))
 
-            remove_topic_mute(
-                user_profile=user,
-                stream_id=stream.id,
-                topic_name="Verona3",
+            do_unmute_topic(
+                user,
+                stream,
+                "Verona3",
             )
 
         assert stream.recipient is not None
@@ -128,7 +121,6 @@ class MutedTopicsTests(ZulipTestCase):
         self.login_user(user)
 
         stream = get_stream("Verona", realm)
-        recipient = stream.recipient
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
         payloads: List[Dict[str, object]] = [
@@ -137,13 +129,11 @@ class MutedTopicsTests(ZulipTestCase):
         ]
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        assert recipient is not None
         for data in payloads:
-            add_topic_mute(
-                user_profile=user,
-                stream_id=stream.id,
-                recipient_id=recipient.id,
-                topic_name="Verona3",
+            do_mute_topic(
+                user,
+                stream,
+                "Verona3",
                 date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
@@ -160,15 +150,7 @@ class MutedTopicsTests(ZulipTestCase):
         self.login_user(user)
 
         stream = get_stream("Verona", realm)
-        recipient = stream.recipient
-        assert recipient is not None
-        add_topic_mute(
-            user_profile=user,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name="Verona3",
-            date_muted=timezone_now(),
-        )
+        do_mute_topic(user, stream, "Verona3", date_muted=timezone_now())
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
 
