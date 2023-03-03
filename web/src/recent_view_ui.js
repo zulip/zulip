@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import * as typeahead from "../shared/src/typeahead";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
@@ -635,8 +636,7 @@ export function topic_in_search_results(keyword, stream_name, topic) {
         return true;
     }
     const text = (stream_name + " " + topic).toLowerCase();
-    const search_words = keyword.toLowerCase().split(/\s+/);
-    return search_words.every((word) => text.includes(word));
+    return typeahead.query_matches_string_in_any_order(keyword, text, " ");
 }
 
 export function update_topics_of_deleted_message_ids(message_ids) {
