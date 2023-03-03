@@ -492,7 +492,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def upload_export_tarball(
         self,
-        realm: Optional[Realm],
+        realm: Realm,
         tarball_path: str,
         percent_callback: Optional[Callable[[Any], None]] = None,
     ) -> str:
