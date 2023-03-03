@@ -157,11 +157,13 @@ def report_error(
         more_info["draft_content"] = privacy_clean_markdown(more_info["draft_content"])
 
     if maybe_user_profile.is_authenticated:
-        email = maybe_user_profile.delivery_email
-        full_name = maybe_user_profile.full_name
+        user = {
+            "user_email": maybe_user_profile.delivery_email,
+            "user_full_name": maybe_user_profile.full_name,
+            "user_role": maybe_user_profile.get_role_name(),
+        }
     else:
-        email = "unauthenticated@example.com"
-        full_name = "Anonymous User"
+        user = None
 
     queue_json_publish(
         "error_reports",
@@ -170,8 +172,7 @@ def report_error(
             report=dict(
                 host=SplitResult("", request.get_host(), "", "", "").hostname,
                 ip_address=remote_ip,
-                user_email=email,
-                user_full_name=full_name,
+                user=user,
                 user_visible=ui_message,
                 server_path=settings.DEPLOY_ROOT,
                 version=version,
