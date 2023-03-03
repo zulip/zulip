@@ -1,4 +1,3 @@
-import subprocess
 from typing import Callable, ContextManager, Dict, List, Tuple
 from unittest import mock
 
@@ -151,11 +150,8 @@ class TestReport(ZulipTestCase):
             )
         )
 
-        subprocess_mock = mock.patch(
-            "zerver.views.report.subprocess.check_output",
-            side_effect=subprocess.CalledProcessError(1, []),
-        )
-        with mock_queue_publish("zerver.views.report.queue_json_publish") as m, subprocess_mock:
+        version_mock = mock.patch("zerver.views.report.ZULIP_VERSION", spec="1.2.3")
+        with mock_queue_publish("zerver.views.report.queue_json_publish") as m, version_mock:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
 
@@ -168,7 +164,7 @@ class TestReport(ZulipTestCase):
 
         # Test with no more_info
         del params["more_info"]
-        with mock_queue_publish("zerver.views.report.queue_json_publish") as m, subprocess_mock:
+        with mock_queue_publish("zerver.views.report.queue_json_publish") as m, version_mock:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
 
@@ -181,7 +177,7 @@ class TestReport(ZulipTestCase):
         # js_source_map actually gets instantiated.
         with self.settings(DEVELOPMENT=False, TEST_SUITE=False), mock.patch(
             "zerver.lib.unminify.SourceMap.annotate_stacktrace"
-        ) as annotate, self.assertLogs(level="INFO") as info_logs:
+        ) as annotate, self.assertLogs(level="INFO") as info_logs, version_mock:
             result = self.client_post("/json/report/error", params)
         self.assert_json_success(result)
         # fix_params (see above) adds quotes when JSON encoding.

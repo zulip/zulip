@@ -1,6 +1,5 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import logging
-import subprocess
 from typing import Any, Mapping, Optional, Union
 from urllib.parse import SplitResult
 
@@ -10,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from version import ZULIP_VERSION
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import human_users_only
 from zerver.lib.markdown import privacy_clean_markdown
@@ -139,13 +139,7 @@ def report_error(
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
-    try:
-        version: Optional[str] = subprocess.check_output(
-            ["git", "show", "-s", "--oneline"],
-            text=True,
-        )
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        version = None
+    version = str(ZULIP_VERSION)
 
     # Get the IP address of the request
     remote_ip = request.META["REMOTE_ADDR"]
