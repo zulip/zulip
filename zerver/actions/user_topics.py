@@ -50,9 +50,6 @@ def do_mute_topic(
 def do_unmute_topic(
     user_profile: UserProfile, stream: Stream, topic: str, *, skip_muted_topics_event: bool = False
 ) -> None:
-    # Note: If you add any new code to this function, the
-    # remove_topic_mute call in do_update_message will need to be
-    # updated for correctness.
     try:
         remove_topic_mute(user_profile, stream.id, topic)
     except UserTopic.DoesNotExist:
