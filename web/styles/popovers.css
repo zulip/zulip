@@ -84,11 +84,11 @@
         padding-bottom: 0;
 
         &:hover {
-            background-color: transparent;
+            background-color: transparent !important;
         }
 
         &:focus {
-            background-color: transparent;
+            background-color: transparent !important;
         }
     }
 }
