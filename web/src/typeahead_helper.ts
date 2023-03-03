@@ -421,17 +421,45 @@ export function sort_recipients({
         return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
 
-    const users_name_results = typeahead.triage(query, users, (p) => p.full_name);
+    const users_name_results = typeahead.triage_raw(query, users, (p) => p.full_name);
+    const users_name_good_matches = [
+        ...users_name_results.exact_matches,
+        ...users_name_results.begins_with_case_sensitive_matches,
+        ...users_name_results.begins_with_case_insensitive_matches,
+    ];
+    const users_name_okay_matches = [...users_name_results.word_boundary_matches];
 
-    const email_results = typeahead.triage(query, users_name_results.rest, (p) => p.email);
+    const email_results = typeahead.triage_raw(
+        query,
+        users_name_results.no_matches,
+        (p) => p.email,
+    );
+    const email_good_matches = [
+        ...email_results.exact_matches,
+        ...email_results.begins_with_case_sensitive_matches,
+        ...email_results.begins_with_case_insensitive_matches,
+    ];
+    const email_okay_matches = [...email_results.word_boundary_matches];
 
-    const groups_results = typeahead.triage(query, groups, (g) => g.name);
+    const groups_results = typeahead.triage_raw(query, groups, (g) => g.name);
+    const groups_good_matches = [
+        ...groups_results.exact_matches,
+        ...groups_results.begins_with_case_sensitive_matches,
+        ...groups_results.begins_with_case_insensitive_matches,
+    ];
+    const groups_okay_matches = [...groups_results.word_boundary_matches];
 
-    const best_users = (): UserOrMention[] => sort_relevance(users_name_results.matches);
-    const best_groups = (): UserGroup[] => groups_results.matches;
-    const ok_users = (): UserOrMention[] => sort_relevance(email_results.matches);
-    const worst_users = (): UserOrMention[] => sort_relevance(email_results.rest);
-    const worst_groups = (): UserGroup[] => groups_results.rest;
+    const best_users = (): UserOrMention[] => [
+        ...sort_relevance(users_name_good_matches),
+        ...sort_relevance(users_name_okay_matches),
+    ];
+    const best_groups = (): UserGroup[] => [...groups_good_matches, ...groups_okay_matches];
+    const ok_users = (): UserOrMention[] => [
+        ...sort_relevance(email_good_matches),
+        ...sort_relevance(email_okay_matches),
+    ];
+    const worst_users = (): UserOrMention[] => sort_relevance(email_results.no_matches);
+    const worst_groups = (): UserGroup[] => groups_results.no_matches;
 
     const getters: (
         | {

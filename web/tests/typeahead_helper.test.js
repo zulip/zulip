@@ -339,9 +339,9 @@ test("sort_recipients", () => {
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
         "b_bot@example.com",
+        "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
-        "a_bot@zulip.com",
     ]);
 
     // Typeahead for direct message [query, "", ""]
@@ -394,9 +394,9 @@ test("sort_recipients", () => {
         subscriber_email_2,
         subscriber_email_1,
         "b_user_1@zulip.net",
+        "a_bot@zulip.com",
         "zman@test.net",
         "a_user@zulip.org",
-        "a_bot@zulip.com",
     ]);
 
     recent_senders.process_stream_message({
@@ -507,10 +507,10 @@ test("sort_recipients dup bots", () => {
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
         "b_bot@example.com",
+        "a_bot@zulip.com",
+        "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
-        "a_bot@zulip.com",
-        "a_bot@zulip.com",
     ];
     assert.deepEqual(recipients_email, expected);
 });
