@@ -272,3 +272,51 @@ run_test("sort_emojis: prioritise perfect matches", () => {
     ];
     assert.deepEqual(typeahead.sort_emojis(emoji_list, "thank you"), emoji_list);
 });
+
+run_test("last_prefix_match", () => {
+    let words = [
+        "apple",
+        "banana",
+        "cantaloupe",
+        "cherry",
+        "kiwi",
+        "melon",
+        "pear",
+        "plum",
+        "raspberry",
+        "watermelon",
+    ];
+    let prefix = "p";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 7);
+
+    prefix = "ch";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 3);
+
+    prefix = "pom";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
+
+    prefix = "aa";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
+
+    prefix = "zu";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
+
+    prefix = "";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 9);
+
+    words = ["one"];
+    prefix = "one";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 0);
+
+    words = ["aa", "pr", "pra", "pre", "pri", "pro", "pru", "zz"];
+    prefix = "pr";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 6);
+
+    words = ["same", "same", "same", "same", "same"];
+    prefix = "same";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 4);
+
+    words = [];
+    prefix = "empty";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
+});
