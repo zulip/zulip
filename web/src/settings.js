@@ -114,6 +114,7 @@ export function build_page() {
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
     });
 
+    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     $(".settings-box").html(rendered_settings_tab);
 }
 
