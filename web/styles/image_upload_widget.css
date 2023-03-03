@@ -206,3 +206,8 @@
     justify-content: space-around;
     flex-wrap: wrap;
 }
+
+/* CSS  related to upload widget's preview image */
+.upload_widget_image_preview {
+    object-fit: cover;
+}
