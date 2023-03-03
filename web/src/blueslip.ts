@@ -94,6 +94,7 @@ function report_error(
         url: "/json/report/error",
         dataType: "json",
         data: {
+            web_version: ZULIP_VERSION,
             message: msg,
             stacktrace: stack,
             ui_message: show_ui_msg,
