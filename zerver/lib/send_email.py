@@ -34,6 +34,7 @@ from django.utils.translation import override as override_language
 
 from confirmation.models import generate_key
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.queue import queue_event_on_commit
 from zerver.models import Realm, ScheduledEmail, UserProfile
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
@@ -487,7 +488,7 @@ def handle_send_email_format_changes(job: dict[str, Any]) -> None:
         del job["to_user_id"]
 
 
-def deliver_scheduled_emails(email: ScheduledEmail) -> None:
+def queue_scheduled_emails(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
     user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
@@ -505,8 +506,7 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
         data["to_user_ids"] = user_ids
     if email.address is not None:
         data["to_emails"] = [email.address]
-    handle_send_email_format_changes(data)
-    send_email(**data)
+    queue_event_on_commit("deferred_email_senders", data)
     email.delete()
 
 

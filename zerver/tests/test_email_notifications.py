@@ -17,7 +17,7 @@ from zerver.lib.email_notifications import (
     send_account_registered_email,
 )
 from zerver.lib.send_email import (
-    deliver_scheduled_emails,
+    queue_scheduled_emails,
     send_custom_email,
     send_custom_server_email,
 )
@@ -490,7 +490,8 @@ class TestFollowupEmails(ZulipTestCase):
             "zerver/emails/onboarding_team_to_zulip",
         )
 
-        deliver_scheduled_emails(scheduled_emails[0])
+        with self.captureOnCommitCallbacks(execute=True):
+            queue_scheduled_emails(scheduled_emails[0])
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -525,7 +526,8 @@ class TestFollowupEmails(ZulipTestCase):
             "zerver/emails/onboarding_team_to_zulip",
         )
 
-        deliver_scheduled_emails(scheduled_emails[0])
+        with self.captureOnCommitCallbacks(execute=True):
+            queue_scheduled_emails(scheduled_emails[0])
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
