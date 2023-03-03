@@ -302,7 +302,15 @@ class TestSupportEndpoint(ZulipTestCase):
             check_zulip_realm_query_result(result)
 
             email = self.nonreg_email("alice")
-            self.client_post("/new/", {"email": email})
+            self.client_post(
+                "/new/",
+                {
+                    "email": email,
+                    "realm_name": "Zulip test",
+                    "realm_type": Realm.ORG_TYPES["business"]["id"],
+                    "realm_subdomain": "zuliptest",
+                },
+            )
             result = get_check_query_result(email, 1)
             check_realm_creation_query_result(result, email)
 

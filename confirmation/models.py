@@ -22,6 +22,7 @@ from zerver.lib.types import UnspecifiedValue
 from zerver.models import (
     EmailChangeStatus,
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmReactivationStatus,
@@ -56,6 +57,7 @@ def generate_key() -> str:
 
 ConfirmationObjT = Union[
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     EmailChangeStatus,
     UserProfile,
@@ -114,12 +116,17 @@ def create_confirmation_link(
     *,
     validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
+    realm_creation: bool = False,
 ) -> str:
     # validity_in_minutes is an override for the default values which are
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
     key = generate_key()
-    realm = obj.realm
+    if realm_creation:
+        realm = None
+    else:
+        assert not isinstance(obj, PreregistrationRealm)
+        realm = obj.realm
 
     current_time = timezone_now()
     expiry_date = None
