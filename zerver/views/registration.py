@@ -116,11 +116,11 @@ def get_prereg_key_and_redirect(
     accidentally adding an extra character after pasting).
     """
     try:
-        prereg_user = check_prereg_key(request, confirmation_key)
+        prereg_object = check_prereg_key(request, confirmation_key)
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
-    realm_creation = prereg_user.realm_creation
+    realm_creation = prereg_object.realm_creation
 
     registration_url = reverse("accounts_register")
     if realm_creation:
@@ -148,14 +148,16 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
         Confirmation.REALM_CREATION,
     ]
 
-    prereg_user = get_object_from_key(confirmation_key, confirmation_types, mark_object_used=False)
-    assert isinstance(prereg_user, PreregistrationUser)
+    prereg_object = get_object_from_key(
+        confirmation_key, confirmation_types, mark_object_used=False
+    )
+    assert isinstance(prereg_object, PreregistrationUser)
 
     # Defensive assert to make sure no mix-up in how .status is set leading to re-use
     # of a PreregistrationUser object.
-    assert prereg_user.created_user is None
+    assert prereg_object.created_user is None
 
-    return prereg_user
+    return prereg_object
 
 
 @add_google_analytics
