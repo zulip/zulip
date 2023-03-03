@@ -9,7 +9,6 @@ from typing import IO, Any, BinaryIO, Callable, Iterator, List, Literal, Optiona
 import boto3
 import botocore
 from boto3.session import Session
-from botocore.client import Config
 from django.conf import settings
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
@@ -101,14 +100,26 @@ def upload_image_to_s3(
     )
 
 
+BOTO_CLIENT: Optional[S3Client] = None
+
+
+def get_boto_client() -> S3Client:
+    """
+    Creating the client takes a long time so we need to cache it.
+    """
+    global BOTO_CLIENT
+    if BOTO_CLIENT is None:
+        BOTO_CLIENT = boto3.client(
+            "s3",
+            aws_access_key_id=settings.S3_KEY,
+            aws_secret_access_key=settings.S3_SECRET_KEY,
+            region_name=settings.S3_REGION,
+            endpoint_url=settings.S3_ENDPOINT_URL,
+        )
+    return BOTO_CLIENT
+
+
 def get_signed_upload_url(path: str, force_download: bool = False) -> str:
-    client = boto3.client(
-        "s3",
-        aws_access_key_id=settings.S3_KEY,
-        aws_secret_access_key=settings.S3_SECRET_KEY,
-        region_name=settings.S3_REGION,
-        endpoint_url=settings.S3_ENDPOINT_URL,
-    )
     params = {
         "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
         "Key": path,
@@ -116,7 +127,7 @@ def get_signed_upload_url(path: str, force_download: bool = False) -> str:
     if force_download:
         params["ResponseContentDisposition"] = "attachment"
 
-    return client.generate_presigned_url(
+    return get_boto_client().generate_presigned_url(
         ClientMethod="get_object",
         Params=params,
         ExpiresIn=SIGNED_UPLOAD_URL_DURATION,
@@ -130,22 +141,7 @@ class S3UploadBackend(ZulipUploadBackend):
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
-        self._boto_client: Optional[S3Client] = None
         self.public_upload_url_base = self.construct_public_upload_url_base()
-
-    def get_boto_client(self) -> S3Client:
-        """
-        Creating the client takes a long time so we need to cache it.
-        """
-        if self._boto_client is None:
-            config = Config(signature_version=botocore.UNSIGNED)
-            self._boto_client = self.session.client(
-                "s3",
-                region_name=settings.S3_REGION,
-                endpoint_url=settings.S3_ENDPOINT_URL,
-                config=config,
-            )
-        return self._boto_client
 
     def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
         key = bucket.Object(path_id)
@@ -179,7 +175,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # back-compute the URL pattern here.
 
         DUMMY_KEY = "dummy_key_ignored"
-        foo_url = self.get_boto_client().generate_presigned_url(
+        foo_url = get_boto_client().generate_presigned_url(
             ClientMethod="get_object",
             Params={
                 "Bucket": self.avatar_bucket.name,
@@ -489,7 +485,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         if export_path.startswith("/"):
             export_path = export_path[1:]
-        return self.get_boto_client().generate_presigned_url(
+        signed_url = get_boto_client().generate_presigned_url(
             ClientMethod="get_object",
             Params={
                 "Bucket": self.avatar_bucket.name,
@@ -497,6 +493,8 @@ class S3UploadBackend(ZulipUploadBackend):
             },
             ExpiresIn=0,
         )
+        # Strip off the signing query parameters, since this URL is public
+        return urllib.parse.urlsplit(signed_url)._replace(query="").geturl()
 
     def upload_export_tarball(
         self,
