@@ -1,7 +1,7 @@
 import logging
 import urllib
 from contextlib import suppress
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -65,6 +65,7 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmUserDefault,
@@ -121,11 +122,9 @@ def get_prereg_key_and_redirect(
     accidentally adding an extra character after pasting).
     """
     try:
-        prereg_object = check_prereg_key(request, confirmation_key)
+        prereg_object, realm_creation = check_prereg_key(request, confirmation_key)
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
-
-    realm_creation = prereg_object.realm_creation
 
     registration_url = reverse("accounts_register")
     if realm_creation:
@@ -142,10 +141,13 @@ def get_prereg_key_and_redirect(
     )
 
 
-def check_prereg_key(request: HttpRequest, confirmation_key: str) -> PreregistrationUser:
+def check_prereg_key(
+    request: HttpRequest, confirmation_key: str
+) -> Tuple[Union[PreregistrationUser, PreregistrationRealm], bool]:
     """
-    Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
-    and raising an appropriate ConfirmationKeyError otherwise.
+    Checks if the Confirmation key is valid, returning the PreregistrationUser or
+    PreregistrationRealm object in case of success and raising an appropriate
+    ConfirmationKeyError otherwise.
     """
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
@@ -156,13 +158,23 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
     prereg_object = get_object_from_key(
         confirmation_key, confirmation_types, mark_object_used=False
     )
-    assert isinstance(prereg_object, PreregistrationUser)
+    assert isinstance(prereg_object, (PreregistrationRealm, PreregistrationUser))
 
-    # Defensive assert to make sure no mix-up in how .status is set leading to re-use
-    # of a PreregistrationUser object.
-    assert prereg_object.created_user is None
+    confirmation_obj = prereg_object.confirmation.get()
+    realm_creation = confirmation_obj.type == Confirmation.REALM_CREATION
 
-    return prereg_object
+    if realm_creation:
+        assert isinstance(prereg_object, PreregistrationRealm)
+        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # of a PreregistrationRealm object.
+        assert prereg_object.created_realm is None
+    else:
+        assert isinstance(prereg_object, PreregistrationUser)
+        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # of a PreregistrationUser object.
+        assert prereg_object.created_user is None
+
+    return prereg_object, realm_creation
 
 
 @add_google_analytics
@@ -188,17 +200,23 @@ def registration_helper(
     ),
 ) -> HttpResponse:
     try:
-        prereg_user = check_prereg_key(request, key)
+        prereg_object, realm_creation = check_prereg_key(request, key)
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
-    email = prereg_user.email
-    realm_creation = prereg_user.realm_creation
-    password_required = prereg_user.password_required
-
-    role = prereg_user.invited_as
+    email = prereg_object.email
+    prereg_realm = None
+    prereg_user = None
     if realm_creation:
+        assert isinstance(prereg_object, PreregistrationRealm)
+        prereg_realm = prereg_object
+        password_required = True
         role = UserProfile.ROLE_REALM_OWNER
+    else:
+        assert isinstance(prereg_object, PreregistrationUser)
+        prereg_user = prereg_object
+        password_required = prereg_object.password_required
+        role = prereg_object.invited_as
 
     try:
         validators.validate_email(email)
@@ -211,6 +229,7 @@ def registration_helper(
         # For creating a new realm, there is no existing realm or domain
         realm = None
     else:
+        assert prereg_user is not None
         assert prereg_user.realm is not None
         if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
@@ -300,13 +319,24 @@ def registration_helper(
                     require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
                     break
 
+        initial_data = {}
+        if realm_creation:
+            assert prereg_realm is not None
+            initial_data = {
+                "realm_name": prereg_realm.name,
+                "realm_type": prereg_realm.org_type,
+                "realm_subdomain": prereg_realm.string_id,
+            }
+
         if ldap_full_name:
-            # We don't use initial= here, because if the form is
-            # complete (that is, no additional fields need to be
-            # filled out by the user) we want the form to validate,
-            # so they can be directly registered without having to
-            # go through this interstitial.
-            form = RegistrationForm({"full_name": ldap_full_name}, realm_creation=realm_creation)
+            # We don't add "full_name" to initial here, because if the realm
+            # already exists and form is complete (that is, no additional fields
+            # need to be filled out by the user) we want the form to validate,
+            # so they can be directly registered without having to go through
+            # this interstitial.
+            form = RegistrationForm(
+                {"full_name": ldap_full_name}, initial=initial_data, realm_creation=realm_creation
+            )
             request.session["authenticated_full_name"] = ldap_full_name
             name_validated = True
         elif realm is not None and realm.is_zephyr_mirror_realm:
@@ -320,24 +350,29 @@ def registration_helper(
                 realm_creation=realm_creation,
             )
             name_validated = True
-        elif prereg_user.full_name:
+        elif prereg_user is not None and prereg_user.full_name:
             if prereg_user.full_name_validated:
                 request.session["authenticated_full_name"] = prereg_user.full_name
                 name_validated = True
                 form = RegistrationForm(
-                    {"full_name": prereg_user.full_name}, realm_creation=realm_creation
+                    {"full_name": prereg_user.full_name},
+                    initial=initial_data,
+                    realm_creation=realm_creation,
                 )
             else:
+                initial_data["full_name"] = prereg_user.full_name
                 form = RegistrationForm(
-                    initial={"full_name": prereg_user.full_name}, realm_creation=realm_creation
+                    initial=initial_data,
+                    realm_creation=realm_creation,
                 )
         elif form_full_name is not None:
+            initial_data["full_name"] = form_full_name
             form = RegistrationForm(
-                initial={"full_name": form_full_name},
+                initial=initial_data,
                 realm_creation=realm_creation,
             )
         else:
-            form = RegistrationForm(realm_creation=realm_creation)
+            form = RegistrationForm(initial=initial_data, realm_creation=realm_creation)
     else:
         postdata = request.POST.copy()
         if name_changes_disabled(realm):
