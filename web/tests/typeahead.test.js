@@ -150,6 +150,26 @@ run_test("triage", () => {
     );
 });
 
+run_test("triage: prioritise word boundary matches to arbitrary substring matches", () => {
+    const book = {name: "book"};
+    const hyphen_ok = {name: "hyphen_ok"};
+    const space_ok = {name: "space ok"};
+    const no_space_ok = {name: "nospaceok"};
+    const number_ok = {name: "number1ok"};
+    const okay = {name: "okay"};
+    const ok = {name: "ok"};
+
+    const emojis = [book, hyphen_ok, space_ok, no_space_ok, number_ok, okay, ok];
+
+    assert.deepEqual(
+        typeahead.triage("ok", emojis, (r) => r.name),
+        {
+            matches: [ok, okay, hyphen_ok, space_ok],
+            rest: [book, no_space_ok, number_ok],
+        },
+    );
+});
+
 function sort_emojis(emojis, query) {
     return typeahead.sort_emojis(emojis, query).map((emoji) => emoji.emoji_name);
 }

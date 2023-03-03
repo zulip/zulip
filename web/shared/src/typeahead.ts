@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 /*
     We hand selected the following emojis a few years
     ago to be given extra precedence in our typeahead
@@ -110,27 +112,37 @@ export function get_emoji_matcher(query: string): (emoji: Emoji) => boolean {
     };
 }
 
-export function triage<T>(
+// space, hyphen, underscore and slash characters are considered word
+// boundaries for now, but we might want to consider the characters
+// from BEFORE_MENTION_ALLOWED_REGEX in zerver/lib/mention.py later.
+export const word_boundary_chars = " _/-";
+
+export function triage_raw<T>(
     query: string,
     objs: T[],
     get_item: (x: T) => string,
-    sorting_comparator?: (a: T, b: T) => number,
-): {matches: T[]; rest: T[]} {
+): {
+    exact_matches: T[];
+    begins_with_case_sensitive_matches: T[];
+    begins_with_case_insensitive_matches: T[];
+    word_boundary_matches: T[];
+    no_matches: T[];
+} {
     /*
-        We split objs into four groups:
+        We split objs into five groups:
 
             - entire string exact match
             - match prefix exactly with `query`
             - match prefix case-insensitively
+            - match word boundary prefix case-insensitively
             - other
 
-        Then we concat the first three groups into
-        `matches` and then call the rest `rest`.
+        and return an object of these.
     */
-
     const exact_matches = [];
     const begins_with_case_sensitive_matches = [];
     const begins_with_case_insensitive_matches = [];
+    const word_boundary_matches = [];
     const no_matches = [];
     const lower_query = query ? query.toLowerCase() : "";
 
@@ -144,26 +156,59 @@ export function triage<T>(
             begins_with_case_sensitive_matches.push(obj);
         } else if (lower_item.startsWith(lower_query)) {
             begins_with_case_insensitive_matches.push(obj);
+        } else if (
+            new RegExp(`[${word_boundary_chars}]${_.escapeRegExp(lower_query)}`).test(lower_item)
+        ) {
+            word_boundary_matches.push(obj);
         } else {
             no_matches.push(obj);
         }
     }
 
+    return {
+        exact_matches,
+        begins_with_case_sensitive_matches,
+        begins_with_case_insensitive_matches,
+        word_boundary_matches,
+        no_matches,
+    };
+}
+
+export function triage<T>(
+    query: string,
+    objs: T[],
+    get_item: (x: T) => string,
+    sorting_comparator?: (a: T, b: T) => number,
+): {matches: T[]; rest: T[]} {
+    const {
+        exact_matches,
+        begins_with_case_sensitive_matches,
+        begins_with_case_insensitive_matches,
+        word_boundary_matches,
+        no_matches,
+    } = triage_raw(query, objs, get_item);
+
     if (sorting_comparator) {
-        const non_exact_sorted_matches = [
+        const beginning_matches_sorted = [
             ...begins_with_case_sensitive_matches,
             ...begins_with_case_insensitive_matches,
         ].sort(sorting_comparator);
         return {
-            matches: [...exact_matches.sort(sorting_comparator), ...non_exact_sorted_matches],
+            matches: [
+                ...exact_matches.sort(sorting_comparator),
+                ...beginning_matches_sorted,
+                ...word_boundary_matches.sort(sorting_comparator),
+            ],
             rest: no_matches.sort(sorting_comparator),
         };
     }
+
     return {
         matches: [
             ...exact_matches,
             ...begins_with_case_sensitive_matches,
             ...begins_with_case_insensitive_matches,
+            ...word_boundary_matches,
         ],
         rest: no_matches,
     };

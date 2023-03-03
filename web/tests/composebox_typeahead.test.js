@@ -1805,11 +1805,9 @@ test("message people", ({override, override_rewire}) => {
     let results;
 
     /*
-        We will simulate that we talk to Hal and Harry,
-        while we don't talk to King Hamlet.  This will
-        knock King Hamlet out of consideration in the
-        filtering pass.  Then Hal will be truncated in
-        the sorting step.
+        We will initially simulate that we talk to Hal and Harry, while
+        we don't talk to King Hamlet or Characters of Hamlet. This
+        will knock these 2 out of consideration in the filtering pass.
     */
 
     let user_ids = [hal.user_id, harry.user_id];
@@ -1823,23 +1821,20 @@ test("message people", ({override, override_rewire}) => {
     };
 
     results = ct.get_person_suggestions("Ha", opts);
-    assert.deepEqual(results, [harry, hamletcharacters]);
+    assert.deepEqual(results, [harry, hal]);
 
-    // Now let's exclude Hal.
+    // Now let's exclude Hal and include King Hamlet.
     user_ids = [hamlet.user_id, harry.user_id];
 
     results = ct.get_person_suggestions("Ha", opts);
-    assert.deepEqual(results, [harry, hamletcharacters]);
+    assert.deepEqual(results, [harry, hamlet]);
 
+    // Reincluding Hal and deactivating harry
     user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
-
-    results = ct.get_person_suggestions("Ha", opts);
-    assert.deepEqual(results, [harry, hamletcharacters]);
-
     people.deactivate(harry);
     results = ct.get_person_suggestions("Ha", opts);
     // harry is excluded since it has been deactivated.
-    assert.deepEqual(results, [hamletcharacters, hal]);
+    assert.deepEqual(results, [hal, hamlet]);
 });
 
 test("muted users excluded from results", () => {
