@@ -76,7 +76,6 @@ not_yet_fully_covered = [
     "zerver/lib/markdown/nested_code_blocks.py",
     # Workers should get full coverage; many have it already
     "zerver/worker/deferred_work.py",
-    "zerver/worker/email_senders.py",
     "zerver/worker/invites.py",
     "zerver/worker/missedmessage_emails.py",
     # Worker-associated files; lower-priority to get testing on

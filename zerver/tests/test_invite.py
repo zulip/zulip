@@ -50,7 +50,7 @@ from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
-from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_future_email
+from zerver.lib.send_email import FromAddress, queue_scheduled_emails, send_future_email
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email
@@ -1837,7 +1837,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_length(email_jobs_to_deliver, 1)
         email_count = len(mail.outbox)
         for job in email_jobs_to_deliver:
-            deliver_scheduled_emails(job)
+            with self.captureOnCommitCallbacks(execute=True):
+                queue_scheduled_emails(job)
         self.assert_length(mail.outbox, email_count + 1)
         self.assertEqual(self.email_envelope_from(mail.outbox[-1]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn(FromAddress.NOREPLY, self.email_display_from(mail.outbox[-1]))

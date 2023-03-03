@@ -16,7 +16,7 @@ from typing_extensions import override
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.send_email import EmailNotDeliveredError, deliver_scheduled_emails
+from zerver.lib.send_email import EmailNotDeliveredError, queue_scheduled_emails
 from zerver.models import ScheduledEmail
 
 ## Setup ##
@@ -47,7 +47,7 @@ Usage: ./manage.py deliver_scheduled_emails
                     )
                     if job:
                         try:
-                            deliver_scheduled_emails(job)
+                            queue_scheduled_emails(job)
                         except EmailNotDeliveredError:
                             logger.warning("%r not delivered", job)
                     else:
