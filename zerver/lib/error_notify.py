@@ -64,7 +64,8 @@ IP address: {ip_address}
 User agent: {user_agent}
 href: {href}
 Server path: {server_path}
-Deployed version: {version}
+Deployed server version: {server_version}
+Web version: {web_version}
 """.format(
         **report
     )

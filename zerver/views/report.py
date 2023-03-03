@@ -127,6 +127,7 @@ def report_error(
     user_agent: str = REQ(),
     href: str = REQ(),
     log: str = REQ(),
+    web_version: Optional[str] = REQ(default=None),
     more_info: Mapping[str, Any] = REQ(json_validator=check_dict([]), default={}),
 ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
@@ -139,7 +140,7 @@ def report_error(
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
-    version = str(ZULIP_VERSION)
+    server_version = str(ZULIP_VERSION)
 
     # Get the IP address of the request
     remote_ip = request.META["REMOTE_ADDR"]
@@ -169,7 +170,8 @@ def report_error(
                 user=user,
                 user_visible=ui_message,
                 server_path=settings.DEPLOY_ROOT,
-                version=version,
+                server_version=server_version,
+                web_version=web_version,
                 user_agent=user_agent,
                 href=href,
                 message=message,
