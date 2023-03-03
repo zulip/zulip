@@ -5,6 +5,7 @@ import path from "path";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import {DefinePlugin} from "webpack";
 import type webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
@@ -12,7 +13,10 @@ import DebugRequirePlugin from "./debug-require-webpack-plugin";
 import assets from "./webpack.assets.json";
 import dev_assets from "./webpack.dev-assets.json";
 
-export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.Configuration[] => {
+export default (
+    env: {minimize?: boolean; ZULIP_VERSION?: string} = {},
+    argv: {mode?: string},
+): webpack.Configuration[] => {
     const production: boolean = argv.mode === "production";
 
     const baseConfig: webpack.Configuration = {
@@ -194,6 +198,9 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             },
         },
         plugins: [
+            new DefinePlugin({
+                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION || "development"),
+            }),
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
