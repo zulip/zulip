@@ -12,7 +12,7 @@ world, with 74+ people who have each contributed 100+ commits. With
 over 1000 contributors merging over 500 commits a month, Zulip is the
 largest and fastest growing open source team chat project.
 
-Come find us on the [development community chat](https://zulip.com/development-community/)!
+Come find us on the [development community chat](https://zulip.com/development-community/)!!
 
 [![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
 [![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/main.svg)](https://codecov.io/gh/zulip/zulip)
