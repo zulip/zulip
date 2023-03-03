@@ -13,6 +13,7 @@ from botocore.client import Config
 from botocore.response import StreamingBody
 from django.conf import settings
 from django.utils.http import content_disposition_header
+from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import override
 
@@ -111,8 +112,20 @@ def upload_content_to_s3(
     )
 
 
+BOTO_CLIENT: S3Client | None = None
+
+
+def get_boto_client() -> S3Client:
+    """
+    Creating the client takes a long time so we need to cache it.
+    """
+    global BOTO_CLIENT
+    if BOTO_CLIENT is None:
+        BOTO_CLIENT = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET).meta.client
+    return BOTO_CLIENT
+
+
 def get_signed_upload_url(path: str, force_download: bool = False) -> str:
-    client = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET).meta.client
     params = {
         "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
         "Key": path,
@@ -120,7 +133,7 @@ def get_signed_upload_url(path: str, force_download: bool = False) -> str:
     if force_download:
         params["ResponseContentDisposition"] = "attachment"
 
-    return client.generate_presigned_url(
+    return get_boto_client().generate_presigned_url(
         ClientMethod="get_object",
         Params=params,
         ExpiresIn=SIGNED_UPLOAD_URL_DURATION,
