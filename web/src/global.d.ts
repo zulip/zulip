@@ -9,3 +9,5 @@ interface JQuery {
     expectOne(): JQuery;
     tab(action?: string): this; // From web/third/bootstrap
 }
+
+declare const ZULIP_VERSION: string;

@@ -237,6 +237,9 @@
                 "browser": true,
                 "node": false
             },
+            "globals": {
+                "ZULIP_VERSION": false
+            },
             "rules": {
                 "no-console": "error"
             },
