@@ -1257,7 +1257,15 @@ class RealmCreationTest(ZulipTestCase):
             get_realm(string_id)
 
         # Create new realm with the email
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": org_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1266,6 +1274,10 @@ class RealmCreationTest(ZulipTestCase):
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email", result)
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        self.assertEqual(prereg_realm.name, "Zulip Test")
+        self.assertEqual(prereg_realm.org_type, Realm.ORG_TYPES["business"]["id"])
+        self.assertEqual(prereg_realm.string_id, string_id)
 
         # Check confirmation email has the correct subject and body, extract
         # confirmation link and visit it
@@ -1347,7 +1359,15 @@ class RealmCreationTest(ZulipTestCase):
             )
 
     def test_create_realm_as_system_bot(self) -> None:
-        result = self.client_post("/new/", {"email": "notification-bot@zulip.com"})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": "notification-bot@zulip.com",
+                "realm_name": "Zulip test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "zuliptest",
+            },
+        )
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("notification-bot@zulip.com is reserved for system bots", result)
 
@@ -1360,7 +1380,15 @@ class RealmCreationTest(ZulipTestCase):
 
         with self.settings(OPEN_REALM_CREATION=False):
             # Create new realm with the email, but no creation key.
-            result = self.client_post("/new/", {"email": email})
+            result = self.client_post(
+                "/new/",
+                {
+                    "email": email,
+                    "realm_name": "Zulip test",
+                    "realm_type": Realm.ORG_TYPES["business"]["id"],
+                    "realm_subdomain": "zuliptest",
+                },
+            )
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("Organization creation link required", result)
 
@@ -1376,7 +1404,15 @@ class RealmCreationTest(ZulipTestCase):
             get_realm(string_id)
 
         # Create new realm with the email
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1420,7 +1456,15 @@ class RealmCreationTest(ZulipTestCase):
             get_realm(string_id)
 
         # Create new realm with the email
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1467,7 +1511,15 @@ class RealmCreationTest(ZulipTestCase):
             get_realm(string_id)
 
         # Create new realm with the email
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1525,7 +1577,15 @@ class RealmCreationTest(ZulipTestCase):
             get_realm(string_id)
 
         # Create new realm with the email
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": "Zulip test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1568,7 +1628,15 @@ class RealmCreationTest(ZulipTestCase):
         realm_name = "Test"
 
         # Create new realm with the email
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1607,7 +1675,15 @@ class RealmCreationTest(ZulipTestCase):
         realm_name = "Test"
 
         # Create new realm with the email
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1649,7 +1725,15 @@ class RealmCreationTest(ZulipTestCase):
         with self.assertRaises(Realm.DoesNotExist):
             get_realm(string_id)
 
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1701,7 +1785,15 @@ class RealmCreationTest(ZulipTestCase):
             get_realm(second_string_id)
 
         # Now we pre-generate two realm creation links
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": first_realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": first_string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1714,7 +1806,15 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 1)
 
         # Get a second realm creation link.
-        result = self.client_post("/new/", {"email": email})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": second_realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": second_string_id,
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
@@ -1768,10 +1868,26 @@ class RealmCreationTest(ZulipTestCase):
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_invalid_email_signup(self) -> None:
-        result = self.client_post("/new/", {"email": "<foo"})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": "<foo",
+                "realm_name": "Zulip test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "zuliptest",
+            },
+        )
         self.assert_in_response("Please use your real email address.", result)
 
-        result = self.client_post("/new/", {"email": "foo\x00bar"})
+        result = self.client_post(
+            "/new/",
+            {
+                "email": "foo\x00bar",
+                "realm_name": "Zulip test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "zuliptest",
+            },
+        )
         self.assert_in_response("Please use your real email address.", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
@@ -1785,11 +1901,6 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post("/new/", {"email": email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-
         errors = {
             "id": "length 3 or greater",
             "-id": "cannot start or end with a",
@@ -1802,12 +1913,31 @@ class RealmCreationTest(ZulipTestCase):
             "zephyr": "unavailable",
         }
         for string_id, error_msg in errors.items():
-            result = self.submit_reg_form_for_user(
-                email, password, realm_subdomain=string_id, realm_name=realm_name
+            result = self.client_post(
+                "/new/",
+                {
+                    "email": email,
+                    "realm_name": realm_name,
+                    "realm_type": Realm.ORG_TYPES["business"]["id"],
+                    "realm_subdomain": string_id,
+                },
             )
             self.assert_in_response(error_msg, result)
 
         # test valid subdomain
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "a-0",
+            },
+        )
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
         result = self.submit_reg_form_for_user(
             email, password, realm_subdomain="a-0", realm_name=realm_name
         )
@@ -1821,16 +1951,16 @@ class RealmCreationTest(ZulipTestCase):
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "new-name", acting_user=None)
 
-        password = "test"
         email = "user1@test.com"
-        realm_name = "Test"
 
-        result = self.client_post("/new/", {"email": email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-        result = self.submit_reg_form_for_user(
-            email, password, realm_subdomain="zulip", realm_name=realm_name
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": "Test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "test",
+            },
         )
         self.assert_in_response("Subdomain unavailable. Please choose a different one.", result)
 
@@ -1840,19 +1970,33 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post("/new/", {"email": email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-
         # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.submit_reg_form_for_user(
-                email, password, realm_subdomain="", realm_name=realm_name
+            result = self.client_post(
+                "/new/",
+                {
+                    "email": email,
+                    "realm_name": realm_name,
+                    "realm_type": Realm.ORG_TYPES["business"]["id"],
+                    "realm_subdomain": "",
+                },
             )
             self.assert_in_response("unavailable", result)
 
         # test valid use of root domain
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "",
+            },
+        )
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
         result = self.submit_reg_form_for_user(
             email, password, realm_subdomain="", realm_name=realm_name
         )
@@ -1867,23 +2011,35 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post("/new/", {"email": email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-
         # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.submit_reg_form_for_user(
-                email,
-                password,
-                realm_subdomain="abcdef",
-                realm_in_root_domain="true",
-                realm_name=realm_name,
+            result = self.client_post(
+                "/new/",
+                {
+                    "email": email,
+                    "realm_name": realm_name,
+                    "realm_type": Realm.ORG_TYPES["business"]["id"],
+                    "realm_subdomain": "abcdef",
+                    "realm_in_root_domain": "true",
+                },
             )
             self.assert_in_response("unavailable", result)
 
         # test valid use of root domain
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "abcdef",
+                "realm_in_root_domain": "true",
+            },
+        )
+        self.client_get(result["Location"])
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
         result = self.submit_reg_form_for_user(
             email,
             password,
@@ -2043,7 +2199,15 @@ class UserSignUpTest(ZulipTestCase):
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
-            result = self.client_post("/new/", {"email": email})
+            result = self.client_post(
+                "/new/",
+                {
+                    "email": email,
+                    "realm_name": "Zulip test",
+                    "realm_type": Realm.ORG_TYPES["business"]["id"],
+                    "realm_subdomain": "zuliptest",
+                },
+            )
 
         self._assert_redirected_to(result, "/config-error/smtp")
         self.assertEqual(m.output, ["ERROR:root:Error in create_realm"])
@@ -2647,27 +2811,22 @@ class UserSignUpTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
 
-        password = "test"
         email = self.example_email("iago")
         realm_name = "Test"
 
-        result = self.client_post("/new/", {"email": email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-        result = self.submit_reg_form_for_user(
-            email,
-            password,
-            # Subdomain is already used, by construction.
-            realm_subdomain=realm.string_id,
-            realm_name=realm_name,
-            source_realm_id=str(realm.id),
+        result = self.client_post(
+            "/new/",
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": realm.string_id,
+            },
         )
         self.assert_in_success_response(
             [
                 "Subdomain unavailable. Please choose a different one.",
-                "Zulip Dev\n",
-                'value="test"',
+                'value="Test"',
                 'name="realm_name"',
             ],
             result,

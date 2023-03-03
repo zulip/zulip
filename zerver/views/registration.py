@@ -77,6 +77,7 @@ from zerver.models import (
     name_changes_disabled,
 )
 from zerver.views.auth import (
+    create_preregistration_realm,
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
@@ -586,7 +587,6 @@ def prepare_activation_url(
     session: SessionBase,
     *,
     realm: Optional[Realm],
-    realm_creation: bool = False,
     streams: Optional[Iterable[Stream]] = None,
     invited_as: Optional[int] = None,
     multiuse_invite: Optional[MultiuseInvite] = None,
@@ -595,9 +595,7 @@ def prepare_activation_url(
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    prereg_user = create_preregistration_user(
-        email, realm, realm_creation, multiuse_invite=multiuse_invite
-    )
+    prereg_user = create_preregistration_user(email, realm, multiuse_invite=multiuse_invite)
 
     if streams is not None:
         prereg_user.streams.set(streams)
@@ -607,11 +605,24 @@ def prepare_activation_url(
         prereg_user.save()
 
     confirmation_type = Confirmation.USER_REGISTRATION
-    if realm_creation:
-        confirmation_type = Confirmation.REALM_CREATION
 
     activation_url = create_confirmation_link(prereg_user, confirmation_type)
-    if settings.DEVELOPMENT and realm_creation:
+    return activation_url
+
+
+def prepare_realm_activation_url(
+    email: str,
+    session: SessionBase,
+    realm_name: str,
+    string_id: str,
+    org_type: int,
+) -> str:
+    prereg_realm = create_preregistration_realm(email, realm_name, string_id, org_type)
+    activation_url = create_confirmation_link(
+        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+    )
+
+    if settings.DEVELOPMENT:
         session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-1]}
     return activation_url
 
@@ -677,8 +688,11 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 )
 
             email = form.cleaned_data["email"]
-            activation_url = prepare_activation_url(
-                email, request.session, realm=None, realm_creation=True
+            realm_name = form.cleaned_data["realm_name"]
+            realm_type = form.cleaned_data["realm_type"]
+            realm_subdomain = form.cleaned_data["realm_subdomain"]
+            activation_url = prepare_realm_activation_url(
+                email, request.session, realm_name, realm_subdomain, realm_type
             )
             if key_record is not None and key_record.presume_email_valid:
                 # The user has a token created from the server command line;
