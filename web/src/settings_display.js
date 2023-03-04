@@ -254,6 +254,7 @@ export async function report_emojiset_change(settings_panel) {
         ui_report.success(
             $t_html({defaultMessage: "Emoji set changed successfully!"}),
             $spinner.expectOne(),
+            1000,
         );
         $spinner.expectOne();
         settings_ui.display_checkmark($spinner);
@@ -273,6 +274,7 @@ export async function report_user_list_style_change(settings_panel) {
         ui_report.success(
             $t_html({defaultMessage: "User list style changed successfully!"}),
             $spinner.expectOne(),
+            1000,
         );
         $spinner.expectOne();
         settings_ui.display_checkmark($spinner);
