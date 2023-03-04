@@ -347,7 +347,7 @@ async function change_language(page: Page, language_data_code: string): Promise<
 }
 
 async function check_language_setting_status(page: Page): Promise<void> {
-    await page.waitForSelector("#user-display-settings .lang-time-settings-status .reload_link", {
+    await page.waitForSelector("#user-display-settings .general-settings-status .reload_link", {
         visible: true,
     });
 }
@@ -400,7 +400,7 @@ async function test_default_language_setting(page: Page): Promise<void> {
     await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
     await page.waitForSelector(display_settings_section, {visible: true});
     await page.click(display_settings_section);
-    await page.waitForSelector("#user-display-settings .lang-time-settings-status", {
+    await page.waitForSelector("#user-display-settings .general-settings-status", {
         visible: true,
     });
     await page.waitForSelector("#user-display-settings .language_selection_button", {
