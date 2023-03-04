@@ -13,6 +13,7 @@ import * as ui_util from "./ui_util";
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
 export type InputPillItem<T> = {
+    group_id?: number;
     display_value: string;
     type: string;
     img_src?: string;
@@ -51,6 +52,7 @@ type InputPillStore<T> = {
 };
 
 type InputPillRenderingDetails = {
+    user_group_id?: number;
     display_value: string;
     has_image: boolean;
     img_src?: string;
@@ -141,6 +143,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             const has_image = item.img_src !== undefined;
 
             const opts: InputPillRenderingDetails = {
+                user_group_id: item.group_id,
                 display_value: item.display_value,
                 has_image,
                 deactivated: item.deactivated,
