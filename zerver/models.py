@@ -41,9 +41,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
-from django.db.models import CASCADE, Exists, F, OuterRef, Q, Sum
+from django.db.models import CASCADE, Exists, F, OuterRef, Q, QuerySet, Sum
 from django.db.models.functions import Upper
-from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
 from django.utils.timezone import now as timezone_now

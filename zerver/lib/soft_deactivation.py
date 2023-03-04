@@ -5,8 +5,7 @@ from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, S
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Max
-from django.db.models.query import QuerySet
+from django.db.models import Max, QuerySet
 from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
