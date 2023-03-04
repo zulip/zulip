@@ -24,7 +24,7 @@ external_host_env = os.getenv("EXTERNAL_HOST")
 if external_host_env is None:
     if IS_DEV_DROPLET:
         # For our droplets, we use the hostname (eg github_username.zulipdev.org) by default.
-        # Note that this code is duplicated in run-dev.py.
+        # Note that this code is duplicated in run-dev.
         EXTERNAL_HOST = os.uname()[1].lower() + ":9991"
     else:
         # For local development environments, we use localhost by
@@ -170,7 +170,7 @@ SEARCH_PILLS_ENABLED = bool(os.getenv("SEARCH_PILLS_ENABLED", False))
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
 
-# Our run-dev.py proxy uses X-Forwarded-Port to communicate to Django
+# Our run-dev proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django
 # server's own port); this setting tells Django to read that HTTP
 # header.  Important for SAML authentication in the development

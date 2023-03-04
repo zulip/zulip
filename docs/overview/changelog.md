@@ -2979,7 +2979,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed missing step in postfix_localmail installation instructions.
 - Fixed several bugs/inconveniences in the production upgrade process.
 - Fixed realm restrictions for servers with a unique, open realm.
-- Substantially cleaned up console logging from run-dev.py.
+- Substantially cleaned up console logging from run-dev.
 
 ### 1.3.9 - 2015-11-16
 

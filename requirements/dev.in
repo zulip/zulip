@@ -8,7 +8,7 @@
 # moto s3 mock
 moto[s3]
 
-# Needed for running tools/run-dev.py
+# Needed for running tools/run-dev
 Twisted
 
 # Needed for documentation links test

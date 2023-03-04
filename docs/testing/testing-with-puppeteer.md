@@ -112,7 +112,7 @@ These tools/features are often useful when debugging:
   failures.
 - TODO: Document any other techniques/ideas that were helpful when porting
   the Casper suite.
-- The Zulip server powering these tests is just `run-dev.py` with some
+- The Zulip server powering these tests is just `run-dev` with some
   extra [Django settings](../subsystems/settings.md) from
   `zproject/test_extra_settings.py` to configure an isolated database
   so that the tests will not interfere/interact with a normal

@@ -219,9 +219,9 @@ test run).
 ### Manual testing and memcached
 
 Zulip's development environment will automatically flush (delete all
-keys in) `memcached` when provisioning and when starting `run-dev.py`.
+keys in) `memcached` when provisioning and when starting `run-dev`.
 You can run the server with that behavior disabled using
-`tools/run-dev.py --no-clear-memcached`.
+`tools/run-dev --no-clear-memcached`.
 
 ### Performance
 

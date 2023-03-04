@@ -206,7 +206,7 @@ def send_bot_payload_message(
     except requests.exceptions.ConnectionError:
         print(
             "This tool needs the local dev server to be running. "
-            "Please start it using tools/run-dev.py before running this tool."
+            "Please start it using tools/run-dev before running this tool."
         )
         sys.exit(1)
     if response.status_code != 200:

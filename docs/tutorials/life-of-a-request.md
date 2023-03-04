@@ -15,7 +15,7 @@ it isn't working. nginx does the first level of routing--deciding which
 application will serve the request (or deciding to serve the request
 itself for static content).
 
-In development, `tools/run-dev.py` fills the role of nginx. Static files
+In development, `tools/run-dev` fills the role of nginx. Static files
 are in your Git checkout under `static`, and are served unminified.
 
 ## Static files are [served directly][served-directly] by nginx

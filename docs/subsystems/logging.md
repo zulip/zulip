@@ -85,9 +85,9 @@ The main Zulip server log contains a line for each backend request.
 It also contains warnings, errors, and the full tracebacks for any
 Python exceptions. In production, it goes to
 `/var/log/zulip/server.log`; in development, it goes to the terminal
-where you run `run-dev.py`.
+where you run `run-dev`.
 
-In development, it's good to keep an eye on the `run-dev.py` console
+In development, it's good to keep an eye on the `run-dev` console
 as you work on backend changes, since it's a great way to notice bugs
 you just introduced.
 

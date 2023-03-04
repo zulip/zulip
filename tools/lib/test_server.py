@@ -72,7 +72,7 @@ def test_server_running(
         update_test_databases_if_required(rebuild_test_database=True)
 
         # Run this not through the shell, so that we have the actual PID.
-        run_dev_server_command = ["tools/run-dev.py", "--test", "--streamlined"]
+        run_dev_server_command = ["tools/run-dev", "--test", "--streamlined"]
         if skip_provision_check:
             run_dev_server_command.append("--skip-provision-check")
         server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
