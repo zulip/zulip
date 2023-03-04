@@ -152,11 +152,11 @@ jobs:
           ./tools/setup/generate_integration_bots_avatars.py --check-missing
           ./tools/ci/check-executables
 
-          # Ban check-database-compatibility.py from transitively
+          # Ban check-database-compatibility from transitively
           # relying on static/generated, because it might not be
           # up-to-date at that point in upgrade-zulip-stage-2.
           chmod 000 static/generated web/generated
-          ./scripts/lib/check-database-compatibility.py
+          ./scripts/lib/check-database-compatibility
           chmod 755 static/generated web/generated
 
       - name: Run documentation and api tests
