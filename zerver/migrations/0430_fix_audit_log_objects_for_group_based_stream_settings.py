@@ -38,7 +38,7 @@ def fix_audit_log_objects_for_group_based_stream_settings(
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0429_user_topic_case_insensitive_unique_toghether"),
+        ("zerver", "0429_user_topic_case_insensitive_unique_together"),
     ]
 
     operations = [
