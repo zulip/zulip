@@ -274,7 +274,9 @@ function human_info(person) {
 let bot_list_widget;
 
 section.bots.create_table = () => {
-    loading.make_indicator($("#admin_page_bots_loading_indicator"), {text: "Loading..."});
+    loading.make_indicator($("#admin_page_bots_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
     const $bots_table = $("#admin_bots_table");
     $bots_table.hide();
     const bot_user_ids = people.get_bot_ids();
@@ -407,9 +409,11 @@ export function redraw_bots_list() {
 }
 
 function start_data_load() {
-    loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
+    loading.make_indicator($("#admin_page_users_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
     loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {
-        text: "Loading...",
+        text: $t({defaultMessage: "Loading…"}),
     });
     $("#admin_deactivated_users_table").hide();
     $("#admin_users_table").hide();
