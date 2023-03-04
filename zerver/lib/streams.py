@@ -1,8 +1,7 @@
 from typing import Collection, List, Optional, Set, Tuple, TypedDict, Union
 
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
-from django.db.models.query import QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
