@@ -2,7 +2,7 @@ import itertools
 import os
 import random
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 import bmemcached
@@ -15,7 +15,6 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
-from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.actions.create_realm import do_create_realm
@@ -1212,7 +1211,7 @@ def choose_date_sent(
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
 
     if num_messages < amount_in_first_chunk:
-        spoofed_date = timezone_now() - timezone_timedelta(days=oldest_message_days)
+        spoofed_date = timezone_now() - timedelta(days=oldest_message_days)
         num_days_for_first_chunk = min(oldest_message_days - 2, 1)
         interval_size = num_days_for_first_chunk * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
@@ -1220,13 +1219,13 @@ def choose_date_sent(
 
     else:
         # We're in the last 20% of messages, so distribute them over the last 24 hours:
-        spoofed_date = timezone_now() - timezone_timedelta(days=1)
+        spoofed_date = timezone_now() - timedelta(days=1)
         interval_size = 24 * 60 * 60 / amount_in_second_chunk
         lower_bound = interval_size * (num_messages - amount_in_first_chunk)
         upper_bound = interval_size * (num_messages - amount_in_first_chunk + 1)
 
     offset_seconds = random.uniform(lower_bound, upper_bound)
-    spoofed_date += timezone_timedelta(seconds=offset_seconds)
+    spoofed_date += timedelta(seconds=offset_seconds)
 
     return spoofed_date
 
