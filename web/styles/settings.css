@@ -329,7 +329,7 @@ td .button {
 
     .loading_indicator_spinner {
         width: 30%;
-        height: 30px;
+        height: 20px;
         margin-top: 7px;
         vertical-align: middle;
         display: inline-block;
