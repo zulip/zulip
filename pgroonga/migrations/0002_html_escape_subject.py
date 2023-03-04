@@ -1,5 +1,5 @@
 from django.db import connection, migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from psycopg2.sql import SQL
 
