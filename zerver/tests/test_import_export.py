@@ -7,8 +7,7 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Q
-from django.db.models.query import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount

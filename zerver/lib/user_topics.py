@@ -1,7 +1,7 @@
 import datetime
 from typing import Callable, List, Optional, Tuple, TypedDict
 
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 from sqlalchemy.types import Integer

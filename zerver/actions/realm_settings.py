@@ -5,7 +5,7 @@ from typing import Any, Dict, Literal, Optional
 import orjson
 from django.conf import settings
 from django.db import transaction
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key

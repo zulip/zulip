@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Tuple
 
 from django.conf import settings
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 

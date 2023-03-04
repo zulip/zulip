@@ -4,7 +4,7 @@ from typing import Any, Callable, Collection, Dict, Iterable, List, Mapping, Opt
 
 from django.core.exceptions import ValidationError
 from django.db import connection
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 
