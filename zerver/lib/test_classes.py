@@ -141,7 +141,7 @@ class UploadSerializeMixin(SerializeMixin):
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff: Optional[int] = None  # noqa: N815
+    maxDiff: Optional[int] = None
 
     def setUp(self) -> None:
         super().setUp()

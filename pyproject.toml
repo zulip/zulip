@@ -137,9 +137,14 @@ ignore = [
     "E731", # Do not assign a lambda expression, use a def
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
+    "PLR0911", # Too many return statements
+    "PLR0912", # Too many branches
     "PLR0913", # Too many arguments to function call
     "PLR0915", # Too many statements
     "PLR2004", # Magic value used in comparison
+    "PLR5501", # Consider using `elif` instead of `else` then `if` to remove one indentation level
+    "PLW0603", # Using the global statement is discouraged
+    "PLW2901", # Outer for loop variable overwritten by inner for loop target
     "RUF001", # String contains ambiguous unicode character
     "RUF002", # Docstring contains ambiguous unicode character
     "RUF003", # Comment contains ambiguous unicode character
@@ -152,6 +157,7 @@ ignore = [
     "S324", # Probable use of insecure hash functions in `hashlib`
     "SIM103", # Return the condition directly
     "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
+    "SIM114", # Combine `if` branches using logical `or` operator
     "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
 ]
