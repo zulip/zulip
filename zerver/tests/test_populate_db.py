@@ -1,4 +1,4 @@
-from django.utils.timezone import timedelta as timezone_timedelta
+from datetime import timedelta
 
 from zerver.lib.test_classes import ZulipTestCase
 from zilencer.management.commands.populate_db import choose_date_sent
@@ -19,9 +19,7 @@ class TestChoosePubDate(ZulipTestCase):
 
         # Verify there is a meaningful difference between elements.
         for i in range(1, len(datetimes_list)):
-            self.assertTrue(
-                datetimes_list[i] - datetimes_list[i - 1] > timezone_timedelta(minutes=5)
-            )
+            self.assertTrue(datetimes_list[i] - datetimes_list[i - 1] > timedelta(minutes=5))
 
 
 class TestUserTimeZones(ZulipTestCase):
