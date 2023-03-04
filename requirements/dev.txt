@@ -617,9 +617,9 @@ face==22.0.0 \
     --hash=sha256:344fe31562d0f6f444a45982418f3793d4b14f9abb98ccca1509d22e0a3e7e35 \
     --hash=sha256:d5d692f90bc8f5987b636e47e36384b9bbda499aaf0a77aa0b0bbe834c76923d
     # via glom
-fakeldap==0.6.4 \
-    --hash=sha256:4e5e19aee88af41b2c5fd0bc4089374aa9d66d64e4a27b305a21f0b0f089841d \
-    --hash=sha256:ac5ff6431998c080b7d94a5190dd6e1ba8e48bbcf19e9360669855950886e12b
+fakeldap==0.6.5 \
+    --hash=sha256:62b87abd92afe0f880869f5dd8f9b4b92c565a0c4f0a359b70eb1f2cbe5f24de \
+    --hash=sha256:6d57c8355ffa3664b4c362b2ab321065dbdad165188b89af880228967cd268c6
     # via -r requirements/dev.in
 filelock==3.9.0 \
     --hash=sha256:7b319f24340b51f55a2bf7a12ac0755a9b03e718311dac567a0f4f7fabd2f5de \
