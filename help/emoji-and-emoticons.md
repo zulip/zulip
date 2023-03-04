@@ -64,7 +64,7 @@ you send. Zulip emoji are compatible with screen readers and other accessibility
 
 {settings_tab|display-settings}
 
-1. Under **Theme**, select **Google**,
+1. Under **Emoji**, select **Google**,
    **Twitter**, **Plain text**, or **Google blobs** for the emoji theme.
 
 {end_tabs}
