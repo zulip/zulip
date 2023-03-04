@@ -21,7 +21,7 @@ automatically by Zulip.
 
 {settings_tab|display-settings}
 
-1. Under **Theme**, select **Convert emoticons before sending**.
+1. Under **Emoji**, select **Convert emoticons before sending**.
 
 {end_tabs}
 
