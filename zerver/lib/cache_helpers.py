@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Iterable, Tuple
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 from django_stubs_ext import ValuesQuerySet
 
