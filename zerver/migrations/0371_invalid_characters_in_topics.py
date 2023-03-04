@@ -1,7 +1,7 @@
 import unicodedata
 
 from django.db import connection, migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 # There are 66 Unicode non-characters; see

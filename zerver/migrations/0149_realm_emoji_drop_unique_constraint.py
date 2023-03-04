@@ -4,7 +4,7 @@ import shutil
 import boto3.session
 from django.conf import settings
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from mypy_boto3_s3.type_defs import CopySourceTypeDef
 
