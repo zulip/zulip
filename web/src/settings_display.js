@@ -221,7 +221,7 @@ export function set_up(settings_panel) {
         if (current_user_list_style === data.user_list_style) {
             return;
         }
-        const $spinner = $container.find(".theme-settings-status").expectOne();
+        const $spinner = $container.find(".advanced-settings-status").expectOne();
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -232,7 +232,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $container.find(".theme-settings-status").expectOne(),
+                    $container.find(".advanced-settings-status").expectOne(),
                 );
             },
         });
@@ -267,7 +267,7 @@ export async function report_user_list_style_change(settings_panel) {
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-    const $spinner = $(settings_panel.container).find(".theme-settings-status");
+    const $spinner = $(settings_panel.container).find(".advanced-settings-status");
     if ($spinner.length) {
         loading.destroy_indicator($spinner);
         ui_report.success(
