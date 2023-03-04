@@ -1,6 +1,6 @@
 from typing import Optional
 
-import lxml
+import lxml.html
 from lxml.html.diff import htmldiff
 
 
