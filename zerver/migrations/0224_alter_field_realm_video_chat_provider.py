@@ -3,7 +3,7 @@
 from typing import Any, Dict, Optional
 
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 # We include a copy of this structure as it was at the time this
