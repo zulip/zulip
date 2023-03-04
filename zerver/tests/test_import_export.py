@@ -879,7 +879,7 @@ class RealmImportExportTest(ExportFile):
             imported_realm_result = f(imported_realm)
             # orig_realm_result should be truthy and have some values, otherwise
             # the test is kind of meaningless
-            assert orig_realm_result  # type: ignore[truthy-bool] # see above
+            assert orig_realm_result
 
             # It may be helpful to do print(f.__name__) if you are having
             # trouble debugging this.

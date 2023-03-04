@@ -172,12 +172,7 @@ def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
                 im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
             )
         elif isinstance(im, PngImagePlugin.PngImageFile):
-            disposals.append(
-                im.info.get(
-                    "disposal",
-                    PngImagePlugin.Disposal.OP_NONE,  # type: ignore[attr-defined] # https://github.com/python/typeshed/pull/9698
-                )
-            )
+            disposals.append(im.info.get("disposal", PngImagePlugin.Disposal.OP_NONE))
         else:  # nocoverage
             raise BadImageError(_("Unknown animated image format."))
     out = io.BytesIO()
