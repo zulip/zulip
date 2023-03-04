@@ -25,8 +25,7 @@ from typing import (
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
-from django.db.models import Q
-from django.db.models.query import QuerySet
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest
 from typing_extensions import ParamSpec
 

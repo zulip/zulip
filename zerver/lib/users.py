@@ -6,7 +6,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Typed
 import dateutil.parser as date_parser
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
