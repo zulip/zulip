@@ -3,7 +3,7 @@ from typing import Any, List, Optional, Type, TypedDict
 
 import orjson
 from django.db import migrations, transaction
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min
 
