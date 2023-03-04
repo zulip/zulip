@@ -23,7 +23,7 @@ from tornado.platform.asyncio import AsyncIOMainLoop
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
 if "posix" in os.name and os.geteuid() == 0:
-    raise RuntimeError("run-dev.py should not be run as root.")
+    raise RuntimeError("run-dev should not be run as root.")
 
 DESCRIPTION = """
 Starts the app listening on localhost, for local development.

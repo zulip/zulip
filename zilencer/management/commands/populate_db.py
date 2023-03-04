@@ -73,7 +73,7 @@ from zerver.models import (
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
-# from `run-dev.py`.
+# from `run-dev`.
 default_cache = settings.CACHES["default"]
 settings.CACHES["default"] = {
     "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -1139,7 +1139,7 @@ def generate_and_send_messages(
 def send_messages(messages: List[Message]) -> None:
     # We disable USING_RABBITMQ here, so that deferred work is
     # executed in do_send_message_messages, rather than being
-    # queued.  This is important, because otherwise, if run-dev.py
+    # queued.  This is important, because otherwise, if run-dev
     # wasn't running when populate_db was run, a developer can end
     # up with queued events that reference objects from a previous
     # life of the database, which naturally throws exceptions.

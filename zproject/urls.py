@@ -235,7 +235,7 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 #
 #   - The nginx config knows which URLs to route to Django or Tornado.
 #
-#   - Likewise for the local dev server in tools/run-dev.py.
+#   - Likewise for the local dev server in tools/run-dev.
 
 # These endpoints constitute the currently designed API (V1), which uses:
 # * REST verbs
