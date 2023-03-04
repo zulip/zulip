@@ -98,7 +98,7 @@ function user_default_language_modal_post_render() {
 
             change_display_setting(
                 data,
-                $("#settings_content").find(".lang-time-settings-status"),
+                $("#settings_content").find(".general-settings-status"),
                 $t_html(
                     {
                         defaultMessage:

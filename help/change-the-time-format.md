@@ -9,7 +9,7 @@ format (e.g. 5:00 PM) or a 24-hour format (e.g. 17:00).
 
 {settings_tab|display-settings}
 
-1. Under **Language and time**, select your preferred option from the
+1. Under **General**, select your preferred option from the
 **Time format** dropdown.
 
 {end_tabs}

@@ -1,14 +1,10 @@
 <form class="display-settings-form">
-    <div class="lang-time-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="general-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
         <!-- this is inline block so that the alert notification can sit beside
         it. If there's not an alert, don't make it inline-block.-->
         <div class="subsection-header inline-block">
-            {{#if for_realm_settings}}
-            <h3>{{t "Time" }}</h3>
-            {{else}}
-            <h3>{{t "Language and time" }}</h3>
-            {{/if}}
-            {{> settings_save_discard_widget section_name="lang-time-settings" show_only_indicator=(not for_realm_settings) }}
+            <h3>{{t "General" }}</h3>
+            {{> settings_save_discard_widget section_name="general-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
         {{#unless for_realm_settings}}
             {{> language_selection_widget
