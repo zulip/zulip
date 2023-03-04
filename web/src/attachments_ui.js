@@ -6,7 +6,7 @@ import render_uploaded_files_list from "../templates/settings/uploaded_files_lis
 
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
@@ -148,7 +148,9 @@ export function set_up_attachments() {
     // The settings page must be rendered before this function gets called.
 
     const $status = $("#delete-upload-status");
-    loading.make_indicator($("#attachments_loading_indicator"), {text: "Loading..."});
+    loading.make_indicator($("#attachments_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
 
     $("#uploaded_files_table").on("click", ".remove-attachment", (e) => {
         const file_name = $(e.target).closest(".uploaded_file_row").attr("id");
