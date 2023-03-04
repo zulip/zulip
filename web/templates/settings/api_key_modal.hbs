@@ -11,16 +11,17 @@
                 <div id="password_confirmation">
                     <span class="alert-notification" id="api_key_status"></span>
                     <div id="api_key_form">
-                        <p>{{t "Please re-enter your password to confirm your identity." }}
-                            <a href="/accounts/password/reset/" target="_blank" rel="noopener noreferrer">
-                                {{t "Never had one? Forgotten it?" }}
-                            </a>
-                        </p>
+                        <p>{{t "Please re-enter your password to confirm your identity." }}</p>
                         <div class="password-div">
-                            <label for="password">{{t "Current password" }}</label>
+                            <label for="password">{{t "Your password" }}</label>
                             <input type="password" autocomplete="off" name="password" id="get_api_key_password" value="" />
                             <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button"></i>
                         </div>
+                        <p class="small">
+                            {{#tr}}If you don't know your password, you can <z-link>reset it</z-link>.
+                                {{#*inline "z-link"}}<a href="/accounts/password/reset/" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                            {{/tr}}
+                        </p>
                     </div>
                 </div>
                 <div id="show_api_key">
