@@ -440,6 +440,8 @@ input[type="checkbox"] {
 }
 
 .admin-realm-form {
+    overflow-x: auto;
+
     & h3 {
         margin-bottom: 10px;
     }
@@ -1497,6 +1499,9 @@ $option_title_width: 180px;
 .dropdown-list-widget {
     & button.dropdown-toggle {
         text-align: left;
+        display: inline-flex;
+        justify-content: space-between;
+        white-space: nowrap;
 
         .fa-chevron-down {
             float: right;
