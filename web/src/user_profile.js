@@ -376,4 +376,9 @@ export function register_click_handlers() {
             $input.css("margin-right", "0");
         }
     });
+    $("body").on("click", "#user-profile-modal", () => {
+        if (popovers.user_info_popped()) {
+            popovers.hide_all();
+        }
+    });
 }
