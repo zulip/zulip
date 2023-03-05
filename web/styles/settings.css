@@ -874,21 +874,28 @@ input[type="checkbox"] {
     margin-top: 5px;
 }
 
-.edit_bot_form {
-    font-size: 100%;
-    margin: 0;
-    padding: 0;
+#edit_bot_modal {
+    padding-right: 24px;
 
-    .buttons {
-        margin: 10px 0 5px;
+    .edit_bot_modal {
+        padding-right: unset;
     }
 
-    #current_bot_avatar_image {
-        margin: 5px 0 8px;
-    }
+    .edit_bot_form {
+        font-size: 100%;
+        margin: 0;
 
-    .edit_bot_avatar_preview_text {
-        display: none;
+        .buttons {
+            margin: 10px 0 5px;
+        }
+
+        #current_bot_avatar_image {
+            margin: 5px 0 8px;
+        }
+
+        .edit_bot_avatar_preview_text {
+            display: none;
+        }
     }
 }
 
@@ -1481,6 +1488,10 @@ $option_title_width: 180px;
         width: max(206px, 25vw);
         max-width: 320px;
     }
+}
+
+#edit_bot_owner_name {
+    min-width: 220px;
 }
 
 .dropdown-list-widget {

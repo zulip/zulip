@@ -1,7 +1,7 @@
 <div class="micromodal" id="dialog_widget_modal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div {{#if id}}id="{{id}}" {{/if}}class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
-            <header class="modal__header">
+            <header class="modal__header {{id}}">
                 <h1 class="modal__title dialog_heading">
                     {{{ heading_text }}}
                     {{#if link}}
@@ -14,7 +14,7 @@
                 <div class="alert" id="dialog_error"></div>
                 {{{ html_body }}}
             </main>
-            <footer class="modal__footer">
+            <footer class="modal__footer {{id}}">
                 {{#unless single_footer_button}}
                 <button class="modal__btn dialog_cancel_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
                 {{/unless}}
