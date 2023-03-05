@@ -363,6 +363,10 @@ td .button {
         height: 30px;
         width: 220px;
     }
+
+    .account-settings-heading {
+        margin-right: 10px;
+    }
 }
 
 .settings_select {
@@ -522,6 +526,11 @@ input[type="checkbox"] {
     margin-left: 10px;
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
+
+    &.account-alert-notification {
+        margin: 0 0 10px;
+        vertical-align: middle;
+    }
 
     &:not(:empty) {
         border: 1px solid hsl(156, 30%, 50%);
