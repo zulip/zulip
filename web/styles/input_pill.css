@@ -56,14 +56,12 @@
     }
 
     &.not-editable {
-        cursor: not-allowed;
         border: none;
         background-color: transparent;
         padding: 0;
 
         .pill {
             padding-right: 4px;
-            cursor: not-allowed;
 
             &:focus {
                 color: inherit;
