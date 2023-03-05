@@ -513,7 +513,9 @@ input[type="checkbox"] {
     vertical-align: top;
     height: auto !important;
     width: auto !important;
+    white-space: break-spaces !important;
 
+    overflow-wrap: anywhere;
     background-color: transparent;
     border-radius: 4px;
     margin-top: 14px;
