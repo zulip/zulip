@@ -208,6 +208,7 @@ function display_image(payload) {
     const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
     img.src = payload.source;
+
     $img_container.html(img).show();
 
     const filename = payload.url?.split("/").pop();

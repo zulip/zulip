@@ -39,6 +39,9 @@ def backend_serve_thumbnail(
         assert isinstance(maybe_user_profile, UserProfile)
         realm = maybe_user_profile.realm
 
+    if validate_thumbnail_request(realm, maybe_user_profile, url) is None:
+        return redirect("static/images/errors/not2.svg")
+
     if not validate_thumbnail_request(realm, maybe_user_profile, url):
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
 
