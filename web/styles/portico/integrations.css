@@ -426,6 +426,7 @@ $category-text: hsl(219, 23%, 33%);
             font-size: 0.9em;
         }
     }
+
     @media (max-width: 550px) {
         .button {
             display: flex;

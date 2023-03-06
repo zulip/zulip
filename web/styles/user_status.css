@@ -13,6 +13,7 @@
             border: none;
             background-color: transparent;
             padding-right: 25px;
+
             @media (width < $ml_min) {
                 width: 92%;
             }
