@@ -44,6 +44,7 @@ import "../../styles/informational_overlays.css";
 import "../../styles/compose.css";
 import "../../styles/message_edit_history.css";
 import "../../styles/reactions.css";
+import "../../styles/search.css";
 import "../../styles/user_circles.css";
 import "../../styles/left_sidebar.css";
 import "../../styles/right_sidebar.css";
