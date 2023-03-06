@@ -16,6 +16,10 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
+const autosize = () => {};
+autosize.update = () => {};
+mock_esm("autosize", {default: autosize});
+
 const channel = mock_esm("../src/channel");
 const compose_fade = mock_esm("../src/compose_fade", {
     clear_compose: noop,
