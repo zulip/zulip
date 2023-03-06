@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const autosize = require("autosize");
-
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -12,6 +10,10 @@ const $ = require("./lib/zjquery");
 const noop = () => {};
 
 set_global("navigator", {});
+
+const autosize = () => {};
+autosize.update = () => {};
+mock_esm("autosize", {default: autosize});
 
 mock_esm("../src/message_lists", {
     current: {},
