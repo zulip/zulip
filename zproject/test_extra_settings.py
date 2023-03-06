@@ -151,6 +151,9 @@ ENABLE_FILE_LINKS = True
 # frontend/API tests in test_server.py can control this.
 if "LOCAL_UPLOADS_DIR" in os.environ:
     LOCAL_UPLOADS_DIR = os.getenv("LOCAL_UPLOADS_DIR")
+    assert LOCAL_UPLOADS_DIR is not None
+    LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars")
+    LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files")
 # Otherwise, we use the default value from dev_settings.py
 
 S3_KEY = "test-key"
