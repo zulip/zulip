@@ -4391,3 +4391,37 @@ nav {
         }
     }
 }
+
+.try-zulip-now-page {
+    .bottom-register-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .try-now-button {
+        padding: 11px 25px;
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: hsl(0, 0%, 100%);
+        background: linear-gradient(
+            145deg,
+            hsl(191, 56%, 55%),
+            hsl(169, 65%, 42%)
+        );
+        box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
+        border: 0;
+        width: 200px;
+        height: 50px;
+        outline: none;
+        border-radius: 4px;
+
+        &:visited {
+            color: hsl(0, 0%, 100%);
+        }
+
+        &:hover {
+            background-color: hsl(169, 65%, 42%);
+            box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.3);
+        }
+    }
+}
