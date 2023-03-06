@@ -33,7 +33,7 @@
             <div class="field">{{t "Bot email" }}</div>
             <div class="email-copy-container">
                 <div class="value">{{email}}</div>
-                <button id="copy-bot-email" class=" btn btn-email-icon"><i class="fa fa-clipboard bot-email-icon" aria-hidden="true"></i></button>
+                <button id="copy_bot_email" class=" btn btn-email-icon"><i class="fa fa-clipboard bot-email-icon" aria-hidden="true"></i></button>
             </div>
         </div>
         {{#if is_active}}
@@ -42,7 +42,7 @@
             <div class="api-key-value-and-button no-select">
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
                 <span class="value text-select">{{api_key}}</span>
-                <button id="copy-bot-apikey" class=" btn btn-apicopy-icon"><i class="fa fa-clipboard bot-email-icon" aria-hidden="true"></i></button>
+                <button id="copy_bot_apikey" class=" btn btn-apicopy-icon"><i class="fa fa-clipboard bot-email-icon" aria-hidden="true"></i></button>
                 <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-refresh" aria-hidden="true"></i>
                 </button>

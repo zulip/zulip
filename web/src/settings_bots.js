@@ -602,7 +602,7 @@ export function set_up() {
         },
     });
 
-    new ClipboardJS("#copy-bot-email", {
+    new ClipboardJS("#copy_bot_mail", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
@@ -612,7 +612,7 @@ export function set_up() {
         },
     });
 
-    new ClipboardJS("#copy-bot-apikey", {
+    new ClipboardJS("#copy_bot_apikey", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
