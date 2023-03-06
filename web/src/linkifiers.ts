@@ -69,6 +69,7 @@ function python_to_js_linkifier(pattern: string, url: string): [RegExp | null, s
             blueslip.error("python_to_js_linkifier: " + error.message);
         } else {
             // Don't swallow any other (unexpected) exceptions.
+            /* istanbul ignore next */
             throw error;
         }
     }
