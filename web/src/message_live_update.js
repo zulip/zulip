@@ -8,6 +8,19 @@ export function rerender_messages_view() {
     }
 }
 
+export function rerender_messages_view_by_message_ids(message_ids) {
+    const messages_to_render = [];
+    for (const id of message_ids) {
+        const message = message_store.get(id);
+        if (message !== undefined) {
+            messages_to_render.push(message);
+        }
+    }
+    for (const list of message_lists.all_rendered_message_lists()) {
+        list.view.rerender_messages(messages_to_render);
+    }
+}
+
 function rerender_messages_view_for_user(user_id) {
     for (const list of message_lists.all_rendered_message_lists()) {
         const messages = list.data.get_messages_sent_by_user(user_id);
