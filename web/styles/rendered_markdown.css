@@ -520,6 +520,17 @@
         border: none;
     }
 
+    a {
+        color: hsl(200, 100%, 40%);
+        text-decoration: none;
+
+        &:hover,
+        &:focus {
+            color: hsl(200, 100%, 25%);
+            text-decoration: underline;
+        }
+    }
+
     pre {
         &:hover .copy_codeblock,
         &:hover .code_external_link {
