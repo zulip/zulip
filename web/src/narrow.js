@@ -423,7 +423,13 @@ export function activate(raw_operators, opts) {
     // Open tooltips are only interesting for current narrow,
     // so hide them when activating a new one.
     $(".tooltip").hide();
-
+    if (
+        narrow_state.filter() !== undefined &&
+        filter !== undefined &&
+        JSON.stringify(narrow_state.filter()._operators) === JSON.stringify(filter._operators)
+    ) {
+        return;
+    }
     update_narrow_title(filter);
 
     blueslip.debug("Narrowed", {
