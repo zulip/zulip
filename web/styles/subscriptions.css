@@ -407,8 +407,9 @@ h4.user_group_setting_subsection_title {
                 display: none;
                 font-size: 1.5em;
                 line-height: 1;
-                margin: 9px 0;
+                margin: 9px;
                 font-weight: 600;
+                overflow-wrap: break-word;
 
                 .large-icon {
                     display: inline-block;
@@ -441,6 +442,11 @@ h4.user_group_setting_subsection_title {
             text-align: left;
         }
     }
+}
+
+#change_group_info_modal .modal__title,
+#change_stream_info_modal .modal__title {
+    word-break: break-all;
 }
 
 #search_stream_name,
@@ -767,7 +773,7 @@ h4.user_group_setting_subsection_title {
         .button-group {
             padding-top: 5px;
             margin-left: auto;
-            margin-right: 15px;
+            margin-right: 18px;
 
             .subscribe-button,
             #preview-stream-button,
@@ -783,6 +789,7 @@ h4.user_group_setting_subsection_title {
         white-space: nowrap;
         padding-top: 10px;
         display: flex;
+        gap: 3px;
         align-items: center;
 
         .group-name-wrapper,
@@ -794,6 +801,7 @@ h4.user_group_setting_subsection_title {
             margin-left: -3px;
             margin-top: -5px;
             white-space: nowrap;
+            overflow-x: clip;
 
             .group-name,
             .sub-stream-name {
@@ -805,7 +813,7 @@ h4.user_group_setting_subsection_title {
         }
 
         .button-group {
-            margin-left: 1rem;
+            margin-left: auto;
 
             .deactivate {
                 margin-right: 3px;
@@ -843,7 +851,9 @@ h4.user_group_setting_subsection_title {
         .group_change_property_info,
         .stream_change_property_info {
             vertical-align: top;
-            margin: -5px 0 0;
+            margin: 0;
+            padding: 3px 15px;
+            display: none;
         }
     }
 

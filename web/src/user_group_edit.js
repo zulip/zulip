@@ -201,6 +201,7 @@ export function initialize() {
         const template_data = {
             group_name: user_group.name,
             group_description: user_group.description,
+            max_user_group_name_length: 100,
         };
         const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
         dialog_widget.launch({
