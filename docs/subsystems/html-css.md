@@ -180,12 +180,7 @@ first add it to the appropriate place under `static/`.
   `package.json` for management by yarn, this allows them to be upgraded easily
   and not bloat our codebase. Run `./tools/provision` for yarn to install the
   new packages and update its lock file. You should also update
-  `PROVISION_VERSION` in `version.py` in the same commit. When adding modules
-  to `package.json`, please pin specific versions of them (don't using carets
-  `^`, tildes `~`, etc). We prefer fixed versions so that when the upstream
-  providers release new versions with incompatible APIs, it can't break Zulip.
-  We update those versions periodically to ensure we're running a recent
-  version of third-party libraries.
+  `PROVISION_VERSION` in `version.py` in the same commit.
 - Third-party files that we have patched should all go in
   `web/third/`. Tag the commit with "[third]" when adding or
   modifying a third-party package. Our goal is to the extent possible
