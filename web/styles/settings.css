@@ -826,21 +826,24 @@ input[type="checkbox"] {
     .email-copy-container{
         display: flex;
     }
+
     .bot-email-icon{
-        color: grey;
+        color: rgb(169,169,169);
         font-size: 12px;
         margin-left: 3px;
     }
+
     .btn-email-icon{
         border: none;
         background: transparent;
         padding: 2px;
     }
+
     .btn-apicopy-icon{
         border: none;
         background: transparent;
         padding: 2px;
-        color: grey;
+        color: rgb(169,169,169);
         font-size: 12px;
         margin-right: 5px;
     }

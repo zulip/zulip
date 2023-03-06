@@ -127,22 +127,12 @@ export function generate_botserverrc_content(email, api_key, token) {
     );
 }
 export function copy_bot_email(bot){
-    let token;
-
-    if(bot.bot_type==3){
-        token = bot_data.get_services(bot.user_id)[0].token;
-    }
     return(
         bot.email
     );
 }
 
 export function copy_bot_apikey(bot){
-    let token;
-
-    if(bot.bot_type==3){
-        token = bot_data.get_services(bot.user_id)[0].token;
-    }
     return(
         bot.api_key
     );
