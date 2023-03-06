@@ -7794,6 +7794,9 @@ paths:
         If any of the specified streams do not exist, they are automatically
         created. The initial [stream settings](/api/update-stream) will be determined
         by the optional parameters like `invite_only` detailed below.
+
+        **Changes**: From Zulip 6.0 (feature level 167), we allow guests to subscribe
+        themselves to web-public streams.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -7957,6 +7960,9 @@ paths:
       tags: ["streams"]
       description: |
         Update which streams you are subscribed to.
+
+        **Changes**: From Zulip 6.0 (feature level 167), we allow guests to subscribe
+        themselves to web-public streams.
       parameters:
         - name: delete
           in: query

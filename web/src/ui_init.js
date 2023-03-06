@@ -169,7 +169,8 @@ function initialize_bottom_whitespace() {
 
 function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
-        is_guest: page_params.is_guest,
+        can_subscribe_to_streams:
+            !page_params.is_guest || settings_data.web_public_streams_enabled_for_realm(),
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

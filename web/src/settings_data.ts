@@ -68,6 +68,18 @@ export function user_can_change_logo(): boolean {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
 }
 
+export function web_public_streams_enabled_for_realm(): boolean {
+    if (!page_params.server_web_public_streams_enabled) {
+        return false;
+    }
+
+    if (!page_params.zulip_plan_is_not_limited) {
+        return false;
+    }
+
+    return page_params.realm_enable_spectator_access;
+}
+
 function user_has_permission(policy_value: number): boolean {
     /* At present, nobody and by_owners_only is not present in
      * common_policy_values, but we include a check for it here,

@@ -523,8 +523,9 @@ export function is_notifications_stream_muted() {
 export function can_toggle_subscription(sub) {
     // You can always remove your subscription if you're subscribed.
     //
-    // One can only join a stream if it is public (!invite_only) and
-    // your role is Member or above (!is_guest).
+    // One can only join a stream if it is web-public or public (!invite_only)
+    // and your role is Member or above (!is_guest).
+    // Guests can only join web-public streams.
     // Spectators cannot subscribe to any streams.
     //
     // Note that the correctness of this logic relies on the fact that
@@ -532,7 +533,8 @@ export function can_toggle_subscription(sub) {
     // deactivated streams are automatically made private during the
     // archive stream process.
     return (
-        (sub.subscribed || (!page_params.is_guest && !sub.invite_only)) && !page_params.is_spectator
+        (sub.subscribed || sub.is_web_public || (!page_params.is_guest && !sub.invite_only)) &&
+        !page_params.is_spectator
     );
 }
 

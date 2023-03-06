@@ -549,7 +549,9 @@ def fetch_initial_state_data(
         # places.
         if user_profile is not None:
             state["streams"] = do_get_streams(
-                user_profile, include_all_active=user_profile.is_realm_admin
+                user_profile,
+                include_all_active=user_profile.is_realm_admin,
+                include_web_public=user_profile.is_guest,
             )
         else:
             # TODO: This line isn't used by the web app because it
@@ -835,7 +837,9 @@ def apply_event(
 
                     if "streams" in state:
                         state["streams"] = do_get_streams(
-                            user_profile, include_all_active=user_profile.is_realm_admin
+                            user_profile,
+                            include_all_active=user_profile.is_realm_admin,
+                            include_web_public=user_profile.is_guest,
                         )
 
                     if state["is_guest"]:

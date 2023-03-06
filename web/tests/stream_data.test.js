@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params, user_settings} = require("./lib/zpage_params");
@@ -22,6 +22,10 @@ const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const settings_config = zrequire("settings_config");
 const user_groups = zrequire("user_groups");
+
+const settings_data = mock_esm("../src/settings_data", {
+    web_public_streams_enabled_for_realm: () => true,
+});
 
 const me = {
     email: "me@zulip.com",
@@ -465,10 +469,27 @@ test("stream_settings", () => {
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group_id, moderators_group.id);
 
-    // For guest user only retrieve subscribed streams
+    const red = {
+        stream_id: 4,
+        name: "r",
+        color: "red",
+        subscribed: false,
+        invite_only: false,
+        is_web_public: true,
+        can_remove_subscribers_group_id: admins_group.id,
+    };
+    stream_data.add_sub(red);
+    // For guest user only retrieve subscribed streams and web-public streams.
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
-    assert.equal(sub_rows.length, 3);
+    assert.equal(sub_rows.length, 4);
     page_params.is_guest = true;
+    sub_rows = stream_settings_data.get_updated_unsorted_subs();
+    assert.equal(sub_rows[0].name, "c");
+    assert.equal(sub_rows[1].name, "a");
+    assert.equal(sub_rows[2].name, "r");
+    assert.equal(sub_rows.length, 3);
+
+    settings_data.web_public_streams_enabled_for_realm = () => false;
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");

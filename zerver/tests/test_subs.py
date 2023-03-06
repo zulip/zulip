@@ -4274,6 +4274,15 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_error(result, "Not allowed for guest users")
 
+        self.subscribe(self.test_user, "stream2")
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
         do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
         self.common_subscribe_to_streams(
             self.test_user,
@@ -4571,7 +4580,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:
-        """Guest users cannot subscribe themselves to anything"""
+        """Guest users can subscribe themselves only to web-public streams"""
         guest_user = self.example_user("polonius")
         result = self.common_subscribe_to_streams(guest_user, ["Denmark"], allow_fail=True)
         self.assert_json_error(result, "Not allowed for guest users")
@@ -4588,14 +4597,10 @@ class SubscriptionAPITest(ZulipTestCase):
         web_public_stream = self.make_stream("web_public_stream", is_web_public=True)
         public_stream = self.make_stream("public_stream", invite_only=False)
         private_stream = self.make_stream("private_stream2", invite_only=True)
-        # This test should be added as soon as the subscription endpoint allows
-        # guest users to subscribe to web-public streams. Although they are already
-        # authorized, the decorator in "add_subscriptions_backend" still needs to be
-        # deleted.
-        #
-        # result = self.common_subscribe_to_streams(guest_user, ['web_public_stream'],
-        #                                           is_web_public=True, allow_fail=True)
-        # self.assert_json_success(result)
+        result = self.common_subscribe_to_streams(
+            guest_user, ["web_public_stream"], is_web_public=True, allow_fail=True
+        )
+        self.assert_json_success(result)
         streams_to_sub = [web_public_stream, public_stream, private_stream]
         self.assertEqual(
             filter_stream_authorization(guest_user, streams_to_sub),

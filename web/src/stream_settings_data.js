@@ -2,6 +2,7 @@ import * as hash_util from "./hash_util";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import {user_settings} from "./user_settings";
@@ -25,9 +26,13 @@ function get_subs_for_settings(subs) {
 export function get_updated_unsorted_subs() {
     let all_subs = stream_data.get_unsorted_subs();
 
-    // We don't display unsubscribed streams to guest users.
+    // We display only subscribed and web-public streams to guest users.
     if (page_params.is_guest) {
-        all_subs = all_subs.filter((sub) => sub.subscribed);
+        all_subs = all_subs.filter(
+            (sub) =>
+                sub.subscribed ||
+                (settings_data.web_public_streams_enabled_for_realm() && sub.is_web_public),
+        );
     }
 
     return get_subs_for_settings(all_subs);
