@@ -524,10 +524,18 @@
         color: hsl(200, 100%, 40%);
         text-decoration: none;
 
+        code {
+            color: hsl(200, 100%, 40%);
+        }
+
         &:hover,
         &:focus {
             color: hsl(200, 100%, 25%);
             text-decoration: underline;
+
+            code {
+                color: hsl(200, 100%, 25%);
+            }
         }
     }
 
@@ -545,6 +553,21 @@
         overflow-x: scroll;
         color: inherit;
         border: 0;
+    }
+
+    code {
+        /* 11.55px when body is the default 14px; this is chosen to be
+        slightly above the 11.5px threshold where the height jumps by a
+        pixel on most platforms. */
+        font-size: 0.825em;
+        unicode-bidi: embed;
+        direction: ltr;
+        color: hsl(0, 0%, 0%);
+        white-space: pre-wrap;
+        padding: 0 4px;
+        background-color: hsl(0, 0%, 100%);
+        border: 1px solid hsl(240, 13%, 90%);
+        border-radius: 3px;
     }
 
     /* Style copy-to-clipboard button inside code blocks */
@@ -624,27 +647,6 @@ TODO: It is likely that this CSS can and should be moved into the
 rendered_markdown block; we just need to do further analysis to
 confirm doing so won't break anything. */
 
-code {
-    /* 11.55px when body is the default 14px; this is chosen to be
-       slightly above the 11.5px threshold where the height jumps by a
-       pixel on most platforms. */
-    font-size: 0.825em;
-    unicode-bidi: embed;
-    direction: ltr;
-    color: hsl(0, 0%, 0%);
-    white-space: pre;
-    padding: 2px 4px;
-    background-color: hsl(240, 14%, 97%);
-    border: 1px solid hsl(240, 13%, 90%);
-    border-radius: 3px;
-}
-
-.rendered_markdown code {
-    white-space: pre-wrap;
-    padding: 0 4px;
-    background-color: hsl(0, 0%, 100%);
-}
-
 .codehilite {
     display: block !important;
     border: none !important;
@@ -686,16 +688,6 @@ pre {
     &::-webkit-scrollbar-thumb:hover {
         background-color: hsla(0, 0%, 0%, 0.6);
     }
-}
-
-/* Style inline code inside a link
-   to look more like a normal link */
-a code {
-    color: hsl(200, 100%, 40%);
-}
-
-a:hover code {
-    color: hsl(200, 100%, 25%);
 }
 
 /* Search highlight used in both topics and rendered_markdown */
