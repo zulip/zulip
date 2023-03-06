@@ -670,7 +670,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "id": 3,
         },
         "pg-13": {
-            "name": gettext_lazy("Allow GIFs rated PG13 (Parental guidance - under 13)"),
+            "name": gettext_lazy("Allow GIFs rated PG-13 (Parental guidance - under 13)"),
             "id": 4,
         },
         "r": {
