@@ -1351,7 +1351,6 @@ class ScheduledMessageTest(ZulipTestCase):
         defer_until: str = "",
         tz_guess: str = "",
         delivery_type: str = "send_later",
-        realm_str: str = "zulip",
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
@@ -1364,7 +1363,6 @@ class ScheduledMessageTest(ZulipTestCase):
             "to": orjson.dumps(to).decode(),
             "content": msg,
             "topic": topic_name,
-            "realm_str": realm_str,
             "delivery_type": delivery_type,
             "tz_guess": tz_guess,
         }
