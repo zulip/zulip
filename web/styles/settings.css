@@ -823,27 +823,27 @@ input[type="checkbox"] {
         box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
     }
 
-    .email-copy-container{
+    .email-copy-container {
         display: flex;
     }
 
-    .bot-email-icon{
-        color: rgb(169,169,169);
+    .bot-email-icon {
+        color: hsl(0, 0%, 75%);
         font-size: 12px;
         margin-left: 3px;
     }
 
-    .btn-email-icon{
+    .btn-email-icon {
         border: none;
         background: transparent;
         padding: 2px;
     }
 
-    .btn-apicopy-icon{
+    .btn-apicopy-icon {
         border: none;
         background: transparent;
         padding: 2px;
-        color: rgb(169,169,169);
+        color: hsl(0, 0%, 75%);
         font-size: 12px;
         margin-right: 5px;
     }
