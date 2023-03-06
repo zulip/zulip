@@ -329,7 +329,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
         The main downside of doing a full rerender is that it can be
         user-visible in the form of users' avatars flickering.
     */
-    message_live_update.rerender_messages_view();
+    message_live_update.rerender_messages_view_by_message_ids(message_ids);
     recent_topics_ui.complete_rerender();
 
     if (
