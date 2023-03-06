@@ -108,6 +108,8 @@
 
             .message_content {
                 grid-column: 1 / 2;
+                /* to space from restore draft button */
+                margin-right: 5px;
             }
 
             .message_top_line {
