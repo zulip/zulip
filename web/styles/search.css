@@ -110,9 +110,15 @@
     }
 
     #search_arrows {
-        padding-left: 35px;
         font-size: 90%;
         letter-spacing: normal;
+    }
+}
+
+/* in progress: searchbox with pills */
+#searchbox {
+    #search_arrows {
+        padding-left: 35px;
     }
 
     .pill-container {
