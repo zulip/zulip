@@ -126,6 +126,27 @@ export function generate_botserverrc_content(email, api_key, token) {
         "\n"
     );
 }
+export function copy_bot_email(bot){
+    let token;
+
+    if(bot.bot_type==3){
+        token = bot_data.get_services(bot.user_id)[0].token;
+    }
+    return(
+        bot.email
+    );
+}
+
+export function copy_bot_apikey(bot){
+    let token;
+
+    if(bot.bot_type==3){
+        token = bot_data.get_services(bot.user_id)[0].token;
+    }
+    return(
+        bot.api_key
+    );
+}
 
 export const bot_creation_policy_values = {
     admins_only: {
@@ -595,6 +616,27 @@ export function set_up() {
         },
     });
 
+    // for bot-email-copy
+    new ClipboardJS("#copy-bot-email", {
+        text(trigger) {
+            const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const data = copy_bot_email(bot); 
+            return data;
+        },
+    });
+    // for bot-apikey copy
+    new ClipboardJS("#copy-bot-apikey", {
+        text(trigger) {
+            const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const data = copy_bot_apikey(bot); 
+            return data;
+        },
+    });
+    
     $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();

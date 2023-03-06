@@ -755,7 +755,7 @@ input[type="checkbox"] {
 
     .regenerate_bot_api_key {
         position: relative;
-        margin-left: 5px;
+        margin-left: 3px;
         color: hsl(0, 0%, 67%);
         transition: all 0.3s ease;
 
@@ -821,6 +821,28 @@ input[type="checkbox"] {
         border-radius: 4px;
         vertical-align: top;
         box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+    }
+
+    .email-copy-container{
+        display: flex;
+    }
+    .bot-email-icon{
+        color: grey;
+        font-size: 12px;
+        margin-left: 3px;
+    }
+    .btn-email-icon{
+        border: none;
+        background: transparent;
+        padding: 2px;
+    }
+    .btn-apicopy-icon{
+        border: none;
+        background: transparent;
+        padding: 2px;
+        color: grey;
+        font-size: 12px;
+        margin-right: 5px;
     }
 
     .email,
