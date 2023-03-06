@@ -35,6 +35,7 @@ body,
     This is the header, aka the navbar.
     */
     --header-height: 40px;
+
     @media (width < $sm_min) {
         --header-height: 30px;
     }
@@ -1753,6 +1754,7 @@ div.focused_table {
         padding: 12px 6px;
         overflow: hidden;
         text-overflow: ellipsis;
+
         @media (width < $sm_min) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
@@ -1822,6 +1824,7 @@ div.focused_table {
             height: 50%;
             color: hsl(0, 0%, 88%);
             font-size: 20px;
+
             @media (width < $sm_min) {
                 top: 10%;
             }
@@ -1829,6 +1832,7 @@ div.focused_table {
 
         &::before {
             left: -3px;
+
             @media (width < $sm_min) {
                 /* this ensures the before "|" doesn't overlap
                    with the stream name text on small narrows */
@@ -1872,6 +1876,7 @@ div.focused_table {
         font-size: 20px;
 
         padding: 10px 15px 0 0;
+
         @media (width < $sm_min) {
             padding: 5px 15px 0 0;
         }

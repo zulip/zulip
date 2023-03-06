@@ -149,6 +149,7 @@
             font-size: 14px;
         }
     }
+
     @media (width < $sm_min) {
         #search_arrows .pill {
             line-height: 20px;
