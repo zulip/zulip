@@ -58,14 +58,18 @@ body,
     --right-sidebar-width: 250px;
 }
 
-:root.dark-theme {
+%dark-theme {
     --color-default-text: hsl(0, 0%, 100%);
     --color-date: hsl(0, 0%, 100%, 0.75);
 }
 
+:root.dark-theme {
+    @extend %dark-theme;
+}
+
 @media (prefers-color-scheme: dark) {
     :root.color-scheme-automatic {
-        @extend :root.dark-theme;
+        @extend %dark-theme;
     }
 }
 
