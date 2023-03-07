@@ -34,10 +34,13 @@ Collective](https://opencollective.com/zulip).
 ## Help others find Zulip
 
 * [**Link to Zulip**](/help/linking-to-zulip-website) from your organization's
-  website.
+  website. In addition to providing information for anyone browsing your
+  website, this helps people find Zulip in Google and other search engines.
 
 * [**List your organization**](/help/communities-directory) in the [Zulip
-  communities directory](https://zulip.com/communities/).
+  communities directory](https://zulip.com/communities/). Browsing open
+  communities helps folks see how others are using Zulip, and learn best
+  practices.
 
 * **Star** Zulip on GitHub. There are four main repositories:
   [server/web](https://github.com/zulip/zulip),
@@ -46,8 +49,11 @@ Collective](https://opencollective.com/zulip).
   [Python API](https://github.com/zulip/python-zulip-api).
 
 * **Review** Zulip on product comparison websites, such as
-  [Capterra](https://reviews.capterra.com/new/197945)
-  and [G2](https://www.g2.com/products/zulip/take_survey).
+  [Capterra](https://reviews.capterra.com/new/197945) and
+  [G2](https://www.g2.com/products/zulip/take_survey). Organizations rely on
+  review sites more and more when choosing software for their team, and sharing
+  your experience with Zulip (good or bad) helps them evaluate whether Zulip
+  might work for their needs.
 
 !!! tip ""
     For a limited time, you can receive a $15 gift card by leaving a Capterra
@@ -67,18 +73,24 @@ Collective](https://opencollective.com/zulip).
 
 * [**Report
   issues**](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#reporting-issues),
-  including both feature requests and bug reports.
+  including both feature requests and bug reports. Many improvements to the
+  Zulip app start with a user's suggestion.
 
 * [**Give
   feedback**](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#user-feedback)
   if you are evaluating or using Zulip.
 
 * [**Translate**](https://zulip.readthedocs.io/en/latest/translating/translating.html)
-  Zulip into your language.
+  Zulip into your language. Zulip has been translated into over 25 languages by
+  an amazing group of volunteers, and you can help expand, improve, and
+  maintain the translation for your language, or start working on a language
+  that hasn't been covered yet.
 
 * [**Contribute
   code**](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
-  to the Zulip open-source project.
+  to the Zulip open-source project. To make it easy for contributors from a
+  variety of backgrounds to get started, we have invested into making Zulip’s
+  code uniquely readable, well tested, and easy to modify.
 
 ## Related articles
 
