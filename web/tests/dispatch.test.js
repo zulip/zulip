@@ -80,13 +80,11 @@ mock_esm("../src/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
 
+message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
-    },
-    view: {
-        update_recipient_bar_background_color: () => [],
     },
 };
 message_lists.home = {

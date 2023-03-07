@@ -1,5 +1,6 @@
 import {colord, extend} from "colord";
 import lchPlugin from "colord/plugins/lch";
+import mixPlugin from "colord/plugins/mix";
 import $ from "jquery";
 
 import {$t} from "./i18n";
@@ -8,7 +9,7 @@ import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 
-extend([lchPlugin]);
+extend([lchPlugin, mixPlugin]);
 
 export function update_stream_recipient_color($stream_header) {
     if ($stream_header.length) {
@@ -41,12 +42,9 @@ export function get_recipient_bar_color(color) {
     // Mixes 20% of color to 80% of white (light theme) / black (dark theme).
     const using_dark_theme = settings_data.using_dark_theme();
     color = get_stream_privacy_icon_color(color);
-    const {r, g, b} = colord(color).toRgb();
-    return colord({
-        r: 0.8 * (using_dark_theme ? 0 : 255) + 0.2 * r,
-        g: 0.8 * (using_dark_theme ? 0 : 255) + 0.2 * g,
-        b: 0.8 * (using_dark_theme ? 0 : 255) + 0.2 * b,
-    }).toHex();
+    return colord(using_dark_theme ? "#000000" : "#ffffff")
+        .mix(color, using_dark_theme ? 0.5 : 0.4)
+        .toHex();
 }
 
 function update_table_stream_color(table, stream_name, color) {

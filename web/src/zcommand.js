@@ -79,7 +79,7 @@ export function switch_to_dark_theme() {
         command: "/night",
         on_success(data) {
             dark_theme.enable();
-            message_lists.current.view.update_recipient_bar_background_color();
+            message_lists.update_recipient_bar_background_color();
             feedback_widget.show({
                 populate($container) {
                     const rendered_msg = markdown.parse_non_message(data.msg);

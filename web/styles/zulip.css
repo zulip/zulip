@@ -62,12 +62,7 @@ body,
     --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-text-message-header: hsl(0deg 0% 15%);
-    /* stylelint-disable color-no-hex */
-    /* These colors change how they look when converted to hsl. */
-    /* For example d7d7d7 to hsl and back becomes d6d6d6. */
-    --color-stream-message-header-box-shadow: #e5e5e5;
-    --color-message-list-border: #d7d7d7;
-    /* stylelint-enable color-no-hex */
+    --color-message-list-border: hsl(0deg 0% 80%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 100%);
@@ -80,10 +75,9 @@ body,
     --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-background-private-message-content: hsl(46deg 25% 14%);
     --color-text-message-header: hsl(0deg 0% 100%);
-    --color-stream-message-header-box-shadow: hsl(0deg 0% 10%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
-    --color-message-list-border: hsl(0deg 0% 10%);
+    --color-message-list-border: hsl(0deg 0% 7%);
     --color-background: hsl(212deg 28% 18%);
 }
 
@@ -941,7 +935,7 @@ td.pointer {
     opacity: 0.6;
     color: var(--color-default-text);
     font-feature-settings: "pnum" on, "lnum" on;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
     /* Disable blue link styling for the message timestamp link. */
     &:hover {
         text-decoration: none;
@@ -1090,7 +1084,7 @@ td.pointer {
     /* +2px on the left to account for the stream-color line and unread marker. */
     /* +1px on the right to make left/right more balanced, since the unread marker
        is not visible most of the time. */
-    padding: 3px 4px 3px 5px;
+    padding: 4px 4px 3px 5px;
 
     &:hover .message_controls,
     &:focus-within .message_controls,
@@ -1114,28 +1108,26 @@ td.pointer {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 500;
+    font-weight: 600;
     font-size: calc(15em / 14);
     line-height: 120%;
     position: relative;
     z-index: 0;
     border: 1px solid var(--color-message-list-border);
-    border-bottom: 0;
     border-radius: 5px 5px 0 0;
 
     .message-header-contents {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 30px;
+        height: 28px;
     }
 
     &.message_header_stream {
         /* Add box shadow to hide message border (first one) and message
            selected box shadow (second one) that are visible
            due to top borders of sticky recipient bar being curved. */
-        box-shadow: 0 1px 0 var(--color-stream-message-header-box-shadow),
-            -1px -5px 0 5px var(--color-background),
+        box-shadow: -1px -5px 0 5px var(--color-background),
             1px -5px 0 0 var(--color-background);
 
         & a.message_label_clickable {
@@ -1190,6 +1182,11 @@ td.pointer {
         .message_row:last-of-type {
             border-radius: 0 0 5px 5px;
             border-bottom: 1px solid var(--color-message-list-border);
+
+            .messagebox {
+                border-radius: 0 0 5px 5px;
+                padding-bottom: 4px;
+            }
         }
     }
 
@@ -1217,6 +1214,7 @@ td.pointer {
     position: relative;
     top: 0.5px;
     text-decoration: none;
+    font-weight: 600;
 
     .recipient-row-stream-icon {
         font-size: 12px;
@@ -1265,6 +1263,7 @@ td.pointer {
     line-height: 17px; /* identical to box height, or 131% */
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    padding-top: 1px;
 
     /* Display the date when unchanged only for sticky headers. */
     &.recipient_row_date_unchanged {
@@ -1358,8 +1357,7 @@ td.pointer {
 .message_header_private_message {
     /* This is required for box-shadow appear above the message content. */
     z-index: 1;
-    box-shadow: 0 1px 0 var(--color-message-list-border),
-        -1px -5px 0 5px var(--color-background),
+    box-shadow: -1px -5px 0 5px var(--color-background),
         1px -5px 0 0 var(--color-background);
     background-color: var(--color-background-private-message-header);
 
@@ -1399,7 +1397,6 @@ td.pointer {
     .messagebox,
     .date_row {
         background-color: var(--color-background-private-message-content);
-        border-radius: 0 0 5px 5px;
     }
 }
 

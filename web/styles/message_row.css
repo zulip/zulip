@@ -1,5 +1,5 @@
 $avatar_column_width: 46px;
-$distance_of_text_elements_from_message_box_top: 6px;
+$distance_of_text_elements_from_message_box_top: 7px;
 $distance_of_non_text_elements_from_message_box_top_with_sender_info: 5px;
 $distance_of_non_text_elements_from_message_box_top_without_sender_info: 3px;
 $sender_name_distance_below_flex_center: 2px;
@@ -83,7 +83,7 @@ $time_column_max_width: 150px;
         .message_time {
             line-height: 1;
             justify-self: end;
-            padding-right: 10px;
+            padding-right: 6px;
             min-width: $time_column_min_width;
             text-align: end;
             grid-row-start: 1;

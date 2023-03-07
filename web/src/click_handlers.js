@@ -817,14 +817,14 @@ export function initialize() {
         // Allow propagation to close gear menu.
         e.preventDefault();
         dark_theme.enable();
-        message_lists.current.view.update_recipient_bar_background_color();
+        message_lists.update_recipient_bar_background_color();
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
         dark_theme.disable();
-        message_lists.current.view.update_recipient_bar_background_color();
+        message_lists.update_recipient_bar_background_color();
     });
 
     // MAIN CLICK HANDLER
