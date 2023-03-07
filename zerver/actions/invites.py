@@ -118,7 +118,7 @@ def apply_invite_realm_heuristics(realm: Realm, recent_invites: int, num_invitee
     estimated_sent = RealmCount.objects.filter(
         realm=realm, property="messages_sent:message_type:day"
     ).aggregate(messages=Sum("value"))
-    if estimated_sent["messages"] == 0:
+    if not estimated_sent["messages"]:
         suspicion_score += 1
 
     if suspicion_score == 6:
