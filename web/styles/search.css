@@ -15,6 +15,16 @@
         width: calc(100% - 2px);
         position: absolute;
 
+        @media (width < $xl_min) {
+            width: calc(100% - 84px);
+        }
+
+        @media (width < $md_min) {
+            /* todo: Figure out why this has to be different
+               from top-navbar-border at this width and resolve it */
+            width: calc(100% - 123px);
+        }
+
         .search_close_button {
             display: inline;
             margin-right: 15px;
@@ -60,6 +70,10 @@
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+
+        @media (width < $sm_min) {
+            vertical-align: text-bottom;
+        }
     }
 
     #search_arrows:focus {
@@ -163,29 +177,6 @@
         .search_close_button {
             margin-right: 14px;
         }
-    }
-}
-
-@media (width < $xl_min) {
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
-        width: calc(100% - 84px);
-    }
-}
-
-@media (width < $md_min) {
-    /* todo: Figure out why this has to be different
-       from top-navbar-border at this width and resolve it */
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
-    }
-}
-
-@media (width < $sm_min) {
-    #search_query {
-        height: var(--header-height) !important;
-        vertical-align: text-bottom;
     }
 }
 
