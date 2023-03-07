@@ -57,7 +57,7 @@ function update_buttons_with_focus(focused) {
     // Show buttons iff the search input is focused, or has non-empty contents,
     // or we are narrowed.
     if (focused || $search_query_box.val() || narrow_state.active()) {
-        $(".search_button").prop("disabled", false);
+        $(".search_close_button").prop("disabled", false);
     }
 }
 
@@ -231,5 +231,5 @@ export function initiate_search() {
 export function clear_search_form() {
     $("#search_query").val("");
     $("#search_query").trigger("blur");
-    $(".search_button").prop("disabled", true);
+    $(".search_close_button").prop("disabled", true);
 }
