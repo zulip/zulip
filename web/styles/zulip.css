@@ -2433,7 +2433,7 @@ select.invite-as {
     content: " ";
     vertical-align: middle;
     height: 0;
-    opacity: 0.35;
+    opacity: 0.15;
     border-bottom: 1px solid hsl(0deg 0% 0%);
 }
 
@@ -2449,6 +2449,7 @@ select.invite-as {
 .date_row span::after {
     width: 6px;
     left: 0.25em;
+    margin-right: -1px;
 }
 
 .sub-unsub-message span::before,
