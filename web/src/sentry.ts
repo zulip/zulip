@@ -8,7 +8,7 @@ import {page_params} from "./page_params";
 type UserInfo = {
     id?: string;
     realm: string;
-    role: string;
+    role?: string;
 };
 
 if (page_params.server_sentry_dsn) {
@@ -16,10 +16,18 @@ if (page_params.server_sentry_dsn) {
     if (page_params.realm_uri !== undefined) {
         url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
     }
-    const sentry_key = page_params.realm_sentry_key || "(root)";
+    const sentry_key =
+        // No parameter is the portico pages, empty string is the empty realm
+        page_params.realm_sentry_key === undefined
+            ? "www"
+            : page_params.realm_sentry_key === ""
+            ? "(root)"
+            : page_params.realm_sentry_key;
     const user_info: UserInfo = {
         realm: sentry_key,
-        role: page_params.is_owner
+    };
+    if (sentry_key !== "www") {
+        user_info.role = page_params.is_owner
             ? "Organization owner"
             : page_params.is_admin
             ? "Organization administrator"
@@ -29,10 +37,12 @@ if (page_params.server_sentry_dsn) {
             ? "Guest"
             : page_params.is_spectator
             ? "Spectator"
-            : "Member",
-    };
-    if (page_params.user_id) {
-        user_info.id = page_params.user_id.toString();
+            : page_params.user_id
+            ? "Member"
+            : "Logged out";
+        if (page_params.user_id) {
+            user_info.id = page_params.user_id.toString();
+        }
     }
 
     Sentry.init({

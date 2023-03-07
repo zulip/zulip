@@ -28,6 +28,7 @@ from zproject.backends import (
     password_auth_enabled,
     require_email_format_usernames,
 )
+from zproject.config import get_config
 
 DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "development_environment": settings.DEVELOPMENT,
@@ -139,10 +140,19 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>'
     )
 
-    default_page_params = {
+    default_page_params: Dict[str, Any] = {
         **DEFAULT_PAGE_PARAMS,
+        "server_sentry_dsn": settings.SENTRY_FRONTEND_DSN,
         "request_language": get_language(),
     }
+    if settings.SENTRY_FRONTEND_DSN is not None:
+        if realm is not None:
+            default_page_params["realm_sentry_key"] = realm.string_id
+        default_page_params["server_sentry_environment"] = get_config(
+            "machine", "deploy_type", "development"
+        )
+        default_page_params["server_sentry_sample_rate"] = settings.SENTRY_FRONTEND_SAMPLE_RATE
+        default_page_params["server_sentry_trace_rate"] = settings.SENTRY_FRONTEND_TRACE_RATE
 
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
