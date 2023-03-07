@@ -3,28 +3,26 @@
 Contents:
 
 - [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
-- [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
+- [Installing using Vagrant with VirtualBox on Windows 10](#installing-using-vagrant-with-virtualbox-on-windows-10)
 - [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
 - [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
-- [Installing directly on cloud9](#installing-on-cloud9)
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
-If you'd like to install a Zulip development environment on a computer
-that's running one of:
+One can install the Zulip development environment directly on a Linux
+host by following these instructions. Currently supported platforms
+are:
 
-- Ubuntu 20.04 Focal, 18.04 Bionic
-- Debian 10 Buster, 11 Bullseye (beta)
+- Ubuntu 20.04, 22.04
+- Debian 11
 - CentOS 7 (beta)
 - Fedora 33 and 34 (beta)
 - RHEL 7 (beta)
 
-You can just run the Zulip provision script on your machine.
-
 **Note**: You should not use the `root` user to run the installation.
-If you are using a [remote server](../development/remote.md), see
+If you are using a [remote server](remote.md), see
 the
-[section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
+[section on creating appropriate user accounts](remote.md#setting-up-user-accounts).
 
 :::{warning}
 There is no supported uninstallation process with this
@@ -42,103 +40,103 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```bash
-# On CentOS/RHEL, you must first install epel-release, and then python36,
-# and finally you must run `sudo ln -nsf /usr/bin/python36 /usr/bin/python3`
-# On Fedora, you must first install python3
+# On CentOS/RHEL/Fedora, you must first install python3
 # From a clone of zulip.git
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
-./tools/run-dev.py  # starts the development server
+./tools/run-dev  # starts the development server
 ```
 
 Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
-environment](../development/setup-vagrant.html#step-4-developing),
+environment](setup-recommended.md#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
-## Installing directly on Windows 10 with WSL 2
+## Installing using Vagrant with VirtualBox on Windows 10
 
-Zulip's development environment is most easily set up on Windows using
-the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
-installation method described here.
+:::{note}
+We recommend using [WSL 2 for Windows development](setup-recommended.md#windows-10)
+because it is easier to set up and provides a substantially better experience.
+:::
 
-1. Install WSL 2 by following the instructions provided by Microsoft
-   [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+1. Install [Git for Windows][git-bash], which installs _Git BASH_.
+2. Install [VirtualBox][vbox-dl] (latest).
+3. Install [Vagrant][vagrant-dl] (latest).
 
-1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
-   Store.
+(Note: While _Git BASH_ is recommended, you may also use [Cygwin][cygwin-dl].
+If you do, make sure to **install default required packages** along with
+**git**, **curl**, **openssh**, and **rsync** binaries.)
 
-1. Launch the `Ubuntu 18.04` shell and run the following commands:
+Also, you must have hardware virtualization enabled (VT-x or AMD-V) in your
+computer's BIOS.
 
-   ```bash
-   sudo apt update && sudo apt upgrade
-   sudo apt install rabbitmq-server memcached redis-server postgresql
-   ```
+#### Running Git BASH as an administrator
 
-1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
+It is important that you **always run Git BASH with administrator
+privileges** when working on Zulip code, as not doing so will cause
+errors in the development environment (such as symlink creation). You
+might wish to configure your Git BASH shortcut to always run with
+these privileges enabled (see this [guide][bash-admin-setup] for how
+to set this up).
 
-   ```bash
-   sudo vim /etc/rabbitmq/rabbitmq-env.conf
-   ```
+##### Enable native symlinks
 
-   Add the following lines at the end of your file and save:
+The Zulip code includes symbolic links (symlinks). By default, native Windows
+symlinks are not enabled in either Git BASH or Cygwin, so you need to do a bit
+of configuration. **You must do this before you clone the Zulip code.**
 
-   ```ini
-   NODE_IP_ADDRESS=127.0.0.1
-   NODE_PORT=5672
-   ```
+In **Git for BASH**:
 
-1. Make sure you are inside the WSL disk and not in a Windows mounted disk.
-   You will run into permission issues if you run `provision` from `zulip`
-   in a Windows mounted disk.
+Open **Git BASH as an administrator** and run:
 
-   ```bash
-   cd ~  # or cd /home/USERNAME
-   ```
+```console
+$ git config --global core.symlinks true
+```
 
-1. [Clone your fork of the Zulip repository][zulip-rtd-git-cloning]
-   and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+Now confirm the setting:
 
-   ```bash
-   git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
-   cd zulip
-   git remote add -f upstream https://github.com/zulip/zulip.git
-   ```
+```console
+$ git config core.symlinks
+true
+```
 
-1. Run the following to install the Zulip development environment and
-   start it (click `Allow access` if you get popups for Windows Firewall
-   blocking some services)
+If you see `true`, you are ready for [Step 2: Get Zulip code](setup-recommended.md#step-2-get-zulip-code).
 
-   ```bash
-   # Start database, cache, and other services
-   ./tools/wsl/start_services
-   # Install/update the Zulip development environment
-   ./tools/provision
-   # Enter the Zulip Python environment
-   source /srv/zulip-py3-venv/bin/activate
-   # Start the development server
-   ./tools/run-dev.py
-   ```
+Otherwise, if the above command prints `false` or nothing at all, then symlinks
+have not been enabled.
 
-   :::{note}
-   If you shut down WSL, after starting it again, you will have to manually start
-   the services using `./tools/wsl/start_services`.
-   :::
+In **Cygwin**:
 
-1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
-   you can try running `./tools/provision` again.
+Open a Cygwin window **as an administrator** and do this:
 
-1. [Visual Studio Code Remote - WSL](https://code.visualstudio.com/docs/remote/wsl) is
-   recommended for editing files when developing with WSL.
+```console
+christie@win10 ~
+$ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
+```
 
-1. You're done! You can pick up the [documentation on using the
-   Zulip development
-   environment](../development/setup-vagrant.html#step-4-developing),
-   ignoring the parts about `vagrant` (since you're not using it).
+Next, close that Cygwin window and open another. If you `echo` $CYGWIN you
+should see:
 
-WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
+```console
+christie@win10 ~
+$ echo $CYGWIN
+winsymlinks:native
+```
 
-[uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
+Now you are ready for [Step 2: Get Zulip code](setup-recommended.md#step-2-get-zulip-code).
+
+(Note: The **GitHub Desktop client** for Windows has a bug where it
+will automatically set `git config core.symlink false` on a repository
+if you use it to clone a repository, which will break the Zulip
+development environment, because we use symbolic links. For that
+reason, we recommend avoiding using GitHub Desktop client to clone
+projects and to instead follow these instructions exactly.)
+
+[cygwin-dl]: https://cygwin.com
+[git-bash]: https://git-for-windows.github.io
+[vbox-dl]: https://www.virtualbox.org/wiki/Downloads
+[vagrant-dl]: https://www.vagrantup.com/downloads.html
+[bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 
 ## Using the Vagrant Hyper-V provider on Windows (beta)
 
@@ -225,7 +223,7 @@ expected.
 1. You should now be able to start the Zulip development server.
 
    ```console
-   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev.py
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev
    ```
 
    The output will look like:
@@ -257,11 +255,11 @@ expected.
    programs after the provisioning is completed. If it still isn't
    enough, try restarting your system and running the command again.
 
-2. Be patient the first time you run `./tools/run-dev.py`.
+2. Be patient the first time you run `./tools/run-dev`.
 
 As with other installation methods, please visit [#provision
 help][provision-help] in the [Zulip development community
-server](https://zulip.com/developer-community/) if you need help.
+server](https://zulip.com/development-community/) if you need help.
 
 [provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 
@@ -279,58 +277,8 @@ likely only a few lines of changes to `tools/lib/provision.py` and
 `scripts/lib/setup-apt-repo` if you'd like to do it yourself and
 submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
-on chat.zulip.org, and a core team member can help guide you through
-adding support for the platform.
+in [the Zulip development community](https://zulip.com/development-community/),
+and a core team member can help guide you through adding support for the platform.
 
-## Installing on Cloud9
-
-AWS Cloud9 is a cloud-based integrated development environment (IDE)
-that lets you write, run, and debug your code with just a browser. It
-includes a code editor, debugger, and terminal.
-
-This section documents how to set up the Zulip development environment
-in a Cloud9 workspace. If you don't have an existing Cloud9 account,
-you can sign up [here](https://aws.amazon.com/cloud9/).
-
-- Create a Workspace, and select the blank template.
-- Resize the workspace to be 1GB of memory and 4GB of disk
-  space. (This is under free limit for both the old Cloud9 and the AWS
-  Free Tier).
-- Clone the zulip repo:
-  `git clone --config pull.rebase https://github.com/<your-username>/zulip.git`
-- Restart rabbitmq-server since its broken on Cloud9:
-  `sudo service rabbitmq-server restart`.
-- And run provision `cd zulip && ./tools/provision`, once this is done.
-- Activate the Zulip virtual environment by
-  `source /srv/zulip-py3-venv/bin/activate` or by opening a new
-  terminal.
-
-#### Install zulip-cloud9
-
-There's a NPM package, `zulip-cloud9`, that provides a wrapper around
-the Zulip development server for use in the Cloud9 environment.
-
-Note: `npm i -g zulip-cloud9` does not work in zulip's virtual
-environment. Although by default, any packages installed in workspace
-folder (i.e. the top level folder) are added to `$PATH`.
-
-```bash
-cd .. # switch to workspace folder if you are in zulip directory
-npm i zulip-cloud9
-zulip-dev start # to start the development server
-```
-
-If you get error of the form `bash: cannot find command zulip-dev`,
-you need to start a new terminal.
-
-Your development server would be running at
-`https://<workspace-name>-<username>.c9users.io` on port 8080. You
-dont need to add `:8080` to your URL, since the Cloud9 proxy should
-automatically forward the connection. You might want to visit
-[zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's
-[wiki](https://github.com/cPhost/zulip-cloud9/wiki) for more info on
-how to use zulip-cloud9 package.
-
-[zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
-[zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
-[port-forward-setup]: ../development/remote.html#running-the-development-server
+[zulip-rtd-git-cloning]: ../git/cloning.md#step-1b-clone-to-your-machine
+[zulip-rtd-git-connect]: ../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0343_alter_useractivityinterval_index_together"),
     ]
@@ -15,10 +14,10 @@ class Migration(migrations.Migration):
             name="emojiset",
             field=models.CharField(
                 choices=[
-                    ("google", "Google modern"),
-                    ("google-blob", "Google classic"),
+                    ("google", "Google"),
                     ("twitter", "Twitter"),
                     ("text", "Plain text"),
+                    ("google-blob", "Google blobs"),
                 ],
                 default="google",
                 max_length=20,
@@ -29,10 +28,10 @@ class Migration(migrations.Migration):
             name="emojiset",
             field=models.CharField(
                 choices=[
-                    ("google", "Google modern"),
-                    ("google-blob", "Google classic"),
+                    ("google", "Google"),
                     ("twitter", "Twitter"),
                     ("text", "Plain text"),
+                    ("google-blob", "Google blobs"),
                 ],
                 default="google",
                 max_length=20,

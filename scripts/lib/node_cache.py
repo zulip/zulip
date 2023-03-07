@@ -11,8 +11,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 ZULIP_SRV_PATH = "/srv"
 
 NODE_MODULES_CACHE_PATH = os.path.join(ZULIP_SRV_PATH, "zulip-npm-cache")
-YARN_BIN = os.path.join(ZULIP_SRV_PATH, "zulip-yarn/bin/yarn")
-YARN_PACKAGE_JSON = os.path.join(ZULIP_SRV_PATH, "zulip-yarn/package.json")
+YARN_BIN = "/usr/local/bin/yarn"
 
 DEFAULT_PRODUCTION = False
 
@@ -40,11 +39,7 @@ def generate_sha1sum_node_modules(
         # For backwards compatibility, we can't assume yarn.lock exists
         with open(YARN_LOCK_FILE_PATH) as f:
             data[YARN_LOCK_FILE_PATH] = f.read().strip()
-    with open(YARN_PACKAGE_JSON) as f:
-        data["yarn-package-version"] = json.load(f)["version"]
-    data["node-version"] = subprocess.check_output(
-        ["node", "--version"], universal_newlines=True
-    ).strip()
+    data["node-version"] = subprocess.check_output(["node", "--version"], text=True).strip()
     data["yarn-args"] = get_yarn_args(production=production)
 
     sha1sum = hashlib.sha1()
@@ -90,6 +85,8 @@ def do_yarn_install(
     # Copy the existing node_modules to speed up install
     if os.path.exists("node_modules") and not os.path.exists(cached_node_modules):
         shutil.copytree("node_modules/", cached_node_modules, symlinks=True)
+        if os.path.isdir(os.path.join(cached_node_modules, ".cache")):
+            shutil.rmtree(os.path.join(cached_node_modules, ".cache"))
     if os.environ.get("CUSTOM_CA_CERTIFICATES"):
         run([YARN_BIN, "config", "set", "cafile", os.environ["CUSTOM_CA_CERTIFICATES"]])
     run(

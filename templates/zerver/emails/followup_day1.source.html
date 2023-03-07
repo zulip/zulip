@@ -5,51 +5,55 @@
 {% endblock %}
 
 {% block content %}
-<p>{{ _('Welcome to Zulip!') }}</p>
-
+{% if realm_creation %}
+{% if is_demo_org %}
 <p>
-    {% if realm_creation %}
-        {% if is_demo_org %}
-            {% trans %}You've created a demo Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations <a href="https://zulip.com/help/demo-organizations">here</a>!{% endtrans %}
-        {% else %}
-            {% trans %}You've created the new Zulip organization <b>{{ realm_name }}</b>.{% endtrans %}
-        {% endif %}
-    {% else %}
-        {% trans %}You've joined the Zulip organization <b>{{ realm_name }}</b>.{% endtrans %}
-    {% endif %}
+    {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %}Congratulations, you have created a new Zulip demo organization. Note
+    that this organization will be automatically deleted in 30 days. Learn more
+    about demo organizations <a
+    href="{{ demo_organizations_help_link }}">here</a>!
+    {% endtrans %}
 </p>
+{% else %}
+<p>
+    {% trans %}Congratulations, you have created a new Zulip
+    organization: <b>{{ realm_name }}</b>.{% endtrans %}
+</p>
+{% endif %}
+{% else %}
+<p>{{ _('Welcome to Zulip!') }}</p>
+<p>
+    {% trans %}You've joined the Zulip organization <b>{{ realm_name }}</b>.
+    {% endtrans %}
+</p>
+{% endif %}
 
 <p>
-    {{ _('Your account details:') }}
+    {% trans apps_page_link="https://zulip.com/apps" %}You will use the following info to log into the Zulip web, <a href="{{ apps_page_link }}">mobile and desktop</a> apps:{% endtrans %}
     <ul>
         <li>{% trans organization_url=macros.link_tag(realm_uri) %}Organization URL: {{ organization_url }}{% endtrans %}<br /></li>
         {% if ldap %}
             {% if ldap_username %}
-            <li>{% trans %}Username: {{ ldap_username }}{% endtrans %}<br /></li>
+            <li>{% trans %}Your username: {{ ldap_username }}{% endtrans %}<br /></li>
             {% else %}
             <li>{{ _('Use your LDAP account to log in') }}<br /></li>
             {% endif %}
         {% else %}
-            <li>{% trans email=macros.email_tag(email) %}Email: {{ email }}{% endtrans %}<br /></li>
+            <li>{% trans email=macros.email_tag(email) %}Your account email: {{ email }}{% endtrans %}<br /></li>
         {% endif %}
     </ul>
-    {% trans apps_page_link="https://zulip.com/apps" %}(you'll need these to sign in to the <a href="{{ apps_page_link }}">mobile and desktop</a> apps){% endtrans %}
+    <a class="button" href="{{ realm_uri }}">{{ _('Go to organization') }}</a>
 </p>
 
 <p>
+    {% trans %}If you are new to Zulip, check out our <a href="{{ getting_user_started_link }}">Getting started guide</a>!{% endtrans %}
     {% if is_realm_admin %}
-        {% trans %}Check out our <a href="{{ getting_started_link }}">guide for admins</a>, become a Zulip pro with a few <a href="{{ keyboard_shortcuts_link }}">keyboard shortcuts</a>, or <a href="{{ realm_uri }}">dive right in</a>!{% endtrans %}
-    {% else %}
-        {% trans %}<a href="{{ getting_started_link }}">Learn more</a> about Zulip, become a pro with a few <a href="{{ keyboard_shortcuts_link }}">keyboard shortcuts</a>, or <a href="{{ realm_uri }}">dive right in</a>!{% endtrans %}
+    {% trans %}We also have a guide for <a href="{{ getting_organization_started_link }}">Setting up your organization</a>.{% endtrans %}
     {% endif %}
 </p>
 
 <p>
-    {{ _("Cheers,") }}<br />
-    {{ _("Team Zulip") }}
-</p>
-
-<p>
-    {% trans %}PS: Follow us on <a href="https://twitter.com/zulip">Twitter</a>, star us on <a href="https://github.com/zulip/zulip">GitHub</a>, or chat with us live on the <a href="https://zulip.com/developer-community/">Zulip community server</a>!{% endtrans %}
+    {% trans support_email=macros.email_tag(support_email) %}Questions? Contact
+us any time at {{ support_email }}.{% endtrans %}
 </p>
 {% endblock %}

@@ -1,9 +1,9 @@
 [tool.black]
 line-length = 100
-target-version = ["py36"]
+target-version = ["py38"]
 
 [tool.isort]
-src_paths = [".", "tools", "tools/setup/emoji"]
+src_paths = [".", "tools"]
 known_third_party = "zulip"
 profile = "black"
 line_length = 100
@@ -17,23 +17,20 @@ show_traceback = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
 cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
 
-# These are all the options that would be enabled by mypy --strict, in
-# the order listed by the mypy --help documentation of --strict.  We
-# do not yet enable all of them.
-warn_unused_configs = true
-disallow_any_generics = true
+# Enable strict mode, with some exceptions.
+strict = true
 disallow_subclassing_any = false
 disallow_untyped_calls = false
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
 disallow_untyped_decorators = false
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
 warn_return_any = false
-no_implicit_reexport = true
-strict_equality = true
+
+# Enable optional errors.
+enable_error_code = [
+    "redundant-expr",
+    "truthy-bool",
+    "ignore-without-code",
+    "unused-awaitable",
+]
 
 # Display the codes needed for # type: ignore[code] annotations.
 show_error_codes = true
@@ -41,58 +38,132 @@ show_error_codes = true
 # Warn of unreachable or redundant code.
 warn_unreachable = true
 
+# dmypy enables local_partial_types implicitly. We need mypy to align
+# with this behavior.
+local_partial_types = true
+
+plugins = ["mypy_django_plugin.main"]
+
 [[tool.mypy.overrides]]
-module = ["zproject.configured_settings", "zproject.settings"]
+module = ["zproject.configured_settings", "zproject.settings", "zproject.default_settings"]
 no_implicit_reexport = false
 
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
-    "aioapns.*",
+    "aioapns.*", # https://github.com/Fatal1ty/aioapns/issues/33
     "bitfield.*",
     "bmemcached.*",
-    "bs4.*",
-    "bson.*",
-    "cairosvg.*",
-    "coverage.*",
+    "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
+    "circuitbreaker.*",
+    "coverage.*", # https://github.com/nedbat/coveragepy/issues/1434
     "cssutils.*",
-    "defusedxml.*",
+    "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
     "disposable_email_domains.*",
-    "django.*",
     "django_auth_ldap.*",
+    "django_bmemcached.*",
+    "django_cte.*",
     "django_otp.*",
-    "django_sendfile.*",
+    "django_scim.*",
     "django_statsd.*",
     "DNS.*",
     "fakeldap.*",
     "gcm.*",
     "gitlint.*",
     "jsonref.*",
-    "ldap.*",
-    "markdown_include.*",
-    "moto.*",
-    "natsort.*",
-    "netifaces.*",
+    "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
+    "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
-    "openapi_core.*",
-    "openapi_schema_validator.*",
     "premailer.*",
     "pyinotify.*",
     "pyoembed.*",
     "pyuca.*",
     "re2.*",
-    "requests_oauthlib.*",
-    "scrapy.*",
+    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
+    "scim2_filter_parser.attr_paths",
+    "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
     "social_core.*",
     "social_django.*",
     "sourcemap.*",
-    "sphinx_rtd_theme.*",
     "talon_core.*",
     "tlds.*",
-    "tornado.*",
     "twitter.*",
     "two_factor.*",
-    "zxcvbn.*",
 ]
 ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "zproject.settings"
+
+[tool.ruff]
+# See https://github.com/charliermarsh/ruff#rules for error code definitions.
+select = [
+    "ANN", # annotations
+    "B", # bugbear
+    "C4", # comprehensions
+    "DTZ", # naive datetime
+    "E", # style errors
+    "EXE", # shebang
+    "F", # flakes
+    "G", # logging format
+    "I", # import sorting
+    "ISC", # string concatenation
+    "N", # naming
+    "PGH", # pygrep-hooks
+    "PIE", # miscellaneous
+    "PL", # pylint
+    "Q", # quotes
+    "RSE", # raise
+    "RUF", # Ruff
+    "S", # security
+    "SIM", # simplify
+    "T10", # debugger
+    "UP", # upgrade
+    "W", # style warnings
+    "YTT", # sys.version
+]
+ignore = [
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in classmethod
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+    "B007", # Loop control variable not used within the loop body
+    "B008", # Do not perform function calls in argument defaults
+    "B023", # Function definition does not bind loop variable
+    "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+    "C408", # Unnecessary `dict` call (rewrite as a literal)
+    "E402", # Module level import not at top of file
+    "E501", # Line too long
+    "E731", # Do not assign a lambda expression, use a def
+    "N802", # Function name should be lowercase
+    "N806", # Variable in function should be lowercase
+    "PLR0911", # Too many return statements
+    "PLR0912", # Too many branches
+    "PLR0913", # Too many arguments to function call
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used in comparison
+    "PLR5501", # Consider using `elif` instead of `else` then `if` to remove one indentation level
+    "PLW0603", # Using the global statement is discouraged
+    "PLW2901", # Outer for loop variable overwritten by inner for loop target
+    "RUF001", # String contains ambiguous unicode character
+    "RUF002", # Docstring contains ambiguous unicode character
+    "RUF003", # Comment contains ambiguous unicode character
+    "S101", # Use of `assert` detected
+    "S105", # Possible hardcoded password
+    "S106", # Possible hardcoded password
+    "S107", # Possible hardcoded password
+    "S110", # `try`-`except`-`pass` detected, consider logging the exception
+    "S113", # Probable use of requests call without timeout
+    "S324", # Probable use of insecure hash functions in `hashlib`
+    "SIM103", # Return the condition directly
+    "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
+    "SIM114", # Combine `if` branches using logical `or` operator
+    "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
+    "SIM401", # Use `d.get(key, default)` instead of an `if` block
+]
+line-length = 100
+src = [".", "tools"]
+target-version = "py38"
+
+[tool.ruff.isort]
+known-third-party = ["zulip"]

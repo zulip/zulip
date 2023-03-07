@@ -6,13 +6,14 @@ from typing import Optional
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
+from django.core.files.base import File
+from django.core.files.storage import FileSystemStorage
 
 if settings.DEBUG:
     from django.contrib.staticfiles.finders import find
 
     def static_path(path: str) -> str:
         return find(path) or "/nonexistent"
-
 
 else:
 
@@ -22,7 +23,7 @@ else:
 
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     def hashed_name(
-        self, name: str, content: Optional[str] = None, filename: Optional[str] = None
+        self, name: str, content: Optional["File[bytes]"] = None, filename: Optional[str] = None
     ) -> str:
         ext = os.path.splitext(name)[1]
         if name.startswith("webpack-bundles"):
@@ -35,17 +36,22 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # use a no-op hash function for these already-hashed
             # assets.
             return name
+        if name == "generated/emoji/emoji_api.json":
+            # Unlike most .json files, we do want to hash this file;
+            # its hashed URL is returned as part of the API.  See
+            # data_url() in zerver/lib/emoji.py.
+            return super().hashed_name(name, content, filename)
         if ext in [".png", ".gif", ".jpg", ".svg"]:
             # Similarly, don't hash-rename image files; we only serve
             # the original file paths (not the hashed file paths), and
             # so the only effect of hash-renaming these is to increase
-            # the size of release tarballs with duplicate copies of thesex.
+            # the size of release tarballs with duplicate copies of these.
             #
             # One could imagine a future world in which we instead
             # used the hashed paths for these; in that case, though,
             # we should instead be removing the non-hashed paths.
             return name
-        if ext in ["json", "po", "mo", "mp3", "ogg", "html"]:
+        if ext in [".json", ".po", ".mo", ".mp3", ".ogg", ".html", ".md"]:
             # And same story for translation files, sound files, etc.
             return name
         return super().hashed_name(name, content, filename)
@@ -57,9 +63,5 @@ class ZulipStorage(IgnoreBundlesManifestStaticFilesStorage):
     # so, we can use a different copy of staticfiles.json for each
     # deployment, which ensures that we always use the correct static
     # assets for each deployment.
-    manifest_name = os.path.join(settings.DEPLOY_ROOT, "staticfiles.json")
-
-    def path(self, name: str) -> str:
-        if name == self.manifest_name:
-            return name
-        return super().path(name)
+    def __init__(self) -> None:
+        super().__init__(manifest_storage=FileSystemStorage(location=settings.DEPLOY_ROOT))

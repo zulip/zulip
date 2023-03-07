@@ -3,12 +3,12 @@ class zulip::profile::memcached {
   include zulip::sasl_modules
   include zulip::systemd_daemon_reload
 
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $memcached_packages = [ 'memcached', 'sasl2-bin' ]
       $memcached_user = 'memcache'
     }
-    'redhat': {
+    'RedHat': {
       $memcached_packages = [ 'memcached', 'cyrus-sasl' ]
       $memcached_user = 'memcached'
     }
@@ -16,8 +16,9 @@ class zulip::profile::memcached {
       fail('osfamily not supported')
     }
   }
-  package { $memcached_packages: ensure => 'installed' }
+  package { $memcached_packages: ensure => installed }
 
+  $memcached_max_item_size = zulipconf('memcached', 'max_item_size', '1m')
   $memcached_memory = zulipconf('memcached', 'memory', $zulip::common::total_memory_mb / 8)
   file { '/etc/sasl2':
     ensure => directory,
@@ -70,24 +71,6 @@ saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
     source  => 'puppet:///modules/zulip/sasl2/memcached.conf',
     notify  => Service[memcached],
   }
-  file { '/etc/systemd/system/memcached.service.d':
-    ensure => directory,
-  }
-  file { '/etc/systemd/system/memcached.service.d/zulip-fix-sasl.conf':
-    require => File['/etc/systemd/system/memcached.service.d'],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => "\
-# https://bugs.launchpad.net/ubuntu/+source/memcached/+bug/1878721
-[Service]
-Environment=SASL_CONF_PATH=/etc/sasl2
-",
-    notify  => [
-      Class['zulip::systemd_daemon_reload'],
-      Service['memcached'],
-    ],
-  }
   file { '/etc/memcached.conf':
     ensure  => file,
     require => [
@@ -99,9 +82,16 @@ Environment=SASL_CONF_PATH=/etc/sasl2
     mode    => '0644',
     content => template('zulip/memcached.conf.template.erb'),
   }
+  file { '/run/memcached':
+    ensure  => directory,
+    owner   => 'memcache',
+    group   => 'memcache',
+    mode    => '0755',
+    require => Package[$memcached_packages],
+  }
   service { 'memcached':
     ensure    => running,
     subscribe => File['/etc/memcached.conf'],
-    require   => Class['zulip::systemd_daemon_reload'];
+    require   => [File['/run/memcached'], Class['zulip::systemd_daemon_reload']],
   }
 }

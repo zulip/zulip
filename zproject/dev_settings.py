@@ -1,8 +1,9 @@
 import os
 import pwd
-from typing import Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 from scripts.lib.zulip_tools import deport
+from zproject.settings_types import SCIMConfigDict
 
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
@@ -23,7 +24,7 @@ external_host_env = os.getenv("EXTERNAL_HOST")
 if external_host_env is None:
     if IS_DEV_DROPLET:
         # For our droplets, we use the hostname (eg github_username.zulipdev.org) by default.
-        # Note that this code is duplicated in run-dev.py.
+        # Note that this code is duplicated in run-dev.
         EXTERNAL_HOST = os.uname()[1].lower() + ":9991"
     else:
         # For local development environments, we use localhost by
@@ -77,6 +78,15 @@ OPEN_REALM_CREATION = True
 WEB_PUBLIC_STREAMS_ENABLED = True
 INVITES_MIN_USER_AGE_DAYS = 0
 
+# Redirect to /devlogin/ by default in dev mode
+CUSTOM_HOME_NOT_LOGGED_IN = "/devlogin/"
+LOGIN_URL = "/devlogin/"
+
+# For development convenience, configure the ToS/Privacy Policies
+POLICIES_DIRECTORY = "corporate/policies"
+TERMS_OF_SERVICE_VERSION = "1.0"
+TERMS_OF_SERVICE_MESSAGE: Optional[str] = "Description of changes to the ToS!"
+
 EMBEDDED_BOTS_ENABLED = True
 
 SYSTEM_ONLY_REALMS: Set[str] = set()
@@ -91,9 +101,6 @@ PASSWORD_MIN_GUESSES = 0
 # Two factor authentication: Use the fake backend for development.
 TWO_FACTOR_CALL_GATEWAY = "two_factor.gateways.fake.Fake"
 TWO_FACTOR_SMS_GATEWAY = "two_factor.gateways.fake.Fake"
-
-# Make sendfile use django to serve files in development
-SENDFILE_BACKEND = "django_sendfile.backends.development"
 
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False
@@ -163,10 +170,7 @@ SEARCH_PILLS_ENABLED = bool(os.getenv("SEARCH_PILLS_ENABLED", False))
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
 
-# Test custom TOS template rendering
-TERMS_OF_SERVICE = "corporate/terms.md"
-
-# Our run-dev.py proxy uses X-Forwarded-Port to communicate to Django
+# Our run-dev proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django
 # server's own port); this setting tells Django to read that HTTP
 # header.  Important for SAML authentication in the development
@@ -179,3 +183,11 @@ SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
 SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 MEMCACHED_USERNAME: Optional[str] = None
+
+SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
+    "zulip": {
+        "bearer_token": "token1234",
+        "scim_client_name": "test-scim-client",
+        "name_formatted_included": True,
+    }
+}

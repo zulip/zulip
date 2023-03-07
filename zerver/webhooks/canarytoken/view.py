@@ -1,21 +1,22 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view("Canarytoken")
+@webhook_view("Canarytokens")
 @has_request_variables
 def api_canarytoken_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    message: Dict[str, Any] = REQ(argument_type="body"),
+    message: WildValue = REQ(argument_type="body", converter=to_wild_value),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
     """
@@ -28,13 +29,13 @@ def api_canarytoken_webhook(
     """
     topic = "canarytoken alert"
     body = (
-        f"**:alert: Canarytoken has been triggered on {message['time']}!**\n\n"
-        f"{message['memo']} \n\n"
-        f"[Manage this canarytoken]({message['manage_url']})"
+        f"**:alert: Canarytoken has been triggered on {message['time'].tame(check_string)}!**\n\n"
+        f"{message['memo'].tame(check_string)} \n\n"
+        f"[Manage this canarytoken]({message['manage_url'].tame(check_string)})"
     )
 
     if user_specified_topic:
         topic = user_specified_topic
 
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

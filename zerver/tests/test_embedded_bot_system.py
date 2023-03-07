@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import orjson
 
-from zerver.lib.bot_lib import EmbeddedBotQuitException
+from zerver.lib.bot_lib import EmbeddedBotQuitError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     UserProfile,
@@ -59,6 +59,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_message_to_embedded_bot_with_initialize(self) -> None:
         assert self.bot_profile is not None
+        self.subscribe(self.user_profile, "Denmark")
         with patch(
             "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize", create=True
         ) as mock_initialize:
@@ -74,7 +75,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         assert self.bot_profile is not None
         with patch(
             "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message",
-            side_effect=EmbeddedBotQuitException("I'm quitting!"),
+            side_effect=EmbeddedBotQuitError("I'm quitting!"),
         ):
             with self.assertLogs(level="WARNING") as m:
                 self.send_stream_message(

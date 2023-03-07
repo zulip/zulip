@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-# Scans zulip repositary for issues that don't have any `area` labels.
+# Scans zulip repository for issues that don't have any `area` labels.
 # GitHub API token is required as GitHub limits unauthenticated
 # requests to 60/hour. There is a good chance that this limit is
 # bypassed in consecutive attempts.

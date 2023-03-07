@@ -1,4 +1,4 @@
-# Customize Zulip
+# Server configuration
 
 Once you've got Zulip set up, you'll likely want to configure it the
 way you like.
@@ -23,18 +23,19 @@ su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 Zulip has dozens of settings documented in the comments in
 `/etc/zulip/settings.py`; you can review [the latest version of the
 settings.py template][settings-py-template], and if you've upgraded
-from an old versions of Zulip, we recommend [carefully updating your
+from an old version of Zulip, we recommend [carefully updating your
 `/etc/zulip/settings.py`][update-settings-docs] to fold in the inline
 comment documentation for new configuration settings after upgrading
 to each new major release.
 
-[update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
+[update-settings-docs]: upgrade.md#updating-settingspy-inline-documentation
 [settings-py-template]: https://github.com/zulip/zulip/blob/main/zproject/prod_settings_template.py
 
-Since Zulip's settings file is a Python script, there are a number of
-other things that one can configure that are not documented; ask on
-[chat.zulip.org](https://zulip.com/developer-community/)
-if there's something you'd like to do but can't figure out how to.
+Since Zulip’s settings file is a Python script, there are a number of
+other things that one can configure that are documented in
+[System and deployment configuration](deployment.md#system-and-deployment-configuration).
+Otherwise, ask in [the Zulip development community](https://zulip.com/development-community/)
+if there’s something you’d like to do but can’t figure out how to.
 
 ## Specific settings
 
@@ -61,7 +62,7 @@ If you want an additional or different authentication backend, you
 will need to uncomment one or more and then do any additional
 configuration required for that backend as documented in the
 `settings.py` file. See the
-[section on authentication](../production/authentication-methods.md) for more
+[section on authentication](authentication-methods.md) for more
 detail on the available authentication backends and how to configure
 them.
 
@@ -86,12 +87,25 @@ and configure this service.
 ### Terms of Service and Privacy policy
 
 Zulip allows you to configure your server's Terms of Service and
-Privacy Policy pages (`/terms` and `/privacy`, respectively). You can
-use the `TERMS_OF_SERVICE` and `PRIVACY_POLICY` settings to configure
-the path to your server's policies. The syntax is Markdown (with
-support for included HTML). A good approach is to use paths like
-`/etc/zulip/terms.md`, so that it's easy to back up your policy
-configuration along with your other Zulip server configuration.
+Privacy Policy pages (`/terms` and `/privacy`, respectively).
+
+You can configure this using the `POLICIES_DIRECTORY` setting. We
+recommend using `/etc/zulip/policies`, so that your policies are
+naturally backed up with the server's other configuration. Just place
+Markdown files named `terms.md` and `privacy.md` in that directory,
+and set `TERMS_OF_SERVICE_VERSION` to `1.0` to enable this feature.
+
+You can place additional files in this directory to document
+additional policies; if you do so, you may want to:
+
+- Create a Markdown file `sidebar_index.md` listing the pages in your
+  policies site; this generates the policies site navigation.
+- Create a Markdown file `missing.md` with custom content for 404s in
+  this directory.
+
+Please make clear in these pages what organization is hosting your
+Zulip server, so that nobody could be confused that your policies are
+the policies for Zulip Cloud.
 
 ### Miscellaneous server settings
 
@@ -99,16 +113,17 @@ Some popular settings in `/etc/zulip/settings.py` include:
 
 - The Twitter integration, which provides pretty inline previews of
   tweets.
-- The [email gateway](../production/email-gateway.md), which lets
+- The [email gateway](email-gateway.md), which lets
   users send emails into Zulip.
-- The [Video call integrations](../production/video-calls.md).
+- The [Video call integrations](video-calls.md).
 
 ## Zulip announcement list
 
-If you haven't already, subscribe to the
-[zulip-announce](https://groups.google.com/forum/#!forum/zulip-announce)
-list so that you can receive important announces like new Zulip
-releases or major changes to the app ecosystem.
+Subscribe to the [Zulip announcements email
+list](https://groups.google.com/g/zulip-announce) for server administrators, if
+you have not done so already. This extremely low-traffic list is for important
+announcements, including [new releases](../overview/release-lifecycle.md) and
+security issues.
 
 ## Enjoy your Zulip installation!
 
@@ -118,5 +133,5 @@ request; we love even small contributions, and we'd love to make the
 Zulip documentation cover everything anyone might want to know about
 running Zulip in production.
 
-Next: [Backups, export and import](../production/export-and-import.md) and
-[upgrading](../production/upgrade-or-modify.md) Zulip in production.
+Next: [Backups, export and import](export-and-import.md) and
+[upgrading](upgrade.md) Zulip in production.

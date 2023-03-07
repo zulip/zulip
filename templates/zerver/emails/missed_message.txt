@@ -21,26 +21,26 @@ See {{ alert_notif_url }} for more details.
 {% endif %}
 
 --
-{% if mention %}
-{% if mentioned_user_group_name %}
-{% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned in {{ realm_name }}.{% endtrans %}
-{% else %}
-{% trans %}You are receiving this because you were mentioned in {{ realm_name }}.{% endtrans %}
-{% endif %}
+{% if personal_mentioned %}
+{% trans %}You are receiving this because you were personally mentioned.{% endtrans %}
+{% elif mentioned_user_group_name %}
+{% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned.{% endtrans %}
+{% elif wildcard_mentioned %}
+{% trans %}You are receiving this because everyone was mentioned in #{{ stream_name }}.{% endtrans %}
 {% elif stream_email_notify %}
-{% trans %}You are receiving this because you have email notifications enabled for this stream.{% endtrans %}
+{% trans %}You are receiving this because you have email notifications enabled for #{{ stream_name }}.{% endtrans %}
 {% endif %}
 
 {% if reply_to_zulip  %}
-{% trans %}Reply to this email directly, or view it in Zulip:{% endtrans %}
+{% trans %}Reply to this email directly, or view it in {{ realm_name }} Zulip:{% endtrans %}
 
 {{ narrow_url }}
 {% elif not show_message_content %}
-{% trans %}View or reply in Zulip:{% endtrans %}
+{% trans %}View or reply in {{ realm_name }} Zulip:{% endtrans %}
 
 {{ narrow_url }}
 {% else %}
-{% trans %}Reply in Zulip:{% endtrans %}
+{% trans %}Reply in {{ realm_name }} Zulip:{% endtrans %}
 
 {{ narrow_url }}
 

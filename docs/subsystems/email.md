@@ -44,7 +44,7 @@ Email takes about a quarter second per email to process and send. Generally
 speaking, if you're sending just one email, doing it in the current process
 is fine. If you're sending emails in a loop, you probably want to send it
 from a queue. Documentation on our queueing system is available
-[here](../subsystems/queuing.md).
+[here](queuing.md).
 
 ## Development and testing
 
@@ -72,9 +72,9 @@ mutate the HTML email one can see previewed on `/emails`.
 
 To do this sort of testing, you need to set up an outgoing SMTP
 provider. Our production advice for
-[Gmail](../production/email.html#using-gmail-for-outgoing-email) and
+[Gmail](../production/email.md#using-gmail-for-outgoing-email) and
 [transactional email
-providers](../production/email.html#free-outgoing-email-services) are
+providers](../production/email.md#free-outgoing-email-services) are
 relevant; you can ignore the Gmail warning as Gmail's rate limits are
 appropriate for this sort of low-volume testing.
 

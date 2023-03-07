@@ -1,14 +1,14 @@
 # Realms in Zulip
 
 Zulip allows multiple _realms_ to be hosted on a single instance.
-Realms are the Zulip codebases's internal name for what we refer to in
-user documentation as an organization (the name "realm" comes from
-[Kerberos](https://web.mit.edu/kerberos/)).
+Realms are the Zulip codebase's internal name for what we refer to in
+user-facing documentation as an organization (the name "realm" comes
+from [Kerberos](https://web.mit.edu/kerberos/)).
 
 Wherever possible, we avoid using the term `realm` in any user-facing
 string or documentation; "Organization" is the equivalent term used in
 those contexts (and we have linters that attempt to enforce this rule
-in translateable strings). We may in the future modify Zulip's
+in translatable strings). We may in the future modify Zulip's
 internals to use `organization` instead.
 
 The
@@ -34,15 +34,6 @@ after the creation of the realm. The link also expires if not used
 within 7 days. The expiration period can be changed by modifying
 `REALM_CREATION_LINK_VALIDITY_DAYS` in settings.py.
 
-### Enabling open realm creation
-
-If you want anyone to be able to create new realms on your server, you
-can enable open realm creation. This will add a **Create new
-organization** link to your Zulip homepage footer, and anyone can
-create a new realm by visiting this link (**/new**). This
-feature is disabled by default in production instances, and can be
-enabled by setting `OPEN_REALM_CREATION = True` in settings.py.
-
 ## Subdomains
 
 One can host multiple realms in a Zulip server by giving each realm a
@@ -62,6 +53,17 @@ releases had much less nice handling for subdomains. See our
 user-facing documentation on this.
 
 ### Working with subdomains in development environment
+
+Zulip's development environment is designed to make it convenient to
+test the various Zulip configurations for different subdomains:
+
+- Realms are subdomains on `*.zulipdev.com`, just like `*.zulipchat.com`.
+- The root domain (like `zulip.com` itself) is `zulipdev.com` itself.
+- The default realm is hosted on `localhost:9991` rather than
+  `zulip.zulipdev.com`, using the [`REALM_HOSTS`
+  feature](../production/multiple-organizations.md) feature.
+
+Details are below.
 
 By default, Linux does not provide a convenient way to use subdomains
 in your local development environment. To solve this problem, we use

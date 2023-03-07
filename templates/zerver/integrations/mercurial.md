@@ -1,14 +1,12 @@
 Get Zulip notifications when you `hg push`!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-Next, on your {{ settings_html|safe }}, create a Mercurial bot.
-
-Then:
+1. {!create-an-incoming-webhook.md!}
 
 1.  {!download-python-bindings.md!}
 
-2.  Edit the `hg/.hgrc` configuration file for this default Mercurial
+1.  Edit the `hg/.hgrc` configuration file for this default Mercurial
 repository and add the following sections, using the credentials for
 your Mercurial bot and setting the appropriate path to the integration
 hook if it installs in a different location on this system:
@@ -22,7 +20,7 @@ hook if it installs in a different location on this system:
         stream = "commits"
         site = {{ api_url }}
 
-3.  Add the directory where the `zulip_changegroup.py` script was
+1.  Add the directory where the `zulip_changegroup.py` script was
 installed to the environment variable `PYTHONPATH`.  For example, if
 you installed the Zulip Python bindings at the system level, it'd be:
 

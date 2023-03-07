@@ -20,4 +20,4 @@ def api_deskdotcom_webhook(
 ) -> HttpResponse:
     topic = "Desk.com notification"
     check_send_webhook_message(request, user_profile, topic, data)
-    return json_success()
+    return json_success(request)

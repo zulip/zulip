@@ -3,7 +3,7 @@ to derail from your goal!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your Beeminder **Reminders** settings.
 

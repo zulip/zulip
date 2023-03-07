@@ -28,14 +28,18 @@ for any particular type of object.
 
 """
 import re
-from datetime import datetime
+import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import (
     Any,
     Callable,
     Collection,
     Dict,
+    Iterator,
     List,
+    NoReturn,
     Optional,
     Set,
     Tuple,
@@ -46,15 +50,24 @@ from typing import (
 )
 
 import orjson
-import pytz
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import InvalidJSONError, JsonableError
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
 
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
+
 ResultT = TypeVar("ResultT")
+
+
+def check_anything(var_name: str, val: object) -> object:
+    return val
 
 
 def check_string(var_name: str, val: object) -> str:
@@ -119,11 +132,25 @@ def check_long_string(var_name: str, val: object) -> str:
     return check_capped_string(500)(var_name, val)
 
 
+def check_timezone(var_name: str, val: object) -> str:
+    s = check_string(var_name, val)
+    try:
+        zoneinfo.ZoneInfo(s)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+        raise ValidationError(
+            _("{var_name} is not a recognized time zone").format(var_name=var_name)
+        )
+    return s
+
+
 def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
     try:
-        if datetime.strptime(val, "%Y-%m-%d").strftime("%Y-%m-%d") != val:
+        if (
+            datetime.strptime(val, "%Y-%m-%d").replace(tzinfo=timezone.utc).strftime("%Y-%m-%d")
+            != val
+        ):
             raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
     except ValueError:
         raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
@@ -137,6 +164,11 @@ def check_int(var_name: str, val: object) -> int:
 
 
 def check_int_in(possible_values: List[int]) -> Validator[int]:
+    """
+    Assert that the input is an integer and is contained in `possible_values`. If the input is not in
+    `possible_values`, a `ValidationError` is raised containing the failing field's name.
+    """
+
     def validator(var_name: str, val: object) -> int:
         n = check_int(var_name, val)
         if n not in possible_values:
@@ -357,7 +389,7 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
 
     if s.count("%(username)s") != 1:
-        raise ValidationError(_("Malformed URL pattern."))
+        raise ValidationError(_("URL pattern must contain '%(username)s'."))
     url_val = s.replace("%(username)s", "username")
 
     check_url(var_name, url_val)
@@ -376,12 +408,21 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
         ]
     )
 
+    # To create an array of texts of each option
+    distinct_field_names: Set[str] = set()
+
     for key, value in field_data.items():
         if not key.strip():
             raise ValidationError(_("'{item}' cannot be blank.").format(item="value"))
 
         valid_value = validator("field_data", value)
         assert value is valid_value  # To justify the unchecked cast below
+
+        distinct_field_names.add(valid_value["text"])
+
+    # To show error if the options are duplicate
+    if len(field_data) != len(distinct_field_names):
+        raise ValidationError(_("Field must not have duplicate choices."))
 
     return cast(Dict[str, Dict[str, str]], field_data)
 
@@ -416,7 +457,6 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
         raise ValidationError("extra_data is not a dict")
 
     if widget_type == "zform":
-
         if "type" not in extra_data:
             raise ValidationError("zform is missing type field")
 
@@ -529,7 +569,7 @@ def validate_todo_data(todo_data: object) -> None:
 
 
 # Converter functions for use with has_request_variables
-def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
+def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) -> int:
     x = int(s)
     if x < 0:
         raise ValueError("argument is negative")
@@ -538,27 +578,29 @@ def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
     return x
 
 
-def to_float(s: str) -> float:
+def to_float(var_name: str, s: str) -> float:
     return float(s)
 
 
-def to_decimal(s: str) -> Decimal:
+def to_decimal(var_name: str, s: str) -> Decimal:
     return Decimal(s)
 
 
-def to_timezone_or_empty(s: str) -> str:
-    if s in pytz.all_timezones_set:
-        return s
-    else:
+def to_timezone_or_empty(var_name: str, s: str) -> str:
+    try:
+        zoneinfo.ZoneInfo(s)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
         return ""
+    else:
+        return canonicalize_timezone(s)
 
 
 def to_converted_or_fallback(
-    sub_converter: Callable[[str], ResultT], default: ResultT
-) -> Callable[[str], ResultT]:
-    def converter(s: str) -> ResultT:
+    sub_converter: Callable[[str, str], ResultT], default: ResultT
+) -> Callable[[str, str], ResultT]:
+    def converter(var_name: str, s: str) -> ResultT:
         try:
-            return sub_converter(s)
+            return sub_converter(var_name, s)
         except ValueError:
             return default
 
@@ -582,3 +624,133 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
+
+
+@dataclass
+class WildValue:
+    var_name: str
+    value: object
+
+    def __bool__(self) -> bool:
+        return bool(self.value)
+
+    def __eq__(self, other: object) -> bool:
+        return self.value == other
+
+    def __len__(self) -> int:
+        if not isinstance(self.value, (dict, list, str)):
+            raise ValidationError(
+                _("{var_name} does not have a length").format(var_name=self.var_name)
+            )
+        return len(self.value)
+
+    def __str__(self) -> NoReturn:
+        raise TypeError("cannot convert WildValue to string; try .tame(check_string)")
+
+    def _need_list(self) -> NoReturn:
+        raise ValidationError(_("{var_name} is not a list").format(var_name=self.var_name))
+
+    def _need_dict(self) -> NoReturn:
+        raise ValidationError(_("{var_name} is not a dict").format(var_name=self.var_name))
+
+    def __iter__(self) -> Iterator["WildValue"]:
+        self._need_list()
+
+    def __contains__(self, key: str) -> bool:
+        self._need_dict()
+
+    def __getitem__(self, key: Union[int, str]) -> "WildValue":
+        if isinstance(key, int):
+            self._need_list()
+        else:
+            self._need_dict()
+
+    def get(self, key: str, default: object = None) -> "WildValue":
+        self._need_dict()
+
+    def keys(self) -> Iterator[str]:
+        self._need_dict()
+
+    def values(self) -> Iterator["WildValue"]:
+        self._need_dict()
+
+    def items(self) -> Iterator[Tuple[str, "WildValue"]]:
+        self._need_dict()
+
+    def tame(self, validator: Validator[ResultT]) -> ResultT:
+        return validator(self.var_name, self.value)
+
+
+class WildValueList(WildValue):
+    value: List[object]
+
+    def __iter__(self) -> Iterator[WildValue]:
+        for i, item in enumerate(self.value):
+            yield wrap_wild_value(f"{self.var_name}[{i}]", item)
+
+    def __getitem__(self, key: Union[int, str]) -> WildValue:
+        if not isinstance(key, int):
+            return super().__getitem__(key)
+
+        var_name = f"{self.var_name}[{key!r}]"
+
+        try:
+            item = self.value[key]
+        except IndexError:
+            raise ValidationError(_("{var_name} is missing").format(var_name=var_name)) from None
+
+        return wrap_wild_value(var_name, item)
+
+
+class WildValueDict(WildValue):
+    value: Dict[str, object]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.value
+
+    def __getitem__(self, key: Union[int, str]) -> WildValue:
+        if not isinstance(key, str):
+            return super().__getitem__(key)
+
+        var_name = f"{self.var_name}[{key!r}]"
+
+        try:
+            item = self.value[key]
+        except KeyError:
+            raise ValidationError(_("{var_name} is missing").format(var_name=var_name)) from None
+
+        return wrap_wild_value(var_name, item)
+
+    def get(self, key: str, default: object = None) -> WildValue:
+        item = self.value.get(key, default)
+        if isinstance(item, WildValue):
+            return item
+        return wrap_wild_value(f"{self.var_name}[{key!r}]", item)
+
+    def keys(self) -> Iterator[str]:
+        yield from self.value.keys()
+
+    def values(self) -> Iterator[WildValue]:
+        for key, value in self.value.items():
+            yield wrap_wild_value(f"{self.var_name}[{key!r}]", value)
+
+    def items(self) -> Iterator[Tuple[str, WildValue]]:
+        for key, value in self.value.items():
+            yield key, wrap_wild_value(f"{self.var_name}[{key!r}]", value)
+
+
+def wrap_wild_value(var_name: str, value: object) -> WildValue:
+    if isinstance(value, list):
+        return WildValueList(var_name, value)
+    if isinstance(value, dict):
+        return WildValueDict(var_name, value)
+    return WildValue(var_name, value)
+
+
+def to_wild_value(var_name: str, input: str) -> WildValue:
+    try:
+        value = orjson.loads(input)
+    except orjson.JSONDecodeError:
+        raise InvalidJSONError(_("Malformed JSON"))
+
+    return wrap_wild_value(var_name, value)

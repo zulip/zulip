@@ -7,7 +7,7 @@ from urllib.parse import unquote
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import (
+from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
     check_send_stream_message_by_id,
@@ -38,9 +38,6 @@ that this integration expects!
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
 SETUP_MESSAGE_USER_PART = " by {user_name}"
 
-# Django prefixes all custom HTTP headers with `HTTP_`
-DJANGO_HTTP_PREFIX = "HTTP_"
-
 
 def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
@@ -60,7 +57,7 @@ def notify_bot_owner_about_invalid_json(
     )
 
 
-class MissingHTTPEventHeader(JsonableError):
+class MissingHTTPEventHeaderError(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
     data_fields = ["header"]
 
@@ -87,7 +84,7 @@ def check_send_webhook_message(
     ),
     unquote_url_parameters: bool = False,
 ) -> None:
-    if complete_event_type is not None:
+    if complete_event_type is not None and (
         # Here, we implement Zulip's generic support for filtering
         # events sent by the third-party service.
         #
@@ -98,14 +95,16 @@ def check_send_webhook_message(
         #
         # We match items in only_events and exclude_events using Unix
         # shell-style wildcards.
-        if (
+        (
             only_events is not None
-            and all([not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events])
-        ) or (
+            and all(not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events)
+        )
+        or (
             exclude_events is not None
-            and any([fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events])
-        ):
-            return
+            and any(fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events)
+        )
+    ):
+        return
 
     client = RequestNotes.get_notes(request).client
     assert client is not None
@@ -117,7 +116,7 @@ def check_send_webhook_message(
         # double escape their URLs in a manner that escaped space characters
         # (%20) are never properly decoded. We work around that by making sure
         # that the URL parameters are decoded on our end.
-        if stream is not None and unquote_url_parameters:
+        if unquote_url_parameters:
             stream = unquote(stream)
 
         if user_specified_topic is not None:
@@ -141,7 +140,7 @@ def check_send_webhook_message(
 def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
     """This method can be used to standardize a dictionary of headers with
     the standard format that Django expects. For reference, refer to:
-    https://docs.djangoproject.com/en/2.2/ref/request-response/#django.http.HttpRequest.headers
+    https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpRequest.headers
 
     NOTE: Historically, Django's headers were not case-insensitive. We're still
     capitalizing our headers to make it easier to compare/search later if required.
@@ -153,9 +152,11 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
     for raw_header in input_headers:
         polished_header = raw_header.upper().replace("-", "_")
-        if polished_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
-            if not polished_header.startswith("HTTP_"):
-                polished_header = "HTTP_" + polished_header
+        if polished_header not in [
+            "CONTENT_TYPE",
+            "CONTENT_LENGTH",
+        ] and not polished_header.startswith("HTTP_"):
+            polished_header = "HTTP_" + polished_header
         canonical_headers[polished_header] = str(input_headers[raw_header])
 
     return canonical_headers
@@ -166,7 +167,7 @@ def validate_extract_webhook_http_header(
 ) -> Optional[str]:
     assert request.user.is_authenticated
 
-    extracted_header = request.META.get(DJANGO_HTTP_PREFIX + header)
+    extracted_header = request.headers.get(header)
     if extracted_header is None and fatal:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=request.user.full_name,
@@ -179,7 +180,7 @@ def validate_extract_webhook_http_header(
             request.user, request.user.realm, message_body
         )
 
-        raise MissingHTTPEventHeader(header)
+        raise MissingHTTPEventHeaderError(header)
 
     return extracted_header
 
@@ -195,7 +196,7 @@ def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["
         # TODO: We may want to migrate to a more explicit registration
         # strategy for this behavior rather than a try/except import.
         view_module = importlib.import_module(view_module_name)
-        fixture_to_headers = getattr(view_module, "fixture_to_headers")
+        fixture_to_headers = view_module.fixture_to_headers
     except (ImportError, AttributeError):
         return {}
     return fixture_to_headers(fixture_name)

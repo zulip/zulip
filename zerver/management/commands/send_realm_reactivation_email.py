@@ -3,7 +3,7 @@ from typing import Any
 
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_send_realm_reactivation_email
+from zerver.actions.realm_settings import do_send_realm_reactivation_email
 from zerver.lib.management import ZulipBaseCommand
 
 

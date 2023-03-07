@@ -1,5 +1,5 @@
-import datetime
 import os
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import orjson
@@ -20,7 +20,8 @@ from zerver.data_import.rocketchat import (
     process_message_attachment,
     process_users,
     rocketchat_data_to_dict,
-    separate_channel_and_private_messages,
+    separate_channel_private_and_livechat_messages,
+    truncate_name,
 )
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.user_handler import UserHandler
@@ -40,11 +41,11 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(rocketchat_data["user"][2]["username"], "harry.potter")
         self.assert_length(rocketchat_data["user"][2]["__rooms"], 10)
 
-        self.assert_length(rocketchat_data["room"], 13)
+        self.assert_length(rocketchat_data["room"], 16)
         self.assertEqual(rocketchat_data["room"][0]["_id"], "GENERAL")
         self.assertEqual(rocketchat_data["room"][0]["name"], "general")
 
-        self.assert_length(rocketchat_data["message"], 66)
+        self.assert_length(rocketchat_data["message"], 87)
         self.assertEqual(rocketchat_data["message"][1]["msg"], "Hey everyone, how's it going??")
         self.assertEqual(rocketchat_data["message"][1]["rid"], "GENERAL")
         self.assertEqual(rocketchat_data["message"][1]["u"]["username"], "priyansh3133")
@@ -149,7 +150,7 @@ class RocketChatImporter(ZulipTestCase):
         rocketchat_data["user"].append(
             {
                 "_id": "s0m34ndmID",
-                "createdAt": datetime.datetime(2019, 11, 6, 0, 38, 42, 796000),
+                "createdAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
                 "type": "unknown",
                 "roles": ["unknown"],
                 "name": "Unknown user",
@@ -186,23 +187,27 @@ class RocketChatImporter(ZulipTestCase):
         dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
         direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
         huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+        livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
-        categorize_channels_and_map_with_id(
-            channel_data=rocketchat_data["room"],
-            room_id_to_room_map=room_id_to_room_map,
-            team_id_to_team_map=team_id_to_team_map,
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-        )
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                direct_id_to_direct_map=direct_id_to_direct_map,
+                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+            )
 
-        self.assert_length(rocketchat_data["room"], 13)
+        self.assert_length(rocketchat_data["room"], 16)
         # Teams are a subset of rooms.
         self.assert_length(room_id_to_room_map, 6)
         self.assert_length(team_id_to_team_map, 1)
-        self.assert_length(dsc_id_to_dsc_map, 4)
+        self.assert_length(dsc_id_to_dsc_map, 5)
         self.assert_length(direct_id_to_direct_map, 2)
         self.assert_length(huddle_id_to_huddle_map, 1)
+        self.assert_length(livechat_id_to_livechat_map, 2)
 
         room_id = rocketchat_data["room"][0]["_id"]
         self.assertIn(room_id, room_id_to_room_map)
@@ -224,6 +229,10 @@ class RocketChatImporter(ZulipTestCase):
         self.assertIn(huddle_id, huddle_id_to_huddle_map)
         self.assertEqual(huddle_id_to_huddle_map[huddle_id], rocketchat_data["room"][12])
 
+        livechat_id = rocketchat_data["room"][14]["_id"]
+        self.assertIn(livechat_id, livechat_id_to_livechat_map)
+        self.assertEqual(livechat_id_to_livechat_map[livechat_id], rocketchat_data["room"][14])
+
     def test_convert_channel_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -236,15 +245,18 @@ class RocketChatImporter(ZulipTestCase):
         dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
         direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
         huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+        livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
-        categorize_channels_and_map_with_id(
-            channel_data=rocketchat_data["room"],
-            room_id_to_room_map=room_id_to_room_map,
-            team_id_to_team_map=team_id_to_team_map,
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-        )
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                direct_id_to_direct_map=direct_id_to_direct_map,
+                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+            )
 
         zerver_stream = convert_channel_data(
             room_id_to_room_map=room_id_to_room_map,
@@ -318,15 +330,18 @@ class RocketChatImporter(ZulipTestCase):
         dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
         direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
         huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+        livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
-        categorize_channels_and_map_with_id(
-            channel_data=rocketchat_data["room"],
-            room_id_to_room_map=room_id_to_room_map,
-            team_id_to_team_map=team_id_to_team_map,
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-        )
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                direct_id_to_direct_map=direct_id_to_direct_map,
+                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+            )
 
         zerver_stream = convert_channel_data(
             room_id_to_room_map=room_id_to_room_map,
@@ -370,7 +385,7 @@ class RocketChatImporter(ZulipTestCase):
         # Add a new channel with no user.
         no_user_channel: Dict[str, Any] = {
             "_id": "rand0mID",
-            "ts": datetime.datetime(2021, 7, 15, 10, 58, 23, 647000),
+            "ts": datetime(2021, 7, 15, 10, 58, 23, 647000, tzinfo=timezone.utc),
             "t": "c",
             "name": "no-user-channel",
         }
@@ -422,15 +437,18 @@ class RocketChatImporter(ZulipTestCase):
         dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
         direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
         huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+        livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
-        categorize_channels_and_map_with_id(
-            channel_data=rocketchat_data["room"],
-            room_id_to_room_map=room_id_to_room_map,
-            team_id_to_team_map=team_id_to_team_map,
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-        )
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                direct_id_to_direct_map=direct_id_to_direct_map,
+                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+            )
 
         zerver_huddle = convert_huddle_data(
             huddle_id_to_huddle_map=huddle_id_to_huddle_map,
@@ -520,15 +538,18 @@ class RocketChatImporter(ZulipTestCase):
         dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
         direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
         huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+        livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
-        categorize_channels_and_map_with_id(
-            channel_data=rocketchat_data["room"],
-            room_id_to_room_map=room_id_to_room_map,
-            team_id_to_team_map=team_id_to_team_map,
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-        )
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                direct_id_to_direct_map=direct_id_to_direct_map,
+                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+            )
 
         zerver_stream = convert_channel_data(
             room_id_to_room_map=room_id_to_room_map,
@@ -588,7 +609,7 @@ class RocketChatImporter(ZulipTestCase):
             huddle_id_to_recipient_id[zerver_recipient[12]["type_id"]], zerver_recipient[12]["id"]
         )
 
-    def test_separate_channel_and_private_messages(self) -> None:
+    def test_separate_channel_private_and_livechat_messages(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
 
@@ -597,30 +618,38 @@ class RocketChatImporter(ZulipTestCase):
         dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
         direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
         huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+        livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
-        categorize_channels_and_map_with_id(
-            channel_data=rocketchat_data["room"],
-            room_id_to_room_map=room_id_to_room_map,
-            team_id_to_team_map=team_id_to_team_map,
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            huddle_id_to_huddle_map=huddle_id_to_huddle_map,
-        )
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                direct_id_to_direct_map=direct_id_to_direct_map,
+                huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+            )
 
         channel_messages: List[Dict[str, Any]] = []
         private_messages: List[Dict[str, Any]] = []
+        livechat_messages: List[Dict[str, Any]] = []
 
-        separate_channel_and_private_messages(
+        separate_channel_private_and_livechat_messages(
             messages=rocketchat_data["message"],
+            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
             direct_id_to_direct_map=direct_id_to_direct_map,
             huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+            livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             channel_messages=channel_messages,
             private_messages=private_messages,
+            livechat_messages=livechat_messages,
         )
 
-        self.assert_length(rocketchat_data["message"], 66)
-        self.assert_length(channel_messages, 60)
-        self.assert_length(private_messages, 6)
+        self.assert_length(rocketchat_data["message"], 87)
+        self.assert_length(channel_messages, 68)
+        self.assert_length(private_messages, 11)
+        self.assert_length(livechat_messages, 8)
 
         self.assertIn(rocketchat_data["message"][0], channel_messages)
         self.assertIn(rocketchat_data["message"][1], channel_messages)
@@ -630,12 +659,20 @@ class RocketChatImporter(ZulipTestCase):
         self.assertIn(rocketchat_data["message"][12], private_messages)
         self.assertIn(rocketchat_data["message"][50], private_messages)  # Huddle message
 
+        self.assertIn(rocketchat_data["message"][79], livechat_messages)
+        self.assertIn(rocketchat_data["message"][83], livechat_messages)
+        self.assertIn(rocketchat_data["message"][86], livechat_messages)
+
+        # Message in a Discussion originating from a direct channel
+        self.assertIn(rocketchat_data["message"][70], private_messages)
+        self.assertIn(rocketchat_data["message"][70]["rid"], direct_id_to_direct_map)
+
         # Add a message with no `rid`
         rocketchat_data["message"].append(
             {
                 "_id": "p4v37myxc6yLZ8AHh",
                 "t": "livechat_navigation_history",
-                "ts": datetime.datetime(2019, 11, 6, 0, 38, 42, 796000),
+                "ts": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
                 "msg": " - applewebdata://9124F033-BFEF-43C5-9215-DA369E4DA22D",
                 "u": {"_id": "rocket.cat", "username": "cat"},
                 "groupable": False,
@@ -650,24 +687,29 @@ class RocketChatImporter(ZulipTestCase):
                 },
                 "expireAt": 1575592722794.0,
                 "_hidden": True,
-                "_updatedAt": datetime.datetime(2019, 11, 6, 0, 38, 42, 796000),
+                "_updatedAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
             }
         )
 
         channel_messages = []
         private_messages = []
+        livechat_messages = []
 
-        separate_channel_and_private_messages(
+        separate_channel_private_and_livechat_messages(
             messages=rocketchat_data["message"],
+            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
             direct_id_to_direct_map=direct_id_to_direct_map,
             huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+            livechat_id_to_livechat_map=livechat_id_to_livechat_map,
             channel_messages=channel_messages,
             private_messages=private_messages,
+            livechat_messages=livechat_messages,
         )
 
-        # No new message added to channel or private messages
-        self.assert_length(channel_messages, 60)
-        self.assert_length(private_messages, 6)
+        # No new message added to channel, private or livechat messages
+        self.assert_length(channel_messages, 68)
+        self.assert_length(private_messages, 11)
+        self.assert_length(livechat_messages, 8)
 
     def test_map_upload_id_to_upload_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -716,14 +758,15 @@ class RocketChatImporter(ZulipTestCase):
             zerver_realmemoji=zerver_realmemoji,
         )
 
-        # :grin: and :star_struck: are not present in Zulip's default
-        # emoji set, or in Reaction.UNICODE_EMOJI reaction type.
-        self.assert_length(total_reactions, 7)
+        # :grin: is not present in Zulip's default emoji set,
+        # or in Reaction.UNICODE_EMOJI reaction type.
+        self.assert_length(total_reactions, 8)
 
         grinning_emoji_code = name_to_codepoint["grinning"]
         innocent_emoji_code = name_to_codepoint["innocent"]
         heart_emoji_code = name_to_codepoint["heart"]
         rocket_emoji_code = name_to_codepoint["rocket"]
+        star_struck_emoji_code = name_to_codepoint["star_struck"]
 
         realmemoji_code = {}
         for emoji in zerver_realmemoji:
@@ -735,7 +778,16 @@ class RocketChatImporter(ZulipTestCase):
         )
         self.assertEqual(
             self.get_set(total_reactions, "emoji_name"),
-            {"grinning", "innocent", "heart", "rocket", "check", "zulip", "harry-ron"},
+            {
+                "grinning",
+                "innocent",
+                "star_struck",
+                "heart",
+                "rocket",
+                "check",
+                "zulip",
+                "harry-ron",
+            },
         )
         self.assertEqual(
             self.get_set(total_reactions, "emoji_code"),
@@ -744,13 +796,14 @@ class RocketChatImporter(ZulipTestCase):
                 innocent_emoji_code,
                 heart_emoji_code,
                 rocket_emoji_code,
+                star_struck_emoji_code,
                 realmemoji_code["check"],
                 realmemoji_code["zulip"],
                 realmemoji_code["harry-ron"],
             },
         )
         self.assertEqual(self.get_set(total_reactions, "user_profile"), {2, 3, 4})
-        self.assert_length(self.get_set(total_reactions, "id"), 7)
+        self.assert_length(self.get_set(total_reactions, "id"), 8)
         self.assert_length(self.get_set(total_reactions, "message"), 1)
 
     def test_process_message_attachment(self) -> None:
@@ -818,7 +871,11 @@ class RocketChatImporter(ZulipTestCase):
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
         output_dir = self.make_import_output_dir("rocketchat")
 
-        with self.assertLogs(level="INFO") as info_log:
+        with self.assertLogs(level="INFO") as info_log, self.settings(
+            EXTERNAL_HOST="zulip.example.com"
+        ):
+            # We need to mock EXTERNAL_HOST to be a valid domain because rocketchat's importer
+            # uses it to generate email addresses for users without an email specified.
             do_convert_data(
                 rocketchat_data_dir=rocketchat_data_dir,
                 output_dir=output_dir,
@@ -826,10 +883,10 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
+                "INFO:root:Huddle channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z'] -> hash 752a5854d2b6eec337fe81f0066a5dd72c3f0639",
                 "INFO:root:Starting to process custom emoji",
                 "INFO:root:Done processing emoji",
-                "INFO:root:Start making tarball",
-                "INFO:root:Done making tarball",
+                "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
             ],
         )
 
@@ -864,7 +921,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             exported_user_emails,
             {
-                "rocket.cat-bot@testserver",
+                "rocket.cat-bot@zulip.example.com",
                 "priyansh3133@email.com",
                 "harrypotter@email.com",
                 "hermionegranger@email.com",
@@ -930,8 +987,8 @@ class RocketChatImporter(ZulipTestCase):
 
         realm = get_realm("hogwarts")
 
-        self.assertFalse(get_user("rocket.cat-bot@testserver", realm).is_mirror_dummy)
-        self.assertTrue(get_user("rocket.cat-bot@testserver", realm).is_bot)
+        self.assertFalse(get_user("rocket.cat-bot@zulip.example.com", realm).is_mirror_dummy)
+        self.assertTrue(get_user("rocket.cat-bot@zulip.example.com", realm).is_bot)
         self.assertFalse(get_user("harrypotter@email.com", realm).is_mirror_dummy)
         self.assertFalse(get_user("harrypotter@email.com", realm).is_bot)
         self.assertFalse(get_user("ronweasley@email.com", realm).is_mirror_dummy)
@@ -944,11 +1001,11 @@ class RocketChatImporter(ZulipTestCase):
             self.assertIsNotNone(message.rendered_content)
         # After removing user_joined, added_user, discussion_created, etc.
         # messages. (Total messages were 66.)
-        self.assert_length(messages, 39)
+        self.assert_length(messages, 43)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
-        self.assert_length(stream_messages, 33)
+        self.assert_length(stream_messages, 35)
         self.assert_length(set(stream_recipients), 5)
         self.assertEqual(stream_messages[0].sender.email, "priyansh3133@email.com")
         self.assertEqual(stream_messages[0].content, "Hey everyone, how's it going??")
@@ -964,7 +1021,7 @@ class RocketChatImporter(ZulipTestCase):
 
         huddle_messages = messages.filter(recipient__type=Recipient.HUDDLE).order_by("date_sent")
         huddle_recipients = huddle_messages.values_list("recipient", flat=True)
-        self.assert_length(huddle_messages, 3)
+        self.assert_length(huddle_messages, 4)
         self.assert_length(set(huddle_recipients), 1)
         self.assertEqual(huddle_messages[0].sender.email, "hermionegranger@email.com")
         self.assertEqual(huddle_messages[0].content, "Hey people!")
@@ -982,10 +1039,17 @@ class RocketChatImporter(ZulipTestCase):
             "date_sent"
         )
         personal_recipients = personal_messages.values_list("recipient", flat=True)
-        self.assert_length(personal_messages, 3)
+        self.assert_length(personal_messages, 4)
         self.assert_length(set(personal_recipients), 2)
         self.assertEqual(personal_messages[0].sender.email, "harrypotter@email.com")
         self.assertEqual(
             personal_messages[0].content,
             "Hey @**Hermione Granger** :grin:, how's everything going?",
         )
+
+        self.verify_emoji_code_foreign_keys()
+
+    def test_truncate_name(self) -> None:
+        self.assertEqual("foobar", truncate_name("foobar", 42, 60))
+
+        self.assertEqual("1234567890 [42]", truncate_name("12345678901234567890", 42, 15))

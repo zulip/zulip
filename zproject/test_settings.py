@@ -17,8 +17,8 @@ import os
 # Ick.
 os.environ["EXTERNAL_HOST"] = os.getenv("TEST_EXTERNAL_HOST", "testserver")
 
-from .settings import *  # noqa: F401,F403 isort: skip
-from .test_extra_settings import *  # noqa: F401,F403 isort: skip
+from .settings import *  # noqa: F403 isort: skip
+from .test_extra_settings import *  # noqa: F403 isort: skip
 
 # Do not add any code after these wildcard imports!  Add it to
 # test_extra_settings instead.

@@ -1,6 +1,6 @@
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
-from typing_extensions import TypedDict
+from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.cache import (
     bulk_cached_fetch,
@@ -25,7 +25,13 @@ class TinyStreamResult(TypedDict):
     name: str
 
 
-@cache_with_key(lambda *args: display_recipient_cache_key(args[0]), timeout=3600 * 24 * 7)
+def get_display_recipient_cache_key(
+    recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
+) -> str:
+    return display_recipient_cache_key(recipient_id)
+
+
+@cache_with_key(get_display_recipient_cache_key, timeout=3600 * 24 * 7)
 def get_display_recipient_remote_cache(
     recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
 ) -> DisplayRecipientT:
@@ -92,7 +98,9 @@ def bulk_fetch_display_recipients(
     }
     personal_and_huddle_recipients = recipient_tuples - stream_recipients
 
-    def stream_query_function(recipient_ids: List[int]) -> List[TinyStreamResult]:
+    def stream_query_function(
+        recipient_ids: List[int],
+    ) -> ValuesQuerySet[Stream, TinyStreamResult]:
         stream_ids = [
             recipient_id_to_type_pair_dict[recipient_id][1] for recipient_id in recipient_ids
         ]
@@ -114,7 +122,7 @@ def bulk_fetch_display_recipients(
     )
 
     # Now we have to create display_recipients for personal and huddle messages.
-    # We do this via generic_bulk_cached_fetch, supplying apprioprate functions to it.
+    # We do this via generic_bulk_cached_fetch, supplying appropriate functions to it.
 
     def personal_and_huddle_query_function(
         recipient_ids: List[int],

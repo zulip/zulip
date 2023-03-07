@@ -80,9 +80,10 @@ using an [HTTP reverse proxy][reverse-proxy]).
    mailname = emaildomain.example.com
    ```
 
-   This tells postfix to expect to receive emails at addresses ending
-   with `@emaildomain.example.com`, overriding the default of
-   `@hostname.example.com`.
+   This tells postfix to expect to receive emails at addresses ending with
+   `@emaildomain.example.com`, overriding the default of
+   `@hostname.example.com`. It will also identify itself as
+   `emaildomain.example.com` on any outgoing emails it sends.
 
 1. Run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`
    (and answer `y`) to apply your new `/etc/zulip/zulip.conf`
@@ -96,7 +97,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
 
 Congratulations! The integration should be fully operational.
 
-[reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
+[reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
 
 ## Polling setup
 
@@ -118,7 +119,16 @@ Congratulations! The integration should be fully operational.
      in the email gateway integration section (`EMAIL_GATEWAY_LOGIN` and others).
    - Password in `/etc/zulip/zulip-secrets.conf` as `email_gateway_password`.
 
-1. Install a cron job to poll the inbox every minute for new messages:
+1. Test your configuration by sending emails to the target email
+   account and then running the Zulip tool to poll that inbox:
+
+   ```
+   su zulip -c '/home/zulip/deployments/current/manage.py email_mirror'
+   ```
+
+1. Once everything is working, install the cron job which will poll
+   the inbox every minute for new messages using the tool you tested
+   in the last step:
    ```bash
    cd /home/zulip/deployments/current/
    sudo cp puppet/zulip/files/cron.d/email-mirror /etc/cron.d/

@@ -28,7 +28,8 @@ Look at the surrounding code, or a similar part of the project, and try
 to do the same thing. If you think the other code has actively bad
 style, fix it (in a separate commit).
 
-When in doubt, ask in [chat.zulip.org](https://chat.zulip.org).
+When in doubt, ask in
+[#development help](https://chat.zulip.org/#narrow/stream/49-development-help).
 
 ## Lint tools
 
@@ -51,7 +52,7 @@ The Vagrant setup process runs this for you.
 - JavaScript ([ESLint](https://eslint.org/),
   [Prettier](https://prettier.io/))
 - Python ([mypy](http://mypy-lang.org/),
-  [Pyflakes](https://pypi.python.org/pypi/pyflakes),
+  [ruff](https://github.com/charliermarsh/ruff),
   [Black](https://github.com/psf/black),
   [isort](https://pycqa.github.io/isort/))
 - templates
@@ -61,8 +62,8 @@ The Vagrant setup process runs this for you.
 ## Secrets
 
 Please don't put any passwords, secret access keys, etc. inline in the
-code. Instead, use the `get_secret` function in `zproject/config.py`
-to read secrets from `/etc/zulip/secrets.conf`.
+code. Instead, use the `get_secret` function or the `get_mandatory_secret`
+function in `zproject/config.py` to read secrets from `/etc/zulip/secrets.conf`.
 
 ## Dangerous constructs
 
@@ -140,7 +141,7 @@ You should work with the IDs instead:
 ```python
 obj: UserProfile = get_user_profile_by_id(17)
 some_objs = UserProfile.objects.get(id=17)
-assert obj.id in set([o.id for i in some_objs])
+assert obj.id in set([o.id for o in some_objs])
 ```
 
 ### user_profile.save()
@@ -154,7 +155,7 @@ object before the first thread wrote out its change.
 
 ### Using raw saves to update important model objects
 
-In most cases, we already have a function in zerver/lib/actions.py with
+In most cases, we already have a function in `zerver.actions` with
 a name like do_activate_user that will correctly handle lookups,
 caching, and notifying running browsers via the event system about your
 change. So please check whether such a function exists before writing
@@ -163,11 +164,11 @@ of getting at least one of these things wrong.
 
 ### Naive datetime objects
 
-Python allows datetime objects to not have an associated timezone, which can
+Python allows datetime objects to not have an associated time zone, which can
 cause time-related bugs that are hard to catch with a test suite, or bugs
 that only show up during daylight savings time.
 
-Good ways to make timezone-aware datetimes are below. We import timezone
+Good ways to make time-zone-aware datetimes are below. We import time zone
 libraries as `from datetime import datetime, timezone` and
 `from django.utils.timezone import now as timezone_now`.
 
@@ -183,7 +184,7 @@ Use:
 - `datetime.strptime(date_string, format).replace(tzinfo=timezone.utc)` if
   creating a datetime from a formatted string that is in UTC.
 
-Idioms that result in timezone-naive datetimes, and should be avoided, are
+Idioms that result in time-zone-naive datetimes, and should be avoided, are
 `datetime.now()` and `datetime.fromtimestamp(timestamp)` without a `tz`
 parameter, `datetime.utcnow()` and `datetime.utcfromtimestamp()`, and
 `datetime.strptime(date_string, format)` without replacing the `tzinfo` at
@@ -272,8 +273,8 @@ editor](https://prettier.io/docs/en/editors.html).
 
 Combine adjacent on-ready functions, if they are logically related.
 
-The best way to build complicated DOM elements is a Mustache template
-like `static/templates/message_reactions.hbs`. For simpler things
+The best way to build complicated DOM elements is a Handlebars template
+like `web/templates/message_reactions.hbs`. For simpler things
 you can use jQuery DOM building APIs like so:
 
 ```js
@@ -331,7 +332,7 @@ type changes in the future.
   isort in check mode, or in write mode with
   `tools/lint --only=black,isort --fix`. You may find it helpful to
   [integrate
-  Black](https://black.readthedocs.io/en/stable/editor_integration.html)
+  Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
   and
   [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
   with your editor.

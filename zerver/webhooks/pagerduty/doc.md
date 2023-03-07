@@ -2,7 +2,7 @@ Get Zulip notifications for your PagerDuty services!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Open the **Integrations** tab, and click **Generic Webhooks (v3)**.
 

@@ -5,10 +5,46 @@
 set -e
 set -x
 
+usage() {
+    cat <<'EOF'
+Usage:
+  production-verify
+  production-verify --test-custom-db
+  production-verify --help
+
+Options:
+  --test-custom-db
+      Use custom database and user names.
+
+EOF
+}
+
+# Shell option parsing.
+args="$(getopt -o '' --long help,test-custom-db -n "$0" -- "$@")"
+eval "set -- $args"
+NAGIOS_USER="zulip"
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+
+        --test-custom-db)
+            NAGIOS_USER="zulipcustomuser"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
 cat >>/etc/zulip/settings.py <<EOF
 # CircleCI override settings above
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
-NOREPLY_EMAIL_ADDRESS = 'noreply@circleci.example.com'
+NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 ALLOWED_HOSTS = []
 EOF
 
@@ -56,10 +92,10 @@ fi
 
 # TODO: Ideally this would test actually logging in, but this is a start.
 echo
-echo "Now testing that the newly installed server's homepage loads"
+echo "Now testing that the newly installed server's settings endpoint loads"
 echo
 
-curl -ILk https://localhost -o /tmp/http-headers
+curl -ILk https://localhost/api/v1/server_settings -o /tmp/http-headers
 grep -vi -e '^content-length:' -e '^date:' -e '^expires:' -e '^set-cookie:' /tmp/http-headers >/tmp/http-headers-processed
 
 nginx_version="$(nginx -v 2>&1)"
@@ -93,7 +129,7 @@ echo
 # Then, compute the list of all Django queue workers to run Nagios checks against
 consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type=consumer)
 for consumer in $consumer_list; do
-    if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_rabbitmq_consumers "$consumer"; then
+    if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_cron_file "/var/lib/nagios_state/check-rabbitmq-consumers-$consumer"; then
         set +x
         echo
         echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
@@ -111,7 +147,7 @@ echo
 echo "Now running additional Nagios tests"
 echo
 if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
-    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check"; then # || \
+    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check --nagios-user=$NAGIOS_USER"; then # || \
     #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
     set +x
     echo

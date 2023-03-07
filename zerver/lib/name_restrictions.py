@@ -30,6 +30,7 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "thread",
     "installation",
     "organization",
+    "your-org",
     "realm",
     "team",
     "subdomain",
@@ -102,7 +103,7 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "open",
     "code",
     "license",
-    # intership programs
+    # internship programs
     "intern",
     "outreachy",
     "gsoc",

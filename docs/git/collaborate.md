@@ -56,4 +56,4 @@ tools/fetch-pull-request <PR-number>
 ```
 
 [github-help-co-pr-locally]: https://help.github.com/en/articles/checking-out-pull-requests-locally
-[tools-pr]: ../git/zulip-tools.html#fetch-a-pull-request-and-rebase
+[tools-pr]: zulip-tools.md#fetch-a-pull-request-and-rebase

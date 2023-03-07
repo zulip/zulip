@@ -1,6 +1,10 @@
 {% extends "zerver/portico_signup.html" %}
 {% set entrypoint = "register" %}
 
+{% block title %}
+<title>{{ _("Set a new password") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 
 <div class="password-container flex full-page new-style">
@@ -14,7 +18,7 @@
             <!-- TODO: Ask about meta viewport 1:1 scaling -->
 
             {% if validlink %}
-            <form method="post" id="password_reset" class="form-horizontal" autocomplete="off">
+            <form method="post" id="password_reset" autocomplete="off">
                 {{ csrf_input }}
                 <div class="input-box" id="email-section">
                     <label for="id_email">{{ _("Email") }}</label>

@@ -26,7 +26,7 @@ principles are important in how we think about internationalization:
   element needs to be built in a way that supports i18n.
 - This is more about string consistency in general, but we have a
   "Sentence case" [capitalization
-  policy](../translating/translating.html#capitalization) that we enforce using linters
+  policy](translating.md#capitalization) that we enforce using linters
   that check all strings tagged for translation in Zulip.
 
 This article aims to provide a brief introduction. We recommend the
@@ -48,7 +48,7 @@ to understand when implementing an internationalized application:
   translate the content.
 - **Word order** varies between languages (e.g. some languages put
   subjects before verbs, others the other way around). This means
-  that **concatenating translateable strings** produces broken results
+  that **concatenating translatable strings** produces broken results
   (more details with examples are below).
 - The **width of the string needed to express something** varies
   dramatically between languages; this means you can't just hardcode a
@@ -108,7 +108,7 @@ The end-to-end tooling process for translations in Zulip is as follows.
    Transifex API tool, `tx pull`, internally).
 
 If you're interested, you may also want to check out the [translators'
-workflow](../translating/translating.html#translators-workflow), just so you have a
+workflow](translating.md#translators-workflow), just so you have a
 sense of how everything fits together.
 
 ## Translation resource files
@@ -146,7 +146,7 @@ can use the `_()` function in the templates like this:
 If a piece of text contains both a literal string component and variables,
 you can use a block translation, which makes use of placeholders to
 help translators to translate an entire sentence. To translate a
-block, Jinja2 uses the [trans][] tag. So rather than writing
+block, Jinja2 uses the [trans][trans] tag. So rather than writing
 something ugly and confusing for translators like this:
 
 ```jinja
@@ -202,7 +202,7 @@ class Realm(models.Model):
     STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy('stream events')
 ```
 
-To ensure we always internationalize our JSON errors messages, the
+To ensure we always internationalize our JSON error messages, the
 Zulip linter (`tools/lint`) attempts to verify correct usage.
 
 ## Frontend translations
@@ -239,7 +239,7 @@ $("#foo").html(
 
 The only HTML tags allowed directly in translated strings are the
 simple HTML tags enumerated in `default_html_elements`
-(`static/js/i18n.js`) with no attributes. This helps to avoid
+(`web/src/i18n.js`) with no attributes. This helps to avoid
 exposing HTML details to translators. If you need to include more
 complex markup such as a link, you can define a custom HTML tag
 locally to the translation:
@@ -247,7 +247,7 @@ locally to the translation:
 ```js
 $t_html(
     {defaultMessage: "<b>HTML</b> linking to the <z-link>login page</z-link>"},
-    {"z-link": (content_html) => `<a href="/login/">${content_html}</a>`},
+    {"z-link": (content_html) => `<a href="/login/">${content_html.join("")}</a>`},
 )
 ```
 
@@ -293,7 +293,7 @@ translated block, because they don't work properly with translation.
 The Handlebars expression would be evaluated before the string is
 processed by FormatJS, so that the string to be translated wouldn't be
 constant. We have a linter to enforce that translated blocks don't
-contain handlebars.
+contain Handlebars.
 
 Restrictions on including HTML tags in translated strings are the same
 as in JavaScript. You can insert more complex markup using a local
@@ -314,18 +314,17 @@ located at `.tx/config`.
 ## Transifex CLI setup
 
 In order to be able to run `tx pull` (and `tx push` as well, if you're a
-maintainer), you have to specify your Transifex credentials in a config
-file, located at `~/.transifexrc`.
+maintainer), you have to specify your Transifex API Token, [generated in
+Transifex's web interface][transifex-api-token], in a config file located at
+`~/.transifexrc`.
 
 You can find details on how to set it up [here][transifexrc], but it should
 look similar to this (with your credentials):
 
 ```ini
 [https://www.transifex.com]
-username = user
-token =
-password = p@ssw0rd
-hostname = https://www.transifex.com
+rest_hostname = https://rest.api.transifex.com
+token = 1/abcdefg...
 ```
 
 This basically identifies you as a Transifex user, so you can access your
@@ -333,10 +332,11 @@ organizations from the command line.
 
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/
-[trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
+[trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
 [formatjs]: https://formatjs.io/
 [icu messageformat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
 [transifex]: https://transifex.com
+[transifex-api-token]: https://www.transifex.com/user/settings/api/
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
-[html-templates]: ../subsystems/html-css.html#html-templates
+[html-templates]: ../subsystems/html-css.md#html-templates

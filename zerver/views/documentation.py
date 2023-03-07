@@ -12,7 +12,13 @@ from django.views.generic import TemplateView
 
 from zerver.context_processors import zulip_default_context
 from zerver.decorator import add_google_analytics_context
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, WebhookIntegration
+from zerver.lib.integrations import (
+    CATEGORIES,
+    INTEGRATIONS,
+    META_CATEGORY,
+    HubotIntegration,
+    WebhookIntegration,
+)
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.templates import render_markdown_path
@@ -50,14 +56,6 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context["zulip_url"] = zulip_url
 
     context["html_settings_links"] = html_settings_links
-    if html_settings_links:
-        settings_html = '<a href="/#settings">Zulip settings page</a>'
-        subscriptions_html = '<a target="_blank" href="/#streams">streams page</a>'
-    else:
-        settings_html = "Zulip settings page"
-        subscriptions_html = "streams page"
-    context["settings_html"] = settings_html
-    context["subscriptions_html"] = subscriptions_html
 
 
 class ApiURLView(TemplateView):
@@ -69,6 +67,9 @@ class ApiURLView(TemplateView):
 
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
+    policies_view = False
+    help_view = False
+    api_doc_view = False
 
     def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
@@ -76,6 +77,10 @@ class MarkdownDirectoryView(ApiURLView):
             article = "index"
         elif article == "include/sidebar_index":
             pass
+        elif article == "api-doc-template":
+            # This markdown template shouldn't be accessed directly.
+            article = "missing"
+            http_status = 404
         elif "/" in article:
             article = "missing"
             http_status = 404
@@ -87,36 +92,53 @@ class MarkdownDirectoryView(ApiURLView):
         endpoint_name = None
         endpoint_method = None
 
-        # The following is a somewhat hacky approach to extract titles from articles.
-        # Hack: `context["article"] has a leading `/`, so we use + to add directories.
-        article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
+        if not self.path_template.startswith("/"):
+            # Relative paths only used for policies documentation
+            # when it is not configured or in the dev environment
+            assert self.policies_view
 
-        if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
             try:
-                endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
-                path = "/zerver/api/api-doc-template.md"
-            except AssertionError:
+                loader.get_template(path)
+                return DocumentationArticle(
+                    article_path=path,
+                    article_http_status=http_status,
+                    endpoint_path=endpoint_name,
+                    endpoint_method=endpoint_method,
+                )
+            except loader.TemplateDoesNotExist:
                 return DocumentationArticle(
                     article_path=self.path_template % ("missing",),
                     article_http_status=404,
                     endpoint_path=None,
                     endpoint_method=None,
                 )
-        try:
-            loader.get_template(path)
-            return DocumentationArticle(
-                article_path=path,
-                article_http_status=http_status,
-                endpoint_path=endpoint_name,
-                endpoint_method=endpoint_method,
-            )
-        except loader.TemplateDoesNotExist:
-            return DocumentationArticle(
-                article_path=self.path_template % ("missing",),
-                article_http_status=404,
-                endpoint_path=None,
-                endpoint_method=None,
-            )
+
+        if not os.path.exists(path):
+            if self.api_doc_view:
+                try:
+                    # API endpoints documented in zerver/openapi/zulip.yaml
+                    endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
+                    path = self.path_template % ("api-doc-template",)
+                except AssertionError:
+                    return DocumentationArticle(
+                        article_path=self.path_template % ("missing",),
+                        article_http_status=404,
+                        endpoint_path=None,
+                        endpoint_method=None,
+                    )
+            elif self.help_view or self.policies_view:
+                article = "missing"
+                http_status = 404
+                path = self.path_template % (article,)
+            else:
+                raise AssertionError("Invalid documentation view type")
+
+        return DocumentationArticle(
+            article_path=path,
+            article_http_status=http_status,
+            endpoint_path=endpoint_name,
+            endpoint_method=endpoint_method,
+        )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
@@ -124,32 +146,50 @@ class MarkdownDirectoryView(ApiURLView):
 
         documentation_article = self.get_path(article)
         context["article"] = documentation_article.article_path
+        not_index_page = not context["article"].endswith("/index.md")
 
-        # For disabling the "Back to home" on the homepage
-        context["not_index_page"] = not context["article"].endswith("/index.md")
-        if self.path_template == "/zerver/help/%s.md":
+        if documentation_article.article_path.startswith("/") and os.path.exists(
+            documentation_article.article_path
+        ):
+            # Absolute path case
+            article_absolute_path = documentation_article.article_path
+        else:
+            # Relative path case
+            article_absolute_path = os.path.join(
+                settings.DEPLOY_ROOT, "templates", documentation_article.article_path
+            )
+
+        if self.help_view:
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
             context["doc_root_title"] = "Help center"
             sidebar_article = self.get_path("include/sidebar_index")
             sidebar_index = sidebar_article.article_path
-            title_base = "Zulip Help Center"
-        else:
+            title_base = "Zulip help center"
+        elif self.policies_view:
+            context["page_is_policy_center"] = True
+            context["doc_root"] = "/policies/"
+            context["doc_root_title"] = "Terms and policies"
+            sidebar_article = self.get_path("sidebar_index")
+            sidebar_index = sidebar_article.article_path
+            title_base = "Zulip terms and policies"
+        elif self.api_doc_view:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
             context["doc_root_title"] = "API documentation"
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
+        else:
+            raise AssertionError("Invalid documentation view type")
 
         # The following is a somewhat hacky approach to extract titles from articles.
-        # Hack: `context["article"] has a leading `/`, so we use + to add directories.
-        article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + context["article"]
-        if os.path.exists(article_path):
-            with open(article_path) as article_file:
+        endpoint_name = None
+        endpoint_method = None
+        if os.path.exists(article_absolute_path):
+            with open(article_absolute_path) as article_file:
                 first_line = article_file.readlines()[0]
-            # Strip the header and then use the first line to get the article title
-            if context["article"] == "/zerver/api/api-doc-template.md":
+            if self.api_doc_view and context["article"].endswith("api-doc-template.md"):
                 endpoint_name, endpoint_method = (
                     documentation_article.endpoint_path,
                     documentation_article.endpoint_method,
@@ -157,22 +197,23 @@ class MarkdownDirectoryView(ApiURLView):
                 assert endpoint_name is not None
                 assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
-            elif self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
-                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1]
+            elif self.api_doc_view and "{generate_api_header(" in first_line:
+                api_operation = context["PAGE_METADATA_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
             else:
+                # Strip the header and then use the first line to get the article title
                 article_title = first_line.lstrip("#").strip()
                 endpoint_name = endpoint_method = None
-            if context["not_index_page"]:
-                context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
+            if not_index_page:
+                context["PAGE_TITLE"] = f"{article_title} | {title_base}"
             else:
-                context["OPEN_GRAPH_TITLE"] = title_base
+                context["PAGE_TITLE"] = title_base
             request_notes = RequestNotes.get_notes(self.request)
             request_notes.placeholder_open_graph_description = (
-                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}"
+                f"REPLACEMENT_PAGE_DESCRIPTION_{int(2**24 * random.random())}"
             )
-            context["OPEN_GRAPH_DESCRIPTION"] = request_notes.placeholder_open_graph_description
+            context["PAGE_DESCRIPTION"] = request_notes.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
         # An "article" might require the api_uri_context to be rendered
@@ -185,10 +226,18 @@ class MarkdownDirectoryView(ApiURLView):
         add_google_analytics_context(context)
         return context
 
-    def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
+    def get(
+        self, request: HttpRequest, *args: object, article: str = "", **kwargs: object
+    ) -> HttpResponse:
+        # Hack: It's hard to reinitialize urls.py from tests, and so
+        # we want to defer the use of settings.POLICIES_DIRECTORY to
+        # runtime.
+        if self.policies_view:
+            self.path_template = f"{settings.POLICIES_DIRECTORY}/%s.md"
+
         documentation_article = self.get_path(article)
         http_status = documentation_article.article_http_status
-        result = super().get(self, article=article)
+        result = super().get(request, article=article)
         if http_status != 200:
             result.status_code = http_status
         return result
@@ -216,17 +265,20 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
 
     if path_name in INTEGRATIONS:
         integration = INTEGRATIONS[path_name]
-        context["OPEN_GRAPH_TITLE"] = f"Connect {integration.display_name} to Zulip"
-        context["OPEN_GRAPH_DESCRIPTION"] = description
+        context["PAGE_TITLE"] = f"{integration.display_name} | Zulip integrations"
+        context["PAGE_DESCRIPTION"] = description
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        context["OPEN_GRAPH_TITLE"] = f"Connect your {category} tools to Zulip"
-        context["OPEN_GRAPH_DESCRIPTION"] = description
+        if path_name in META_CATEGORY:
+            context["PAGE_TITLE"] = f"{category} | Zulip integrations"
+        else:
+            context["PAGE_TITLE"] = f"{category} tools | Zulip integrations"
+        context["PAGE_DESCRIPTION"] = description
 
     elif path_name == "integrations":
-        context["OPEN_GRAPH_TITLE"] = "Connect the tools you use to Zulip"
-        context["OPEN_GRAPH_DESCRIPTION"] = description
+        context["PAGE_TITLE"] = "Zulip integrations"
+        context["PAGE_DESCRIPTION"] = description
 
 
 class IntegrationView(ApiURLView):
@@ -242,8 +294,10 @@ class IntegrationView(ApiURLView):
 
 @has_request_variables
 def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> HttpResponse:
-    if not request.is_ajax():
+    # FIXME: This check is jQuery-specific.
+    if request.headers.get("x-requested-with") != "XMLHttpRequest":
         return HttpResponseNotFound()
+
     try:
         integration = INTEGRATIONS[integration_name]
     except KeyError:
@@ -257,9 +311,14 @@ def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> Http
     context["recommended_stream_name"] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
         context["integration_url"] = integration.url[3:]
+        if (
+            hasattr(integration.function, "_all_event_types")
+            and integration.function._all_event_types is not None
+        ):
+            context["all_event_types"] = integration.function._all_event_types
     if isinstance(integration, HubotIntegration):
         context["hubot_docs_url"] = integration.hubot_docs_url
 
-    doc_html_str = render_markdown_path(integration.doc, context)
+    doc_html_str = render_markdown_path(integration.doc, context, integration_doc=True)
 
     return HttpResponse(doc_html_str)

@@ -6,14 +6,14 @@ import logging
 import re
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
 import gcm
 import lxml.html
 import orjson
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -21,10 +21,11 @@ from django.utils.translation import override as override_language
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
+from zerver.lib.message import access_message, huddle_users
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
+from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
@@ -32,6 +33,7 @@ from zerver.models import (
     NotificationTriggers,
     PushDeviceToken,
     Recipient,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_display_recipient,
@@ -44,9 +46,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemotePushDeviceToken
+    from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
 DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
+
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
@@ -55,6 +58,52 @@ def b64_to_hex(data: str) -> str:
 
 def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
+
+
+class UserPushIdentityCompat:
+    """Compatibility class for supporting the transition from remote servers
+    sending their UserProfile ids to the bouncer to sending UserProfile uuids instead.
+
+    Until we can drop support for receiving user_id, we need this
+    class, because a user's identity in the push notification context
+    may be represented either by an id or uuid.
+    """
+
+    def __init__(self, user_id: Optional[int] = None, user_uuid: Optional[str] = None) -> None:
+        assert user_id is not None or user_uuid is not None
+        self.user_id = user_id
+        self.user_uuid = user_uuid
+
+    def filter_q(self) -> Q:
+        """
+        This aims to support correctly querying for RemotePushDeviceToken.
+        If only one of (user_id, user_uuid) is provided, the situation is trivial,
+        If both are provided, we want to query for tokens matching EITHER the
+        uuid or the id - because the user may have devices with old registrations,
+        so user_id-based, as well as new registration with uuid. Notifications
+        naturally should be sent to both.
+        """
+        if self.user_id is not None and self.user_uuid is None:
+            return Q(user_id=self.user_id)
+        elif self.user_uuid is not None and self.user_id is None:
+            return Q(user_uuid=self.user_uuid)
+        else:
+            assert self.user_id is not None and self.user_uuid is not None
+            return Q(user_uuid=self.user_uuid) | Q(user_id=self.user_id)
+
+    def __str__(self) -> str:
+        result = ""
+        if self.user_id is not None:
+            result += f"<id:{self.user_id}>"
+        if self.user_uuid is not None:
+            result += f"<uuid:{self.user_uuid}>"
+
+        return result
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, UserPushIdentityCompat):
+            return self.user_id == other.user_id and self.user_uuid == other.user_uuid
+        return False
 
 
 #
@@ -78,28 +127,31 @@ def get_apns_context() -> Optional[APNsContext]:
     # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
     logging.getLogger("aioapns").setLevel(logging.CRITICAL)
 
-    if settings.APNS_CERT_FILE is None:
+    if settings.APNS_CERT_FILE is None:  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
     # That's a little sloppy, but harmless unless a server gets
     # hammered with a ton of these all at once after startup.
     loop = asyncio.new_event_loop()
-    apns = aioapns.APNs(
-        client_cert=settings.APNS_CERT_FILE,
-        topic=settings.APNS_TOPIC,
-        max_connection_attempts=APNS_MAX_RETRIES,
-        loop=loop,
-        use_sandbox=settings.APNS_SANDBOX,
-    )
+
+    async def make_apns() -> aioapns.APNs:
+        return aioapns.APNs(
+            client_cert=settings.APNS_CERT_FILE,
+            topic=settings.APNS_TOPIC,
+            max_connection_attempts=APNS_MAX_RETRIES,
+            use_sandbox=settings.APNS_SANDBOX,
+        )
+
+    apns = loop.run_until_complete(make_apns())
     return APNsContext(apns=apns, loop=loop)
 
 
 def apns_enabled() -> bool:
-    return get_apns_context() is not None
+    return settings.APNS_CERT_FILE is not None
 
 
-def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
+def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
     """Take a payload in an unknown Zulip version's format, and return in current format."""
     # TODO this isn't super robust as is -- if a buggy remote server
     # sends a malformed payload, we are likely to raise an exception.
@@ -130,7 +182,10 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(
-    user_id: int, devices: Sequence[DeviceToken], payload_data: Dict[str, Any], remote: bool = False
+    user_identity: UserPushIdentityCompat,
+    devices: Sequence[DeviceToken],
+    payload_data: Mapping[str, Any],
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     if not devices:
         return
@@ -155,8 +210,20 @@ def send_apple_push_notification(
     else:
         DeviceTokenClass = PushDeviceToken
 
-    logger.info("APNs: Sending notification for user %d to %d devices", user_id, len(devices))
-    payload_data = modernize_apns_payload(payload_data).copy()
+    if remote:
+        logger.info(
+            "APNs: Sending notification for remote user %s:%s to %d devices",
+            remote.uuid,
+            user_identity,
+            len(devices),
+        )
+    else:
+        logger.info(
+            "APNs: Sending notification for local user %s to %d devices",
+            user_identity,
+            len(devices),
+        )
+    payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
     for device in devices:
         # TODO obviously this should be made to actually use the async
@@ -168,17 +235,18 @@ def send_apple_push_notification(
             result = apns_context.loop.run_until_complete(
                 apns_context.apns.send_notification(request)
             )
-        except aioapns.exceptions.ConnectionError as e:
-            logger.warning(
-                "APNs: ConnectionError sending for user %d to device %s: %s",
-                user_id,
+        except aioapns.exceptions.ConnectionError:
+            logger.error(
+                "APNs: ConnectionError sending for user %s to device %s; check certificate expiration",
+                user_identity,
                 device.token,
-                e.__class__.__name__,
             )
             continue
 
         if result.is_successful:
-            logger.info("APNs: Success sending for user %d to device %s", user_id, device.token)
+            logger.info(
+                "APNs: Success sending for user %s to device %s", user_identity, device.token
+            )
         elif result.description in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
             logger.info(
                 "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
@@ -188,8 +256,8 @@ def send_apple_push_notification(
             DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
         else:
             logger.warning(
-                "APNs: Failed to send for user %d to device %s: %s",
-                user_id,
+                "APNs: Failed to send for user %s to device %s: %s",
+                user_identity,
                 device.token,
                 result.description,
             )
@@ -198,6 +266,12 @@ def send_apple_push_notification(
 #
 # Sending to GCM, for Android
 #
+
+
+class FCMSession(OutgoingSession):
+    def __init__(self) -> None:
+        # We don't set up retries, since the gcm package does that for us.
+        super().__init__(role="fcm", timeout=5)
 
 
 def make_gcm_client() -> gcm.GCM:  # nocoverage
@@ -228,11 +302,14 @@ def gcm_enabled() -> bool:  # nocoverage
     return gcm_client is not None
 
 
+# This is purely used in testing
 def send_android_push_notification_to_user(
     user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
 ) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
-    send_android_push_notification(devices, data, options)
+    send_android_push_notification(
+        UserPushIdentityCompat(user_id=user_profile.id), devices, data, options
+    )
 
 
 def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
@@ -282,10 +359,11 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(
+    user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
     data: Dict[str, Any],
     options: Dict[str, Any],
-    remote: bool = False,
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     """
     Send a GCM message to the given devices.
@@ -307,14 +385,34 @@ def send_android_push_notification(
         )
         return
 
+    if remote:
+        logger.info(
+            "GCM: Sending notification for remote user %s:%s to %d devices",
+            remote.uuid,
+            user_identity,
+            len(devices),
+        )
+    else:
+        logger.info(
+            "GCM: Sending notification for local user %s to %d devices", user_identity, len(devices)
+        )
     reg_ids = [device.token for device in devices]
     priority = parse_gcm_options(options, data)
     try:
         # See https://firebase.google.com/docs/cloud-messaging/http-server-ref .
         # Two kwargs `retries` and `session` get eaten by `json_request`;
         # the rest pass through to the GCM server.
+        #
+        # One initial request plus 2 retries, with 5-second timeouts,
+        # and expected 1 + 2 seconds (the gcm module jitters its
+        # backoff by ±50%, so worst case * 1.5) between them, totals
+        # 18s expected, up to 19.5s worst case.
         res = gcm_client.json_request(
-            registration_ids=reg_ids, priority=priority, data=data, retries=10
+            registration_ids=reg_ids,
+            priority=priority,
+            data=data,
+            retries=2,
+            session=FCMSession(),
         )
     except OSError:
         logger.warning("Error while pushing to GCM", exc_info=True)
@@ -393,6 +491,9 @@ def send_notifications_to_bouncer(
     gcm_options: Dict[str, Any],
 ) -> Tuple[int, int]:
     post_data = {
+        "user_uuid": str(get_user_profile_by_id(user_profile_id).uuid),
+        # user_uuid is the intended future format, but we also need to send user_id
+        # to avoid breaking old mobile registrations, which were made with user_id.
         "user_id": user_profile_id,
         "apns_payload": apns_payload,
         "gcm_payload": gcm_payload,
@@ -445,7 +546,7 @@ def add_push_device_token(
     if uses_notification_bouncer():
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
-            "user_id": user_profile.id,
+            "user_uuid": str(user_profile.uuid),
             "token": token_str,
             "token_kind": kind,
         }
@@ -479,6 +580,9 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
         # TODO: Make this a remove item
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
+            # We don't know here if the token was registered with uuid
+            # or using the legacy id format, so we need to send both.
+            "user_uuid": str(user_profile.uuid),
             "user_id": user_profile.id,
             "token": token_str,
             "token_kind": kind,
@@ -490,8 +594,12 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
 def clear_push_device_tokens(user_profile_id: int) -> None:
     # Deletes all of a user's PushDeviceTokens.
     if uses_notification_bouncer():
+        user_uuid = str(get_user_profile_by_id(user_profile_id).uuid)
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
+            # We want to clear all registered token, and they may have
+            # been registered with either uuid or id.
+            "user_uuid": user_uuid,
             "user_id": user_profile_id,
         }
         send_to_push_bouncer("POST", "push/unregister/all", post_data)
@@ -553,12 +661,12 @@ def get_gcm_alert(
         message.recipient.type == Recipient.HUDDLE
         and trigger == NotificationTriggers.PRIVATE_MESSAGE
     ):
-        return f"New private group message from {sender_str}"
+        return f"New direct group message from {sender_str}"
     elif (
         message.recipient.type == Recipient.PERSONAL
         and trigger == NotificationTriggers.PRIVATE_MESSAGE
     ):
-        return f"New private message from {sender_str}"
+        return f"New direct message from {sender_str}"
     elif message.is_stream_message() and trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is None:
             return f"{sender_str} mentioned you in #{display_recipient}"
@@ -688,6 +796,7 @@ def get_message_payload(
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
         data["stream"] = get_display_recipient(message.recipient)
+        data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
         data["recipient_type"] = "private"
@@ -861,14 +970,47 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     mobile app, when the message is read on the server, to remove the
     message from the notification.
     """
+    if not push_notifications_enabled():
+        return
+
     user_profile = get_user_profile_by_id(user_profile_id)
-    message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
-    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
-    apns_payload = get_remove_payload_apns(user_profile, message_ids)
+
+    # We may no longer have access to the message here; for example,
+    # the user (1) got a message, (2) read the message in the web UI,
+    # and then (3) it was deleted.  When trying to send the push
+    # notification for (2), after (3) has happened, there is no
+    # message to fetch -- but we nonetheless want to remove the mobile
+    # notification.  Because of this, the usual access control of
+    # `bulk_access_messages_expect_usermessage` is skipped here.
+    # Because of this, no access to the Message objects should be
+    # done; they are treated as a list of opaque ints.
+
+    # APNs has a 4KB limit on the maximum size of messages, which
+    # translated to several hundred message IDs in one of these
+    # notifications. In rare cases, it's possible for someone to mark
+    # thousands of push notification eligible messages as read at
+    # once. We could handle this situation with a loop, but we choose
+    # to truncate instead to avoid extra network traffic, because it's
+    # very likely the user has manually cleared the notifications in
+    # their mobile device's UI anyway.
+    #
+    # When truncating, we keep only the newest N messages in this
+    # remove event. This is optimal because older messages are the
+    # ones most likely to have already been manually cleared at some
+    # point in the past.
+    #
+    # We choose 200 here because a 10-digit message ID plus a comma and
+    # space consume 12 bytes, and 12 x 200 = 2400 bytes is still well
+    # below the 4KB limit (leaving plenty of space for metadata).
+    MAX_APNS_MESSAGE_IDS = 200
+    truncated_message_ids = sorted(message_ids)[-MAX_APNS_MESSAGE_IDS:]
+    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
+    apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
     else:
+        user_identity = UserPushIdentityCompat(user_id=user_profile_id)
         android_devices = list(
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
         )
@@ -876,14 +1018,19 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
         )
         if android_devices:
-            send_android_push_notification(android_devices, gcm_payload, gcm_options)
+            send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
         if apple_devices:
-            send_apple_push_notification(user_profile_id, apple_devices, apns_payload)
+            send_apple_push_notification(user_identity, apple_devices, apns_payload)
 
-    UserMessage.objects.filter(
-        user_profile_id=user_profile_id,
-        message_id__in=message_ids,
-    ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
+    # We intentionally use the non-truncated message_ids here.  We are
+    # assuming in this very rare case that the user has manually
+    # dismissed these notifications on the device side, and the server
+    # should no longer track them as outstanding notifications.
+    with transaction.atomic(savepoint=False):
+        UserMessage.select_for_update_query().filter(
+            user_profile_id=user_profile_id,
+            message_id__in=message_ids,
+        ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
 
 
 @statsd_increment("push_notifications")
@@ -896,9 +1043,16 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         return
     user_profile = get_user_profile_by_id(user_profile_id)
 
-    if user_profile.is_bot:
-        # BUG: Investigate why it's possible to get here.
-        return  # nocoverage
+    if user_profile.is_bot:  # nocoverage
+        # We don't expect to reach here for bot users. However, this code exists
+        # to find and throw away any pre-existing events in the queue while
+        # upgrading from versions before our notifiability logic was implemented.
+        # TODO/compatibility: This block can be removed when one can no longer
+        # upgrade from versions <= 4.0 to versions >= 5.0
+        logger.warning(
+            "Send-push-notification event found for bot user %s. Skipping.", user_profile_id
+        )
+        return
 
     if not (
         user_profile.enable_offline_push_notifications
@@ -946,13 +1100,17 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     trigger = missed_message["trigger"]
     mentioned_user_group_name = None
+    # mentioned_user_group_id will be None if the user is personally mentioned
+    # regardless whether they are a member of the mentioned user group in the
+    # message or not.
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
-        user_group = access_user_group_by_id(
-            mentioned_user_group_id, user_profile, for_mention=True
-        )
+        user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
         mentioned_user_group_name = user_group.name
+
+    # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
+    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
 
     apns_payload = get_message_payload_apns(
         user_profile, message, trigger, mentioned_user_group_id, mentioned_user_group_name
@@ -983,10 +1141,11 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     )
 
     logger.info(
-        "Sending mobile push notifications for user %s: %s via FCM devices, %s via APNs devices",
+        "Sending mobile push notifications for local user %s: %s via FCM devices, %s via APNs devices",
         user_profile_id,
         len(android_devices),
         len(apple_devices),
     )
-    send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
-    send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    user_identity = UserPushIdentityCompat(user_id=user_profile.id)
+    send_apple_push_notification(user_identity, apple_devices, apns_payload)
+    send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)

@@ -16,7 +16,7 @@ cd /home/zulip/deployments/current
 # Start by reading the help
 ./manage.py <command_name> --help
 
-# Once you've determine this is the command for you, run it!
+# Once you've determined this is the command for you, run it!
 ./manage.py <command_name> <args>
 ```
 
@@ -52,7 +52,7 @@ containing system-internal bots like `Notification Bot`; you are
 unlikely to ever need to interact with that realm.)
 
 Unless you are
-[hosting multiple organizations on your Zulip server](../production/multiple-organizations.md),
+[hosting multiple organizations on your Zulip server](multiple-organizations.md),
 your single Zulip organization on the root domain will have the empty
 string (`''`) as its `string_id`. So you can run e.g.:
 
@@ -91,12 +91,12 @@ database, for most objects, in addition to saving the changes to the
 database, one may also need to flush caches, notify the apps and open
 browser windows, and record the change in Zulip's `RealmAuditLog`
 audit history table. For almost any data change you want to do, there
-is already a function in `zerver.lib.actions.py` with a name like
+is already a function in `zerver.actions` with a name like
 `do_change_full_name` that updates that field and notifies clients
 correctly.
 
-For convenience, Zulip automatically import `zerver/models.py` and
-`zerver/lib/actions.py` into every management shell; if you need to
+For convenience, Zulip automatically imports `zerver/models.py`
+into every management shell; if you need to
 access other functions, you'll need to import them yourself.
 
 ## Other useful manage.py commands
@@ -123,7 +123,7 @@ There are dozens of useful management commands under
   UI](https://zulip.com/help/change-a-users-role)) or give bots the
   `can_forge_sender` permission, which is needed for certain special API features.
 - `./manage.py export_single_user`: does a limited version of the [main
-  export tools](../production/export-and-import.md) containing just
+  export tools](export-and-import.md) containing just
   the messages accessible by a single user.
 - `./manage.py reactivate_realm`: Reactivates a realm.
 - `./manage.py deactivate_user`: Deactivates a user. This can be done
@@ -132,7 +132,7 @@ There are dozens of useful management commands under
   For most purposes, deactivating users is preferred, since that does not
   alter message history for other users.
   See the `./manage.py delete_user --help` documentation for details.
-- `./manage.py clear_auth_rate_limit_history`: If a user failed authenticaton
+- `./manage.py clear_auth_rate_limit_history`: If a user failed authentication
   attempts too many times and further attempts are disallowed by the rate limiter,
   this can be used to reset the limit.
 
@@ -148,7 +148,7 @@ self-hosted Zulip server:
   [webhook integration][webhook-integrations] or [bot][writing-bots].
 - Writing a program using the [Zulip API][zulip-api].
 - [Modifying the Zulip server][modifying-zulip].
-- Using the interactive [management shell](#manage-py-shell),
+- Using the interactive [management shell](#managepy-shell),
   documented above, for one-time work or prototyping.
 - Writing a custom management command, detailed here.
 
@@ -171,15 +171,15 @@ the Zulip server.
 Instead, we recommend deploying custom management commands either via
 the [modifying Zulip][modifying-zulip] process or by storing them in
 `/etc/zulip` (so they are included in
-[backups](../production/export-and-import.html#backups)) and then
+[backups](export-and-import.md#backups)) and then
 symlinking them into
 `/home/zulip/deployments/current/zerver/management/` after each
 upgrade.
 
-[modifying-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
+[modifying-zulip]: modify.md
 [writing-bots]: https://zulip.com/api/writing-bots
 [integrations]: https://zulip.com/integrations
 [zulip-api]: https://zulip.com/api/rest
 [webhook-integrations]: https://zulip.com/api/incoming-webhooks-overview
 [management-commands-dev]: ../subsystems/management-commands.md
-[django-management]: https://docs.djangoproject.com/en/2.2/ref/django-admin/#django-admin-and-manage-py
+[django-management]: https://docs.djangoproject.com/en/3.2/ref/django-admin/#django-admin-and-manage-py

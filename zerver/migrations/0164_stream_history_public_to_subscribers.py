@@ -2,12 +2,12 @@
 
 from django.conf import settings
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def set_initial_value_for_history_public_to_subscribers(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     stream_model = apps.get_model("zerver", "Stream")
     streams = stream_model.objects.all()
@@ -27,7 +27,6 @@ def set_initial_value_for_history_public_to_subscribers(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0163_remove_userprofile_default_desktop_notifications"),
     ]

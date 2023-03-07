@@ -1,17 +1,19 @@
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar, cast
+from typing import Any, Callable, Dict, Optional
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
+from typing_extensions import Concatenate, ParamSpec
 
-from zerver.lib.actions import do_create_user, get_service_bot_events
+from zerver.actions.create_user import do_create_user
+from zerver.actions.message_send import get_service_bot_events
 from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
-from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
+from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsListError, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import patch_queue_publish
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
 from zerver.models import Recipient, UserProfile, get_realm
 
@@ -266,13 +268,13 @@ class TestServiceBotStateHandler(ZulipTestCase):
             "keys": orjson.dumps(["key 1", "key 3"]).decode(),
         }
         result = self.client_get("/json/bot_storage", params)
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], {"key 3": "value 3", "key 1": "value 1"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], {"key 3": "value 3", "key 1": "value 1"})
 
         # Assert the stored data for all keys.
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], initial_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], initial_dict)
 
         # Store some more data; update an entry and store a new entry
         dict_update = {"key 1": "new value", "key 4": "value 4"}
@@ -286,8 +288,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         updated_dict = initial_dict.copy()
         updated_dict.update(dict_update)
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], updated_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], updated_dict)
 
         # Assert errors on invalid requests.
         invalid_params = {
@@ -320,8 +322,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         for key in keys_to_remove:
             updated_dict.pop(key)
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], updated_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], updated_dict)
 
         # Try to remove an existing and a nonexistent key.
         params = {
@@ -332,8 +334,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Assert an error has been thrown and no entries were removed.
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], updated_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], updated_dict)
 
         # Remove the entire storage.
         result = self.client_delete("/json/bot_storage")
@@ -341,8 +343,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Assert the entire storage has been removed.
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], {})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], {})
 
 
 class TestServiceBotConfigHandler(ZulipTestCase):
@@ -407,25 +409,46 @@ class TestServiceBotConfigHandler(ZulipTestCase):
 
     def test_bot_send_pm_with_empty_recipients_list(self) -> None:
         with self.assertRaisesRegex(
-            EmbeddedBotEmptyRecipientsList, "Message must have recipients!"
+            EmbeddedBotEmptyRecipientsListError, "Message must have recipients!"
         ):
             self.bot_handler.send_message(message={"type": "private", "to": []})
 
 
-FuncT = TypeVar("FuncT", bound=Callable[..., None])
+ParamT = ParamSpec("ParamT")
 
 
-def for_all_bot_types(test_func: FuncT) -> FuncT:
+def for_all_bot_types(
+    test_func: Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]
+) -> Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]:
     @wraps(test_func)
-    def _wrapped(*args: object, **kwargs: object) -> None:
-        assert len(args) > 0
-        self = cast(TestServiceBotEventTriggers, args[0])
+    def _wrapped(
+        self: "TestServiceBotEventTriggers", /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> None:
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
-            test_func(*args, **kwargs)
+            test_func(self, *args, **kwargs)
 
-    return cast(FuncT, _wrapped)  # https://github.com/python/mypy/issues/1927
+    return _wrapped
+
+
+def patch_queue_publish(
+    method_to_patch: str,
+) -> Callable[
+    [Callable[["TestServiceBotEventTriggers", mock.Mock], None]],
+    Callable[["TestServiceBotEventTriggers"], None],
+]:
+    def inner(
+        func: Callable[["TestServiceBotEventTriggers", mock.Mock], None]
+    ) -> Callable[["TestServiceBotEventTriggers"], None]:
+        @wraps(func)
+        def _wrapped(self: "TestServiceBotEventTriggers") -> None:
+            with mock_queue_publish(method_to_patch) as m:
+                func(self, m)
+
+        return _wrapped
+
+    return inner
 
 
 class TestServiceBotEventTriggers(ZulipTestCase):
@@ -452,7 +475,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         )
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_trigger_on_stream_mention_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
         content = "@**FooBot** foo bar!!!"
         recipient = "Denmark"
@@ -478,7 +501,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.send_stream_message(self.user_profile, "Denmark", content)
         self.assertTrue(mock_queue_json_publish.called)
 
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_stream_message_without_mention(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -487,7 +510,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_stream_mention_from_bot(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -495,7 +518,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_trigger_on_personal_message_from_user(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -525,7 +548,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertTrue(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_personal_message_from_bot(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -535,7 +558,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_trigger_on_huddle_message_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
         self.second_bot_profile.bot_type = self.bot_profile.bot_type
         self.second_bot_profile.save()
@@ -563,7 +586,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertEqual(mock_queue_json_publish.call_count, 2)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_huddle_message_from_bot(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:

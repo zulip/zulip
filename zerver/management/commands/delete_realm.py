@@ -4,6 +4,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import CommandError
 
+from zerver.actions.realm_settings import do_delete_all_realm_attachments
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, UserProfile
 
@@ -25,25 +26,22 @@ realms used for testing; consider using deactivate_realm instead."""
             is_bot=False,
         ).count()
 
-        message_count = Message.objects.filter(sender__realm=realm).count()
+        message_count = Message.objects.filter(realm=realm).count()
 
         print(f"This realm has {user_count} users and {message_count} messages.\n")
 
         if settings.BILLING_ENABLED:
             # Deleting a Realm object also deletes associating billing
             # metadata in an invariant-violating way, so we should
-            # never use this tool for a realm with billing setup.
+            # never use this tool for a realm with billing set up.
             from corporate.models import CustomerPlan, get_customer_by_realm
 
             customer = get_customer_by_realm(realm)
-            if customer:
-                if (
-                    customer.stripe_customer_id
-                    or CustomerPlan.objects.filter(customer=customer).count() > 0
-                ):
-                    raise CommandError(
-                        "This realm has had a billing relationship associated with it!"
-                    )
+            if customer and (
+                customer.stripe_customer_id
+                or CustomerPlan.objects.filter(customer=customer).count() > 0
+            ):
+                raise CommandError("This realm has had a billing relationship associated with it!")
 
         print(
             "This command will \033[91mPERMANENTLY DELETE\033[0m all data for this realm.  "
@@ -53,6 +51,10 @@ realms used for testing; consider using deactivate_realm instead."""
         confirmation = input("Type the name of the realm to confirm: ")
         if confirmation != realm.string_id:
             raise CommandError("Aborting!")
+
+        # Explicitly remove the attachments and their files in backend
+        # storage; failing to do this leaves dangling files
+        do_delete_all_realm_attachments(realm)
 
         # TODO: This approach leaks Recipient and Huddle objects,
         # because those don't have a foreign key to the Realm or any

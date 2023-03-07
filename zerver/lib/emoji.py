@@ -3,6 +3,7 @@ import re
 from typing import Tuple
 
 import orjson
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
@@ -34,6 +35,15 @@ EMOTICON_RE = (
     + ")|(".join(possible_emoticon_regexes)
     + f"))(?![^{terminal_symbols}])"
 )
+
+
+def data_url() -> str:
+    # This bakes a hash into the URL, which looks something like
+    # static/webpack-bundles/files/64.0cdafdf0b6596657a9be.png
+    # This is how Django deals with serving static files in a cacheable way.
+    # See PR #22275 for details.
+    return staticfiles_storage.url("generated/emoji/emoji_api.json")
+
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: str) -> str:
@@ -101,9 +111,15 @@ def check_remove_custom_emoji(user_profile: UserProfile, emoji_name: str) -> Non
 
 def check_valid_emoji_name(emoji_name: str) -> None:
     if emoji_name:
-        if re.match(r"^[0-9a-z.\-_]+(?<![.\-_])$", emoji_name):
+        if re.match(r"^[0-9a-z\-_]+(?<![\-_])$", emoji_name):
             return
-        raise JsonableError(_("Invalid characters in emoji name"))
+        if re.match(r"^[0-9a-z\-_]+$", emoji_name):
+            raise JsonableError(_("Emoji names must end with either a letter or digit."))
+        raise JsonableError(
+            _(
+                "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
+            )
+        )
     raise JsonableError(_("Emoji name is missing"))
 
 

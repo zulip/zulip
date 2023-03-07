@@ -56,7 +56,7 @@ details worth understanding:
 - Return to "Credentials", and select "Create credentials". Choose
   "OAuth client ID", and follow prompts to create a consent screen, etc.
   For "Authorized redirect URIs", fill in
-  `http://zulipdev.com:9991/complete/google/` .
+  `http://auth.zulipdev.com:9991/complete/google/` .
 
 - You should get a client ID and a client secret. Copy them. In
   `dev-secrets.conf`, set `social_auth_google_key` to the client ID
@@ -67,7 +67,7 @@ details worth understanding:
 - Register an OAuth2 application with GitHub at one of
   <https://github.com/settings/developers> or
   <https://github.com/organizations/ORGNAME/settings/developers>.
-  Specify `http://zulipdev.com:9991/complete/github/` as the callback URL.
+  Specify `http://auth.zulipdev.com:9991/complete/github/` as the callback URL.
 
 - You should get a page with settings for your new application,
   showing a client ID and a client secret. In `dev-secrets.conf`, set
@@ -78,7 +78,7 @@ details worth understanding:
 
 - Register an OAuth application with GitLab at
   <https://gitlab.com/oauth/applications>.
-  Specify `http://zulipdev.com:9991/complete/gitlab` as the callback URL.
+  Specify `http://auth.zulipdev.com:9991/complete/gitlab/` as the callback URL.
 
 - You should get a page containing the Application ID and Secret for
   your new application. In `dev-secrets.conf`, enter the Application
@@ -91,7 +91,7 @@ details worth understanding:
   Enable App ID and Create a Services ID with the instructions in
   <https://help.apple.com/developer-account/?lang=en#/dev1c0e25352> .
   When prompted for a "Return URL", enter
-  `http://zulipdev.com:9991/complete/apple/` .
+  `http://auth.zulipdev.com:9991/complete/apple/` .
 
 - [Create a Sign in with Apple private key](https://help.apple.com/developer-account/?lang=en#/dev77c875b7e)
 
@@ -138,16 +138,16 @@ details worth understanding:
 Some OAuth providers (such as Facebook) require HTTPS on the callback
 URL they post back to, which isn't supported directly by the Zulip
 development environment. If you run a
-[remote Zulip development server](../development/remote.md), we have
+[remote Zulip development server](remote.md), we have
 instructions for
-[an nginx reverse proxy with SSL](../development/remote.html#using-an-nginx-reverse-proxy)
+[an nginx reverse proxy with SSL](remote.md#using-an-nginx-reverse-proxy)
 that you can use for your development efforts.
 
 ## Testing LDAP in development
 
 Before Zulip 2.0, one of the more common classes of bug reports with
 Zulip's authentication was users having trouble getting [LDAP
-authentication](../production/authentication-methods.html#ldap-including-active-directory)
+authentication](../production/authentication-methods.md#ldap-including-active-directory)
 working. The root cause was because setting up a local LDAP server
 for development was difficult, which meant most developers were unable
 to work on fixing even simple issues with it.
@@ -161,7 +161,7 @@ actual flows for LDAP configuration.
 - To enable fakeldap, set `FAKE_LDAP_MODE` in
   `zproject/dev_settings.py` to one of the following options. For more
   information on these modes, refer to
-  [our production docs](../production/authentication-methods.html#ldap-including-active-directory):
+  [our production docs](../production/authentication-methods.md#ldap-including-active-directory):
 
   - `a`: If users' email addresses are in LDAP and used as username.
   - `b`: If LDAP only has usernames but email addresses are of the form

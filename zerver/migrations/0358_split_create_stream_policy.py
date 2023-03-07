@@ -1,10 +1,10 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F
 
 
-def copy_stream_policy_field(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def copy_stream_policy_field(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     Realm.objects.all().update(create_public_stream_policy=F("create_stream_policy"))
     Realm.objects.all().update(create_private_stream_policy=F("create_stream_policy"))
@@ -15,7 +15,7 @@ def copy_stream_policy_field(apps: StateApps, schema_editor: DatabaseSchemaEdito
 # but in most cases downgrades that would reverse migrations happen
 # before any real usage, so it's very likely that both values are
 # identical.
-def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     Realm.objects.all().update(create_stream_policy=F("create_public_stream_policy"))
 

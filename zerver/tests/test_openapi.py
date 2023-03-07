@@ -1,14 +1,24 @@
 import inspect
 import os
-import re
-import sys
 from collections import abc
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+    get_args,
+    get_origin,
+)
 from unittest.mock import MagicMock, patch
 
 import yaml
 from django.http import HttpResponse
-from jsonschema.exceptions import ValidationError
+from django.utils import regex_helper
 
 from zerver.lib.request import _REQ, arguments_map
 from zerver.lib.rest import rest_dispatch
@@ -78,15 +88,15 @@ class OpenAPIToolsTest(ZulipTestCase):
             "name": "message_id",
             "in": "path",
             "description": "The target message's ID.\n",
-            "example": 42,
+            "example": 43,
             "required": True,
             "schema": {"type": "integer"},
         }
         assert expected_item in actual
 
     def test_validate_against_openapi_schema(self) -> None:
-        with self.assertRaises(
-            ValidationError, msg="Additional properties are not allowed ('foo' was unexpected)"
+        with self.assertRaisesRegex(
+            SchemaError, r"Additional properties are not allowed \('foo' was unexpected\)"
         ):
             bad_content: Dict[str, object] = {
                 "msg": "",
@@ -97,7 +107,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaises(ValidationError, msg=("42 is not of type string")):
+        with self.assertRaisesRegex(SchemaError, r"42 is not of type 'string'"):
             bad_content = {
                 "msg": 42,
                 "result": "success",
@@ -106,7 +116,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaises(ValidationError, msg='Expected to find the "msg" required key'):
+        with self.assertRaisesRegex(SchemaError, r"'msg' is a required property"):
             bad_content = {
                 "result": "success",
             }
@@ -132,36 +142,46 @@ class OpenAPIToolsTest(ZulipTestCase):
         # 'deep' opaque object. Also the parameters are a heterogeneous
         # mix of arrays and objects to verify that our descent logic
         # correctly gets to the the deeply nested objects.
-        with open(os.path.join(os.path.dirname(OPENAPI_SPEC_PATH), "testing.yaml")) as test_file:
+        test_filename = os.path.join(os.path.dirname(OPENAPI_SPEC_PATH), "testing.yaml")
+        with open(test_filename) as test_file:
             test_dict = yaml.safe_load(test_file)
-        openapi_spec.openapi()["paths"]["testing"] = test_dict
-        try:
+        with patch("zerver.openapi.openapi.openapi_spec", OpenAPISpec(test_filename)):
             validate_against_openapi_schema(
-                (test_dict["test1"]["responses"]["200"]["content"]["application/json"]["example"]),
-                "testing",
-                "test1",
+                {
+                    "top_array": [
+                        {"obj": {"str3": "test"}},
+                        [{"str1": "success", "str2": "success"}],
+                    ],
+                },
+                "/test1",
+                "get",
                 "200",
             )
-            with self.assertRaises(
-                ValidationError, msg='Extraneous key "str4" in response\'s content'
+            with self.assertRaisesRegex(
+                SchemaError,
+                r"\{'obj': \{'str3': 'test', 'str4': 'extraneous'\}\} is not valid under any of the given schemas",
             ):
                 validate_against_openapi_schema(
-                    (
-                        test_dict["test2"]["responses"]["200"]["content"]["application/json"][
-                            "example"
-                        ]
-                    ),
-                    "testing",
-                    "test2",
+                    {
+                        "top_array": [
+                            {"obj": {"str3": "test", "str4": "extraneous"}},
+                            [{"str1": "success", "str2": "success"}],
+                        ],
+                    },
+                    "/test2",
+                    "get",
                     "200",
                 )
-            with self.assertRaises(SchemaError, msg='Opaque object "obj"'):
+            with self.assertRaisesRegex(
+                SchemaError,
+                r"additionalProperties needs to be defined for objects to make sure they have no additional properties left to be documented\.",
+            ):
                 # Checks for opaque objects
                 validate_schema(
-                    test_dict["test3"]["responses"]["200"]["content"]["application/json"]["schema"]
+                    test_dict["paths"]["/test3"]["get"]["responses"]["200"]["content"][
+                        "application/json"
+                    ]["schema"]
                 )
-        finally:
-            openapi_spec.openapi()["paths"].pop("testing", None)
 
     def test_live_reload(self) -> None:
         # Force the reload by making the last update date < the file's last
@@ -185,9 +205,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     checked_endpoints: Set[str] = set()
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
-        "/realm/presence",
         "/users/me/presence",
-        "/users/me/alert_words",
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).
@@ -197,14 +215,11 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         ## And this one isn't, and isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
-        # Delete a file uploaded by current user.
-        "/attachments/{attachment_id}",
         # List data exports for organization (GET) or request one (POST)
         "/export/realm",
         # Delete a data export.
         "/export/realm/{export_id}",
         # Manage default streams and default stream groups
-        "/default_streams",
         "/default_stream_groups/create",
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
@@ -266,26 +281,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # consistency tests.  We aim to keep this list empty.
     buggy_documentation_endpoints: Set[str] = set()
 
-    def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
-        """Convert regular expressions style URL patterns to their
-        corresponding OpenAPI style formats. All patterns are
-        expected to start with ^ and end with $.
-        Examples:
-            1. /messages/{message_id} <-> r'^messages/(?P<message_id>[0-9]+)$'
-            2. /events <-> r'^events$'
-            3. '/realm/domains' <-> r'/realm\\/domains$'
-        """
-
-        # Handle the presence-email code which has a non-slashes syntax.
-        regex_pattern = regex_pattern.replace("[^/]*", ".*").replace("[^/]+", ".*")
-
-        self.assertTrue(regex_pattern.startswith("^"))
-        self.assertTrue(regex_pattern.endswith("$"))
-        url_pattern = "/" + regex_pattern[1:][:-1]
-        url_pattern = re.sub(r"\(\?P<(\w+)>[^/]+\)", r"{\1}", url_pattern)
-        url_pattern = url_pattern.replace("\\", "")
-        return url_pattern
-
     def ensure_no_documentation_if_intentionally_undocumented(
         self, url_pattern: str, method: str, msg: Optional[str] = None
     ) -> None:
@@ -300,7 +295,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         except KeyError:
             return
 
-    def check_for_non_existant_openapi_endpoints(self) -> None:
+    def check_for_non_existent_openapi_endpoints(self) -> None:
         """Here, we check to see if every endpoint documented in the OpenAPI
         documentation actually exists in urls.py and thus in actual code.
         Note: We define this as a helper called at the end of
@@ -327,7 +322,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         val = 6
         for t in types:
             if isinstance(t, tuple):
-                return t  # e.g. (list, dict) or (list ,str)
+                return t  # e.g. (list, dict) or (list, str)
             v = priority.get(t, 6)
             if v < val:
                 val = v
@@ -340,26 +335,17 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        origin = getattr(t, "__origin__", None)
-        if sys.version_info < (3, 7):  # nocoverage
-            if origin == List:
-                origin = list
-            elif origin == Dict:
-                origin = dict
-            elif origin == Mapping:
-                origin = abc.Mapping
-            elif origin == Sequence:
-                origin = abc.Sequence
+        origin = get_origin(t)
 
-        if not origin:
+        if origin is None:
             # Then it's most likely one of the fundamental data types
             # I.E. Not one of the data types from the "typing" module.
             return t
         elif origin == Union:
-            subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
+            subtypes = [self.get_standardized_argument_type(st) for st in get_args(t)]
             return self.get_type_by_priority(subtypes)
         elif origin in [list, abc.Sequence]:
-            [st] = t.__args__
+            [st] = get_args(t)
             return (list, self.get_standardized_argument_type(st))
         elif origin in [dict, abc.Mapping]:
             return dict
@@ -436,10 +422,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         # Iterate through the decorators to find the original
         # function, wrapped by has_request_variables, so we can parse
         # its arguments.
-        while getattr(function, "__wrapped__", None):
-            function = getattr(function, "__wrapped__", None)
-            # Tell mypy this is never None.
-            assert function is not None
+        while (wrapped := getattr(function, "__wrapped__", None)) is not None:
+            function = wrapped
 
         # Now, we do inference mapping each REQ parameter's
         # declaration details to the Python/mypy types for the
@@ -553,74 +537,82 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 accepted_arguments = set(arguments_map[function_name])
 
                 regex_pattern = p.pattern.regex.pattern
-                url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
+                for url_format, url_params in regex_helper.normalize(regex_pattern):
+                    url_pattern = "/" + url_format % {param: f"{{{param}}}" for param in url_params}
 
-                if "intentionally_undocumented" in tags:
-                    self.ensure_no_documentation_if_intentionally_undocumented(url_pattern, method)
-                    continue
+                    if "intentionally_undocumented" in tags:
+                        self.ensure_no_documentation_if_intentionally_undocumented(
+                            url_pattern, method
+                        )
+                        continue
 
-                if url_pattern in self.pending_endpoints:
-                    # HACK: After all pending_endpoints have been resolved, we should remove
-                    # this segment and the "msg" part of the `ensure_no_...` method.
-                    msg = f"""
+                    if url_pattern in self.pending_endpoints:
+                        # HACK: After all pending_endpoints have been resolved, we should remove
+                        # this segment and the "msg" part of the `ensure_no_...` method.
+                        msg = f"""
 We found some OpenAPI documentation for {method} {url_pattern},
 so maybe we shouldn't include it in pending_endpoints.
 """
-                    self.ensure_no_documentation_if_intentionally_undocumented(
-                        url_pattern, method, msg
-                    )
-                    continue
+                        self.ensure_no_documentation_if_intentionally_undocumented(
+                            url_pattern, method, msg
+                        )
+                        continue
 
-                try:
-                    # Don't include OpenAPI parameters that live in
-                    # the path; these are not extracted by REQ.
-                    openapi_parameters = get_openapi_parameters(
-                        url_pattern, method, include_url_parameters=False
-                    )
-                except Exception:  # nocoverage
-                    raise AssertionError(f"Could not find OpenAPI docs for {method} {url_pattern}")
+                    try:
+                        # Don't include OpenAPI parameters that live in
+                        # the path; these are not extracted by REQ.
+                        openapi_parameters = get_openapi_parameters(
+                            url_pattern, method, include_url_parameters=False
+                        )
+                    except Exception:  # nocoverage
+                        raise AssertionError(
+                            f"Could not find OpenAPI docs for {method} {url_pattern}"
+                        )
 
-                # We now have everything we need to understand the
-                # function as defined in our urls.py:
-                #
-                # * method is the HTTP method, e.g. GET, POST, or PATCH
-                #
-                # * p.pattern.regex.pattern is the URL pattern; might require
-                #   some processing to match with OpenAPI rules
-                #
-                # * accepted_arguments is the full set of arguments
-                #   this method accepts (from the REQ declarations in
-                #   code).
-                #
-                # * The documented parameters for the endpoint as recorded in our
-                #   OpenAPI data in zerver/openapi/zulip.yaml.
-                #
-                # We now compare these to confirm that the documented
-                # argument list matches what actually appears in the
-                # codebase.
+                    # We now have everything we need to understand the
+                    # function as defined in our urls.py:
+                    #
+                    # * method is the HTTP method, e.g. GET, POST, or PATCH
+                    #
+                    # * p.pattern.regex.pattern is the URL pattern; might require
+                    #   some processing to match with OpenAPI rules
+                    #
+                    # * accepted_arguments is the full set of arguments
+                    #   this method accepts (from the REQ declarations in
+                    #   code).
+                    #
+                    # * The documented parameters for the endpoint as recorded in our
+                    #   OpenAPI data in zerver/openapi/zulip.yaml.
+                    #
+                    # We now compare these to confirm that the documented
+                    # argument list matches what actually appears in the
+                    # codebase.
 
-                openapi_parameter_names = {parameter["name"] for parameter in openapi_parameters}
+                    openapi_parameter_names = {
+                        parameter["name"] for parameter in openapi_parameters
+                    }
 
-                if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
-                    print("Undocumented parameters for", url_pattern, method, function_name)
-                    print(" +", openapi_parameter_names)
-                    print(" -", accepted_arguments)
-                    assert url_pattern in self.buggy_documentation_endpoints
-                elif len(openapi_parameter_names - accepted_arguments) > 0:  # nocoverage
-                    print("Documented invalid parameters for", url_pattern, method, function_name)
-                    print(" -", openapi_parameter_names)
-                    print(" +", accepted_arguments)
-                    assert url_pattern in self.buggy_documentation_endpoints
-                else:
-                    self.assertEqual(openapi_parameter_names, accepted_arguments)
-                    self.check_argument_types(function, openapi_parameters)
-                    self.checked_endpoints.add(url_pattern)
+                    if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
+                        print("Undocumented parameters for", url_pattern, method, function_name)
+                        print(" +", openapi_parameter_names)
+                        print(" -", accepted_arguments)
+                        assert url_pattern in self.buggy_documentation_endpoints
+                    elif len(openapi_parameter_names - accepted_arguments) > 0:  # nocoverage
+                        print(
+                            "Documented invalid parameters for", url_pattern, method, function_name
+                        )
+                        print(" -", openapi_parameter_names)
+                        print(" +", accepted_arguments)
+                        assert url_pattern in self.buggy_documentation_endpoints
+                    else:
+                        self.assertEqual(openapi_parameter_names, accepted_arguments)
+                        self.check_argument_types(function, openapi_parameters)
+                        self.checked_endpoints.add(url_pattern)
 
-        self.check_for_non_existant_openapi_endpoints()
+        self.check_for_non_existent_openapi_endpoints()
 
 
 class TestCurlExampleGeneration(ZulipTestCase):
-
     spec_mock_without_examples = {
         "security": [{"basicAuth": []}],
         "paths": {
@@ -783,7 +775,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    def test_generate_and_render_curl_example_with_nonexistant_endpoints(self) -> None:
+    def test_generate_and_render_curl_example_with_nonexistent_endpoints(self) -> None:
         with self.assertRaises(KeyError):
             self.curl_example("/mark_this_stream_as_read", "POST")
         with self.assertRaises(KeyError):
@@ -825,7 +817,8 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
-            "    --data-urlencode anchor=42 \\",
+            "    --data-urlencode anchor=43 \\",
+            "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
@@ -899,7 +892,8 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
-            "    --data-urlencode anchor=42 \\",
+            "    --data-urlencode anchor=43 \\",
+            "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
@@ -941,13 +935,13 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 for status_code, response in operation["responses"].items():
                     schema = response["content"]["application/json"]["schema"]
                     if "oneOf" in schema:
-                        for subschema_index, subschema in enumerate(schema["oneOf"]):
+                        for _, subschema in enumerate(schema["oneOf"]):
                             validate_schema(subschema)
                             assert validate_against_openapi_schema(
                                 subschema["example"],
                                 path,
                                 method,
-                                status_code + "_" + str(subschema_index),
+                                status_code,
                             )
                         continue
                     validate_schema(schema)
@@ -962,7 +956,7 @@ class OpenAPIRegexTest(ZulipTestCase):
         Calls a few documented  and undocumented endpoints and checks whether they
         find a match or not.
         """
-        # Some of the undocumentd endpoints which are very similar to
+        # Some of the undocumented endpoints which are very similar to
         # some of the documented endpoints.
         assert find_openapi_endpoint("/users/me/presence") is None
         assert find_openapi_endpoint("/users/me/subscriptions/23") is None
@@ -987,7 +981,7 @@ class OpenAPIRequestValidatorTest(ZulipTestCase):
         """
         Test to make sure the request validator works properly
         The tests cover both cases such as catching valid requests marked
-        as invalid and making sure invalid requests are markded properly
+        as invalid and making sure invalid requests are marked properly
         """
         # `/users/me/subscriptions` doesn't require any parameters
         validate_request("/users/me/subscriptions", "get", {}, {}, False, "200")

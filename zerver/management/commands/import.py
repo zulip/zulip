@@ -9,7 +9,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.forms import check_subdomain_available
-from zerver.lib.import_realm import do_import_realm, do_import_system_bots
+from zerver.lib.import_realm import do_import_realm
 
 
 class Command(BaseCommand):
@@ -96,6 +96,4 @@ import a database dump from one or more JSON files."""
 
         for path in paths:
             print(f"Processing dump: {path} ...")
-            realm = do_import_realm(path, subdomain, num_processes)
-            print("Checking the system bots.")
-            do_import_system_bots(realm)
+            do_import_realm(path, subdomain, num_processes)

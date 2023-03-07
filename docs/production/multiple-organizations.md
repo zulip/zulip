@@ -45,17 +45,12 @@ things:
   authentication method, review
   [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#authentication).
 
-For servers hosting a large number of organizations, like
-[zulip.com](https://zulip.com), one can set
-`ROOT_DOMAIN_LANDING_PAGE = True` in `/etc/zulip/settings.py` so that
-the homepage for the server is a copy of the Zulip homepage.
-
 ### SSL certificates
 
 You'll need to install an SSL certificate valid for all the
 (sub)domains you're using your Zulip server with. You can get an SSL
 certificate covering several domains for free by using
-[our Certbot wrapper tool](../production/ssl-certificates.html#after-zulip-is-already-installed),
+[our Certbot wrapper tool](ssl-certificates.md#after-zulip-is-already-installed),
 though if you're going to host a large number of organizations, you
 may want to get a wildcard certificate. You can also get a wildcard
 certificate for
@@ -73,12 +68,19 @@ Python dictionary, like this:
 
 ```python
 REALM_HOSTS = {
-    'mysubdomain': 'hostname.example.com',
+    "mysubdomain": "hostname.example.com",
 }
 ```
 
-What this will do is map the hostname `hostname.example.com` to the
-realm whose `subdomain` in the Zulip database is `mysubdomain`.
+This will make `hostname.example.com` the hostname for the realm that
+would, without this configuration, have been
+`mysubdomain.zulip.example.com`. To create your new realm on
+`hostname.example.com`, one should enter `mysubdomain` as the
+"subdomain" for the new realm.
+
+The value you choose for `mysubdomain` will not be displayed to users;
+the main constraint is that it will be impossible to create a
+different realm on `mysubdomain.zulip.example.com`.
 
 In a future version of Zulip, we expect to move this configuration
 into the database.
@@ -97,6 +99,16 @@ organizations, because the auth cookies for the root domain are
 visible to the subdomain (so it's not possible for a single
 browser/client to be logged into both). So we don't recommend that
 configuration.
+
+### Changing subdomains
+
+You can [change the subdomain][help-center-change-url] for an existing
+organization using a [management command][management-commands]. Be
+sure you understand the implications of changing the organization URL
+before doing so, as it can be disruptive to users.
+
+[management-commands]: ../production/management-commands.md
+[help-center-change-url]: https://zulip.com/help/change-organization-url
 
 ### Authentication
 
@@ -131,3 +143,12 @@ If you're migrating from a configuration using the root domain to one
 with realms hosted on subdomains, be sure to clear cookies in any
 browsers that were logged in on the root domain; otherwise, those
 browsers will experience weird/confusing redirects.
+
+## Open realm creation
+
+Installations like [Zulip Cloud](https://zulip.com/plans) that wish to
+allow anyone on the Internet to create new Zulip organizations can do
+so by setting `OPEN_REALM_CREATION = True` in
+`/etc/zulip/settings.py`. Note that offering Zulip hosting to anyone
+on the Internet entails significant responsibility around security,
+abuse/spam, legal issues like GDPR/CCPA compliance, and more.

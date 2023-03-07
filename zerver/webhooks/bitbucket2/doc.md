@@ -8,8 +8,9 @@ Bitbucket Server click [here](./bitbucket3).
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
-   {!git-webhook-url-with-branches-indented.md!}
+1. {!create-bot-construct-url.md!}
+
+    {!git-webhook-url-with-branches.md!}
 
 1. On your repository's web page, click on **Settings**. Select
    **Webhooks**, and click **Add webhook**.

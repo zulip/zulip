@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import argparse
 import logging
 import os
 import pwd
@@ -9,17 +8,19 @@ import sys
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.supervisor import list_supervisor_processes
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     ENDC,
     OKGREEN,
     WARNING,
+    get_config,
     get_config_file,
     get_tornado_ports,
     has_application_server,
     has_process_fts_updates,
-    list_supervisor_processes,
     overwrite_symlink,
+    start_arg_parser,
 )
 
 action = "restart"
@@ -30,19 +31,7 @@ verbing = action.title() + "ing"
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format=f"%(asctime)s {action}-server: %(message)s", level=logging.INFO)
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
-if action == "restart":
-    parser.add_argument(
-        "--less-graceful",
-        action="store_true",
-        help="Restart with more concern for expediency than minimizing availability interruption",
-    )
-    parser.add_argument(
-        "--skip-tornado",
-        action="store_true",
-        help="Do not restart Tornado processes",
-    )
+parser = start_arg_parser(action=action, add_help=True)
 args = parser.parse_args()
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -52,9 +41,14 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
+
+if not args.skip_checks:
+    logging.info("Running syntax and database checks")
+    subprocess.check_call(["./manage.py", "check", "--database", "default"])
+
 if args.fill_cache:
     logging.info("Filling memcached caches")
-    subprocess.check_call(["./manage.py", "fill_memcached_caches"])
+    subprocess.check_call(["./manage.py", "fill_memcached_caches", "--skip-checks"])
 
 current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
 last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")
@@ -82,7 +76,7 @@ if has_application_server():
     if action == "start" or args.less_graceful:
         workers.append("zulip-workers:*")
     else:
-        workers.extend(list_supervisor_processes("zulip-workers:*"))
+        workers.extend(list_supervisor_processes(["zulip-workers:*"]))
 
     if has_application_server(once=True):
         # These used to be included in "zulip-workers:*"; since we may
@@ -92,13 +86,43 @@ if has_application_server():
         # `supervisorctl`.
         workers.extend(
             list_supervisor_processes(
-                "zulip_deliver_scheduled_emails",
-                "zulip_deliver_scheduled_messages",
+                [
+                    "zulip_deliver_scheduled_emails",
+                    "zulip_deliver_scheduled_messages",
+                ]
             )
         )
 
 if has_process_fts_updates():
     workers.append("process-fts-updates")
+
+# Before we start (re)starting main services, make sure to start any
+# optional auxiliary services that we don't stop, but do expect to be
+# running, and aren't currently.
+aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_running=False)
+if aux_services:
+    subprocess.check_call(["supervisorctl", "start", *aux_services])
+
+# If none of the workers nor the application servers are running, this
+# is actually a "start," not a restart, which means we will defer
+# workers to later.
+if (
+    action == "restart"
+    and len(
+        list_supervisor_processes([*workers, "zulip-django", "zulip-tornado:*"], only_running=True)
+    )
+    == 0
+):
+    action = "start"
+    verbing = "Starting"
+
+
+def restart_or_start(service: str) -> None:
+    our_verb = action
+    if our_verb == "restart" and len(list_supervisor_processes([service], only_running=True)) == 0:
+        our_verb = "start"
+    subprocess.check_call(["supervisorctl", our_verb, service])
+
 
 if action == "restart" and len(workers) > 0:
     if args.less_graceful:
@@ -113,7 +137,7 @@ if action == "restart" and len(workers) > 0:
         # requires multiple `supervisorctl restart` calls.
         for worker in workers:
             logging.info("Restarting %s", worker)
-            subprocess.check_call(["supervisorctl", "restart", worker])
+            restart_or_start(worker)
 
 if has_application_server():
     # Next, we restart the Tornado processes sequentially, in order to
@@ -132,16 +156,35 @@ if has_application_server():
             # supervisord group where if any individual process is slow to
             # stop, the whole bundle stays stopped for an extended time.
             logging.info("%s Tornado process on port %s", verbing, p)
-            subprocess.check_call(
-                ["supervisorctl", action, f"zulip-tornado:zulip-tornado-port-{p}"]
-            )
+            restart_or_start(f"zulip-tornado:zulip-tornado-port-{p}")
     else:
         logging.info("%s Tornado process", verbing)
-        subprocess.check_call(["supervisorctl", action, "zulip-tornado", "zulip-tornado:*"])
+        restart_or_start("zulip-tornado:*")
 
     # Finally, restart the Django uWSGI processes.
-    logging.info("%s django server", verbing)
-    subprocess.check_call(["supervisorctl", action, "zulip-django"])
+    if (
+        action == "restart"
+        and not args.less_graceful
+        and get_config(config_file, "application_server", "rolling_restart") != ""
+        and os.path.exists("/home/zulip/deployments/uwsgi-control")
+    ):
+        # See if it's currently running
+        uwsgi_status = subprocess.run(
+            ["supervisorctl", "status", "zulip-django"],
+            stdout=subprocess.DEVNULL,
+        )
+        if uwsgi_status.returncode == 0:
+            logging.info("Starting rolling restart of django server")
+            with open("/home/zulip/deployments/uwsgi-control", "w") as control_socket:
+                # "c" is chain-reloading:
+                # https://uwsgi-docs.readthedocs.io/en/latest/MasterFIFO.html#available-commands
+                control_socket.write("c")
+        else:
+            logging.info("Starting django server")
+            subprocess.check_call(["supervisorctl", "start", "zulip-django"])
+    else:
+        logging.info("%s django server", verbing)
+        restart_or_start("zulip-django")
 
     using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
     if using_sso.strip() == b"True":

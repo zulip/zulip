@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.upload import delete_message_image
+from zerver.lib.upload import delete_message_attachment
 from zerver.models import Attachment, UserProfile
 
 
@@ -27,7 +27,7 @@ def access_attachment_by_id(
 
 def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None:
     try:
-        delete_message_image(attachment.path_id)
+        delete_message_attachment(attachment.path_id)
     except Exception:
         raise JsonableError(
             _("An error occurred while deleting the attachment. Please try again later.")

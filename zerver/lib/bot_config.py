@@ -5,9 +5,8 @@ from collections import defaultdict
 from typing import Dict, List, Optional
 
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import F, Sum
 from django.db.models.functions import Length
-from django.db.models.query import F
 
 from zerver.models import BotConfigData, UserProfile
 
@@ -72,6 +71,7 @@ def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
 def load_bot_config_template(bot: str) -> Dict[str, str]:
     bot_module_name = f"zulip_bots.bots.{bot}"
     bot_module = importlib.import_module(bot_module_name)
+    assert bot_module.__file__ is not None
     bot_module_path = os.path.dirname(bot_module.__file__)
     config_path = os.path.join(bot_module_path, f"{bot}.conf")
     if os.path.isfile(config_path):

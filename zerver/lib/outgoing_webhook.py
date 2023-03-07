@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+from contextlib import suppress
 from time import perf_counter
 from typing import Any, AnyStr, Dict, Optional
 
@@ -10,8 +11,8 @@ from django.utils.translation import gettext as _
 from requests import Response
 
 from version import ZULIP_VERSION
-from zerver.lib.actions import check_send_message
-from zerver.lib.exceptions import JsonableError
+from zerver.actions.message_send import check_send_message
+from zerver.lib.exceptions import JsonableError, StreamDoesNotExistError
 from zerver.lib.message import MessageDict
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
@@ -106,7 +107,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         self, base_url: str, event: Dict[str, Any], realm: Realm
     ) -> Optional[Response]:
         if event["message"]["type"] == "private":
-            failure_message = "Slack outgoing webhooks don't support private messages."
+            failure_message = "Slack outgoing webhooks don't support direct messages."
             fail_with_message(event, failure_message)
             return None
 
@@ -164,7 +165,6 @@ def get_service_interface_class(interface: str) -> Any:
 
 
 def get_outgoing_webhook_service_handler(service: Service) -> Any:
-
     service_interface_class = get_service_interface_class(service.interface_name())
     service_interface = service_interface_class(
         token=service.token, user_profile=service.user_profile, service_name=service.name
@@ -232,7 +232,10 @@ def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
     message_info = event["message"]
     content = "Failure! " + failure_message
     response_data = dict(content=content)
-    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+    # If the stream has vanished while we were failing, there's no
+    # reasonable place to report the error.
+    with suppress(StreamDoesNotExistError):
+        send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 
 def get_message_url(event: Dict[str, Any]) -> str:

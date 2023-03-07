@@ -7,7 +7,6 @@ ROLE_MEMBER = 400
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0248_userprofile_role_start"),
     ]

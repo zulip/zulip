@@ -1,11 +1,13 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 import datetime
 import logging
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Any, Callable, Dict, Iterable, Tuple
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
+from django_stubs_ext import ValuesQuerySet
 
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import
@@ -19,6 +21,7 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
     user_profile_cache_key,
 )
+from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
 from zerver.models import (
@@ -55,17 +58,20 @@ def huddle_cache_items(items_for_remote_cache: Dict[str, Tuple[Huddle]], huddle:
     items_for_remote_cache[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
 
-def session_cache_items(items_for_remote_cache: Dict[str, str], session: Session) -> None:
-    if settings.SESSION_ENGINE != "django.contrib.sessions.backends.cached_db":
+def session_cache_items(
+    items_for_remote_cache: Dict[str, Dict[str, object]], session: Session
+) -> None:
+    if settings.SESSION_ENGINE != "zerver.lib.safe_session_cached_db":
         # If we're not using the cached_db session engine, we there
         # will be no store.cache_key attribute, and in any case we
         # don't need to fill the cache, since it won't exist.
         return
     store = session_engine.SessionStore(session_key=session.session_key)
+    assert isinstance(store, SessionStore)
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 
-def get_active_realm_ids() -> List[int]:
+def get_active_realm_ids() -> ValuesQuerySet[RealmCount, int]:
     """For installations like Zulip Cloud hosting a lot of realms, it only makes
     sense to do cache-filling work for realms that have any currently
     active users/clients.  Otherwise, we end up with every single-user
@@ -81,7 +87,7 @@ def get_active_realm_ids() -> List[int]:
     )
 
 
-def get_streams() -> List[Stream]:
+def get_streams() -> QuerySet[Stream]:
     return (
         Stream.objects.select_related()
         .filter(realm__in=get_active_realm_ids())
@@ -93,7 +99,7 @@ def get_streams() -> List[Stream]:
     )
 
 
-def get_users() -> List[UserProfile]:
+def get_users() -> QuerySet[UserProfile]:
     return UserProfile.objects.select_related().filter(
         long_term_idle=False, realm__in=get_active_realm_ids()
     )

@@ -3,11 +3,11 @@ import os
 
 import orjson
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def populate_new_fields(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def populate_new_fields(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     # Open the JSON file which contains the data to be used for migration.
     MIGRATION_DATA_PATH = os.path.join(
         os.path.dirname(os.path.dirname(__file__)), "management", "data"
@@ -31,7 +31,6 @@ def populate_new_fields(apps: StateApps, schema_editor: DatabaseSchemaEditor) ->
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0096_add_password_required"),
     ]

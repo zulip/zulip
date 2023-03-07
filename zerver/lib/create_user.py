@@ -1,3 +1,5 @@
+from datetime import datetime
+from email.headerregistry import Address
 from typing import Optional, Union
 
 import orjson
@@ -5,6 +7,7 @@ from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.hotspots import copy_hotspots
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -33,6 +36,12 @@ def copy_default_settings(
             settings_source, RealmUserDefault
         ):
             continue
+
+        if settings_name == "email_address_visibility":
+            # For email_address_visibility, the value selected in registration form
+            # is preferred over the realm-level default value and value of source
+            # profile.
+            continue
         value = getattr(settings_source, settings_name)
         setattr(target_profile, settings_name, value)
 
@@ -40,12 +49,12 @@ def copy_default_settings(
         target_profile.save()
         return
 
-    setattr(target_profile, "full_name", settings_source.full_name)
-    setattr(target_profile, "timezone", settings_source.timezone)
+    target_profile.full_name = settings_source.full_name
+    target_profile.timezone = canonicalize_timezone(settings_source.timezone)
     target_profile.save()
 
     if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:
-        from zerver.lib.actions import do_change_avatar_fields
+        from zerver.actions.user_settings import do_change_avatar_fields
 
         do_change_avatar_fields(
             target_profile,
@@ -60,7 +69,9 @@ def copy_default_settings(
 
 def get_display_email_address(user_profile: UserProfile) -> str:
     if not user_profile.email_address_is_realm_public():
-        return f"user{user_profile.id}@{get_fake_email_domain(user_profile.realm)}"
+        return Address(
+            username=f"user{user_profile.id}", domain=get_fake_email_domain(user_profile.realm)
+        ).addr_spec
     return user_profile.delivery_email
 
 
@@ -81,12 +92,19 @@ def create_user_profile(
     bot_owner: Optional[UserProfile],
     is_mirror_dummy: bool,
     tos_version: Optional[str],
-    timezone: Optional[str],
+    timezone: str,
+    default_language: str = "en",
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
-    enter_sends: bool = False,
     force_id: Optional[int] = None,
+    force_date_joined: Optional[datetime] = None,
+    *,
+    email_address_visibility: int,
 ) -> UserProfile:
-    now = timezone_now()
+    if force_date_joined is None:
+        date_joined = timezone_now()
+    else:
+        date_joined = force_date_joined
+
     email = UserManager.normalize_email(email)
 
     extra_kwargs = {}
@@ -97,8 +115,8 @@ def create_user_profile(
         is_staff=False,
         is_active=active,
         full_name=full_name,
-        last_login=now,
-        date_joined=now,
+        last_login=date_joined,
+        date_joined=date_joined,
         realm=realm,
         is_bot=bool(bot_type),
         bot_type=bot_type,
@@ -107,10 +125,10 @@ def create_user_profile(
         tos_version=tos_version,
         timezone=timezone,
         tutorial_status=tutorial_status,
-        enter_sends=enter_sends,
         onboarding_steps=orjson.dumps([]).decode(),
-        default_language=realm.default_language,
+        default_language=default_language,
         delivery_email=email,
+        email_address_visibility=email_address_visibility,
         **extra_kwargs,
     )
     if bot_type or not active:
@@ -136,13 +154,27 @@ def create_user(
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
+    default_language: str = "en",
     default_sending_stream: Optional[Stream] = None,
     default_events_register_stream: Optional[Stream] = None,
     default_all_public_streams: Optional[bool] = None,
     source_profile: Optional[UserProfile] = None,
     force_id: Optional[int] = None,
+    force_date_joined: Optional[datetime] = None,
     enable_marketing_emails: Optional[bool] = None,
+    email_address_visibility: Optional[int] = None,
 ) -> UserProfile:
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    if bot_type is None:
+        if email_address_visibility is not None:
+            user_email_address_visibility = email_address_visibility
+        else:
+            user_email_address_visibility = realm_user_default.email_address_visibility
+    else:
+        # There is no privacy motivation for limiting access to bot email addresses,
+        # so we hardcode them to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+        user_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+
     user_profile = create_user_profile(
         realm,
         email,
@@ -154,7 +186,10 @@ def create_user(
         is_mirror_dummy,
         tos_version,
         timezone,
+        default_language,
         force_id=force_id,
+        force_date_joined=force_date_joined,
+        email_address_visibility=user_email_address_visibility,
     )
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
@@ -168,7 +203,7 @@ def create_user(
     # If a source profile was specified, we copy settings from that
     # user.  Note that this is positioned in a way that overrides
     # other arguments passed in, which is correct for most defaults
-    # like timezone where the source profile likely has a better value
+    # like time zone where the source profile likely has a better value
     # than the guess. As we decide on details like avatars and full
     # names for this feature, we may want to move it.
     if source_profile is not None:
@@ -176,7 +211,6 @@ def create_user(
         # save is not required.
         copy_default_settings(source_profile, user_profile)
     elif bot_type is None:
-        realm_user_default = RealmUserDefault.objects.get(realm=realm)
         copy_default_settings(realm_user_default, user_profile)
     else:
         # This will be executed only for bots.

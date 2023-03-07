@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from django.db import connection
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
@@ -13,13 +13,14 @@ from analytics.views.activity_common import (
     format_date_for_activity_reports,
     get_user_activity_summary,
     make_table,
+    realm_stats_link,
     user_activity_link,
 )
 from zerver.decorator import require_server_admin
 from zerver.models import Realm, UserActivity
 
 
-def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
+def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet[UserActivity]:
     fields = [
         "user_profile__full_name",
         "user_profile__delivery_email",
@@ -40,11 +41,11 @@ def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
 
 
 def realm_user_summary_table(
-    all_records: List[QuerySet], admin_emails: Set[str]
-) -> Tuple[Dict[str, Dict[str, Any]], str]:
+    all_records: QuerySet[UserActivity], admin_emails: Set[str]
+) -> Tuple[Dict[str, Any], str]:
     user_records = {}
 
-    def by_email(record: QuerySet) -> str:
+    def by_email(record: UserActivity) -> str:
         return record.user_profile.delivery_email
 
     for email, records in itertools.groupby(all_records, by_email):
@@ -68,7 +69,7 @@ def realm_user_summary_table(
 
     rows = []
     for email, user_summary in user_records.items():
-        email_link = user_activity_link(email)
+        email_link = user_activity_link(email, user_summary["user_profile_id"])
         sent_count = get_count(user_summary, "send")
         cells = [user_summary["name"], email_link, sent_count]
         row_class = ""
@@ -107,10 +108,11 @@ def realm_user_summary_table(
     return user_records, content
 
 
-def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
+def realm_client_table(user_summaries: Dict[str, Dict[str, Any]]) -> str:
     exclude_keys = [
         "internal",
         "name",
+        "user_profile_id",
         "use",
         "send",
         "pointer",
@@ -120,7 +122,7 @@ def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> 
 
     rows = []
     for email, user_summary in user_summaries.items():
-        email_link = user_activity_link(email)
+        email_link = user_activity_link(email, user_summary["user_profile_id"])
         name = user_summary["name"]
         for k, v in user_summary.items():
             if k in exclude_keys:
@@ -235,7 +237,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     admin_emails = {admin.delivery_email for admin in admins}
 
     for is_bot, page_title in [(False, "Humans"), (True, "Bots")]:
-        all_records = list(get_user_activity_records_for_realm(realm_str, is_bot))
+        all_records = get_user_activity_records_for_realm(realm_str, is_bot)
 
         user_records, content = realm_user_summary_table(all_records, admin_emails)
         all_user_records.update(user_records)
@@ -251,8 +253,10 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     data += [(page_title, content)]
 
     title = realm_str
+    realm_stats = realm_stats_link(realm_str)
+
     return render(
         request,
         "analytics/activity.html",
-        context=dict(data=data, realm_link=None, title=title),
+        context=dict(data=data, realm_stats_link=realm_stats, title=title),
     )

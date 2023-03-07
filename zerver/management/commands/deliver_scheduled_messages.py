@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import build_message_send_dict, do_send_messages
+from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, ScheduledMessage, get_user_by_delivery_email
@@ -32,6 +32,7 @@ Usage: ./manage.py deliver_scheduled_messages
         original_sender = scheduled_message.sender
         message.content = scheduled_message.content
         message.recipient = scheduled_message.recipient
+        message.realm = scheduled_message.realm
         message.subject = scheduled_message.subject
         message.date_sent = timezone_now()
         message.sending_client = scheduled_message.sending_client

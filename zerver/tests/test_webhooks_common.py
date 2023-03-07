@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 
+from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
-from zerver.lib.actions import do_rename_stream
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
@@ -15,7 +15,7 @@ from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
     INVALID_JSON_MESSAGE,
     MISSING_EVENT_HEADER_MESSAGE,
-    MissingHTTPEventHeader,
+    MissingHTTPEventHeaderError,
     get_fixture_http_headers,
     standardize_headers,
     validate_extract_webhook_http_header,
@@ -31,7 +31,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         request.user = webhook_bot
 
         header_value = validate_extract_webhook_http_header(
-            request, "X_CUSTOM_HEADER", "test_webhook"
+            request, "X-Custom-Header", "test_webhook"
         )
 
         self.assertEqual(header_value, "custom_value")
@@ -45,15 +45,15 @@ class WebhooksCommonTestCase(ZulipTestCase):
         request.user = webhook_bot
         request.path = "some/random/path"
 
-        exception_msg = "Missing the HTTP event header 'X_CUSTOM_HEADER'"
-        with self.assertRaisesRegex(MissingHTTPEventHeader, exception_msg):
-            validate_extract_webhook_http_header(request, "X_CUSTOM_HEADER", "test_webhook")
+        exception_msg = "Missing the HTTP event header 'X-Custom-Header'"
+        with self.assertRaisesRegex(MissingHTTPEventHeaderError, exception_msg):
+            validate_extract_webhook_http_header(request, "X-Custom-Header", "test_webhook")
 
         msg = self.get_last_message()
         expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=webhook_bot.full_name,
             request_path=request.path,
-            header_name="X_CUSTOM_HEADER",
+            header_name="X-Custom-Header",
             integration_name="test_webhook",
             support_email=FromAddress.SUPPORT,
         ).rstrip()
@@ -88,6 +88,9 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertNotEqual(msg.content, expected_msg.strip())
 
         # Then verify that with the setting, it does send such a message.
+        request = HostRequestMock()
+        request.POST["api_key"] = webhook_bot_api_key
+        request.host = "zulip.testserver"
         with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
             my_webhook_notify(request)
         msg = self.get_last_message()
@@ -110,8 +113,8 @@ class WebhooksCommonTestCase(ZulipTestCase):
         headers = get_fixture_http_headers("some_integration", "complex_fixture")
         self.assertEqual(headers, {"key": "value"})
 
-    def test_get_fixture_http_headers_for_non_existant_integration(self) -> None:
-        headers = get_fixture_http_headers("some_random_nonexistant_integration", "fixture_name")
+    def test_get_fixture_http_headers_for_non_existent_integration(self) -> None:
+        headers = get_fixture_http_headers("some_random_nonexistent_integration", "fixture_name")
         self.assertEqual(headers, {})
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
@@ -119,7 +122,6 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self,
         import_module_mock: MagicMock,
     ) -> None:
-
         fake_module = SimpleNamespace()
         import_module_mock.return_value = fake_module
 
@@ -187,7 +189,7 @@ class MissingEventHeaderTestCase(WebhookTestCase):
             self.get_body("ticket_state_changed"),
             content_type="application/x-www-form-urlencoded",
         )
-        self.assert_json_error(result, "Missing the HTTP event header 'X_GROOVE_EVENT'")
+        self.assert_json_error(result, "Missing the HTTP event header 'X-Groove-Event'")
 
         realm = get_realm("zulip")
         webhook_bot = get_user("webhook-bot@zulip.com", realm)
@@ -197,7 +199,7 @@ class MissingEventHeaderTestCase(WebhookTestCase):
         expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=webhook_bot.full_name,
             request_path="/api/v1/external/groove",
-            header_name="X_GROOVE_EVENT",
+            header_name="X-Groove-Event",
             integration_name="Groove",
             support_email=FromAddress.SUPPORT,
         ).rstrip()

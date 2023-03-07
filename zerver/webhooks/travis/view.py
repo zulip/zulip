@@ -44,7 +44,7 @@ def api_travis_webhook(
     event = str(message["type"])
     message_status = message["status_message"]
     if ignore_pull_requests and message["type"] == "pull_request":
-        return json_success()
+        return json_success(request)
 
     if message_status in GOOD_STATUSES:
         emoji = ":thumbs_up:"
@@ -65,4 +65,4 @@ def api_travis_webhook(
     topic = "builds"
 
     check_send_webhook_message(request, user_profile, topic, body, event)
-    return json_success()
+    return json_success(request)

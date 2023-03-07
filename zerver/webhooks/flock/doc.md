@@ -2,7 +2,7 @@ Get Zulip notifications from your Flock channels.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Click on **Apps** in the bottom-right corner.
    Click on **Admin Panel**, and click on **Webhooks**.

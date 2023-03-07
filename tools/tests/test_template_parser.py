@@ -4,7 +4,7 @@ from typing import Optional
 
 try:
     from tools.lib.template_parser import (
-        TemplateParserException,
+        TemplateParserError,
         is_django_block_tag,
         tokenize,
         validate,
@@ -20,10 +20,9 @@ class ParserTest(unittest.TestCase):
         error: str,
         fn: Optional[str] = None,
         text: Optional[str] = None,
-        check_indent: bool = True,
     ) -> None:
-        with self.assertRaisesRegex(TemplateParserException, error):
-            validate(fn=fn, text=text, check_indent=check_indent)
+        with self.assertRaisesRegex(TemplateParserError, error):
+            validate(fn=fn, text=text)
 
     def test_is_django_block_tag(self) -> None:
         self.assertTrue(is_django_block_tag("block"))
@@ -49,6 +48,22 @@ class ParserTest(unittest.TestCase):
             {{/with}}
             """
         validate(text=my_html)
+
+    def test_validate_handlebars_partial_block(self) -> None:
+        my_html = """
+            {{#> generic_thing }}
+                <p>hello!</p>
+            {{/generic_thing}}
+            """
+        validate(text=my_html)
+
+    def test_validate_bad_handlebars_partial_block(self) -> None:
+        my_html = """
+            {{#> generic_thing }}
+                <p>hello!</p>
+            {{# generic_thing}}
+            """
+        self._assert_validate_error("Missing end tag for the token at row 4 13!", text=my_html)
 
     def test_validate_comment(self) -> None:
         my_html = """
@@ -85,7 +100,7 @@ class ParserTest(unittest.TestCase):
         my_html = """
             <b>foo</i>
         """
-        self._assert_validate_error("Mismatched tag.", text=my_html)
+        self._assert_validate_error(r"Mismatched tags: \(b != i\)", text=my_html)
 
     def test_validate_bad_indentation(self) -> None:
         my_html = """
@@ -93,7 +108,7 @@ class ParserTest(unittest.TestCase):
                 foo
                 </p>
         """
-        self._assert_validate_error("Bad indentation.", text=my_html, check_indent=True)
+        self._assert_validate_error("Indentation for start/end tags does not match.", text=my_html)
 
     def test_validate_state_depth(self) -> None:
         my_html = """
@@ -168,7 +183,6 @@ class ParserTest(unittest.TestCase):
         self._assert_validate_error("Tag name missing", text=my_html)
 
     def test_code_blocks(self) -> None:
-
         # This is fine.
         my_html = """
             <code>
@@ -189,10 +203,9 @@ class ParserTest(unittest.TestCase):
         self._assert_validate_error("Code tag is split across two lines.", text=my_html)
 
     def test_anchor_blocks(self) -> None:
-
         # This is allowed, although strange.
         my_html = """
-            <a hef="/some/url">
+            <a href="/some/url">
             Click here
             for more info.
             </a>"""
@@ -298,6 +311,11 @@ class ParserTest(unittest.TestCase):
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, "handlebars_end")
         self.assertEqual(token.tag, "with")
+
+        tag = "{{#> compose_banner }}bla"
+        token = tokenize(tag)[0]
+        self.assertEqual(token.kind, "handlebars_partial_block")
+        self.assertEqual(token.tag, "compose_banner")
 
         tag = "{% if foo %}bla"
         token = tokenize(tag)[0]

@@ -2,7 +2,7 @@ Get Zulip notifications for your Semaphore builds!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. In Semaphore 2.0, under **Configuration** select **Notifications**. Click on
    **Create New Notification**. Add the the URL constructed above to the Webhook

@@ -2,19 +2,25 @@ import os
 from unittest.mock import Mock, patch
 
 from django.conf import settings
-from moto import mock_s3
+from moto.s3 import mock_s3
 
-from zerver.lib.actions import check_add_realm_emoji
+from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import avatar_disk_path, create_s3_buckets, get_test_image_file
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    create_s3_buckets,
+    get_test_image_file,
+    read_test_image_file,
+)
 from zerver.lib.transfer import (
     transfer_avatars_to_s3,
     transfer_emoji_to_s3,
     transfer_message_files_to_s3,
     transfer_uploads_to_s3,
 )
-from zerver.lib.upload import resize_emoji, upload_message_file
+from zerver.lib.upload import upload_message_attachment
+from zerver.lib.upload.base import resize_emoji
 from zerver.models import Attachment, RealmEmoji
 
 
@@ -61,8 +67,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        upload_message_file("dummy1.txt", len(b"zulip1!"), "text/plain", b"zulip1!", hamlet)
-        upload_message_file("dummy2.txt", len(b"zulip2!"), "text/plain", b"zulip2!", othello)
+        upload_message_attachment("dummy1.txt", len(b"zulip1!"), "text/plain", b"zulip1!", hamlet)
+        upload_message_attachment("dummy2.txt", len(b"zulip2!"), "text/plain", b"zulip2!", othello)
 
         with self.assertLogs(level="INFO"):
             transfer_message_files_to_s3(1)
@@ -83,8 +89,6 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
         with get_test_image_file("img.png") as image_file:
             emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
-        if not emoji:
-            raise AssertionError("Unable to add emoji.")
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=othello.realm_id,
@@ -98,8 +102,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         original_key = bucket.Object(emoji_path + ".original")
         resized_key = bucket.Object(emoji_path)
 
-        with get_test_image_file("img.png") as image_file:
-            image_data = image_file.read()
+        image_data = read_test_image_file("img.png")
         resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
 
         self.assertEqual(is_animated, False)
@@ -107,10 +110,10 @@ class TransferUploadsToS3Test(ZulipTestCase):
         self.assertEqual(image_data, original_key.get()["Body"].read())
         self.assertEqual(resized_image_data, resized_key.get()["Body"].read())
 
+        emoji_name = "emoji2.png"
+
         with get_test_image_file("animated_img.gif") as image_file:
             emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
-        if not emoji:
-            raise AssertionError("Unable to add emoji.")
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=othello.realm_id,
@@ -131,8 +134,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
             )
         )
 
-        with get_test_image_file("animated_img.gif") as image_file:
-            image_data = image_file.read()
+        image_data = read_test_image_file("animated_img.gif")
         resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
 
         self.assertEqual(is_animated, True)

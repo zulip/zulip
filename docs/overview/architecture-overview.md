@@ -7,7 +7,7 @@ contains the Zulip backend (written in Python 3.x and Django), the
 web app (written in JavaScript and TypeScript) and our library of
 incoming webhook [integrations](https://zulip.com/integrations)
 with other services and applications (see [the directory structure
-guide](../overview/directory-structure.md)).
+guide](directory-structure.md)).
 
 [Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
 mobile Zulip client supporting both iOS and Android, written in
@@ -108,9 +108,9 @@ feed.
 
 For more details on the frontend, see our documentation on
 [translation](../translating/translating.md),
-[templates](../subsystems/html-css.html#html-templates),
-[directory structure](../overview/directory-structure.md), and
-[the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
+[templates](../subsystems/html-css.md#html-templates),
+[directory structure](directory-structure.md), and
+[the static asset pipeline](../subsystems/html-css.md#static-asset-pipeline).
 
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/
@@ -290,7 +290,7 @@ self-explanatory names.
 - **message editing**: If the realm admin allows it, then after a user
   posts a message, the user has a few minutes to click "Edit" and
   change the content of their message. If they do, Zulip adds a
-  marker such as "(EDITED)" at the top of the message, visible to
+  marker such as "EDITED" at the top of the message, visible to
   anyone who can see the message.
 
 - **realm**: What the codebase calls an "organization" in the UI.

@@ -1,20 +1,60 @@
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import (
+    WildValue,
+    check_int,
+    check_none_or,
+    check_string,
+    check_string_in,
+    check_url,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import get_short_sha
 from zerver.models import UserProfile
 
 outcome_to_formatted_status_map = {
     "success": "has succeeded",
     "failed": "has failed",
     "canceled": "was canceled",
+    "unauthorized": "was unauthorized",
+    "error": "had an error",
 }
 
-ALL_EVENT_TYPES = list(outcome_to_formatted_status_map.keys())
+GITHUB_COMMIT_LINK = "{target_repository_url}/commit/{commit_sha}"
+
+BITBUCKET_COMMIT_LINK = "{target_repository_url}/commits/{commit_sha}"
+
+GITLAB_COMMIT_LINK = "{web_url}/-/commit/{commit_sha}"
+
+FULL_COMMIT_INFO_TEMPLATE = """
+Triggered on [`{commit_details}`]({commit_link}) on branch `{branch_name}` by {author_name}.
+"""
+
+MANUAL_TRIGGER_INFO_TEMPLATE = """
+Triggered on `{branch_name}`'s HEAD on [{commit_sha}]({commit_link}).
+"""
+
+TAG_TRIGGER_INFO_TEMPLATE = """
+Triggered on the latest tag on [{commit_sha}]({commit_link}).
+"""
+
+WORKFLOW_BODY_TEMPLATE = """
+Workflow [`{workflow_name}`]({workflow_url}) within Pipeline #{pipeline_number} {formatted_status}.
+{commit_details}
+"""
+
+JOB_BODY_TEMPLATE = """
+Job `{job_name}` within Pipeline #{pipeline_number} {formatted_status}.
+{commit_details}
+"""
+
+ALL_EVENT_TYPES = ["job-completed", "workflow-completed"]
 
 
 @webhook_view("CircleCI", all_event_types=ALL_EVENT_TYPES)
@@ -22,134 +62,125 @@ ALL_EVENT_TYPES = list(outcome_to_formatted_status_map.keys())
 def api_circleci_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    payload = payload["payload"]
     subject = get_subject(payload)
     body = get_body(payload)
+
+    pipeline = payload["pipeline"]
+
+    # We currently don't support projects using VCS providers other than GitHub,
+    # BitBucket and GitLab.
+    if "trigger_parameters" in pipeline and pipeline["trigger"]["type"] != "gitlab":
+        raise JsonableError(
+            _("Projects using this version control system provider aren't supported")
+        )  # nocoverage
 
     check_send_webhook_message(
         request,
         user_profile,
         subject,
         body,
-        payload.get("status") if not payload.get("build_num") else payload.get("outcome"),
+        payload["type"].tame(check_string),
     )
-    return json_success()
+    return json_success(request)
 
 
-def get_subject(payload: Dict[str, Any]) -> str:
-    repository_name = payload["reponame"]
-    return f"{repository_name}"
+def get_subject(payload: WildValue) -> str:
+    return payload["project"]["name"].tame(check_string)
 
 
-def get_commit_range_info(payload: Dict[str, Any]) -> str:
-    commits = payload["all_commit_details"]
-    num_commits = len(commits)
+def get_commit_details(payload: WildValue) -> str:
+    if "vcs" in payload["pipeline"]:  # GitHub and BitBucket associated pipelines.
+        revision = payload["pipeline"]["vcs"]["revision"].tame(check_string)
+        commit_id = get_short_sha(revision)
 
-    if num_commits == 1:
-        commit_id = commits[0]["commit"][:10]
-        commit_url = commits[0]["commit_url"]
-        return f"- **Commit:** [{commit_id}]({commit_url})"
-
-    vcs_provider = payload["user"]["vcs_type"]  # Same as payload["why"]?
-    first_commit_id = commits[0]["commit"]
-    shortened_first_commit_id = first_commit_id[:10]
-    last_commit_id = commits[-1]["commit"]
-    shortened_last_commit_id = last_commit_id[:10]
-    if vcs_provider == "github":
-        # Then use GitHub's commit range feature to form the appropriate url.
-        vcs_url = payload["vcs_url"]
-        commit_range_url = f"{vcs_url}/compare/{first_commit_id}...{last_commit_id}"
-        return f"- **Commits ({num_commits}):** [{shortened_first_commit_id} ... {shortened_last_commit_id}]({commit_range_url})"
-    else:
-        # Bitbucket doesn't have a good commit range URL feature like GitHub does.
-        # So let's just show the two separately.
-        # https://community.atlassian.com/t5/Bitbucket-questions/BitBucket-4-14-diff-between-any-two-commits/qaq-p/632974
-        first_commit_url = commits[0]["commit_url"]
-        last_commit_url = commits[-1]["commit_url"]
-        return f"- **Commits ({num_commits}):** [{shortened_first_commit_id}]({first_commit_url}) ... [{shortened_last_commit_id}]({last_commit_url})"
-
-
-def get_authors_and_committer_info(payload: Dict[str, Any]) -> str:
-    body = ""
-
-    author_names = set()
-    committer_names = set()
-    for commit in payload["all_commit_details"]:
-        author_name = commit["author_name"]
-        author_username = commit["author_login"]
-        if author_username:
-            author_names.add(f"{author_name} ({author_username})")
+        if payload["pipeline"]["vcs"]["provider_name"] == "github":
+            commit_link = GITHUB_COMMIT_LINK.format(
+                target_repository_url=payload["pipeline"]["vcs"]["target_repository_url"].tame(
+                    check_url
+                ),
+                commit_sha=revision,
+            )
         else:
-            author_names.add(commit["author_name"])
+            commit_link = BITBUCKET_COMMIT_LINK.format(
+                target_repository_url=payload["pipeline"]["vcs"]["target_repository_url"].tame(
+                    check_url
+                ),
+                commit_sha=revision,
+            )
 
-        if commit.get("committer_email", None):
-            committer_name = commit["committer_name"]
-            committer_username = commit["committer_login"]
-            if committer_username:
-                committer_names.add(f"{committer_name} ({committer_username})")
-            else:
-                committer_names.add(commit["committer_name"])
+        branch = payload["pipeline"]["vcs"]["branch"].tame(check_none_or(check_string))
+        commit_subject = payload["pipeline"]["vcs"]["commit"]["subject"].tame(
+            check_none_or(check_string)
+        )
+        if not commit_subject:
+            # Manually triggered pipelines (possible only for GitHub and BitBucket projects currently).
+            if not branch:
+                return TAG_TRIGGER_INFO_TEMPLATE.format(
+                    commit_sha=commit_id, commit_link=commit_link
+                )
+            return MANUAL_TRIGGER_INFO_TEMPLATE.format(
+                branch_name=branch, commit_sha=commit_id, commit_link=commit_link
+            )
 
-    author_names_list = list(author_names)
-    author_names_list.sort()
-    committer_names_list = list(committer_names)
-    committer_names_list.sort()
-    authors = ", ".join(author_names_list)
-    committers = ", ".join(committer_names_list)
+        commit_details = f"{commit_id}: {commit_subject}"
+        author_name = payload["pipeline"]["vcs"]["commit"]["author"]["name"].tame(check_string)
 
-    # Add the authors' information to the body.
-    if len(author_names_list) > 1:
-        body += f"- **Authors:** {authors}"
+    else:  # Other providers (GitLab).
+        commit_title = payload["pipeline"]["trigger_parameters"]["gitlab"]["commit_title"].tame(
+            check_string
+        )
+        checkout_sha = payload["pipeline"]["trigger_parameters"]["gitlab"]["checkout_sha"].tame(
+            check_string
+        )
+        commit_id = get_short_sha(checkout_sha)
+        commit_details = f"{commit_id}: {commit_title}"
+
+        author_name = payload["pipeline"]["trigger_parameters"]["gitlab"][
+            "commit_author_name"
+        ].tame(check_string)
+
+        commit_link = GITLAB_COMMIT_LINK.format(
+            web_url=payload["pipeline"]["trigger_parameters"]["gitlab"]["web_url"].tame(check_url),
+            commit_sha=checkout_sha,
+        )
+
+        branch = payload["pipeline"]["trigger_parameters"]["gitlab"]["branch"].tame(check_string)
+
+    return FULL_COMMIT_INFO_TEMPLATE.format(
+        commit_details=commit_details,
+        commit_link=commit_link,
+        author_name=author_name,
+        branch_name=branch,
+    )
+
+
+def get_body(payload: WildValue) -> str:
+    pipeline_number = payload["pipeline"]["number"].tame(check_int)
+    commit_details = get_commit_details(payload)
+    payload_type = payload["type"].tame(check_string_in(["job-completed", "workflow-completed"]))
+
+    if payload_type == "job-completed":
+        job_name = payload["job"]["name"].tame(check_string)
+        status = payload["job"]["status"].tame(check_string)
+        formatted_status = outcome_to_formatted_status_map.get(status)
+        return JOB_BODY_TEMPLATE.format(
+            job_name=job_name,
+            pipeline_number=pipeline_number,
+            formatted_status=formatted_status,
+            commit_details=commit_details,
+        )
+
     else:
-        body += f"- **Author:** {authors}"
-
-    # Add information about the committers if it was provided.
-    if len(committer_names) > 0:
-        if len(committer_names) > 1:
-            body += f"\n- **Committers:** {committers}"
-        else:
-            body += f"\n- **Committer:** {committers}"
-
-    return body
-
-
-def super_minimal_body(payload: Dict[str, Any]) -> str:
-    branch_name = payload["branch"]
-    status = payload["status"]
-    formatted_status = outcome_to_formatted_status_map.get(status, status)
-    build_url = payload["build_url"]
-    username = payload["username"]
-    return f"[Build]({build_url}) triggered by {username} on branch `{branch_name}` {formatted_status}."
-
-
-def get_body(payload: Dict[str, Any]) -> str:
-    build_num = payload.get("build_num", None)
-    if not build_num:
-        return super_minimal_body(payload)
-
-    build_url = payload["build_url"]
-
-    outcome = payload["outcome"]
-    formatted_status = outcome_to_formatted_status_map.get(outcome, outcome)
-
-    branch_name = payload["branch"]
-    workflow_name = payload["workflows"]["workflow_name"]
-    job_name = payload["workflows"]["job_name"]
-
-    commit_range_info = get_commit_range_info(payload)
-    pull_request_info = ""
-    if len(payload["pull_requests"]) > 0:
-        pull_request_url = payload["pull_requests"][0]["url"]
-        pull_request_info = f"- **Pull request:** {pull_request_url}"
-    authors_and_committers_info = get_authors_and_committer_info(payload)
-
-    body = f"""
-Build [#{build_num}]({build_url}) of `{job_name}`/`{workflow_name}` on branch `{branch_name}` {formatted_status}.
-{commit_range_info}
-{pull_request_info}
-{authors_and_committers_info}
-""".strip()
-
-    return body
+        workflow_name = payload["workflow"]["name"].tame(check_string)
+        workflow_url = payload["workflow"]["url"].tame(check_url)
+        status = payload["workflow"]["status"].tame(check_string)
+        formatted_status = outcome_to_formatted_status_map.get(status)
+        return WORKFLOW_BODY_TEMPLATE.format(
+            workflow_name=workflow_name,
+            workflow_url=workflow_url,
+            pipeline_number=pipeline_number,
+            formatted_status=formatted_status,
+            commit_details=commit_details,
+        )

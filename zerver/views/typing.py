@@ -3,7 +3,7 @@ from typing import List, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import check_send_typing_notification, do_send_stream_typing_notification
+from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -38,6 +38,9 @@ def send_notification_backend(
         if topic is None:
             raise JsonableError(_("Missing topic"))
 
+        if not user_profile.send_stream_typing_notifications:
+            raise JsonableError(_("User has disabled typing notifications for stream messages"))
+
         stream_id = notification_to[0]
         # Verify that the user has access to the stream and has
         # permission to send messages to it.
@@ -45,7 +48,10 @@ def send_notification_backend(
         access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
         do_send_stream_typing_notification(user_profile, operator, stream, topic)
     else:
+        if not user_profile.send_private_typing_notifications:
+            raise JsonableError(_("User has disabled typing notifications for direct messages"))
+
         user_ids = notification_to
         check_send_typing_notification(user_profile, user_ids, operator)
 
-    return json_success()
+    return json_success(request)

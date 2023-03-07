@@ -17,4 +17,4 @@ def set_tutorial_status(
         user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user_profile.save(update_fields=["tutorial_status"])
 
-    return json_success()
+    return json_success(request)

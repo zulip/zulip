@@ -1,6 +1,6 @@
 1.  {!create-stream.md!}
 
-1.  Next, on your {{ settings_html|safe }}, create a bot.
+1.  {!create-an-incoming-webhook.md!}
 
 1.  Construct a webhook URL like the following:
 
@@ -44,7 +44,7 @@
     **Updated**. In the **Perform these actions** section, select
     **Notification: Notify target**, then select **Zulip**.
 
-1.  Next we need need to enter the message body into Message. You can use
+1.  Next we need to enter the message body into Message. You can use
     Zulip Markdown and the Zendesk placeholders when creating your message.
 
     You can copy this example template:

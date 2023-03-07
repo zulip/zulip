@@ -8,9 +8,9 @@ similar.
 
 This page focused on the mechanics of running automated tests in a
 [development environment](../development/overview.md); you may also
-want to read about our [testing philosophy](../testing/philosophy.md)
+want to read about our [testing philosophy](philosophy.md)
 and [continuous integration
-setup](../testing/continuous-integration.md).
+setup](continuous-integration.md).
 
 Manual testing with a web browser is primarily discussed in the docs
 on [using the development environment](../development/using.md).
@@ -32,11 +32,11 @@ because it takes a long time. Instead, your edit/refresh cycle will
 typically involve running subsets of the tests with commands like these:
 
 ```bash
-./tools/lint zerver/lib/actions.py # Lint the file you just changed
+./tools/lint zerver/models.py # Lint the file you just changed
 ./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
 ./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
-./tools/test-js-with-puppeteer navigation.ts
-./tools/test-js-with-node utils.js
+./tools/test-js-with-node util
+# etc.
 ```
 
 The commands above will all run in just a few seconds. Many more
@@ -48,11 +48,11 @@ useful options are discussed in each tool's documentation (e.g.
 Zulip has a handful of major tests suite that every developer will
 eventually work with, each with its own page detailing how it works:
 
-- [Linters](../testing/linters.md): Our dozen or so linters run in parallel.
-- [Django](../testing/testing-with-django.md): Server/backend Python tests.
-- [Node](../testing/testing-with-node.md): JavaScript tests for the
+- [Linters](linters.md): Our dozen or so linters run in parallel.
+- [Django](testing-with-django.md): Server/backend Python tests.
+- [Node](testing-with-node.md): JavaScript tests for the
   frontend run via node.js.
-- [Puppeteer](../testing/testing-with-puppeteer.md): End-to-end
+- [Puppeteer](testing-with-puppeteer.md): End-to-end
   UI tests run via a Chromium browser.
 
 ## Other test suites
@@ -66,7 +66,7 @@ Additionally, Zulip also has about a dozen smaller tests suites:
 - `tools/test-documentation`: Checks for broken links in this
   ReadTheDocs documentation site.
 - `tools/test-help-documentation`: Checks for broken links in the
-  `/help` user documentation site, and related pages.
+  `/help/` help center documentation, and related pages.
 - `tools/test-api`: Tests that the API documentation at `/api`
   actually works; the actual code for this is defined in
   `zerver/openapi/python_examples.py`.
@@ -84,7 +84,7 @@ Additionally, Zulip also has about a dozen smaller tests suites:
 - `tools/check-frontend-i18n`: Checks for a common bug in Handlebars
   templates, of using the wrong syntax for translating blocks
   containing variables.
-- `./tools/test-run-dev`: Checks that `run-dev.py` starts properly;
+- `./tools/test-run-dev`: Checks that `run-dev` starts properly;
   this helps prevent bugs that break the development environment.
 - `./tools/test-queue-worker-reload`: Verifies that Zulip's queue
   processors properly reload themselves after code changes.
@@ -126,7 +126,7 @@ This is easy to do using test fixtures (a fancy word for fixed data
 used in tests) and the `mock.patch` function to specify what HTTP
 response should be used by the tests for every outgoing HTTP (or other
 network) request. Consult
-[our guide on mocking](../testing/testing-with-django.html#zulip-mocking-practices) to
+[our guide on mocking](testing-with-django.md#zulip-mocking-practices) to
 learn how to mock network requests easily; there are also a number of
 examples throughout the codebase.
 

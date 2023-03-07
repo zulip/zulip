@@ -7,27 +7,27 @@ import secrets
 import sys
 import time
 import traceback
-from functools import lru_cache, wraps
+from functools import _lru_cache_wrapper, lru_cache, wraps
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Dict,
+    Generic,
     Iterable,
     List,
     Optional,
     Sequence,
     Tuple,
     TypeVar,
-    cast,
 )
 
 from django.conf import settings
-from django.core.cache import cache as djcache
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest
+from typing_extensions import ParamSpec
 
 from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 
@@ -38,14 +38,10 @@ if TYPE_CHECKING:
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
-FuncT = TypeVar("FuncT", bound=Callable[..., object])
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
 
 logger = logging.getLogger()
-
-
-class NotFoundInCache(Exception):
-    pass
-
 
 remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
@@ -68,7 +64,6 @@ def remote_cache_stats_start() -> None:
 def remote_cache_stats_finish() -> None:
     global remote_cache_total_time
     global remote_cache_total_requests
-    global remote_cache_time_start
     remote_cache_total_requests += 1
     remote_cache_total_time += time.time() - remote_cache_time_start
 
@@ -125,46 +120,16 @@ def bounce_key_prefix_for_testing(test_name: str) -> None:
 
 def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
     if cache_name is None:
-        return djcache
+        cache_name = "default"
     return caches[cache_name]
 
 
-def get_cache_with_key(
-    keyfunc: Callable[..., str],
-    cache_name: Optional[str] = None,
-) -> Callable[[FuncT], FuncT]:
-    """
-    The main goal of this function getting value from the cache like in the "cache_with_key".
-    A cache value can contain any data including the "None", so
-    here used exception for case if value isn't found in the cache.
-    """
-
-    def decorator(func: FuncT) -> FuncT:
-        @wraps(func)
-        def func_with_caching(*args: object, **kwargs: object) -> object:
-            key = keyfunc(*args, **kwargs)
-            try:
-                val = cache_get(key, cache_name=cache_name)
-            except InvalidCacheKeyException:
-                stack_trace = traceback.format_exc()
-                log_invalid_cache_keys(stack_trace, [key])
-                val = None
-
-            if val is not None:
-                return val[0]
-            raise NotFoundInCache()
-
-        return cast(FuncT, func_with_caching)  # https://github.com/python/mypy/issues/1927
-
-    return decorator
-
-
 def cache_with_key(
-    keyfunc: Callable[..., str],
+    keyfunc: Callable[ParamT, str],
     cache_name: Optional[str] = None,
     timeout: Optional[int] = None,
     with_statsd_key: Optional[str] = None,
-) -> Callable[[FuncT], FuncT]:
+) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
     Decorator argument is a function which computes a cache key
@@ -172,14 +137,14 @@ def cache_with_key(
     for avoiding collisions with other uses of this decorator or
     other uses of caching."""
 
-    def decorator(func: FuncT) -> FuncT:
+    def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         @wraps(func)
-        def func_with_caching(*args: object, **kwargs: object) -> object:
+        def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             key = keyfunc(*args, **kwargs)
 
             try:
                 val = cache_get(key, cache_name=cache_name)
-            except InvalidCacheKeyException:
+            except InvalidCacheKeyError:
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
                 return func(*args, **kwargs)
@@ -202,17 +167,22 @@ def cache_with_key(
                 return val[0]
 
             val = func(*args, **kwargs)
-
-            cache_set(key, val, cache_name=cache_name, timeout=timeout)
+            if isinstance(val, QuerySet):  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/issues/704
+                logging.error(
+                    "cache_with_key attempted to store a full QuerySet object -- declining to cache",
+                    stack_info=True,
+                )
+            else:
+                cache_set(key, val, cache_name=cache_name, timeout=timeout)
 
             return val
 
-        return cast(FuncT, func_with_caching)  # https://github.com/python/mypy/issues/1927
+        return func_with_caching
 
     return decorator
 
 
-class InvalidCacheKeyException(Exception):
+class InvalidCacheKeyError(Exception):
     pass
 
 
@@ -237,9 +207,9 @@ def validate_cache_key(key: str) -> None:
     # The regex checks "all characters between ! and ~ in the ascii table",
     # which happens to be the set of all "nice" ascii characters.
     if not bool(re.fullmatch(r"([!-~])+", key)):
-        raise InvalidCacheKeyException("Invalid characters in the cache key: " + key)
+        raise InvalidCacheKeyError("Invalid characters in the cache key: " + key)
     if len(key) > MEMCACHED_MAX_KEY_LENGTH:
-        raise InvalidCacheKeyException(f"Cache key too long: {key} Length: {len(key)}")
+        raise InvalidCacheKeyError(f"Cache key too long: {key} Length: {len(key)}")
 
 
 def cache_set(
@@ -284,7 +254,7 @@ def safe_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Di
         # to do normal cache_get_many to avoid the overhead of
         # validating all the keys here.
         return cache_get_many(keys, cache_name)
-    except InvalidCacheKeyException:
+    except InvalidCacheKeyError:
         stack_trace = traceback.format_exc()
         good_keys, bad_keys = filter_good_and_bad_keys(keys)
 
@@ -317,7 +287,7 @@ def safe_cache_set_many(
         # to do normal cache_set_many to avoid the overhead of
         # validating all the keys here.
         return cache_set_many(items, cache_name, timeout)
-    except InvalidCacheKeyException:
+    except InvalidCacheKeyError:
         stack_trace = traceback.format_exc()
 
         good_keys, bad_keys = filter_good_and_bad_keys(list(items.keys()))
@@ -352,7 +322,7 @@ def filter_good_and_bad_keys(keys: List[str]) -> Tuple[List[str], List[str]]:
         try:
             validate_cache_key(key)
             good_keys.append(key)
-        except InvalidCacheKeyException:
+        except InvalidCacheKeyError:
             bad_keys.append(key)
 
     return good_keys, bad_keys
@@ -374,6 +344,7 @@ CacheItemT = TypeVar("CacheItemT")
 # Type for compressed items for storage in the cache.  For
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar("CompressedItemT")
+
 
 # Required arguments are as follows:
 # * object_ids: The list of object ids to look up
@@ -411,7 +382,7 @@ def generic_bulk_cached_fetch(
     )
 
     cached_objects: Dict[str, CacheItemT] = {}
-    for (key, val) in cached_objects_compressed.items():
+    for key, val in cached_objects_compressed.items():
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [
         object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects
@@ -499,7 +470,7 @@ def user_profile_delivery_email_cache_key(delivery_email: str, realm: "Realm") -
     return f"user_profile_by_delivery_email:{make_safe_digest(delivery_email.strip())}:{realm.id}"
 
 
-def bot_profile_cache_key(email: str, realm_id: Optional[int] = None) -> str:
+def bot_profile_cache_key(email: str, realm_id: int) -> str:
     return f"bot_profile:{make_safe_digest(email.strip())}"
 
 
@@ -521,13 +492,13 @@ realm_user_dict_fields: List[str] = [
     "role",
     "is_billing_admin",
     "is_bot",
-    "realm_id",
     "timezone",
     "date_joined",
     "bot_owner_id",
     "delivery_email",
     "bot_type",
     "long_term_idle",
+    "email_address_visibility",
 ]
 
 
@@ -592,7 +563,7 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
         )
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
-            keys.append(bot_profile_cache_key(user_profile.email))
+            keys.append(bot_profile_cache_key(user_profile.email, user_profile.realm_id))
 
     cache_delete_many(keys)
 
@@ -600,8 +571,9 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
 def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
     from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
 
-    recipient_ids = Subscription.objects.filter(user_profile=user_profile)
-    recipient_ids = recipient_ids.values_list("recipient_id", flat=True)
+    recipient_ids = Subscription.objects.filter(user_profile=user_profile).values_list(
+        "recipient_id", flat=True
+    )
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
     keys.append(display_recipient_bulk_get_users_by_id_cache_key(user_profile.id))
     cache_delete_many(keys)
@@ -733,12 +705,12 @@ def flush_stream(
 def flush_used_upload_space_cache(
     *,
     instance: "Attachment",
-    created: Optional[bool] = None,
+    created: bool = True,
     **kwargs: object,
 ) -> None:
     attachment = instance
 
-    if created is None or created:
+    if created:
         cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
 
 
@@ -767,9 +739,46 @@ def flush_submessage(*, instance: "SubMessage", **kwargs: object) -> None:
     cache_delete(to_dict_cache_key_id(message_id))
 
 
+class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
+    def __init__(
+        self, function: Callable[ParamT, ReturnT], cached_function: "_lru_cache_wrapper[ReturnT]"
+    ) -> None:
+        self.key_prefix = KEY_PREFIX
+        self.function = function
+        self.cached_function = cached_function
+        self.cache_info = cached_function.cache_info
+        self.cache_clear = cached_function.cache_clear
+
+    def __call__(self, *args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+            # In the development environment, we want every file
+            # change to refresh the source files from disk.
+            return self.function(*args, **kwargs)
+
+        if self.key_prefix != KEY_PREFIX:
+            # Clear cache when cache.KEY_PREFIX changes. This is used in
+            # tests.
+            self.cache_clear()
+            self.key_prefix = KEY_PREFIX
+
+        try:
+            return self.cached_function(
+                *args, **kwargs  # type: ignore[arg-type] # might be unhashable
+            )
+        except TypeError:
+            # args or kwargs contains an element which is unhashable. In
+            # this case we don't cache the result.
+            pass
+
+        # Deliberately calling this function from outside of exception
+        # handler to get a more descriptive traceback. Otherwise traceback
+        # can include the exception from cached_function as well.
+        return self.function(*args, **kwargs)
+
+
 def ignore_unhashable_lru_cache(
     maxsize: int = 128, typed: bool = False
-) -> Callable[[FuncT], FuncT]:
+) -> Callable[[Callable[ParamT, ReturnT]], IgnoreUnhashableLruCacheWrapper[ParamT, ReturnT]]:
     """
     This is a wrapper over lru_cache function. It adds following features on
     top of lru_cache:
@@ -779,41 +788,10 @@ def ignore_unhashable_lru_cache(
     """
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 
-    def decorator(user_function: FuncT) -> FuncT:
-        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
-            # In the development environment, we want every file
-            # change to refresh the source files from disk.
-            return user_function
-
-        # Casting to Any since we're about to monkey-patch this.
-        cache_enabled_user_function: Any = internal_decorator(user_function)
-
-        def wrapper(*args: object, **kwargs: object) -> object:
-            if not hasattr(cache_enabled_user_function, "key_prefix"):
-                cache_enabled_user_function.key_prefix = KEY_PREFIX
-
-            if cache_enabled_user_function.key_prefix != KEY_PREFIX:
-                # Clear cache when cache.KEY_PREFIX changes. This is used in
-                # tests.
-                cache_enabled_user_function.cache_clear()
-                cache_enabled_user_function.key_prefix = KEY_PREFIX
-
-            try:
-                return cache_enabled_user_function(*args, **kwargs)
-            except TypeError:
-                # args or kwargs contains an element which is unhashable. In
-                # this case we don't cache the result.
-                pass
-
-            # Deliberately calling this function from outside of exception
-            # handler to get a more descriptive traceback. Otherwise traceback
-            # can include the exception from cached_enabled_user_function as
-            # well.
-            return user_function(*args, **kwargs)
-
-        setattr(wrapper, "cache_info", cache_enabled_user_function.cache_info)
-        setattr(wrapper, "cache_clear", cache_enabled_user_function.cache_clear)
-        return cast(FuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+    def decorator(
+        user_function: Callable[ParamT, ReturnT]
+    ) -> IgnoreUnhashableLruCacheWrapper[ParamT, ReturnT]:
+        return IgnoreUnhashableLruCacheWrapper(user_function, internal_decorator(user_function))
 
     return decorator
 

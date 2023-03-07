@@ -4,9 +4,9 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
+from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.context_processors import common_context
-from zerver.lib.actions import do_change_user_setting
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.models import ScheduledEmail, UserProfile
 
@@ -18,10 +18,13 @@ def process_unsubscribe(
     unsubscribe_function: Callable[[UserProfile], None],
 ) -> HttpResponse:
     try:
-        user_profile = get_object_from_key(confirmation_key, Confirmation.UNSUBSCRIBE)
-    except ConfirmationKeyException:
+        user_profile = get_object_from_key(
+            confirmation_key, [Confirmation.UNSUBSCRIBE], mark_object_used=False
+        )
+    except ConfirmationKeyError:
         return render(request, "zerver/unsubscribe_link_error.html")
 
+    assert isinstance(user_profile, UserProfile)
     unsubscribe_function(user_profile)
     context = common_context(user_profile)
     context.update(subscription_type=subscription_type)
@@ -65,6 +68,7 @@ email_unsubscribers = {
     "login": ("login", do_login_unsubscribe),
     "marketing": ("marketing", do_marketing_unsubscribe),
 }
+
 
 # Login NOT required. These are for one-click unsubscribes.
 @csrf_exempt

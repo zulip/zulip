@@ -1,23 +1,13 @@
-HTTP/2 302 
+HTTP/2 200 
 server: {nginx_version_string}
-content-type: text/html; charset=utf-8
-location: /login/
+content-type: application/json
+vary: Accept-Encoding
 vary: Accept-Language, Cookie
 content-language: en
 strict-transport-security: max-age=15768000
 x-frame-options: DENY
 x-content-type-options: nosniff
-x-xss-protection: 1; mode=block
-
-HTTP/2 200 
-server: {nginx_version_string}
-content-type: text/html; charset=utf-8
-vary: Accept-Encoding
-cache-control: max-age=0, no-cache, no-store, must-revalidate, private
-vary: Cookie, Accept-Language
-content-language: en
-strict-transport-security: max-age=15768000
-x-frame-options: DENY
-x-content-type-options: nosniff
-x-xss-protection: 1; mode=block
+access-control-allow-origin: *
+access-control-allow-headers: Authorization
+access-control-allow-methods: GET, POST, DELETE, PUT, PATCH, HEAD
 

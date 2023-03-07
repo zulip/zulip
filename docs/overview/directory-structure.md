@@ -10,25 +10,25 @@ flow through these files.
 ### Core Python files
 
 Zulip uses the [Django web
-framework](https://docs.djangoproject.com/en/1.8/), so a lot of these
+framework](https://docs.djangoproject.com/en/3.2/), so a lot of these
 paths will be familiar to Django developers.
 
 - `zproject/urls.py` Main
-  [Django routes file](https://docs.djangoproject.com/en/1.8/topics/http/urls/).
+  [Django routes file](https://docs.djangoproject.com/en/3.2/topics/http/urls/).
   Defines which URLs are handled by which view functions or templates.
 
 - `zerver/models.py` Main
-  [Django models](https://docs.djangoproject.com/en/1.8/topics/db/models/)
+  [Django models](https://docs.djangoproject.com/en/3.2/topics/db/models/)
   file. Defines Zulip's database tables.
 
 - `zerver/lib/*.py` Most library code.
 
-- `zerver/lib/actions.py` Most code doing writes to user-facing
+- `zerver/actions/*.py` Most code doing writes to user-facing
   database tables lives here. In particular, we have a policy that
   all code calling `send_event` to trigger [pushing data to
   clients](../subsystems/events-system.md) must live here.
 
-- `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/).
+- `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/3.2/topics/http/views/).
 
 - `zerver/webhooks/` Webhook views and tests for [Zulip's incoming webhook integrations](https://zulip.com/api/incoming-webhooks-overview).
 
@@ -38,7 +38,7 @@ paths will be familiar to Django developers.
 
 - `zerver/lib/markdown/` [Backend Markdown processor](../subsystems/markdown.md).
 
-- `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/).
+- `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/3.2/topics/auth/customizing/).
 
 ---
 
@@ -50,24 +50,26 @@ templating systems.
 - `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates
   for the backend (for zerver app; logged-in content is in `templates/zerver/app`).
 
-- `static/templates/` [Handlebars](https://handlebarsjs.com/) templates for the frontend.
+- `web/templates/` [Handlebars](https://handlebarsjs.com/) templates for the frontend.
 
 ---
 
-### JavaScript, TypeScript, and other static assets
+### JavaScript, TypeScript, and other frontend assets
 
-- `static/js/` Zulip's own JavaScript and TypeScript sources.
+- `web/src/` Zulip's own JavaScript and TypeScript sources.
 
-- `static/styles/` Zulip's own CSS.
+- `web/styles/` Zulip's own CSS.
 
-- `static/images/` Zulip's images.
+- `web/images/` Images bundled with webpack.
 
-- `static/third/` Third-party JavaScript and CSS that has been vendored.
+- `static/images/` Images served directly to the web.
+
+- `web/third/` Third-party JavaScript and CSS that has been vendored.
 
 - `node_modules/` Third-party JavaScript installed via `yarn`.
 
-- `static/assets/` For assets not to be served to the web (e.g. the system to
-  generate our favicons).
+- `web/shared/icons/` Icons placed in this directory are compiled
+  into an icon font.
 
 ---
 
@@ -75,9 +77,9 @@ templating systems.
 
 - `zerver/tests/` Backend tests.
 
-- `frontend_tests/node_tests/` Node Frontend unit tests.
+- `web/tests/` Node Frontend unit tests.
 
-- `frontend_tests/puppeteer_tests/` Puppeteer frontend integration tests.
+- `web/e2e-tests/` Puppeteer frontend integration tests.
 
 - `tools/test-*` Developer-facing test runner scripts.
 

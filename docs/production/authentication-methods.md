@@ -212,6 +212,43 @@ corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
 
+#### Synchronizing email addresses
+
+User accounts in Zulip are uniquely identified by their email address,
+and that's [currently](https://github.com/zulip/zulip/pull/16208) the
+only way through which a Zulip account is associated with their LDAP
+user account.
+
+In particular, whenever a user attempts to log in to Zulip using LDAP,
+Zulip will use the LDAP information to authenticate the access, and
+determine the user's email address. It will then log in the user to
+the Zulip account with that email address (or if none exists,
+potentially prompt the user to create one). This model is convenient,
+because it works well with any LDAP provider (and handles migrations
+between LDAP providers transparently).
+
+However, when a user's email address is changed in your LDAP
+directory, manual action needs to be taken to tell Zulip that the
+email address Zulip account with the new email address.
+
+There are two ways to execute email address changes:
+
+- Users changing their email address in LDAP can [change their email
+  address in Zulip](https://zulip.com/help/change-your-email-address)
+  before logging out of Zulip. The user will need to be able to
+  receive email at the new email address in order to complete this
+  flow.
+
+- A server administrator can use the `manage.py change_user_email`
+  [management command][management-commands] to adjust a Zulip
+  account's email address directly.
+
+If a user accidentally creates a duplicate account, the duplicate
+account can be deactivated (and its email address changed) or deleted,
+and then the real account adjusted using the management command above.
+
+[management-commands]: ../production/management-commands.md
+
 #### Automatically deactivating users
 
 Zulip supports synchronizing the
@@ -256,14 +293,14 @@ the next time your `manage.py sync_ldap_user_data` cron job runs.
 
 Other fields you may want to sync from LDAP include:
 
-- Boolean flags; `is_realm_admin` (the organization's administrator
-  permission) is the main one. You can use the
+- Boolean flags describing the user's level of permission:
+  `is_realm_owner` (Organization owner), `is_realm_admin` (Organization administrator),
+  `is_guest` (Guest), `is_moderator` (Moderator). You can use the
   [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
-  `django-auth-ldap` to configure a group to get this permissions.
-  (We don't recommend using this flags feature for managing
-  `is_active` because deactivating a user this way would not disable
-  any active sessions the user might have; see the above discussion of
-  automatic deactivation for how to do that properly).
+  `django-auth-ldap` to configure a group to get any of these permissions.
+  (Don't use this to modify other boolean flags such as
+  `is_active` as that can introduce inconsistent state in the database;
+  see the above discussion of automatic deactivation for how to do that properly).
 - String fields like `default_language` (e.g. `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
 
@@ -289,11 +326,23 @@ AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
 
 You can restrict access to your Zulip server to a set of LDAP groups
 using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
-settings in `/etc/zulip/settings.py`. See the
-[upstream django-auth-ldap documentation][upstream-ldap-groups] for
-details.
+settings in `/etc/zulip/settings.py`.
 
-[upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html#limiting-access
+An example configation for Active Directory group restriction can be:
+
+```
+import django_auth_ldap
+AUTH_LDAP_GROUP_TYPE = django_auth_ldap.config.ActiveDirectoryGroupType()
+
+AUTH_LDAP_REQUIRE_GROUP = "cn=enabled,ou=groups,dc=example,dc=com"
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)")
+```
+
+Please note that `AUTH_LDAP_GROUP_TYPE` needs to be set to the correct
+group type for your LDAP server. See the [upstream django-auth-ldap
+documentation][upstream-ldap-groups] for details.
+
+[upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html
 
 ### Restricting LDAP user access to specific organizations
 
@@ -384,7 +433,7 @@ it as follows:
      the "SAML ACS url" in SAML terminology.
 
      If you're
-     [hosting multiple organizations](../production/multiple-organizations.html#authentication),
+     [hosting multiple organizations](multiple-organizations.md#authentication),
      you need to use `SOCIAL_AUTH_SUBDOMAIN`. For example,
      if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
      this should be `https://auth.zulip.example.com/complete/saml/`.
@@ -412,7 +461,7 @@ it as follows:
      4. The values needed in the `attr_` fields are often configurable
         in your IdP's interface when setting up SAML authentication
         (referred to as "Attribute Statements" with Okta, or
-        "Attribute Mapping" with GSuite). You'll want to connect
+        "Attribute Mapping" with Google Workspace). You'll want to connect
         these so that Zulip gets the email address (used as a unique
         user ID) and name for the user.
      5. The `display_name` and `display_icon` fields are used to
@@ -478,7 +527,7 @@ it as follows:
    profile fields during login, not during account creation; we
    consider this [a bug](https://github.com/zulip/zulip/issues/18746).
 
-1. [Restart the Zulip server](../production/settings.md) to ensure
+1. [Restart the Zulip server](settings.md) to ensure
    your settings changes take effect. The Zulip login page should now
    have a button for SAML authentication that you can use to log in or
    create an account (including when creating a new organization).
@@ -546,7 +595,7 @@ to the root and `engineering` subdomains:
    should be
    `https://keycloak.example.com/auth/realms/master/protocol/saml`
 3. Your Keycloak public certificate must be saved on the Zulip server
-   as `{idp_name}.crt` in `/etc/zulip/idps/`. You can obtain the
+   as `{idp_name}.crt` in `/etc/zulip/saml/idps/`. You can obtain the
    certificate from the Keycloak UI in the `Keys` tab. Click on the
    button `Certificate` and copy the content.
 
@@ -566,7 +615,7 @@ to the root and `engineering` subdomains:
 
 4. If you want to sign SAML requests, you have to do two things in Keycloak:
 
-   1. In the Keycloak client settings you setup previously, open the
+   1. In the Keycloak client settings you set up previously, open the
       `Settings` tab and **enable** `Client Signature Required`.
    2. Keycloak can generate the Client private key and certificate
       automatically, but Zulip's SAML library does not support the
@@ -597,6 +646,59 @@ to the root and `engineering` subdomains:
          client. Import `domainname.pfx` into Keycloak. After
          importing, only the certificate will be displayed (not the private
          key).
+
+### IdP-initiated SAML Logout
+
+Zulip 5.0 introduces beta support for IdP-initiated SAML Logout. The
+implementation has primarily been tested with Keycloak and these
+instructions are for that provider; please [contact
+us](https://zulip.com/help/contact-support) for help using this with
+another IdP.
+
+1. In the KeyCloak configuration for Zulip, enable `Force Name ID Format`
+   and set `Name ID Format` to `email`. Zulip needs to receive
+   the user's email address in the NameID to know which user's
+   sessions to terminate.
+1. Make sure `Front Channel Logout` is enabled, which it should be by default.
+   Disable `Force POST Binding`, as Zulip only supports the Redirect binding.
+1. In `Fine Grain SAML Endpoint Configuration`, set `Logout Service Redirect Binding URL`
+   to the same value you provided for `SSO URL` above.
+1. Add the IdP's `Redirect Binding URL`for `SingleLogoutService` to
+   your IdP configuration dict in `SOCIAL_AUTH_SAML_ENABLED_IDPS` in
+   `/etc/zulip/settings.py` as `slo_url`. For example it may look like
+   this:
+
+   ```
+   "your_keycloak_idp_name": {
+       "entity_id": "https://keycloak.example.com/auth/realms/yourrealm",
+       "url": "https://keycloak.example.com/auth/realms/yourrealm/protocol/saml",
+       "slo_url": "https://keycloak.example.com/auth/realms/yourrealm/protocol/saml",
+       ...
+   ```
+
+   You can find these details in your `SAML 2.0 Identity Provider Metadata` (available
+   in your `Realm Settings`).
+
+1. Because Keycloak uses the old `Name ID Format` format for
+   pre-existing sessions, each user needs to be logged out before SAML
+   Logout will work for them. Test SAML logout with your account by
+   logging out from Zulip, logging back in using SAML, and then using
+   the SAML logout feature from KeyCloak. Check
+   `/var/log/zulip/errors.log` for error output if it doesn't work.
+1. Once SAML logout is working for you, you can use the `manage.py logout_all_users` management command to log out all users so that
+   SAML logout works for everyone.
+
+   ```bash
+   /home/zulip/deployments/current/manage.py logout_all_users
+   ```
+
+#### Caveats
+
+- This beta doesn't support using `SessionIndex` to limit which
+  sessions are affected; it always terminates all logged-in sessions
+  for the user identified in the `NameID`.
+- SAML Logout in a configuration where your IdP handles authentication
+  for multiple organizations is not yet supported.
 
 ## Apache-based SSO with `REMOTE_USER`
 
@@ -764,7 +866,7 @@ self-hosted servers. To do so, you'll need to do the following:
 [apple-developer]: https://developer.apple.com/account/resources/
 [apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
 [apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
-[outgoing-email]: ../production/email.md
+[outgoing-email]: email.md
 
 ## OpenID Connect
 
@@ -774,14 +876,19 @@ enabling `zproject.backends.GenericOpenIdConnectBackend` in
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 
+If your server was originally installed from a release in the
+`4.x` series or earlier, you will need to update your `settings.py`
+file. You can find instructions on how to do that in a
+[separate doc][update-inline-comments].
+
 Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
 
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
 
-By default, users who attempt to login with OIDC using an email
+By default, users who attempt to log in with OIDC using an email
 address that does not have a current Zulip account will be prompted
-for whether they intend to create a new account or would like to login
+for whether they intend to create a new account or would like to log in
 using another authentication method. You can configure automatic
 account creation on first login attempt by setting
 `"auto_signup": True` in the IdP configuration dictionary.
@@ -792,7 +899,30 @@ prefills that value in the new account creation form, but gives the
 user the opportunity to edit it before submitting. When `True`, Zulip
 assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
-the server (i.e. `TERMS_OF_SERVICE=True`).
+the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
+
+## JWT
+
+Zulip supports using JSON Web Tokens (JWT) authentication in two ways:
+
+1. Obtaining a logged in session by making a POST request to
+   `/accounts/login/jwt/`. This allows a separate application to
+   integrate with Zulip via having a button that directly takes the user
+   to Zulip and logs them in.
+2. Fetching a user's API key by making a POST request to
+   `/api/v1/jwt/fetch_api_key`. This allows a separate application to
+   integrate with Zulip by [making API
+   requests](https://zulip.com/api/) on behalf of any user in a Zulip
+   organization.
+
+In both cases, the request should be made by sending an HTTP `POST`
+request with the JWT in the `token` parameter, with the JWT payload
+having the structure `{"email": "<target user email>"}`.
+
+In order to use JWT authentication with Zulip, one must first
+configure the JWT secret and algorithm via `JWT_AUTH_KEYS` in
+`/etc/zulip/settings.py`; see the inline comment documentation in that
+file for details.
 
 ## Adding more authentication backends
 
@@ -817,5 +947,5 @@ The `DevAuthBackend` method is used only in development, to allow
 passwordless login as any user in a development environment. It's
 mentioned on this page only for completeness.
 
-[custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
-[update-inline-comments]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
+[custom-profile-fields]: https://zulip.com/help/custom-profile-fields
+[update-inline-comments]: upgrade.md#updating-settingspy-inline-documentation

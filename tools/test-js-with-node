@@ -5,7 +5,7 @@ import os
 import pwd
 import subprocess
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -20,7 +20,7 @@ sanity_check.check_venv(__file__)
 import orjson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
-INDEX_JS = os.path.join(ROOT_DIR, "frontend_tests/zjsunit/index.js")
+INDEX_JS = os.path.join(ROOT_DIR, "web/tests/lib/index.js")
 NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.json")
 
 # Ideally, we wouldn't need this line, but it seems to be required to
@@ -28,166 +28,205 @@ NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.js
 os.chdir(ROOT_DIR)
 
 USAGE = """
-    tools/test-js-with-node                      - to run all tests
-    tools/test-js-with-node util.js activity.js  - to run just a couple tests
-    tools/test-js-with-node --coverage           - to generate coverage report
+    tools/test-js-with-node                                - to run all tests
+    tools/test-js-with-node util.test.js activity.test.js  - to run just a couple tests
+    tools/test-js-with-node --coverage                     - to generate coverage report
     """
 
+
+def make_set(files: List[str]) -> Set[str]:
+    for i in range(1, len(files)):
+        if files[i - 1] > files[i]:
+            raise Exception(f"Please move {files[i]} so that names are sorted.")
+    return set(files)
+
+
 # We do not yet require 100% line coverage for these files:
-EXEMPT_FILES = {
-    "static/js/about_zulip.js",
-    "static/js/admin.js",
-    "static/js/alert_popup.ts",
-    "static/js/archive.js",
-    "static/js/attachments_ui.js",
-    "static/js/avatar.js",
-    "static/js/billing/helpers.js",
-    "static/js/billing/upgrade.js",
-    "static/js/blueslip.ts",
-    "static/js/blueslip_stacktrace.ts",
-    "static/js/click_handlers.js",
-    "static/js/compose_actions.js",
-    "static/js/compose_closed_ui.js",
-    "static/js/composebox_typeahead.js",
-    "static/js/compose_fade.js",
-    "static/js/compose_validate.js",
-    "static/js/compose.js",
-    "static/js/compose_ui.js",
-    "static/js/condense.js",
-    "static/js/confirm_dialog.js",
-    "static/js/dialog_widget.js",
-    "static/js/copy_and_paste.js",
-    "static/js/csrf.ts",
-    "static/js/css_variables.js",
-    "static/js/debug.js",
-    "static/js/deprecated_feature_notice.js",
-    "static/js/desktop_integration.js",
-    "static/js/drafts.js",
-    "static/js/echo.js",
-    "static/js/emoji_picker.js",
-    "static/js/emojisets.js",
-    "static/js/favicon.js",
-    "static/js/feedback_widget.js",
-    "static/js/floating_recipient_bar.js",
-    "static/js/gear_menu.js",
-    "static/js/giphy.js",
-    "static/js/global.d.ts",
-    "static/js/hashchange.js",
-    "static/js/hbs.d.ts",
-    "static/js/hotkey.js",
-    "static/js/hotspots.js",
-    "static/js/info_overlay.js",
-    "static/js/invite.js",
-    "static/js/lightbox_canvas.js",
-    "static/js/lightbox.js",
-    "static/js/list_util.ts",
-    "static/js/loading.ts",
-    "static/js/local_message.js",
-    "static/js/localstorage.js",
-    "static/js/spectators.js",
-    "static/js/message_edit.js",
-    "static/js/message_edit_history.js",
-    "static/js/message_events.js",
-    "static/js/message_fetch.js",
-    "static/js/message_list_data.js",
-    "static/js/message_list.js",
-    "static/js/message_list_view.js",
-    "static/js/message_lists.js",
-    "static/js/message_live_update.js",
-    "static/js/message_scroll.js",
-    "static/js/message_util.js",
-    "static/js/message_viewport.js",
-    "static/js/muted_topics_ui.js",
-    "static/js/muted_users_ui.js",
-    "static/js/narrow.js",
-    "static/js/navigate.js",
-    "static/js/night_mode.ts",
-    "static/js/notifications.js",
-    "static/js/overlays.js",
-    "static/js/padded_widget.ts",
-    "static/js/page_params.ts",
-    "static/js/navbar_alerts.js",
-    "static/js/pm_list_dom.js",
-    "static/js/poll_widget.js",
-    "static/js/popovers.js",
-    "static/js/popover_menus.js",
-    "static/js/ready.ts",
-    "static/js/realm_icon.js",
-    "static/js/realm_logo.js",
-    "static/js/realm_playground.js",
-    "static/js/realm_user_settings_defaults.ts",
-    "static/js/recent_topics_ui.js",
-    "static/js/recent_topics_util.js",
-    "static/js/reload.js",
-    "static/js/reminder.js",
-    "static/js/resize.js",
-    "static/js/rows.js",
-    "static/js/scroll_bar.js",
-    "static/js/search_pill_widget.js",
-    "static/js/sent_messages.js",
-    "static/js/server_events.js",
-    "static/js/dropdown_list_widget.js",
-    "static/js/settings_account.js",
-    "static/js/settings_bots.js",
-    "static/js/settings_display.js",
-    "static/js/settings_emoji.js",
-    "static/js/settings_exports.js",
-    "static/js/settings_invites.js",
-    "static/js/settings.js",
-    "static/js/settings_linkifiers.js",
-    "static/js/settings_playgrounds.js",
-    "static/js/settings_muted_topics.js",
-    "static/js/settings_muted_users.js",
-    "static/js/settings_notifications.js",
-    "static/js/settings_org.js",
-    "static/js/settings_panel_menu.js",
-    "static/js/settings_profile_fields.js",
-    "static/js/settings_realm_user_settings_defaults.js",
-    "static/js/settings_sections.js",
-    "static/js/settings_streams.js",
-    "static/js/settings_toggle.js",
-    "static/js/settings_ui.js",
-    "static/js/settings_users.js",
-    "static/js/setup.js",
-    "static/js/spoilers.ts",
-    "static/js/starred_messages_ui.js",
-    "static/js/stream_bar.js",
-    "static/js/stream_color.js",
-    "static/js/stream_create.js",
-    "static/js/stream_edit.js",
-    "static/js/stream_list.js",
-    "static/js/stream_muting.js",
-    "static/js/stream_popover.js",
-    "static/js/stream_ui_updates.js",
-    "static/js/submessage.js",
-    "static/js/stream_settings_ui.js",
-    "static/js/message_view_header.js",
-    "static/js/timerender.ts",
-    "static/js/tippyjs.js",
-    "static/js/todo_widget.js",
-    "static/js/topic_list.js",
-    "static/js/topic_zoom.js",
-    "static/js/tutorial.js",
-    "static/js/types.ts",
-    "static/js/typing_events.js",
-    "static/js/typing.js",
-    "static/js/ui_init.js",
-    "static/js/ui.js",
-    "static/js/ui_report.ts",
-    "static/js/ui_util.ts",
-    "static/js/unread_ops.js",
-    "static/js/unread_ui.js",
-    "static/js/upload_widget.ts",
-    "static/js/user_profile.js",
-    "static/js/user_settings.ts",
-    "static/js/user_status_ui.js",
-    "static/js/webpack_public_path.js",
-    "static/js/zcommand.js",
-    "static/js/zform.js",
-    "static/js/zulip.js",
-    "static/js/zulip_test.js",
-    "static/shared/js/poll_data.js",
-}
+EXEMPT_FILES = make_set(
+    [
+        "web/shared/src/poll_data.js",
+        "web/src/about_zulip.js",
+        "web/src/add_subscribers_pill.js",
+        "web/src/admin.js",
+        "web/src/alert_popup.ts",
+        "web/src/alert_words_ui.js",
+        "web/src/archive.js",
+        "web/src/assets.d.ts",
+        "web/src/attachments_ui.js",
+        "web/src/avatar.js",
+        "web/src/billing/event_status.js",
+        "web/src/billing/helpers.js",
+        "web/src/billing/upgrade.js",
+        "web/src/blueslip.ts",
+        "web/src/blueslip_stacktrace.ts",
+        "web/src/click_handlers.js",
+        "web/src/compose.js",
+        "web/src/compose_actions.js",
+        "web/src/compose_banner.ts",
+        "web/src/compose_closed_ui.js",
+        "web/src/compose_fade.js",
+        "web/src/compose_state.js",
+        "web/src/compose_ui.js",
+        "web/src/compose_validate.js",
+        "web/src/composebox_typeahead.js",
+        "web/src/condense.js",
+        "web/src/confirm_dialog.js",
+        "web/src/copy_and_paste.js",
+        "web/src/csrf.ts",
+        "web/src/css_variables.js",
+        "web/src/dark_theme.js",
+        "web/src/debug.js",
+        "web/src/deprecated_feature_notice.js",
+        "web/src/desktop_integration.js",
+        "web/src/dialog_widget.js",
+        "web/src/drafts.js",
+        "web/src/dropdown_list_widget.js",
+        "web/src/echo.js",
+        "web/src/emoji_picker.js",
+        "web/src/emojisets.js",
+        "web/src/favicon.js",
+        "web/src/feature_flags.ts",
+        "web/src/feedback_widget.js",
+        "web/src/flatpickr.js",
+        "web/src/gear_menu.js",
+        "web/src/giphy.js",
+        "web/src/global.d.ts",
+        "web/src/hash_util.js",
+        "web/src/hashchange.js",
+        "web/src/hbs.d.ts",
+        "web/src/hotkey.js",
+        "web/src/hotspots.js",
+        "web/src/info_overlay.js",
+        "web/src/invite.js",
+        "web/src/lightbox.js",
+        "web/src/list_util.ts",
+        "web/src/list_widget.js",
+        "web/src/loading.ts",
+        "web/src/local_message.js",
+        "web/src/localstorage.js",
+        "web/src/message_edit.js",
+        "web/src/message_edit_history.js",
+        "web/src/message_events.js",
+        "web/src/message_fetch.js",
+        "web/src/message_list.js",
+        "web/src/message_list_data.js",
+        "web/src/message_list_view.js",
+        "web/src/message_lists.js",
+        "web/src/message_live_update.js",
+        "web/src/message_scroll.js",
+        "web/src/message_util.js",
+        "web/src/message_view_header.js",
+        "web/src/message_viewport.js",
+        "web/src/muted_topics_ui.js",
+        "web/src/muted_users_ui.js",
+        "web/src/narrow.js",
+        "web/src/navbar_alerts.js",
+        "web/src/navigate.js",
+        "web/src/notifications.js",
+        "web/src/overlays.js",
+        "web/src/padded_widget.ts",
+        "web/src/page_params.ts",
+        "web/src/pm_list.js",
+        "web/src/pm_list_dom.js",
+        "web/src/poll_widget.js",
+        "web/src/popover_menus.js",
+        "web/src/popover_menus_data.js",
+        "web/src/popovers.js",
+        "web/src/read_receipts.js",
+        "web/src/ready.ts",
+        "web/src/realm_icon.js",
+        "web/src/realm_logo.js",
+        "web/src/realm_playground.js",
+        "web/src/realm_user_settings_defaults.ts",
+        "web/src/recent_topics_ui.js",
+        "web/src/recent_topics_util.js",
+        "web/src/reload.js",
+        "web/src/reminder.js",
+        "web/src/resize.js",
+        "web/src/rows.js",
+        "web/src/scroll_bar.js",
+        "web/src/search_pill_widget.js",
+        "web/src/sent_messages.js",
+        "web/src/server_events.js",
+        "web/src/settings.js",
+        "web/src/settings_account.js",
+        "web/src/settings_bots.js",
+        "web/src/settings_display.js",
+        "web/src/settings_emoji.js",
+        "web/src/settings_exports.js",
+        "web/src/settings_invites.js",
+        "web/src/settings_linkifiers.js",
+        "web/src/settings_muted_topics.js",
+        "web/src/settings_muted_users.js",
+        "web/src/settings_notifications.js",
+        "web/src/settings_org.js",
+        "web/src/settings_panel_menu.js",
+        "web/src/settings_playgrounds.js",
+        "web/src/settings_profile_fields.js",
+        "web/src/settings_realm_domains.js",
+        "web/src/settings_realm_user_settings_defaults.js",
+        "web/src/settings_sections.js",
+        "web/src/settings_streams.js",
+        "web/src/settings_toggle.js",
+        "web/src/settings_ui.js",
+        "web/src/settings_user_groups_legacy.js",
+        "web/src/settings_users.js",
+        "web/src/setup.js",
+        "web/src/spectators.js",
+        "web/src/spoilers.ts",
+        "web/src/starred_messages_ui.js",
+        "web/src/stream_bar.js",
+        "web/src/stream_color.js",
+        "web/src/stream_create.js",
+        "web/src/stream_create_subscribers.js",
+        "web/src/stream_edit.js",
+        "web/src/stream_edit_subscribers.js",
+        "web/src/stream_list.js",
+        "web/src/stream_muting.js",
+        "web/src/stream_popover.js",
+        "web/src/stream_settings_containers.js",
+        "web/src/stream_settings_ui.js",
+        "web/src/stream_ui_updates.js",
+        "web/src/submessage.js",
+        "web/src/subscriber_api.js",
+        "web/src/timerender.ts",
+        "web/src/tippyjs.js",
+        "web/src/todo_widget.js",
+        "web/src/topic_list.js",
+        "web/src/topic_zoom.js",
+        "web/src/tutorial.js",
+        "web/src/types.ts",
+        "web/src/typing.js",
+        "web/src/typing_events.js",
+        "web/src/ui.js",
+        "web/src/ui_init.js",
+        "web/src/ui_report.ts",
+        "web/src/ui_util.ts",
+        "web/src/unread.js",
+        "web/src/unread_ops.js",
+        "web/src/unread_ui.js",
+        "web/src/upload.js",
+        "web/src/upload_widget.ts",
+        "web/src/user_group_create.js",
+        "web/src/user_group_create_members.js",
+        "web/src/user_group_create_members_data.js",
+        "web/src/user_group_edit.js",
+        "web/src/user_group_edit_members.js",
+        "web/src/user_group_ui_updates.js",
+        "web/src/user_groups_settings_ui.js",
+        "web/src/user_profile.js",
+        "web/src/user_settings.ts",
+        "web/src/user_status.js",
+        "web/src/user_status_ui.js",
+        "web/src/webpack_public_path.js",
+        "web/src/zcommand.js",
+        "web/src/zform.js",
+        "web/src/zulip.js",
+        "web/src/zulip_test.js",
+        "web/tests/lib/mdiff.js",
+        "web/tests/lib/zjquery_element.js",
+    ]
+)
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
@@ -249,10 +288,10 @@ def print_error(msg: str) -> None:
 
 def clean_file(orig_fn: str) -> str:
     fn = orig_fn
-    if not fn.endswith(".js"):
-        fn += ".js"
-    if "frontend_tests/" not in fn:
-        fn = os.path.join(ROOT_DIR, "frontend_tests", "node_tests", fn)
+    if not fn.endswith(".test.js"):
+        fn += ".test.js"
+    if "web/tests/" not in fn:
+        fn = os.path.join(ROOT_DIR, "web", "tests", fn)
     fn = os.path.abspath(fn)
     if not os.path.exists(fn):
         print(f"Cannot find {orig_fn} ({fn})")
@@ -280,7 +319,7 @@ def run_tests_via_node_js() -> int:
         parallel = 1
         files = individual_files
     else:
-        files = sorted(glob.glob(os.path.join(ROOT_DIR, "frontend_tests/node_tests/*.js")))
+        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.js")))
 
     test_files = clean_files(files)
 
@@ -300,6 +339,7 @@ def run_tests_via_node_js() -> int:
 
     node_tests_cmd += test_files
     if options.coverage:
+        os.environ["USING_INSTRUMENTED_CODE"] = "TRUE"
         coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
 
         nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
@@ -353,19 +393,21 @@ def read_coverage() -> Any:
 
 
 def enforce_proper_coverage(coverage_json: Any) -> bool:
-    all_js_files = set(
-        glob.glob("static/js/*.js")
-        + glob.glob("static/js/*.ts")
-        + glob.glob("static/shared/js/*.js")
-        + glob.glob("static/shared/js/*.ts")
-        + glob.glob("static/js/billing/*.js"),
-    )
-    enforce_fully_covered = all_js_files - EXEMPT_FILES
+    all_js_files = {
+        *glob.glob("web/shared/src/*.js"),
+        *glob.glob("web/shared/src/*.ts"),
+        *glob.glob("web/src/*.js"),
+        *glob.glob("web/src/*.ts"),
+        *glob.glob("web/src/billing/*.js"),
+        *glob.glob("web/tests/*.js"),
+        *glob.glob("web/tests/lib/*.js"),
+    }
+    enforce_fully_covered = sorted(all_js_files - EXEMPT_FILES)
 
     coverage_lost = False
     for relative_path in enforce_fully_covered:
         path = ROOT_DIR + "/" + relative_path
-        if not (path in coverage_json):
+        if path not in coverage_json:
             coverage_lost = True
             print_error(f"{relative_path} has no node test coverage")
             continue

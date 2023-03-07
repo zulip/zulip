@@ -10,14 +10,21 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
+if [ -e "$(dirname "${BASH_SOURCE[0]}")/../.vagrant" ] && [ ! -e /home/vagrant ]; then
+    echo 'Error: provision should be run inside the Vagrant environment.' >&2
+    # shellcheck disable=SC2016
+    echo 'Try `vagrant up --provision`.' >&2
+    exit 1
+fi
+
 os="$(. /etc/os-release && echo "$ID $VERSION_ID")"
 case "$os" in
-    'ubuntu 14.04' | 'ubuntu 16.04')
+    'ubuntu 14.04' | 'ubuntu 16.04' | 'ubuntu 18.04' | 'debian 10')
         echo "Error: $os is no longer a supported platform for Zulip." >&2
         if [ -e /home/vagrant ]; then
             # shellcheck disable=SC2016
             echo 'To upgrade, run `vagrant destroy`, and then recreate the Vagrant guest.' >&2
-            echo 'See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html' >&2
+            echo 'See: https://zulip.readthedocs.io/en/latest/development/setup-recommended.html' >&2
         fi
         exit 1
         ;;
@@ -25,8 +32,8 @@ esac
 
 python_version="$(python3 --version)"
 case "$python_version" in
-    Python\ 3.[0-5].*)
-        echo 'Error: Zulip requires an OS with Python 3.6 or later.' >&2
+    Python\ 3.[0-7].*)
+        echo 'Error: Zulip requires an OS with Python 3.8 or later.' >&2
         exit 1
         ;;
 esac

@@ -1,7 +1,7 @@
 import calendar
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -15,6 +15,7 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
+from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
@@ -68,7 +69,7 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
 
     # If PROMOTE_SPONSORING_ZULIP is enabled, advertise sponsoring
     # Zulip in the gear menu of non-paying organizations.
-    return realm.plan_type in [Realm.STANDARD_FREE, Realm.SELF_HOSTED]
+    return realm.plan_type in [Realm.PLAN_TYPE_STANDARD_FREE, Realm.PLAN_TYPE_SELF_HOSTED]
 
 
 def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
@@ -85,7 +86,7 @@ def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
                 elif CustomerPlan.objects.filter(customer=customer).exists():
                     show_billing = True
 
-        if not user_profile.is_guest and user_profile.realm.plan_type == Realm.LIMITED:
+        if not user_profile.is_guest and user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
             show_plans = True
 
     return BillingInfo(
@@ -124,7 +125,7 @@ def build_page_params_for_home_page_load(
     first_in_realm: bool,
     prompt_for_invites: bool,
     needs_tutorial: bool,
-) -> Tuple[int, Dict[str, Any]]:
+) -> Tuple[int, Dict[str, object]]:
     """
     This function computes page_params for when we load the home page.
 
@@ -143,6 +144,7 @@ def build_page_params_for_home_page_load(
         assert client is not None
         register_ret = do_events_register(
             user_profile,
+            realm,
             client,
             apply_markdown=True,
             client_gravatar=True,
@@ -151,42 +153,33 @@ def build_page_params_for_home_page_load(
             narrow=narrow,
             include_streams=False,
         )
+        default_language = register_ret["user_settings"]["default_language"]
     else:
-        # Since events for spectator is not implemented, we only fetch the data
-        # at the time of request and don't register for any events.
-        # TODO: Implement events for spectator.
-        from zerver.lib.events import fetch_initial_state_data, post_process_state
+        # The spectator client will be fetching the /register response
+        # for spectators via the API. But we still need to set the
+        # values not presence in that object.
+        register_ret = {
+            "queue_id": None,
+        }
+        default_language = realm.default_language
 
-        register_ret = fetch_initial_state_data(
-            user_profile,
-            realm=realm,
-            event_types=None,
-            queue_id=None,
-            client_gravatar=False,
-            user_avatar_url_field_optional=client_capabilities["user_avatar_url_field_optional"],
-            user_settings_object=client_capabilities["user_settings_object"],
-            slim_presence=False,
-            include_subscribers=False,
-            include_streams=False,
+    if user_profile is None:
+        request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language)
+    else:
+        request_language = get_and_set_request_language(
+            request,
+            default_language,
+            translation.get_language_from_path(request.path_info),
         )
 
-        post_process_state(user_profile, register_ret, False)
-
     furthest_read_time = get_furthest_read_time(user_profile)
-
-    request_language = get_and_set_request_language(
-        request,
-        register_ret["user_settings"]["default_language"],
-        translation.get_language_from_path(request.path_info),
-    )
-
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
     billing_info = get_billing_info(user_profile)
     user_permission_info = get_user_permission_info(user_profile)
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a JavaScript Object named 'page_params'.
-    page_params = dict(
+    page_params: Dict[str, object] = dict(
         ## Server settings.
         test_suite=settings.TEST_SUITE,
         insecure_desktop_app=insecure_desktop_app,
@@ -217,7 +210,7 @@ def build_page_params_for_home_page_load(
         no_event_queue=user_profile is None,
     )
 
-    for field_name in register_ret.keys():
+    for field_name in register_ret:
         page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:
@@ -238,5 +231,11 @@ def build_page_params_for_home_page_load(
         page_params["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
+
+    if user_profile is None:
+        # Get rendered version of realm description which is displayed in right
+        # sidebar for spectator.
+        page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
+        page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
 
     return register_ret["queue_id"], page_params

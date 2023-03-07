@@ -116,6 +116,7 @@ else:
         response["Access-Control-Allow-Origin"] = "*"
         return response
 
+    assert settings.STATIC_URL is not None
     urls += static(urlsplit(settings.STATIC_URL).path, view=serve_static)
 
 i18n_urls = [
@@ -123,12 +124,3 @@ i18n_urls = [
     path("confirmation_key/", confirmation_key),
 ]
 urls += i18n_urls
-
-# On a production instance, these files would be served by nginx.
-if settings.LOCAL_UPLOADS_DIR is not None:
-    avatars_url = path(
-        "user_avatars/<path:path>",
-        serve,
-        {"document_root": os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")},
-    )
-    urls += [avatars_url]

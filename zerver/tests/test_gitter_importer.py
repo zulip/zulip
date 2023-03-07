@@ -1,13 +1,16 @@
 import os
+from datetime import timedelta
 from typing import Any
 from unittest import mock
 
+import dateutil.parser
 import orjson
 
 from zerver.data_import.gitter import do_convert_data, get_usermentions
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserProfile, get_realm
+from zerver.models import Message, Realm, UserProfile, get_realm
+from zproject.backends import GitHubAuthBackend, auth_enabled_helper, github_auth_enabled
 
 
 class GitterImporter(ZulipTestCase):
@@ -15,7 +18,20 @@ class GitterImporter(ZulipTestCase):
     def test_gitter_import_data_conversion(self, mock_process_avatars: mock.Mock) -> None:
         output_dir = self.make_import_output_dir("gitter")
         gitter_file = os.path.join(os.path.dirname(__file__), "fixtures/gitter_data.json")
-        with self.assertLogs(level="INFO"):
+
+        # We need some time-mocking to set up user soft-deactivation logic.
+        # One of the messages in the import data
+        # is significantly older than the other one. We mock the current time in the relevant module
+        # to match the sent time of the more recent message - to make it look like one of the messages
+        # is very recent, while the other one is old. This should cause that the sender of the recent
+        # message to NOT be soft-deactivated, while the sender of the other one is.
+        with open(gitter_file) as f:
+            gitter_data = orjson.loads(f.read())
+        sent_datetime = dateutil.parser.parse(gitter_data[1]["sent"])
+        with self.assertLogs(level="INFO"), mock.patch(
+            "zerver.data_import.import_util.timezone_now",
+            return_value=sent_datetime + timedelta(days=1),
+        ):
             do_convert_data(gitter_file, output_dir)
 
         def read_file(output_file: str) -> Any:
@@ -73,11 +89,26 @@ class GitterImporter(ZulipTestCase):
         self.assertIn(messages["zerver_message"][1]["recipient"], exported_recipient_id)
         self.assertIn(messages["zerver_message"][0]["content"], "test message")
 
-        # test usermessages
+        # test usermessages and soft-deactivation of users
+        user_should_be_long_term_idle = [
+            user
+            for user in realm["zerver_userprofile"]
+            if user["delivery_email"] == "username1@users.noreply.github.com"
+        ][0]
+        user_should_not_be_long_term_idle = [
+            user
+            for user in realm["zerver_userprofile"]
+            if user["delivery_email"] == "username2@users.noreply.github.com"
+        ][0]
+        self.assertEqual(user_should_be_long_term_idle["long_term_idle"], True)
+
+        # Only the user who's not soft-deactivated gets UserMessages.
         exported_usermessage_userprofile = self.get_set(
             messages["zerver_usermessage"], "user_profile"
         )
-        self.assertEqual(exported_user_ids, exported_usermessage_userprofile)
+        self.assertEqual(
+            {user_should_not_be_long_term_idle["id"]}, exported_usermessage_userprofile
+        )
         exported_usermessage_message = self.get_set(messages["zerver_usermessage"], "message")
         self.assertEqual(exported_usermessage_message, exported_messages_id)
 
@@ -98,6 +129,13 @@ class GitterImporter(ZulipTestCase):
         messages = Message.objects.filter(sender__in=realm_users)
         for message in messages:
             self.assertIsNotNone(message.rendered_content, None)
+
+        self.assertTrue(github_auth_enabled(realm))
+        for auth_backend_name in Realm.AUTHENTICATION_FLAGS:
+            if auth_backend_name == GitHubAuthBackend.auth_backend_name:
+                continue
+
+            self.assertFalse(auth_enabled_helper([auth_backend_name], realm))
 
     def test_get_usermentions(self) -> None:
         user_map = {"57124a4": 3, "57124b4": 5, "57124c4": 8}

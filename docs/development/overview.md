@@ -11,12 +11,15 @@ megabytes of dependencies, so you will need an **active, reasonably fast,
 internet connection throughout the entire installation processes.** You can
 [configure a proxy][configure-proxy] if you need one.
 
-## Recommended setup (Vagrant)
+## Recommended setup
 
 **For first-time contributors, we recommend using the
-[Vagrant development environment][install-vagrant]**.
+[Vagrant development environment][install-vagrant]** on
+macOS and Linux based OS and [WSL 2 setup][install-via-wsl] on Windows.
 
-This method creates a virtual machine (for Windows and macOS) or a
+## Vagrant setup
+
+[Vagrant setup][install-vagrant] creates a virtual machine (for Windows and macOS) or a
 Linux container (otherwise) inside which the Zulip server and all
 related services will run. Vagrant adds a bit of overhead to using the
 Zulip development server, but provides an isolated environment that is
@@ -73,12 +76,12 @@ machine, take a look at our tips for
 [developing remotely][dev-remote].
 
 [dev-remote]: remote.md
-[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-vagrant]: ../development/setup-vagrant.md
+[install-direct]: setup-advanced.md#installing-directly-on-ubuntu-debian-centos-or-fedora
+[install-vagrant]: setup-recommended.md
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
-[configure-proxy]: ../development/setup-vagrant.html#specifying-a-proxy
+[configure-proxy]: setup-recommended.md#specifying-a-proxy
 [using-dev-env]: using.md
 [testing]: ../testing/testing.md
-[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
-[install-via-wsl]: ../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2
+[ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
+[install-via-wsl]: setup-recommended.md#windows-10

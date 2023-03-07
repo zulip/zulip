@@ -9,6 +9,7 @@ the level of detail we desire or do comparison with OpenAPI types
 easily with the native Python type system.
 """
 
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
@@ -111,7 +112,7 @@ class NumberType:
     OpenAPI, because isinstance(4, float) == False"""
 
     def check_data(self, var_name: str, val: Optional[Any]) -> None:
-        if isinstance(val, int) or isinstance(val, float):
+        if isinstance(val, (int, float)):
             return
         raise AssertionError(f"{var_name} is not a number")
 
@@ -183,7 +184,7 @@ class TupleType:
     sub_types: Sequence[Any]
 
     def check_data(self, var_name: str, val: Any) -> None:
-        if not (isinstance(val, list) or isinstance(val, tuple)):
+        if not isinstance(val, (list, tuple)):
             raise AssertionError(f"{var_name} is not a list/tuple")
 
         if len(val) != len(self.sub_types):
@@ -206,10 +207,8 @@ class UnionType:
 
     def check_data(self, var_name: str, val: Any) -> None:
         for sub_type in self.sub_types:
-            try:
+            with suppress(AssertionError):
                 check_data(sub_type, var_name, val)
-            except AssertionError:
-                pass
 
             # We matched on one of our sub_types, so return
             return
@@ -244,7 +243,6 @@ def event_dict_type(
     required_keys: Sequence[Tuple[str, Any]],
     optional_keys: Sequence[Tuple[str, Any]] = [],
 ) -> DictType:
-
     """
     This is just a tiny wrapper on DictType, but it provides
     some minor benefits:
@@ -262,7 +260,7 @@ def event_dict_type(
     assert "type" in rkeys
     assert "id" not in keys
     return DictType(
-        required_keys=list(required_keys) + [("id", int)],
+        required_keys=[*required_keys, ("id", int)],
         optional_keys=optional_keys,
     )
 

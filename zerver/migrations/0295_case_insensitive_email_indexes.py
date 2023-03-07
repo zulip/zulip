@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         # new case-insensitive index.
         #
         # Further, when we created the delivery_email field, we
-        # neglected to create an unique index on (realm_id,
+        # neglected to create a unique index on (realm_id,
         # delivery_email), which meant race conditions or logic bugs
         # could allow duplicate user accounts being created in
         # organizations with EMAIL_ADDRESS_VISIBILITY_ADMINS.  We

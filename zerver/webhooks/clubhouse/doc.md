@@ -2,7 +2,7 @@ Get Zulip notifications for your Clubhouse Stories and Epics!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your Clubhouse Dashboard, and click on the settings icon in
    the top-right corner. Click on **Integrations**, and select **Webhooks**.

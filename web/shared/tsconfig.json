@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        /* Language and Environment */
+        "target": "es2019",
+
+        /* Modules */
+        "rootDir": "src",
+        "moduleResolution": "node",
+
+        /* JavaScript Support */
+        "allowJs": true,
+
+        /* Emit */
+        "declaration": true,
+        "sourceMap": true,
+        "outDir": "lib",
+
+        /* Interop Constraints */
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+
+        /* Type Checking */
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+    },
+    "include": ["src"],
+}

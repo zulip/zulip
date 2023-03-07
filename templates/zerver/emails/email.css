@@ -21,6 +21,11 @@ body {
     -webkit-text-size-adjust: 100%;
 }
 
+pre {
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
 table {
     border-collapse: separate;
     mso-table-lspace: 0;
@@ -53,7 +58,7 @@ table td {
 .content {
     box-sizing: border-box;
     display: block;
-    margin: 20px auto 0 auto;
+    margin: 20px auto 0;
     max-width: 580px;
     padding: 10px;
 }
@@ -70,7 +75,7 @@ table td {
 
 .wrapper {
     box-sizing: border-box;
-    padding: 0 20px 20px 20px;
+    padding: 0 20px 20px;
 }
 
 .footer {
@@ -136,8 +141,8 @@ ol {
 p li,
 ul li,
 ol li {
-    list-style-position: inside;
-    margin-left: 5px;
+    list-style-position: outside;
+    margin-left: 15px;
 }
 
 a {
@@ -323,6 +328,13 @@ a.button:hover {
     color: #15c;
 }
 
+.deactivated-user-text {
+    padding: 0 0 0 15px;
+    margin: 0 0 20px;
+    border-left: 5px solid #eee;
+    white-space: pre-line;
+}
+
 @media only screen and (max-width: 620px) {
     table[class="body"] h1 {
         font-size: 28px !important;
@@ -339,7 +351,7 @@ a.button:hover {
     }
 
     table[class="body"] .wrapper {
-        padding: 0 10px 10px 10px;
+        padding: 0 10px 10px;
     }
 
     table[class="body"] .article {
@@ -390,7 +402,7 @@ a.button:hover {
         line-height: 100%;
     }
 
-    /* iOS converts adreses in emails to links automatically */
+    /* iOS converts addresses in emails to links automatically */
     .apple-link a {
         color: inherit !important;
         font-family: inherit !important;

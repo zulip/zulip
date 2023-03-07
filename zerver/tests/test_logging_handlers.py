@@ -2,41 +2,48 @@ import logging
 import sys
 from functools import wraps
 from types import TracebackType
-from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, Union, cast
+from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, Union
+from unittest import mock
 from unittest.mock import MagicMock, patch
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.utils.log import AdminEmailHandler
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.lib.types import ViewFuncT
 from zerver.logging_handlers import AdminNotifyHandler, HasRequest
+from zerver.models import UserProfile
 
+ParamT = ParamSpec("ParamT")
 captured_request: Optional[HttpRequest] = None
 captured_exc_info: Optional[
     Union[Tuple[Type[BaseException], BaseException, TracebackType], Tuple[None, None, None]]
 ] = None
 
 
-def capture_and_throw(domain: Optional[str] = None) -> Callable[[ViewFuncT], ViewFuncT]:
-    def wrapper(view_func: ViewFuncT) -> ViewFuncT:
-        @wraps(view_func)
-        def wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> NoReturn:
-            global captured_request
-            captured_request = request
-            try:
-                raise Exception("Request error")
-            except Exception as e:
-                global captured_exc_info
-                captured_exc_info = sys.exc_info()
-                raise e
+def capture_and_throw(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], NoReturn]:
+    @wraps(view_func)
+    def wrapped_view(
+        request: HttpRequest,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> NoReturn:
+        global captured_request
+        captured_request = request
+        try:
+            raise Exception("Request error")
+        except Exception as e:
+            global captured_exc_info
+            captured_exc_info = sys.exc_info()
+            raise e
 
-        return cast(ViewFuncT, wrapped_view)  # https://github.com/python/mypy/issues/1927
-
-    return wrapper
+    return wrapped_view
 
 
 class AdminNotifyHandlerTest(ZulipTestCase):
@@ -77,15 +84,18 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
     def simulate_error(self) -> logging.LogRecord:
         self.login("hamlet")
-        with patch("zerver.decorator.rate_limit") as rate_limit_patch, self.assertLogs(
+        with patch(
+            "zerver.lib.rest.authenticated_json_view", side_effect=capture_and_throw
+        ) as view_decorator_patch, self.assertLogs(
             "django.request", level="ERROR"
         ) as request_error_log, self.assertLogs(
             "zerver.middleware.json_error_handler", level="ERROR"
-        ) as json_error_handler_log:
-            rate_limit_patch.side_effect = capture_and_throw
+        ) as json_error_handler_log, self.settings(
+            TEST_SUITE=False
+        ):
             result = self.client_get("/json/users")
             self.assert_json_error(result, "Internal server error", status_code=500)
-            rate_limit_patch.assert_called_once()
+            view_decorator_patch.assert_called_once()
         self.assertEqual(
             request_error_log.output, ["ERROR:django.request:Internal Server Error: /json/users"]
         )
@@ -119,15 +129,16 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         """A request with no stack and multi-line report.getMessage() is handled properly"""
         record = self.simulate_error()
         record.exc_info = None
-        record.msg = "message\nmoremesssage\nmore"
+        record.msg = "message\nmoremessage\nmore"
 
         report = self.run_handler(record)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
-        self.assertEqual(report["stack_trace"], "message\nmoremesssage\nmore")
+        self.assertEqual(report["stack_trace"], "message\nmoremessage\nmore")
         self.assertEqual(report["message"], "message")
 
     @patch("zerver.logging_handlers.try_git_describe")
@@ -139,6 +150,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         report = self.run_handler(record)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -160,6 +172,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -169,19 +182,18 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         record.request.user = self.example_user("hamlet")
 
         # Now simulate a DisallowedHost exception
-        def get_host_error() -> str:
-            raise Exception("Get host failure!")
-
-        orig_get_host = record.request.get_host
-        record.request.get_host = get_host_error
-        report = self.run_handler(record)
-        record.request.get_host = orig_get_host
-        self.assertIn("host", report)
-        self.assertIn("user", report)
-        self.assertIn("user_email", report["user"])
-        self.assertIn("user_role", report["user"])
-        self.assertIn("message", report)
-        self.assertIn("stack_trace", report)
+        with mock.patch.object(
+            record.request, "get_host", side_effect=Exception("Get host failure!")
+        ) as m:
+            report = self.run_handler(record)
+            self.assertIn("host", report)
+            self.assertIn("user", report)
+            assert isinstance(report["user"], dict)
+            self.assertIn("user_email", report["user"])
+            self.assertIn("user_role", report["user"])
+            self.assertIn("message", report)
+            self.assertIn("stack_trace", report)
+            m.assert_called_once()
 
         # Test an exception_filter exception
         with patch("zerver.logging_handlers.get_exception_reporter_filter", return_value=15):
@@ -190,6 +202,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             record.request.method = "GET"
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -220,21 +233,24 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertEqual(report["stack_trace"], "No stack trace available")
 
         # Test arbitrary exceptions from request.user
-        record.request.user = None
+        del record.request.user
         with patch("zerver.logging_handlers.traceback.print_exc"):
             report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
+        self.assertEqual(report["user"]["user_email"], None)
 
 
 class LoggingConfigTest(ZulipTestCase):
@@ -242,8 +258,7 @@ class LoggingConfigTest(ZulipTestCase):
     def all_loggers() -> Iterator[logging.Logger]:
         # There is no documented API for enumerating the loggers; but the
         # internals of `logging` haven't changed in ages, so just use them.
-        loggerDict: Dict[str, object] = getattr(logging.Logger, "manager").loggerDict
-        for logger in loggerDict.values():
+        for logger in logging.Logger.manager.loggerDict.values():
             if not isinstance(logger, logging.Logger):
                 continue
             yield logger

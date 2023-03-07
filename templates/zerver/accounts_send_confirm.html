@@ -1,6 +1,10 @@
 {% extends "zerver/portico_signup.html" %}
 {# Displayed after a user attempts to sign up. #}
 
+{% block title %}
+<title>{{ _("Confirm your email address") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 <!-- The following empty tag has unique data-page-id so that this
 page can be easily identified in it's respective JavaScript file -->
@@ -14,12 +18,12 @@ page can be easily identified in it's respective JavaScript file -->
             </div>
 
             <div class="white-box">
-                <p>{{ _("Check your email so we can get started.") }}</p>
+                <p>{% trans %}Check your email (<span class="user_email semi-bold">{{ email }}</span>) so we can get started.{% endtrans %}</p>
 
                 {% include 'zerver/dev_env_email_access_details.html' %}
 
                 <p>{% trans %}Still no email? We can <a href="#" id="resend_email_link">resend it</a>.{% endtrans %}
-                <i class="grey">({{ _("Just in case, take a look at your Spam folder.") }})</i></p>
+                    <i class="grey">({{ _("Just in case, take a look at your Spam folder.") }})</i></p>
                 {% if realm_creation %}
                 <form class="resend_confirm" action="/new/" method="post" style="position: absolute;">
                     {{ csrf_input }}

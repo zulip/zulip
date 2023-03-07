@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from unittest import mock
 
 import orjson
@@ -6,17 +6,27 @@ import requests
 import responses
 
 from version import ZULIP_VERSION
-from zerver.lib.actions import do_create_user
+from zerver.actions.create_user import do_create_user
+from zerver.actions.streams import do_deactivate_stream
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_webhook import (
     GenericOutgoingWebhookService,
     SlackOutgoingWebhookService,
     do_rest_call,
+    fail_with_message,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.users import add_service
-from zerver.models import Recipient, Service, UserProfile, get_display_recipient, get_realm
+from zerver.models import (
+    Recipient,
+    Service,
+    UserProfile,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+)
 
 
 class ResponseMock:
@@ -35,7 +45,7 @@ def timeout_error(final_url: Any, **request_kwargs: Any) -> Any:
 
 
 def connection_error(final_url: Any, **request_kwargs: Any) -> Any:
-    raise requests.exceptions.ConnectionError()
+    raise requests.exceptions.ConnectionError
 
 
 class DoRestCallTests(ZulipTestCase):
@@ -56,6 +66,7 @@ class DoRestCallTests(ZulipTestCase):
                 "sender_full_name": bot_user.full_name,
                 "sender_avatar_source": UserProfile.AVATAR_FROM_GRAVATAR,
                 "sender_avatar_version": 1,
+                "sender_email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 "recipient_type": "stream",
                 "recipient_type_id": 999,
                 "sender_is_mirror_dummy": False,
@@ -75,31 +86,39 @@ class DoRestCallTests(ZulipTestCase):
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
-        with mock.patch.object(
-            service_handler, "session"
-        ) as session, expect_send_response as mock_send:
-            session.post.return_value = ResponseMock(200, orjson.dumps(dict(content="whatever")))
-            with self.assertLogs(level="INFO") as logs:
-                do_rest_call("", mock_event, service_handler)
-            self.assert_length(logs.output, 1)
-            self.assertIn(
-                f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
-            )
-
-        self.assertTrue(mock_send.called)
-
-        for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
-            handler = service_class("token", bot_user, "service")
-            with mock.patch.object(handler, "session") as session:
-                session.post.return_value = ResponseMock(200, b"{}")
+        def _helper(content: Optional[str]) -> None:
+            expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
+            with mock.patch.object(
+                service_handler, "session"
+            ) as session, expect_send_response as mock_send:
+                session.post.return_value = ResponseMock(200, orjson.dumps(dict(content=content)))
                 with self.assertLogs(level="INFO") as logs:
-                    do_rest_call("", mock_event, handler)
+                    do_rest_call("", mock_event, service_handler)
                 self.assert_length(logs.output, 1)
                 self.assertIn(
                     f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
                 )
-                session.post.assert_called_once()
+
+            if content == "":
+                self.assertFalse(mock_send.called)
+            else:
+                self.assertTrue(mock_send.called)
+
+            for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
+                handler = service_class("token", bot_user, "service")
+                with mock.patch.object(handler, "session") as session:
+                    session.post.return_value = ResponseMock(200, b"{}")
+                    with self.assertLogs(level="INFO") as logs:
+                        do_rest_call("", mock_event, handler)
+                    self.assert_length(logs.output, 1)
+                    self.assertIn(
+                        f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
+                    )
+                    session.post.assert_called_once()
+
+        _helper("whatever")
+        _helper("")
+        _helper(None)
 
     def test_retry_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -128,6 +147,33 @@ The webhook got a response with status code *500*.""",
 
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+
+    def test_bad_msg_type(self) -> None:
+        bot_user = self.example_user("outgoing_webhook_bot")
+        mock_event = self.mock_event(bot_user)
+        service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
+
+        mock_event["message"]["type"] = "unknown"
+        with mock.patch.object(service_handler, "session") as session, self.assertRaises(
+            JsonableError
+        ), self.assertLogs(level="INFO"):
+            session.post.return_value = ResponseMock(200)
+            url = "http://somewhere.com/api/call"
+            with mock.patch("zerver.lib.outgoing_webhook.get_message_url", return_value=url):
+                do_rest_call("", mock_event, service_handler)
+
+    def test_response_none(self) -> None:
+        bot_user = self.example_user("outgoing_webhook_bot")
+        mock_event = self.mock_event(bot_user)
+        service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
+
+        with mock.patch(
+            "zerver.lib.outgoing_webhook.GenericOutgoingWebhookService.make_request",
+            return_value=None,
+        ), self.assertLogs(level="INFO") as logs:
+            resp = do_rest_call("", mock_event, service_handler)
+            self.assertEqual(resp, None)
+        self.assert_length(logs.output, 1)
 
     def test_fail_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -510,6 +556,95 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")
+
+    @responses.activate
+    def test_stream_message_failure_to_outgoing_webhook_bot(self) -> None:
+        realm = get_realm("zulip")
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            body=requests.exceptions.Timeout("Time is up!"),
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            sent_message_id = self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assert_length(responses.calls, 4)
+        self.assert_length(logs.output, 5)
+        self.assertEqual(
+            [
+                "INFO:root:Trigger event @**Outgoing Webhook bot** foo on foo-service timed out. Retrying",
+                f"INFO:root:Trigger event @**{bot.full_name}** foo on foo-service timed out. Retrying",
+                f"INFO:root:Trigger event @**{bot.full_name}** foo on foo-service timed out. Retrying",
+                f"INFO:root:Trigger event @**{bot.full_name}** foo on foo-service timed out. Retrying",
+                f"WARNING:root:Maximum retries exceeded for trigger:outgoing-webhook-bot@zulip.testserver event:@**{bot.full_name}** foo",
+            ],
+            logs.output,
+        )
+
+        last_message = self.get_last_message()
+        message_dict = {
+            "stream_id": get_stream("Denmark", realm).id,
+            "display_recipient": "Denmark",
+            TOPIC_NAME: "bar",
+            "id": sent_message_id,
+            "type": "stream",
+        }
+        message_url = near_message_url(realm, message_dict)
+        self.assertEqual(
+            last_message.content,
+            f"[A message]({message_url}) to your bot @_**{bot.full_name}** triggered an outgoing webhook.\n"
+            "Request timed out after 10 seconds.",
+        )
+        self.assertEqual(last_message.sender_id, bot.id)
+        assert bot.bot_owner is not None
+        self.assertEqual(last_message.recipient_id, bot.bot_owner.recipient_id)
+
+        stream_message = self.get_second_to_last_message()
+        self.assertEqual(stream_message.content, "Failure! Bot is unavailable")
+        self.assertEqual(stream_message.sender_id, bot.id)
+        self.assertEqual(stream_message.topic_name(), "bar")
+        display_recipient = get_display_recipient(stream_message.recipient)
+        self.assertEqual(display_recipient, "Denmark")
+
+    @responses.activate
+    def test_stream_message_failure_deactivated_to_outgoing_webhook_bot(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        def wrapped(event: Dict[str, Any], failure_message: str) -> None:
+            do_deactivate_stream(get_stream("Denmark", get_realm("zulip")), acting_user=None)
+            fail_with_message(event, failure_message)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            body=requests.exceptions.Timeout("Time is up!"),
+        )
+        with mock.patch(
+            "zerver.lib.outgoing_webhook.fail_with_message", side_effect=wrapped
+        ) as fail:
+            with self.assertLogs(level="INFO") as logs:
+                self.send_stream_message(
+                    bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+                )
+
+        self.assert_length(logs.output, 5)
+        fail.assert_called_once()
+
+        last_message = self.get_last_message()
+        self.assertIn("Request timed out after 10 seconds", last_message.content)
+
+        prev_message = self.get_second_to_last_message()
+        self.assertIn(
+            "tried to send a message to stream #**Denmark**, but that stream does not exist",
+            prev_message.content,
+        )
 
     @responses.activate
     def test_empty_string_json_as_response_to_outgoing_webhook_request(self) -> None:

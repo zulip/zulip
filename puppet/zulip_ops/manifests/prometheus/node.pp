@@ -4,18 +4,14 @@ class zulip_ops::prometheus::node {
   include zulip_ops::prometheus::base
   include zulip::supervisor
 
-  $version = '1.1.2'
-  zulip::sha256_tarball_to { 'node_exporter':
-    url     => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-amd64.tar.gz",
-    sha256  => '8c1f6a317457a658e0ae68ad710f6b4098db2cad10204649b51e3c043aa3e70d',
-    install => {
-      "node_exporter-${version}.linux-amd64/node_exporter" => "/usr/local/bin/node_exporter-${version}",
-    },
-  }
-  file { '/usr/local/bin/node_exporter':
-    ensure  => 'link',
-    target  => "/usr/local/bin/node_exporter-${version}",
-    require => Zulip::Sha256_tarball_to['node_exporter'],
+  $version = $zulip::common::versions['node_exporter']['version']
+  $dir = "/srv/zulip-node_exporter-${version}"
+  $bin = "${dir}/node_exporter"
+
+  zulip::external_dep { 'node_exporter':
+    version        => $version,
+    url            => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-${zulip::common::goarch}.tar.gz",
+    tarball_prefix => "node_exporter-${version}.linux-${zulip::common::goarch}",
   }
 
   zulip_ops::firewall_allow { 'node_exporter': port => '9100' }
@@ -24,12 +20,12 @@ class zulip_ops::prometheus::node {
     require => [
       User[zulip],
       Package[supervisor],
-      File['/usr/local/bin/node_exporter'],
+      Zulip::External_Dep['node_exporter'],
     ],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/prometheus_node_exporter.conf',
+    content => template('zulip_ops/supervisor/conf.d/prometheus_node_exporter.conf.template.erb'),
     notify  => Service[supervisor],
   }
 }

@@ -29,16 +29,12 @@ assert_provisioning_status_ok(options.skip_provision_check)
 with test_server_running(
     skip_provision_check=options.skip_provision_check, external_host="zulipdev.com:9981"
 ):
-    # Zerver imports should happen after `django.setup()` is run
+    # zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
-    from zerver.lib.actions import (
-        change_user_is_active,
-        do_create_user,
-        do_deactivate_realm,
-        do_reactivate_realm,
-        do_reactivate_user,
-    )
-    from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+    from zerver.actions.create_user import do_create_user, do_reactivate_user
+    from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+    from zerver.actions.users import change_user_is_active
+    from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
     from zerver.lib.users import get_api_key
     from zerver.models import get_realm, get_user
     from zerver.openapi.javascript_examples import test_js_bindings
@@ -52,7 +48,7 @@ with test_server_running(
 
     print("Running API tests...")
 
-    reset_emails_in_zulip_realm()
+    reset_email_visibility_to_everyone_in_zulip_realm()
 
     # Prepare the admin client
     email = "iago@zulip.com"  # Iago is an admin

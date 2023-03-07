@@ -1,0 +1,47 @@
+<div class="right-sidebar" id="right-sidebar" role="navigation">
+    <div class="right-sidebar-items">
+        <div id="user-list">
+            <div id="userlist-header">
+                <h4 class='sidebar-title' data-tooltip-template-id="search-people-tooltip-template"
+                  id='userlist-title'>
+                    {{t 'USERS' }}
+                </h4>
+                <i id="user_filter_icon" class="fa fa-search"
+                  aria-hidden="true" aria-label="{{t 'Search people' }}"
+                  data-tooltip-template-id="search-people-tooltip-template">
+                </i>
+            </div>
+            <template id="search-people-tooltip-template">
+                {{t 'Search people' }}
+                {{tooltip_hotkey_hints "W"}}
+            </template>
+            <div class="input-append notdisplayed" id="user_search_section">
+                <input class="user-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{t 'Search people' }}" />
+                <button type="button" class="btn clear_search_button" id="clear_search_people_button">
+                    <i class="fa fa-remove" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div id="buddy_list_wrapper" class="scrolling_list" data-simplebar>
+                <ul id="user_presences" class="filters required-text" data-empty="{{t 'No matching users.' }}"></ul>
+                <div id="buddy_list_wrapper_padding"></div>
+            </div>
+        </div>
+        <div class="right-sidebar-shortcuts">
+            {{#if can_invite_others_to_realm}}
+            <a class="invite-user-link" role="button"><i class="fa fa-user-plus" aria-hidden="true"></i>{{t 'Invite more users' }}</a>
+            {{/if}}
+            <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts" class="hidden-for-spectators">
+                <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tooltip-template-id="keyboard-icon-tooltip-template"></i>
+                <template id="keyboard-icon-tooltip-template">
+                    {{t 'Keyboard shortcuts' }}
+                    {{tooltip_hotkey_hints "?"}}
+                </template>
+            </a>
+            <div class="only-visible-for-spectators">
+                <div class="realm-description">
+                    <div class="rendered_markdown">{{rendered_markdown realm_rendered_description }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

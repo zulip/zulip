@@ -1,0 +1,36 @@
+{{#with attachment}}
+<tr class="uploaded_file_row" id="{{name}}" data-attachment-id="{{id}}">
+    <td>
+        <a type="submit" href="/user_uploads/{{path_id}}" target="_blank" rel="noopener noreferrer" title="{{t 'View file' }}">
+            {{ name }}
+        </a>
+    </td>
+    <td>{{ create_time_str }}</td>
+    <td>
+        {{#if messages }}
+        <div class="attachment-messages">
+            {{#each messages}}
+                <a class="ind-message" href="/#narrow/id/{{ this.id }}">
+                    #{{ this.id }}
+                </a>
+            {{/each}}
+        </div>
+        {{/if}}
+    </td>
+    <td class="upload-size" >{{ size_str }}</td>
+    <td class="actions">
+        <span class="edit-attachment-buttons">
+            <a type="submit" href="/user_uploads/{{path_id}}" class="btn no-style" title="{{t 'Download file' }}" id="download_attachment" download>
+                <i class="fa fa-download sea-green" aria-hidden="true"></i>
+            </a>
+        </span>
+        <span class="edit-attachment-buttons">
+            <button type="submit"
+              class="button small no-style remove-attachment"
+              title="{{t 'Delete file' }}" data-attachment="{{id}}">
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+            </button>
+        </span>
+    </td>
+</tr>
+{{/with}}

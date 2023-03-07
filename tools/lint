@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import random
 import re
 import sys
 
@@ -25,12 +24,11 @@ def run() -> None:
         assert_provisioning_status_ok,
     )
     from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
-    from tools.linter_lib.pep8 import check_pep8
-    from tools.linter_lib.pyflakes import check_pyflakes
 
     parser = argparse.ArgumentParser()
     add_provision_check_override_param(parser)
     parser.add_argument("--full", action="store_true", help="Check some things we typically ignore")
+    parser.add_argument("--use-mypy-daemon", action="store_true", help="Run mypy daemon instead")
     add_default_linter_arguments(parser)
     args = parser.parse_args()
 
@@ -131,12 +129,26 @@ def run() -> None:
     command = ["tools/run-mypy", "--quiet"]
     if args.skip_provision_check:
         command.append("--skip-provision-check")
+    if args.use_mypy_daemon:
+        command.append("--use-daemon")
     linter_config.external_linter(
         "mypy",
         command,
         ["py", "pyi"],
         pass_targets=False,
         description="Static type checker for Python (config: pyproject.toml)",
+        suppress_line=(
+            lambda line: line.startswith("Daemon") or line == "Restarting: configuration changed"
+        )
+        if args.use_mypy_daemon
+        else lambda _: False,
+    )
+    linter_config.external_linter(
+        "ruff",
+        ["ruff", "--quiet"],
+        ["py", "pyi"],
+        fix_arg="--fix",
+        description="Python linter",
     )
     linter_config.external_linter(
         "tsc",
@@ -158,15 +170,8 @@ def run() -> None:
         description="Checks commit messages for common formatting errors (config: .gitlint)",
     )
     linter_config.external_linter(
-        "isort",
-        ["isort"],
-        ["py", "pyi"],
-        description="Sorts Python import statements",
-        check_arg=["--check-only", "--diff"],
-    )
-    linter_config.external_linter(
         "prettier",
-        ["node_modules/.bin/prettier", "--check", "--loglevel=warn"],
+        ["node_modules/.bin/prettier", "--cache", "--check", "--log-level=warn"],
         ["css", "flow", "js", "json", "md", "ts", "yaml", "yml"],
         fix_arg=["--write"],
         description="Formats CSS, JavaScript, YAML",
@@ -214,27 +219,6 @@ def run() -> None:
         failed = False
         for rule in non_py_rules:
             failed = failed or rule.check(by_lang, verbose=args.verbose)
-        return 1 if failed else 0
-
-    @linter_config.lint
-    def pyflakes() -> int:
-        """Standard Python bug and code smell linter (config: tools/linter_lib/pyflakes.py)"""
-        failed = check_pyflakes(by_lang["py"], args)
-        return 1 if failed else 0
-
-    python_part1 = {x for x in by_lang["py"] + by_lang["pyi"] if random.randint(0, 1) == 0}
-    python_part2 = {y for y in by_lang["py"] + by_lang["pyi"] if y not in python_part1}
-
-    @linter_config.lint
-    def pep8_1of2() -> int:
-        """Standard Python style linter on 50% of files (config: setup.cfg)"""
-        failed = check_pep8(list(python_part1))
-        return 1 if failed else 0
-
-    @linter_config.lint
-    def pep8_2of2() -> int:
-        """Standard Python style linter on other 50% of files (config: setup.cfg)"""
-        failed = check_pep8(list(python_part2))
         return 1 if failed else 0
 
     linter_config.do_lint()

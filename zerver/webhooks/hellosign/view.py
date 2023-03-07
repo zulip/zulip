@@ -1,11 +1,11 @@
-from typing import Any, Dict, List
+from typing import Dict, List
 
-import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -14,14 +14,15 @@ WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"
 BODY = "The `{contract_title}` document {actions}."
 
 
-def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
-    contract_title = payload["signature_request"]["title"]
+def get_message_body(payload: WildValue) -> str:
+    contract_title = payload["signature_request"]["title"].tame(check_string)
     recipients: Dict[str, List[str]] = {}
     signatures = payload["signature_request"]["signatures"]
 
     for signature in signatures:
-        recipients.setdefault(signature["status_code"], [])
-        recipients[signature["status_code"]].append(signature["signer_name"])
+        status_code = signature["status_code"].tame(check_string)
+        recipients.setdefault(status_code, [])
+        recipients[status_code].append(signature["signer_name"].tame(check_string))
 
     recipients_text = ""
     if recipients.get("awaiting_signature"):
@@ -59,11 +60,11 @@ def get_recipients_text(recipients: List[str]) -> str:
 def api_hellosign_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Dict[str, Any]] = REQ(whence="json", converter=orjson.loads),
+    payload: WildValue = REQ(whence="json", converter=to_wild_value),
 ) -> HttpResponse:
     if "signature_request" in payload:
         body = get_message_body(payload)
-        topic = payload["signature_request"]["title"]
+        topic = payload["signature_request"]["title"].tame(check_string)
         check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success({"msg": "Hello API Event Received"})
+    return json_success(request, data={"msg": "Hello API Event Received"})

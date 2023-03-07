@@ -23,8 +23,9 @@ MAX_REQUEST_RETRIES = 3
 ChannelT = TypeVar("ChannelT", Channel, BlockingChannel)
 Consumer = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, bytes], None]
 
+
 # This simple queuing library doesn't expose much of the power of
-# rabbitmq/pika's queuing system; its purpose is to just provide an
+# RabbitMQ/Pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
 class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
@@ -32,10 +33,12 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         self,
         # Disable RabbitMQ heartbeats by default because BlockingConnection can't process them
         rabbitmq_heartbeat: Optional[int] = 0,
+        prefetch: int = 0,
     ) -> None:
         self.log = logging.getLogger("zulip.queue")
         self.queues: Set[str] = set()
         self.channel: Optional[ChannelT] = None
+        self.prefetch = prefetch
         self.consumers: Dict[str, Set[Consumer[ChannelT]]] = defaultdict(set)
         self.rabbitmq_heartbeat = rabbitmq_heartbeat
         self.is_consuming = False
@@ -76,6 +79,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
 
         return pika.ConnectionParameters(
             settings.RABBITMQ_HOST,
+            port=settings.RABBITMQ_PORT,
             heartbeat=self.rabbitmq_heartbeat,
             tcp_options=tcp_options,
             credentials=credentials,
@@ -85,7 +89,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         return f"{queue_name}_{str(random.getrandbits(16))}"
 
     def _reconnect_consumer_callback(self, queue: str, consumer: Consumer[ChannelT]) -> None:
-        self.log.info(f"Queue reconnecting saved consumer {consumer} to queue {queue}")
+        self.log.info("Queue reconnecting saved consumer %r to queue %s", consumer, queue)
         self.ensure_queue(
             queue,
             lambda channel: channel.basic_consume(
@@ -139,7 +143,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel = self.connection.channel()
-        self.log.info(f"SimpleQueueClient connected (connecting took {time.time() - start:.3f}s)")
+        self.log.info("SimpleQueueClient connected (connecting took %.3fs)", time.time() - start)
 
     def _reconnect(self) -> None:
         self.connection = None
@@ -156,11 +160,15 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         the callback with no arguments."""
         if self.connection is None or not self.connection.is_open:
             self._connect()
+            assert self.channel is not None
+            self.channel.basic_qos(prefetch_count=self.prefetch)
+        else:
+            assert self.channel is not None
 
-        assert self.channel is not None
         if queue_name not in self.queues:
             self.channel.queue_declare(queue=queue_name, durable=True)
             self.queues.add(queue_name)
+
         callback(self.channel)
 
     def start_json_consumer(
@@ -247,7 +255,10 @@ class TornadoQueueClient(QueueClient[Channel]):
     def __init__(self) -> None:
         super().__init__(
             # TornadoConnection can process heartbeats, so enable them.
-            rabbitmq_heartbeat=None
+            rabbitmq_heartbeat=None,
+            # Only ask for 100 un-acknowledged messages at once from
+            # the server, rather than an unbounded number.
+            prefetch=100,
         )
         self._on_open_cbs: List[Callable[[Channel], None]] = []
         self._connection_failure_count = 0
@@ -294,18 +305,20 @@ class TornadoQueueClient(QueueClient[Channel]):
             "TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs...",
             retry_secs,
         )
-        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
+        ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
 
     def _on_connection_closed(
         self, connection: pika.connection.Connection, reason: Exception
     ) -> None:
+        if self.connection is None:
+            return
         self._connection_failure_count = 1
         retry_secs = self.CONNECTION_RETRY_SECS
         self.log.warning(
             "TornadoQueueClient lost connection to RabbitMQ, reconnecting in %d secs...",
             retry_secs,
         )
-        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
+        ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
         assert self.connection is not None
@@ -327,11 +340,16 @@ class TornadoQueueClient(QueueClient[Channel]):
     def close(self) -> None:
         if self.connection is not None:
             self.connection.close()
+            self.connection = None
 
     def ensure_queue(self, queue_name: str, callback: Callable[[Channel], object]) -> None:
-        def finish(frame: Any) -> None:
+        def set_qos(frame: Any) -> None:
             assert self.channel is not None
             self.queues.add(queue_name)
+            self.channel.basic_qos(prefetch_count=self.prefetch, callback=finish)
+
+        def finish(frame: Any) -> None:
+            assert self.channel is not None
             callback(self.channel)
 
         if queue_name not in self.queues:
@@ -342,7 +360,7 @@ class TornadoQueueClient(QueueClient[Channel]):
                 return
 
             assert self.channel is not None
-            self.channel.queue_declare(queue=queue_name, durable=True, callback=finish)
+            self.channel.queue_declare(queue=queue_name, durable=True, callback=set_qos)
         else:
             assert self.channel is not None
             callback(self.channel)
@@ -381,28 +399,20 @@ class TornadoQueueClient(QueueClient[Channel]):
         )
 
 
-queue_client: Optional[Union[SimpleQueueClient, TornadoQueueClient]] = None
+thread_data = threading.local()
 
 
 def get_queue_client() -> Union[SimpleQueueClient, TornadoQueueClient]:
-    global queue_client
-    if queue_client is None:
-        if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:
-            queue_client = TornadoQueueClient()
-        elif settings.USING_RABBITMQ:
-            queue_client = SimpleQueueClient()
-        else:
+    if not hasattr(thread_data, "queue_client"):
+        if not settings.USING_RABBITMQ:
             raise RuntimeError("Cannot get a queue client without USING_RABBITMQ")
+        thread_data.queue_client = SimpleQueueClient()
 
-    return queue_client
+    return thread_data.queue_client
 
 
-# We using a simple lock to prevent multiple RabbitMQ messages being
-# sent to the SimpleQueueClient at the same time; this is a workaround
-# for an issue with the pika BlockingConnection where using
-# BlockingConnection for multiple queues causes the channel to
-# randomly close.
-queue_lock = threading.RLock()
+def set_queue_client(queue_client: Union[SimpleQueueClient, TornadoQueueClient]) -> None:
+    thread_data.queue_client = queue_client
 
 
 def queue_json_publish(
@@ -410,16 +420,15 @@ def queue_json_publish(
     event: Dict[str, Any],
     processor: Optional[Callable[[Any], None]] = None,
 ) -> None:
-    with queue_lock:
-        if settings.USING_RABBITMQ:
-            get_queue_client().json_publish(queue_name, event)
-        elif processor:
-            processor(event)
-        else:
-            # Must be imported here: A top section import leads to circular imports
-            from zerver.worker.queue_processors import get_worker
+    if settings.USING_RABBITMQ:
+        get_queue_client().json_publish(queue_name, event)
+    elif processor:
+        processor(event)
+    else:
+        # Must be imported here: A top section import leads to circular imports
+        from zerver.worker.queue_processors import get_worker
 
-            get_worker(queue_name).consume_single_event(event)
+        get_worker(queue_name).consume_single_event(event)
 
 
 def retry_event(
@@ -431,4 +440,4 @@ def retry_event(
     if event["failed_tries"] > MAX_REQUEST_RETRIES:
         failure_processor(event)
     else:
-        queue_json_publish(queue_name, event, lambda x: None)
+        queue_json_publish(queue_name, event)

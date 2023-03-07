@@ -1,5 +1,6 @@
 import secrets
 import time
+from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple, Type
 from unittest import mock
 
@@ -34,8 +35,8 @@ class RateLimitedTestObject(RateLimitedObject):
         return self._rules
 
 
-class RateLimiterBackendBase(ZulipTestCase):
-    __unittest_skip__ = True
+class RateLimiterBackendBase(ZulipTestCase, ABC):
+    backend: Type[RateLimiterBackend]
 
     def setUp(self) -> None:
         self.requests_record: Dict[str, List[float]] = {}
@@ -84,13 +85,14 @@ class RateLimiterBackendBase(ZulipTestCase):
 
         return self.api_calls_left_from_history(history, max_window, max_calls, now)
 
+    @abstractmethod
     def api_calls_left_from_history(
         self, history: List[float], max_window: int, max_calls: int, now: float
     ) -> Tuple[int, float]:
         """
         This depends on the algorithm used in the backend, and should be defined by the test class.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def test_hit_ratelimits(self) -> None:
         obj = self.create_object("test", [(2, 3)])
@@ -151,7 +153,6 @@ class RateLimiterBackendBase(ZulipTestCase):
 
 
 class RedisRateLimiterBackendTest(RateLimiterBackendBase):
-    __unittest_skip__ = False
     backend = RedisRateLimiterBackend
 
     def api_calls_left_from_history(
@@ -177,7 +178,6 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
 
 
 class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
-    __unittest_skip__ = False
     backend = TornadoInMemoryRateLimiterBackend
 
     def api_calls_left_from_history(
@@ -229,18 +229,29 @@ class RateLimitedObjectsTest(ZulipTestCase):
 
     def test_add_remove_rule(self) -> None:
         user_profile = self.example_user("hamlet")
-        add_ratelimit_rule(1, 2)
-        add_ratelimit_rule(4, 5, domain="some_new_domain")
-        add_ratelimit_rule(10, 100, domain="some_new_domain")
-        obj = RateLimitedUser(user_profile)
+        try:
+            add_ratelimit_rule(1, 2)
+            add_ratelimit_rule(4, 5, domain="some_new_domain")
+            add_ratelimit_rule(10, 100, domain="some_new_domain")
+            obj = RateLimitedUser(user_profile)
 
-        self.assertEqual(obj.get_rules(), [(1, 2)])
-        obj.domain = "some_new_domain"
-        self.assertEqual(obj.get_rules(), [(4, 5), (10, 100)])
+            self.assertEqual(obj.get_rules(), [(1, 2)])
+            obj.domain = "some_new_domain"
+            self.assertEqual(obj.get_rules(), [(4, 5), (10, 100)])
 
-        remove_ratelimit_rule(10, 100, domain="some_new_domain")
-        self.assertEqual(obj.get_rules(), [(4, 5)])
+            remove_ratelimit_rule(10, 100, domain="some_new_domain")
+            self.assertEqual(obj.get_rules(), [(4, 5)])
+
+        finally:
+            # Ensure all the rules get cleaned up.
+            remove_ratelimit_rule(1, 2)
+            remove_ratelimit_rule(4, 5, domain="some_new_domain")
+            remove_ratelimit_rule(10, 100, domain="some_new_domain")
 
     def test_empty_rules_edge_case(self) -> None:
         obj = RateLimitedTestObject("test", rules=[], backend=RedisRateLimiterBackend)
         self.assertEqual(obj.get_rules(), [(1, 9999)])
+
+
+# Don't load the base class as a test: https://bugs.python.org/issue17519.
+del RateLimiterBackendBase

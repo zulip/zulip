@@ -2,7 +2,19 @@ import copy
 import datetime
 import zlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import (
+    Any,
+    Collection,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypedDict,
+    Union,
+)
 
 import ahocorasick
 import orjson
@@ -11,13 +23,14 @@ from django.db import connection
 from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL
-from typing_extensions import TypedDict
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.cache import (
+    cache_set_many,
     cache_with_key,
     generic_bulk_cached_fetch,
     to_dict_cache_key,
@@ -37,8 +50,9 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
-from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
-from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
+from zerver.lib.url_preview.types import UrlEmbedData
+from zerver.lib.user_topics import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -54,6 +68,15 @@ from zerver.models import (
     get_usermessage_by_message_id,
     query_for_ids,
 )
+
+
+class MessageDetailsDict(TypedDict, total=False):
+    type: str
+    mentioned: bool
+    user_ids: List[int]
+    stream_id: int
+    topic: str
+    unmuted_stream_msg: bool
 
 
 class RawReactionRow(TypedDict):
@@ -72,7 +95,7 @@ class RawUnreadStreamDict(TypedDict):
 
 
 class RawUnreadPrivateMessageDict(TypedDict):
-    sender_id: int
+    other_user_id: int
 
 
 class RawUnreadHuddleDict(TypedDict):
@@ -89,10 +112,28 @@ class RawUnreadMessagesResult(TypedDict):
     old_unreads_missing: bool
 
 
+class UnreadStreamInfo(TypedDict):
+    stream_id: int
+    topic: str
+    unread_message_ids: List[int]
+
+
+class UnreadPrivateMessageInfo(TypedDict):
+    other_user_id: int
+    # Deprecated and misleading synonym for other_user_id
+    sender_id: int
+    unread_message_ids: List[int]
+
+
+class UnreadHuddleInfo(TypedDict):
+    user_ids_string: str
+    unread_message_ids: List[int]
+
+
 class UnreadMessagesResult(TypedDict):
-    pms: List[Dict[str, Any]]
-    streams: List[Dict[str, Any]]
-    huddles: List[Dict[str, Any]]
+    pms: List[UnreadPrivateMessageInfo]
+    streams: List[UnreadStreamInfo]
+    huddles: List[UnreadHuddleInfo]
     mentions: List[int]
     count: int
     old_unreads_missing: bool
@@ -119,12 +160,16 @@ class SendMessageRequest:
     long_term_idle_user_ids: Set[int]
     default_bot_user_ids: Set[int]
     service_bot_tuples: List[Tuple[int, int]]
+    all_bot_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
     links_for_embed: Set[str]
     widget_content: Optional[Dict[str, Any]]
     submessages: List[Dict[str, Any]] = field(default_factory=list)
     deliver_at: Optional[datetime.datetime] = None
     delivery_type: Optional[str] = None
+    limit_unread_user_ids: Optional[Set[int]] = None
+    service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
+    disable_external_notifications: bool = False
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -161,7 +206,6 @@ def messages_for_ids(
     client_gravatar: bool,
     allow_edit_history: bool,
 ) -> List[Dict[str, Any]]:
-
     cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row["id"]
 
@@ -329,6 +373,13 @@ class MessageDict:
         if not skip_copy:
             obj = copy.copy(obj)
 
+        if obj["sender_email_address_visibility"] != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+            # If email address of the sender is only available to administrators,
+            # clients cannot compute gravatars, so we force-set it to false.
+            # If we plumbed the current user's role, we could allow client_gravatar=True
+            # here if the current user's role has access to the target user's email address.
+            client_gravatar = False
+
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj["content_type"] = "text/html"
@@ -346,6 +397,7 @@ class MessageDict:
         del obj["recipient_type"]
         del obj["recipient_type_id"]
         del obj["sender_is_mirror_dummy"]
+        del obj["sender_email_address_visibility"]
         return obj
 
     @staticmethod
@@ -440,7 +492,7 @@ class MessageDict:
         return MessageDict.build_message_dict(
             message_id=row["id"],
             last_edit_time=row["last_edit_time"],
-            edit_history=row["edit_history"],
+            edit_history_json=row["edit_history"],
             content=row["content"],
             topic_name=row[DB_TOPIC_NAME],
             date_sent=row["date_sent"],
@@ -461,7 +513,7 @@ class MessageDict:
     def build_message_dict(
         message_id: int,
         last_edit_time: Optional[datetime.datetime],
-        edit_history: Optional[str],
+        edit_history_json: Optional[str],
         content: str,
         topic_name: str,
         date_sent: datetime.datetime,
@@ -477,7 +529,6 @@ class MessageDict:
         reactions: List[RawReactionRow],
         submessages: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-
         obj = dict(
             id=message_id,
             sender_id=sender_id,
@@ -499,8 +550,9 @@ class MessageDict:
 
         if last_edit_time is not None:
             obj["last_edit_timestamp"] = datetime_to_timestamp(last_edit_time)
-            assert edit_history is not None
-            obj["edit_history"] = orjson.loads(edit_history)
+            assert edit_history_json is not None
+            edit_history: List[EditHistoryEvent] = orjson.loads(edit_history_json)
+            obj["edit_history"] = edit_history
 
         if Message.need_to_render_content(
             rendered_content, rendered_content_version, markdown_version
@@ -525,10 +577,9 @@ class MessageDict:
         if rendered_content is not None:
             obj["rendered_content"] = rendered_content
         else:
-            obj["rendered_content"] = (
-                "<p>[Zulip note: Sorry, we could not "
-                + "understand the formatting of your message]</p>"
-            )
+            obj[
+                "rendered_content"
+            ] = "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
 
         if rendered_content is not None:
             obj["is_me_message"] = Message.is_status_message(content, rendered_content)
@@ -543,7 +594,6 @@ class MessageDict:
 
     @staticmethod
     def bulk_hydrate_sender_info(objs: List[Dict[str, Any]]) -> None:
-
         sender_ids = list({obj["sender_id"] for obj in objs})
 
         if not sender_ids:
@@ -558,6 +608,7 @@ class MessageDict:
             "avatar_source",
             "avatar_version",
             "is_mirror_dummy",
+            "email_address_visibility",
         )
 
         rows = query_for_ids(query, sender_ids, "zerver_userprofile.id")
@@ -574,6 +625,7 @@ class MessageDict:
             obj["sender_avatar_source"] = user_row["avatar_source"]
             obj["sender_avatar_version"] = user_row["avatar_version"]
             obj["sender_is_mirror_dummy"] = user_row["is_mirror_dummy"]
+            obj["sender_email_address_visibility"] = user_row["email_address_visibility"]
 
     @staticmethod
     def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientT) -> None:
@@ -716,7 +768,7 @@ def access_web_public_message(
     message_id: int,
 ) -> Message:
     """Access control method for unauthenticated requests interacting
-    with a message in web public streams.
+    with a message in web-public streams.
     """
 
     # We throw a MissingAuthenticationError for all errors in this
@@ -724,21 +776,21 @@ def access_web_public_message(
     # message with the provided ID exists on the server if the client
     # shouldn't have access to it.
     if not realm.web_public_streams_enabled():
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     try:
         message = Message.objects.select_related().get(id=message_id)
     except Message.DoesNotExist:
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     if not message.is_stream_message():
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     queryset = get_web_public_streams_queryset(realm)
     try:
         stream = queryset.get(id=message.recipient.type_id)
     except Stream.DoesNotExist:
-        raise MissingAuthenticationError()
+        raise MissingAuthenticationError
 
     # These should all have been enforced by the code in
     # get_web_public_streams_queryset
@@ -782,7 +834,7 @@ def has_message_access(
     else:
         assert stream.recipient_id == message.recipient_id
 
-    if stream.realm != user_profile.realm:
+    if stream.realm_id != user_profile.realm_id:
         # You can't access public stream messages in other realms
         return False
 
@@ -804,7 +856,7 @@ def has_message_access(
 
 
 def bulk_access_messages(
-    user_profile: UserProfile, messages: Sequence[Message], *, stream: Optional[Stream] = None
+    user_profile: UserProfile, messages: Collection[Message], *, stream: Optional[Stream] = None
 ) -> List[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
@@ -822,8 +874,17 @@ def bulk_access_messages(
         )
     )
 
-    # TODO: Ideally, we'd do a similar bulk-stream-fetch if stream is
-    # None, so that this function is fast with
+    if stream is None:
+        streams = {
+            stream.recipient_id: stream
+            for stream in Stream.objects.filter(
+                id__in={
+                    message.recipient.type_id
+                    for message in messages
+                    if message.recipient.type == Recipient.STREAM
+                }
+            )
+        }
 
     subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
 
@@ -834,7 +895,7 @@ def bulk_access_messages(
             user_profile,
             message,
             has_user_message=has_user_message,
-            stream=stream,
+            stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
         ):
             filtered_messages.append(message)
@@ -843,7 +904,7 @@ def bulk_access_messages(
 
 def bulk_access_messages_expect_usermessage(
     user_profile_id: int, message_ids: Sequence[int]
-) -> List[int]:
+) -> ValuesQuerySet[UserMessage, int]:
     """
     Like bulk_access_messages, but faster and potentially stricter.
 
@@ -868,6 +929,7 @@ def render_markdown(
     content: str,
     realm: Optional[Realm] = None,
     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
@@ -889,6 +951,7 @@ def render_markdown(
         message_realm=realm,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
+        url_embed_data=url_embed_data,
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
@@ -909,61 +972,6 @@ def huddle_users(recipient_id: int) -> str:
     user_ids: List[int] = [obj["id"] for obj in display_recipient]
     user_ids = sorted(user_ids)
     return ",".join(str(uid) for uid in user_ids)
-
-
-def aggregate_message_dict(
-    input_dict: Dict[int, Any], lookup_fields: List[str]
-) -> List[Dict[str, Any]]:
-    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
-
-    """
-    A concrete example might help explain the inputs here:
-
-    input_dict = {
-        1002: dict(stream_id=5, topic='foo'),
-        1003: dict(stream_id=5, topic='foo'),
-        1004: dict(stream_id=6, topic='baz'),
-    }
-
-    lookup_fields = ['stream_id', 'topic']
-
-    The first time through the loop:
-        attribute_dict = dict(stream_id=5, topic='foo')
-        lookup_key = (5, 'foo')
-
-    lookup_dict = {
-        (5, 'foo'): dict(stream_id=5, topic='foo',
-                         unread_message_ids=[1002, 1003],
-                        ),
-        ...
-    }
-
-    result = [
-        dict(stream_id=5, topic='foo',
-             unread_message_ids=[1002, 1003],
-            ),
-        ...
-    ]
-    """
-
-    for message_id, attribute_dict in input_dict.items():
-        lookup_key = tuple(attribute_dict[f] for f in lookup_fields)
-        if lookup_key not in lookup_dict:
-            obj = {}
-            for f in lookup_fields:
-                obj[f] = attribute_dict[f]
-            obj["unread_message_ids"] = []
-            lookup_dict[lookup_key] = obj
-
-        bucket = lookup_dict[lookup_key]
-        bucket["unread_message_ids"].append(message_id)
-
-    for dct in lookup_dict.values():
-        dct["unread_message_ids"].sort()
-
-    sorted_keys = sorted(lookup_dict.keys())
-
-    return [lookup_dict[k] for k in sorted_keys]
 
 
 def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
@@ -1010,7 +1018,9 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     )
 
 
-def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
+def get_raw_unread_data(
+    user_profile: UserProfile, message_ids: Optional[List[int]] = None
+) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = (
@@ -1019,9 +1029,6 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         )
         .exclude(
             message__recipient_id__in=excluded_recipient_ids,
-        )
-        .extra(
-            where=[UserMessage.where_unread()],
         )
         .values(
             "message_id",
@@ -1035,6 +1042,16 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         .order_by("-message_id")
     )
 
+    if message_ids is not None:
+        # When users are marking just a few messages as unread, we just need
+        # those ids, and we know they're unread.
+        user_msgs = user_msgs.filter(message_id__in=message_ids)
+    else:
+        # At page load we need all unread messages.
+        user_msgs = user_msgs.extra(
+            where=[UserMessage.where_unread()],
+        )
+
     # Limit unread messages for performance reasons.
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
 
@@ -1045,7 +1062,6 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
-
     pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
@@ -1116,14 +1132,8 @@ def extract_unread_data_from_um_rows(
             else:
                 other_user_id = sender_id
 
-            # The `sender_id` field here is misnamed.  It's really
-            # just the other participant in a PM conversation.  For
-            # most unread PM messages, the other user is also the sender,
-            # but that's not true for certain messages sent from the
-            # API.  Unfortunately, it's difficult now to rename the
-            # field without breaking mobile.
             pm_dict[message_id] = dict(
-                sender_id=other_user_id,
+                other_user_id=other_user_id,
             )
 
         elif msg_type == Recipient.HUDDLE:
@@ -1154,8 +1164,82 @@ def extract_unread_data_from_um_rows(
     return raw_unread_messages
 
 
-def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
+def aggregate_streams(*, input_dict: Dict[int, RawUnreadStreamDict]) -> List[UnreadStreamInfo]:
+    lookup_dict: Dict[Tuple[int, str], UnreadStreamInfo] = {}
+    for message_id, attribute_dict in input_dict.items():
+        stream_id = attribute_dict["stream_id"]
+        topic = attribute_dict["topic"]
+        lookup_key = (stream_id, topic)
+        if lookup_key not in lookup_dict:
+            obj = UnreadStreamInfo(
+                stream_id=stream_id,
+                topic=topic,
+                unread_message_ids=[],
+            )
+            lookup_dict[lookup_key] = obj
 
+        bucket = lookup_dict[lookup_key]
+        bucket["unread_message_ids"].append(message_id)
+
+    for dct in lookup_dict.values():
+        dct["unread_message_ids"].sort()
+
+    sorted_keys = sorted(lookup_dict.keys())
+
+    return [lookup_dict[k] for k in sorted_keys]
+
+
+def aggregate_pms(
+    *, input_dict: Dict[int, RawUnreadPrivateMessageDict]
+) -> List[UnreadPrivateMessageInfo]:
+    lookup_dict: Dict[int, UnreadPrivateMessageInfo] = {}
+    for message_id, attribute_dict in input_dict.items():
+        other_user_id = attribute_dict["other_user_id"]
+        if other_user_id not in lookup_dict:
+            # The `sender_id` field here is only supported for
+            # legacy mobile clients. Its actual semantics are the same
+            # as `other_user_id`.
+            obj = UnreadPrivateMessageInfo(
+                other_user_id=other_user_id,
+                sender_id=other_user_id,
+                unread_message_ids=[],
+            )
+            lookup_dict[other_user_id] = obj
+
+        bucket = lookup_dict[other_user_id]
+        bucket["unread_message_ids"].append(message_id)
+
+    for dct in lookup_dict.values():
+        dct["unread_message_ids"].sort()
+
+    sorted_keys = sorted(lookup_dict.keys())
+
+    return [lookup_dict[k] for k in sorted_keys]
+
+
+def aggregate_huddles(*, input_dict: Dict[int, RawUnreadHuddleDict]) -> List[UnreadHuddleInfo]:
+    lookup_dict: Dict[str, UnreadHuddleInfo] = {}
+    for message_id, attribute_dict in input_dict.items():
+        user_ids_string = attribute_dict["user_ids_string"]
+        if user_ids_string not in lookup_dict:
+            obj = UnreadHuddleInfo(
+                user_ids_string=user_ids_string,
+                unread_message_ids=[],
+            )
+            lookup_dict[user_ids_string] = obj
+
+        bucket = lookup_dict[user_ids_string]
+        bucket["unread_message_ids"].append(message_id)
+
+    for dct in lookup_dict.values():
+        dct["unread_message_ids"].sort()
+
+    sorted_keys = sorted(lookup_dict.keys())
+
+    return [lookup_dict[k] for k in sorted_keys]
+
+
+def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
     pm_dict = raw_data["pm_dict"]
     stream_dict = raw_data["stream_dict"]
     unmuted_stream_msgs = raw_data["unmuted_stream_msgs"]
@@ -1164,27 +1248,9 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
 
     count = len(pm_dict) + len(unmuted_stream_msgs) + len(huddle_dict)
 
-    pm_objects = aggregate_message_dict(
-        input_dict=pm_dict,
-        lookup_fields=[
-            "sender_id",
-        ],
-    )
-
-    stream_objects = aggregate_message_dict(
-        input_dict=stream_dict,
-        lookup_fields=[
-            "stream_id",
-            "topic",
-        ],
-    )
-
-    huddle_objects = aggregate_message_dict(
-        input_dict=huddle_dict,
-        lookup_fields=[
-            "user_ids_string",
-        ],
-    )
+    pm_objects = aggregate_pms(input_dict=pm_dict)
+    stream_objects = aggregate_streams(input_dict=stream_dict)
+    huddle_objects = aggregate_huddles(input_dict=huddle_dict)
 
     result: UnreadMessagesResult = dict(
         pms=pm_objects,
@@ -1224,20 +1290,21 @@ def apply_unread_message_event(
             topic=topic,
         )
 
-        if stream_id not in state["muted_stream_ids"]:
+        if (
+            stream_id not in state["muted_stream_ids"]
             # This next check hits the database.
-            if not topic_is_muted(user_profile, stream_id, topic):
-                state["unmuted_stream_msgs"].add(message_id)
+            and not topic_is_muted(user_profile, stream_id, topic)
+        ):
+            state["unmuted_stream_msgs"].add(message_id)
 
     elif message_type == "private":
         if len(others) == 1:
-            other_id = others[0]["id"]
+            other_user_id = others[0]["id"]
         else:
-            other_id = user_profile.id
+            other_user_id = user_profile.id
 
-        # The `sender_id` field here is misnamed.
         state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
-            sender_id=other_id,
+            other_user_id=other_user_id,
         )
 
     else:
@@ -1252,9 +1319,8 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
-    if "wildcard_mentioned" in flags:
-        if message_id in state["unmuted_stream_msgs"]:
-            state["mentions"].add(message_id)
+    if "wildcard_mentioned" in flags and message_id in state["unmuted_stream_msgs"]:
+        state["mentions"].add(message_id)
 
 
 def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id: int) -> None:
@@ -1265,6 +1331,95 @@ def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id
     state["huddle_dict"].pop(message_id, None)
     state["unmuted_stream_msgs"].discard(message_id)
     state["mentions"].discard(message_id)
+
+
+def format_unread_message_details(
+    my_user_id: int,
+    raw_unread_data: RawUnreadMessagesResult,
+) -> Dict[str, MessageDetailsDict]:
+    unread_data = {}
+
+    for message_id, private_message_details in raw_unread_data["pm_dict"].items():
+        other_user_id = private_message_details["other_user_id"]
+        if other_user_id == my_user_id:
+            user_ids = []
+        else:
+            user_ids = [other_user_id]
+
+        # Note that user_ids excludes ourself, even for the case we send messages
+        # to ourself.
+        message_details = MessageDetailsDict(
+            type="private",
+            user_ids=user_ids,
+        )
+        if message_id in raw_unread_data["mentions"]:
+            message_details["mentioned"] = True
+        unread_data[str(message_id)] = message_details
+
+    for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
+        unmuted_stream_msg = message_id in raw_unread_data["unmuted_stream_msgs"]
+
+        message_details = MessageDetailsDict(
+            type="stream",
+            stream_id=stream_message_details["stream_id"],
+            topic=stream_message_details["topic"],
+            # Clients don't need this detail, but we need it internally for apply_events.
+            unmuted_stream_msg=unmuted_stream_msg,
+        )
+        if message_id in raw_unread_data["mentions"]:
+            message_details["mentioned"] = True
+        unread_data[str(message_id)] = message_details
+
+    for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
+        # The client wants a list of user_ids in the conversation, excluding ourself,
+        # that is sorted in numerical order.
+        user_ids = [int(s) for s in huddle_message_details["user_ids_string"].split(",")]
+        user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
+        user_ids.sort()
+        message_details = MessageDetailsDict(
+            type="private",
+            user_ids=user_ids,
+        )
+        if message_id in raw_unread_data["mentions"]:
+            message_details["mentioned"] = True
+        unread_data[str(message_id)] = message_details
+
+    return unread_data
+
+
+def add_message_to_unread_msgs(
+    my_user_id: int,
+    state: RawUnreadMessagesResult,
+    message_id: int,
+    message_details: MessageDetailsDict,
+) -> None:
+    if message_details.get("mentioned"):
+        state["mentions"].add(message_id)
+
+    if message_details["type"] == "private":
+        user_ids: List[int] = message_details["user_ids"]
+        user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
+        if user_ids == []:
+            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+                other_user_id=my_user_id,
+            )
+        elif len(user_ids) == 1:
+            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+                other_user_id=user_ids[0],
+            )
+        else:
+            user_ids.append(my_user_id)
+            user_ids_string = ",".join(str(user_id) for user_id in sorted(user_ids))
+            state["huddle_dict"][message_id] = RawUnreadHuddleDict(
+                user_ids_string=user_ids_string,
+            )
+    elif message_details["type"] == "stream":
+        state["stream_dict"][message_id] = RawUnreadStreamDict(
+            stream_id=message_details["stream_id"],
+            topic=message_details["topic"],
+        )
+        if message_details["unmuted_stream_msg"]:
+            state["unmuted_stream_msgs"].add(message_id)
 
 
 def estimate_recent_messages(realm: Realm, hours: int) -> int:
@@ -1294,7 +1449,7 @@ def update_first_visible_message_id(realm: Realm) -> None:
     else:
         try:
             first_visible_message_id = (
-                Message.objects.filter(sender__realm=realm)
+                Message.objects.filter(realm=realm)
                 .values("id")
                 .order_by("-id")[realm.message_visibility_limit - 1]["id"]
             )
@@ -1306,7 +1461,7 @@ def update_first_visible_message_id(realm: Realm) -> None:
 
 def get_last_message_id() -> int:
     # We generally use this function to populate RealmAuditLog, and
-    # the max id here is actually systemwide, not per-realm.  I
+    # the max id here is actually system-wide, not per-realm.  I
     # assume there's some advantage in not filtering by realm.
     last_id = Message.objects.aggregate(Max("id"))["id__max"]
     if last_id is None:
@@ -1424,7 +1579,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         )
 
     # Now we need to map all the recipient_id objects to lists of user IDs
-    for (recipient_id, user_profile_id) in (
+    for recipient_id, user_profile_id in (
         Subscription.objects.filter(recipient_id__in=recipient_map.keys())
         .exclude(user_profile_id=user_profile.id)
         .values_list("recipient_id", "user_profile_id")
@@ -1460,10 +1615,6 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MODERATORS:
         return sender.is_realm_admin or sender.is_moderator
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS:
-        # TODO: Change this when we implement stream administrators
-        return sender.is_realm_admin
-
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS:
         return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
 
@@ -1473,13 +1624,32 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
     raise AssertionError("Invalid wildcard mention policy")
 
 
-def parse_message_content_delete_limit(
+def parse_message_time_limit_setting(
     value: Union[int, str],
     special_values_map: Mapping[str, Optional[int]],
+    *,
+    setting_name: str,
 ) -> Optional[int]:
-    if isinstance(value, str) and value in special_values_map.keys():
+    if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
-        raise RequestVariableConversionError("message_content_delete_limit_seconds", value)
+        raise RequestVariableConversionError(setting_name, value)
     assert isinstance(value, int)
     return value
+
+
+def update_to_dict_cache(
+    changed_messages: List[Message], realm_id: Optional[int] = None
+) -> List[int]:
+    """Updates the message as stored in the to_dict cache (for serving
+    messages)."""
+    items_for_remote_cache = {}
+    message_ids = []
+    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages, realm_id)
+    for msg_id, msg in changed_messages_to_dict.items():
+        message_ids.append(msg_id)
+        key = to_dict_cache_key_id(msg_id)
+        items_for_remote_cache[key] = (msg,)
+
+    cache_set_many(items_for_remote_cache)
+    return message_ids

@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any, List
+from typing import Any, Iterable
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core.management.base import CommandError
@@ -26,7 +26,9 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args: Any, **options: str) -> None:
         if options["entire_server"]:
-            users = UserProfile.objects.filter(is_active=True, is_bot=False, is_mirror_dummy=False)
+            users: Iterable[UserProfile] = UserProfile.objects.filter(
+                is_active=True, is_bot=False, is_mirror_dummy=False
+            )
         else:
             realm = self.get_realm(options)
             try:
@@ -40,7 +42,7 @@ class Command(ZulipBaseCommand):
 
         self.send(users)
 
-    def send(self, users: List[UserProfile]) -> None:
+    def send(self, users: Iterable[UserProfile]) -> None:
         """Sends one-use only links for resetting password to target users"""
         for user_profile in users:
             context = {

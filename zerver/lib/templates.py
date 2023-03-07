@@ -1,5 +1,5 @@
 import time
-from typing import Any, List, Mapping, Optional
+from typing import Any, Dict, List, Optional
 
 import markdown
 import markdown.extensions.admonition
@@ -10,6 +10,7 @@ import orjson
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
+from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
 
@@ -21,6 +22,7 @@ import zerver.lib.markdown.help_relative_links
 import zerver.lib.markdown.help_settings_links
 import zerver.lib.markdown.include
 import zerver.lib.markdown.nested_code_blocks
+import zerver.lib.markdown.static
 import zerver.lib.markdown.tabbed_sections
 import zerver.openapi.markdown_extension
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
@@ -65,14 +67,15 @@ def display_list(values: List[str], display_limit: int) -> str:
     return display_string
 
 
-md_extensions: Optional[List[Any]] = None
-md_macro_extension: Optional[Any] = None
+md_extensions: Optional[List[markdown.Extension]] = None
+md_macro_extension: Optional[markdown.Extension] = None
 # Prevent the automatic substitution of macros in these docs. If
 # they contain a macro, it is always used literally for documenting
 # the macro system.
 docs_without_macros = [
     "incoming-webhooks-walkthrough.md",
 ]
+
 
 # render_markdown_path is passed a context dictionary (unhashable), which
 # results in the calls not being cached. To work around this, we convert the
@@ -82,13 +85,19 @@ docs_without_macros = [
 @items_tuple_to_dict
 @register.filter(name="render_markdown_path", is_safe=True)
 def render_markdown_path(
-    markdown_file_path: str, context: Mapping[str, Any] = {}, pure_markdown: bool = False
+    markdown_file_path: str,
+    context: Optional[Dict[str, Any]] = None,
+    pure_markdown: bool = False,
+    integration_doc: bool = False,
+    help_center: bool = False,
 ) -> str:
     """Given a path to a Markdown file, return the rendered HTML.
 
     Note that this assumes that any HTML in the Markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
+    if context is None:
+        context = {}
 
     # We set this global hackishly
     from zerver.lib.markdown.help_settings_links import set_relative_settings_links
@@ -112,22 +121,15 @@ def render_markdown_path(
             zerver.lib.markdown.fenced_code.makeExtension(
                 run_content_validators=context.get("run_content_validators", False),
             ),
-            zerver.lib.markdown.api_arguments_table_generator.makeExtension(
-                base_path="templates/zerver/api/"
-            ),
-            zerver.lib.markdown.api_return_values_table_generator.makeExtension(
-                base_path="templates/zerver/api/"
-            ),
+            zerver.lib.markdown.api_arguments_table_generator.makeExtension(),
+            zerver.lib.markdown.api_return_values_table_generator.makeExtension(),
             zerver.lib.markdown.nested_code_blocks.makeExtension(),
             zerver.lib.markdown.tabbed_sections.makeExtension(),
             zerver.lib.markdown.help_settings_links.makeExtension(),
             zerver.lib.markdown.help_relative_links.makeExtension(),
             zerver.lib.markdown.help_emoticon_translations_table.makeExtension(),
+            zerver.lib.markdown.static.makeExtension(),
         ]
-    if md_macro_extension is None:
-        md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path="templates/zerver/help/include/"
-        )
     if "api_url" in context:
         # We need to generate the API code examples extension each
         # time so the `api_url` config parameter can be set dynamically.
@@ -143,6 +145,16 @@ def render_markdown_path(
     else:
         extensions = md_extensions
 
+    if integration_doc:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
+            base_path="templates/zerver/integrations/include/"
+        )
+    elif help_center:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(base_path="help/include/")
+    else:
+        md_macro_extension = zerver.lib.markdown.include.makeExtension(
+            base_path="api_docs/include/"
+        )
     if not any(doc in markdown_file_path for doc in docs_without_macros):
         extensions = [md_macro_extension, *extensions]
 
@@ -154,6 +166,7 @@ def render_markdown_path(
         # By default, we do both Jinja2 templating and Markdown
         # processing on the file, to make it easy to use both Jinja2
         # context variables and markdown includes in the file.
+        assert isinstance(jinja, Jinja2)
         markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
     except TemplateNotFound as e:
         if pure_markdown:
@@ -188,8 +201,15 @@ def webpack_entry(entrypoint: str) -> List[str]:
     if status != "done":
         raise RuntimeError("Webpack compilation was not successful")
 
-    return [
-        staticfiles_storage.url(settings.WEBPACK_BUNDLES + filename)
-        for filename in stats["chunks"][entrypoint]
-        if filename.endswith((".css", ".js")) and not filename.endswith(".hot-update.js")
-    ]
+    try:
+        files_from_entrypoints = [
+            staticfiles_storage.url(settings.WEBPACK_BUNDLES + filename)
+            for filename in stats["chunks"][entrypoint]
+            if filename.endswith((".css", ".js")) and not filename.endswith(".hot-update.js")
+        ]
+    except KeyError:
+        raise KeyError(
+            f"'{entrypoint}' entrypoint could not be found. Please define it in web/webpack.assets.json."
+        )
+
+    return files_from_entrypoints

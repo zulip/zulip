@@ -1,10 +1,10 @@
 import os
 import shutil
 
-import boto3
+import boto3.session
 from django.conf import settings
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from mypy_boto3_s3.type_defs import CopySourceTypeDef
 
@@ -17,7 +17,7 @@ class Uploader:
         self.new_path_template = "{realm_id}/emoji/images/{emoji_file_name}"
 
     def copy_files(self, src_path: str, dst_path: str) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def ensure_emoji_images(self, realm_id: int, old_filename: str, new_filename: str) -> None:
         # Copy original image file.
@@ -50,9 +50,12 @@ class LocalUploader(Uploader):
             os.makedirs(dirname)
 
     def copy_files(self, src_path: str, dst_path: str) -> None:
-        src_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", src_path)
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_AVATARS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+        src_path = os.path.join(settings.LOCAL_AVATARS_DIR, src_path)
         self.mkdirs(src_path)
-        dst_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", dst_path)
+        dst_path = os.path.join(settings.LOCAL_AVATARS_DIR, dst_path)
         self.mkdirs(dst_path)
         shutil.copyfile(src_path, dst_path)
 
@@ -60,7 +63,7 @@ class LocalUploader(Uploader):
 class S3Uploader(Uploader):
     def __init__(self) -> None:
         super().__init__()
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         self.bucket_name = settings.S3_AVATAR_BUCKET
         self.bucket = session.resource(
             "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
@@ -82,7 +85,9 @@ def get_emoji_file_name(emoji_file_name: str, new_name: str) -> str:
     return "".join((new_name, image_ext))
 
 
-def migrate_realm_emoji_image_files(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def migrate_realm_emoji_image_files(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     uploader = get_uploader()
     for realm_emoji in RealmEmoji.objects.all():
@@ -93,7 +98,7 @@ def migrate_realm_emoji_image_files(apps: StateApps, schema_editor: DatabaseSche
         realm_emoji.save(update_fields=["file_name"])
 
 
-def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     # Ensures that migration can be re-run in case of a failure.
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     for realm_emoji in RealmEmoji.objects.all():
@@ -104,7 +109,6 @@ def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0148_max_invites_forget_default"),
     ]

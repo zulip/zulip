@@ -1,15 +1,13 @@
 import logging
 import re
 import secrets
-from email.headerregistry import AddressHeader
+from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Match, Optional, Tuple
 
 from django.conf import settings
-from django.utils.timezone import now as timezone_now
-from django.utils.timezone import timedelta
 
-from zerver.lib.actions import (
+from zerver.actions.message_send import (
     check_send_message,
     internal_send_huddle_message,
     internal_send_private_message,
@@ -22,12 +20,13 @@ from zerver.lib.email_mirror_helpers import (
     get_email_gateway_message_string_from_address,
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
-from zerver.lib.exceptions import JsonableError, RateLimited
-from zerver.lib.message import normalize_body, truncate_topic
+from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
-from zerver.lib.upload import upload_message_file
+from zerver.lib.string_validation import is_character_printable
+from zerver.lib.upload import upload_message_attachment
 from zerver.models import (
     Message,
     MissedMessageEmailAddress,
@@ -49,35 +48,27 @@ logger = logging.getLogger(__name__)
 
 def redact_email_address(error_message: str) -> str:
     if not settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
-        domain = settings.EMAIL_GATEWAY_PATTERN.rsplit("@")[-1]
+        domain = Address(addr_spec=settings.EMAIL_GATEWAY_PATTERN).domain
     else:
         # EMAIL_GATEWAY_EXTRA_PATTERN_HACK is of the form '@example.com'
         domain = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK[1:]
 
-    address_match = re.search("\\b(\\S*?)@" + domain, error_message)
-    if address_match:
-        email_address = address_match.group(0)
+    def redact(address_match: Match[str]) -> str:
+        email_address = address_match[0]
         # Annotate basic info about the address before scrubbing:
         if is_missed_message_address(email_address):
-            redacted_message = error_message.replace(
-                email_address, f"{email_address} <Missed message address>"
-            )
+            annotation = " <Missed message address>"
         else:
             try:
                 target_stream_id = decode_stream_email_address(email_address)[0].id
-                annotated_address = f"{email_address} <Address to stream id: {target_stream_id}>"
-                redacted_message = error_message.replace(email_address, annotated_address)
+                annotation = f" <Address to stream id: {target_stream_id}>"
             except ZulipEmailForwardError:
-                redacted_message = error_message.replace(
-                    email_address, f"{email_address} <Invalid address>"
-                )
+                annotation = " <Invalid address>"
 
         # Scrub the address from the message, to the form XXXXX@example.com:
-        string_to_scrub = address_match.groups()[0]
-        redacted_message = redacted_message.replace(string_to_scrub, "X" * len(string_to_scrub))
-        return redacted_message
+        return "X" * len(address_match[1]) + address_match[2] + annotation
 
-    return error_message
+    return re.sub(rf"\b(\S*?)(@{re.escape(domain)})", redact, error_message)
 
 
 def report_to_zulip(error_message: str) -> None:
@@ -141,18 +132,9 @@ def get_missed_message_token_from_address(address: str) -> str:
 def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress:
     token = get_missed_message_token_from_address(address)
     try:
-        mm_address = MissedMessageEmailAddress.objects.select_related().get(
-            email_token=token,
-            timestamp__gt=timezone_now()
-            - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS),
-        )
+        mm_address = MissedMessageEmailAddress.objects.select_related().get(email_token=token)
     except MissedMessageEmailAddress.DoesNotExist:
-        raise ZulipEmailForwardUserError("Missed message address expired or doesn't exist.")
-
-    if not mm_address.is_usable():
-        # Technical, this also checks whether the event is expired,
-        # but that case is excluded by the logic above.
-        raise ZulipEmailForwardUserError("Missed message address out of uses.")
+        raise ZulipEmailForwardError("Zulip notification reply address is invalid.")
 
     return mm_address
 
@@ -165,7 +147,9 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
         return FromAddress.NOREPLY
 
     mm_address = MissedMessageEmailAddress.objects.create(
-        message=message, user_profile=user_profile, email_token=generate_missed_message_token()
+        message=message,
+        user_profile=user_profile,
+        email_token=generate_missed_message_token(),
     )
     return str(mm_address)
 
@@ -173,6 +157,8 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
 def construct_zulip_body(
     message: EmailMessage,
     realm: Realm,
+    *,
+    sender: UserProfile,
     show_sender: bool = False,
     include_quotes: bool = False,
     include_footer: bool = False,
@@ -186,15 +172,26 @@ def construct_zulip_body(
 
     if not body.endswith("\n"):
         body += "\n"
-    body += extract_and_upload_attachments(message, realm)
     if not body.rstrip():
         body = "(No email body)"
 
+    preamble = ""
     if show_sender:
-        sender = str(message.get("From", ""))
-        body = f"From: {sender}\n{body}"
+        from_address = str(message.get("From", ""))
+        preamble = f"From: {from_address}\n"
 
-    return body
+    postamble = extract_and_upload_attachments(message, realm, sender)
+    if postamble != "":
+        postamble = "\n" + postamble
+
+    # Truncate the content ourselves, to ensure that the attachments
+    # all make it into the body-as-posted
+    body = truncate_content(
+        body,
+        settings.MAX_MESSAGE_LENGTH - len(preamble) - len(postamble),
+        "\n[message truncated]",
+    )
+    return preamble + body + postamble
 
 
 ## Sending the Zulip ##
@@ -241,11 +238,17 @@ def get_message_part_by_type(message: EmailMessage, content_type: str) -> Option
             content = part.get_payload(decode=True)
             assert isinstance(content, bytes)
             if charsets[idx]:
-                return content.decode(charsets[idx], errors="ignore")
+                try:
+                    return content.decode(charsets[idx], errors="ignore")
+                except LookupError:
+                    # The RFCs do not define how to handle unknown
+                    # charsets, but treating as US-ASCII seems
+                    # reasonable; fall through to below.
+                    pass
+
             # If no charset has been specified in the header, assume us-ascii,
             # by RFC6657: https://tools.ietf.org/html/rfc6657
-            else:
-                return content.decode("us-ascii", errors="ignore")
+            return content.decode("us-ascii", errors="ignore")
 
     return None
 
@@ -326,9 +329,7 @@ def filter_footer(text: str) -> str:
     return re.split(r"^\s*--\s*$", text, 1, flags=re.MULTILINE)[0].strip()
 
 
-def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
-    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
-
+def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: UserProfile) -> str:
     attachment_links = []
     for part in message.walk():
         content_type = part.get_content_type()
@@ -336,12 +337,12 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
-                s3_url = upload_message_file(
+                s3_url = upload_message_attachment(
                     filename,
                     len(attachment),
                     content_type,
                     attachment,
-                    user_profile,
+                    sender,
                     target_realm=realm,
                 )
                 formatted_link = f"[{filename}]({s3_url})"
@@ -417,13 +418,18 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
     subject = strip_from_subject(subject_header) or "(no topic)"
 
+    # We don't want to reject email messages with disallowed characters in the Subject,
+    # so we just remove them to make it a valid Zulip topic name.
+    subject = "".join([char for char in subject if is_character_printable(char)]) or "(no topic)"
+
     stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
-    body = construct_zulip_body(message, stream.realm, **options)
-    send_zulip(get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id), stream, subject, body)
+    user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+    body = construct_zulip_body(message, stream.realm, sender=user_profile, **options)
+    send_zulip(user_profile, stream, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
         stream.name,
@@ -448,7 +454,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         logger.warning("Sending user is not active. Ignoring this message notification email.")
         return
 
-    body = construct_zulip_body(message, user_profile.realm)
+    body = construct_zulip_body(message, user_profile.realm, sender=user_profile)
 
     assert recipient is not None
     if recipient.type == Recipient.STREAM:
@@ -539,7 +545,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
 
 
 def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
-    ratelimited = RateLimitedRealmMirror(recipient_realm).rate_limit()[0]
+    ratelimited, secs_to_freedom = RateLimitedRealmMirror(recipient_realm).rate_limit()
 
     if ratelimited:
-        raise RateLimited()
+        raise RateLimitedError(secs_to_freedom)

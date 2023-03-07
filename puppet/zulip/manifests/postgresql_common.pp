@@ -1,8 +1,8 @@
 class zulip::postgresql_common {
   include zulip::snakeoil
   $version = zulipconf('postgresql', 'version', undef)
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $postgresql = "postgresql-${version}"
       $postgresql_packages = [
         # The database itself
@@ -21,7 +21,7 @@ class zulip::postgresql_common {
         Package['ssl-cert'],
       ]
     }
-    'redhat': {
+    'RedHat': {
       $postgresql = "postgresql${version}"
       $postgresql_packages = [
         $postgresql,
@@ -43,8 +43,8 @@ class zulip::postgresql_common {
       }
       # allows ssl-cert group to read /etc/pki/tls/private
       file { '/etc/pki/tls/private':
-        ensure => 'directory',
-        mode   => '0640',
+        ensure => directory,
+        mode   => '0750',
         owner  => 'root',
         group  => 'ssl-cert',
       }
@@ -59,11 +59,11 @@ class zulip::postgresql_common {
   }
 
   zulip::safepackage { $postgresql_packages:
-    ensure  => 'installed',
+    ensure  => installed,
     require => Exec['generate-default-snakeoil'],
   }
 
-  if $::osfamily == 'debian' {
+  if $::os['family'] == 'Debian' {
     # The logrotate file only created in debian-based systems
     exec { 'disable_logrotate':
       # lint:ignore:140chars

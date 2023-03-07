@@ -1,4 +1,5 @@
-from zerver.lib.actions import do_create_user, do_mark_hotspot_as_read
+from zerver.actions.create_user import do_create_user
+from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserHotspot, UserProfile, get_realm
@@ -16,14 +17,14 @@ class TestGetNextHotspots(ZulipTestCase):
     def test_first_hotspot(self) -> None:
         hotspots = get_next_hotspots(self.user)
         self.assert_length(hotspots, 1)
-        self.assertEqual(hotspots[0]["name"], "intro_reply")
+        self.assertEqual(hotspots[0]["name"], "intro_streams")
 
     def test_some_done_some_not(self) -> None:
-        do_mark_hotspot_as_read(self.user, "intro_reply")
+        do_mark_hotspot_as_read(self.user, "intro_streams")
         do_mark_hotspot_as_read(self.user, "intro_compose")
         hotspots = get_next_hotspots(self.user)
         self.assert_length(hotspots, 1)
-        self.assertEqual(hotspots[0]["name"], "intro_streams")
+        self.assertEqual(hotspots[0]["name"], "intro_topics")
 
     def test_all_intro_hotspots_done(self) -> None:
         with self.settings(TUTORIAL_ENABLED=True):
@@ -54,16 +55,16 @@ class TestHotspots(ZulipTestCase):
     def test_hotspots_url_endpoint(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
-        result = self.client_post("/json/users/me/hotspots", {"hotspot": "intro_reply"})
+        result = self.client_post("/json/users/me/hotspots", {"hotspot": "intro_streams"})
         self.assert_json_success(result)
         self.assertEqual(
             list(UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)),
-            ["intro_reply"],
+            ["intro_streams"],
         )
 
         result = self.client_post("/json/users/me/hotspots", {"hotspot": "invalid"})
         self.assert_json_error(result, "Unknown hotspot: invalid")
         self.assertEqual(
             list(UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)),
-            ["intro_reply"],
+            ["intro_streams"],
         )

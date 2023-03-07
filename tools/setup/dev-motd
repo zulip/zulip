@@ -2,7 +2,7 @@
 
 This is the Zulip development environment.  Popular commands:
 * tools/provision - Update the development environment
-* tools/run-dev.py - Run the development server
+* tools/run-dev - Run the development server
 * tools/lint - Run the linter (quick and catches many problems)
 * tools/test-* - Run tests (use --help to learn about options)
 

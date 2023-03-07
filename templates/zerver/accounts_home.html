@@ -1,6 +1,10 @@
 {% extends "zerver/portico_signup.html" %}
 {# Home page for not logged-in users. #}
 
+{% block title %}
+<title>{{ _("Sign up") }} | Zulip</title>
+{% endblock %}
+
 {# This is where we pitch the app and solicit signups. #}
 
 {% block portico_content %}

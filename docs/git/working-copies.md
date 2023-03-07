@@ -7,7 +7,7 @@ repository that you are generally concerned with:
   repository](https://github.com/zulip/zulip) on GitHub. You probably
   don't have write access to this repository.
 - The **origin** remote: Your personal remote repository on GitHub.
-  You'll use this to share your code and create [pull requests](../git/pull-requests.md).
+  You'll use this to share your code and create [pull requests](pull-requests.md).
 - local copy: This lives on your laptop or your remote dev instance,
   and is what you'll use to make changes and create commits.
 
@@ -45,6 +45,6 @@ working copies:
 - `git remote`: This helps you configure short names for remotes.
 - `git pull`: This pulls code, but by default creates a merge commit
   (which you definitely don't want). However, if you've followed our
-  [cloning documentation](../git/cloning.md), this will do
+  [cloning documentation](cloning.md), this will do
   `git pull --rebase` instead, which is the only mode you'll want to
   use when working on Zulip.

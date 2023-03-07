@@ -4,7 +4,7 @@ from typing import Any
 
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_add_linkifier, do_remove_linkifier
+from zerver.actions.realm_linkifiers import do_add_linkifier, do_remove_linkifier
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import linkifiers_for_realm
 
@@ -56,10 +56,10 @@ Example: ./manage.py edit_linkifiers --realm=zulip --op=show
             if not url_format_string:
                 self.print_help("./manage.py", "edit_linkifiers")
                 raise CommandError
-            do_add_linkifier(realm, pattern, url_format_string)
+            do_add_linkifier(realm, pattern, url_format_string, acting_user=None)
             sys.exit(0)
         elif options["op"] == "remove":
-            do_remove_linkifier(realm, pattern=pattern)
+            do_remove_linkifier(realm, pattern=pattern, acting_user=None)
             sys.exit(0)
         else:
             self.print_help("./manage.py", "edit_linkifiers")

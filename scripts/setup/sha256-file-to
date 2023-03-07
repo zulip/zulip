@@ -1,0 +1,32 @@
+#!/bin/sh
+
+if [ "$#" -ne 3 ]; then
+    echo "Usage:"
+    echo "  sha256-file-to SHA256 http://FETCH/FROM DST"
+    echo
+    echo "SHA256 is the sha256sum of the file fetched; the file is"
+    echo "placed in DST."
+    exit 1
+fi
+
+set -e
+set -x
+
+SHA256="$1"
+URL="$2"
+DST="$3"
+
+# Work in a tmpdir which we clean up at the end
+tmpdir="$(mktemp -d)"
+trap 'rm -r "$tmpdir"' EXIT
+cd "$tmpdir"
+
+# Fetch to a predictable name, not whatever curl guesses from the URL
+LOCALFILE="output"
+curl -fL --retry 3 -o "$LOCALFILE" "$URL"
+
+# Check the hash against what was passed in
+echo "$SHA256  $LOCALFILE" >"$LOCALFILE.sha256"
+sha256sum -c "$LOCALFILE.sha256"
+
+mv "$LOCALFILE" "$DST"

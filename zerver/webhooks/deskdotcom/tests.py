@@ -17,7 +17,6 @@ class DeskDotComHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "deskdotcom"
 
     def test_static_text_message(self) -> None:
-
         expected_topic = "static text notification"
         expected_message = "This is a custom action."
 
@@ -46,7 +45,6 @@ class DeskDotComHookTests(WebhookTestCase):
         )
 
     def test_unicode_text_italian(self) -> None:
-
         expected_topic = "case updated notification"
         expected_message = (
             "Case 2 updated. "
@@ -63,7 +61,6 @@ class DeskDotComHookTests(WebhookTestCase):
         )
 
     def test_unicode_text_japanese(self) -> None:
-
         expected_topic = "case updated notification"
         expected_message = (
             "Case 2 updated. "

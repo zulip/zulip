@@ -2,7 +2,7 @@ import datetime
 import heapq
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Collection, Dict, List, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -148,7 +148,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime.datetime) -> None:
     user_ids.sort()
 
     # We process batches of 30.  We want a big enough batch
-    # to amorize work, but not so big that a single item
+    # to amortize work, but not so big that a single item
     # from the queue takes too long to process.
     chunk_size = 30
     for i in range(0, len(user_ids), chunk_size):
@@ -276,10 +276,12 @@ def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
     return {stream.id: stream for stream in streams}
 
 
-def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
+def bulk_get_digest_context(
+    users: Collection[UserProfile], cutoff: float
+) -> Dict[int, Dict[str, Any]]:
     # We expect a non-empty list of users all from the same realm.
     assert users
-    realm = users[0].realm
+    realm = next(iter(users)).realm
     for user in users:
         assert user.realm_id == realm.id
 
@@ -304,7 +306,7 @@ def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int
     # Get all the recent topics for all the users.  This does the heavy
     # lifting of making an expensive query to the Message table.  Then
     # for each user, we filter to just the streams they care about.
-    recent_topics = get_recent_topics(sorted(list(all_stream_ids)), cutoff_date)
+    recent_topics = get_recent_topics(sorted(all_stream_ids), cutoff_date)
 
     stream_map = get_slim_stream_map(all_stream_ids)
 
@@ -348,7 +350,11 @@ def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
 def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.
-    users = UserProfile.objects.filter(id__in=user_ids).order_by("id").select_related("realm")
+    users = (
+        UserProfile.objects.filter(id__in=user_ids, is_active=True, realm__deactivated=False)
+        .order_by("id")
+        .select_related("realm")
+    )
     context_map = bulk_get_digest_context(users, cutoff)
 
     digest_users = []

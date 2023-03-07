@@ -79,7 +79,7 @@ See also [fixing commits][fix-commit]
   - `git fetch origin`: fetch origin repository
   - `git fetch upstream`: fetch upstream repository
 - grep
-  - `git grep update_unread_counts static/js`: Search our JS for references to update_unread_counts.
+  - `git grep update_unread_counts web/src`: Search our JS for references to update_unread_counts.
 - log
   - `git log`: show commit logs
   - `git log --oneline | head`: To quickly see the latest ten commits on a branch.
@@ -112,5 +112,5 @@ See also [fixing commits][fix-commit]
   - `git status`: show the working tree status, unstaged and staged files
 
 [fix-commit]: fixing-commits.md
-[git-config-clone]: cloning.html#step-1b-clone-to-your-machine
-[git-overview]: ./overview.md
+[git-config-clone]: cloning.md#step-1b-clone-to-your-machine
+[git-overview]: overview.md

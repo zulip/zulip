@@ -1,12 +1,13 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
-
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import get_short_sha
 from zerver.models import UserProfile
 
 MESSAGE_TEMPLATE = """
@@ -24,20 +25,20 @@ ALL_EVENT_TYPES = ["first-fail", "stop", "received"]
 def api_solano_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    event = payload.get("event")
+    event = payload["event"].tame(check_string)
     topic = "build update"
     if event == "test":
         return handle_test_event(request, user_profile, topic)
     try:
-        author = payload["committers"][0]
-    except KeyError:
+        author = payload["committers"][0].tame(check_string)
+    except ValidationError:
         author = "Unknown"
-    status = payload["status"]
-    build_log = payload["url"]
-    repository = payload["repository"]["url"]
-    commit_id = payload["commit_id"]
+    status = payload["status"].tame(check_string)
+    build_log = payload["url"].tame(check_string)
+    repository = payload["repository"]["url"].tame(check_string)
+    commit_id = payload["commit_id"].tame(check_string)
 
     good_status = ["passed"]
     bad_status = ["failed", "error"]
@@ -63,17 +64,17 @@ def api_solano_webhook(
     body = MESSAGE_TEMPLATE.format(
         author=author,
         build_log_url=build_log,
-        commit_id=commit_id[:7],
+        commit_id=get_short_sha(commit_id),
         commit_url=commit_url,
         status=status,
         emoji=emoji,
     )
 
     check_send_webhook_message(request, user_profile, topic, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def handle_test_event(request: HttpRequest, user_profile: UserProfile, topic: str) -> HttpResponse:
     body = "Solano webhook set up correctly."
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

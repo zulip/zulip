@@ -1,14 +1,10 @@
-from typing import Any, Dict, List, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping
 from unittest import mock
 
 import orjson
-from django.http import HttpResponse
 
-from zerver.lib.actions import (
-    do_change_stream_invite_only,
-    do_make_stream_web_public,
-    notify_reaction_update,
-)
+from zerver.actions.reactions import notify_reaction_update
+from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
@@ -16,6 +12,9 @@ from zerver.lib.message import extract_message_dict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
 from zerver.models import Message, Reaction, RealmEmoji, UserMessage, get_realm
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class ReactionEmojiTest(ZulipTestCase):
@@ -87,29 +86,38 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Formatted reactions data is saved in cache.
         """
-        sender = self.example_user("hamlet")
-        reaction_info = {
-            "emoji_name": "smile",
-        }
-        result = self.api_post(sender, "/api/v1/messages/1/reactions", reaction_info)
+        senders = [self.example_user("hamlet"), self.example_user("cordelia")]
+        emojis = ["smile", "tada"]
+        expected_emoji_codes = ["1f642", "1f389"]
 
-        self.assert_json_success(result)
-        self.assertEqual(200, result.status_code)
+        for sender, emoji in zip(senders, emojis):
+            reaction_info = {
+                "emoji_name": emoji,
+            }
+            result = self.api_post(sender, "/api/v1/messages/1/reactions", reaction_info)
+
+            self.assert_json_success(result)
+            self.assertEqual(200, result.status_code)
+
         key = to_dict_cache_key_id(1)
         message = extract_message_dict(cache_get(key)[0])
 
         expected_reaction_data = [
             {
-                "emoji_name": "smile",
-                "emoji_code": "1f642",
+                "emoji_name": emoji,
+                "emoji_code": emoji_code,
                 "reaction_type": "unicode_emoji",
                 "user": {
                     "email": f"user{sender.id}@zulip.testserver",
                     "id": sender.id,
-                    "full_name": "King Hamlet",
+                    "full_name": sender.full_name,
                 },
                 "user_id": sender.id,
             }
+            # It's important that we preserve the loop order in this
+            # test, since this is our test to verify that we're
+            # returning reactions in chronological order.
+            for sender, emoji, emoji_code in zip(senders, emojis, expected_emoji_codes)
         ]
         self.assertEqual(expected_reaction_data, message["reactions"])
 
@@ -273,10 +281,13 @@ class ReactionMessageIDTest(ZulipTestCase):
         result = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
-        self.assert_json_success(result)
-        pm_id = result.json()["id"]
+        pm_id = self.assert_json_success(result)["id"]
         reaction_info = {
             "emoji_name": "smile",
         }
@@ -299,7 +310,11 @@ class ReactionTest(ZulipTestCase):
         pm = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
         self.assert_json_success(pm)
         content = orjson.loads(pm.content)
@@ -329,7 +344,11 @@ class ReactionTest(ZulipTestCase):
         pm = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
         self.assert_json_success(pm)
 
@@ -410,10 +429,13 @@ class ReactionEventTest(ZulipTestCase):
         result = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
-        self.assert_json_success(result)
-        pm_id = result.json()["id"]
+        pm_id = self.assert_json_success(result)["id"]
 
         expected_recipient_ids = {pm_sender.id, pm_recipient.id}
 
@@ -450,10 +472,13 @@ class ReactionEventTest(ZulipTestCase):
         result = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
-        self.assert_json_success(result)
-        content = result.json()
+        content = self.assert_json_success(result)
         pm_id = content["id"]
 
         expected_recipient_ids = {pm_sender.id, pm_recipient.id}
@@ -538,7 +563,13 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream history public to subscribers
-        do_change_stream_invite_only(stream, False, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream,
+            invite_only=False,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=iago,
+        )
         # Since stream history is public to subscribers, reacting to
         # message_before_id should notify all subscribers:
         # Iago and Hamlet.
@@ -557,7 +588,13 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream web_public as well.
-        do_make_stream_web_public(stream)
+        do_change_stream_permission(
+            stream,
+            invite_only=False,
+            history_public_to_subscribers=True,
+            is_web_public=True,
+            acting_user=iago,
+        )
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
         with self.tornado_redirected_to_list(events, expected_num_events=1):
@@ -594,7 +631,7 @@ class ReactionEventTest(ZulipTestCase):
         huddle_message_id = self.send_huddle_message(
             hamlet,
             [polonius, iago],
-            "hello message to muliple receiver",
+            "hello message to multiple receiver",
         )
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
@@ -614,7 +651,7 @@ class EmojiReactionBase(ZulipTestCase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def post_reaction(self, reaction_info: Dict[str, str]) -> HttpResponse:
+    def post_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -622,7 +659,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def post_other_reaction(self, reaction_info: Dict[str, str]) -> HttpResponse:
+    def post_other_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -630,7 +667,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def delete_reaction(self, reaction_info: Dict[str, str]) -> HttpResponse:
+    def delete_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_delete(
@@ -1027,7 +1064,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         }
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.reactions.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits!"
                 )
@@ -1100,7 +1137,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        self.send_stream_message(hamlet, "Scotland")
+        self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
         reaction = Reaction(
             user_profile=hamlet,
@@ -1111,7 +1148,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         )
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.reactions.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )

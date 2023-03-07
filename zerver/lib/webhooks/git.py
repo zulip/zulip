@@ -37,6 +37,9 @@ PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = (
 PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = (
     "{user_name} [pushed]({compare_url}) the branch {branch_name}."
 )
+PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_WITHOUT_URL_TEMPLATE = (
+    "{user_name} pushed the branch {branch_name}."
+)
 PUSH_COMMITS_MESSAGE_EXTENSION = "Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
 
@@ -81,9 +84,14 @@ def get_push_commits_event_message(
         )
 
     if not commits_data and not deleted:
-        return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE.format(
+        if compare_url:
+            return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE.format(
+                user_name=user_name,
+                compare_url=compare_url,
+                branch_name=branch_name,
+            )
+        return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_WITHOUT_URL_TEMPLATE.format(
             user_name=user_name,
-            compare_url=compare_url,
             branch_name=branch_name,
         )
 
@@ -209,13 +217,16 @@ def get_pull_request_event_message(
         main_message = f"{main_message} {branch_info}"
 
     punctuation = ":" if message else "."
-    if assignees or assignee or (target_branch and base_branch) or (title is None):
-        main_message = f"{main_message}{punctuation}"
-    elif title is not None:
+    if (
+        assignees
+        or assignee
+        or (target_branch and base_branch)
+        or title is None
         # Once we get here, we know that the message ends with a title
         # which could already have punctuation at the end
-        if title[-1] not in string.punctuation:
-            main_message = f"{main_message}{punctuation}"
+        or title[-1] not in string.punctuation
+    ):
+        main_message = f"{main_message}{punctuation}"
 
     if message:
         main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message)
@@ -319,7 +330,7 @@ def get_release_event_message(
 
 
 def get_short_sha(sha: str) -> str:
-    return sha[:7]
+    return sha[:11]
 
 
 def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:

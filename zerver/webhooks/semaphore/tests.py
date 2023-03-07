@@ -19,7 +19,7 @@ class SemaphoreHookTests(WebhookTestCase):
         expected_topic = "knighthood/master"  # repo/branch
         expected_message = """
 [Build 314](https://semaphoreci.com/donquixote/knighthood/branches/master/builds/314) passed:
-* **Commit**: [a490b8d: Create user account for Rocinante](https://github.com/donquixote/knighthood/commit/a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf)
+* **Commit**: [a490b8d508e: Create user account for Rocinante](https://github.com/donquixote/knighthood/commit/a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf)
 * **Author**: don@lamancha.com
 """.strip()
         self.check_webhook(
@@ -33,7 +33,7 @@ class SemaphoreHookTests(WebhookTestCase):
         expected_topic = "knighthood/master"
         expected_message = """
 [Deploy 17](https://semaphoreci.com/donquixote/knighthood/servers/lamancha-271/deploys/17) of [build 314](https://semaphoreci.com/donquixote/knighthood/branches/master/builds/314) passed:
-* **Commit**: [a490b8d: Create user account for Rocinante](https://github.com/donquixote/knighthood/commit/a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf)
+* **Commit**: [a490b8d508e: Create user account for Rocinante](https://github.com/donquixote/knighthood/commit/a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf)
 * **Author**: don@lamancha.com
 * **Server**: lamancha-271
 """.strip()
@@ -50,7 +50,7 @@ class SemaphoreHookTests(WebhookTestCase):
         expected_topic = "notifications/rw/webhook_impl"  # repo/branch
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/acabe58e-4bcc-4d39-be06-e98d71917703) pipeline **stopped**:
-* **Commit**: [(2d9f5fc)](https://github.com/renderedtext/notifications/commit/2d9f5fcec1ca7c68fa7bd44dd58ec4ff65814563) Implement webhooks for SemaphoreCI
+* **Commit**: [(2d9f5fcec1c)](https://github.com/renderedtext/notifications/commit/2d9f5fcec1ca7c68fa7bd44dd58ec4ff65814563) Implement webhooks for SemaphoreCI
 * **Branch**: rw/webhook_impl
 * **Author**: [radwo](https://github.com/radwo)
 """.strip()
@@ -62,7 +62,7 @@ class SemaphoreHookTests(WebhookTestCase):
         expected_topic = "notifications/rw/webhook_impl"  # repo/branch
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/acabe58e-4bcc-4d39-be06-e98d71917703) pipeline **stopped**:
-* **Commit**: (2d9f5fc) Implement webhooks for SemaphoreCI
+* **Commit**: (2d9f5fcec1c) Implement webhooks for SemaphoreCI
 * **Branch**: rw/webhook_impl
 * **Author**: radwo
 """.strip()
@@ -116,6 +116,16 @@ class SemaphoreHookTests(WebhookTestCase):
             self.check_webhook(
                 "tag", expected_topic, expected_message, content_type="application/json"
             )
+
+    def test_semaphore_unknown(self) -> None:
+        expected_topic = "knighthood/master"
+        expected_message = "unknown: passed"
+        self.check_webhook(
+            "unknown",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def test_semaphore_unknown_event(self) -> None:
         expected_topic = "notifications"

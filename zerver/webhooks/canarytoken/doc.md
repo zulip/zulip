@@ -4,7 +4,7 @@ See your Thinkst Canarytoken alerts in Zulip! This integration works with Canary
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to [canarytokens.org][canarytokens], and select the type of
    webhook that you want to create and add a reminder note.

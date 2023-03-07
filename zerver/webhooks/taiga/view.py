@@ -6,15 +6,19 @@ Tips for notification output:
 value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
+
+EventType = Dict[str, Union[str, Dict[str, Optional[Union[str, bool]]]]]
+ReturnType = Tuple[WildValue, WildValue]
 
 
 @webhook_view("Taiga")
@@ -22,7 +26,7 @@ from zerver.models import UserProfile
 def api_taiga_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    message: Dict[str, Any] = REQ(argument_type="body"),
+    message: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     parsed_events = parse_message(message)
     content_lines = []
@@ -30,12 +34,11 @@ def api_taiga_webhook(
         content_lines.append(generate_content(event) + "\n")
     content = "".join(sorted(content_lines))
     topic = "General"
-    if message["data"].get("milestone") is not None:
-        if message["data"]["milestone"].get("name") is not None:
-            topic = message["data"]["milestone"]["name"]
+    if message["data"].get("milestone") and "name" in message["data"]["milestone"]:
+        topic = message["data"]["milestone"]["name"].tame(check_string)
     check_send_webhook_message(request, user_profile, topic, content)
 
-    return json_success()
+    return json_success(request)
 
 
 templates = {
@@ -56,12 +59,12 @@ templates = {
     },
     "relateduserstory": {
         "create": (
-            "[{user}]({user_link}) added a related user story "
-            "{userstory_subject} to the epic {epic_subject}."
+            "[{user}]({user_link}) added a related user story"
+            " {userstory_subject} to the epic {epic_subject}."
         ),
         "delete": (
-            "[{user}]({user_link}) removed a related user story "
-            + "{userstory_subject} from the epic {epic_subject}."
+            "[{user}]({user_link}) removed a related user story"
+            " {userstory_subject} from the epic {epic_subject}."
         ),
     },
     "userstory": {
@@ -87,7 +90,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted user story {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of user story {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of user story {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of user story {subject} to {new}.",
     },
     "milestone": {
         "create": "[{user}]({user_link}) created sprint {subject}.",
@@ -118,9 +121,8 @@ templates = {
         "commented": "[{user}]({user_link}) commented on task {subject}.",
         "delete": "[{user}]({user_link}) deleted task {subject}.",
         "changed_us": "[{user}]({user_link}) moved task {subject} from user story {old} to {new}.",
-        "due_date": "[{user}]({user_link}) changed due date of task {subject}"
-        " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of task {subject}" " to {new}.",
+        "due_date": "[{user}]({user_link}) changed due date of task {subject} from {old} to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of task {subject} to {new}.",
     },
     "issue": {
         "create": "[{user}]({user_link}) created issue {subject}.",
@@ -143,7 +145,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted issue {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of issue {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of issue {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of issue {subject} to {new}.",
         "blocked": "[{user}]({user_link}) blocked issue {subject}.",
         "unblocked": "[{user}]({user_link}) unblocked issue {subject}.",
     },
@@ -153,21 +155,20 @@ templates = {
 }
 
 
-return_type = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
-
-
-def get_old_and_new_values(change_type: str, message: Mapping[str, Any]) -> return_type:
+def get_old_and_new_values(change_type: str, message: WildValue) -> ReturnType:
     """Parses the payload and finds previous and current value of change_type."""
     old = message["change"]["diff"][change_type].get("from")
     new = message["change"]["diff"][change_type].get("to")
     return old, new
 
 
-def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
+def parse_comment(
+    message: WildValue,
+) -> EventType:
     """Parses the comment to issue, task or US."""
     return {
         "event": "commented",
-        "type": message["type"],
+        "type": message["type"].tame(check_string),
         "values": {
             "user": get_owner_name(message),
             "user_link": get_owner_link(message),
@@ -176,12 +177,14 @@ def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
-def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
+def parse_create_or_delete(
+    message: WildValue,
+) -> EventType:
     """Parses create or delete event."""
-    if message["type"] == "relateduserstory":
+    if message["type"].tame(check_string) == "relateduserstory":
         return {
-            "type": message["type"],
-            "event": message["action"],
+            "type": message["type"].tame(check_string),
+            "event": message["action"].tame(check_string),
             "values": {
                 "user": get_owner_name(message),
                 "user_link": get_owner_link(message),
@@ -191,8 +194,8 @@ def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
         }
 
     return {
-        "type": message["type"],
-        "event": message["action"],
+        "type": message["type"].tame(check_string),
+        "event": message["action"].tame(check_string),
         "values": {
             "user": get_owner_name(message),
             "user_link": get_owner_link(message),
@@ -201,10 +204,10 @@ def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
-def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
+def parse_change_event(change_type: str, message: WildValue) -> Optional[EventType]:
     """Parses change event."""
-    evt: Dict[str, Any] = {}
-    values: Dict[str, Any] = {
+    evt: EventType = {}
+    values: Dict[str, Optional[Union[str, bool]]] = {
         "user": get_owner_name(message),
         "user_link": get_owner_link(message),
         "subject": get_subject(message),
@@ -215,24 +218,26 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
 
     elif change_type in ["milestone", "assigned_to"]:
         old, new = get_old_and_new_values(change_type, message)
-        if not old:
+        tamed_old = old.tame(check_none_or(check_string))
+        tamed_new = new.tame(check_none_or(check_string))
+        if not tamed_old:
             event_type = "set_" + change_type
-            values["new"] = new
-        elif not new:
+            values["new"] = tamed_new
+        elif not tamed_new:
             event_type = "unset_" + change_type
-            values["old"] = old
+            values["old"] = tamed_old
         else:
             event_type = "changed_" + change_type
-            values.update(old=old, new=new)
+            values.update(old=tamed_old, new=tamed_new)
 
     elif change_type == "is_blocked":
-        if message["change"]["diff"]["is_blocked"]["to"]:
+        if message["change"]["diff"]["is_blocked"]["to"].tame(check_bool):
             event_type = "blocked"
         else:
             event_type = "unblocked"
 
     elif change_type == "is_closed":
-        if message["change"]["diff"]["is_closed"]["to"]:
+        if message["change"]["diff"]["is_closed"]["to"].tame(check_bool):
             event_type = "closed"
         else:
             event_type = "reopened"
@@ -240,21 +245,27 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
     elif change_type == "user_story":
         old, new = get_old_and_new_values(change_type, message)
         event_type = "changed_us"
-        values.update(old=old, new=new)
+        tamed_old = old.tame(check_none_or(check_string))
+        tamed_new = new.tame(check_none_or(check_string))
+        values.update(old=tamed_old, new=tamed_new)
 
     elif change_type in ["subject", "name"]:
         event_type = "renamed"
         old, new = get_old_and_new_values(change_type, message)
-        values.update(old=old, new=new)
+        tamed_old = old.tame(check_none_or(check_string))
+        tamed_new = new.tame(check_none_or(check_string))
+        values.update(old=tamed_old, new=tamed_new)
 
     elif change_type in ["estimated_finish", "estimated_start", "due_date"]:
         old, new = get_old_and_new_values(change_type, message)
-        if not old:
+        tamed_old = old.tame(check_none_or(check_string))
+        tamed_new = new.tame(check_none_or(check_string))
+        if not tamed_old:
             event_type = "set_" + change_type
-            values["new"] = new
-        elif not old == new:
+            values["new"] = tamed_new
+        elif tamed_old != tamed_new:
             event_type = change_type
-            values.update(old=old, new=new)
+            values.update(old=tamed_old, new=tamed_new)
         else:
             # date hasn't changed
             return None
@@ -262,17 +273,21 @@ def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional
     elif change_type in ["priority", "severity", "type", "status"]:
         event_type = "changed_" + change_type
         old, new = get_old_and_new_values(change_type, message)
-        values.update(old=old, new=new)
+        tamed_old = old.tame(check_none_or(check_string))
+        tamed_new = new.tame(check_none_or(check_string))
+        values.update(old=tamed_old, new=tamed_new)
 
     else:
         # we are not supporting this type of event
         return None
 
-    evt.update(type=message["type"], event=event_type, values=values)
+    evt.update(type=message["type"].tame(check_string), event=event_type, values=values)
     return evt
 
 
-def parse_webhook_test(message: Mapping[str, Any]) -> Dict[str, Any]:
+def parse_webhook_test(
+    message: WildValue,
+) -> EventType:
     return {
         "type": "webhook_test",
         "event": "test",
@@ -284,62 +299,78 @@ def parse_webhook_test(message: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
-def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
+def parse_message(
+    message: WildValue,
+) -> List[EventType]:
     """Parses the payload by delegating to specialized functions."""
-    events = []
-    if message["action"] in ["create", "delete"]:
+    events: List[EventType] = []
+    if message["action"].tame(check_string) in ["create", "delete"]:
         events.append(parse_create_or_delete(message))
-    elif message["action"] == "change":
+    elif message["action"].tame(check_string) == "change":
         if message["change"]["diff"]:
-            for value in message["change"]["diff"]:
+            for value in message["change"]["diff"].keys():  # noqa: SIM118
                 parsed_event = parse_change_event(value, message)
                 if parsed_event:
                     events.append(parsed_event)
-        if message["change"]["comment"]:
+        if message["change"]["comment"].tame(check_string):
             events.append(parse_comment(message))
-    elif message["action"] == "test":
+    elif message["action"].tame(check_string) == "test":
         events.append(parse_webhook_test(message))
 
     return events
 
 
-def generate_content(data: Mapping[str, Any]) -> str:
+def generate_content(data: EventType) -> str:
     """Gets the template string and formats it with parsed data."""
+    assert isinstance(data["type"], str) and isinstance(data["event"], str)
     template = templates[data["type"]][data["event"]]
+
+    assert isinstance(data["values"], dict)
     content = template.format(**data["values"])
     return content
 
 
-def get_owner_name(message: Mapping[str, Any]) -> str:
-    return message["by"]["full_name"]
+def get_owner_name(message: WildValue) -> str:
+    return message["by"]["full_name"].tame(check_string)
 
 
-def get_owner_link(message: Mapping[str, Any]) -> str:
-    return message["by"]["permalink"]
+def get_owner_link(message: WildValue) -> str:
+    return message["by"]["permalink"].tame(check_string)
 
 
-def get_subject(message: Mapping[str, Any]) -> str:
+def get_subject(message: WildValue) -> str:
     data = message["data"]
+
+    subject = data.get("subject").tame(check_none_or(check_string))
+    subject_to_use = subject if subject else data["name"].tame(check_string)
+
     if "permalink" in data:
-        return "[" + data.get("subject", data.get("name")) + "]" + "(" + data["permalink"] + ")"
-    return "**" + data.get("subject", data.get("name")) + "**"
+        return "[" + subject_to_use + "]" + "(" + data["permalink"].tame(check_string) + ")"
+    return "**" + subject_to_use + "**"
 
 
-def get_epic_subject(message: Mapping[str, Any]) -> str:
+def get_epic_subject(message: WildValue) -> str:
     if "permalink" in message["data"]["epic"]:
         return (
             "["
-            + message["data"]["epic"]["subject"]
+            + message["data"]["epic"]["subject"].tame(check_string)
             + "]"
             + "("
-            + message["data"]["epic"]["permalink"]
+            + message["data"]["epic"]["permalink"].tame(check_string)
             + ")"
         )
-    return "**" + message["data"]["epic"]["subject"] + "**"
+    return "**" + message["data"]["epic"]["subject"].tame(check_string) + "**"
 
 
-def get_userstory_subject(message: Mapping[str, Any]) -> str:
+def get_userstory_subject(message: WildValue) -> str:
     if "permalink" in message["data"]["user_story"]:
         us_data = message["data"]["user_story"]
-        return "[" + us_data["subject"] + "]" + "(" + us_data["permalink"] + ")"
-    return "**" + message["data"]["user_story"]["subject"] + "**"
+        return (
+            "["
+            + us_data["subject"].tame(check_string)
+            + "]"
+            + "("
+            + us_data["permalink"].tame(check_string)
+            + ")"
+        )
+    return "**" + message["data"]["user_story"]["subject"].tame(check_string) + "**"

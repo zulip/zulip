@@ -6,7 +6,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_deactivate_realm
+from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Reaction, UserProfile
@@ -31,7 +31,7 @@ class Command(ZulipBaseCommand):
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
     * ScheduledEmail (not relevant on a new server)
     * RemoteZulipServer (unlikely to be migrated)
-    * third_party_api_results cache (this means rerending all old
+    * third_party_api_results cache (this means rerendering all old
       messages could be expensive)
 
     Things that will break as a result of the export:
@@ -103,11 +103,6 @@ class Command(ZulipBaseCommand):
             "--upload",
             action="store_true",
             help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
-        )
-        parser.add_argument(
-            "--delete-after-upload",
-            action="store_true",
-            help="Automatically delete the local tarball after a successful export",
         )
         self.add_realm_args(parser, required=True)
 
@@ -215,7 +210,6 @@ class Command(ZulipBaseCommand):
             threads=num_threads,
             upload=options["upload"],
             public_only=public_only,
-            delete_after_upload=options["delete_after_upload"],
             percent_callback=percent_callback,
             consent_message_id=consent_message_id,
         )

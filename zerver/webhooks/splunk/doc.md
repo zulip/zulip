@@ -2,7 +2,7 @@ See your Splunk Search alerts in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
     If you do not specify a topic, the name of the search is used
     (truncated to fit if needed).

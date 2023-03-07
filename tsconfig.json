@@ -2,7 +2,7 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "*": ["static/js/types/*"],
+            "*": ["web/src/types/*"],
         },
         "types": [],
 
@@ -34,7 +34,7 @@
     },
     "exclude": [
         /* Type stubs are not part of the top-level project. */
-        "static/js/types",
+        "web/src/types",
 
         /* Skip walking large generated directories. */
         "docs/_build",

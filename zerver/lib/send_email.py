@@ -3,11 +3,12 @@ import hashlib
 import logging
 import os
 import smtplib
+from contextlib import suppress
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import backoff
 import orjson
@@ -86,22 +87,40 @@ def build_email(
         if realm is None:
             assert len({to_user.realm_id for to_user in to_users}) == 1
             realm = to_users[0].realm
-        to_emails = [
-            str(Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email))
-            for to_user in to_users
-        ]
+        to_emails = []
+        for to_user in to_users:
+            stringified = str(
+                Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email)
+            )
+            # Check ASCII encoding length.  Amazon SES rejects emails
+            # with From or To values longer than 320 characters (which
+            # appears to be a misinterpretation of the RFC); in that
+            # case we drop the name part from the address, under the
+            # theory that it's better to send the email with a
+            # simplified field than not at all.
+            if len(sanitize_address(stringified, "utf-8")) > 320:
+                stringified = str(Address(addr_spec=to_user.delivery_email))
+            to_emails.append(stringified)
 
-    extra_headers = {}
+    # Attempt to suppress all auto-replies.  This header originally
+    # came out of Microsoft Outlook and friends, but seems reasonably
+    # commonly-recognized.
+    extra_headers = {"X-Auto-Response-Suppress": "All"}
+
     if realm is not None:
         # formaddr is meant for formatting (display_name, email_address) pair for headers like "To",
         # but we can use its utility for formatting the List-Id header, as it follows the same format,
         # except having just a domain instead of an email address.
         extra_headers["List-Id"] = formataddr((realm.name, realm.host))
 
+    assert settings.STATIC_URL is not None
     context = {
         **context,
         "support_email": FromAddress.SUPPORT,
-        "email_images_base_uri": settings.ROOT_DOMAIN_URI + "/static/images/emails",
+        # Emails use unhashed image URLs so that those continue to
+        # work over time, even if the prod-static directory is cleaned
+        # out; as such, they just use a STATIC_URL prefix.
+        "email_images_base_uri": settings.STATIC_URL + "images/emails",
         "physical_address": settings.PHYSICAL_ADDRESS,
     }
 
@@ -159,11 +178,8 @@ def build_email(
 
     # Set the "From" that is displayed separately from the envelope-from.
     extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
-    # Check ASCII encoding length.  Amazon SES rejects emails with
-    # From names longer than 320 characters (which appears to be a
-    # misinterpretation of the RFC); in that case we drop the name
-    # from the From line, under the theory that it's better to send
-    # the email with a simplified From field than not.
+    # As above, with the "To" line, we drop the name part if it would
+    # result in an address which is longer than 320 bytes.
     if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
         extra_headers["From"] = str(Address(addr_spec=from_address))
 
@@ -195,11 +211,11 @@ def build_email(
     return mail
 
 
-class EmailNotDeliveredException(Exception):
+class EmailNotDeliveredError(Exception):
     pass
 
 
-class DoubledEmailArgumentException(CommandError):
+class DoubledEmailArgumentError(CommandError):
     def __init__(self, argument_name: str) -> None:
         msg = (
             f"Argument '{argument_name}' is ambiguously present in both options and email template."
@@ -207,7 +223,7 @@ class DoubledEmailArgumentException(CommandError):
         super().__init__(msg)
 
 
-class NoEmailArgumentException(CommandError):
+class NoEmailArgumentError(CommandError):
     def __init__(self, argument_name: str) -> None:
         msg = f"Argument '{argument_name}' is required in either options or email template."
         super().__init__(msg)
@@ -223,7 +239,7 @@ def send_email(
     from_address: Optional[str] = None,
     reply_to_email: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
     realm: Optional[Realm] = None,
     connection: Optional[BaseEmailBackend] = None,
     dry_run: bool = False,
@@ -242,6 +258,8 @@ def send_email(
     )
     template = template_prefix.split("/")[-1]
 
+    log_email_config_errors()
+
     if dry_run:
         print(mail.message().get_payload()[0])
         return
@@ -253,7 +271,7 @@ def send_email(
     if request is not None:
         cause = f" (triggered from {request.META['REMOTE_ADDR']})"
 
-    logging_recipient = mail.to
+    logging_recipient: Union[str, List[str]] = mail.to
     if realm is not None:
         logging_recipient = f"{mail.to} in {realm.string_id}"
 
@@ -264,7 +282,7 @@ def send_email(
         # it will only call .close() if it was not open to begin with
         if connection.send_messages([mail]) == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
-            raise EmailNotDeliveredException
+            raise EmailNotDeliveredError
     except smtplib.SMTPResponseException as e:
         logger.exception(
             "Error sending %s email to %s with error code %s: %s",
@@ -274,20 +292,13 @@ def send_email(
             e.smtp_error,
             stack_info=True,
         )
-        raise EmailNotDeliveredException
+        raise EmailNotDeliveredError
     except smtplib.SMTPException as e:
-        logger.exception(
-            "Error sending %s email to %s: %s", template, mail.to, str(e), stack_info=True
-        )
-        raise EmailNotDeliveredException
+        logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
+        raise EmailNotDeliveredError
 
 
-@backoff.on_exception(
-    backoff.expo,
-    OSError,
-    max_tries=MAX_CONNECTION_TRIES,
-    logger=None,  # type: ignore[arg-type] # https://github.com/gleb-chipiga/backoff-stubs/pull/2
-)
+@backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
 def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
     if not connection:
         connection = get_connection()
@@ -330,7 +341,7 @@ def send_future_email(
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
     delay: datetime.timedelta = datetime.timedelta(0),
 ) -> None:
     template_name = template_prefix.split("/")[-1]
@@ -385,7 +396,7 @@ def send_email_to_admins(
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
 ) -> None:
     admins = realm.get_human_admin_users()
     admin_user_ids = [admin.id for admin in admins]
@@ -405,7 +416,7 @@ def send_email_to_billing_admins_and_realm_owners(
     from_name: Optional[str] = None,
     from_address: Optional[str] = None,
     language: Optional[str] = None,
-    context: Dict[str, Any] = {},
+    context: Mapping[str, Any] = {},
 ) -> None:
     send_email(
         template_prefix,
@@ -482,14 +493,18 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
 
 def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     if option and header:
-        raise DoubledEmailArgumentException(name)
+        raise DoubledEmailArgumentError(name)
     if not option and not header:
-        raise NoEmailArgumentException(name)
+        raise NoEmailArgumentError(name)
     return str(option or header)
 
 
-def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
+def send_custom_email(
+    users: Iterable[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
+) -> None:
     """
+    Helper for `manage.py send_custom_email`.
+
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
         markdown_template_path="/path/to/markdown/file.md",
@@ -542,17 +557,48 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
             "realm_name": user_profile.realm.name,
             "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
+        with suppress(EmailNotDeliveredError):
+            send_email(
+                email_id,
+                to_user_ids=[user_profile.id],
+                from_address=FromAddress.SUPPORT,
+                reply_to_email=options.get("reply_to"),
+                from_name=get_header(
+                    options.get("from_name"), parsed_email_template.get("from"), "from_name"
+                ),
+                context=context,
+                dry_run=options["dry_run"],
+            )
+
+        if options["dry_run"]:
+            break
+
+    # Now send emails to any recipients without a user account.
+    # This code path is intended for rare RemoteZulipServer emails.
+    for email_address in target_emails:
         send_email(
             email_id,
-            to_user_ids=[user_profile.id],
+            to_emails=[email_address],
             from_address=FromAddress.SUPPORT,
             reply_to_email=options.get("reply_to"),
             from_name=get_header(
                 options.get("from_name"), parsed_email_template.get("from"), "from_name"
             ),
-            context=context,
+            context={"remote_server_email": True},
             dry_run=options["dry_run"],
         )
 
         if options["dry_run"]:
             break
+
+
+def log_email_config_errors() -> None:
+    """
+    The purpose of this function is to log (potential) config errors,
+    but without raising an exception.
+    """
+    if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD is None:
+        logger.error(
+            "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD).  "
+            "To disable SMTP authentication, set EMAIL_HOST_USER to an empty string."
+        )

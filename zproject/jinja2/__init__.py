@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils import translation
 from django.utils.timesince import timesince
 from jinja2 import Environment
-from two_factor.templatetags.two_factor import device_action
+from two_factor.plugins.phonenumber.templatetags.phonenumber import device_action
 
 from zerver.context_processors import DEFAULT_PAGE_PARAMS
 from zerver.lib.templates import display_list, render_markdown_path, webpack_entry
@@ -18,7 +18,7 @@ def json_dumps(obj: object) -> str:
 
 
 def environment(**options: Any) -> Environment:
-    env = Environment(**options)
+    env = Environment(autoescape=options.pop("autoescape", True), **options)
     env.globals.update(
         # default_page_params is provided here for responses where
         # zulip_default_context is not run, including the 404.html and

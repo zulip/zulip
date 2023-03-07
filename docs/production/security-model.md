@@ -4,7 +4,7 @@ This section attempts to document the Zulip security model. It likely
 does not cover every issue; if there are details you're curious about,
 please feel free to ask questions in [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
-[Zulip community server](https://zulip.com/developer-community/) (or if you
+[Zulip community server](https://zulip.com/development-community/) (or if you
 think you've found a security bug, please report it to
 security@zulip.com so we can do a responsible security
 announcement).
@@ -35,11 +35,11 @@ announcement).
 - Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
-- The preferred way to log in to Zulip is using an SSO solution like
-  Google auth, LDAP, or similar, but Zulip also supports password
-  authentication. See
-  [the authentication methods documentation](../production/authentication-methods.md)
-  for details on Zulip's available authentication methods.
+- The preferred way to log in to Zulip is using a single sign-on (SSO)
+  solution like Google authentication, LDAP, or similar, but Zulip
+  also supports password authentication. See [the authentication
+  methods documentation](authentication-methods.md) for
+  details on Zulip's available authentication methods.
 
 ### Passwords
 
@@ -67,7 +67,7 @@ strength allowed is controlled by two settings in
   By default, `PASSWORD_MIN_GUESSES` is 10000. This provides
   significant protection against online attacks, while limiting the
   burden imposed on users choosing a password. See
-  [password strength](../production/password-strength.md) for an extended
+  [password strength](password-strength.md) for an extended
   discussion on how we chose this value.
 
   Estimating the guessability of a password is a complex problem and
@@ -133,7 +133,7 @@ strength allowed is controlled by two settings in
     be deleted at any time by that administrator.
 
   - See
-    [Configuring message editing and deletion](https://zulip.com/help/configure-message-editing-and-deletion)
+    [Restrict message editing and deletion](https://zulip.com/help/configure-message-editing-and-deletion)
     for more details.
 
 ## Users and bots
@@ -168,11 +168,11 @@ strength allowed is controlled by two settings in
 
 - To properly remove a user's access to a Zulip team, it does not
   suffice to change their password or deactivate their account in a
-  SSO system, since neither of those prevents authenticating with the
-  user's API key or those of bots the user has created. Instead, you
-  should
-  [deactivate the user's account](https://zulip.com/help/deactivate-or-reactivate-a-user)
-  via Zulip's "Organization settings" interface.
+  single sign-on (SSO) system, since neither of those prevents
+  authenticating with the user's API key or those of bots the user has
+  created. Instead, you should [deactivate the user's
+  account](https://zulip.com/help/deactivate-or-reactivate-a-user) via
+  Zulip's "Organization settings" interface.
 
 - The Zulip mobile apps authenticate to the server by sending the
   user's password and retrieving the user's API key; the apps then use
@@ -239,7 +239,7 @@ strength allowed is controlled by two settings in
   browser is logged into a Zulip account that has received the
   uploaded file in question).
 
-- Zulip supports using the Camo image proxy to proxy content like
+- Zulip supports using the [go-camo][go-camo] image proxy to proxy content like
   inline image previews, that can be inserted into the Zulip message feed by
   other users. This ensures that clients do not make requests to external
   servers to fetch images, improving privacy.
@@ -259,15 +259,66 @@ strength allowed is controlled by two settings in
   - Mobile push notifications (must be configured to be enabled)
 
 - Notably, these first 3 features give end users (limited) control to cause
-  the Zulip server to make HTTP requests on their behalf. As a result,
-  Zulip supports routing all outgoing outgoing HTTP requests [through
+  the Zulip server to make HTTP requests on their behalf. Because of this,
+  Zulip routes all outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
   used to execute [SSRF attacks][ssrf] against other systems on an
   internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
+  The Camo image server does not, by default, route its traffic
+  through Smokescreen, since Camo includes logic to deny access to
+  private subnets; this can be [overridden][proxy.enable_for_camo].
+
+[go-camo]: https://github.com/cactus/go-camo
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-setup]: ../production/deployment.html#using-an-outgoing-http-proxy
+[smokescreen-setup]: deployment.md#customizing-the-outgoing-http-proxy
+[proxy.enable_for_camo]: deployment.md#enable_for_camo
+
+## Rate limiting
+
+Zulip has built-in rate limiting of login attempts, all access to the
+API, as well as certain other types of actions that may be involved in
+abuse. For example, the email confirmation flow, by its nature, needs
+to allow sending an email to an email address that isn't associated
+with an existing Zulip account. Limiting the ability of users to
+trigger such emails helps prevent bad actors from damaging the spam
+reputation of a Zulip server by sending confirmation emails to random
+email addresses.
+
+The default rate limiting rules for a Zulip server will change as we improve
+the product. A server administrator can browse the current rules using
+`/home/zulip/deployments/current/scripts/get-django-setting
+RATE_LIMITING_RULES`; or with comments by reading
+`DEFAULT_RATE_LIMITING_RULES` in `zproject/default_settings.py`.
+
+Server administrators can tweak rate limiting in the following ways in
+`/etc/zulip/settings.py`:
+
+- The `RATE_LIMITING` setting can be set to `False` to completely
+  disable all rate-limiting.
+- The `RATE_LIMITING_RULES` setting can be used to override specific
+  rules. See the comment in the file for more specific details on how
+  to do it. After changing the setting, we recommend using
+  `/home/zulip/deployments/current/scripts/get-django-setting
+RATE_LIMITING_RULES` to verify your changes. You can then restart
+  the Zulip server with `scripts/restart-server` to have the new
+  configuration take effect.
+- The `RATE_LIMIT_TOR_TOGETHER` setting can be set to `True` to group all
+  known exit nodes of [TOR](https://www.torproject.org/) together for purposes
+  of IP address limiting. Since traffic from a client using TOR is distributed
+  across its exit nodes, without enabling this setting, TOR can otherwise be
+  used to avoid IP-based rate limiting. The updated list of TOR exit nodes
+  is refetched once an hour.
+- If a user runs into the rate limit for login attempts, a server
+  administrator can clear this state using the
+  `manage.py reset_authentication_attempt_count`
+  [management command][management-commands].
+
+See also our [API documentation on rate limiting][rate-limit-api].
+
+[management-commands]: ../production/management-commands.md
+[rate-limit-api]: https://zulip.com/api/rest-error-handling#rate-limit-exceeded
 
 ## Final notes and security response
 

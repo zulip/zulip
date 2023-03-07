@@ -1,19 +1,34 @@
 import logging
-import multiprocessing
 import os
 import random
 import shutil
+from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import partial
-from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Protocol,
+    Set,
+    Tuple,
+    TypeVar,
+)
 
 import orjson
 import requests
 from django.forms.models import model_to_dict
-from typing_extensions import Protocol
+from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
     Huddle,
@@ -64,13 +79,13 @@ def build_zerver_realm(
 ) -> List[ZerverFieldsT]:
     realm = Realm(
         id=realm_id,
-        date_created=time,
         name=realm_subdomain,
         string_id=realm_subdomain,
         description=f"Organization imported from {other_product}!",
     )
     auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude="authentication_methods")
+    realm_dict = model_to_dict(realm, exclude=["authentication_methods"])
+    realm_dict["date_created"] = time
     realm_dict["authentication_methods"] = auth_methods
     return [realm_dict]
 
@@ -87,7 +102,7 @@ def build_user_profile(
     is_mirror_dummy: bool,
     realm_id: int,
     short_name: str,
-    timezone: Optional[str],
+    timezone: str,
     is_bot: bool = False,
     bot_type: Optional[int] = None,
 ) -> ZerverFieldsT:
@@ -159,8 +174,8 @@ def make_user_messages(
     subscriber_map: Dict[int, Set[int]],
     is_pm_data: bool,
     mention_map: Dict[int, Set[int]],
+    wildcard_mention_map: Mapping[int, bool] = {},
 ) -> List[ZerverFieldsT]:
-
     zerver_usermessage = []
 
     for message in zerver_message:
@@ -168,6 +183,7 @@ def make_user_messages(
         recipient_id = message["recipient"]
         sender_id = message["sender"]
         mention_user_ids = mention_map[message_id]
+        wildcard_mention = wildcard_mention_map.get(message_id, False)
         subscriber_ids = subscriber_map.get(recipient_id, set())
         user_ids = subscriber_ids | {sender_id}
 
@@ -178,6 +194,7 @@ def make_user_messages(
                 message_id=message_id,
                 is_private=is_pm_data,
                 is_mentioned=is_mentioned,
+                wildcard_mention=wildcard_mention,
             )
             zerver_usermessage.append(user_message)
 
@@ -185,7 +202,7 @@ def make_user_messages(
 
 
 def build_subscription(recipient_id: int, user_id: int, subscription_id: int) -> ZerverFieldsT:
-    subscription = Subscription(color=random.choice(stream_colors), id=subscription_id)
+    subscription = Subscription(color=random.choice(STREAM_COLORS), id=subscription_id)
     subscription_dict = model_to_dict(subscription, exclude=["user_profile", "recipient_id"])
     subscription_dict["user_profile"] = user_id
     subscription_dict["recipient"] = recipient_id
@@ -202,7 +219,6 @@ def build_stream_subscriptions(
     zerver_recipient: List[ZerverFieldsT],
     zerver_stream: List[ZerverFieldsT],
 ) -> List[ZerverFieldsT]:
-
     subscriptions: List[ZerverFieldsT] = []
 
     stream_ids = {stream["id"] for stream in zerver_stream}
@@ -231,7 +247,6 @@ def build_huddle_subscriptions(
     zerver_recipient: List[ZerverFieldsT],
     zerver_huddle: List[ZerverFieldsT],
 ) -> List[ZerverFieldsT]:
-
     subscriptions: List[ZerverFieldsT] = []
 
     huddle_ids = {huddle["id"] for huddle in zerver_huddle}
@@ -256,7 +271,6 @@ def build_huddle_subscriptions(
 
 
 def build_personal_subscriptions(zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
-
     subscriptions: List[ZerverFieldsT] = []
 
     personal_recipients = [
@@ -398,11 +412,17 @@ def build_usermessages(
 
 
 def build_user_message(
-    user_id: int, message_id: int, is_private: bool, is_mentioned: bool
+    user_id: int,
+    message_id: int,
+    is_private: bool,
+    is_mentioned: bool,
+    wildcard_mention: bool = False,
 ) -> ZerverFieldsT:
     flags_mask = 1  # For read
     if is_mentioned:
         flags_mask += 8  # For mentioned
+    if wildcard_mention:
+        flags_mask += 16
     if is_private:
         flags_mask += 2048  # For is_private
 
@@ -432,6 +452,12 @@ def build_stream(
     invite_only: bool = False,
     stream_post_policy: int = 1,
 ) -> ZerverFieldsT:
+    # Other applications don't have the distinction of "private stream with public history"
+    # vs "private stream with hidden history" - and we've traditionally imported private "streams"
+    # of other products as private streams with hidden history.
+    # So we can set the history_public_to_subscribers value based on the invite_only flag.
+    history_public_to_subscribers = not invite_only
+
     stream = Stream(
         name=name,
         deactivated=deactivated,
@@ -441,6 +467,7 @@ def build_stream(
         invite_only=invite_only,
         id=stream_id,
         stream_post_policy=stream_post_policy,
+        history_public_to_subscribers=history_public_to_subscribers,
     )
     stream_dict = model_to_dict(stream, exclude=["realm"])
     stream_dict["realm"] = realm_id
@@ -455,6 +482,7 @@ def build_huddle(huddle_id: int) -> ZerverFieldsT:
 
 
 def build_message(
+    *,
     topic_name: str,
     date_sent: float,
     message_id: int,
@@ -462,13 +490,13 @@ def build_message(
     rendered_content: Optional[str],
     user_id: int,
     recipient_id: int,
+    realm_id: int,
     has_image: bool = False,
     has_link: bool = False,
     has_attachment: bool = True,
 ) -> ZerverFieldsT:
     zulip_message = Message(
         rendered_content_version=1,  # this is Zulip specific
-        date_sent=date_sent,
         id=message_id,
         content=content,
         rendered_content=rendered_content,
@@ -483,6 +511,7 @@ def build_message(
     zulip_message_dict["sender"] = user_id
     zulip_message_dict["sending_client"] = 1
     zulip_message_dict["recipient"] = recipient_id
+    zulip_message_dict["date_sent"] = date_sent
 
     return zulip_message_dict
 
@@ -597,9 +626,12 @@ def run_parallel_wrapper(
 ) -> None:
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
-    with multiprocessing.Pool(threads) as p:
+    with ProcessPoolExecutor(max_workers=threads) as executor:
         count = 0
-        for out in p.imap_unordered(partial(wrapping_function, f), full_items):
+        for future in as_completed(
+            executor.submit(wrapping_function, f, item) for item in full_items
+        ):
+            future.result()
             count += 1
             if count % 1000 == 0:
                 logging.info("Finished %s items", count)
@@ -710,3 +742,60 @@ def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> N
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "wb") as fp:
         fp.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
+
+
+# External user-id
+ExternalId = TypeVar("ExternalId")
+
+
+def long_term_idle_helper(
+    message_iterator: Iterator[ZerverFieldsT],
+    user_from_message: Callable[[ZerverFieldsT], Optional[ExternalId]],
+    timestamp_from_message: Callable[[ZerverFieldsT], float],
+    zulip_user_id_from_user: Callable[[ExternalId], int],
+    all_user_ids_iterator: Iterator[ExternalId],
+    zerver_userprofile: List[ZerverFieldsT],
+) -> Set[int]:
+    """Algorithmically, we treat users who have sent at least 10 messages
+    or have sent a message within the last 60 days as active.
+    Everyone else is treated as long-term idle, which means they will
+    have a slightly slower first page load when coming back to
+    Zulip.
+    """
+    sender_counts: Dict[ExternalId, int] = defaultdict(int)
+    recent_senders: Set[ExternalId] = set()
+    NOW = float(timezone_now().timestamp())
+    for message in message_iterator:
+        timestamp = timestamp_from_message(message)
+        user = user_from_message(message)
+        if user is None:
+            continue
+
+        if user in recent_senders:
+            continue
+
+        if NOW - timestamp < 60 * 24 * 60 * 60:
+            recent_senders.add(user)
+
+        sender_counts[user] += 1
+    for user, count in sender_counts.items():
+        if count > 10:
+            recent_senders.add(user)
+
+    long_term_idle = set()
+
+    for user_id in all_user_ids_iterator:
+        if user_id in recent_senders:
+            continue
+        zulip_user_id = zulip_user_id_from_user(user_id)
+        long_term_idle.add(zulip_user_id)
+
+    for user_profile_row in zerver_userprofile:
+        if user_profile_row["id"] in long_term_idle:
+            user_profile_row["long_term_idle"] = True
+            # Setting last_active_message_id to 1 means the user, if
+            # imported, will get the full message history for the
+            # streams they were on.
+            user_profile_row["last_active_message_id"] = 1
+
+    return long_term_idle

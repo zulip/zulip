@@ -9,7 +9,7 @@ Get Zulip notifications from your Trello boards!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. **Log in to Trello**, and collect the following three items:
 

@@ -4,22 +4,22 @@
     Header add Strict-Transport-Security "max-age=15768000"
     Header add X-Frame-Options DENY
 
-    ScriptAlias /cgi-bin/nagios3 /usr/lib/cgi-bin/nagios3
-    ScriptAlias /nagios3/cgi-bin /usr/lib/cgi-bin/nagios3
+    ScriptAlias /cgi-bin/nagios4 /usr/lib/cgi-bin/nagios4
+    ScriptAlias /nagios4/cgi-bin /usr/lib/cgi-bin/nagios4
 
     # Where the stylesheets (config files) reside
-    Alias /nagios3/stylesheets /etc/nagios3/stylesheets
+    Alias /nagios4/stylesheets /etc/nagios4/stylesheets
 
     # Where the HTML pages live
-    Alias /nagios3 /usr/share/nagios3/htdocs
+    Alias /nagios4 /usr/share/nagios4/htdocs
 
     <Location "/">
         Require all granted
     </Location>
 
-    RedirectMatch ^/?$ https://nagios.teleport.<%= @default_host_domain %>/cgi-bin/nagios3/status.cgi?host=all
+    RedirectMatch ^/?$ https://nagios.teleport.<%= @default_host_domain %>/cgi-bin/nagios4/status.cgi?host=all
 
-    <DirectoryMatch (/usr/share/nagios3/htdocs|/usr/lib/cgi-bin/nagios3|/etc/nagios3/stylesheets)>
+    <DirectoryMatch (/usr/share/nagios4/htdocs|/usr/lib/cgi-bin/nagios4|/etc/nagios4/stylesheets)>
         Options FollowSymLinks
 
         DirectoryIndex index.php index.html
@@ -28,7 +28,7 @@
         Allow From All
     </DirectoryMatch>
 
-    <Directory /usr/share/nagios3/htdocs>
+    <Directory /usr/share/nagios4/htdocs>
         Options +ExecCGI
     </Directory>
 
@@ -36,5 +36,5 @@
     # See http://apan.sourceforge.net/download.html for more info
     # It allows you to see a clickable list of all hostgroups in the
     # left pane of the Nagios web interface
-    ScriptAlias /nagios3/side.html /usr/lib/cgi-bin/nagios3/grouplist.cgi
+    ScriptAlias /nagios4/side.html /usr/lib/cgi-bin/nagios4/grouplist.cgi
 </VirtualHost>

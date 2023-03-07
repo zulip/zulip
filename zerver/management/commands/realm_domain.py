@@ -30,6 +30,7 @@ class Command(ZulipBaseCommand):
         if options["op"] == "show":
             print(f"Domains for {realm.string_id}:")
             for realm_domain in get_realm_domains(realm):
+                assert isinstance(realm_domain["domain"], str)
                 if realm_domain["allow_subdomains"]:
                     print(realm_domain["domain"] + " (subdomains allowed)")
                 else:

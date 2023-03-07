@@ -124,8 +124,7 @@ class TestGetChartData(ZulipTestCase):
         stat = COUNT_STATS["active_users_audit:is_bot:day"]
         self.insert_data(stat, ["false"], [])
         result = self.client_get("/json/analytics/chart_data", {"chart_name": "number_of_humans"})
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -148,8 +147,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_over_time"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -171,8 +169,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_message_type"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -182,20 +179,20 @@ class TestGetChartData(ZulipTestCase):
                 "everyone": {
                     "Public streams": self.data(100),
                     "Private streams": self.data(0),
-                    "Private messages": self.data(101),
-                    "Group private messages": self.data(0),
+                    "Direct messages": self.data(101),
+                    "Group direct messages": self.data(0),
                 },
                 "user": {
                     "Public streams": self.data(200),
                     "Private streams": self.data(201),
-                    "Private messages": self.data(0),
-                    "Group private messages": self.data(0),
+                    "Direct messages": self.data(0),
+                    "Group direct messages": self.data(0),
                 },
                 "display_order": [
-                    "Private messages",
+                    "Direct messages",
                     "Public streams",
                     "Private streams",
-                    "Group private messages",
+                    "Group direct messages",
                 ],
                 "result": "success",
             },
@@ -215,8 +212,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_client"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -240,8 +236,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_read_over_time"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -262,8 +257,7 @@ class TestGetChartData(ZulipTestCase):
             state=FillState.DONE,
         )
         result = self.client_get("/json/analytics/chart_data", {"chart_name": "number_of_humans"})
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["everyone"], {"_1day": [0], "_15day": [0], "all_time": [0]})
         self.assertFalse("user" in data)
 
@@ -275,8 +269,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_over_time"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["everyone"], {"human": [0], "bot": [0]})
         self.assertEqual(data["user"], {"human": [0], "bot": [0]})
 
@@ -288,15 +281,14 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_message_type"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data["everyone"],
             {
                 "Public streams": [0],
                 "Private streams": [0],
-                "Private messages": [0],
-                "Group private messages": [0],
+                "Direct messages": [0],
+                "Group direct messages": [0],
             },
         )
         self.assertEqual(
@@ -304,8 +296,8 @@ class TestGetChartData(ZulipTestCase):
             {
                 "Public streams": [0],
                 "Private streams": [0],
-                "Private messages": [0],
-                "Group private messages": [0],
+                "Direct messages": [0],
+                "Group direct messages": [0],
             },
         )
 
@@ -317,8 +309,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_client"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["everyone"], {})
         self.assertEqual(data["user"], {})
 
@@ -340,8 +331,7 @@ class TestGetChartData(ZulipTestCase):
                 "end": end_time_timestamps[2],
             },
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["end_times"], end_time_timestamps[1:3])
         self.assertEqual(
             data["everyone"], {"_1day": [0, 100], "_15day": [0, 100], "all_time": [0, 100]}
@@ -369,8 +359,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "number_of_humans", "min_length": 2}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data["end_times"], [datetime_to_timestamp(dt) for dt in self.end_times_day]
         )
@@ -382,8 +371,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "number_of_humans", "min_length": 5}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         end_times = [
             ceiling_to_day(self.realm.date_created) + timedelta(days=i) for i in range(-1, 4)
         ]
@@ -621,6 +609,7 @@ class TestMapArrays(ZulipTestCase):
             "SomethingRandom": [4, 5, 6],
             "ZulipGitHubWebhook": [7, 7, 9],
             "ZulipAndroid": [64, 63, 65],
+            "ZulipTerminal": [9, 10, 11],
         }
         result = rewrite_client_arrays(a)
         self.assertEqual(
@@ -630,10 +619,11 @@ class TestMapArrays(ZulipTestCase):
                 "Old iOS app": [1, 2, 3],
                 "Desktop app": [2, 5, 7],
                 "Mobile app": [1, 5, 7],
-                "Website": [1, 2, 3],
+                "Web app": [1, 2, 3],
                 "Python API": [2, 4, 6],
                 "SomethingRandom": [4, 5, 6],
                 "GitHub webhook": [7, 7, 9],
                 "Old Android app": [64, 63, 65],
+                "Terminal app": [9, 10, 11],
             },
         )

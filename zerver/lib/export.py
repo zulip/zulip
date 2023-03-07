@@ -13,14 +13,16 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from contextlib import suppress
+from functools import lru_cache
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
 
 import orjson
 from django.apps import apps
 from django.conf import settings
+from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
-from django.utils.timezone import make_aware as timezone_make_aware
 from mypy_boto3_s3.service_resource import Object
 
 import zerver.lib.upload
@@ -28,7 +30,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.upload import get_bucket
+from zerver.lib.upload.s3 import get_bucket
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -38,8 +40,10 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     DefaultStream,
+    GroupGroupMembership,
     Huddle,
     Message,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -60,8 +64,8 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     UserTopic,
-    get_display_recipient,
     get_realm,
     get_system_bot,
     get_user_profile_by_id,
@@ -78,17 +82,14 @@ FilterArgs = Dict[str, Any]
 IdSource = Tuple[TableName, Field]
 SourceFilter = Callable[[Record], bool]
 
-# This next type is a callback, which mypy does not
-# support well, because PEP 484 says "using callbacks
-# with keyword arguments is not perceived as a common use case."
-# CustomFetch = Callable[[TableData, Config, Context], None]
-CustomFetch = Any  # TODO: make more specific, see above
+CustomFetch = Callable[[TableData, Context], None]
 
-# The keys of our MessageOutput variables are normally
-# List[Record], but when we write partials, we can get
-# lists of integers or a single integer.
-# TODO: This could maybe be improved using TypedDict?
-MessageOutput = Dict[str, Union[List[Record], List[int], int]]
+
+class MessagePartial(TypedDict):
+    zerver_message: List[Record]
+    zerver_userprofile_ids: List[int]
+    realm_id: int
+
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
 
@@ -127,6 +128,7 @@ ALL_ZULIP_TABLES = {
     "zerver_defaultstreamgroup_streams",
     "zerver_draft",
     "zerver_emailchangestatus",
+    "zerver_groupgroupmembership",
     "zerver_huddle",
     "zerver_message",
     "zerver_missedmessageemailaddress",
@@ -142,6 +144,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmemoji",
     "zerver_realmfilter",
     "zerver_realmplayground",
+    "zerver_realmreactivationstatus",
     "zerver_realmuserdefault",
     "zerver_recipient",
     "zerver_scheduledemail",
@@ -180,6 +183,7 @@ NON_EXPORTED_TABLES = {
     "zerver_multiuseinvite_streams",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
+    "zerver_realmreactivationstatus",
     # Missed message addresses are low value to export since
     # missed-message email addresses include the server's hostname and
     # expire after a few days.
@@ -231,10 +235,7 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
-    "zerver_muteduser",
     "zerver_submessage",
-    # This is low priority, since users can easily just reset themselves to away.
-    "zerver_userstatus",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
     # For any tables listed below here, it's a bug that they are not present in the export.
@@ -275,22 +276,24 @@ ANALYTICS_TABLES = {
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
 DATE_FIELDS: Dict[TableName, List[Field]] = {
+    "analytics_installationcount": ["end_time"],
+    "analytics_realmcount": ["end_time"],
+    "analytics_streamcount": ["end_time"],
+    "analytics_usercount": ["end_time"],
     "zerver_attachment": ["create_time"],
     "zerver_message": ["last_edit_time", "date_sent"],
-    "zerver_usertopic": ["last_updated"],
+    "zerver_muteduser": ["date_muted"],
+    "zerver_realmauditlog": ["event_time"],
     "zerver_realm": ["date_created"],
     "zerver_stream": ["date_created"],
-    "zerver_useractivity": ["last_visit"],
     "zerver_useractivityinterval": ["start", "end"],
+    "zerver_useractivity": ["last_visit"],
+    "zerver_userhotspot": ["timestamp"],
     "zerver_userpresence": ["timestamp"],
     "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
     "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
-    "zerver_realmauditlog": ["event_time"],
-    "zerver_userhotspot": ["timestamp"],
-    "analytics_installationcount": ["end_time"],
-    "analytics_realmcount": ["end_time"],
-    "analytics_usercount": ["end_time"],
-    "analytics_streamcount": ["end_time"],
+    "zerver_userstatus": ["timestamp"],
+    "zerver_usertopic": ["last_updated"],
 }
 
 BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
@@ -306,6 +309,7 @@ def sanity_check_output(data: TableData) -> None:
         + list(apps.get_app_config("django_otp").get_models(include_auto_created=True))
         + list(apps.get_app_config("otp_static").get_models(include_auto_created=True))
         + list(apps.get_app_config("otp_totp").get_models(include_auto_created=True))
+        + list(apps.get_app_config("phonenumber").get_models(include_auto_created=True))
         + list(apps.get_app_config("social_django").get_models(include_auto_created=True))
         + list(apps.get_app_config("two_factor").get_models(include_auto_created=True))
         + list(apps.get_app_config("zerver").get_models(include_auto_created=True))
@@ -327,7 +331,7 @@ def sanity_check_output(data: TableData) -> None:
     in {__file__} for what to include in data exports.
     """
 
-    assert ALL_ZULIP_TABLES == all_tables_db, error_message
+    assert all_tables_db == ALL_ZULIP_TABLES, error_message
     assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES), error_message
     assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
     assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
@@ -346,6 +350,16 @@ def sanity_check_output(data: TableData) -> None:
 
 
 def write_data_to_file(output_file: Path, data: Any) -> None:
+    """
+    IMPORTANT: You generally don't want to call this directly.
+
+    Instead use one of the higher level helpers:
+
+        write_table_data
+        write_records_json_file
+
+    The one place we call this directly is for message partials.
+    """
     with open(output_file, "wb") as f:
         # Because we don't pass a default handler, OPT_PASSTHROUGH_DATETIME
         # actually causes orjson to raise a TypeError on datetime objects. This
@@ -353,6 +367,38 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
         # post-processed them to serialize to UNIX timestamps rather than ISO
         # 8601 strings for historical reasons.
         f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_PASSTHROUGH_DATETIME))
+    logging.info("Finished writing %s", output_file)
+
+
+def write_table_data(output_file: str, data: Dict[str, Any]) -> None:
+    # We sort by ids mostly so that humans can quickly do diffs
+    # on two export jobs to see what changed (either due to new
+    # data arriving or new code being deployed).
+    for table in data.values():
+        table.sort(key=lambda row: row["id"])
+
+    assert output_file.endswith(".json")
+
+    write_data_to_file(output_file, data)
+
+
+def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> None:
+    # We want a somewhat deterministic sorting order here. All of our
+    # versions of records.json include a "path" field in each element,
+    # even though there's some variation among avatars/emoji/realm_icons/uploads
+    # in other fields that get written.
+    #
+    # The sorting order of paths isn't entirely sensical to humans,
+    # because they include ids and even some random numbers,
+    # but if you export the same realm twice, you should get identical results.
+    records.sort(key=lambda record: record["path"])
+
+    output_file = os.path.join(output_dir, "records.json")
+    with open(output_file, "wb") as f:
+        # For legacy reasons we allow datetime objects here, unlike
+        # write_data_to_file.
+        f.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    logging.info("Finished writing %s", output_file)
 
 
 def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
@@ -370,6 +416,8 @@ def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
         instances below.
         """
         for field in instance._meta.many_to_many:
+            if exclude is not None and field.name in exclude:
+                continue
             value = data[field.name]
             data[field.name] = [row.id for row in value]
 
@@ -381,16 +429,12 @@ def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
 def floatify_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field in DATE_FIELDS[table]:
-            orig_dt = item[field]
-            if orig_dt is None:
+            dt = item[field]
+            if dt is None:
                 continue
-            if timezone_is_naive(orig_dt):
-                logging.warning("Naive datetime:", item)
-                dt = timezone_make_aware(orig_dt)
-            else:
-                dt = orig_dt
-            utc_naive = dt.replace(tzinfo=None) - dt.utcoffset()
-            item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
+            assert isinstance(dt, datetime.datetime)
+            assert not timezone_is_naive(dt)
+            item[field] = dt.timestamp()
 
 
 def listify_bithandler_fields(data: TableData, table: TableName) -> None:
@@ -427,7 +471,7 @@ class Config:
         concat_and_destroy: Optional[List[TableName]] = None,
         id_source: Optional[IdSource] = None,
         source_filter: Optional[SourceFilter] = None,
-        parent_key: Optional[Field] = None,
+        include_rows: Optional[Field] = None,
         use_all: bool = False,
         is_seeded: bool = False,
         exclude: Optional[List[Field]] = None,
@@ -438,7 +482,7 @@ class Config:
         self.normal_parent = normal_parent
         self.virtual_parent = virtual_parent
         self.filter_args = filter_args
-        self.parent_key = parent_key
+        self.include_rows = include_rows
         self.use_all = use_all
         self.is_seeded = is_seeded
         self.exclude = exclude
@@ -448,6 +492,20 @@ class Config:
         self.id_source = id_source
         self.source_filter = source_filter
         self.children: List[Config] = []
+
+        if self.include_rows:
+            assert self.include_rows.endswith("_id__in")
+
+        if self.custom_fetch:
+            # enforce a naming convention
+            assert self.custom_fetch.__name__.startswith("custom_fetch_")
+            if self.normal_parent is not None:
+                raise AssertionError(
+                    """
+                    If you have a custom fetcher, then specify
+                    your parent as a virtual_parent.
+                    """
+                )
 
         if normal_parent is not None:
             self.parent: Optional[Config] = normal_parent
@@ -526,9 +584,8 @@ def export_from_config(
 
     elif config.custom_fetch:
         config.custom_fetch(
-            response=response,
-            config=config,
-            context=context,
+            response,
+            context,
         )
         if config.custom_tables:
             for t in config.custom_tables:
@@ -560,13 +617,28 @@ def export_from_config(
         model = config.model
         assert parent is not None
         assert parent.table is not None
-        assert config.parent_key is not None
+        assert config.include_rows is not None
         parent_ids = [r["id"] for r in response[parent.table]]
-        filter_parms: Dict[str, Any] = {config.parent_key: parent_ids}
+        filter_params: Dict[str, Any] = {config.include_rows: parent_ids}
         if config.filter_args is not None:
-            filter_parms.update(config.filter_args)
+            filter_params.update(config.filter_args)
         assert model is not None
-        query = model.objects.filter(**filter_parms)
+        try:
+            query = model.objects.filter(**filter_params)
+        except Exception:
+            print(
+                f"""
+                Something about your Config seems to make it difficult
+                to construct a query.
+
+                table: {table}
+                parent: {parent.table}
+
+                filter_params: {filter_params}
+                """
+            )
+            raise
+
         rows = list(query)
 
     elif config.id_source:
@@ -581,10 +653,10 @@ def export_from_config(
         if config.source_filter:
             child_rows = [r for r in child_rows if config.source_filter(r)]
         lookup_ids = [r[field] for r in child_rows]
-        filter_parms = dict(id__in=lookup_ids)
+        filter_params = dict(id__in=lookup_ids)
         if config.filter_args:
-            filter_parms.update(config.filter_args)
-        query = model.objects.filter(**filter_parms)
+            filter_params.update(config.filter_args)
+        query = model.objects.filter(**filter_params)
         rows = list(query)
 
     if rows is not None:
@@ -621,42 +693,49 @@ def get_realm_config() -> Config:
         table="zerver_defaultstream",
         model=DefaultStream,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_customprofilefield",
         model=CustomProfileField,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
+    )
+
+    Config(
+        table="zerver_realmauditlog",
+        model=RealmAuditLog,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmemoji",
         model=RealmEmoji,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmdomain",
         model=RealmDomain,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmfilter",
         model=RealmFilter,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmplayground",
         model=RealmPlayground,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
@@ -670,7 +749,7 @@ def get_realm_config() -> Config:
         table="zerver_realmuserdefault",
         model=RealmUserDefault,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     user_profile_config = Config(
@@ -681,28 +760,29 @@ def get_realm_config() -> Config:
         # set table for children who treat us as normal parent
         table="zerver_userprofile",
         virtual_parent=realm_config,
-        custom_fetch=fetch_user_profile,
-    )
-
-    Config(
-        table="zerver_alertword",
-        model=AlertWord,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        custom_fetch=custom_fetch_user_profile,
     )
 
     user_groups_config = Config(
         table="zerver_usergroup",
         model=UserGroup,
         normal_parent=realm_config,
-        parent_key="realm__in",
+        include_rows="realm_id__in",
+        exclude=["direct_members", "direct_subgroups"],
     )
 
     Config(
         table="zerver_usergroupmembership",
         model=UserGroupMembership,
         normal_parent=user_groups_config,
-        parent_key="user_group__in",
+        include_rows="user_group_id__in",
+    )
+
+    Config(
+        table="zerver_groupgroupmembership",
+        model=GroupGroupMembership,
+        normal_parent=user_groups_config,
+        include_rows="supergroup_id__in",
     )
 
     Config(
@@ -710,77 +790,28 @@ def get_realm_config() -> Config:
             "zerver_userprofile_crossrealm",
         ],
         virtual_parent=user_profile_config,
-        custom_fetch=fetch_user_profile_cross_realm,
-    )
-
-    Config(
-        table="zerver_userpresence",
-        model=UserPresence,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_customprofilefieldvalue",
-        model=CustomProfileFieldValue,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_useractivity",
-        model=UserActivity,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_useractivityinterval",
-        model=UserActivityInterval,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_realmauditlog",
-        model=RealmAuditLog,
-        normal_parent=user_profile_config,
-        parent_key="modified_user__in",
-    )
-
-    Config(
-        table="zerver_userhotspot",
-        model=UserHotspot,
-        normal_parent=user_profile_config,
-        parent_key="user__in",
-    )
-
-    Config(
-        table="zerver_usertopic",
-        model=UserTopic,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        custom_fetch=custom_fetch_user_profile_cross_realm,
     )
 
     Config(
         table="zerver_service",
         model=Service,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_botstoragedata",
         model=BotStorageData,
         normal_parent=user_profile_config,
-        parent_key="bot_profile__in",
+        include_rows="bot_profile_id__in",
     )
 
     Config(
         table="zerver_botconfigdata",
         model=BotConfigData,
         normal_parent=user_profile_config,
-        parent_key="bot_profile__in",
+        include_rows="bot_profile_id__in",
     )
 
     # Some of these tables are intermediate "tables" that we
@@ -791,7 +822,7 @@ def get_realm_config() -> Config:
         model=Subscription,
         normal_parent=user_profile_config,
         filter_args={"recipient__type": Recipient.PERSONAL},
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
@@ -808,14 +839,14 @@ def get_realm_config() -> Config:
         model=Stream,
         exclude=["email_token"],
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     stream_recipient_config = Config(
         table="_stream_recipient",
         model=Recipient,
         normal_parent=stream_config,
-        parent_key="type_id__in",
+        include_rows="type_id__in",
         filter_args={"type": Recipient.STREAM},
     )
 
@@ -823,7 +854,7 @@ def get_realm_config() -> Config:
         table="_stream_subscription",
         model=Subscription,
         normal_parent=stream_recipient_config,
-        parent_key="recipient_id__in",
+        include_rows="recipient_id__in",
     )
 
     #
@@ -834,8 +865,8 @@ def get_realm_config() -> Config:
             "_huddle_subscription",
             "zerver_huddle",
         ],
-        normal_parent=user_profile_config,
-        custom_fetch=fetch_huddle_objects,
+        virtual_parent=user_profile_config,
+        custom_fetch=custom_fetch_huddle_objects,
     )
 
     # Now build permanent tables from our temp tables.
@@ -859,15 +890,103 @@ def get_realm_config() -> Config:
         ],
     )
 
+    add_user_profile_child_configs(user_profile_config)
+
     return realm_config
 
 
-def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
+def add_user_profile_child_configs(user_profile_config: Config) -> None:
+    """
+    We add tables here that are keyed by user, and for which
+    we fetch rows using the same scheme whether we are
+    exporting a realm or a single user.
+
+    For any table where there is nuance between how you
+    fetch for realms vs. single users, it's best to just
+    keep things simple and have each caller maintain its
+    own slightly different 4/5 line Config (while still
+    possibly calling common code deeper in the stack).
+
+    As of now, we do NOT include bot tables like Service.
+    """
+
+    Config(
+        table="zerver_alertword",
+        model=AlertWord,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_customprofilefieldvalue",
+        model=CustomProfileFieldValue,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_muteduser",
+        model=MutedUser,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_useractivity",
+        model=UserActivity,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_useractivityinterval",
+        model=UserActivityInterval,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_userhotspot",
+        model=UserHotspot,
+        normal_parent=user_profile_config,
+        include_rows="user_id__in",
+    )
+
+    Config(
+        table="zerver_userpresence",
+        model=UserPresence,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_userstatus",
+        model=UserStatus,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_usertopic",
+        model=UserTopic,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+
+# We exclude these fields for the following reasons:
+# * api_key is a secret.
+# * password is a secret.
+# * uuid is unlikely to be useful if the domain changes.
+EXCLUDED_USER_PROFILE_FIELDS = ["api_key", "password", "uuid"]
+
+
+def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     realm = context["realm"]
     exportable_user_ids = context["exportable_user_ids"]
 
     query = UserProfile.objects.filter(realm_id=realm.id)
-    exclude = ["password", "api_key"]
+    exclude = EXCLUDED_USER_PROFILE_FIELDS
     rows = make_raw(list(query), exclude=exclude)
 
     normal_rows: List[Record] = []
@@ -892,7 +1011,7 @@ def fetch_user_profile(response: TableData, config: Config, context: Context) ->
     response["zerver_userprofile_mirrordummy"] = dummy_rows
 
 
-def fetch_user_profile_cross_realm(response: TableData, config: Config, context: Context) -> None:
+def custom_fetch_user_profile_cross_realm(response: TableData, context: Context) -> None:
     realm = context["realm"]
     response["zerver_userprofile_crossrealm"] = []
 
@@ -925,10 +1044,13 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
         )
 
 
-def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[int]) -> None:
-    filter_args = {"realm_id": realm_id}
-    query = Attachment.objects.filter(**filter_args)
-    response["zerver_attachment"] = make_raw(list(query))
+def fetch_attachment_data(
+    response: TableData, realm_id: int, message_ids: Set[int]
+) -> List[Attachment]:
+    attachments = list(
+        Attachment.objects.filter(realm_id=realm_id, messages__in=message_ids).distinct()
+    )
+    response["zerver_attachment"] = make_raw(attachments)
     floatify_datetime_fields(response, "zerver_attachment")
 
     """
@@ -941,16 +1063,18 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
         filterer_message_ids = set(row["messages"]).intersection(message_ids)
         row["messages"] = sorted(filterer_message_ids)
 
+    return attachments
+
+
+def custom_fetch_realm_audit_logs_for_user(response: TableData, context: Context) -> None:
+    """To be expansive, we include audit log entries for events that
+    either modified the target user or where the target user modified
+    something (E.g. if they changed the settings for a stream).
     """
-    Attachments can be connected to multiple messages, although
-    it's most common to have just one message. Regardless,
-    if none of those message(s) survived the filtering above
-    for a particular attachment, then we won't export the
-    attachment row.
-    """
-    response["zerver_attachment"] = [
-        row for row in response["zerver_attachment"] if row["messages"]
-    ]
+    user = context["user"]
+    query = RealmAuditLog.objects.filter(Q(modified_user_id=user.id) | Q(acting_user_id=user.id))
+    rows = make_raw(list(query))
+    response["zerver_realmauditlog"] = rows
 
 
 def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
@@ -958,12 +1082,9 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
     response["zerver_reaction"] = make_raw(list(query))
 
 
-def fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
-
+def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
     realm = context["realm"]
-    assert config.parent is not None
-    assert config.parent.table is not None
-    user_profile_ids = {r["id"] for r in response[config.parent.table]}
+    user_profile_ids = {r["id"] for r in response["zerver_userprofile"]}
 
     # First we get all huddles involving someone in the realm.
     realm_huddle_subs = Subscription.objects.select_related("recipient").filter(
@@ -1033,24 +1154,28 @@ def export_usermessages_batch(
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
     objects. (This is called by the export_usermessage_batch
-    management command)."""
+    management command).
+
+    See write_message_partial_for_query for more context."""
+    assert input_path.endswith((".partial", ".locked"))
+    assert output_path.endswith(".json")
+
     with open(input_path, "rb") as input_file:
-        output = orjson.loads(input_file.read())
-    message_ids = [item["id"] for item in output["zerver_message"]]
-    user_profile_ids = set(output["zerver_userprofile_ids"])
-    del output["zerver_userprofile_ids"]
-    realm = Realm.objects.get(id=output["realm_id"])
-    del output["realm_id"]
-    output["zerver_usermessage"] = fetch_usermessages(
-        realm, set(message_ids), user_profile_ids, output_path, consent_message_id
+        input_data: MessagePartial = orjson.loads(input_file.read())
+
+    message_ids = {item["id"] for item in input_data["zerver_message"]}
+    user_profile_ids = set(input_data["zerver_userprofile_ids"])
+    realm = Realm.objects.get(id=input_data["realm_id"])
+    zerver_usermessage_data = fetch_usermessages(
+        realm, message_ids, user_profile_ids, output_path, consent_message_id
     )
-    write_message_export(output_path, output)
+
+    output_data: TableData = dict(
+        zerver_message=input_data["zerver_message"],
+        zerver_usermessage=zerver_usermessage_data,
+    )
+    write_table_data(output_path, output_data)
     os.unlink(input_path)
-
-
-def write_message_export(message_filename: Path, output: MessageOutput) -> None:
-    write_data_to_file(output_file=message_filename, data=output)
-    logging.info("Dumped to %s", message_filename)
 
 
 def export_partial_message_files(
@@ -1064,7 +1189,7 @@ def export_partial_message_files(
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
-    def get_ids(records: List[Record]) -> Set[int]:
+    def get_ids(records: Iterable[Mapping[str, Any]]) -> Set[int]:
         return {x["id"] for x in records}
 
     # Basic security rule: You can export everything either...
@@ -1106,12 +1231,18 @@ def export_partial_message_files(
             type=Recipient.STREAM, type_id__in=public_streams
         ).values_list("id", flat=True)
 
+        streams_with_protected_history_recipient_ids = Stream.objects.filter(
+            realm=realm, history_public_to_subscribers=False
+        ).values_list("recipient_id", flat=True)
+
         consented_recipient_ids = Subscription.objects.filter(
             user_profile_id__in=consented_user_ids
         ).values_list("recipient_id", flat=True)
 
-        recipient_ids = set(public_stream_recipient_ids) | set(consented_recipient_ids)
-        recipient_ids_for_us = get_ids(response["zerver_recipient"]) & recipient_ids
+        recipient_ids_set = set(public_stream_recipient_ids) | set(consented_recipient_ids) - set(
+            streams_with_protected_history_recipient_ids
+        )
+        recipient_ids_for_us = get_ids(response["zerver_recipient"]) & recipient_ids_set
     else:
         recipient_ids_for_us = get_ids(response["zerver_recipient"])
         # For a full export, we have implicit consent for all users in the export.
@@ -1121,20 +1252,43 @@ def export_partial_message_files(
         messages_we_received = Message.objects.filter(
             sender__in=ids_of_our_possible_senders,
             recipient__in=recipient_ids_for_us,
-        ).order_by("id")
+        )
 
         # For the public stream export, we only need the messages those streams received.
         message_queries = [
             messages_we_received,
         ]
     else:
+        message_queries = []
+
         # We capture most messages here: Messages that were sent by
         # anyone in the export and received by any of the users who we
         # have consent to export.
         messages_we_received = Message.objects.filter(
             sender__in=ids_of_our_possible_senders,
             recipient__in=recipient_ids_for_us,
-        ).order_by("id")
+        )
+        message_queries.append(messages_we_received)
+
+        if consent_message_id is not None:
+            # Export with member consent requires some careful handling to make sure
+            # we only include messages that a consenting user can access.
+            has_usermessage_expression = Exists(
+                UserMessage.objects.filter(
+                    user_profile_id__in=consented_user_ids, message_id=OuterRef("id")
+                )
+            )
+            messages_we_received_in_protected_history_streams = Message.objects.annotate(
+                has_usermessage=has_usermessage_expression
+            ).filter(
+                sender__in=ids_of_our_possible_senders,
+                recipient_id__in=(
+                    set(consented_recipient_ids) & set(streams_with_protected_history_recipient_ids)
+                ),
+                has_usermessage=True,
+            )
+
+            message_queries.append(messages_we_received_in_protected_history_streams)
 
         # The above query is missing some messages that consenting
         # users have access to, namely, PMs sent by one of the users
@@ -1153,51 +1307,46 @@ def export_partial_message_files(
         messages_we_sent_to_them = Message.objects.filter(
             sender__in=consented_user_ids,
             recipient__in=recipient_ids_for_them,
-        ).order_by("id")
+        )
 
-        message_queries = [
-            messages_we_received,
-            messages_we_sent_to_them,
-        ]
+        message_queries.append(messages_we_sent_to_them)
 
     all_message_ids: Set[int] = set()
-    dump_file_id = 1
 
     for message_query in message_queries:
-        dump_file_id = write_message_partial_for_query(
-            realm=realm,
-            message_query=message_query,
-            dump_file_id=dump_file_id,
-            all_message_ids=all_message_ids,
-            output_dir=output_dir,
-            user_profile_ids=user_ids_for_us,
-            chunk_size=chunk_size,
-        )
+        message_ids = set(get_id_list_gently_from_database(base_query=message_query, id_field="id"))
+
+        # We expect our queries to be disjoint, although this assertion
+        # isn't strictly necessary if you don't mind a little bit of
+        # overhead.
+        assert len(message_ids.intersection(all_message_ids)) == 0
+
+        all_message_ids |= message_ids
+
+    message_id_chunks = chunkify(sorted(all_message_ids), chunk_size=MESSAGE_BATCH_CHUNK_SIZE)
+
+    write_message_partials(
+        realm=realm,
+        message_id_chunks=message_id_chunks,
+        output_dir=output_dir,
+        user_profile_ids=user_ids_for_us,
+    )
 
     return all_message_ids
 
 
-def write_message_partial_for_query(
+def write_message_partials(
+    *,
     realm: Realm,
-    message_query: Any,
-    dump_file_id: int,
-    all_message_ids: Set[int],
+    message_id_chunks: List[List[int]],
     output_dir: Path,
     user_profile_ids: Set[int],
-    chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
-) -> int:
-    min_id = -1
+) -> None:
+    dump_file_id = 1
 
-    while True:
-        actual_query = message_query.filter(id__gt=min_id)[0:chunk_size]
+    for message_id_chunk in message_id_chunks:
+        actual_query = Message.objects.filter(id__in=message_id_chunk).order_by("id")
         message_chunk = make_raw(actual_query)
-        message_ids = {m["id"] for m in message_chunk}
-        assert len(message_ids.intersection(all_message_ids)) == 0
-
-        all_message_ids.update(message_ids)
-
-        if len(message_chunk) == 0:
-            break
 
         # Figure out the name of our shard file.
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
@@ -1212,20 +1361,24 @@ def write_message_partial_for_query(
         # Build up our output for the .partial file, which needs
         # a list of user_profile_ids to search for (as well as
         # the realm id).
-        output: MessageOutput = {}
-        output["zerver_message"] = table_data["zerver_message"]
-        output["zerver_userprofile_ids"] = list(user_profile_ids)
-        output["realm_id"] = realm.id
+        output: MessagePartial = dict(
+            zerver_message=table_data["zerver_message"],
+            zerver_userprofile_ids=list(user_profile_ids),
+            realm_id=realm.id,
+        )
 
         # And write the data.
-        write_message_export(message_filename, output)
-        min_id = max(message_ids)
+        write_data_to_file(message_filename, output)
         dump_file_id += 1
 
-    return dump_file_id
 
-
-def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
+def export_uploads_and_avatars(
+    realm: Realm,
+    *,
+    attachments: Optional[List[Attachment]] = None,
+    user: Optional[UserProfile],
+    output_dir: Path,
+) -> None:
     uploads_output_dir = os.path.join(output_dir, "uploads")
     avatars_output_dir = os.path.join(output_dir, "avatars")
     realm_icons_output_dir = os.path.join(output_dir, "realm_icons")
@@ -1234,73 +1387,115 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     for dir_path in (
         uploads_output_dir,
         avatars_output_dir,
-        realm_icons_output_dir,
         emoji_output_dir,
     ):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
+    # Avoid creating realm_icons_output_dir for single user exports
+    if user is None and not os.path.exists(realm_icons_output_dir):
+        os.makedirs(realm_icons_output_dir)
+
+    if user is None:
+        handle_system_bots = True
+        users = list(UserProfile.objects.filter(realm=realm))
+        assert attachments is not None
+        realm_emojis = list(RealmEmoji.objects.filter(realm_id=realm.id))
+    else:
+        handle_system_bots = False
+        users = [user]
+        attachments = list(Attachment.objects.filter(owner_id=user.id))
+        realm_emojis = list(RealmEmoji.objects.filter(author_id=user.id))
+
     if settings.LOCAL_UPLOADS_DIR:
+        assert settings.LOCAL_FILES_DIR
+        assert settings.LOCAL_AVATARS_DIR
         # Small installations and developers will usually just store files locally.
         export_uploads_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "files"),
+            local_dir=settings.LOCAL_FILES_DIR,
             output_dir=uploads_output_dir,
+            attachments=attachments,
         )
         export_avatars_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+            local_dir=settings.LOCAL_AVATARS_DIR,
             output_dir=avatars_output_dir,
+            users=users,
+            handle_system_bots=handle_system_bots,
         )
         export_emoji_from_local(
             realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+            local_dir=settings.LOCAL_AVATARS_DIR,
             output_dir=emoji_output_dir,
+            realm_emojis=realm_emojis,
         )
-        export_realm_icons(
-            realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
-            output_dir=realm_icons_output_dir,
-        )
+
+        if user is None:
+            export_realm_icons(
+                realm,
+                local_dir=settings.LOCAL_AVATARS_DIR,
+                output_dir=realm_icons_output_dir,
+            )
     else:
+        user_ids = {user.id for user in users}
+
         # Some bigger installations will have their data stored on S3.
-        export_files_from_s3(
-            realm, settings.S3_AVATAR_BUCKET, output_dir=avatars_output_dir, processing_avatars=True
-        )
-        export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, output_dir=uploads_output_dir)
-        export_files_from_s3(
-            realm, settings.S3_AVATAR_BUCKET, output_dir=emoji_output_dir, processing_emoji=True
-        )
+
+        path_ids = {attachment.path_id for attachment in attachments}
+
         export_files_from_s3(
             realm,
-            settings.S3_AVATAR_BUCKET,
-            output_dir=realm_icons_output_dir,
-            processing_realm_icon_and_logo=True,
+            handle_system_bots=handle_system_bots,
+            flavor="upload",
+            bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
+            object_prefix=f"{realm.id}/",
+            output_dir=uploads_output_dir,
+            user_ids=user_ids,
+            valid_hashes=path_ids,
         )
 
+        avatar_hash_values = set()
+        for user_id in user_ids:
+            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
+            avatar_hash_values.add(avatar_path)
+            avatar_hash_values.add(avatar_path + ".original")
 
-def _check_key_metadata(
-    email_gateway_bot: Optional[UserProfile],
-    key: Object,
-    processing_avatars: bool,
-    realm: Realm,
-    user_ids: Set[int],
-) -> None:
-    # Helper function for export_files_from_s3
-    if "realm_id" in key.metadata and key.metadata["realm_id"] != str(realm.id):
-        if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
-            email_gateway_bot.id
-        ):
-            raise AssertionError(f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}")
-        # Email gateway bot sends messages, potentially including attachments, cross-realm.
-        print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
-    elif processing_avatars:
-        if "user_profile_id" not in key.metadata:
-            raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
-        if int(key.metadata["user_profile_id"]) not in user_ids:
-            raise AssertionError(f"Wrong user_profile_id in key metadata: {key.metadata}")
-    elif "realm_id" not in key.metadata:
-        raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
+        export_files_from_s3(
+            realm,
+            handle_system_bots=handle_system_bots,
+            flavor="avatar",
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/",
+            output_dir=avatars_output_dir,
+            user_ids=user_ids,
+            valid_hashes=avatar_hash_values,
+        )
+
+        emoji_paths = {get_emoji_path(realm_emoji) for realm_emoji in realm_emojis}
+
+        export_files_from_s3(
+            realm,
+            handle_system_bots=handle_system_bots,
+            flavor="emoji",
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/emoji/images/",
+            output_dir=emoji_output_dir,
+            user_ids=user_ids,
+            valid_hashes=emoji_paths,
+        )
+
+        if user is None:
+            export_files_from_s3(
+                realm,
+                handle_system_bots=handle_system_bots,
+                flavor="realm_icon_or_logo",
+                bucket_name=settings.S3_AVATAR_BUCKET,
+                object_prefix=f"{realm.id}/realm/",
+                output_dir=realm_icons_output_dir,
+                user_ids=user_ids,
+                valid_hashes=None,
+            )
 
 
 def _get_exported_s3_record(
@@ -1348,12 +1543,10 @@ def _get_exported_s3_record(
 def _save_s3_object_to_file(
     key: Object,
     output_dir: str,
-    processing_avatars: bool,
-    processing_emoji: bool,
-    processing_realm_icon_and_logo: bool,
+    processing_uploads: bool,
 ) -> None:
     # Helper function for export_files_from_s3
-    if processing_avatars or processing_emoji or processing_realm_icon_and_logo:
+    if not processing_uploads:
         filename = os.path.join(output_dir, key.key)
     else:
         fields = key.key.split("/")
@@ -1376,55 +1569,66 @@ def _save_s3_object_to_file(
 
 def export_files_from_s3(
     realm: Realm,
+    handle_system_bots: bool,
+    flavor: str,
     bucket_name: str,
+    object_prefix: str,
     output_dir: Path,
-    processing_avatars: bool = False,
-    processing_emoji: bool = False,
-    processing_realm_icon_and_logo: bool = False,
+    user_ids: Set[int],
+    valid_hashes: Optional[Set[str]],
 ) -> None:
+    processing_uploads = flavor == "upload"
+    processing_emoji = flavor == "emoji"
+
     bucket = get_bucket(bucket_name)
     records = []
 
-    logging.info("Downloading uploaded files from %s", bucket_name)
+    logging.info("Downloading %s files from %s", flavor, bucket_name)
 
-    avatar_hash_values = set()
-    user_ids = set()
-    if processing_avatars:
-        for user_profile in UserProfile.objects.filter(realm=realm):
-            avatar_path = user_avatar_path_from_ids(user_profile.id, realm.id)
-            avatar_hash_values.add(avatar_path)
-            avatar_hash_values.add(avatar_path + ".original")
-            user_ids.add(user_profile.id)
+    email_gateway_bot: Optional[UserProfile] = None
 
-    if processing_realm_icon_and_logo:
-        object_prefix = f"{realm.id}/realm/"
-    elif processing_emoji:
-        object_prefix = f"{realm.id}/emoji/images/"
-    else:
-        object_prefix = f"{realm.id}/"
-
-    if settings.EMAIL_GATEWAY_BOT is not None:
+    if handle_system_bots and settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        email_gateway_bot: Optional[UserProfile] = get_system_bot(
-            settings.EMAIL_GATEWAY_BOT, internal_realm.id
-        )
-    else:
-        email_gateway_bot = None
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+        user_ids.add(email_gateway_bot.id)
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
-        if processing_avatars and bkey.Object().key not in avatar_hash_values:
+        if valid_hashes is not None and bkey.Object().key not in valid_hashes:
             continue
 
         key = bucket.Object(bkey.key)
-        # This can happen if an email address has moved realms
-        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
+
+        """
+        For very old realms we may not have proper metadata. If you really need
+        an export to bypass these checks, flip the following flag.
+        """
+        checking_metadata = True
+        if checking_metadata:
+            if "realm_id" not in key.metadata:
+                raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
+
+            if "user_profile_id" not in key.metadata:
+                raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
+
+            if int(key.metadata["user_profile_id"]) not in user_ids:
+                continue
+
+            # This can happen if an email address has moved realms
+            if key.metadata["realm_id"] != str(realm.id):
+                if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
+                    email_gateway_bot.id
+                ):
+                    raise AssertionError(
+                        f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}"
+                    )
+                # Email gateway bot sends messages, potentially including attachments, cross-realm.
+                print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
+
         record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record["path"] = key.key
-        _save_s3_object_to_file(
-            key, output_dir, processing_avatars, processing_emoji, processing_realm_icon_and_logo
-        )
+        _save_s3_object_to_file(key, output_dir, processing_uploads)
 
         records.append(record)
         count += 1
@@ -1432,15 +1636,15 @@ def export_files_from_s3(
         if count % 100 == 0:
             logging.info("Finished %s", count)
 
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    write_records_json_file(output_dir, records)
 
 
-def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
-
+def export_uploads_from_local(
+    realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
+) -> None:
     count = 0
     records = []
-    for attachment in Attachment.objects.filter(realm_id=realm.id):
+    for attachment in attachments:
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
         # are user controlled
@@ -1468,23 +1672,28 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
 
         if count % 100 == 0:
             logging.info("Finished %s", count)
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+
+    write_records_json_file(output_dir, records)
 
 
-def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
-
+def export_avatars_from_local(
+    realm: Realm,
+    local_dir: Path,
+    output_dir: Path,
+    users: List[UserProfile],
+    handle_system_bots: bool,
+) -> None:
     count = 0
     records = []
 
-    users = list(UserProfile.objects.filter(realm=realm))
+    if handle_system_bots:
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        users += [
+            get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
+            get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
+            get_system_bot(settings.WELCOME_BOT, internal_realm.id),
+        ]
 
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    users += [
-        get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
-        get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
-        get_system_bot(settings.WELCOME_BOT, internal_realm.id),
-    ]
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
@@ -1520,8 +1729,7 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
             if count % 100 == 0:
                 logging.info("Finished %s", count)
 
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    write_records_json_file(output_dir, records)
 
 
 def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
@@ -1537,19 +1745,23 @@ def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
         record = dict(realm_id=realm.id, path=icon_relative_path, s3_path=icon_relative_path)
         records.append(record)
 
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    write_records_json_file(output_dir, records)
 
 
-def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+def get_emoji_path(realm_emoji: RealmEmoji) -> str:
+    return RealmEmoji.PATH_ID_TEMPLATE.format(
+        realm_id=realm_emoji.realm_id,
+        emoji_file_name=realm_emoji.file_name,
+    )
 
+
+def export_emoji_from_local(
+    realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
+) -> None:
     count = 0
     records = []
-    for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=realm.id,
-            emoji_file_name=realm_emoji.file_name,
-        )
+    for realm_emoji in realm_emojis:
+        emoji_path = get_emoji_path(realm_emoji)
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
@@ -1580,8 +1792,8 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
         count += 1
         if count % 100 == 0:
             logging.info("Finished %s", count)
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+
+    write_records_json_file(output_dir, records)
 
 
 def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
@@ -1644,9 +1856,6 @@ def do_export_realm(
 
     sanity_check_output(response)
 
-    logging.info("Exporting uploaded files and avatars")
-    export_uploads_and_avatars(realm, output_dir)
-
     # We (sort of) export zerver_message rows here.  We write
     # them to .partial files that are subsequently fleshed out
     # by parallel processes to add in zerver_usermessage data.
@@ -1669,14 +1878,18 @@ def do_export_realm(
 
     # Write realm data
     export_file = os.path.join(output_dir, "realm.json")
-    write_data_to_file(output_file=export_file, data=response)
-    logging.info("Writing realm data to %s", export_file)
+    write_table_data(output_file=export_file, data=response)
 
     # Write analytics data
     export_analytics_tables(realm=realm, output_dir=output_dir)
 
     # zerver_attachment
-    export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
+    attachments = export_attachment_table(
+        realm=realm, output_dir=output_dir, message_ids=message_ids
+    )
+
+    logging.info("Exporting uploaded files and avatars")
+    export_uploads_and_avatars(realm, attachments=attachments, user=None, output_dir=output_dir)
 
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(
@@ -1688,23 +1901,28 @@ def do_export_realm(
 
     do_write_stats_file_for_realm_export(output_dir)
 
-    # We need to change back to the current working directory after writing
-    # the tarball to the output directory, otherwise the state is compromised
-    # for our unit tests.
-    reset_dir = os.getcwd()
     tarball_path = output_dir.rstrip("/") + ".tar.gz"
-    os.chdir(os.path.dirname(output_dir))
-    subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
-    os.chdir(reset_dir)
+    subprocess.check_call(
+        [
+            "tar",
+            f"-czf{tarball_path}",
+            f"-C{os.path.dirname(output_dir)}",
+            os.path.basename(output_dir),
+        ]
+    )
     return tarball_path
 
 
-def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int]) -> None:
+def export_attachment_table(
+    realm: Realm, output_dir: Path, message_ids: Set[int]
+) -> List[Attachment]:
     response: TableData = {}
-    fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
+    attachments = fetch_attachment_data(
+        response=response, realm_id=realm.id, message_ids=message_ids
+    )
     output_file = os.path.join(output_dir, "attachment.json")
-    logging.info("Writing attachment table data to %s", output_file)
-    write_data_to_file(output_file=output_file, data=response)
+    write_table_data(output_file=output_file, data=response)
+    return attachments
 
 
 def create_soft_link(source: Path, in_progress: bool = True) -> None:
@@ -1719,10 +1937,8 @@ def create_soft_link(source: Path, in_progress: bool = True) -> None:
     if in_progress:
         new_target = in_progress_link
     else:
-        try:
+        with suppress(FileNotFoundError):
             os.remove(in_progress_link)
-        except FileNotFoundError:
-            pass
         new_target = done_link
 
     overwrite_symlink(source, new_target)
@@ -1760,18 +1976,26 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
 
     export_single_user(user_profile, response)
     export_file = os.path.join(output_dir, "user.json")
-    write_data_to_file(output_file=export_file, data=response)
+    write_table_data(output_file=export_file, data=response)
+
+    reaction_message_ids: Set[int] = {row["message"] for row in response["zerver_reaction"]}
+
     logging.info("Exporting messages")
-    export_messages_single_user(user_profile, output_dir)
+    export_messages_single_user(
+        user_profile, output_dir=output_dir, reaction_message_ids=reaction_message_ids
+    )
+
+    logging.info("Exporting images")
+    export_uploads_and_avatars(user_profile.realm, user=user_profile, output_dir=output_dir)
 
 
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
-
     config = get_single_user_config()
     export_from_config(
         response=response,
         config=config,
         seed_object=user_profile,
+        context=dict(user=user_profile),
     )
 
 
@@ -1784,7 +2008,7 @@ def get_single_user_config() -> Config:
     user_profile_config = Config(
         table="zerver_userprofile",
         is_seeded=True,
-        exclude=["password", "api_key"],
+        exclude=EXCLUDED_USER_PROFILE_FIELDS,
     )
 
     # zerver_subscription
@@ -1792,7 +2016,7 @@ def get_single_user_config() -> Config:
         table="zerver_subscription",
         model=Subscription,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     # zerver_recipient
@@ -1823,24 +2047,131 @@ def get_single_user_config() -> Config:
         exclude=["email_token"],
     )
 
+    Config(
+        table="analytics_usercount",
+        model=UserCount,
+        normal_parent=user_profile_config,
+        include_rows="user_id__in",
+    )
+
+    Config(
+        table="zerver_realmauditlog",
+        model=RealmAuditLog,
+        virtual_parent=user_profile_config,
+        # See the docstring for why we use a custom fetch here.
+        custom_fetch=custom_fetch_realm_audit_logs_for_user,
+    )
+
+    Config(
+        table="zerver_reaction",
+        model=Reaction,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
+    add_user_profile_child_configs(user_profile_config)
+
     return user_profile_config
 
 
-def export_messages_single_user(
-    user_profile: UserProfile, output_dir: Path, chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE
-) -> None:
-    user_message_query = UserMessage.objects.filter(user_profile=user_profile).order_by("id")
-    min_id = -1
-    dump_file_id = 1
-    while True:
-        actual_query = user_message_query.select_related(
-            "message", "message__sending_client"
-        ).filter(id__gt=min_id)[0:chunk_size]
-        user_message_chunk = list(actual_query)
-        user_message_ids = {um.id for um in user_message_chunk}
+def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> List[int]:
+    """
+    Use this function if you need a HUGE number of ids from
+    the database, and you don't mind a few extra trips.  Particularly
+    for exports, we don't really care about a little extra time
+    to finish the export--the much bigger concern is that we don't
+    want to overload our database all at once, nor do we want to
+    keep a whole bunch of Django objects around in memory.
 
-        if len(user_message_chunk) == 0:
+    So our general process is to call this function first, and then
+    we call chunkify to break our ids into small chunks for "fat query"
+    batches.
+
+    Even if you are not working at huge scale, this function can
+    also be used for the convenience of its API.
+    """
+    min_id = -1
+    all_ids = []
+    batch_size = 10000  # we are just getting ints
+
+    assert id_field == "id" or id_field.endswith("_id")
+
+    while True:
+        filter_args = {f"{id_field}__gt": min_id}
+        new_ids = list(
+            base_query.values_list(id_field, flat=True)
+            .filter(**filter_args)
+            .order_by(id_field)[:batch_size]
+        )
+        if len(new_ids) == 0:
             break
+        all_ids += new_ids
+        min_id = new_ids[-1]
+
+    return all_ids
+
+
+def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
+    # chunkify([1,2,3,4,5], 2) == [[1,2], [3,4], [5]]
+    result = []
+    i = 0
+    while True:
+        chunk = lst[i : i + chunk_size]
+        if len(chunk) == 0:
+            break
+        else:
+            result.append(chunk)
+            i += chunk_size
+
+    return result
+
+
+def export_messages_single_user(
+    user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: Set[int]
+) -> None:
+    @lru_cache(maxsize=None)
+    def get_recipient(recipient_id: int) -> str:
+        recipient = Recipient.objects.get(id=recipient_id)
+
+        if recipient.type == Recipient.STREAM:
+            stream = Stream.objects.values("name").get(id=recipient.type_id)
+            return stream["name"]
+
+        user_names = (
+            UserProfile.objects.filter(
+                subscription__recipient_id=recipient.id,
+            )
+            .order_by("full_name")
+            .values_list("full_name", flat=True)
+        )
+
+        return ", ".join(user_names)
+
+    messages_from_me = Message.objects.filter(sender=user_profile)
+
+    my_subscriptions = Subscription.objects.filter(
+        user_profile=user_profile, recipient__type__in=[Recipient.PERSONAL, Recipient.HUDDLE]
+    )
+    my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
+    messages_to_me = Message.objects.filter(recipient_id__in=my_recipient_ids)
+
+    # Find all message ids that pertain to us.
+    all_message_ids: Set[int] = set()
+
+    for query in [messages_from_me, messages_to_me]:
+        all_message_ids |= set(get_id_list_gently_from_database(base_query=query, id_field="id"))
+
+    all_message_ids |= reaction_message_ids
+
+    dump_file_id = 1
+    for message_id_chunk in chunkify(sorted(all_message_ids), MESSAGE_BATCH_CHUNK_SIZE):
+        fat_query = (
+            UserMessage.objects.select_related("message", "message__sending_client")
+            .filter(user_profile=user_profile, message_id__in=message_id_chunk)
+            .order_by("message_id")
+        )
+
+        user_message_chunk = list(fat_query)
 
         message_chunk = []
         for user_message in user_message_chunk:
@@ -1849,7 +2180,7 @@ def export_messages_single_user(
             item["flags_mask"] = user_message.flags.mask
             # Add a few nice, human-readable details
             item["sending_client_name"] = user_message.message.sending_client.name
-            item["display_recipient"] = get_display_recipient(user_message.message.recipient)
+            item["recipient_name"] = get_recipient(user_message.message.recipient_id)
             message_chunk.append(item)
 
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
@@ -1857,18 +2188,15 @@ def export_messages_single_user(
 
         output = {"zerver_message": message_chunk}
         floatify_datetime_fields(output, "zerver_message")
-        message_output: MessageOutput = dict(output)
 
-        write_message_export(message_filename, message_output)
-        min_id = max(user_message_ids)
+        write_table_data(message_filename, output)
         dump_file_id += 1
 
 
 def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     response: TableData = {}
 
-    export_file = os.path.join(output_dir, "analytics.json")
-    logging.info("Writing analytics table data to %s", (export_file))
+    logging.info("Fetching analytics table data")
     config = get_analytics_config()
     export_from_config(
         response=response,
@@ -1882,7 +2210,8 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     # before writing to disk.
     del response["zerver_realm"]
 
-    write_data_to_file(output_file=export_file, data=response)
+    export_file = os.path.join(output_dir, "analytics.json")
+    write_table_data(output_file=export_file, data=response)
 
 
 def get_analytics_config() -> Config:
@@ -1898,21 +2227,21 @@ def get_analytics_config() -> Config:
         table="analytics_realmcount",
         model=RealmCount,
         normal_parent=analytics_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="analytics_usercount",
         model=UserCount,
         normal_parent=analytics_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="analytics_streamcount",
         model=StreamCount,
         normal_parent=analytics_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     return analytics_config
@@ -1935,7 +2264,6 @@ def export_realm_wrapper(
     threads: int,
     upload: bool,
     public_only: bool,
-    delete_after_upload: bool,
     percent_callback: Optional[Callable[[Any], None]] = None,
     consent_message_id: Optional[int] = None,
 ) -> Optional[str]:
@@ -1946,9 +2274,8 @@ def export_realm_wrapper(
         public_only=public_only,
         consent_message_id=consent_message_id,
     )
-    print(f"Finished exporting to {output_dir}")
+    shutil.rmtree(output_dir)
     print(f"Tarball written to {tarball_path}")
-
     if not upload:
         return None
 
@@ -1959,12 +2286,10 @@ def export_realm_wrapper(
     public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
         realm, tarball_path, percent_callback=percent_callback
     )
-    print()
-    print(f"Uploaded to {public_url}")
+    print(f"\nUploaded to {public_url}")
 
-    if delete_after_upload:
-        os.remove(tarball_path)
-        print(f"Successfully deleted the tarball at {tarball_path}")
+    os.remove(tarball_path)
+    print(f"Successfully deleted the tarball at {tarball_path}")
     return public_url
 
 

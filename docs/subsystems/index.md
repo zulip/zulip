@@ -8,6 +8,7 @@ maxdepth: 3
 dependencies
 settings
 html-css
+accessibility
 events-system
 sending-messages
 notifications

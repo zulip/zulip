@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+files="$(git ls-tree -r @ | sed -n 's/^100755 blob \S\+\t//p' | xargs -r grep -Lz '^#!' --)" || [ $? = 123 ]
+if [ "$files" ]; then
+    echo 'error: non-scripts should not be marked executable (fix with chmod -x):'
+    echo
+    printf '%s\n' "$files"
+    exit 1
+fi

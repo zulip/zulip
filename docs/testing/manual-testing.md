@@ -65,7 +65,7 @@ Try narrowing from the message view:
   - narrow to a group PM
 - Click on the Zulip logo
   - narrow to a topic
-  - click on the Zulip logo (and verify you're in the Recent topics view)
+  - click on the Zulip logo (and verify you're in the Recent conversations view)
 
 ### Messagebox
 
@@ -82,12 +82,12 @@ to test their appearance too:
 Here's how we're going to test the message appearances:
 
 - narrow to a new topic and send a message (this message will include sender)
-  - edit the message ("(EDITED)" label should appear beside sender name)
+  - edit the message ("EDITED" label should appear beside sender name)
 - send another message (will not include sender)
-  - edit the message ("(EDITED)" label should appear in the left column, where the avatar is)
+  - edit the message ("EDITED" label should appear in the left column, where the avatar is)
 - send a "/me" message (`/me test message`)
   - message should appear alongside sender name
-  - edit the message ("(EDITED)" label should appear beside the message)
+  - edit the message ("EDITED" label should appear beside the message)
 
 For all the three cases, we need to test the click handlers and
 the hotkeys too:
@@ -486,7 +486,6 @@ Do these tasks as Cordelia.
 - Display settings
   - Right now, these unfortunately require reloads to take effect.
   - Default language (change to Spanish)
-  - Show user list on left sidebar in narrow windows (verify by making window thinner)
   - 24-hour time (and then test going back to AM/PM)
 - Notifications
   - Stream message
@@ -532,7 +531,7 @@ Make sure that these options launch appropriate help screens:
 
 - Proofread and try a couple random options:
   - Message formatting
-  - Search operators
+  - Search filters
 - Make sure help launches in a separate browser tab:
   - Desktop and mobile apps
   - Integrations

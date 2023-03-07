@@ -25,7 +25,6 @@ class AnalyzeQueueStatsTests(TestCase):
             "name",
             {
                 "update_time": time.time(),
-                "current_queue_size": 10000,
                 "recent_average_consume_time": None,
             },
             10000,
@@ -38,7 +37,6 @@ class AnalyzeQueueStatsTests(TestCase):
             "name",
             {
                 "update_time": time.time(),
-                "current_queue_size": 10000,
                 "queue_last_emptied_timestamp": time.time() - 10000,
                 "recent_average_consume_time": 1,
             },
@@ -52,7 +50,6 @@ class AnalyzeQueueStatsTests(TestCase):
             "name",
             {
                 "update_time": time.time(),
-                "current_queue_size": 10000,
                 "queue_last_emptied_timestamp": time.time() - 10000,
                 "recent_average_consume_time": 0.0001,
             },
@@ -66,7 +63,6 @@ class AnalyzeQueueStatsTests(TestCase):
                 "name",
                 {
                     "update_time": time.time(),
-                    "current_queue_size": 11,
                     "queue_last_emptied_timestamp": time.time() - 10000,
                     "recent_average_consume_time": 1,
                 },
@@ -79,7 +75,6 @@ class AnalyzeQueueStatsTests(TestCase):
                 "name",
                 {
                     "update_time": time.time(),
-                    "current_queue_size": 9,
                     "queue_last_emptied_timestamp": time.time() - 10000,
                     "recent_average_consume_time": 1,
                 },

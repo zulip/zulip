@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0219_toggle_realm_digest_emails_enabled_default"),
     ]
@@ -13,21 +12,21 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="subscription",
             name="audible_notifications",
-            field=models.NullBooleanField(default=None),
+            field=models.BooleanField(null=True, default=None),
         ),
         migrations.AlterField(
             model_name="subscription",
             name="desktop_notifications",
-            field=models.NullBooleanField(default=None),
+            field=models.BooleanField(null=True, default=None),
         ),
         migrations.AlterField(
             model_name="subscription",
             name="email_notifications",
-            field=models.NullBooleanField(default=None),
+            field=models.BooleanField(null=True, default=None),
         ),
         migrations.AlterField(
             model_name="subscription",
             name="push_notifications",
-            field=models.NullBooleanField(default=None),
+            field=models.BooleanField(null=True, default=None),
         ),
     ]

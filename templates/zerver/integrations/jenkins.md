@@ -1,6 +1,6 @@
 1. {!create-stream.md!}
 
-1. {!create-a-bot-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
 1. Install the "Zulip" plugin by going to
    **Manage Jenkins > Manage Plugins > Available**,
@@ -31,9 +31,9 @@
    If you don't specify a custom topic, the project name will be used as the
    topic instead. Then click **Save**.
 
-   ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
+    ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
 
-   When your builds fail or succeed, you'll see a message as shown below.
+    When your builds fail or succeed, you'll see a message as shown below.
 
 {!congrats.md!}
 

@@ -1,0 +1,410 @@
+// todo: Refactor pills subsystem to use modern javascript classes?
+
+import $ from "jquery";
+
+import render_input_pill from "../templates/input_pill.hbs";
+
+import * as blueslip from "./blueslip";
+import * as compose from "./compose";
+import * as keydown_util from "./keydown_util";
+import * as ui_util from "./ui_util";
+
+// See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
+
+export function create(opts) {
+    if (!opts.$container) {
+        blueslip.error("Pill needs container.");
+        return undefined;
+    }
+
+    if (!opts.create_item_from_text) {
+        blueslip.error("Pill needs create_item_from_text");
+        return undefined;
+    }
+
+    if (!opts.get_text_from_item) {
+        blueslip.error("Pill needs get_text_from_item");
+        return undefined;
+    }
+
+    // a stateful object of this `pill_container` instance.
+    // all unique instance information is stored in here.
+    const store = {
+        pills: [],
+        pill_config: opts.pill_config,
+        $parent: opts.$container,
+        $input: opts.$container.find(".input").expectOne(),
+        create_item_from_text: opts.create_item_from_text,
+        get_text_from_item: opts.get_text_from_item,
+    };
+
+    // a dictionary of internal functions. Some of these are exposed as well,
+    // and nothing in here should be assumed to be private (due to the passing)
+    // of the `this` arg in the `Function.prototype.bind` use in the prototype.
+    const funcs = {
+        // return the value of the contenteditable input form.
+        value(input_elem) {
+            return input_elem.textContent;
+        },
+
+        // clear the value of the input form.
+        clear(input_elem) {
+            input_elem.textContent = "";
+        },
+
+        clear_text() {
+            store.$input.text("");
+        },
+
+        is_pending() {
+            // This function returns true if we have text
+            // in out widget that hasn't been turned into
+            // pills.  We use it to decide things like
+            // whether we're ready to send typing indicators.
+            return store.$input.text().trim() !== "";
+        },
+
+        create_item(text) {
+            const existing_items = funcs.items();
+            const item = store.create_item_from_text(text, existing_items);
+
+            if (!item || !item.display_value) {
+                store.$input.addClass("shake");
+                return undefined;
+            }
+
+            return item;
+        },
+
+        // This is generally called by typeahead logic, where we have all
+        // the data we need (as opposed to, say, just a user-typed email).
+        appendValidatedData(item) {
+            if (!item.display_value) {
+                blueslip.error("no display_value returned");
+                return;
+            }
+
+            if (!item.type) {
+                blueslip.error("no type defined for the item");
+                return;
+            }
+
+            const payload = {
+                item,
+            };
+
+            store.pills.push(payload);
+
+            const has_image = item.img_src !== undefined;
+
+            const opts = {
+                display_value: item.display_value,
+                has_image,
+                deactivated: item.deactivated,
+            };
+
+            if (has_image) {
+                opts.img_src = item.img_src;
+            }
+
+            if (store.pill_config?.show_user_status_emoji === true) {
+                const has_status = item.status_emoji_info !== undefined;
+                if (has_status) {
+                    opts.status_emoji_info = item.status_emoji_info;
+                }
+                opts.has_status = has_status;
+            }
+
+            if (typeof store.onPillCreate === "function") {
+                store.onPillCreate();
+            }
+
+            const pill_html = render_input_pill(opts);
+            payload.$element = $(pill_html);
+            store.$input.before(payload.$element);
+        },
+
+        // this appends a pill to the end of the container but before the
+        // input block.
+        appendPill(value) {
+            if (value.length === 0) {
+                return true;
+            }
+            if (value.match(",")) {
+                funcs.insertManyPills(value);
+                return false;
+            }
+
+            const payload = this.create_item(value);
+            // if the pill object is undefined, then it means the pill was
+            // rejected so we should return out of this.
+            if (!payload) {
+                return false;
+            }
+
+            this.appendValidatedData(payload);
+            return true;
+        },
+
+        // this searches given the DOM node for a pill, removes the node
+        // from the DOM, removes it from the array and returns it.
+        // this would generally be used for DOM-provoked actions, such as a user
+        // clicking on a pill to remove it.
+        removePill(element) {
+            let idx;
+            for (let x = 0; x < store.pills.length; x += 1) {
+                if (store.pills[x].$element[0] === element) {
+                    idx = x;
+                }
+            }
+
+            if (typeof idx === "number") {
+                store.pills[idx].$element.remove();
+                const pill = store.pills.splice(idx, 1);
+                if (typeof store.removePillFunction === "function") {
+                    store.removePillFunction(pill);
+                }
+
+                return pill;
+            }
+
+            /* istanbul ignore next */
+            return undefined;
+        },
+
+        // this will remove the last pill in the container -- by default tied
+        // to the "Backspace" key when the value of the input is empty.
+        // If quiet is a truthy value, the event handler associated with the
+        // pill will not be evaluated. This is useful when using clear to reset
+        // the pills.
+        removeLastPill(quiet) {
+            const pill = store.pills.pop();
+
+            if (pill) {
+                pill.$element.remove();
+                if (!quiet && typeof store.removePillFunction === "function") {
+                    store.removePillFunction(pill);
+                }
+            }
+        },
+
+        removeAllPills(quiet) {
+            while (store.pills.length > 0) {
+                this.removeLastPill(quiet);
+            }
+
+            this.clear(store.$input[0]);
+        },
+
+        insertManyPills(pills) {
+            if (typeof pills === "string") {
+                pills = pills.split(/,/g).map((pill) => pill.trim());
+            }
+
+            // this is an array to push all the errored values to, so it's drafts
+            // of pills for the user to fix.
+            const drafts = pills.filter(
+                (pill) =>
+                    // if this returns `false`, it errored and we should push it to
+                    // the draft pills.
+                    funcs.appendPill(pill) === false,
+            );
+
+            store.$input.text(drafts.join(", "));
+            // when using the `text` insertion feature with jQuery the caret is
+            // placed at the beginning of the input field, so this moves it to
+            // the end.
+            ui_util.place_caret_at_end(store.$input[0]);
+
+            // this sends a flag if the operation wasn't completely successful,
+            // which in this case is defined as some of the pills not autofilling
+            // correctly.
+            return drafts.length === 0;
+        },
+
+        getByElement(element) {
+            return store.pills.find((pill) => pill.$element[0] === element);
+        },
+
+        _get_pills_for_testing() {
+            return store.pills;
+        },
+
+        items() {
+            return store.pills.map((pill) => pill.item);
+        },
+
+        createPillonPaste() {
+            if (typeof store.createPillonPaste === "function") {
+                return store.createPillonPaste();
+            }
+            return true;
+        },
+    };
+
+    {
+        store.$parent.on("keydown", ".input", (e) => {
+            if (keydown_util.is_enter_event(e)) {
+                // regardless of the value of the input, the ENTER keyword
+                // should be ignored in favor of keeping content to one line
+                // always.
+                e.preventDefault();
+
+                // if there is input, grab the input, make a pill from it,
+                // and append the pill, then clear the input.
+                const value = funcs.value(e.target).trim();
+                if (value.length > 0) {
+                    // append the pill and by proxy create the pill object.
+                    const ret = funcs.appendPill(value);
+
+                    // if the pill to append was rejected, no need to clear the
+                    // input; it may have just been a typo or something close but
+                    // incorrect.
+                    if (ret !== false) {
+                        // clear the input.
+                        funcs.clear(e.target);
+                        e.stopPropagation();
+                    }
+                }
+
+                return;
+            }
+
+            // if the user backspaces and there is input, just do normal char
+            // deletion, otherwise delete the last pill in the sequence.
+            if (
+                e.key === "Backspace" &&
+                (funcs.value(e.target).length === 0 || window.getSelection().anchorOffset === 0)
+            ) {
+                e.preventDefault();
+                funcs.removeLastPill();
+
+                return;
+            }
+
+            // if one is on the ".input" element and back/left arrows, then it
+            // should switch to focus the last pill in the list.
+            // the rest of the events then will be taken care of in the function
+            // below that handles events on the ".pill" class.
+            if (e.key === "ArrowLeft" && window.getSelection().anchorOffset === 0) {
+                store.$parent.find(".pill").last().trigger("focus");
+            }
+
+            // Typing of the comma is prevented if the last field doesn't validate,
+            // as well as when the new pill is created.
+            if (e.key === ",") {
+                // if the pill is successful, it will create the pill and clear
+                // the input.
+                if (funcs.appendPill(store.$input.text().trim()) !== false) {
+                    funcs.clear(store.$input[0]);
+                }
+                e.preventDefault();
+
+                return;
+            }
+        });
+
+        // handle events while hovering on ".pill" elements.
+        // the three primary events are next, previous, and delete.
+        store.$parent.on("keydown", ".pill", (e) => {
+            const $pill = store.$parent.find(".pill:focus");
+
+            switch (e.key) {
+                case "ArrowLeft":
+                    $pill.prev().trigger("focus");
+                    break;
+                case "ArrowRight":
+                    $pill.next().trigger("focus");
+                    break;
+                case "Backspace": {
+                    const $next = $pill.next();
+                    funcs.removePill($pill[0]);
+                    $next.trigger("focus");
+                    // the "Backspace" key in Firefox will go back a page if you do
+                    // not prevent it.
+                    e.preventDefault();
+                    break;
+                }
+            }
+        });
+
+        // when the shake animation is applied to the ".input" on invalid input,
+        // we want to remove the class when finished automatically.
+        store.$parent.on("animationend", ".input", function () {
+            $(this).removeClass("shake");
+        });
+
+        // replace formatted input with plaintext to allow for sane copy-paste
+        // actions.
+        store.$parent.on("paste", ".input", (e) => {
+            e.preventDefault();
+
+            // get text representation of clipboard
+            const text = (e.originalEvent || e).clipboardData.getData("text/plain");
+
+            // insert text manually
+            document.execCommand("insertText", false, text);
+
+            if (funcs.createPillonPaste()) {
+                funcs.insertManyPills(store.$input.text().trim());
+            }
+        });
+
+        // when the "×" is clicked on a pill, it should delete that pill and then
+        // select the next pill (or input).
+        store.$parent.on("click", ".exit", function (e) {
+            e.stopPropagation();
+            const $pill = $(this).closest(".pill");
+            const $next = $pill.next();
+
+            funcs.removePill($pill[0]);
+            $next.trigger("focus");
+
+            compose.update_on_recipient_change();
+        });
+
+        store.$parent.on("click", function (e) {
+            if ($(e.target).is(".pill-container")) {
+                $(this).find(".input").trigger("focus");
+            }
+        });
+
+        store.$parent.on("copy", ".pill", (e) => {
+            const $element = store.$parent.find(":focus");
+            const data = funcs.getByElement($element[0]);
+            e.originalEvent.clipboardData.setData(
+                "text/plain",
+                store.get_text_from_item(data.item),
+            );
+            e.preventDefault();
+        });
+    }
+
+    // the external, user-accessible prototype.
+    const prototype = {
+        appendValue: funcs.appendPill.bind(funcs),
+        appendValidatedData: funcs.appendValidatedData.bind(funcs),
+
+        getByElement: funcs.getByElement,
+        items: funcs.items,
+
+        onPillCreate(callback) {
+            store.onPillCreate = callback;
+        },
+
+        onPillRemove(callback) {
+            store.removePillFunction = callback;
+        },
+
+        createPillonPaste(callback) {
+            store.createPillonPaste = callback;
+        },
+
+        clear: funcs.removeAllPills.bind(funcs),
+        clear_text: funcs.clear_text,
+        is_pending: funcs.is_pending,
+        _get_pills_for_testing: funcs._get_pills_for_testing,
+    };
+
+    return prototype;
+}

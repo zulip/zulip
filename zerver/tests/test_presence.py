@@ -5,10 +5,10 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_deactivate_user
-from zerver.lib.presence import get_status_dict_by_realm
+from zerver.actions.users import do_deactivate_user
+from zerver.lib.presence import get_presence_dict_by_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import make_client, reset_emails_in_zulip_realm
+from zerver.lib.test_helpers import make_client, reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     PushDeviceToken,
@@ -34,7 +34,7 @@ class UserPresenceModelTests(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         email = user_profile.email
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
         self.assert_length(presence_dct, 0)
 
         self.login_user(user_profile)
@@ -42,12 +42,12 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         slim_presence = False
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
         self.assert_length(presence_dct, 1)
         self.assertEqual(presence_dct[email]["website"]["status"], "active")
 
         slim_presence = True
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
         self.assert_length(presence_dct, 1)
         info = presence_dct[str(user_profile.id)]
         self.assertEqual(set(info.keys()), {"active_timestamp"})
@@ -59,12 +59,12 @@ class UserPresenceModelTests(ZulipTestCase):
 
         # Simulate the presence being a week old first.  Nothing should change.
         back_date(num_weeks=1)
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
         self.assert_length(presence_dct, 1)
 
         # If the UserPresence row is three weeks old, we ignore it.
         back_date(num_weeks=3)
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
         self.assert_length(presence_dct, 0)
 
     def test_push_tokens(self) -> None:
@@ -78,7 +78,7 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         def pushable() -> bool:
-            presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+            presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
             self.assert_length(presence_dct, 1)
             return presence_dct[email]["website"]["pushable"]
 
@@ -113,8 +113,7 @@ class UserPresenceTests(ZulipTestCase):
 
         params = dict(status="idle")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(json["presences"][hamlet.email][client]["status"], "idle")
         self.assertIn("timestamp", json["presences"][hamlet.email][client])
         self.assertIsInstance(json["presences"][hamlet.email][client]["timestamp"], int)
@@ -123,7 +122,7 @@ class UserPresenceTests(ZulipTestCase):
         self.login_user(othello)
         params = dict(status="idle", slim_presence="true")
         result = self.client_post("/json/users/me/presence", params)
-        json = result.json()
+        json = self.assert_json_success(result)
         presences = json["presences"]
         self.assertEqual(
             set(presences.keys()),
@@ -149,23 +148,21 @@ class UserPresenceTests(ZulipTestCase):
 
         params = dict(status="idle")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual(result.json()["presences"][hamlet.email][client]["status"], "idle")
+        self.assertEqual(response_dict["presences"][hamlet.email][client]["status"], "idle")
 
         self.login("othello")
         params = dict(status="idle")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         self.assertEqual(json["presences"][othello.email][client]["status"], "idle")
         self.assertEqual(json["presences"][hamlet.email][client]["status"], "idle")
 
         params = dict(status="active")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         self.assertEqual(json["presences"][othello.email][client]["status"], "active")
         self.assertEqual(json["presences"][hamlet.email][client]["status"], "idle")
@@ -173,8 +170,7 @@ class UserPresenceTests(ZulipTestCase):
         self.login_user(hamlet)
         params = dict(status="active", slim_presence="true")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         presences = json["presences"]
         self.assertEqual(
@@ -254,7 +250,7 @@ class UserPresenceTests(ZulipTestCase):
 
     def test_filter_presence_idle_user_ids(self) -> None:
         user_profile = self.example_user("hamlet")
-        from zerver.lib.actions import filter_presence_idle_user_ids
+        from zerver.actions.message_send import filter_presence_idle_user_ids
 
         self.login("hamlet")
 
@@ -276,8 +272,8 @@ class UserPresenceTests(ZulipTestCase):
         user = self.mit_user("espuser")
         self.login_user(user)
         result = self.client_post("/json/users/me/presence", {"status": "idle"}, subdomain="zephyr")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["presences"], {})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["presences"], {})
 
     def test_mirror_presence(self) -> None:
         """Zephyr mirror realms find out the status of their mirror bot"""
@@ -288,8 +284,7 @@ class UserPresenceTests(ZulipTestCase):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "idle"}, subdomain="zephyr"
             )
-            self.assert_json_success(result)
-            json = result.json()
+            json = self.assert_json_success(result)
             return json
 
         json = post_presence()
@@ -321,8 +316,7 @@ class UserPresenceTests(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         result = self.client_post("/json/users/me/presence", {"status": "idle"})
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(json["presences"][hamlet.email]["website"]["status"], "idle")
         self.assertEqual(
             json["presences"].keys(),
@@ -352,7 +346,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assert_json_error(result, "No presence data for email@zulip.com")
 
     def test_single_user_get(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # First, we set up the test with some data
         user = self.example_user("othello")
@@ -402,28 +396,27 @@ class SingleUserPresenceTests(ZulipTestCase):
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(
             set(result_dict["presence"].keys()), {"ZulipAndroid", "website", "aggregated"}
         )
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
         result = self.client_get(f"/json/users/{othello.id}/presence")
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(
             set(result_dict["presence"].keys()), {"ZulipAndroid", "website", "aggregated"}
         )
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
     def test_ping_only(self) -> None:
-
         self.login("othello")
         req = dict(
             status="active",
             ping_only="true",
         )
         result = self.client_post("/json/users/me/presence", req)
-        self.assertEqual(result.json()["msg"], "")
+        self.assertEqual(self.assert_json_success(result)["msg"], "")
 
 
 class UserPresenceAggregationTests(ZulipTestCase):
@@ -448,7 +441,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
                 {"status": status},
                 HTTP_USER_AGENT="ZulipIOS/1.0",
             )
-        latest_result_dict = latest_result.json()
+        latest_result_dict = self.assert_json_success(latest_result)
         self.assertDictEqual(
             latest_result_dict["presences"][user.email]["aggregated"],
             {
@@ -459,7 +452,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         )
 
         result = self.client_get(f"/json/users/{user.email}/presence")
-        return result.json()
+        return self.assert_json_success(result)
 
     def test_aggregated_info(self) -> None:
         user = self.example_user("othello")
@@ -475,7 +468,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
                 {"status": "active"},
                 HTTP_USER_AGENT="ZulipTestDev/1.0",
             )
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertDictEqual(
             result_dict["presences"][user.email]["aggregated"],
             {
@@ -485,7 +478,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_active(self) -> None:
+    def test_aggregated_presence_active(self) -> None:
         user = self.example_user("othello")
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(user, "active", validate_time)
@@ -497,7 +490,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_idle(self) -> None:
+    def test_aggregated_presence_idle(self) -> None:
         user = self.example_user("othello")
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(user, "idle", validate_time)
@@ -509,7 +502,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_mixed(self) -> None:
+    def test_aggregated_presence_mixed(self) -> None:
         user = self.example_user("othello")
         self.login_user(user)
         validate_time = timezone_now()
@@ -532,7 +525,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             },
         )
 
-    def test_aggregated_presense_offline(self) -> None:
+    def test_aggregated_presence_offline(self) -> None:
         user = self.example_user("othello")
         self.login_user(user)
         validate_time = timezone_now()
@@ -566,8 +559,7 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="idle"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
 
         result = self.api_post(
@@ -576,14 +568,12 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="active", slim_presence="true"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {str(hamlet.id), str(othello.id)})
 
         # Check that a bot can fetch the presence data for the realm.
         result = self.api_get(self.example_user("default_bot"), "/api/v1/realm/presence")
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
 
     def test_presence_disabled(self) -> None:
@@ -609,8 +599,7 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="idle"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         # Othello's presence status is disabled so it won't be reported.
         self.assertEqual(set(json["presences"].keys()), {hamlet.email})
@@ -621,6 +610,5 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="active", slim_presence="true"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {str(hamlet.id)})

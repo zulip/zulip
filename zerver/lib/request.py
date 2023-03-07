@@ -1,5 +1,4 @@
 import threading
-import weakref
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import wraps
@@ -10,6 +9,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    Literal,
     MutableMapping,
     Optional,
     Sequence,
@@ -21,17 +21,22 @@ from typing import (
 )
 
 import orjson
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from typing_extensions import Literal
+from typing_extensions import Concatenate, ParamSpec
 
-import zerver.lib.rate_limiter as rate_limiter
-import zerver.tornado.handlers as handlers
+from zerver.lib import rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.notes import BaseNotes
-from zerver.lib.types import Validator, ViewFuncT
+from zerver.lib.response import MutableJsonResponse
+from zerver.lib.types import Validator
+from zerver.lib.validator import check_anything
 from zerver.models import Client, Realm
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 
 @dataclass
@@ -41,7 +46,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     details on how it works.
 
     Note that most Optional fields will be definitely not None once
-    middlware has run. In the future, we may want to express that in
+    middleware has run. In the future, we may want to express that in
     the types by having different types EarlyRequestNotes and
     post-middleware RequestNotes types, but for now we have a lot
     of `assert request_notes.foo is not None` when accessing them.
@@ -59,23 +64,22 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     realm: Optional[Realm] = None
     has_fetched_realm: bool = False
     set_language: Optional[str] = None
-    ratelimits_applied: List["rate_limiter.RateLimitResult"] = field(default_factory=lambda: [])
+    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=list)
     query: Optional[str] = None
     error_format: Optional[str] = None
     placeholder_open_graph_description: Optional[str] = None
     saved_response: Optional[HttpResponse] = None
-    # tornado_handler is a weak reference to work around a memory leak
-    # in WeakKeyDictionary (https://bugs.python.org/issue44680).
-    tornado_handler: Optional["weakref.ReferenceType[handlers.AsyncDjangoHandler]"] = None
+    tornado_handler_id: Optional[int] = None
     processed_parameters: Set[str] = field(default_factory=set)
-    ignored_parameters: Set[str] = field(default_factory=set)
+    remote_server: Optional["RemoteZulipServer"] = None
+    is_webhook_view: bool = False
 
     @classmethod
     def init_notes(cls) -> "RequestNotes":
         return RequestNotes()
 
 
-class RequestConfusingParmsError(JsonableError):
+class RequestConfusingParamsError(JsonableError):
     code = ErrorCode.REQUEST_CONFUSING_VAR
     data_fields = ["var_name1", "var_name2"]
 
@@ -130,7 +134,7 @@ class _REQ(Generic[ResultT]):
         self,
         whence: Optional[str] = None,
         *,
-        converter: Optional[Callable[[str], ResultT]] = None,
+        converter: Optional[Callable[[str, str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT, None] = NotSpecified,
         json_validator: Optional[Validator[ResultT]] = None,
         str_validator: Optional[Validator[ResultT]] = None,
@@ -168,6 +172,10 @@ class _REQ(Generic[ResultT]):
 
         """
 
+        if argument_type == "body" and converter is None and json_validator is None:
+            # legacy behavior
+            json_validator = cast(Callable[[str, object], ResultT], check_anything)
+
         self.post_var_name = whence
         self.func_var_name: Optional[str] = None
         self.converter = converter
@@ -204,8 +212,9 @@ class _REQ(Generic[ResultT]):
 def REQ(
     whence: Optional[str] = ...,
     *,
-    converter: Callable[[str], ResultT],
+    converter: Callable[[str, str], ResultT],
     default: ResultT = ...,
+    argument_type: Optional[Literal["body"]] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -221,6 +230,7 @@ def REQ(
     *,
     default: ResultT = ...,
     json_validator: Validator[ResultT],
+    argument_type: Optional[Literal["body"]] = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -278,7 +288,7 @@ def REQ(
 def REQ(
     whence: Optional[str] = None,
     *,
-    converter: Optional[Callable[[str], ResultT]] = None,
+    converter: Optional[Callable[[str, str], ResultT]] = None,
     default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
     json_validator: Optional[Validator[ResultT]] = None,
     str_validator: Optional[Validator[ResultT]] = None,
@@ -306,6 +316,9 @@ def REQ(
 
 
 arguments_map: Dict[str, List[str]] = defaultdict(list)
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
+
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
@@ -323,19 +336,21 @@ arguments_map: Dict[str, List[str]] = defaultdict(list)
 # Note that this can't be used in helper functions which are not
 # expected to call json_success or raise JsonableError, as it uses JsonableError
 # internally when it encounters an error
-def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
-    num_params = view_func.__code__.co_argcount
-    default_param_values = cast(FunctionType, view_func).__defaults__
+def has_request_variables(
+    req_func: Callable[Concatenate[HttpRequest, ParamT], ReturnT]
+) -> Callable[Concatenate[HttpRequest, ParamT], ReturnT]:
+    num_params = req_func.__code__.co_argcount
+    default_param_values = cast(FunctionType, req_func).__defaults__
     if default_param_values is None:
         default_param_values = ()
     num_default_params = len(default_param_values)
-    default_param_names = view_func.__code__.co_varnames[num_params - num_default_params :]
+    default_param_names = req_func.__code__.co_varnames[num_params - num_default_params :]
 
     post_params = []
 
-    view_func_full_name = ".".join([view_func.__module__, view_func.__name__])
+    view_func_full_name = ".".join([req_func.__module__, req_func.__name__])
 
-    for (name, value) in zip(default_param_names, default_param_values):
+    for name, value in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):
             value.func_var_name = name
             if value.post_var_name is None:
@@ -351,8 +366,10 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             ):
                 arguments_map[view_func_full_name].append(value.post_var_name)
 
-    @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    @wraps(req_func)
+    def _wrapped_req_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> ReturnT:
         request_notes = RequestNotes.get_notes(request)
         for param in post_params:
             func_var_name = param.func_var_name
@@ -368,62 +385,61 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 continue
             assert func_var_name is not None
 
+            post_var_name: Optional[str]
+
             if param.argument_type == "body":
+                post_var_name = "request"
                 try:
-                    val = orjson.loads(request.body)
-                except orjson.JSONDecodeError:
-                    raise InvalidJSONError(_("Malformed JSON"))
-                kwargs[func_var_name] = val
-                continue
+                    val = request.body.decode(request.encoding or "utf-8")
+                except UnicodeDecodeError:
+                    raise JsonableError(_("Malformed payload"))
             else:
                 # This is a view bug, not a user error, and thus should throw a 500.
                 assert param.argument_type is None, "Invalid argument type"
 
-            post_var_names = [param.post_var_name]
-            post_var_names += param.aliases
+                post_var_names = [param.post_var_name]
+                post_var_names += param.aliases
+                post_var_name = None
 
-            default_assigned = False
-
-            post_var_name: Optional[str] = None
-
-            for req_var in post_var_names:
-                assert req_var is not None
-                if req_var in request.POST:
-                    val = request.POST[req_var]
-                    request_notes.processed_parameters.add(req_var)
-                elif req_var in request.GET:
-                    val = request.GET[req_var]
-                    request_notes.processed_parameters.add(req_var)
-                else:
-                    # This is covered by test_REQ_aliases, but coverage.py
-                    # fails to recognize this for some reason.
-                    continue  # nocoverage
-                if post_var_name is not None:
+                for req_var in post_var_names:
                     assert req_var is not None
-                    raise RequestConfusingParmsError(post_var_name, req_var)
-                post_var_name = req_var
+                    if req_var in request.POST:
+                        val = request.POST[req_var]
+                        request_notes.processed_parameters.add(req_var)
+                    elif req_var in request.GET:
+                        val = request.GET[req_var]
+                        request_notes.processed_parameters.add(req_var)
+                    else:
+                        # This is covered by test_REQ_aliases, but coverage.py
+                        # fails to recognize this for some reason.
+                        continue  # nocoverage
+                    if post_var_name is not None:
+                        raise RequestConfusingParamsError(post_var_name, req_var)
+                    post_var_name = req_var
 
-            if post_var_name is None:
-                post_var_name = param.post_var_name
-                assert post_var_name is not None
-                if param.default is _REQ.NotSpecified:
-                    raise RequestVariableMissingError(post_var_name)
-                val = param.default
-                default_assigned = True
+                if post_var_name is None:
+                    post_var_name = param.post_var_name
+                    assert post_var_name is not None
+                    if param.default is _REQ.NotSpecified:
+                        raise RequestVariableMissingError(post_var_name)
+                    kwargs[func_var_name] = param.default
+                    continue
 
-            if param.converter is not None and not default_assigned:
+            if param.converter is not None:
                 try:
-                    val = param.converter(val)
+                    val = param.converter(post_var_name, val)
                 except JsonableError:
                     raise
                 except Exception:
                     raise RequestVariableConversionError(post_var_name, val)
 
             # json_validator is like converter, but doesn't handle JSON parsing; we do.
-            if param.json_validator is not None and not default_assigned:
+            if param.json_validator is not None:
                 try:
                     val = orjson.loads(val)
                 except orjson.JSONDecodeError:
+                    if param.argument_type == "body":
+                        raise InvalidJSONError(_("Malformed JSON"))
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
                 try:
@@ -432,7 +448,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     raise JsonableError(error.message)
 
             # str_validators is like json_validator, but for direct strings (no JSON parsing).
-            if param.str_validator is not None and not default_assigned:
+            if param.str_validator is not None:
                 try:
                     val = param.str_validator(post_var_name, val)
                 except ValidationError as error:
@@ -440,9 +456,40 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             kwargs[func_var_name] = val
 
-        return view_func(request, *args, **kwargs)
+        return_value = req_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+        if (
+            isinstance(return_value, MutableJsonResponse)
+            and not request_notes.is_webhook_view
+            # Implemented only for 200 responses.
+            # TODO: Implement returning unsupported ignored parameters for 400
+            # JSON error responses. This is complex because has_request_variables
+            # can be called multiple times, so when an error response is raised,
+            # there may be supported parameters that have not yet been processed,
+            # which could lead to inaccurate output.
+            and 200 <= return_value.status_code < 300
+        ):
+            ignored_parameters = set(
+                list(request.POST.keys()) + list(request.GET.keys())
+            ).difference(request_notes.processed_parameters)
+
+            # This will be called each time a function decorated with
+            # has_request_variables returns a MutableJsonResponse with a
+            # success status_code. Because a shared processed_parameters
+            # value is checked each time, the value for the
+            # ignored_parameters_unsupported key is either added/updated
+            # to the response data or it is removed in the case that all
+            # of the request parameters have been processed.
+            if ignored_parameters:
+                return_value.get_data()["ignored_parameters_unsupported"] = sorted(
+                    ignored_parameters
+                )
+            else:
+                return_value.get_data().pop("ignored_parameters_unsupported", None)
+
+        return return_value
+
+    return _wrapped_req_func
 
 
 local = threading.local()
@@ -459,9 +506,9 @@ def get_current_request() -> Optional[HttpRequest]:
 
 
 def set_request(req: HttpRequest) -> None:
-    setattr(local, "request", req)
+    local.request = req
 
 
 def unset_request() -> None:
     if hasattr(local, "request"):
-        delattr(local, "request")
+        del local.request

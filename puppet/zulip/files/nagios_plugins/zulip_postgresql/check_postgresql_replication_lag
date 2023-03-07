@@ -4,14 +4,28 @@
 replica PostgreSQL servers' xlog location.  Requires that the user this
 connects to PostgreSQL as has been granted the `pg_monitor` role.
 
+This can only use stdlib modules from python.
 """
+import configparser
 import re
 import subprocess
+import sys
 from typing import Dict, List
 
-from scripts.lib.zulip_tools import get_config, get_config_file
 
-config_file = get_config_file()
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str = "",
+) -> str:
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
 
 states = {
     "OK": 0,
@@ -39,21 +53,18 @@ def run_sql_query(query: str) -> List[List[str]]:
         "ON_ERROR_STOP=1",
         "-d",
         get_config(config_file, "postgresql", "database_name", "zulip"),
-        "-u",
-        get_config(config_file, "postgresql", "database_user", "zulip"),
+        # No -U; nagios connects as itself
         "-c",
         f"SELECT {query}",
     ]
     try:
-        output = subprocess.check_output(
-            command, stderr=subprocess.STDOUT, universal_newlines=True
-        ).strip()
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, text=True).strip()
         if not output:
             return []
         return [x.split("\0") for x in output.split("\n")]
     except subprocess.CalledProcessError as e:
         report("CRITICAL", f"psql failed: {str(e)}: {e.output}")
-        exit(MAXSTATE)
+        sys.exit(MAXSTATE)
 
 
 def loc_to_abs_offset(loc_str: str) -> int:
@@ -76,27 +87,30 @@ def loc_to_abs_offset(loc_str: str) -> int:
     return 0xFF000000 * int(xlog_file, 16) + int(file_offset, 16)
 
 
-replication_info = run_sql_query(
-    "sender_host, status, pg_last_wal_replay_lsn(), pg_last_wal_receive_lsn()"
-    " from pg_stat_wal_receiver"
-)
+is_in_recovery = run_sql_query("pg_is_in_recovery()")
 
-if replication_info:
-    (primary_server, state, replay_loc, recv_loc) = replication_info[0]
-
-    recv_offset = loc_to_abs_offset(recv_loc)
-    replay_lag = recv_offset - loc_to_abs_offset(replay_loc)
-
-    if state != "streaming":
-        report("CRITICAL", f"replica is in state {state}, not streaming")
-
-    msg = f"replica is {replay_lag} bytes behind in replay of WAL logs from {primary_server}"
-    if replay_lag > 5 * 16 * 1024 ** 2:
-        report("CRITICAL", msg)
-    elif replay_lag > 16 * 1024 ** 2:
-        report("WARNING", msg)
+if is_in_recovery[0][0] == "t":
+    replication_info = run_sql_query(
+        "sender_host, status, pg_last_wal_replay_lsn(), pg_last_wal_receive_lsn()"
+        " from pg_stat_wal_receiver"
+    )
+    if not replication_info:
+        report("CRITICAL", "Replaying WAL logs from backups")
     else:
-        report("OK", msg)
+        (primary_server, state, replay_loc, recv_loc) = replication_info[0]
+        recv_offset = loc_to_abs_offset(recv_loc)
+        replay_lag = recv_offset - loc_to_abs_offset(replay_loc)
+
+        if state != "streaming":
+            report("CRITICAL", f"replica is in state {state}, not streaming")
+
+        msg = f"replica is {replay_lag} bytes behind in replay of WAL logs from {primary_server}"
+        if replay_lag > 5 * 16 * 1024**2:
+            report("CRITICAL", msg)
+        elif replay_lag > 16 * 1024**2:
+            report("WARNING", msg)
+        else:
+            report("OK", msg)
 
 else:
     replication_info = run_sql_query(
@@ -122,11 +136,11 @@ else:
         for lag_type in ("write", "flush", "replay"):
             lag_bytes = lag[lag_type]
             msg = f"replica {client_addr} is {lag_bytes} bytes behind in {lag_type} of WAL logs"
-            if lag_bytes > 5 * 16 * 1024 ** 2:
+            if lag_bytes > 5 * 16 * 1024**2:
                 report("CRITICAL", msg)
-            elif lag_bytes > 16 * 1024 ** 2:
+            elif lag_bytes > 16 * 1024**2:
                 report("WARNING", msg)
             else:
                 report("OK", msg)
 
-exit(MAXSTATE)
+sys.exit(MAXSTATE)

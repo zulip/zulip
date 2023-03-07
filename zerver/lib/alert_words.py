@@ -27,7 +27,7 @@ def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:
 def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     user_id_with_words = alert_words_in_realm(realm)
     alert_word_automaton = ahocorasick.Automaton()
-    for (user_id, alert_words) in user_id_with_words.items():
+    for user_id, alert_words in user_id_with_words.items():
         for alert_word in alert_words:
             alert_word_lower = alert_word.lower()
             if alert_word_automaton.exists(alert_word_lower):
@@ -39,7 +39,7 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     # If the kind is not AHOCORASICK after calling make_automaton, it means there is no key present
     # and hence we cannot call items on the automaton yet. To avoid it we return None for such cases
     # where there is no alert-words in the realm.
-    # https://pyahocorasick.readthedocs.io/en/latest/index.html?highlight=Automaton.kind#module-constants
+    # https://pyahocorasick.readthedocs.io/en/latest/#make-automaton
     if alert_word_automaton.kind != ahocorasick.AHOCORASICK:
         return None
     return alert_word_automaton

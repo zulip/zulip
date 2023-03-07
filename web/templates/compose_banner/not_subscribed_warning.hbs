@@ -1,0 +1,7 @@
+{{#> compose_banner }}
+    {{#if can_subscribe_other_users}}
+        <p>{{#tr}}<strong>{name}</strong> is not subscribed to this stream. They will not be notified unless you subscribe them.{{/tr}}</p>
+    {{else}}
+        <p>{{#tr}}<strong>{name}</strong> is not subscribed to this stream. They will not be notified if you mention them.{{/tr}}</p>
+    {{/if}}
+{{/compose_banner}}

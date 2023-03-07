@@ -1,54 +1,44 @@
 {
-    "type": "scanningCompleted",
-    "occur_at": 1571341880,
+    "type": "SCANNING_COMPLETED",
+    "occur_at": 1648715576,
+    "operator": "auto",
     "event_data": {
-        "resources": [
-            {
-                "digest": "sha256:d55414535f65d9b0ca180a9a591868c93d72e6f7d1de03a315215220e63e622e",
-                "tag": "latest",
-                "resource_url": "harbor.example.com/example/test:latest",
-                "scan_overview": {
-                    "image_digest": "sha256:d55414535f65d9b0ca180a9a591868c93d72e6f7d1de03a315215220e63e622e",
-                    "scan_status": "finished",
-                    "job_id": 5,
-                    "severity": 5,
-                    "components": {
-                        "total": 168,
-                        "summary": [
-                            {
-                                "severity": 5,
-                                "count": 12
-                            },
-                            {
-                                "severity": 4,
-                                "count": 16
-                            },
-                            {
-                                "severity": 2,
-                                "count": 2
-                            },
-                            {
-                                "severity": 3,
-                                "count": 7
-                            },
-                            {
-                                "severity": 1,
-                                "count": 131
-                            }
-                        ]
-                    },
-                    "details_key": "71ffc66d04c94f01d2990d7ae908f66e6266bc82e45fdffa12181ea521e3a30c",
-                    "creation_time": "2019-10-17T19:50:10.728751Z",
-                    "update_time": "2019-10-17T19:51:20.370425Z"
+      "resources": [
+        {
+          "digest": "sha256:b50334049354ed01330403212605dce2f4676a4e787ed113506861d9cf3c5424",
+          "tag": "3.8.1",
+          "resource_url": "harbor.xxx.xxxx.com/test/alpine/helm:3.8.1",
+          "scan_overview": {
+            "application/vnd.security.vulnerability.report; version=1.1": {
+              "report_id": "65e8a295-749c-44e2-93fe-2ebb49b9e51a",
+              "scan_status": "Success",
+              "severity": "High",
+              "duration": 3,
+              "summary": {
+                "total": 5,
+                "fixable": 5,
+                "summary": {
+                  "High": 4,
+                  "Unknown": 1
                 }
+              },
+              "start_time": "2022-03-31T08:32:53Z",
+              "end_time": "2022-03-31T08:32:56Z",
+              "scanner": {
+                "name": "Trivy",
+                "vendor": "Aqua Security",
+                "version": "v0.20.1"
+              },
+              "complete_percent": 100
             }
-        ],
-        "repository": {
-            "name": "test",
-            "namespace": "example",
-            "repo_full_name": "example/test",
-            "repo_type": "private"
+          }
         }
-    },
-    "operator": "auto"
+      ],
+      "repository": {
+        "name": "alpine/helm",
+        "namespace": "test",
+        "repo_full_name": "test/alpine/helm",
+        "repo_type": "private"
+      }
+    }
 }

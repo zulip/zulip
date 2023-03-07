@@ -21,12 +21,17 @@ class BaseNotes(Generic[_KeyT, _DataT], metaclass=ABCMeta):
     longer has other references (avoiding memory leaks).
 
     We still need to be careful to avoid any of the attributes of
-    _NoteT having points to the original object, as that can create a
+    _DataT having points to the original object, as that can create a
     cyclic reference cycle that the Python garbage collect may not
     handle correctly.
     """
 
-    __notes_map: ClassVar[MutableMapping[Any, Any]] = weakref.WeakKeyDictionary()
+    __notes_map: ClassVar[MutableMapping[Any, Any]]
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        super().__init_subclass__(**kwargs)
+        if not hasattr(cls, "__notes_map"):
+            cls.__notes_map = weakref.WeakKeyDictionary()
 
     @classmethod
     def get_notes(cls, key: _KeyT) -> _DataT:

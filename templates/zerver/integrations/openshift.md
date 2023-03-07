@@ -16,7 +16,7 @@ in an OpenShift instance.
 
     ![Connecting to application](/static/images/integrations/openshift/002.png)
 
-1.  {!change-zulip-config-file-indented.md!}
+1.  {!change-zulip-config-file.md!}
 
 1.  You can also specify which pushes will result in notifications and to
     what stream the notifications will be sent by modifying the

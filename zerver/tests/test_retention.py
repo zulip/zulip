@@ -5,13 +5,11 @@ from unittest import mock
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    do_add_submessage,
-    do_create_realm,
-    do_delete_messages,
-    do_set_realm_property,
-    internal_send_private_message,
-)
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.submessage import do_add_submessage
 from zerver.lib.retention import (
     archive_messages,
     clean_archived_data,
@@ -21,8 +19,8 @@ from zerver.lib.retention import (
     restore_retention_policy_deletions_for_stream,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured, zulip_reaction_info
-from zerver.lib.upload import create_attachment
+from zerver.lib.test_helpers import zulip_reaction_info
+from zerver.lib.upload.base import create_attachment
 from zerver.models import (
     ArchivedAttachment,
     ArchivedMessage,
@@ -149,6 +147,19 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         assert msg_id is not None
         return msg_id
 
+    def _send_personal_message_to_cross_realm_bot(self) -> int:
+        # Send message from bot to users from different realm.
+        bot_email = "notification-bot@zulip.com"
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        zulip_user = self.example_user("hamlet")
+        msg_id = internal_send_private_message(
+            sender=zulip_user,
+            recipient_user=get_system_bot(bot_email, internal_realm.id),
+            content="test message",
+        )
+        assert msg_id is not None
+        return msg_id
+
     def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
         msg_ids = list(
             Message.objects.order_by("id")
@@ -174,13 +185,14 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         ]
 
         for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, size)
+            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
 
         self.subscribe(user_profile, "Denmark")
         body = (
-            "Some files here ... [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...."
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+            "Some files here ..."
+            " [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
+            " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some"
+            " more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
         ).format(id=realm_id, host=host)
 
         expired_message_id = self.send_stream_message(user_profile, "Denmark", body)
@@ -300,9 +312,13 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
     def test_cross_realm_personal_message_archiving(self) -> None:
         """Check that cross-realm personal messages get correctly archived."""
+
+        # We want to test on a set of cross-realm messages of both kinds -
+        # from a bot to a user, and from a user to a bot.
         msg_ids = [self._send_cross_realm_personal_message() for i in range(1, 7)]
+        msg_ids += [self._send_personal_message_to_cross_realm_bot() for i in range(1, 7)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
-        # Make the message expired on the recipient's realm:
+        # Make the message expired in the Zulip realm.:
         self._change_messages_date_sent(msg_ids, timezone_now() - timedelta(ZULIP_REALM_DAYS + 1))
 
         archive_messages()
@@ -315,8 +331,10 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
         # Insert an exception near the end of the archiving process of a chunk:
-        with mock.patch("zerver.lib.retention.delete_messages", side_effect=Exception):
-            with self.assertRaises(Exception):
+        with mock.patch(
+            "zerver.lib.retention.delete_messages", side_effect=Exception("delete_messages error")
+        ):
+            with self.assertRaisesRegex(Exception, r"^delete_messages error$"):
                 # Specify large chunk_size to ensure things happen in a single batch
                 archive_messages(chunk_size=1000)
 
@@ -573,7 +591,7 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
         ]
         user_profile = self.example_user("hamlet")
         for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, size)
+            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
 
     def _assert_archive_empty(self) -> None:
         self.assertFalse(ArchivedUserMessage.objects.exists())
@@ -640,8 +658,8 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         king = self.lear_user("king")
 
         zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(0, 3)]
-        leary_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
-        msg_ids = zulip_msg_ids + leary_msg_ids
+        lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
+        msg_ids = zulip_msg_ids + lear_msg_ids
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -702,9 +720,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             self.assertEqual(
                 set(attachment_id_to_message_ids[attachment_id]),
                 set(
-                    ArchivedMessage.objects.filter(
-                        archivedattachment__id=attachment_id
-                    ).values_list("id", flat=True)
+                    ArchivedMessage.objects.filter(attachment__id=attachment_id).values_list(
+                        "id", flat=True
+                    )
                 ),
             )
 
@@ -978,7 +996,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         # so we use a helper to order both structures in a consistent manner. This wouldn't be necessary
         # if python had a true "unordered list" data structure. Set doesn't do the job, because it requires
         # elements to be hashable.
-        expected_result = [
+        expected_result: List[Tuple[Realm, List[Stream]]] = [
             (zulip_realm, list(Stream.objects.filter(realm=zulip_realm).exclude(id=verona.id))),
             (zephyr_realm, [archiving_enabled_zephyr_stream]),
             (realm_all_streams_archiving_disabled, []),
@@ -1004,7 +1022,7 @@ class TestRestoreStreamMessages(ArchiveMessagesTestingBase):
         hamlet = self.example_user("hamlet")
 
         realm = get_realm("zulip")
-        stream_name = "Denmark"
+        stream_name = "Verona"
         stream = get_stream(stream_name, realm)
 
         message_ids_to_archive_manually = [
@@ -1052,13 +1070,12 @@ class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
-        message_ids = [self.send_stream_message(cordelia, "Denmark", str(i)) for i in range(0, 10)]
+        message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(0, 10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(19):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
-        self.assert_length(queries, 19)
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))

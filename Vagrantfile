@@ -15,8 +15,10 @@ Vagrant.configure("2") do |config|
   ubuntu_mirror = ""
   vboxadd_version = nil
 
+  config.vm.box = "bento/ubuntu-20.04"
+
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/srv/zulip"
+  config.vm.synced_folder ".", "/srv/zulip", docker_consistency: "z"
 
   vagrant_config_file = ENV["HOME"] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
@@ -61,6 +63,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 9994, host: host_port + 3, host_ip: host_ip_addr
   # Specify Docker provider before VirtualBox provider so it's preferred.
   config.vm.provider "docker" do |d, override|
+    override.vm.box = nil
     d.build_dir = File.join(__dir__, "tools", "setup", "dev-vagrant-docker")
     d.build_args = ["--build-arg", "VAGRANT_UID=#{Process.uid}"]
     if !ubuntu_mirror.empty?
@@ -71,7 +74,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provider "virtualbox" do |vb, override|
-    override.vm.box = "hashicorp/bionic64"
     # It's possible we can get away with just 1.5GB; more testing needed
     vb.memory = vm_memory
     vb.cpus = vm_num_cpus
@@ -88,15 +90,12 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provider "hyperv" do |h, override|
-    override.vm.box = "bento/ubuntu-18.04"
     h.memory = vm_memory
     h.maxmemory = vm_memory
     h.cpus = vm_num_cpus
   end
 
   config.vm.provider "parallels" do |prl, override|
-    override.vm.box = "bento/ubuntu-18.04"
-    override.vm.box_version = "202005.21.0"
     prl.memory = vm_memory
     prl.cpus = vm_num_cpus
   end

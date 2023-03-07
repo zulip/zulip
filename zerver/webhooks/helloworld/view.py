@@ -17,7 +17,6 @@ def api_helloworld_webhook(
     user_profile: UserProfile,
     payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
-
     # construct the body of the message
     body = "Hello! I am happy to be here! :smile:"
 
@@ -32,4 +31,4 @@ def api_helloworld_webhook(
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success()
+    return json_success(request)

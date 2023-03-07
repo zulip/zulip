@@ -8,7 +8,7 @@ class zulip_ops::profile::munin_server {
     'autossh',
     'libapache2-mod-fcgid',
   ]
-  package { $munin_packages: ensure => 'installed' }
+  package { $munin_packages: ensure => installed }
 
   $default_host_domain = zulipconf('nagios', 'default_host_domain', undef)
   $hosts = zulipconf_nagios_hosts()

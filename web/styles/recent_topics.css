@@ -1,0 +1,469 @@
+.recent_topics_container {
+    padding: 0;
+    border-radius: 4px;
+    background-color: hsl(0, 0%, 100%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+
+    #recent_topics_table {
+        max-width: 100%;
+        padding-top: 12px;
+        overflow: hidden !important;
+        display: flex;
+        flex-direction: column;
+        border-style: solid;
+        border-color: hsl(0, 0%, 88%);
+        border-width: 0 1px;
+        border-radius: 0;
+        margin-top: 40px;
+        /* To make the table span full height
+         * when rows don't reach bottom of the
+         * window. This makes the border span
+         * fully to bottom in that case.
+         */
+        min-height: 100vw;
+
+        td {
+            vertical-align: middle;
+            padding: 3px 8px;
+        }
+
+        .recent_topics_focusable {
+            display: inline-block;
+
+            & > * {
+                outline: 0;
+            }
+
+            &:focus-within {
+                /* Use the same color as the message feed pointer */
+                box-shadow: 0 3px 0 hsl(215, 47%, 50%);
+            }
+        }
+
+        a {
+            color: hsl(205, 47%, 42%);
+            text-decoration: none;
+
+            &:hover {
+                color: hsl(214, 40%, 58%);
+            }
+        }
+
+        .required-text:empty::after {
+            content: attr(data-empty);
+            display: block;
+            font-style: italic;
+            color: hsl(0, 0%, 67%);
+            position: absolute;
+        }
+
+        .fa-check-square-o,
+        .fa-square-o {
+            padding: 0 2px;
+            width: 10px;
+        }
+
+        .fa-lock {
+            padding-right: 3px;
+        }
+
+        .fa-envelope {
+            font-size: 0.7rem;
+            margin-right: 2px;
+            position: relative;
+            top: -1px;
+            opacity: 0.6;
+        }
+
+        .table_fix_head {
+            padding: 0 !important;
+            /* 100px = space occupied by `recent_topics_filter_buttons`( ~49px)
+                     + give user some extra space at the bottom so that last
+                       topic row is clearly visible. */
+            max-height: calc(100vh - 100px);
+        }
+
+        .table_fix_head table {
+            /* To keep border properties to the thead th. */
+            border-collapse: separate;
+            margin-bottom: 100px;
+        }
+
+        #recent_topics_filter_buttons {
+            margin: 0 10px;
+            display: flex;
+            /* Search box has no height without this in safari. */
+            flex: 0 0 auto;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .search_group {
+            display: flex;
+            flex-grow: 1;
+            margin: 0 0 10px;
+        }
+
+        #recent_topics_search {
+            flex-grow: 1;
+            padding-right: 20px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .clear_search_button {
+            /* Overrides app_components.css property. */
+            padding-top: 6px !important;
+        }
+
+        #recent_topics_search_clear {
+            margin-top: -10px !important;
+        }
+
+        .btn-recent-filters {
+            border-radius: 40px;
+            margin: 0 5px 10px 0;
+
+            &:focus {
+                background-color: hsl(0, 0%, 80%);
+                outline: 0;
+            }
+
+            &.fake_disabled_button {
+                cursor: not-allowed;
+                opacity: 0.5;
+
+                &:hover {
+                    background-color: hsl(0, 0%, 100%);
+                    border-color: hsl(0, 0%, 80%);
+                }
+            }
+        }
+
+        .btn-recent-selected {
+            background-color: hsl(0, 11%, 93%);
+        }
+
+        .unread_count {
+            /* Focus underline can only occupy the total length of the unread count */
+            margin-right: 1px;
+            margin-left: 1px;
+            align-self: center;
+            background-color: hsl(105, 2%, 50%);
+        }
+
+        .unread_mention_info:not(:empty) {
+            margin-right: -5px;
+            /* Match with its font-size. */
+            line-height: 14px;
+        }
+
+        .unread_hidden {
+            visibility: hidden;
+        }
+
+        .flex_container_pm {
+            /* Flex container to fit in user circle and group icon */
+            display: flex;
+            justify-content: space-between;
+
+            .tippy-content {
+                font-weight: 400;
+            }
+        }
+
+        .flex_container {
+            display: flex;
+            align-items: center;
+        }
+
+        .flex_container .left_part {
+            flex-wrap: wrap;
+
+            .user_status_icon_wrapper {
+                display: inline-flex;
+                align-items: center;
+                flex-direction: row;
+            }
+        }
+
+        .flex_container .right_part {
+            margin-left: auto;
+            display: inline-flex;
+        }
+
+        .recent_topic_actions {
+            /* To add spacing between unread count and mute icon */
+            margin-left: 10px;
+            display: flex;
+            flex-flow: row nowrap;
+        }
+
+        .mention_in_unread {
+            opacity: 0.7;
+        }
+
+        .recent_topic_actions.dummy_action_button {
+            visibility: hidden;
+        }
+
+        .recent_topic_actions .recent_topics_focusable {
+            display: flex;
+            align-items: center;
+            padding-bottom: 3px;
+        }
+
+        .recent_topics_participants {
+            display: inline-flex; /* Causes LI items to display in row. */
+            list-style-type: none;
+            margin: auto; /* Centers vertically / horizontally in flex container. */
+            height: 24px;
+            padding: 4px;
+            border-radius: 6px;
+            overflow: hidden;
+
+            /*
+                By using the row-reverse layout, the visual ordering will be opposite of
+                the DOM ordering. This will allows us to stack the items in the opposite
+                direction of the natural stacking order without having to mess with the
+                zIndex value. The MAJOR DOWNSIDE is that the HTML itself now reads
+                backwards, which super janky.
+            */
+            flex-direction: row-reverse;
+        }
+
+        .recent_topics_participant_item {
+            height: 24px;
+            margin: 0;
+            padding: 0 1.5px;
+            position: relative;
+            min-width: 24px;
+            cursor: pointer;
+
+            .fa-user {
+                opacity: 0.7;
+            }
+        }
+
+        .recent_topics_participant_avatar,
+        .recent_topics_participant_overflow {
+            border: 0;
+            border-radius: 6px;
+            color: hsl(0, 0%, 100%);
+            display: block;
+            height: 24px;
+            text-align: center;
+            background-color: hsl(0, 0%, 88%);
+        }
+
+        .recent_topics_participant_overflow {
+            color: hsl(0, 0%, 0%);
+            line-height: 24px;
+        }
+
+        tr {
+            background-color: hsl(100, 11%, 96%);
+
+            &:hover {
+                background-color: hsl(210, 100%, 97%);
+            }
+        }
+
+        .unread_topic {
+            background-color: hsl(0, 0%, 100%);
+        }
+
+        .last_msg_time {
+            float: left;
+            margin-right: 5px;
+        }
+
+        thead th {
+            background-color: hsl(0, 0%, 100%);
+            color: inherit;
+            border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+
+            &.active::after,
+            &[data-sort]:hover::after {
+                content: " \f0d8";
+                white-space: pre;
+                display: inline-block;
+                position: absolute;
+                padding-top: 3px;
+                font: normal normal normal 12px/1 FontAwesome;
+                font-size: inherit;
+            }
+
+            &.active {
+                opacity: 1;
+                transition: opacity 100ms ease-out;
+
+                &.descend::after {
+                    content: " \f0d7";
+                }
+            }
+
+            &[data-sort]:hover {
+                cursor: pointer;
+                background-color: hsla(0, 0%, 95%);
+                transition: background-color 100ms ease-in-out;
+
+                &:not(.active)::after {
+                    opacity: 0.3;
+                }
+            }
+        }
+
+        /* These fixed column widths prevent column widths from being adjusted
+           as new messages arrive from the server. */
+        .recent_topic_stream {
+            width: 25%;
+            padding: 8px 0 8px 8px;
+
+            a {
+                word-break: break-word;
+                hyphens: auto;
+            }
+        }
+
+        .recent_topic_name {
+            width: 40%;
+
+            a {
+                word-break: break-word;
+                /* No hyphes for word break since it caused hyphens to appear before
+                   the ellipsis `longText-...` which is not desirable. Ellipsis appears due
+                   to the line clamp applied below.
+                */
+            }
+
+            .line_clamp {
+                /* This -webkit-box display property is webkit-specific, but
+                   it appears that line clamping works fine for this component
+                   on Firefox anyway. */
+                /* stylelint-disable-next-line value-no-vendor-prefix */
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        }
+
+        .recent_topic_users {
+            width: 20%;
+        }
+
+        .recent_topic_timestamp {
+            width: 15%;
+        }
+
+        thead .last_msg_time_header {
+            /* The responsive table of bootstrap
+               somehow ignores the width of ::after
+               element. This ensures it is always visible.
+               20px = space occupied by ::after (icon) +
+               some extra padding.
+            */
+            padding-right: 20px;
+        }
+
+        @media (width < $md_min) {
+            /* Hide participants and last message time
+               on smaller screens. This ensures user always
+               has a nice UI experience. */
+            .recent_topic_users,
+            .recent_topic_timestamp,
+            thead .participants_header,
+            thead .last_msg_time_header {
+                display: none;
+            }
+
+            .recent_topic_actions {
+                margin-right: 5px;
+                font-size: 15px;
+            }
+        }
+
+        .private_conversation_row {
+            .recent_topic_stream {
+                /* Reduce padding of stream section so that user status
+                   icon can have more padding without impacting height of the row */
+                padding: 5px 0 5px 8px;
+            }
+
+            .pm_status_icon {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                /* Increasing vertical padding any further will increase
+                the height of the row. */
+                padding: 8px;
+                position: relative;
+                right: -8px; /* To cancel padding-right */
+                /* To accommodate fa-group icon */
+                width: 14px;
+                height: 14px;
+
+                .fa-group {
+                    font-size: 0.8rem;
+                    /* color: hsl(105, 2%, 50%); */
+                    opacity: 0.6;
+                }
+
+                .user_circle {
+                    /* Shrink the user activity circle for the recent topics context. */
+                    min-width: 7px;
+                    height: 7px;
+                    float: left;
+                    position: unset;
+                }
+            }
+        }
+    }
+
+    #recent_topics_bottom_whitespace {
+        /* For visual reasons, in a message feed, we require a large
+         * bottom_whitespace to make it convenient to display new
+         * messages as they come in and prevent occluding the last
+         * message with an open compose box. Here, the bottom item
+         * is rarely interesting context for a message one is
+         * composing, but we do need at least 41px to allow the
+         * close-compose-box UI element (including border) to not
+         * overlap content. Add some more margin so that user
+         * can clearly see the end of the topics.
+         */
+        height: 120px;
+
+        #recent_topics_loading_messages_indicator,
+        .bottom-messages-logo {
+            display: block;
+            position: absolute;
+            top: 200px;
+            left: 0;
+            right: 0;
+            margin: auto;
+
+            .loading_indicator_spinner {
+                position: relative;
+                top: -7px;
+            }
+        }
+    }
+
+    .stream-privacy .zulip-icon.zulip-icon-globe {
+        left: -1px;
+    }
+}
+
+#recent_topics_view {
+    display: none;
+    position: relative;
+}

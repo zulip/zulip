@@ -1,8 +1,9 @@
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django_stubs_ext import StrPromise
 
 
 class ErrorCode(Enum):
@@ -18,6 +19,7 @@ class ErrorCode(Enum):
     STREAM_DOES_NOT_EXIST = auto()
     UNAUTHORIZED_PRINCIPAL = auto()
     UNSUPPORTED_WEBHOOK_EVENT_TYPE = auto()
+    ANOMALOUS_WEBHOOK_PAYLOAD = auto()
     BAD_EVENT_QUEUE_ID = auto()
     CSRF_FAILED = auto()
     INVITATION_FAILED = auto()
@@ -31,9 +33,12 @@ class ErrorCode(Enum):
     RATE_LIMIT_HIT = auto()
     USER_DEACTIVATED = auto()
     REALM_DEACTIVATED = auto()
+    REMOTE_SERVER_DEACTIVATED = auto()
     PASSWORD_AUTH_DISABLED = auto()
     PASSWORD_RESET_REQUIRED = auto()
     AUTHENTICATION_FAILED = auto()
+    UNAUTHORIZED = auto()
+    REQUEST_TIMEOUT = auto()
 
 
 class JsonableError(Exception):
@@ -81,9 +86,9 @@ class JsonableError(Exception):
     # like 403 or 404.
     http_status_code: int = 400
 
-    def __init__(self, msg: str) -> None:
+    def __init__(self, msg: Union[str, StrPromise]) -> None:
         # `_msg` is an implementation detail of `JsonableError` itself.
-        self._msg: str = msg
+        self._msg = msg
 
     @staticmethod
     def msg_format() -> str:
@@ -120,6 +125,28 @@ class JsonableError(Exception):
 
     def __str__(self) -> str:
         return self.msg
+
+
+class UnauthorizedError(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED
+    http_status_code: int = 401
+
+    def __init__(self, msg: Optional[str] = None, www_authenticate: Optional[str] = None) -> None:
+        if msg is None:
+            msg = _("Not logged in: API authentication or user session required")
+        super().__init__(msg)
+        if www_authenticate is None:
+            self.www_authenticate = 'Basic realm="zulip"'
+        elif www_authenticate == "session":
+            self.www_authenticate = 'Session realm="zulip"'
+        else:
+            raise AssertionError("Invalid www_authenticate value!")
+
+    @property
+    def extra_headers(self) -> Dict[str, Any]:
+        extra_headers_dict = super().extra_headers
+        extra_headers_dict["WWW-Authenticate"] = self.www_authenticate
+        return extra_headers_dict
 
 
 class StreamDoesNotExistError(JsonableError):
@@ -159,7 +186,7 @@ class CannotDeactivateLastUserError(JsonableError):
         return _("Cannot deactivate the only {entity}.")
 
 
-class InvalidMarkdownIncludeStatement(JsonableError):
+class InvalidMarkdownIncludeStatementError(JsonableError):
     code = ErrorCode.INVALID_MARKDOWN_INCLUDE_STATEMENT
     data_fields = ["include_statement"]
 
@@ -171,7 +198,7 @@ class InvalidMarkdownIncludeStatement(JsonableError):
         return _("Invalid Markdown include statement: {include_statement}")
 
 
-class RateLimited(JsonableError):
+class RateLimitedError(JsonableError):
     code = ErrorCode.RATE_LIMIT_HIT
     http_status_code = 429
 
@@ -206,7 +233,7 @@ class InvalidJSONError(JsonableError):
         return _("Malformed JSON")
 
 
-class OrganizationMemberRequired(JsonableError):
+class OrganizationMemberRequiredError(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
     def __init__(self) -> None:
@@ -217,7 +244,7 @@ class OrganizationMemberRequired(JsonableError):
         return _("Must be an organization member")
 
 
-class OrganizationAdministratorRequired(JsonableError):
+class OrganizationAdministratorRequiredError(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
     def __init__(self) -> None:
@@ -228,7 +255,7 @@ class OrganizationAdministratorRequired(JsonableError):
         return _("Must be an organization administrator")
 
 
-class OrganizationOwnerRequired(JsonableError):
+class OrganizationOwnerRequiredError(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
     def __init__(self) -> None:
@@ -237,17 +264,6 @@ class OrganizationOwnerRequired(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Must be an organization owner")
-
-
-class StreamAdministratorRequired(JsonableError):
-    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
-
-    def __init__(self) -> None:
-        pass
-
-    @staticmethod
-    def msg_format() -> str:
-        return _("Must be an organization or stream administrator")
 
 
 class AuthenticationFailedError(JsonableError):
@@ -279,6 +295,16 @@ class RealmDeactivatedError(AuthenticationFailedError):
         return _("This organization has been deactivated")
 
 
+class RemoteServerDeactivatedError(AuthenticationFailedError):
+    code: ErrorCode = ErrorCode.REALM_DEACTIVATED
+
+    @staticmethod
+    def msg_format() -> str:
+        return _(
+            "The mobile push notification service registration for your server has been deactivated"
+        )
+
+
 class PasswordAuthDisabledError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.PASSWORD_AUTH_DISABLED
 
@@ -295,7 +321,7 @@ class PasswordResetRequiredError(AuthenticationFailedError):
         return _("Your password has been disabled and needs to be reset")
 
 
-class MarkdownRenderingException(Exception):
+class MarkdownRenderingError(Exception):
     pass
 
 
@@ -317,17 +343,59 @@ class InvalidAPIKeyFormatError(InvalidAPIKeyError):
         return _("Malformed API key")
 
 
-class UnsupportedWebhookEventType(JsonableError):
+class WebhookError(JsonableError):
+    """
+    Intended as a generic exception raised by specific webhook
+    integrations. This class is subclassed by more specific exceptions
+    such as UnsupportedWebhookEventTypeError and AnomalousWebhookPayloadError.
+    """
+
+    data_fields = ["webhook_name"]
+
+    def __init__(self) -> None:
+        # webhook_name is often set by decorators such as webhook_view
+        # in zerver/decorator.py
+        self.webhook_name = "(unknown)"
+
+
+class UnsupportedWebhookEventTypeError(WebhookError):
+    """Intended as an exception for event formats that we know the
+    third-party service generates but which Zulip doesn't support /
+    generate a message for.
+
+    Exceptions where we cannot parse the event type, possibly because
+    the event isn't actually from the service in question, should
+    raise AnomalousWebhookPayloadError.
+    """
+
     code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
     data_fields = ["webhook_name", "event_type"]
 
     def __init__(self, event_type: Optional[str]) -> None:
-        self.webhook_name = "(unknown)"
+        super().__init__()
         self.event_type = event_type
 
     @staticmethod
     def msg_format() -> str:
         return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
+
+
+class AnomalousWebhookPayloadError(WebhookError):
+    """Intended as an exception for incoming webhook requests that we
+    cannot recognize as having been generated by the service in
+    question. (E.g. because someone pointed a Jira server at the
+    GitHub integration URL).
+
+    If we can parse the event but don't support it, use
+    UnsupportedWebhookEventTypeError.
+
+    """
+
+    code = ErrorCode.ANOMALOUS_WEBHOOK_PAYLOAD
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Unable to parse request: Did {webhook_name} generate this event?")
 
 
 class MissingAuthenticationError(JsonableError):
@@ -353,14 +421,19 @@ class InvalidSubdomainError(JsonableError):
         return _("Invalid subdomain")
 
 
-class ZephyrMessageAlreadySentException(Exception):
+class ZephyrMessageAlreadySentError(Exception):
     def __init__(self, message_id: int) -> None:
         self.message_id = message_id
 
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
-    data_fields = ["errors", "sent_invitations", "license_limit_reached"]
+    data_fields = [
+        "errors",
+        "sent_invitations",
+        "license_limit_reached",
+        "daily_limit_reached",
+    ]
 
     def __init__(
         self,
@@ -368,11 +441,13 @@ class InvitationError(JsonableError):
         errors: List[Tuple[str, str, bool]],
         sent_invitations: bool,
         license_limit_reached: bool = False,
+        daily_limit_reached: bool = False,
     ) -> None:
         self._msg: str = msg
         self.errors: List[Tuple[str, str, bool]] = errors
         self.sent_invitations: bool = sent_invitations
         self.license_limit_reached: bool = license_limit_reached
+        self.daily_limit_reached: bool = daily_limit_reached
 
 
 class AccessDeniedError(JsonableError):
@@ -398,4 +473,4 @@ class ValidationFailureError(JsonableError):
 
     def __init__(self, error: ValidationError) -> None:
         super().__init__(error.messages[0])
-        self.errors = dict(error)
+        self.errors = error.message_dict

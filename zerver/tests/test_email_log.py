@@ -10,7 +10,7 @@ from zproject.email_backends import get_forward_address
 class EmailLogTest(ZulipTestCase):
     def test_generate_and_clear_email_log(self) -> None:
         with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"), mock.patch(
-            "zproject.email_backends.EmailBackend.send_messages"
+            "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
         ), self.assertLogs(level="INFO") as m, self.settings(DEVELOPMENT_LOG_EMAILS=True):
             result = self.client_get("/emails/generate/")
             self.assertEqual(result.status_code, 302)
@@ -29,17 +29,22 @@ class EmailLogTest(ZulipTestCase):
             self.assertEqual(m.output, [output_log for i in range(15)])
 
     def test_forward_address_details(self) -> None:
-        forward_address = "forward-to@example.com"
-        result = self.client_post("/emails/", {"forward_address": forward_address})
-        self.assert_json_success(result)
+        try:
+            forward_address = "forward-to@example.com"
+            result = self.client_post("/emails/", {"forward_address": forward_address})
+            self.assert_json_success(result)
 
-        self.assertEqual(get_forward_address(), forward_address)
+            self.assertEqual(get_forward_address(), forward_address)
 
-        with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"):
-            with mock.patch("zproject.email_backends.EmailBackend.send_messages"):
+            with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"), mock.patch(
+                "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
+            ):
                 result = self.client_get("/emails/generate/")
                 self.assertEqual(result.status_code, 302)
                 self.assertIn("emails", result["Location"])
                 result = self.client_get(result["Location"])
                 self.assert_in_success_response([forward_address], result)
-        os.remove(settings.FORWARD_ADDRESS_CONFIG_FILE)
+        # Remove this file, even if the test fails, so that it does
+        # not impact the state of the development environment.
+        finally:
+            os.remove(settings.FORWARD_ADDRESS_CONFIG_FILE)

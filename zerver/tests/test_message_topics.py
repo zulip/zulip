@@ -1,7 +1,12 @@
+from unittest import mock
+
+import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_change_stream_invite_only
+from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import timeout_mock
+from zerver.lib.timeout import TimeoutExpiredError
 from zerver.models import Message, UserMessage, get_client, get_realm, get_stream
 
 
@@ -21,8 +26,7 @@ class TopicHistoryTest(ZulipTestCase):
         self.subscribe(user_profile, stream_name)
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint, {}, subdomain="zephyr")
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
         self.assertEqual(history, [])
 
     def test_topics_history(self) -> None:
@@ -41,6 +45,7 @@ class TopicHistoryTest(ZulipTestCase):
             message = Message(
                 sender=hamlet,
                 recipient=recipient,
+                realm=stream.realm,
                 content="whatever",
                 date_sent=timezone_now(),
                 sending_client=get_client("whatever"),
@@ -75,8 +80,7 @@ class TopicHistoryTest(ZulipTestCase):
 
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
 
         # We only look at the most recent three topics, because
         # the prior fixture data may be unreliable.
@@ -105,8 +109,7 @@ class TopicHistoryTest(ZulipTestCase):
         # same results for a public stream.
         self.login("cordelia")
         result = self.client_get(endpoint, {})
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
 
         # We only look at the most recent three topics, because
         # the prior fixture data may be unreliable.
@@ -132,12 +135,17 @@ class TopicHistoryTest(ZulipTestCase):
         )
 
         # Now make stream private, but subscribe cordelia
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=self.example_user("cordelia"),
+        )
         self.subscribe(self.example_user("cordelia"), stream.name)
 
         result = self.client_get(endpoint, {})
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
         history = history[:3]
 
         # Cordelia doesn't have these recent history items when we
@@ -152,7 +160,7 @@ class TopicHistoryTest(ZulipTestCase):
         # non-sensible stream id
         endpoint = "/json/users/me/9999999999/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
         # out of realm
         bad_stream = self.make_stream(
@@ -161,7 +169,7 @@ class TopicHistoryTest(ZulipTestCase):
         )
         endpoint = f"/json/users/me/{bad_stream.id}/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
         # private stream to which I am not subscribed
         private_stream = self.make_stream(
@@ -170,19 +178,19 @@ class TopicHistoryTest(ZulipTestCase):
         )
         endpoint = f"/json/users/me/{private_stream.id}/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_get_topics_web_public_stream_web_public_request(self) -> None:
-        stream = self.make_stream("web-public-steram", is_web_public=True)
+        iago = self.example_user("iago")
+        stream = self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(iago, stream.name)
+
         for i in range(3):
-            self.send_stream_message(
-                self.example_user("iago"), stream.name, topic_name="topic" + str(i)
-            )
+            self.send_stream_message(iago, stream.name, topic_name="topic" + str(i))
 
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint)
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
         self.assertEqual(
             [topic["name"] for topic in history],
             [
@@ -196,13 +204,13 @@ class TopicHistoryTest(ZulipTestCase):
         stream = get_stream("Verona", self.example_user("iago").realm)
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint)
-        self.assert_json_error(result, "Invalid stream id", 400)
+        self.assert_json_error(result, "Invalid stream ID", 400)
 
-    def test_get_topics_non_existant_stream_web_public_request(self) -> None:
-        non_existant_stream_id = 10000000000000000000000
-        endpoint = f"/json/users/me/{non_existant_stream_id}/topics"
+    def test_get_topics_non_existent_stream_web_public_request(self) -> None:
+        non_existent_stream_id = 10000000000000000000000
+        endpoint = f"/json/users/me/{non_existent_stream_id}/topics"
         result = self.client_get(endpoint)
-        self.assert_json_error(result, "Invalid stream id", 400)
+        self.assert_json_error(result, "Invalid stream ID", 400)
 
 
 class TopicDeleteTest(ZulipTestCase):
@@ -230,10 +238,16 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_error(result, "Must be an organization administrator")
-        self.assertEqual(self.get_last_message().id, last_msg_id)
+        self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Make stream private with limited history
-        do_change_stream_invite_only(stream, invite_only=True, history_public_to_subscribers=False)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
 
         # ADMIN USER subscribed now
         user_profile = self.example_user("iago")
@@ -251,7 +265,7 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, last_msg_id)
+        self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Try to delete all messages in the topic again. There are no messages accessible
         # to the administrator, so this should do nothing.
@@ -262,26 +276,62 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, last_msg_id)
+        self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Make the stream's history public to subscribers
-        do_change_stream_invite_only(stream, invite_only=True, history_public_to_subscribers=True)
-        # Delete the topic should now remove all messages
-        result = self.client_post(
-            endpoint,
-            {
-                "topic_name": topic_name,
-            },
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=user_profile,
         )
+        # Delete the topic should now remove all messages
+        with timeout_mock("zerver.views.streams"):
+            result = self.client_post(
+                endpoint,
+                {
+                    "topic_name": topic_name,
+                },
+            )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, initial_last_msg_id)
+        self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
+        self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
 
         # Delete again, to test the edge case of deleting an empty topic.
-        result = self.client_post(
-            endpoint,
-            {
-                "topic_name": topic_name,
-            },
-        )
+        with timeout_mock("zerver.views.streams"):
+            result = self.client_post(
+                endpoint,
+                {
+                    "topic_name": topic_name,
+                },
+            )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, initial_last_msg_id)
+        self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
+        self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
+
+    def test_topic_delete_timeout(self) -> None:
+        stream_name = "new_stream"
+        topic_name = "new topic 2"
+
+        user_profile = self.example_user("iago")
+        self.subscribe(user_profile, stream_name)
+
+        stream = get_stream(stream_name, user_profile.realm)
+        self.send_stream_message(user_profile, stream_name, topic_name=topic_name)
+
+        self.login_user(user_profile)
+        endpoint = "/json/streams/" + str(stream.id) + "/delete_topic"
+        with mock.patch("zerver.views.streams.timeout", side_effect=TimeoutExpiredError):
+            result = self.client_post(
+                endpoint,
+                {
+                    "topic_name": topic_name,
+                },
+            )
+            self.assertEqual(result.status_code, 200)
+
+            result_dict = orjson.loads(result.content)
+            self.assertEqual(
+                result_dict, {"result": "partially_completed", "msg": "", "code": "REQUEST_TIMEOUT"}
+            )

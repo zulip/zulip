@@ -21,7 +21,7 @@ from PIL import Image
 
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.storage import static_path
-from zerver.lib.upload import DEFAULT_AVATAR_SIZE, resize_avatar
+from zerver.lib.upload.base import DEFAULT_AVATAR_SIZE, resize_avatar
 
 
 def create_square_image(png: bytes) -> bytes:

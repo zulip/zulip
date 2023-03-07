@@ -7,10 +7,13 @@ from typing import List
 import digitalocean
 import zulip
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 manager = digitalocean.Manager(token=os.environ["DIGITALOCEAN_API_KEY"])
-zulip_client = zulip.Client()
+# We just temporarily create the client now, to validate that we can
+# auth to the server; reusing it after the whole install fails because
+# the connection has been half-closed in a way that breaks it.
+zulip.Client()
 TEST_DROPLET_SUBDOMAIN = "do"
 
 
@@ -41,7 +44,16 @@ def sleep_until_droplet_action_is_completed(
                 break
         if incomplete:
             time.sleep(5)
-    droplet.load()
+
+    # Sometimes the droplet does not yet have an .ip_address value
+    # (the attribute is None) after .load()ing the droplet. We cannot
+    # proceed without the IP, so we wait in a loop until the IP is
+    # returned to us.
+    while True:
+        droplet.load()
+        if droplet.ip_address:
+            break
+        time.sleep(5)
 
 
 def set_api_request_retry_limits(api_object: digitalocean.baseapi.BaseAPI) -> None:
@@ -104,7 +116,7 @@ def create_dns_records(droplet: digitalocean.Droplet) -> None:
 
 
 def setup_one_click_app_installer(droplet: digitalocean.Droplet) -> None:
-    subprocess.call(
+    subprocess.check_call(
         [
             "fab",
             "build_image",
@@ -126,7 +138,7 @@ def send_message(content: str) -> None:
         "topic": "digitalocean installer",
         "content": content,
     }
-    zulip_client.send_message(request)
+    zulip.Client().send_message(request)
 
 
 if __name__ == "__main__":

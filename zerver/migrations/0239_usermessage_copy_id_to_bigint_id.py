@@ -3,7 +3,7 @@
 import time
 
 from django.db import connection, migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min
 from psycopg2.sql import SQL
@@ -29,7 +29,7 @@ def sql_copy_id_to_bigint_id(id_range_lower_bound: int, id_range_upper_bound: in
         )
 
 
-def copy_id_to_bigid(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def copy_id_to_bigid(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserMessage = apps.get_model("zerver", "UserMessage")
     if not UserMessage.objects.exists():
         # Nothing to do

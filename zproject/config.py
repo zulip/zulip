@@ -2,6 +2,11 @@ import configparser
 import os
 from typing import Optional, overload
 
+
+class ZulipSettingsError(Exception):
+    pass
+
+
 DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 
 config_file = configparser.RawConfigParser()
@@ -10,7 +15,6 @@ config_file.read("/etc/zulip/zulip.conf")
 # Whether this instance of Zulip is running in a production environment.
 PRODUCTION = config_file.has_option("machine", "deploy_type")
 DEVELOPMENT = not PRODUCTION
-
 secrets_file = configparser.RawConfigParser()
 if PRODUCTION:
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
@@ -36,6 +40,15 @@ def get_secret(
     if development_only and PRODUCTION:
         return default_value
     return secrets_file.get("secrets", key, fallback=default_value)
+
+
+def get_mandatory_secret(key: str) -> str:
+    secret = get_secret(key)
+    if secret is None:
+        if os.environ.get("DISABLE_MANDATORY_SECRET_CHECK") == "True":
+            return ""
+        raise ZulipSettingsError(f'Mandatory secret "{key}" is not set')
+    return secret
 
 
 @overload

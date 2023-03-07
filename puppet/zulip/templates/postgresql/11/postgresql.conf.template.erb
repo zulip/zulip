@@ -693,7 +693,7 @@ effective_io_concurrency = <%= @effective_io_concurrency %>
 listen_addresses = <%= @listen_addresses %>
 <% end -%>
 
-<% if @replication != '' -%>
+<% if @s3_backups_bucket != '' -%>
 # Primary replication settings (ignored on replica)
 wal_level = hot_standby
 max_wal_senders = 5

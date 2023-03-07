@@ -6,25 +6,28 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
+from confirmation.models import Confirmation
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
+from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
+from zerver.actions.muted_users import do_mute_user
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.actions.users import (
     change_user_is_active,
-    create_users,
     do_change_can_create_users,
     do_change_user_role,
-    do_create_user,
     do_deactivate_user,
     do_delete_user,
-    do_invite_users,
-    do_mute_user,
-    do_reactivate_user,
-    do_set_realm_property,
-    get_recipient_info,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
@@ -39,29 +42,30 @@ from zerver.lib.test_helpers import (
     cache_tries_captured,
     get_subscription,
     get_test_image_file,
-    queries_captured,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
-from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
-    InvalidFakeEmailDomain,
+    InvalidFakeEmailDomainError,
     Message,
     PreregistrationUser,
-    Realm,
     RealmDomain,
     RealmUserDefault,
     Recipient,
     ScheduledEmail,
     Stream,
     Subscription,
+    UserGroupMembership,
     UserHotspot,
     UserProfile,
+    UserTopic,
     check_valid_user_ids,
+    filter_to_valid_prereg_users,
     get_client,
     get_fake_email_domain,
     get_realm,
@@ -201,8 +205,7 @@ class PermissionTest(ZulipTestCase):
         do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         result = self.client_get("/json/users")
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         iago_dict = find_dict(members, "email", iago.email)
         self.assertTrue(iago_dict["is_owner"])
         othello_dict = find_dict(members, "email", othello.email)
@@ -210,7 +213,7 @@ class PermissionTest(ZulipTestCase):
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -220,7 +223,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -232,7 +235,7 @@ class PermissionTest(ZulipTestCase):
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -262,8 +265,7 @@ class PermissionTest(ZulipTestCase):
 
         # Make sure we see is_admin flag in /json/users
         result = self.client_get("/json/users")
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         desdemona_dict = find_dict(members, "email", desdemona.email)
         self.assertTrue(desdemona_dict["is_admin"])
         othello_dict = find_dict(members, "email", othello.email)
@@ -273,7 +275,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -284,7 +286,7 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -299,7 +301,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_api_hide_emails(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         user = self.example_user("hamlet")
         admin = self.example_user("iago")
@@ -307,12 +309,11 @@ class PermissionTest(ZulipTestCase):
 
         # First, verify client_gravatar works normally
         result = self.client_get("/json/users", {"client_gravatar": "true"})
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], user.email)
         self.assertIsNone(hamlet["avatar_url"])
-        self.assertNotIn("delivery_email", hamlet)
+        self.assertEqual(hamlet["delivery_email"], user.delivery_email)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # we need to verify client_gravatar is not being overridden.
@@ -320,51 +321,37 @@ class PermissionTest(ZulipTestCase):
             "zerver.lib.events.request_event_queue", return_value=None
         ) as mock_request_event_queue:
             with self.assertRaises(JsonableError):
-                do_events_register(user, get_client("website"), client_gravatar=True)
+                do_events_register(user, user.realm, get_client("website"), client_gravatar=True)
             self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], True)
 
         #############################################################
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
-        do_set_realm_property(
-            user.realm,
-            "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            acting_user=None,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(
+                user,
+                "email_address_visibility",
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                acting_user=None,
+            )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        # Note that the Gravatar URL should still be computed from the
-        # `delivery_email`; otherwise, we won't be able to serve the
-        # user's Gravatar.
         self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
-        self.assertNotIn("delivery_email", hamlet)
-
-        # Also verify the /events code path.  This is a bit hacky, but
-        # basically we want to verify client_gravatar is being
-        # overridden.
-        with mock.patch(
-            "zerver.lib.events.request_event_queue", return_value=None
-        ) as mock_request_event_queue:
-            with self.assertRaises(JsonableError):
-                do_events_register(user, get_client("website"), client_gravatar=True)
-            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], False)
 
         # client_gravatar is still turned off for admins.  In theory,
         # it doesn't need to be, but client-side changes would be
         # required in apps like the mobile apps.
         # delivery_email is sent for admins.
         admin.refresh_from_db()
+        user.refresh_from_db()
         self.login_user(admin)
         result = self.client_get("/json/users", {"client_gravatar": "true"})
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.email, 1))
+        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
@@ -377,7 +364,7 @@ class PermissionTest(ZulipTestCase):
         new_name = "new name"
         self.login("iago")
         hamlet = self.example_user("hamlet")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch(f"/json/users/{hamlet.id}", req)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
@@ -385,21 +372,21 @@ class PermissionTest(ZulipTestCase):
 
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login("hamlet")
-        req = dict(full_name=orjson.dumps("new name").decode())
+        req = dict(full_name="new name")
         result = self.client_patch("/json/users/{}".format(self.example_user("othello").id), req)
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_cannot_set_long_full_name(self) -> None:
         new_name = "a" * (UserProfile.MAX_NAME_LENGTH + 1)
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Name too long!")
 
     def test_admin_cannot_set_short_full_name(self) -> None:
         new_name = "a"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Name too short!")
 
@@ -407,7 +394,7 @@ class PermissionTest(ZulipTestCase):
         # Name of format "Alice|999" breaks in Markdown
         new_name = "iago|72"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
@@ -415,21 +402,21 @@ class PermissionTest(ZulipTestCase):
         # Adding characters after r'|d+' doesn't break Markdown
         new_name = "Hello- 12iago|72k"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_success(result)
 
     def test_not_allowed_format_complex(self) -> None:
         new_name = "Hello- 12iago|72"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = "Opheli*"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid characters in name!")
 
@@ -515,17 +502,32 @@ class PermissionTest(ZulipTestCase):
 
         user_profile = self.example_user(user_email)
         old_role = user_profile.role
+        old_system_group = get_system_user_group_for_user(user_profile)
 
         self.assertTrue(self.check_property_for_role(user_profile, old_role))
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=user_profile, user_group=old_system_group
+            ).exists()
+        )
 
         req = dict(role=orjson.dumps(new_role).decode())
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        num_events = 3
+        if UserProfile.ROLE_MEMBER in [old_role, new_role]:
+            num_events = 4
+        with self.tornado_redirected_to_list(events, expected_num_events=num_events):
             result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_success(result)
 
         user_profile = self.example_user(user_email)
         self.assertTrue(self.check_property_for_role(user_profile, new_role))
+        system_group = get_system_user_group_for_user(user_profile)
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=user_profile, user_group=system_group
+            ).exists()
+        )
 
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], user_profile.id)
@@ -592,11 +594,12 @@ class PermissionTest(ZulipTestCase):
             "Phone number": "short text data",
             "Biography": "long text data",
             "Favorite food": "short text data",
-            "Favorite editor": "vim",
+            "Favorite editor": "0",
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": [cordelia.id],
-            "GitHub": "timabbott",
+            "GitHub username": "timabbott",
+            "Pronouns": "she/her",
         }
 
         for field_name in fields:
@@ -704,7 +707,8 @@ class PermissionTest(ZulipTestCase):
             "Birthday": None,
             "Favorite website": "https://zulip.github.io",
             "Mentor": [hamlet.id],
-            "GitHub": "timabbott",
+            "GitHub username": "timabbott",
+            "Pronouns": None,
         }
         new_profile_data = []
         for field_name in fields:
@@ -774,21 +778,21 @@ class QueryCountTest(ZulipTestCase):
         ]
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
-        invite_expires_in_days = 4
+        invite_expires_in_minutes = 4 * 24 * 60
         do_invite_users(
             user_profile=self.example_user("hamlet"),
             invitee_emails=["fred@zulip.com"],
             streams=streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         events: List[Mapping[str, Any]] = []
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(90):
             with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events, expected_num_events=8):
+                with self.tornado_redirected_to_list(events, expected_num_events=11):
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -798,9 +802,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 84)
-        self.assert_length(cache_tries, 27)
-
+        self.assert_length(cache_tries, 28)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
         notifications = set()
@@ -818,8 +820,11 @@ class QueryCountTest(ZulipTestCase):
 class BulkCreateUserTest(ZulipTestCase):
     def test_create_users(self) -> None:
         realm = get_realm("zulip")
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        realm.save()
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_user_default.email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
+        realm_user_default.save()
 
         name_list = [
             ("Fred Flintstone", "fred@zulip.com"),
@@ -839,8 +844,10 @@ class BulkCreateUserTest(ZulipTestCase):
         self.assertEqual(lisa.is_bot, False)
         self.assertEqual(lisa.bot_type, None)
 
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        realm.save()
+        realm_user_default.email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
+        realm_user_default.save()
 
         name_list = [
             ("Bono", "bono@zulip.com"),
@@ -858,7 +865,6 @@ class BulkCreateUserTest(ZulipTestCase):
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:
-
         # This test should give us complete coverage on
         # create_user_backend.  It mostly exercises error
         # conditions, and it also does a basic test of the success
@@ -916,7 +922,7 @@ class AdminCreateUserTest(ZulipTestCase):
                 short_name="DEPRECATED",
             ),
         )
-        self.assert_json_success(result)
+        self.assert_json_success(result, ignored_parameters=["short_name"])
 
         result = self.client_post(
             "/json/users",
@@ -1090,7 +1096,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(result[webhook_bot.email].email, webhook_bot.email)
 
     def test_get_accounts_for_email(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         def check_account_present_in_accounts(user: UserProfile, accounts: List[Accounts]) -> None:
             for account in accounts:
@@ -1134,7 +1140,7 @@ class UserProfileTest(ZulipTestCase):
             check_account_present_in_accounts(user, accounts)
 
     def test_get_source_profile(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         zulip_realm_id = get_realm("zulip").id
         iago = get_source_profile("iago@zulip.com", zulip_realm_id)
         assert iago is not None
@@ -1177,7 +1183,7 @@ class UserProfileTest(ZulipTestCase):
 
         UserHotspot.objects.filter(user=cordelia).delete()
         UserHotspot.objects.filter(user=iago).delete()
-        hotspots_completed = {"intro_reply", "intro_streams", "intro_topics"}
+        hotspots_completed = {"intro_streams", "intro_topics"}
         for hotspot in hotspots_completed:
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 
@@ -1292,7 +1298,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Invalid stream ID.
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
         result = orjson.loads(
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
@@ -1301,12 +1307,11 @@ class UserProfileTest(ZulipTestCase):
 
         # Subscribe to the stream.
         self.subscribe(iago, stream.name)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(6):
             result = orjson.loads(
                 self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
             )
 
-        self.assert_length(queries, 6)
         self.assertTrue(result["is_subscribed"])
 
         # Logging in with a Guest user.
@@ -1319,6 +1324,26 @@ class UserProfileTest(ZulipTestCase):
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
         )
         self.assertTrue(result["is_subscribed"])
+
+        self.login("iago")
+        stream = self.make_stream("private_stream", invite_only=True)
+        # Unsubscribed admin can check subscription status in a private stream.
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
+
+        # Unsubscribed non-admins cannot check subscription status in a private stream.
+        self.login("shiva")
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
+        self.assert_json_error(result, "Invalid stream ID")
+
+        # Subscribed non-admins can check subscription status in a private stream
+        self.subscribe(self.example_user("shiva"), stream.name)
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
 
 
 class ActivateTest(ZulipTestCase):
@@ -1362,6 +1387,42 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_success(result)
         user = self.example_user("hamlet")
         self.assertTrue(user.is_active)
+
+    def test_email_sent(self) -> None:
+        self.login("iago")
+        user = self.example_user("hamlet")
+
+        # Verify no email sent by default.
+        result = self.client_delete(f"/json/users/{user.id}", dict())
+        self.assert_json_success(result)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 0)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        # Reactivate user
+        do_reactivate_user(user, acting_user=None)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+        # Verify no email sent by default.
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            dict(
+                deactivation_notification_comment="Dear Hamlet,\nyou just got deactivated.",
+            ),
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        self.assert_length(outbox, 1)
+        msg = outbox[0]
+        self.assertEqual(msg.subject, "Notification of account deactivation on Zulip Dev")
+        self.assert_length(msg.reply_to, 1)
+        self.assertEqual(msg.reply_to[0], "noreply@testserver")
+        self.assertIn("Dear Hamlet,", msg.body)
 
     def test_api_with_nonexistent_user(self) -> None:
         self.login("iago")
@@ -1411,6 +1472,153 @@ class ActivateTest(ZulipTestCase):
             "/json/users/{}/reactivate".format(self.example_user("hamlet").id)
         )
         self.assert_json_error(result, "Insufficient permission")
+
+    def test_revoke_invites(self) -> None:
+        """
+        Verify that any invitations generated by the user get revoked
+        when the user is deactivated
+        """
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+
+        invite_expires_in_minutes = 2 * 24 * 60
+        do_invite_users(
+            iago,
+            ["new1@zulip.com", "new2@zulip.com"],
+            [],
+            invite_expires_in_minutes=invite_expires_in_minutes,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+        do_invite_users(
+            desdemona,
+            ["new3@zulip.com", "new4@zulip.com"],
+            [],
+            invite_expires_in_minutes=invite_expires_in_minutes,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+
+        do_invite_users(
+            iago,
+            ["new5@zulip.com"],
+            [],
+            invite_expires_in_minutes=None,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+        do_invite_users(
+            desdemona,
+            ["new6@zulip.com"],
+            [],
+            invite_expires_in_minutes=None,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+
+        iago_multiuse_key = do_create_multiuse_invite_link(
+            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+        ).split("/")[-2]
+        desdemona_multiuse_key = do_create_multiuse_invite_link(
+            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+        ).split("/")[-2]
+
+        iago_never_expire_multiuse_key = do_create_multiuse_invite_link(
+            iago, PreregistrationUser.INVITE_AS["MEMBER"], None
+        ).split("/")[-2]
+        desdemona_never_expire_multiuse_key = do_create_multiuse_invite_link(
+            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], None
+        ).split("/")[-2]
+
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=iago)
+            ).count(),
+            3,
+        )
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=desdemona)
+            ).count(),
+            3,
+        )
+        self.assertTrue(
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            )
+            > timezone_now()
+        )
+        self.assertTrue(
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            )
+            > timezone_now()
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(confirmation_key=iago_never_expire_multiuse_key).expiry_date
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(
+                confirmation_key=desdemona_never_expire_multiuse_key
+            ).expiry_date
+        )
+
+        do_deactivate_user(iago, acting_user=None)
+
+        # Now we verify that invitations generated by iago were revoked, while desdemona's
+        # remain valid.
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=iago)
+            ).count(),
+            0,
+        )
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=desdemona)
+            ).count(),
+            3,
+        )
+        self.assertTrue(
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            )
+            <= timezone_now()
+        )
+        self.assertTrue(
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            )
+            > timezone_now()
+        )
+        self.assertTrue(
+            assert_is_not_none(
+                Confirmation.objects.get(
+                    confirmation_key=iago_never_expire_multiuse_key
+                ).expiry_date
+            )
+            <= timezone_now()
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(
+                confirmation_key=desdemona_never_expire_multiuse_key
+            ).expiry_date
+        )
+
+    def test_clear_sessions(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        session_key = self.client.session.session_key
+        self.assertTrue(session_key)
+
+        result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            do_deactivate_user(user, acting_user=None)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
+
+        result = self.client_get("/json/users")
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
 
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")
@@ -1552,7 +1760,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         all_user_ids = {hamlet.id, cordelia.id, othello.id}
 
-        expected_info = dict(
+        expected_info = RecipientInfoResult(
             active_user_ids=all_user_ids,
             online_push_user_ids=set(),
             pm_mention_email_disabled_user_ids=set(),
@@ -1565,6 +1773,7 @@ class RecipientInfoTest(ZulipTestCase):
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
             service_bot_tuples=[],
+            all_bot_user_ids=set(),
         )
 
         self.assertEqual(info, expected_info)
@@ -1579,8 +1788,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["pm_mention_email_disabled_user_ids"], {hamlet.id})
-        self.assertEqual(info["pm_mention_push_disabled_user_ids"], {hamlet.id})
+        self.assertEqual(info.pm_mention_email_disabled_user_ids, {hamlet.id})
+        self.assertEqual(info.pm_mention_push_disabled_user_ids, {hamlet.id})
         hamlet.enable_offline_email_notifications = True
         hamlet.enable_offline_push_notifications = True
         hamlet.save()
@@ -1596,8 +1805,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
@@ -1606,7 +1815,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["wildcard_mention_user_ids"], {hamlet.id, othello.id})
+        self.assertEqual(info.wildcard_mention_user_ids, {hamlet.id, othello.id})
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = False
@@ -1617,7 +1826,7 @@ class RecipientInfoTest(ZulipTestCase):
             sender_id=hamlet.id,
             stream_topic=stream_topic,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
 
         hamlet.enable_stream_push_notifications = False
         hamlet.save()
@@ -1630,14 +1839,41 @@ class RecipientInfoTest(ZulipTestCase):
             sender_id=hamlet.id,
             stream_topic=stream_topic,
         )
-        self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
+
+        # Now have Hamlet mute the stream and unmute the topic,
+        # which shouldn't omit him from stream_push_user_ids.
+        sub.is_muted = True
+        sub.save()
+
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.UNMUTED,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
+
+        # Now unmute the stream and remove topic visibility_policy.
+        sub.is_muted = False
+        sub.save()
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, topic_name, visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT
+        )
 
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
-        add_topic_mute(
-            user_profile=hamlet,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name=topic_name,
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.MUTED,
         )
 
         info = get_recipient_info(
@@ -1647,8 +1883,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         info = get_recipient_info(
             realm_id=realm.id,
@@ -1657,10 +1893,10 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
         # Since Hamlet has muted the stream and Cordelia has disabled
         # wildcard notifications, it should just be Othello here.
-        self.assertEqual(info["wildcard_mention_user_ids"], {othello.id})
+        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
 
         # If Hamlet mutes Cordelia, he should be in `muted_sender_user_ids` for a message
         # sent by Cordelia.
@@ -1672,7 +1908,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertTrue(hamlet.id in info["muted_sender_user_ids"])
+        self.assertTrue(hamlet.id in info.muted_sender_user_ids)
 
         sub = get_subscription(stream_name, othello)
         sub.wildcard_mentions_notify = False
@@ -1685,9 +1921,9 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
+        self.assertEqual(info.stream_push_user_ids, set())
         # Verify that stream-level wildcard_mentions_notify=False works correctly.
-        self.assertEqual(info["wildcard_mention_user_ids"], set())
+        self.assertEqual(info.wildcard_mention_user_ids, set())
 
         # Verify that True works as expected as well
         sub = get_subscription(stream_name, othello)
@@ -1701,8 +1937,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=True,
         )
-        self.assertEqual(info["stream_push_user_ids"], set())
-        self.assertEqual(info["wildcard_mention_user_ids"], {othello.id})
+        self.assertEqual(info.stream_push_user_ids, set())
+        self.assertEqual(info.wildcard_mention_user_ids, {othello.id})
 
         # Add a service bot.
         service_bot = do_create_user(
@@ -1722,7 +1958,7 @@ class RecipientInfoTest(ZulipTestCase):
             possibly_mentioned_user_ids={service_bot.id},
         )
         self.assertEqual(
-            info["service_bot_tuples"],
+            info.service_bot_tuples,
             [
                 (service_bot.id, UserProfile.EMBEDDED_BOT),
             ],
@@ -1745,7 +1981,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
-        self.assertEqual(info["default_bot_user_ids"], {normal_bot.id})
+        self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
+        self.assertEqual(info.all_bot_user_ids, {normal_bot.id, service_bot.id})
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1770,7 +2007,7 @@ class RecipientInfoTest(ZulipTestCase):
 
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         self.login("cordelia")
 
         hamlet = self.example_user("hamlet")
@@ -1778,8 +2015,7 @@ class BulkUsersTest(ZulipTestCase):
         def get_hamlet_avatar(client_gravatar: bool) -> Optional[str]:
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())
             result = self.client_get("/json/users", data)
-            self.assert_json_success(result)
-            rows = result.json()["members"]
+            rows = self.assert_json_success(result)["members"]
             hamlet_data = [row for row in rows if row["user_id"] == hamlet.id][0]
             return hamlet_data["avatar_url"]
 
@@ -1808,11 +2044,10 @@ class GetProfileTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         email = self.example_user("hamlet").email
-        with queries_captured() as queries:
+        with self.assert_database_query_count(1):
             with simulated_empty_cache() as cache_queries:
                 user_profile = get_user(email, realm)
 
-        self.assert_length(queries, 1)
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, email)
 
@@ -1831,7 +2066,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result["is_owner"])
         self.assertFalse(result["is_guest"])
         self.assertEqual(result["role"], UserProfile.ROLE_MEMBER)
-        self.assertFalse("delivery_email" in result)
+        self.assertEqual(result["delivery_email"], hamlet.delivery_email)
         self.login("iago")
         result = orjson.loads(self.client_get("/json/users/me").content)
         self.assertEqual(result["email"], iago.email)
@@ -1915,10 +2150,12 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user("hamlet")
-        result = self.api_get(hamlet, "/api/v1/users")
-        self.assert_json_success(result)
+        result = self.api_get(
+            hamlet, "/api/v1/users", {"client_gravatar": orjson.dumps(False).decode()}
+        )
+        response_dict = self.assert_json_success(result)
 
-        (my_user,) = (user for user in result.json()["members"] if user["email"] == hamlet.email)
+        (my_user,) = (user for user in response_dict["members"] if user["email"] == hamlet.email)
 
         self.assertEqual(
             my_user["avatar_url"],
@@ -1928,11 +2165,10 @@ class GetProfileTest(ZulipTestCase):
     def test_user_email_according_to_email_address_visibility_setting(self) -> None:
         hamlet = self.example_user("hamlet")
 
-        realm = hamlet.realm
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
         )
 
@@ -1943,10 +2179,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 
@@ -1963,10 +2199,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
             acting_user=None,
         )
 
@@ -1983,10 +2219,30 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            acting_user=None,
+        )
+
+        # Check that normal user can access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_MEMBERS.
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        # Check that guest cannot access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_MEMBERS.
+        self.login("polonius")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        do_change_user_setting(
+            hamlet,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
 
@@ -1994,17 +2250,17 @@ class GetProfileTest(ZulipTestCase):
         # is set to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
         self.login("shiva")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
         self.login("cordelia")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
         self.login("polonius")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
 
@@ -2016,6 +2272,7 @@ class DeleteUserTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         hamlet_personal_recipient = hamlet.recipient
         hamlet_user_id = hamlet.id
+        hamlet_date_joined = hamlet.date_joined
 
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
@@ -2040,14 +2297,16 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
 
-        do_delete_user(hamlet)
+        do_delete_user(hamlet, acting_user=None)
 
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 
         self.assertEqual(
-            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@{realm.uri}"
+            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
         )
         self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+        self.assertEqual(replacement_dummy_user.is_active, False)
+        self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 
         self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
         # Huddle messages from hamlet should have been deleted, but messages of other participants should
@@ -2083,11 +2342,33 @@ class FakeEmailDomainTest(ZulipTestCase):
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain(self) -> None:
         realm = get_realm("zulip")
-        with self.assertRaises(InvalidFakeEmailDomain):
+        with self.assertRaises(InvalidFakeEmailDomainError):
             get_fake_email_domain(realm)
 
     @override_settings(FAKE_EMAIL_DOMAIN="127.0.0.1", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_invalid_fake_email_domain_ip(self) -> None:
-        with self.assertRaises(InvalidFakeEmailDomain):
+        with self.assertRaises(InvalidFakeEmailDomainError):
             realm = get_realm("zulip")
             get_fake_email_domain(realm)
+
+
+class TestBulkRegenerateAPIKey(ZulipTestCase):
+    def test_bulk_regenerate_api_keys(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        hamlet_old_api_key = hamlet.api_key
+        cordelia_old_api_key = cordelia.api_key
+        othello_old_api_key = othello.api_key
+
+        bulk_regenerate_api_keys([hamlet.id, cordelia.id])
+
+        hamlet.refresh_from_db()
+        cordelia.refresh_from_db()
+        othello.refresh_from_db()
+
+        self.assertNotEqual(hamlet_old_api_key, hamlet.api_key)
+        self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)
+
+        self.assertEqual(othello_old_api_key, othello.api_key)

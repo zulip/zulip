@@ -102,18 +102,21 @@ class TestQueueImplementation(ZulipTestCase):
         )
 
         assert queue_client.channel
-        (_, _, message) = queue_client.channel.basic_get("test_suite")
-        assert message
+        method, header, message = queue_client.channel.basic_get("test_suite")
+        assert method is not None
+        assert method.delivery_tag is not None
+        assert message is not None
+        queue_client.channel.basic_ack(method.delivery_tag)
         result = orjson.loads(message)
         self.assertEqual(result["event"], "my_event")
 
-        (_, _, message) = queue_client.channel.basic_get("test_suite")
-        assert not message
+        method, header, message = queue_client.channel.basic_get("test_suite")
+        assert message is None
 
     @override_settings(USING_RABBITMQ=True)
     def setUp(self) -> None:
         queue_client = get_queue_client()
         assert queue_client.channel
-        if "test_suite" in queue_client.queues:
-            queue_client.channel.queue_purge("test_suite")
+        queue_client.channel.queue_declare("test_suite", durable=True)
+        queue_client.channel.queue_purge("test_suite")
         super().setUp()

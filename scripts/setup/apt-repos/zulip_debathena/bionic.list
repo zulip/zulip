@@ -1,2 +1,0 @@
-deb http://debathena.mit.edu/apt bionic debathena debathena-config
-deb-src http://debathena.mit.edu/apt bionic debathena debathena-config

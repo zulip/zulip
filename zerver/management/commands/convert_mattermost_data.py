@@ -10,7 +10,7 @@ in zerver/tests/.
     ./manage.py import --destroy-rebuild-database mattermost mm_export/gryffindor
 
 Test out the realm:
-    ./tools/run-dev.py
+    ./tools/run-dev
     go to browser and use your dev url
 """
 

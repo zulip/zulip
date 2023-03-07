@@ -1,6 +1,10 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "dev-integrations-panel" %}
 
+{% block title %}
+<title>Integrations developer panel | Zulip Dev</title>
+{% endblock %}
+
 {% block customhead %}
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,7 +37,7 @@
     <div class="row1">
         <div>
             <label for="bot_name"><b>Bot</b></label>
-            <select id="bot_name">
+            <select class="bootstrap-focus-style" id="bot_name">
                 <option value=""></option>
                 {% for bot in bots %}
                 <option value="{{ bot.api_key }}"> {{ bot.full_name }} </option>
@@ -43,7 +47,7 @@
 
         <div>
             <label><b>Integration</b></label>
-            <select id="integration_name">
+            <select class="bootstrap-focus-style" id="integration_name">
                 <option value=""></option>
                 {% for integration in integrations %}
                 <option value="{{ integration }}"> {{ integration }} </option>
@@ -53,7 +57,7 @@
 
         <div>
             <label for="fixture_name"><b>Fixture</b></label>
-            <select id="fixture_name"></select>
+            <select class="bootstrap-focus-style" id="fixture_name"></select>
         </div>
 
         <div>
@@ -70,7 +74,7 @@
     <br />
 
     <div class="row2">
-        <label for="URL"><b>URL</b>  (automatically generated)</label>
+        <label for="URL"><b>URL</b> (automatically generated)</label>
         <input id="URL" type="text" />
     </div>
 

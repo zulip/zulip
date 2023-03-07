@@ -3,30 +3,22 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django[argon2]==3.2.*
+Django[argon2]==4.1.*
 
-# needed for Literal, TypedDict
+# needed for NotRequired, ParamSpec
 typing-extensions
-
-# Backport of @dataclass
-dataclasses;python_version<"3.7"
 
 # Needed for rendering backend templates
 Jinja2
 
 # Needed for Markdown processing
 Markdown
-importlib-metadata;python_version<"3.8"  # for Markdown
+importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
 
 # Needed for manage.py
 ipython
-
-# Needed for compatibility with ipython < 7.20, which we cannot
-# install on Python <3.7; see
-# https://github.com/ipython/ipython/issues/12740
-jedi<0.18.0
 
 # Needed for image processing
 Pillow
@@ -34,9 +26,14 @@ Pillow
 # Needed for building complex DB queries
 SQLAlchemy==1.4.*
 
-# Needed for S3 file uploads
+# Needed for S3 file uploads and other AWS tools
 boto3
+
+# The runtime-relevant part of boto3-stubs (see mypy.in)
 mypy-boto3-s3
+mypy-boto3-ses
+mypy-boto3-sns
+mypy-boto3-sqs
 
 # Needed for integrations
 defusedxml
@@ -56,16 +53,13 @@ python-gcm
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
-https://github.com/zulip/talon/archive/1711705c952806d4a704c7dbf58f21db8e11756a.zip#egg=talon-core==1.4.8.zulip1&subdirectory=talon-core
+https://github.com/zulip/talon/archive/137ea31ca506069f9a8bbddde0d0174f395a6893.zip#egg=talon-core==1.6.0.zulip1&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
 premailer
 
 # Needed for JWT-based auth
 PyJWT
-
-# Needed for including other Markdown files for user docs
-markdown-include
 
 # Needed to access RabbitMQ
 pika
@@ -82,8 +76,8 @@ django-bmemcached
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil
 
-# Needed for timezone work
-pytz
+# Needed for time zone work
+https://github.com/andersk/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65af933.zip#egg=backports.zoneinfo==0.2.1+git ; python_version < "3.9"  # https://github.com/pganssle/zoneinfo/pull/126
 
 # Needed for Redis
 redis
@@ -92,7 +86,7 @@ redis
 sourcemap
 
 # Tornado used for server->client push system
-tornado==4.*  # https://github.com/zulip/zulip/issues/8913
+tornado
 
 # Fast JSON parser
 orjson
@@ -120,8 +114,8 @@ python-magic
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
-https://github.com/zulip/python-zulip-api/archive/0.8.0.zip#egg=zulip==0.8.0+git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/0.8.0.zip#egg=zulip_bots==0.8.0+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip==0.8.2+git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip_bots==0.8.2+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
@@ -129,6 +123,7 @@ py3dns
 # Install Python Social Auth
 social-auth-app-django
 social-auth-core[azuread,openidconnect,saml]
+python3-saml
 
 # For encrypting a login token to the desktop app
 cryptography
@@ -137,14 +132,10 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth[call,phonenumberslite,sms]
-https://github.com/karls/twilio-python/archive/fb847755d2ec943a4fd84f0c33ae9f7f4999095a.zip#egg=twilio==6.61.0+git  # support PyJWT ≥ 2.0.0: https://github.com/twilio/twilio-python/pull/560
+django-two-factor-auth[call,phonenumberslite,sms]<1.15.1  # https://github.com/jazzband/django-two-factor-auth/issues/587
 
 # Needed for processing payments (in corporate)
 stripe
-
-# Needed for serving uploaded files from nginx but perform auth checks in django.
-django-sendfile2
 
 # For checking whether email of the user is from a disposable email provider.
 disposable-email-domains
@@ -168,6 +159,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
+importlib-resources ; python_version < "3.9"
 
 # For reporting errors to sentry.io
 sentry-sdk
@@ -186,3 +178,18 @@ pymongo
 
 # Non-backtracking regular expressions
 google-re2
+
+# For querying recursive group membership
+django-cte
+
+# SCIM integration
+django-scim2
+
+# CSS manipulation
+soupsieve
+
+# Circuit-breaking for outgoing services
+circuitbreaker
+
+# Runtime monkeypatching of django-stubs generics
+django-stubs-ext

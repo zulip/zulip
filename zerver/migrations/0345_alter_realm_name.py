@@ -2,11 +2,11 @@
 
 from django.conf import settings
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def rename_system_bot_realm(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def rename_system_bot_realm(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     # Prior to this migration, the system bot realm had name incorrectly set to null.
     Realm = apps.get_model("zerver", "Realm")
     Realm.objects.filter(name=None, string_id=settings.SYSTEM_BOT_REALM).update(

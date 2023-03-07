@@ -3,12 +3,12 @@
 # Prepended to this automatically are the following:
 #SERVER=
 #HOSTNAME=
-#ROLES=
+#FULL_ROLES=
 #REPO_URL=
 #BRANCH=
 #SSH_SECRET_ID=
 
-if ! curl -fLs -m 5 http://169.254.169.254/latest/dynamic/instance-identity/document | grep instanceId; then
+if ! curl -fLs -m 5 -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 10" >/dev/null; then
     echo "This should be run on AWS instances, not locally."
     exit 1
 fi
@@ -20,9 +20,6 @@ set -x
 echo "$HOSTNAME" >/etc/hostname
 hostname "$HOSTNAME"
 sed -i "s/localhost$/localhost $HOSTNAME $SERVER/" /etc/hosts
-
-# Delete the ubuntu user
-userdel ubuntu
 
 # Make sure root doesn't have a password
 passwd -d root
@@ -36,7 +33,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Dependencies to install AWS CLI
 (
     apt-get -qy update
-    apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+    apt-get -qy --with-new-pkgs -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
     apt-get -qy install jq unzip curl
     apt-get -qy autoclean
 )
@@ -44,13 +41,13 @@ export DEBIAN_FRONTEND=noninteractive
 # The following line gets subbed in with the contents of bootstrap-awscli.sh
 AWS=
 
-# Set up AWS so we can use the role credentials we were started with, which give secrets access
+# Set up a bare-bones AWS configuration
 mkdir -p /root/.aws
 cat >/root/.aws/config <<EOF
 [default]
 region = us-east-1
 output = text
-credential_source = Ec2InstanceMetadata
+# Credentials are from the IAM role attached to the EC2 instance
 EOF
 
 # Set up public keys for root, so we can fetch the repo; this is a
@@ -77,6 +74,7 @@ install_keys root
 # https://docs.github.com/en/github/authenticating-to-github/githubs-ssh-key-fingerprints
 # via `ssh-keygen -lf`
 cat >/root/.ssh/known_hosts <<EOF
+github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
 github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
 EOF
 
@@ -85,9 +83,9 @@ git clone "$REPO_URL" zulip -b "$BRANCH"
 git -C zulip checkout "$BRANCH"
 
 (
-    VIRTUALENV_NEEDED=$(if echo "$ROLES" | grep -q app_frontend; then echo -n yes; else echo -n no; fi)
+    VIRTUALENV_NEEDED=$(if echo "$FULL_ROLES" | grep -q app_frontend; then echo -n yes; else echo -n no; fi)
     export VIRTUALENV_NEEDED
-    export PUPPET_CLASSES="$ROLES"
+    export PUPPET_CLASSES="$FULL_ROLES"
     export APT_OPTIONS="-o Dpkg::Options::=--force-confnew"
     /root/zulip/scripts/setup/install \
         --self-signed-cert \
@@ -95,5 +93,8 @@ git -C zulip checkout "$BRANCH"
 )
 
 install_keys zulip
+
+# Delete the ubuntu user
+userdel ubuntu
 
 reboot

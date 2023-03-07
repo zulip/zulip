@@ -65,7 +65,7 @@ class Command(BaseCommand):
             fill_to_time = fill_to_time.replace(tzinfo=timezone.utc)
         if fill_to_time.tzinfo is None:
             raise ValueError(
-                "--time must be timezone aware. Maybe you meant to use the --utc option?"
+                "--time must be time-zone-aware. Maybe you meant to use the --utc option?"
             )
 
         fill_to_time = floor_to_hour(fill_to_time.astimezone(timezone.utc))

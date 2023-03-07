@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -29,7 +29,7 @@ from zproject.backends import (
     require_email_format_usernames,
 )
 
-DEFAULT_PAGE_PARAMS = {
+DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "development_environment": settings.DEVELOPMENT,
     "webpack_public_path": staticfiles_storage.url(settings.WEBPACK_BUNDLES),
 }
@@ -51,7 +51,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     request_notes = RequestNotes.get_notes(request)
-    if hasattr(request, "user") and hasattr(request.user, "realm"):
+    if request.user.is_authenticated:
         return request.user.realm
     if not request_notes.has_fetched_realm:
         # We cache the realm object from this function on the request data,
@@ -71,14 +71,19 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
 def get_valid_realm_from_request(request: HttpRequest) -> Realm:
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     return realm
 
 
 def get_apps_page_url() -> str:
-    if settings.ZILENCER_ENABLED:
+    if settings.CORPORATE_ENABLED:
         return "/apps/"
     return "https://zulip.com/apps/"
+
+
+def is_isolated_page(request: HttpRequest) -> bool:
+    """Accept a GET param `?nav=no` to render an isolated, navless page."""
+    return request.GET.get("nav") == "no"
 
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
@@ -117,10 +122,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     apps_page_web = settings.ROOT_DOMAIN_URI + "/accounts/go/"
 
-    user_is_authenticated = False
-    if hasattr(request, "user") and hasattr(request.user, "is_authenticated"):
-        user_is_authenticated = request.user.is_authenticated
-
     if settings.DEVELOPMENT:
         secrets_path = "zproject/dev-secrets.conf"
         settings_path = "zproject/dev_settings.py"
@@ -129,6 +130,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         secrets_path = "/etc/zulip/zulip-secrets.conf"
         settings_path = "/etc/zulip/settings.py"
         settings_comments_path = "/etc/zulip/settings.py"
+
+    # Used to remove links to Zulip docs and landing page from footer of self-hosted pages.
+    corporate_enabled = settings.CORPORATE_ENABLED
 
     support_email = FromAddress.SUPPORT
     support_email_html_tag = SafeString(
@@ -145,8 +149,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "custom_logo_url": settings.CUSTOM_LOGO_URL,
         "register_link_disabled": register_link_disabled,
         "login_link_disabled": login_link_disabled,
-        "terms_of_service": settings.TERMS_OF_SERVICE,
-        "privacy_policy": settings.PRIVACY_POLICY,
+        "terms_of_service": settings.TERMS_OF_SERVICE_VERSION is not None,
         "login_url": settings.HOME_NOT_LOGGED_IN,
         "only_sso": settings.ONLY_SSO,
         "external_host": settings.EXTERNAL_HOST,
@@ -165,19 +168,21 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
         "zulip_version": ZULIP_VERSION,
-        "user_is_authenticated": user_is_authenticated,
+        "user_is_authenticated": request.user.is_authenticated,
         "settings_path": settings_path,
         "secrets_path": secrets_path,
         "settings_comments_path": settings_comments_path,
         "platform": RequestNotes.get_notes(request).client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
+        "is_isolated_page": is_isolated_page(request),
         "default_page_params": default_page_params,
+        "corporate_enabled": corporate_enabled,
     }
 
-    context["OPEN_GRAPH_URL"] = f"{realm_uri}{request.path}"
+    context["PAGE_METADATA_URL"] = f"{realm_uri}{request.path}"
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
-        context["OPEN_GRAPH_IMAGE"] = urljoin(realm_uri, realm_icon)
+        context["PAGE_METADATA_IMAGE"] = urljoin(realm_uri, realm_icon)
 
     return context
 
@@ -192,9 +197,9 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     else:
         realm_description = get_realm_rendered_description(realm)
         realm_invite_required = realm.invite_required
-        # We offer web public access only if the realm has actual web
+        # We offer web-public access only if the realm has actual web
         # public streams configured, in addition to having it enabled.
-        realm_web_public_access_enabled = realm.has_web_public_streams()
+        realm_web_public_access_enabled = realm.allow_web_public_streams_access()
 
     context: Dict[str, Any] = {
         "realm_invite_required": realm_invite_required,
@@ -206,8 +211,8 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     }
 
     if realm is not None and realm.description:
-        context["OPEN_GRAPH_TITLE"] = realm.name
-        context["OPEN_GRAPH_DESCRIPTION"] = get_realm_text_description(realm)
+        context["PAGE_TITLE"] = realm.name
+        context["PAGE_DESCRIPTION"] = get_realm_text_description(realm)
 
     # Add the keys for our standard authentication backends.
     no_auth_enabled = True

@@ -1,13 +1,21 @@
 import re
 from functools import partial
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import log_exception_to_webhook_logger, webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.decorator import log_unsupported_webhook_event, webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import (
+    WildValue,
+    check_bool,
+    check_int,
+    check_none_or,
+    check_string,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
@@ -24,16 +32,21 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_release_event_message,
+    get_short_sha,
 )
 from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
+TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
+DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n```quote\n### {title}\n{body}\n```"
+DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussion #{discussion_id}]({discussion_url}):\n```quote\n{body}\n```"
+
 
 class Helper:
     def __init__(
         self,
-        payload: Dict[str, Any],
+        payload: WildValue,
         include_title: bool,
     ) -> None:
         self.payload = payload
@@ -41,9 +54,8 @@ class Helper:
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
-        log_exception_to_webhook_logger(
+        log_unsupported_webhook_event(
             summary=summary,
-            unsupported_event=True,
         )
 
 
@@ -51,27 +63,27 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     pull_request = payload["pull_request"]
-    action = payload["action"]
+    action = payload["action"].tame(check_string)
     if action == "synchronize":
         action = "updated"
     assignee = None
     if pull_request.get("assignee"):
-        assignee = pull_request["assignee"]["login"]
+        assignee = pull_request["assignee"]["login"].tame(check_string)
     description = None
     changes = payload.get("changes", {})
     if "body" in changes or action == "opened":
-        description = pull_request["body"]
+        description = pull_request["body"].tame(check_none_or(check_string))
 
     return get_pull_request_event_message(
         get_sender_name(payload),
         action,
-        pull_request["html_url"],
-        target_branch=pull_request["head"]["ref"],
-        base_branch=pull_request["base"]["ref"],
+        pull_request["html_url"].tame(check_string),
+        target_branch=pull_request["head"]["ref"].tame(check_string),
+        base_branch=pull_request["base"]["ref"].tame(check_string),
         message=description,
         assignee=assignee,
-        number=pull_request["number"],
-        title=pull_request["title"] if include_title else None,
+        number=pull_request["number"].tame(check_int),
+        title=pull_request["title"].tame(check_string) if include_title else None,
     )
 
 
@@ -80,18 +92,18 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
     include_title = helper.include_title
     pull_request = payload["pull_request"]
     assignee = pull_request.get("assignee")
-    if assignee is not None:
-        assignee = assignee.get("login")
+    if assignee:
+        stringified_assignee = assignee["login"].tame(check_string)
 
     base_message = get_pull_request_event_message(
         get_sender_name(payload),
-        payload["action"],
-        pull_request["html_url"],
-        number=pull_request["number"],
-        title=pull_request["title"] if include_title else None,
+        payload["action"].tame(check_string),
+        pull_request["html_url"].tame(check_string),
+        number=pull_request["number"].tame(check_int),
+        title=pull_request["title"].tame(check_string) if include_title else None,
     )
-    if assignee is not None:
-        return f"{base_message[:-1]} to {assignee}."
+    if assignee:
+        return f"{base_message[:-1]} to {stringified_assignee}."
     return base_message
 
 
@@ -99,27 +111,27 @@ def get_closed_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     pull_request = payload["pull_request"]
-    action = "merged" if pull_request["merged"] else "closed without merge"
+    action = "merged" if pull_request["merged"].tame(check_bool) else "closed without merge"
     return get_pull_request_event_message(
         get_sender_name(payload),
         action,
-        pull_request["html_url"],
-        number=pull_request["number"],
-        title=pull_request["title"] if include_title else None,
+        pull_request["html_url"].tame(check_string),
+        number=pull_request["number"].tame(check_int),
+        title=pull_request["title"].tame(check_string) if include_title else None,
     )
 
 
 def get_membership_body(helper: Helper) -> str:
     payload = helper.payload
-    action = payload["action"]
+    action = payload["action"].tame(check_string)
     member = payload["member"]
-    team_name = payload["team"]["name"]
+    team_name = payload["team"]["name"].tame(check_string)
 
     return "{sender} {action} [{username}]({html_url}) {preposition} the {team_name} team.".format(
         sender=get_sender_name(payload),
         action=action,
-        username=member["login"],
-        html_url=member["html_url"],
+        username=member["login"].tame(check_string),
+        html_url=member["html_url"].tame(check_string),
         preposition="from" if action == "removed" else "to",
         team_name=team_name,
     )
@@ -129,35 +141,35 @@ def get_member_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} {} [{}]({}) to [{}]({}).".format(
         get_sender_name(payload),
-        payload["action"],
-        payload["member"]["login"],
-        payload["member"]["html_url"],
+        payload["action"].tame(check_string),
+        payload["member"]["login"].tame(check_string),
+        payload["member"]["html_url"].tame(check_string),
         get_repository_name(payload),
-        payload["repository"]["html_url"],
+        payload["repository"]["html_url"].tame(check_string),
     )
 
 
 def get_issue_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
-    action = payload["action"]
+    action = payload["action"].tame(check_string)
     issue = payload["issue"]
     assignee = issue["assignee"]
     return get_issue_event_message(
         get_sender_name(payload),
         action,
-        issue["html_url"],
-        issue["number"],
-        issue["body"],
-        assignee=assignee["login"] if assignee else None,
-        title=issue["title"] if include_title else None,
+        issue["html_url"].tame(check_string),
+        issue["number"].tame(check_int),
+        issue["body"].tame(check_none_or(check_string)),
+        assignee=assignee["login"].tame(check_string) if assignee else None,
+        title=issue["title"].tame(check_string) if include_title else None,
     )
 
 
 def get_issue_comment_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
-    action = payload["action"]
+    action = payload["action"].tame(check_string)
     comment = payload["comment"]
     issue = payload["issue"]
 
@@ -165,15 +177,15 @@ def get_issue_comment_body(helper: Helper) -> str:
         action = "[commented]"
     else:
         action = f"{action} a [comment]"
-    action += "({}) on".format(comment["html_url"])
+    action += "({}) on".format(comment["html_url"].tame(check_string))
 
     return get_issue_event_message(
         get_sender_name(payload),
         action,
-        issue["html_url"],
-        issue["number"],
-        comment["body"],
-        title=issue["title"] if include_title else None,
+        issue["html_url"].tame(check_string),
+        issue["number"].tame(check_int),
+        comment["body"].tame(check_string),
+        title=issue["title"].tame(check_string) if include_title else None,
     )
 
 
@@ -182,8 +194,8 @@ def get_fork_body(helper: Helper) -> str:
     forkee = payload["forkee"]
     return "{} forked [{}]({}).".format(
         get_sender_name(payload),
-        forkee["name"],
-        forkee["html_url"],
+        forkee["name"].tame(check_string),
+        forkee["html_url"].tame(check_string),
     )
 
 
@@ -195,33 +207,33 @@ def get_deployment_body(helper: Helper) -> str:
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
     return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"],
+        payload["deployment_status"]["state"].tame(check_string),
     )
 
 
 def get_create_or_delete_body(helper: Helper, action: str) -> str:
     payload = helper.payload
-    ref_type = payload["ref_type"]
+    ref_type = payload["ref_type"].tame(check_string)
     return "{} {} {} {}.".format(
         get_sender_name(payload),
         action,
         ref_type,
-        payload["ref"],
+        payload["ref"].tame(check_string),
     ).rstrip()
 
 
 def get_commit_comment_body(helper: Helper) -> str:
     payload = helper.payload
     comment = payload["comment"]
-    comment_url = comment["html_url"]
+    comment_url = comment["html_url"].tame(check_string)
     commit_url = comment_url.split("#", 1)[0]
     action = f"[commented]({comment_url})"
     return get_commits_comment_action_message(
         get_sender_name(payload),
         action,
         commit_url,
-        comment.get("commit_id"),
-        comment["body"],
+        comment["commit_id"].tame(check_string),
+        comment["body"].tame(check_string),
     )
 
 
@@ -229,28 +241,56 @@ def get_push_tags_body(helper: Helper) -> str:
     payload = helper.payload
     return get_push_tag_event_message(
         get_sender_name(payload),
-        get_tag_name_from_ref(payload["ref"]),
-        action="pushed" if payload.get("created") else "removed",
+        get_tag_name_from_ref(payload["ref"].tame(check_string)),
+        action="pushed" if payload["created"].tame(check_bool) else "removed",
     )
 
 
 def get_push_commits_body(helper: Helper) -> str:
     payload = helper.payload
-    commits_data = [
-        {
-            "name": (commit.get("author").get("username") or commit.get("author").get("name")),
-            "sha": commit["id"],
-            "url": commit["url"],
-            "message": commit["message"],
-        }
-        for commit in payload["commits"]
-    ]
+    commits_data = []
+    for commit in payload["commits"]:
+        if commit["author"].get("username"):
+            name = commit["author"]["username"].tame(check_string)
+        else:
+            name = commit["author"]["name"].tame(check_string)
+        commits_data.append(
+            {
+                "name": name,
+                "sha": commit["id"].tame(check_string),
+                "url": commit["url"].tame(check_string),
+                "message": commit["message"].tame(check_string),
+            }
+        )
     return get_push_commits_event_message(
         get_sender_name(payload),
-        payload["compare"],
-        get_branch_name_from_ref(payload["ref"]),
+        payload["compare"].tame(check_string),
+        get_branch_name_from_ref(payload["ref"].tame(check_string)),
         commits_data,
-        deleted=payload["deleted"],
+        deleted=payload["deleted"].tame(check_bool),
+    )
+
+
+def get_discussion_body(helper: Helper) -> str:
+    payload = helper.payload
+    return DISCUSSION_TEMPLATE.format(
+        author=get_sender_name(payload),
+        url=payload["discussion"]["html_url"].tame(check_string),
+        body=payload["discussion"]["body"].tame(check_string),
+        category=payload["discussion"]["category"]["name"].tame(check_string),
+        discussion_id=payload["discussion"]["number"].tame(check_int),
+        title=payload["discussion"]["title"].tame(check_string),
+    )
+
+
+def get_discussion_comment_body(helper: Helper) -> str:
+    payload = helper.payload
+    return DISCUSSION_COMMENT_TEMPLATE.format(
+        author=get_sender_name(payload),
+        body=payload["comment"]["body"].tame(check_string),
+        discussion_url=payload["discussion"]["html_url"].tame(check_string),
+        comment_url=payload["comment"]["html_url"].tame(check_string),
+        discussion_id=payload["discussion"]["number"].tame(check_int),
     )
 
 
@@ -259,7 +299,7 @@ def get_public_body(helper: Helper) -> str:
     return "{} made the repository [{}]({}) public.".format(
         get_sender_name(payload),
         get_repository_full_name(payload),
-        payload["repository"]["html_url"],
+        payload["repository"]["html_url"].tame(check_string),
     )
 
 
@@ -269,9 +309,9 @@ def get_wiki_pages_body(helper: Helper) -> str:
     wiki_info = ""
     for page in payload["pages"]:
         wiki_info += wiki_page_info_template.format(
-            action=page["action"],
-            title=page["title"],
-            url=page["html_url"],
+            action=page["action"].tame(check_string),
+            title=page["title"].tame(check_string),
+            url=page["html_url"].tame(check_string),
         )
     return f"{get_sender_name(payload)}:\n{wiki_info.rstrip()}"
 
@@ -281,7 +321,7 @@ def get_watch_body(helper: Helper) -> str:
     return "{} starred the repository [{}]({}).".format(
         get_sender_name(payload),
         get_repository_full_name(payload),
-        payload["repository"]["html_url"],
+        payload["repository"]["html_url"].tame(check_string),
     )
 
 
@@ -289,9 +329,9 @@ def get_repository_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} {} the repository [{}]({}).".format(
         get_sender_name(payload),
-        payload.get("action"),
+        payload["action"].tame(check_string),
         get_repository_full_name(payload),
-        payload["repository"]["html_url"],
+        payload["repository"]["html_url"].tame(check_string),
     )
 
 
@@ -299,8 +339,8 @@ def get_add_team_body(helper: Helper) -> str:
     payload = helper.payload
     return "The repository [{}]({}) was added to team {}.".format(
         get_repository_full_name(payload),
-        payload["repository"]["html_url"],
-        payload["team"]["name"],
+        payload["repository"]["html_url"].tame(check_string),
+        payload["team"]["name"].tame(check_string),
     )
 
 
@@ -308,18 +348,18 @@ def get_team_body(helper: Helper) -> str:
     payload = helper.payload
     changes = payload["changes"]
     if "description" in changes:
-        actor = payload["sender"]["login"]
-        new_description = payload["team"]["description"]
+        actor = payload["sender"]["login"].tame(check_string)
+        new_description = payload["team"]["description"].tame(check_string)
         return f"**{actor}** changed the team description to:\n```quote\n{new_description}\n```"
     if "name" in changes:
-        original_name = changes["name"]["from"]
-        new_name = payload["team"]["name"]
+        original_name = changes["name"]["from"].tame(check_string)
+        new_name = payload["team"]["name"].tame(check_string)
         return f"Team `{original_name}` was renamed to `{new_name}`."
     if "privacy" in changes:
-        new_visibility = payload["team"]["privacy"]
+        new_visibility = payload["team"]["privacy"].tame(check_string)
         return f"Team visibility changed to `{new_visibility}`"
 
-    missing_keys = "/".join(sorted(list(changes.keys())))
+    missing_keys = "/".join(sorted(changes.keys()))
     helper.log_unsupported(f"team/edited (changes: {missing_keys})")
 
     # Do our best to give useful info to the customer--at least
@@ -331,13 +371,17 @@ def get_team_body(helper: Helper) -> str:
 
 def get_release_body(helper: Helper) -> str:
     payload = helper.payload
+    if payload["release"]["name"]:
+        release_name = payload["release"]["name"].tame(check_string)
+    else:
+        release_name = payload["release"]["tag_name"].tame(check_string)
     data = {
         "user_name": get_sender_name(payload),
-        "action": payload["action"],
-        "tagname": payload["release"]["tag_name"],
+        "action": payload["action"].tame(check_string),
+        "tagname": payload["release"]["tag_name"].tame(check_string),
         # Not every GitHub release has a "name" set; if not there, use the tag name.
-        "release_name": payload["release"]["name"] or payload["release"]["tag_name"],
-        "url": payload["release"]["html_url"],
+        "release_name": release_name,
+        "url": payload["release"]["html_url"].tame(check_string),
     }
 
     return get_release_event_message(**data)
@@ -346,21 +390,22 @@ def get_release_body(helper: Helper) -> str:
 def get_page_build_body(helper: Helper) -> str:
     payload = helper.payload
     build = payload["build"]
-    status = build["status"]
+    status = build["status"].tame(check_string)
     actions = {
         "null": "has yet to be built",
         "building": "is being built",
-        "errored": "has failed{}",
+        "errored": "has failed: {}",
         "built": "has finished building",
     }
 
     action = actions.get(status, f"is {status}")
-    action.format(
-        CONTENT_MESSAGE_TEMPLATE.format(message=build["error"]["message"]),
-    )
+    if build["error"]["message"]:
+        action = action.format(
+            CONTENT_MESSAGE_TEMPLATE.format(message=build["error"]["message"].tame(check_string)),
+        )
 
     return "GitHub Pages build, triggered by {}, {}.".format(
-        payload["build"]["pusher"]["login"],
+        payload["build"]["pusher"]["login"].tame(check_string),
         action,
     )
 
@@ -369,14 +414,14 @@ def get_status_body(helper: Helper) -> str:
     payload = helper.payload
     if payload["target_url"]:
         status = "[{}]({})".format(
-            payload["state"],
-            payload["target_url"],
+            payload["state"].tame(check_string),
+            payload["target_url"].tame(check_string),
         )
     else:
-        status = payload["state"]
+        status = payload["state"].tame(check_string)
     return "[{}]({}) changed its status to {}.".format(
-        payload["sha"][:7],  # TODO
-        payload["commit"]["html_url"],
+        get_short_sha(payload["sha"].tame(check_string)),
+        payload["commit"]["html_url"].tame(check_string),
         status,
     )
 
@@ -384,31 +429,35 @@ def get_status_body(helper: Helper) -> str:
 def get_locked_or_unlocked_pull_request_body(helper: Helper) -> str:
     payload = helper.payload
 
-    action = payload["action"]
+    action = payload["action"].tame(check_string)
 
     message = "{sender} has locked [PR #{pr_number}]({pr_url}) as {reason} and limited conversation to collaborators."
     if action == "unlocked":
         message = "{sender} has unlocked [PR #{pr_number}]({pr_url})."
+    if payload["pull_request"]["active_lock_reason"]:
+        active_lock_reason = payload["pull_request"]["active_lock_reason"].tame(check_string)
+    else:
+        active_lock_reason = None
     return message.format(
         sender=get_sender_name(payload),
-        pr_number=payload["pull_request"]["number"],
-        pr_url=payload["pull_request"]["html_url"],
-        reason=payload["pull_request"]["active_lock_reason"],
+        pr_number=payload["pull_request"]["number"].tame(check_int),
+        pr_url=payload["pull_request"]["html_url"].tame(check_string),
+        reason=active_lock_reason,
     )
 
 
 def get_pull_request_auto_merge_body(helper: Helper) -> str:
     payload = helper.payload
 
-    action = payload["action"]
+    action = payload["action"].tame(check_string)
 
     message = "{sender} has enabled auto merge for [PR #{pr_number}]({pr_url})."
     if action == "auto_merge_disabled":
         message = "{sender} has disabled auto merge for [PR #{pr_number}]({pr_url})."
     return message.format(
         sender=get_sender_name(payload),
-        pr_number=payload["pull_request"]["number"],
-        pr_url=payload["pull_request"]["html_url"],
+        pr_number=payload["pull_request"]["number"].tame(check_int),
+        pr_url=payload["pull_request"]["html_url"].tame(check_string),
     )
 
 
@@ -418,8 +467,8 @@ def get_pull_request_ready_for_review_body(helper: Helper) -> str:
     message = "**{sender}** has marked [PR #{pr_number}]({pr_url}) as ready for review."
     return message.format(
         sender=get_sender_name(payload),
-        pr_number=payload["pull_request"]["number"],
-        pr_url=payload["pull_request"]["html_url"],
+        pr_number=payload["pull_request"]["number"].tame(check_int),
+        pr_url=payload["pull_request"]["html_url"].tame(check_string),
     )
 
 
@@ -427,13 +476,13 @@ def get_pull_request_review_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     title = "for #{} {}".format(
-        payload["pull_request"]["number"],
-        payload["pull_request"]["title"],
+        payload["pull_request"]["number"].tame(check_int),
+        payload["pull_request"]["title"].tame(check_string),
     )
     return get_pull_request_event_message(
         get_sender_name(payload),
         "submitted",
-        payload["review"]["html_url"],
+        payload["review"]["html_url"].tame(check_string),
         type="PR review",
         title=title if include_title else None,
     )
@@ -442,20 +491,20 @@ def get_pull_request_review_body(helper: Helper) -> str:
 def get_pull_request_review_comment_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
-    action = payload["action"]
+    action = payload["action"].tame(check_string)
     message = None
     if action == "created":
-        message = payload["comment"]["body"]
+        message = payload["comment"]["body"].tame(check_string)
 
     title = "on #{} {}".format(
-        payload["pull_request"]["number"],
-        payload["pull_request"]["title"],
+        payload["pull_request"]["number"].tame(check_int),
+        payload["pull_request"]["title"].tame(check_string),
     )
 
     return get_pull_request_event_message(
         get_sender_name(payload),
         action,
-        payload["comment"]["html_url"],
+        payload["comment"]["html_url"].tame(check_string),
         message=message,
         type="PR review comment",
         title=title if include_title else None,
@@ -470,8 +519,8 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     requested_team = [payload["requested_team"]] if "requested_team" in payload else []
 
     sender = get_sender_name(payload)
-    pr_number = payload["pull_request"]["number"]
-    pr_url = payload["pull_request"]["html_url"]
+    pr_number = payload["pull_request"]["number"].tame(check_int)
+    pr_url = payload["pull_request"]["html_url"].tame(check_string)
     message = "**{sender}** requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
     message_with_title = (
         "**{sender}** requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
@@ -481,10 +530,20 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     all_reviewers = []
 
     for reviewer in requested_reviewer:
-        all_reviewers.append("[{login}]({html_url})".format(**reviewer))
+        all_reviewers.append(
+            "[{login}]({html_url})".format(
+                login=reviewer["login"].tame(check_string),
+                html_url=reviewer["html_url"].tame(check_string),
+            )
+        )
 
     for team_reviewer in requested_team:
-        all_reviewers.append("[{name}]({html_url})".format(**team_reviewer))
+        all_reviewers.append(
+            "[{name}]({html_url})".format(
+                name=team_reviewer["name"].tame(check_string),
+                html_url=team_reviewer["html_url"].tame(check_string),
+            )
+        )
 
     reviewers = ""
     reviewers = all_reviewers[0]
@@ -494,7 +553,7 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
         reviewers=reviewers,
         pr_number=pr_number,
         pr_url=pr_url,
-        title=payload["pull_request"]["title"] if include_title else None,
+        title=payload["pull_request"]["title"].tame(check_string) if include_title else None,
     )
 
 
@@ -505,15 +564,15 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
 """.strip()
 
     kwargs = {
-        "name": payload["check_run"]["name"],
-        "html_url": payload["check_run"]["html_url"],
-        "status": payload["check_run"]["status"],
-        "short_hash": payload["check_run"]["head_sha"][:7],
+        "name": payload["check_run"]["name"].tame(check_string),
+        "html_url": payload["check_run"]["html_url"].tame(check_string),
+        "status": payload["check_run"]["status"].tame(check_string),
+        "short_hash": get_short_sha(payload["check_run"]["head_sha"].tame(check_string)),
         "commit_url": "{}/commit/{}".format(
-            payload["repository"]["html_url"],
-            payload["check_run"]["head_sha"],
+            payload["repository"]["html_url"].tame(check_string),
+            payload["check_run"]["head_sha"].tame(check_string),
         ),
-        "conclusion": payload["check_run"]["conclusion"],
+        "conclusion": payload["check_run"]["conclusion"].tame(check_string),
     }
 
     return template.format(**kwargs)
@@ -523,10 +582,10 @@ def get_star_body(helper: Helper) -> str:
     payload = helper.payload
     template = "{user} {action} the repository [{repo}]({url})."
     return template.format(
-        user=payload["sender"]["login"],
-        action="starred" if payload["action"] == "created" else "unstarred",
+        user=payload["sender"]["login"].tame(check_string),
+        action="starred" if payload["action"].tame(check_string) == "created" else "unstarred",
         repo=get_repository_full_name(payload),
-        url=payload["repository"]["html_url"],
+        url=payload["repository"]["html_url"].tame(check_string),
     )
 
 
@@ -535,20 +594,20 @@ def get_ping_body(helper: Helper) -> str:
     return get_setup_webhook_message("GitHub", get_sender_name(payload))
 
 
-def get_repository_name(payload: Dict[str, Any]) -> str:
-    return payload["repository"]["name"]
+def get_repository_name(payload: WildValue) -> str:
+    return payload["repository"]["name"].tame(check_string)
 
 
-def get_repository_full_name(payload: Dict[str, Any]) -> str:
-    return payload["repository"]["full_name"]
+def get_repository_full_name(payload: WildValue) -> str:
+    return payload["repository"]["full_name"].tame(check_string)
 
 
-def get_organization_name(payload: Dict[str, Any]) -> str:
-    return payload["organization"]["login"]
+def get_organization_name(payload: WildValue) -> str:
+    return payload["organization"]["login"].tame(check_string)
 
 
-def get_sender_name(payload: Dict[str, Any]) -> str:
-    return payload["sender"]["login"]
+def get_sender_name(payload: WildValue) -> str:
+    return payload["sender"]["login"].tame(check_string)
 
 
 def get_branch_name_from_ref(ref_string: str) -> str:
@@ -559,38 +618,38 @@ def get_tag_name_from_ref(ref_string: str) -> str:
     return re.sub(r"^refs/tags/", "", ref_string)
 
 
-def is_commit_push_event(payload: Dict[str, Any]) -> bool:
-    return bool(re.match(r"^refs/heads/", payload["ref"]))
+def is_commit_push_event(payload: WildValue) -> bool:
+    return bool(re.match(r"^refs/heads/", payload["ref"].tame(check_string)))
 
 
-def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
+def get_subject_based_on_type(payload: WildValue, event: str) -> str:
     if "pull_request" in event:
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
             type="PR",
-            id=payload["pull_request"]["number"],
-            title=payload["pull_request"]["title"],
+            id=payload["pull_request"]["number"].tame(check_int),
+            title=payload["pull_request"]["title"].tame(check_string),
         )
     elif event.startswith("issue"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
             type="issue",
-            id=payload["issue"]["number"],
-            title=payload["issue"]["title"],
+            id=payload["issue"]["number"].tame(check_int),
+            title=payload["issue"]["title"].tame(check_string),
         )
     elif event.startswith("deployment"):
         return "{} / Deployment on {}".format(
             get_repository_name(payload),
-            payload["deployment"]["environment"],
+            payload["deployment"]["environment"].tame(check_string),
         )
     elif event == "membership":
-        return "{} organization".format(payload["organization"]["login"])
+        return "{} organization".format(payload["organization"]["login"].tame(check_string))
     elif event == "team":
-        return "team {}".format(payload["team"]["name"])
+        return "team {}".format(payload["team"]["name"].tame(check_string))
     elif event == "push_commits":
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
-            branch=get_branch_name_from_ref(payload["ref"]),
+            branch=get_branch_name_from_ref(payload["ref"].tame(check_string)),
         )
     elif event == "gollum":
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
@@ -598,10 +657,16 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
             branch="wiki pages",
         )
     elif event == "ping":
-        if payload.get("repository") is None:
+        if not payload.get("repository"):
             return get_organization_name(payload)
     elif event == "check_run":
         return f"{get_repository_name(payload)} / checks"
+    elif event.startswith("discussion"):
+        return TOPIC_FOR_DISCUSSION.format(
+            repo=get_repository_name(payload),
+            number=payload["discussion"]["number"].tame(check_int),
+            title=payload["discussion"]["title"].tame(check_string),
+        )
 
     return get_repository_name(payload)
 
@@ -614,6 +679,8 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "delete": partial(get_create_or_delete_body, action="deleted"),
     "deployment": get_deployment_body,
     "deployment_status": get_change_deployment_status_body,
+    "discussion": get_discussion_body,
+    "discussion_comment": get_discussion_comment_body,
     "fork": get_fork_body,
     "gollum": get_wiki_pages_body,
     "issue_comment": get_issue_comment_body,
@@ -680,27 +747,26 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 def api_github_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
     branches: Optional[str] = REQ(default=None),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
     own Zulip-specific concept of an event that often maps
-    directly to the X_GITHUB_EVENT header's event, but we sometimes
+    directly to the X-GitHub-Event header's event, but we sometimes
     refine it based on the payload.
     """
-    header_event = validate_extract_webhook_http_header(request, "X_GITHUB_EVENT", "GitHub")
+    header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
     if header_event is None:
-        raise UnsupportedWebhookEventType("no header provided")
+        raise UnsupportedWebhookEventTypeError("no header provided")
 
     event = get_zulip_event_name(header_event, payload, branches)
     if event is None:
         # This is nothing to worry about--get_event() returns None
         # for events that are valid but not yet handled by us.
         # See IGNORED_EVENTS, for example.
-        return json_success()
-
+        return json_success(request)
     subject = get_subject_based_on_type(payload, event)
 
     body_function = EVENT_FUNCTION_MAPPER[event]
@@ -712,12 +778,12 @@ def api_github_webhook(
     body = body_function(helper)
 
     check_send_webhook_message(request, user_profile, subject, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def get_zulip_event_name(
     header_event: str,
-    payload: Dict[str, Any],
+    payload: WildValue,
     branches: Optional[str],
 ) -> Optional[str]:
     """
@@ -726,7 +792,7 @@ def get_zulip_event_name(
     We return None for an event that we know we don't want to handle.
     """
     if header_event == "pull_request":
-        action = payload["action"]
+        action = payload["action"].tame(check_string)
         if action in ("opened", "synchronize", "reopened", "edited"):
             return "opened_or_update_pull_request"
         if action in ("assigned", "unassigned"):
@@ -746,18 +812,18 @@ def get_zulip_event_name(
     elif header_event == "push":
         if is_commit_push_event(payload):
             if branches is not None:
-                branch = get_branch_name_from_ref(payload["ref"])
+                branch = get_branch_name_from_ref(payload["ref"].tame(check_string))
                 if branches.find(branch) == -1:
                     return None
             return "push_commits"
         else:
             return "push_tags"
     elif header_event == "check_run":
-        if payload["check_run"]["status"] != "completed":
+        if payload["check_run"]["status"].tame(check_string) != "completed":
             return None
         return header_event
     elif header_event == "team":
-        action = payload["action"]
+        action = payload["action"].tame(check_string)
         if action == "edited":
             return "team"
         if action in IGNORED_TEAM_ACTIONS:
@@ -766,11 +832,13 @@ def get_zulip_event_name(
         else:
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
-            raise UnsupportedWebhookEventType(f"unsupported team action {action}")
+            raise UnsupportedWebhookEventTypeError(f"unsupported team action {action}")
     elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
         return header_event
     elif header_event in IGNORED_EVENTS:
         return None
 
-    complete_event = "{}:{}".format(header_event, payload.get("action", "???"))  # nocoverage
-    raise UnsupportedWebhookEventType(complete_event)
+    complete_event = "{}:{}".format(
+        header_event, payload.get("action", "???").tame(check_string)
+    )  # nocoverage
+    raise UnsupportedWebhookEventTypeError(complete_event)

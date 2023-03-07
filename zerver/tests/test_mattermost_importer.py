@@ -719,6 +719,8 @@ class MatterMostImporter(ZulipTestCase):
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
 
+        self.verify_emoji_code_foreign_keys()
+
     def test_do_convert_data_with_direct_messages(self) -> None:
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
@@ -914,3 +916,5 @@ class MatterMostImporter(ZulipTestCase):
         messages = Message.objects.filter(sender__in=realm_users)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
+
+        self.verify_emoji_code_foreign_keys()

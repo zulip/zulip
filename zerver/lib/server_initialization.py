@@ -3,7 +3,15 @@ from typing import Iterable, Optional, Tuple
 from django.conf import settings
 
 from zerver.lib.bulk_create import bulk_create_users
-from zerver.models import Realm, RealmAuditLog, UserProfile, get_client, get_system_bot
+from zerver.lib.user_groups import create_system_user_groups_for_realm
+from zerver.models import (
+    Realm,
+    RealmAuditLog,
+    RealmUserDefault,
+    UserProfile,
+    get_client,
+    get_system_bot,
+)
 
 
 def server_initialized() -> bool:
@@ -11,16 +19,18 @@ def server_initialized() -> bool:
 
 
 def create_internal_realm() -> None:
-    from zerver.lib.actions import do_change_can_forge_sender
+    from zerver.actions.users import do_change_can_forge_sender
 
     realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM, name="System bot realm")
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
     )
+    RealmUserDefault.objects.create(realm=realm)
+    create_system_user_groups_for_realm(realm)
 
     # Create some client objects for common requests.  Not required;
     # just ensures these get low IDs in production, and in development
-    # avoids an extra database write for the first HTTP requset in
+    # avoids an extra database write for the first HTTP request in
     # most tests.
     get_client("website")
     get_client("ZulipMobile")

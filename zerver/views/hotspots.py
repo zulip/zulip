@@ -1,8 +1,8 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.decorator import human_users_only
-from zerver.lib.actions import do_mark_hotspot_as_read
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.hotspots import ALL_HOTSPOTS
 from zerver.lib.request import REQ, has_request_variables
@@ -18,4 +18,4 @@ def mark_hotspot_as_read(
     if hotspot not in ALL_HOTSPOTS:
         raise JsonableError(_("Unknown hotspot: {}").format(hotspot))
     do_mark_hotspot_as_read(user, hotspot)
-    return json_success()
+    return json_success(request)

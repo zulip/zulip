@@ -5,14 +5,21 @@ class zulip::tornado_sharding {
   # with the correct default content for the "only one shard" setup. For this
   # reason they use "replace => false", because the files are managed by
   # the sharding script afterwards and Puppet shouldn't overwrite them.
-  file { '/etc/zulip/nginx_sharding.conf':
+  file { '/etc/zulip/nginx_sharding_map.conf':
     ensure  => file,
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
     notify  => Service['nginx'],
-    content => "set \$tornado_server http://tornado;\n",
+    content => @(EOT),
+      map "" $tornado_server {
+          default http://tornado;
+      }
+      | EOT
     replace => false,
+  }
+  file { '/etc/zulip/nginx_sharding.conf':
+    ensure => absent,
   }
   file { '/etc/zulip/sharding.json':
     ensure  => file,
@@ -29,14 +36,15 @@ class zulip::tornado_sharding {
   exec { 'stage_updated_sharding':
     command   => "${::zulip_scripts_path}/lib/sharding.py",
     onlyif    => "${::zulip_scripts_path}/lib/sharding.py --errors-ok",
-    require   => [File['/etc/zulip/nginx_sharding.conf'], File['/etc/zulip/sharding.json']],
+    require   => [File['/etc/zulip/nginx_sharding_map.conf'], File['/etc/zulip/sharding.json']],
     logoutput => true,
-    loglevel  => 'warning',
+    loglevel  => warning,
   }
 
-  # The ports of Tornado processes to run on the server; defaults to
-  # 9800.
-  $tornado_ports = zulipconf_keys('tornado_sharding')
+  # The ports of Tornado processes to run on the server, computed from
+  # the zulip.conf configuration. Default is just port 9800.
+  $tornado_groups = zulipconf_keys('tornado_sharding').map |$key| { $key.regsubst(/_regex$/, '').split('_') }.unique
+  $tornado_ports = $tornado_groups.flatten.unique
 
   file { '/etc/nginx/zulip-include/tornado-upstreams':
     require => [Package[$zulip::common::nginx], Exec['stage_updated_sharding']],

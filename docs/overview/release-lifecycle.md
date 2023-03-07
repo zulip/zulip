@@ -14,7 +14,7 @@ security support policies. In short:
   if you don't do so.
 - New server releases are announced via the low-traffic
   [zulip-announce email
-  list](https://groups.google.com/forum/#!forum/zulip-announce). We
+  list](https://groups.google.com/g/zulip-announce). We
   highly recommend subscribing so that you are notified about new
   security releases.
 - Zulip Cloud runs the branch that will become the next major
@@ -72,7 +72,7 @@ in a stable release.
   to chat.zulip.org to facilitate design feedback.
 - We maintain Git branches with names like `4.x` containing backported
   commits from `main` that we plan to include in the next maintenance
-  release. Self hosters can [upgrade][upgrade-from-git] to these
+  release. Self-hosters can [upgrade][upgrade-from-git] to these
   stable release branches to get bug fixes staged for the next stable
   release (which is very useful when you reported a bug whose fix we
   choose to backport). We support these branches as though they were a
@@ -86,13 +86,13 @@ in a stable release.
 A Zulip design goal is for there never to be a reason to run an old
 version of Zulip. We work extremely hard to make sure Zulip is stable
 for self-hosters, has no regressions, and that the [Zulip upgrade
-process](../production/upgrade-or-modify.md) Just Works.
+process](../production/upgrade.md) Just Works.
 
 The Zulip server and clients apps are all carefully engineered to
 ensure compatibility with old versions. In particular:
 
 - The Zulip mobile and desktop apps maintain backwards-compatibility
-  code to support any Zulip server since 2.1.0. (They may also work
+  code to support any Zulip server since 3.0. (They may also work
   with older versions, with a degraded experience).
 - Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
@@ -108,7 +108,7 @@ release series except in rare cases involving a security issue or
 critical bug just after publishing a major release.
 
 [blog-major-releases]: https://blog.zulip.com/tag/major-releases/
-[upgrade-from-git]: ../production/upgrade-or-modify.html#upgrading-from-a-git-repository
+[upgrade-from-git]: ../production/upgrade.md#upgrading-from-a-git-repository
 
 ### Security releases
 
@@ -179,12 +179,12 @@ do not have any of these priority labels.
 We welcome participation from our user community in influencing the
 Zulip roadmap. If a bug or missing feature is causing significant
 pain for you, we'd love to hear from you, either in
-[chat.zulip.org](https://zulip.com/developer-community/) or on the relevant
+[chat.zulip.org](https://zulip.com/development-community/) or on the relevant
 GitHub issue. Please an include an explanation of your use case: such
 details can be extremely helpful in designing appropriately general
 solutions, and also helps us identify cases where an existing solution
 can solve your problem. See [Reporting
-issues](contributing.html#reporting-issues) for more details.
+issues](../contributing/contributing.md#reporting-issues) for more details.
 
 ## Client apps
 
@@ -227,10 +227,10 @@ core community, like the Python and JavaScript bindings, are released
 independently as needed.
 
 [electron]: https://www.electronjs.org/
-[upgrading-to-main]: ../production/upgrade-or-modify.html#upgrading-to-main
-[os-upgrade]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
-[chat-zulip-org]: https://zulip.com/developer-community/
-[fork-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
+[upgrading-to-main]: ../production/modify.md#upgrading-to-main
+[os-upgrade]: ../production/upgrade.md#upgrading-the-operating-system
+[chat-zulip-org]: https://zulip.com/development-community/
+[fork-zulip]: ../production/modify.md
 [zulip-server]: https://github.com/zulip/zulip
 [mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
 [label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22

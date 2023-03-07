@@ -4,7 +4,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import check_add_reaction, do_remove_reaction
+from zerver.actions.reactions import check_add_reaction, do_remove_reaction
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
@@ -26,7 +26,7 @@ def add_reaction(
 ) -> HttpResponse:
     check_add_reaction(user_profile, message_id, emoji_name, emoji_code, reaction_type)
 
-    return json_success()
+    return json_success(request)
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message
@@ -77,4 +77,4 @@ def remove_reaction(
     # deactivated by an administrator in the meantime).
     do_remove_reaction(user_profile, message, emoji_code, reaction_type)
 
-    return json_success()
+    return json_success(request)

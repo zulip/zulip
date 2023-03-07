@@ -7,13 +7,13 @@ Zulip.
 Additionally, the Zulip UI is translated into more than a dozen major
 languages, including Spanish, German, Hindi, French, Chinese, Russian,
 and Japanese, and we're always excited to add more. If you speak a
-language other than English, your help with translating Zulip is be
+language other than English, your help with translating Zulip would be
 greatly appreciated!
 
 If you are interested in knowing about the technical end-to-end
 tooling and processes for tagging strings for translation and syncing
 translations in Zulip, read about [Internationalization for
-Developers](../translating/internationalization.md).
+Developers](internationalization.md).
 
 ## Translators' workflow
 
@@ -21,7 +21,7 @@ These are the steps you should follow if you want to help translate
 Zulip:
 
 1. Join [#translation][translation-stream] in the [Zulip development
-   community server](https://zulip.com/developer-community/), and say hello.
+   community server](https://zulip.com/development-community/), and say hello.
    That stream is also the right place for any questions, updates on your
    progress, reporting problematic strings, etc.
 
@@ -51,11 +51,11 @@ Zulip:
      major release of the Zulip server and web app (which is what we
      run on chat.zulip.org and Zulip Cloud).
    - The variants of `django.po` and `translations.json` with names
-     starting with a version, like, `4-x--`, are strings for Zulip's
+     starting with a version, like `5-x--`, are strings for Zulip's
      current [stable release series](../overview/release-lifecycle.md).
 
    Transifex is smart about only asking you to translate a string once
-   even if it appears in multiple resources. The `4-x--` type variants
+   even if it appears in multiple resources. The `5-x--` type variants
    allow translators to get a language to 100% translated for the
    current release.
 
@@ -87,7 +87,7 @@ Some useful tips for your translating journey:
 
 - When in doubt, ask for context in
   [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
-  the [Zulip development community server](https://zulip.com/developer-community/).
+  the [Zulip development community server](https://zulip.com/development-community/).
 
 - If there are multiple possible translations for a term, search for it in
   the _Concordance_ tool (the button with a magnet in the top right corner).
@@ -115,7 +115,7 @@ can usually just deploy the latest translations there.
 
 - First, download the updated resource files from Transifex using the
   `tools/i18n/sync-translations` command (it will require some [initial
-  setup](../translating/internationalization.html#transifex-cli-setup)). This
+  setup](internationalization.md#transifex-cli-setup)). This
   command will download the resource files from Transifex and replace
   your local resource files with them, and then compile them. You can
   now test your translation work in the Zulip UI.
@@ -157,6 +157,26 @@ There are a few ways to see your translations in the Zulip UI:
 
   This can occasionally be useful for debugging.
 
+### Machine translation
+
+Transifex has [built-in machine translation
+capabilities](https://help.transifex.com/en/articles/6271130-setting-up-machine-translation).
+If machine translation is enabled for your language, you can generate one by
+clicking the **lightning** symbol above the translation box.
+
+![Transifex machine translation button](../images/transifex-machine-translation-button.png)
+
+There are a few things to keep in mind if you choose to make use of machine
+translation:
+
+- We expect human-quality translations for Zulip. While machine translation can
+  be a helpful aid, please be sure to review all machine translated strings.
+
+- We are using machine translation in HTML mode, which has a known bug that
+  causes special characters to be rendered as their HTML encodings. For example,
+  a `'` will be converted to ` &#39;`. Please be sure to fix this when reviewing
+  translations.
+
 ### Translation style guides
 
 We maintain translation style guides for Zulip, giving guidance on how
@@ -165,6 +185,7 @@ translate words like "stream" to), with reasoning, so that future
 translators can understand and preserve those decisions:
 
 - [Chinese](chinese.md)
+- [Finnish](finnish.md)
 - [French](french.md)
 - [German](german.md)
 - [Hindi](hindi.md)
@@ -174,7 +195,7 @@ translators can understand and preserve those decisions:
 
 Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
-style guide as they work , since it's easy to take notes as you
+style guide as they work, since it's easy to take notes as you
 translate, and doing so greatly increases the ability of future
 translators to update the translations in a consistent way. See [our
 docs on this documentation](../documentation/overview.md) for how to
@@ -199,7 +220,7 @@ capitalization in general. This means that:
 
 The Zulip test suite enforces these capitalization guidelines in the
 web app codebase [in our test
-suite](../testing/testing.html#other-test-suites)
+suite](../testing/testing.md#other-test-suites)
 (`./tools/check-capitalization`; `tools/lib/capitalization.py` has
 some exclude lists, e.g. `IGNORED_PHRASES`).
 

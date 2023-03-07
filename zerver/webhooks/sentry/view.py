@@ -1,12 +1,12 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -95,7 +95,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     """Handle either an exception type event or a message type event payload."""
     # We shouldn't support the officially deprecated Raven series of SDKs.
     if int(event["version"]) < 7:
-        raise UnsupportedWebhookEventType("Raven SDK")
+        raise UnsupportedWebhookEventTypeError("Raven SDK")
 
     subject = event["title"]
     platform_name = event["platform"]
@@ -133,7 +133,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                 pre_context = convert_lines_to_traceback_string(
                     exception_frame.get("pre_context", None)
                 )
-                context_line = exception_frame["context_line"] + "\n"
+                context_line = exception_frame.get("context_line", "") + "\n"
                 post_context = convert_lines_to_traceback_string(
                     exception_frame.get("post_context", None)
                 )
@@ -159,7 +159,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         body = MESSAGE_EVENT_TEMPLATE.format(**context)
 
     else:
-        raise UnsupportedWebhookEventType("unknown-event type")
+        raise UnsupportedWebhookEventTypeError("unknown-event type")
 
     return (subject, body)
 
@@ -211,7 +211,7 @@ def handle_issue_payload(
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
 
     else:
-        raise UnsupportedWebhookEventType("unknown-issue-action type")
+        raise UnsupportedWebhookEventTypeError("unknown-issue-action type")
 
     return (subject, body)
 
@@ -243,7 +243,9 @@ def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any
     event_path = f"events/{event_id}/"
     event["web_url"] = urljoin(payload["url"], event_path)
     timestamp = event.get("timestamp", event["received"])
-    event["datetime"] = datetime.fromtimestamp(timestamp).isoformat()
+    event["datetime"] = datetime.fromtimestamp(timestamp, timezone.utc).isoformat(
+        timespec="microseconds"
+    )
     return payload
 
 
@@ -266,9 +268,9 @@ def api_sentry_webhook(
         elif "issue" in data:
             subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
         else:
-            raise UnsupportedWebhookEventType(str(list(data.keys())))
+            raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
     else:
         subject, body = handle_deprecated_payload(payload)
 
     check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
+    return json_success(request)

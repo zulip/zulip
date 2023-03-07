@@ -2,7 +2,7 @@ Get Zulip notifications for your Opsgenie events!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to <https://app.opsgenie.com/integration>. Click on
    **Add New Integrations**, and select **Webhook**.

@@ -34,7 +34,7 @@ REMAPPED_EMOJIS = {
 }
 
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
-# Changes here should be mimicked in `templates/zerver/help/enable-emoticon-translations.md`.
+# Changes here should be mimicked in `help/enable-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
     ":)": ":smile:",
     "(:": ":smile:",
@@ -103,10 +103,7 @@ def generate_emoji_catalog(
 # Use only those names for which images are present in all
 # the emoji sets so that we can switch emoji sets seamlessly.
 def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
-    for emoji_set in EMOJISETS:
-        if not emoji_dict["has_img_" + emoji_set]:
-            return False
-    return True
+    return all(emoji_dict["has_img_" + emoji_set] for emoji_set in EMOJISETS)
 
 
 def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
@@ -114,6 +111,19 @@ def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
     for emoji_code, name_info in emoji_name_maps.items():
         codepoint_to_name[emoji_code] = name_info["canonical_name"]
     return codepoint_to_name
+
+
+def generate_codepoint_to_names_map(
+    emoji_name_maps: Dict[str, Dict[str, Any]]
+) -> Dict[str, List[str]]:
+    codepoint_to_names: Dict[str, List[str]] = {}
+    for emoji_code, name_info in emoji_name_maps.items():
+        # The first element of the names list is always the canonical name.
+        names = [name_info["canonical_name"]]
+        for alias in name_info["aliases"]:
+            names.append(alias)
+        codepoint_to_names[emoji_code] = names
+    return codepoint_to_names
 
 
 def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:

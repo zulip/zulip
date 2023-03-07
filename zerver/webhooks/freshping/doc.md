@@ -2,7 +2,7 @@ Receive Freshping notifications in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your **Freshping** dashboard and click **Settings**.
    Click **Integrations** and then click **Create Integration**

@@ -7,7 +7,7 @@
             <h1>{{ _('Contact support') }}</h1>
         </div>
 
-        <form method="post" class="form-horizontal white-box" id="registration">
+        <form method="post" class="white-box" id="registration">
             {{ csrf_input }}
 
             <fieldset class="support-request">
@@ -31,7 +31,7 @@
                 <div class="register-button-box">
                     <button class="register-button support-submit-button" type="submit">
                         <span>{{ _('Submit') }}</span>
-                        <object class="loader" type="image/svg+xml" data="/static/images/loader-white.svg"></object>
+                        <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                     </button>
                 </div>
             </fieldset>

@@ -79,7 +79,6 @@ def dev_direct_login(
     realm = get_realm(subdomain)
 
     if request.POST.get("prefers_web_public_view") == "Anonymous login":
-        request.session["prefers_web_public_view"] = True
         redirect_to = get_safe_redirect_to(next, realm.uri)
         return HttpResponseRedirect(redirect_to)
 
@@ -87,6 +86,7 @@ def dev_direct_login(
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
         return config_error(request, "dev")
+    assert isinstance(user_profile, UserProfile)
     do_login(request, user_profile)
 
     redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
@@ -117,25 +117,25 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
     validate_login_email(username)
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username, realm=realm, return_data=return_data)
     if return_data.get("inactive_realm"):
-        raise RealmDeactivatedError()
+        raise RealmDeactivatedError
     if return_data.get("inactive_user"):
-        raise UserDeactivatedError()
+        raise UserDeactivatedError
     if return_data.get("invalid_subdomain"):
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     if user_profile is None:
         # Since we're not actually checking passwords, this condition
         # is when one's attempting to send an email address that
         # doesn't have an account, i.e. it's definitely invalid username.
-        raise AuthenticationFailedError()
-    assert user_profile is not None
+        raise AuthenticationFailedError
+    assert isinstance(user_profile, UserProfile)
 
     do_login(request, user_profile)
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
 @csrf_exempt
@@ -144,7 +144,8 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
 
     users = get_dev_users()
     return json_success(
-        dict(
+        request,
+        data=dict(
             direct_admins=[
                 dict(email=u.delivery_email, realm_uri=u.realm.uri)
                 for u in users
@@ -155,5 +156,5 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
                 for u in users
                 if not u.is_realm_admin
             ],
-        )
+        ),
     )

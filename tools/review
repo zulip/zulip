@@ -12,12 +12,12 @@ def exit(message: str) -> None:
 
 
 def run(command: List[str]) -> None:
-    print("\n>>> " + " ".join(map(shlex.quote, command)))
+    print(f"\n>>> {shlex.join(command)}")
     subprocess.check_call(command)
 
 
 def check_output(command: List[str]) -> str:
-    return subprocess.check_output(command, universal_newlines=True)
+    return subprocess.check_output(command, text=True)
 
 
 def get_git_branch() -> str:

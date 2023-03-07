@@ -19,29 +19,23 @@ states = {
     3: "UNKNOWN",
 }
 
-if "USER" in os.environ and not os.environ["USER"] in ["root", "rabbitmq"]:
+if "USER" in os.environ and os.environ["USER"] not in ["root", "rabbitmq"]:
     print("This script must be run as the root or rabbitmq user")
 
 
-usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
-
-parser = argparse.ArgumentParser(usage=usage)
-parser.add_argument("--min-threshold", dest="min_count", type=int, default=1)
-
-options = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.parse_args()
 
 config_file = get_config_file()
 TORNADO_PROCESSES = len(get_tornado_ports(config_file))
 
-output = subprocess.check_output(
-    ["/usr/sbin/rabbitmqctl", "list_consumers"], universal_newlines=True
-)
+output = subprocess.check_output(["/usr/sbin/rabbitmqctl", "list_consumers"], text=True)
 
 consumers: Dict[str, int] = defaultdict(int)
 
 queues = {
     *normal_queues,
-    # These queues may not be present if settings.TORNADO_PROCESSES > 1
+    # All tornado queues get grouped into this, even if sharded
     "notify_tornado",
 }
 
@@ -59,11 +53,11 @@ for line in output.split("\n"):
 
 now = int(time.time())
 
-for queue_name in consumers.keys():
+for queue_name in consumers:
     state_file_path = "/var/lib/nagios_state/check-rabbitmq-consumers-" + queue_name
     state_file_tmp = state_file_path + "-tmp"
 
-    target_count = options.min_count
+    target_count = 1
     if queue_name == "notify_tornado":
         target_count = TORNADO_PROCESSES
 

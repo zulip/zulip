@@ -1,10 +1,10 @@
 See your Thinkst Canary and Canarytoken alerts in Zulip! This integration works with
 Canarytokens from Thinkst's paid product, not [canarytokens.org][canarytokens] - see the
-[Canarytoken](/integrations/doc/canarytoken) integration for those!
+[Canarytokens](/integrations/doc/canarytoken) integration for those!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your Thinkst Canary settings, and click on **Webhooks** on
    the left sidebar. Select the **Generic** tab. Press

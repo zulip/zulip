@@ -5,7 +5,7 @@ These instructions apply to Atlassian Cloud's hosted Jira, and Jira Server versi
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your Jira **Site administration** page. Click **Jira** on the left.
    On the left sidebar, scroll down, and under **Advanced**, click **WebHooks**.

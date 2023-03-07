@@ -6,14 +6,14 @@ import os
 import sys
 import time
 
-import psycopg2
-import psycopg2.extensions
-from psycopg2.sql import SQL, Identifier
-
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from scripts.lib.setup_path import setup_path
 
 setup_path()
+
+import psycopg2
+import psycopg2.extensions
+from psycopg2.sql import SQL, Identifier
 
 from scripts.lib.zulip_tools import su_to_zulip
 
@@ -44,7 +44,8 @@ pg_args["dbname"] = settings.DATABASES["default"]["NAME"]
 pg_args["sslmode"] = settings.DATABASES["default"]["OPTIONS"].get("sslmode")
 pg_args["connect_timeout"] = "600"
 
-conn = psycopg2.connect(**pg_args)
+# connection_factory=None lets mypy understand the return type
+conn = psycopg2.connect(connection_factory=None, **pg_args)
 conn.autocommit = True
 
 pg_server_version = conn.server_version
@@ -65,9 +66,7 @@ FROM
         JOIN pg_class AS trel ON trel.oid = i.indrelid
         JOIN pg_namespace AS tnsp ON trel.relnamespace = tnsp.oid
         JOIN pg_class AS irel ON irel.oid = i.indexrelid
-        CROSS JOIN unnest(i.indkey) colnum
-        JOIN pg_attribute AS a ON trel.oid = a.attrelid
-                AND a.attnum = colnum
+        JOIN pg_attribute AS a ON a.attrelid = i.indexrelid
         WHERE tnsp.nspname = 'zulip'
         AND a.attcollation != 0
 GROUP BY 1, 2, i.indrelid

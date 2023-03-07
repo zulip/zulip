@@ -6,6 +6,7 @@ define zulip_ops::teleport::application (
   $description = '',
   $order = '50',
 ) {
+  include zulip_ops::teleport::application_top
   concat::fragment { "teleport_app_${name}":
     target  => '/etc/teleport_node.yaml',
     order   => $order,

@@ -22,16 +22,24 @@ class HarborHookTests(WebhookTestCase):
         self.assert_json_success(result)
 
     def test_scanning_completed(self) -> None:
-        expected_topic = "example/test"
+        expected_topic = "test/alpine/helm"
 
         expected_message = """
-Image scan completed for `example/test:latest`. Vulnerabilities by severity:
+Image scan completed for `test/alpine/helm:3.8.1`. Vulnerabilities by severity:
 
-* High: **12**
-* Medium: **16**
-* Low: **7**
-* Unknown: **2**
-* None: **131**
+* High: **4**
+* Unknown: **1**
         """.strip()
 
         self.check_webhook("scanning_completed", expected_topic, expected_message)
+
+    def test_scanning_completed_no_vulnerability(self) -> None:
+        expected_topic = "test123/test-image"
+
+        expected_message = """
+Image scan completed for `test123/test-image:latest`. Vulnerabilities by severity:
+
+None
+        """.strip()
+
+        self.check_webhook("scanning_completed_no_vulnerability", expected_topic, expected_message)

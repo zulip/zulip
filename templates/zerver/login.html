@@ -1,5 +1,10 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "signup" %}
+
+{% block title %}
+<title>{{ _("Log in") }} | Zulip</title>
+{% endblock %}
+
 {# Login page. #}
 
 {% block portico_content %}
@@ -34,10 +39,9 @@ page can be easily identified in it's respective JavaScript file. -->
                     <div class="login-social">
                         <form class="anonymous_access_form form-inline" action="/" method="post">
                             {{ csrf_input }}
-                            <input type="hidden" name="prefers_web_public_view" value="true" />
                             <input type="hidden" name="next" value="{{ next }}" />
                             <button class="full-width">
-                                {{ _('Access without an account') }}
+                                {{ _('View without an account') }}
                             </button>
                         </form>
                     </div>
@@ -48,13 +52,30 @@ page can be easily identified in it's respective JavaScript file. -->
                 {% endif %}
                 {% if no_auth_enabled %}
                     <div class="alert">
-                        <p>No authentication backends are enabled on this
-                        server yet, so it is impossible to log in!</p>
+                        <p>
+                            No authentication backends are enabled on this
+                            server yet, so it is impossible to log in!
+                        </p>
 
-                        <p>See the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">Zulip
-                        authentication documentation</a> to learn how to configure authentication backends.</p>
+                        <p>
+                            See the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">
+                            Zulip authentication documentation</a> to learn how to configure authentication backends.
+                        </p>
                     </div>
                 {% else %}
+
+                    {% if already_registered %}
+                    <div class="alert">
+                        {{ _("You've already registered with this email address. Please log in below.") }}
+                    </div>
+                    {% endif %}
+
+                    {% if deactivated_account_error %}
+                    <div class="alert">
+                        {{ deactivated_account_error }}
+                    </div>
+                    {% endif %}
+
                     {% if password_auth_enabled %}
                         <form name="login_form" id="login_form" method="post" class="login-form"
                           action="{{ url('login') }}">
@@ -87,7 +108,7 @@ page can be easily identified in it's respective JavaScript file. -->
                                 <input id="id_password" name="password" class="required" type="password" autocomplete="off"
                                   {% if email %} autofocus {% endif %}
                                   required />
-                                <label for="id_password" class="control-label">{{ _('Password') }}</label>
+                                <label for="id_password">{{ _('Password') }}</label>
                                 <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                             </div>
                             {% else %}
@@ -102,20 +123,8 @@ page can be easily identified in it's respective JavaScript file. -->
                             </div>
                             {% endif %}
 
-                            {% if already_registered %}
-                            <div class="alert">
-                                {{ _("You've already registered with this email address. Please log in below.") }}
-                            </div>
-                            {% endif %}
-
-                            {% if deactivated_account_error %}
-                            <div class="alert">
-                                {{ deactivated_account_error }}
-                            </div>
-                            {% endif %}
-
                             <button type="submit" name="button" class="full-width">
-                                <img class="loader" src="/static/images/loader-white.svg" alt="" />
+                                <img class="loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
                                 <span class="text">{{ _("Log in") }}</span>
                             </button>
                         </form>
@@ -131,7 +140,7 @@ page can be easily identified in it's respective JavaScript file. -->
                         <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
                             <input type="hidden" name="next" value="{{ next }}" />
                             <button id="login_{{ backend.button_id_suffix }}" class="login-social-button"
-                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>                                {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
+                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}> {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                             </button>
                         </form>
                     </div>

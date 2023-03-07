@@ -1,11 +1,11 @@
 import re
-from typing import Any, List, Match, Optional
+from typing import Any, List, Match
 
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 # There is a lot of duplicated code between this file and
 # help_settings_links.py. So if you're making a change here consider making
@@ -20,12 +20,13 @@ gear_info = {
     # link is used for relative links: `Select [name](link).`
     "manage-streams": ["Manage streams", "/#streams/subscribed"],
     "settings": ["Personal Settings", "/#settings/profile"],
-    "manage-organization": ["Manage organization", "/#organization/organization-profile"],
+    "organization-settings": ["Organization settings", "/#organization/organization-profile"],
     "integrations": ["Integrations", "/integrations"],
     "stats": ["Usage statistics", "/stats"],
     "plans": ["Plans and pricing", "/plans"],
     "billing": ["Billing", "/billing"],
     "invite": ["Invite users", "/#invite"],
+    "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
 gear_instructions = """
@@ -46,7 +47,7 @@ def gear_handle_match(key: str) -> str:
 
 stream_info = {
     "all": ["All streams", "/#streams/all"],
-    "subscribed": ["Your streams", "/#streams/subscribed"],
+    "subscribed": ["Subscribed streams", "/#streams/subscribed"],
 }
 
 stream_instructions_no_link = """
@@ -80,7 +81,7 @@ class RelativeLinksHelpExtension(Extension):
         )
 
 
-relative_help_links: Optional[bool] = None
+relative_help_links: bool = False
 
 
 def set_relative_help_links(value: bool) -> None:

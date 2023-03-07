@@ -2,6 +2,7 @@
 # This tools generates /etc/zulip/zulip-secrets.conf
 import os
 import sys
+from contextlib import suppress
 from typing import Dict, List
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,6 +12,7 @@ from scripts.lib.zulip_tools import get_config, get_config_file
 
 setup_path()
 
+os.environ["DISABLE_MANDATORY_SECRET_CHECK"] = "True"
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
 import argparse
@@ -165,10 +167,8 @@ def generate_secrets(development: bool = False) -> None:
                             )
                         break
 
-                try:
+                with suppress(redis.exceptions.ConnectionError):
                     get_redis_client().config_set("requirepass", redis_password)
-                except redis.exceptions.ConnectionError:
-                    pass
 
                 add_secret("redis_password", redis_password)
 
@@ -194,7 +194,6 @@ def generate_secrets(development: bool = False) -> None:
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(

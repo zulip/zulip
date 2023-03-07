@@ -1,57 +1,63 @@
 class zulip::profile::rabbitmq {
   include zulip::profile::base
-  $erlang = $::osfamily ? {
-    'debian' => 'erlang-base',
-    'redhat' => 'erlang',
+  $erlang = $::os['family'] ? {
+    'Debian' => 'erlang-base',
+    'RedHat' => 'erlang',
   }
   $rabbitmq_packages = [
     $erlang,
     'rabbitmq-server',
   ]
-  package { $rabbitmq_packages: ensure => 'installed' }
-
   # Removed 2020-09 in version 4.0; these lines can be removed in
   # Zulip version 5.0 and later.
   file { ['/etc/cron.d/rabbitmq-queuesize', '/etc/cron.d/rabbitmq-numconsumers']:
     ensure => absent,
   }
 
-  file { '/etc/default/rabbitmq-server':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/rabbitmq/rabbitmq-server',
+  file { '/etc/rabbitmq':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    before => Package['rabbitmq-server'],
   }
-
   file { '/etc/rabbitmq/rabbitmq.config':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/rabbitmq/rabbitmq.config',
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/rabbitmq/rabbitmq.config',
+    # This config file must be installed before the package, so that
+    # port 25672 is not even briefly open to the Internet world, which
+    # would be a security risk, due to insecure defaults in the
+    # RabbitMQ package.
+    before => Package['rabbitmq-server'],
+    notify => Service['rabbitmq-server'],
   }
-
-  $rabbitmq_nodename = zulipconf('rabbitmq', 'nodename', '')
-  if $rabbitmq_nodename != '' {
-    file { '/etc/rabbitmq':
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'root',
-      mode   => '0755',
-    }
-
-    file { '/etc/rabbitmq/rabbitmq-env.conf':
-      ensure  => file,
-      require => File['/etc/rabbitmq'],
-      before  => [Package[rabbitmq-server], Service[rabbitmq-server]],
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
-      content => template('zulip/rabbitmq-env.conf.template.erb'),
-    }
+  exec { 'warn-rabbitmq-nodename-change':
+    command   => "${::zulip_scripts_path}/lib/warn-rabbitmq-nodename-change",
+    onlyif    => '[ -f /etc/rabbitmq/rabbitmq-env.conf ] && ! grep -xq NODENAME=zulip@localhost /etc/rabbitmq/rabbitmq-env.conf',
+    before    => [
+      File['/etc/rabbitmq/rabbitmq-env.conf'],
+      Service['rabbitmq-server'],
+    ],
+    logoutput => true,
+    loglevel  => warning,
+  }
+  file { '/etc/rabbitmq/rabbitmq-env.conf':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/rabbitmq/rabbitmq-env.conf',
+    before => Package['rabbitmq-server'],
+    notify => [
+      Service['rabbitmq-server'],
+      Exec['configure-rabbitmq'],
+    ],
+  }
+  package { $rabbitmq_packages:
+    ensure  => installed,
   }
   # epmd doesn't have an init script, so we just check if it is
   # running, and if it isn't, start it.  Even in case of a race, this
@@ -66,10 +72,15 @@ class zulip::profile::rabbitmq {
 
   service { 'rabbitmq-server':
     ensure  => running,
-    require => [Exec['epmd'],
-                File['/etc/rabbitmq/rabbitmq.config'],
-                File['/etc/default/rabbitmq-server']],
+    require => [
+      Exec['epmd'],
+      Package['rabbitmq-server'],
+    ],
   }
 
-  # TODO: Should also call exactly once "configure-rabbitmq"
+  exec { 'configure-rabbitmq':
+    command     => "${::zulip_scripts_path}/setup/configure-rabbitmq",
+    refreshonly => true,
+    require     => Service['rabbitmq-server'],
+  }
 }

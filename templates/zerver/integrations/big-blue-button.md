@@ -10,7 +10,7 @@ configure your zulip server to use that BigBlueButton server.
 
 1. Get the Shared Secret using the `bbb-conf --secret` command on your
    BigBlueButton Server. See also
-   [BigBlueButton documentation](https://docs.bigbluebutton.org/2.2/customize.html#extract-the-shared-secret).
+   [BigBlueButton documentation](https://docs.bigbluebutton.org/admin/customize.html#extract-the-shared-secret).
 
 1. Get the URL to your BigBlueButton API. The URL has the form of
    `https://bigbluebutton.example.com/bigbluebutton/` and can also be

@@ -347,4 +347,4 @@ will be useful in your journey, as well.
 
 ![Git - XKCD 1597](https://imgs.xkcd.com/comics/git.png)
 
-[git-cheat-detailed]: ../git/cheat-sheet.html#detailed-cheat-sheet
+[git-cheat-detailed]: ../git/cheat-sheet.md#detailed-cheat-sheet

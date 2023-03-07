@@ -25,7 +25,7 @@ cd "$tmpdir"
 
 # Fetch to a predictable name, not whatever curl guesses from the URL
 LOCALFILE="archive.tar.gz"
-curl -fL -o "$LOCALFILE" "$URL"
+curl -fL --retry 3 -o "$LOCALFILE" "$URL"
 
 # Check the hash against what was passed in
 echo "$SHA256  $LOCALFILE" >"$LOCALFILE.sha256"

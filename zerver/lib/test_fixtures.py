@@ -26,10 +26,12 @@ from scripts.lib.zulip_tools import (
     write_new_digest,
 )
 
+BACKEND_DATABASE_TEMPLATE = "zulip_test_template"
 UUID_VAR_DIR = get_dev_uuid_var_path()
 
 IMPORTANT_FILES = [
     "zilencer/management/commands/populate_db.py",
+    "zerver/actions/create_realm.py",
     "zerver/lib/bulk_create.py",
     "zerver/lib/generate_test_data.py",
     "zerver/lib/server_initialization.py",
@@ -66,7 +68,7 @@ def migration_paths() -> List[str]:
 
 
 class Database:
-    def __init__(self, platform: str, database_name: str, settings: str):
+    def __init__(self, platform: str, database_name: str, settings: str) -> None:
         self.database_name = database_name
         self.settings = settings
         self.digest_name = "db_files_hash_for_" + platform
@@ -370,7 +372,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
         ["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost", "postgres", "zulip_test"],
         input=commands,
         check=True,
-        universal_newlines=True,
+        text=True,
     )
     return len(databases_to_drop)
 
@@ -413,7 +415,7 @@ def reset_zulip_test_database() -> None:
 
     destroy_test_databases()
     # Pointing default database to test database template, so we can instantly clone it.
-    settings.DATABASES["default"]["NAME"] = settings.BACKEND_DATABASE_TEMPLATE
+    settings.DATABASES["default"]["NAME"] = BACKEND_DATABASE_TEMPLATE
     connection = connections["default"]
     clone_database_suffix = "clone"
     connection.creation.clone_test_db(

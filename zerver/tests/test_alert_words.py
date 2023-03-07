@@ -1,6 +1,6 @@
 import orjson
 
-from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
+from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
@@ -116,8 +116,8 @@ class AlertWordTests(ZulipTestCase):
         self.login_user(user)
 
         result = self.client_get("/json/users/me/alert_words")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["alert_words"], [])
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["alert_words"], [])
 
     def test_json_list_nonempty(self) -> None:
         user = self.get_user()
@@ -125,8 +125,8 @@ class AlertWordTests(ZulipTestCase):
 
         self.login_user(user)
         result = self.client_get("/json/users/me/alert_words")
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
     def test_json_list_add(self) -> None:
         user = self.get_user()
@@ -136,8 +136,8 @@ class AlertWordTests(ZulipTestCase):
             "/json/users/me/alert_words",
             {"alert_words": orjson.dumps(["one ", "\n two", "three"]).decode()},
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
     def test_json_list_remove(self) -> None:
         user = self.get_user()
@@ -147,14 +147,14 @@ class AlertWordTests(ZulipTestCase):
             "/json/users/me/alert_words",
             {"alert_words": orjson.dumps(["one", "two", "three"]).decode()},
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
         result = self.client_delete(
             "/json/users/me/alert_words", {"alert_words": orjson.dumps(["one"]).decode()}
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"two", "three"})
 
     def message_does_alert(self, user: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so our user is notified"""
@@ -170,8 +170,8 @@ class AlertWordTests(ZulipTestCase):
             "/json/users/me/alert_words",
             {"alert_words": orjson.dumps(["one", "two", "three"]).decode()},
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
         # Alerts in the middle of messages work.
         self.assertTrue(self.message_does_alert(user, "Normal alert one time"))
@@ -217,7 +217,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "new ALERT for you",
             },
         )
@@ -230,7 +229,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "sorry false alarm",
             },
         )

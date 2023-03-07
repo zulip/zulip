@@ -2,8 +2,8 @@
 # in a cluster.
 
 class zulip::app_frontend_once {
-  $proxy_host = zulipconf('http_proxy', 'host', '')
-  $proxy_port = zulipconf('http_proxy', 'port', '')
+  $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
+  $proxy_port = zulipconf('http_proxy', 'port', '4750')
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {
@@ -49,6 +49,14 @@ class zulip::app_frontend_once {
     group  => 'root',
     mode   => '0644',
     source => 'puppet:///modules/zulip/cron.d/soft-deactivate-users',
+  }
+
+  file { '/etc/cron.d/promote-new-full-members':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/cron.d/promote-new-full-members',
   }
 
   file { '/etc/cron.d/archive-messages':

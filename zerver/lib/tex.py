@@ -34,9 +34,7 @@ def render_tex(tex: str, is_inline: bool = True) -> Optional[str]:
     if not is_inline:
         command.extend(["--display-mode"])
     try:
-        stdout = subprocess.check_output(
-            command, input=tex, stderr=subprocess.DEVNULL, universal_newlines=True
-        )
+        stdout = subprocess.check_output(command, input=tex, stderr=subprocess.DEVNULL, text=True)
         # stdout contains a newline at the end
         return stdout.strip()
     except subprocess.CalledProcessError:

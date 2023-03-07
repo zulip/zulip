@@ -30,7 +30,7 @@ ALL_HOTSPOTS = {
 ### Step 2: Configure hotspot placement
 
 The target element and visual orientation of each hotspot is specified in
-`HOTSPOT_LOCATIONS` of `static/js/hotspots.js`.
+`HOTSPOT_LOCATIONS` of `web/src/hotspots.js`.
 
 The `icon_offset` property specifies where the pulsing icon is placed _relative to
 the width and height of the target element_.
@@ -67,7 +67,7 @@ content and behind sidebars and overlays. If a hotspot is associated with
 a target element on a sidebar or overlay, the icon's z-index may need to
 be increased to 101, 102, or 103.
 
-This adjustment can be made at the bottom of `static/styles/hotspots.css`:
+This adjustment can be made at the bottom of `web/styles/hotspots.css`:
 
 ```css
 #hotspot_new_hotspot_name_icon {

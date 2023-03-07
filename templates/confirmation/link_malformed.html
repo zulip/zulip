@@ -1,9 +1,13 @@
 {% extends "zerver/portico.html" %}
 
+{% block title %}
+<title>{{ _("Confirmation link malformed") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 <div class="error_page">
-    <div class="container">
-        <img src="/static/images/500art.svg" alt=""/>
+    <div class="container row-fluid">
+        <img src="{{ static('images/errors/500art.svg') }}" alt=""/>
         <div class="errorbox">
             <div class="errorcontent">
                 <h1 class="lead">{{ _("Whoops. The confirmation link is malformed.") }}</h1>

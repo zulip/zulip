@@ -3,16 +3,12 @@
 from typing import Dict, List
 
 from django.conf import settings
-from django.utils.functional import Promise
 from django.utils.translation import gettext_lazy
+from django_stubs_ext import StrPromise
 
 from zerver.models import UserHotspot, UserProfile
 
-INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
-    "intro_reply": {
-        "title": gettext_lazy("Reply to a message"),
-        "description": gettext_lazy("Click anywhere on a message to reply."),
-    },
+INTRO_HOTSPOTS: Dict[str, Dict[str, StrPromise]] = {
     "intro_streams": {
         "title": gettext_lazy("Catch up on a stream"),
         "description": gettext_lazy(
@@ -46,7 +42,7 @@ INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
 # We would most likely implement new hotspots in the future that aren't
 # a part of the initial tutorial. To that end, classifying them into
 # categories which are aggregated in ALL_HOTSPOTS, seems like a good start.
-ALL_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
+ALL_HOTSPOTS: Dict[str, Dict[str, StrPromise]] = {
     **INTRO_HOTSPOTS,
 }
 
@@ -81,7 +77,7 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     seen_hotspots = frozenset(
         UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)
     )
-    for hotspot in INTRO_HOTSPOTS.keys():
+    for hotspot in INTRO_HOTSPOTS:
         if hotspot not in seen_hotspots:
             return [
                 {

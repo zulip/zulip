@@ -1,0 +1,24 @@
+<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if is_current_user}}user_sidebar_entry_me {{/if}}{{#if num_unread}} user-with-count {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
+    <div class="selectable_sidebar_block">
+        <span class="{{user_circle_class}} user_circle"></span>
+        <a class="user-presence-link"
+          href="{{href}}"
+          data-user-id="{{user_id}}"
+          data-name="{{name}}">
+            {{#if user_list_style.WITH_STATUS}}
+                <div class="user-name-and-status-wrapper">
+                    <div class="user-name-and-status-emoji">
+                        <span class="user-name">{{name}}</span>
+                        {{> status_emoji status_emoji_info}}
+                    </div>
+                    <span class="status-text">{{status_text}}</span>
+                </div>
+            {{else}}
+                <span class="user-name">{{name}}</span>
+                {{> status_emoji status_emoji_info}}
+            {{/if}}
+        </a>
+        <span class="unread_count">{{#if num_unread}}{{num_unread}}{{/if}}</span>
+    </div>
+    <span class="user-list-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
+</li>

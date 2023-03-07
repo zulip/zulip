@@ -16,12 +16,12 @@ define zulip_ops::firewall_allow (
   concat::fragment { "iptables_v4_${portname}":
     target  => '/etc/iptables/rules.v4',
     order   => $order,
-    content => "-A INPUT -p ${proto} --dport ${portname} -j ACCEPT\n",
+    content => "-A INPUT -p ${proto} --dport ${portname} -j ACCEPT -m comment --comment \"${name}\"\n",
   }
 
   concat::fragment { "iptables_v6_${portname}":
     target  => '/etc/iptables/rules.v6',
     order   => $order,
-    content => "-A INPUT -p ${proto} --dport ${portname} -j ACCEPT\n",
+    content => "-A INPUT -p ${proto} --dport ${portname} -j ACCEPT -m comment --comment \"${name}\"\n",
   }
 }

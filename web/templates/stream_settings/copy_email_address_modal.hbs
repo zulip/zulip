@@ -1,0 +1,26 @@
+<div class="copy-email-modal">
+    <div class="new-style">
+        <p class="question-which-parts">
+            {{t "Which parts of the email should be included in the Zulip message sent to this stream?"}}
+        </p>
+        {{#each tags}}
+            {{#if (eq this.name "prefer-html") }}
+            <hr />
+            {{/if}}
+            <div class="input-group" id="{{this.name}}-input-group">
+                <label class="checkbox">
+                    <input class="tag-checkbox" id="{{ this.name }}" type="checkbox"/>
+                    <span></span>
+                </label>
+                <label class="inline" for="{{this.name}}">{{{this.description}}}</label>
+            </div>
+        {{/each}}
+        <hr />
+        <p class="stream-email-header">
+            {{t "Stream email address:"}}
+        </p>
+        <div class="stream-email">
+            <div class="email-address">{{email_address}}</div>
+        </div>
+    </div>
+</div>

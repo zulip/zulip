@@ -3,28 +3,27 @@ import os
 import re
 import sys
 import time
-import weakref
 from contextlib import contextmanager
-from functools import wraps
 from typing import (
     IO,
     TYPE_CHECKING,
     Any,
     Callable,
     Dict,
-    Generator,
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
     cast,
 )
 from unittest import mock
 
-import boto3
+import boto3.session
 import fakeldap
 import ldap
 import orjson
@@ -33,25 +32,25 @@ from django.contrib.auth.models import AnonymousUser
 from django.db.migrations.state import StateApps
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.request import QueryDict
+from django.http.response import HttpResponseBase
 from django.test import override_settings
 from django.urls import URLResolver
-from moto import mock_s3
+from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
-import zerver.lib.upload
+from zerver.actions.realm_settings import do_set_realm_user_default_setting
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib import cache
-from zerver.lib.actions import do_set_realm_property
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.lib.notes import BaseNotes
 from zerver.lib.request import RequestNotes
-from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import (
     Client,
     Message,
-    Realm,
+    RealmUserDefault,
     Subscription,
     UserMessage,
     UserProfile,
@@ -60,11 +59,12 @@ from zerver.models import (
     get_stream,
 )
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
-from zerver.worker import queue_processors
 from zilencer.models import RemoteZulipServer
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
     # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import MigrationsTestCase, ZulipTestCase
 
@@ -73,13 +73,13 @@ class MockLDAP(fakeldap.MockLDAP):
     class LDAPError(ldap.LDAPError):
         pass
 
-    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):
+    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):  # noqa: N801
         pass
 
-    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):
+    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):  # noqa: N801
         pass
 
-    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):
+    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):  # noqa: N801
         pass
 
 
@@ -90,12 +90,6 @@ def stub_event_queue_user_events(
     with mock.patch("zerver.lib.events.request_event_queue", return_value=event_queue_return):
         with mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return):
             yield
-
-
-@contextmanager
-def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
-    with mock.patch.object(queue_processors, "SimpleQueueClient", client):
-        yield
 
 
 @contextmanager
@@ -137,16 +131,21 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         yield cache_queries
 
 
+class CapturedQueryDict(TypedDict):
+    sql: bytes
+    time: str
+
+
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Generator[List[Dict[str, Union[str, bytes]]], None, None]:
+) -> Iterator[List[CapturedQueryDict]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[Dict[str, Union[str, bytes]]] = []
+    queries: List[CapturedQueryDict] = []
 
     def wrapper_execute(
         self: TimeTrackingCursor,
@@ -193,23 +192,46 @@ def stdout_suppressed() -> Iterator[IO[str]]:
 
     with open(os.devnull, "a") as devnull:
         stdout, sys.stdout = sys.stdout, devnull
-        yield stdout
-        sys.stdout = stdout
+        try:
+            yield stdout
+        finally:
+            sys.stdout = stdout
 
 
-def reset_emails_in_zulip_realm() -> None:
+def reset_email_visibility_to_everyone_in_zulip_realm() -> None:
+    """
+    This function is used to reset email visibility for all users and
+    RealmUserDefault object in the zulip realm in development environment
+    to "EMAIL_ADDRESS_VISIBILITY_EVERYONE" since the default value is
+    "EMAIL_ADDRESS_VISIBILITY_ADMINS". This function is needed in
+    tests that want "email" field of users to be set to their real email.
+    """
     realm = get_realm("zulip")
-    do_set_realm_property(
-        realm,
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    do_set_realm_user_default_setting(
+        realm_user_default,
         "email_address_visibility",
-        Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         acting_user=None,
     )
+    users = UserProfile.objects.filter(realm=realm)
+    for user in users:
+        do_change_user_setting(
+            user,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
 
 
 def get_test_image_file(filename: str) -> IO[bytes]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
-    return open(os.path.join(test_avatar_dir, filename), "rb")
+    return open(os.path.join(test_avatar_dir, filename), "rb")  # noqa: SIM115
+
+
+def read_test_image_file(filename: str) -> bytes:
+    with get_test_image_file(filename) as img_file:
+        return img_file.read()
 
 
 def avatar_disk_path(
@@ -217,9 +239,10 @@ def avatar_disk_path(
 ) -> str:
     avatar_url_path = avatar_url(user_profile, medium)
     assert avatar_url_path is not None
+    assert settings.LOCAL_UPLOADS_DIR is not None
+    assert settings.LOCAL_AVATARS_DIR is not None
     avatar_disk_path = os.path.join(
-        settings.LOCAL_UPLOADS_DIR,
-        "avatars",
+        settings.LOCAL_AVATARS_DIR,
         avatar_url_path.split("/")[-2],
         avatar_url_path.split("/")[-1].split("?")[0],
     )
@@ -267,6 +290,7 @@ def most_recent_message(user_profile: UserProfile) -> Message:
 def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscription:
     stream = get_stream(stream_name, user_profile.realm)
     recipient_id = stream.recipient_id
+    assert recipient_id is not None
     return Subscription.objects.get(
         user_profile=user_profile, recipient_id=recipient_id, active=True
     )
@@ -283,21 +307,33 @@ def get_user_messages(user_profile: UserProfile) -> List[Message]:
 
 class DummyHandler(AsyncDjangoHandler):
     def __init__(self) -> None:
-        allocate_handler_id(self)
+        self.handler_id = allocate_handler_id(self)
+
+
+dummy_handler = DummyHandler()
 
 
 class HostRequestMock(HttpRequest):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
+    # The base class HttpRequest declares GET and POST as immutable
+    # QueryDict objects. The implementation of HostRequestMock
+    # requires POST to be mutable, and we have some use cases that
+    # modify GET, so GET and POST are both redeclared as mutable.
+
+    GET: QueryDict  # type: ignore[assignment] # See previous comment.
+    POST: QueryDict  # type: ignore[assignment] # See previous comment.
+
     def __init__(
         self,
-        post_data: Dict[str, Any] = {},
-        user_profile: Optional[Union[UserProfile, AnonymousUser, RemoteZulipServer]] = None,
+        post_data: Mapping[str, Any] = {},
+        user_profile: Union[UserProfile, None] = None,
+        remote_server: Optional[RemoteZulipServer] = None,
         host: str = settings.EXTERNAL_HOST,
         client_name: Optional[str] = None,
         meta_data: Optional[Dict[str, Any]] = None,
-        tornado_handler: Optional[AsyncDjangoHandler] = DummyHandler(),
+        tornado_handler: Optional[AsyncDjangoHandler] = None,
         path: str = "",
     ) -> None:
         self.host = host
@@ -318,18 +354,18 @@ class HostRequestMock(HttpRequest):
         else:
             self.META = meta_data
         self.path = path
-        self.user = user_profile
+        self.user = user_profile or AnonymousUser()
         self._body = b""
         self.content_type = ""
-        BaseNotes[str, str].get_notes
 
         RequestNotes.set_notes(
             self,
             RequestNotes(
                 client_name="",
                 log_data={},
-                tornado_handler=None if tornado_handler is None else weakref.ref(tornado_handler),
+                tornado_handler_id=None if tornado_handler is None else tornado_handler.handler_id,
                 client=get_client(client_name) if client_name is not None else None,
+                remote_server=remote_server,
             ),
         )
 
@@ -348,7 +384,7 @@ class HostRequestMock(HttpRequest):
 INSTRUMENTING = os.environ.get("TEST_INSTRUMENT_URL_COVERAGE", "") == "TRUE"
 INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
 
-UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponse])  # TODO: make more specific
+UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponseBase])  # TODO: make more specific
 
 
 def append_instrumentation_data(data: Dict[str, Any]) -> None:
@@ -356,13 +392,14 @@ def append_instrumentation_data(data: Dict[str, Any]) -> None:
 
 
 def instrument_url(f: UrlFuncT) -> UrlFuncT:
+    # TODO: Type this with ParamSpec to preserve the function signature.
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
 
         def wrapper(
-            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Any
-        ) -> HttpResponse:
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Union[bool, str]
+        ) -> HttpResponseBase:
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start
@@ -378,7 +415,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
                 info = "<bytes>"
             elif isinstance(info, dict):
                 info = {
-                    k: "<file object>" if hasattr(v, "read") and callable(getattr(v, "read")) else v
+                    k: "<file object>" if hasattr(v, "read") and callable(v.read) else v
                     for k, v in info.items()
                 }
 
@@ -408,8 +445,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         # Find our untested urls.
         pattern_cnt: Dict[str, int] = collections.defaultdict(int)
 
-        def re_strip(r: Any) -> str:
-            return str(r).lstrip("^").rstrip("$")
+        def re_strip(r: str) -> str:
+            assert r.startswith(r"^")
+            if r.endswith(r"$"):
+                return r[1:-1]
+            else:
+                assert r.endswith(r"\Z")
+                return r[1:-2]
 
         def find_patterns(patterns: List[Any], prefixes: List[str]) -> None:
             for pattern in patterns:
@@ -427,7 +469,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             return url
 
         def find_pattern(pattern: Any, prefixes: List[str]) -> None:
-
             if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 
@@ -469,26 +510,23 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
-            "help/add-custom-emoji",
-            "help/configure-who-can-add-custom-emoji",
-            "help/change-the-topic-of-a-message",
-            "help/configure-missed-message-emails",
-            "help/community-topic-edits",
-            "help/about-streams-and-topics",
-            "help/delete-a-stream",
-            "help/add-an-alert-word",
-            "help/change-notification-sound",
-            "help/configure-message-notification-emails",
-            "help/disable-new-login-emails",
-            "help/test-mobile-notifications",
-            "help/troubleshooting-desktop-notifications",
-            "for/working-groups-and-communities/",
-            "help/only-allow-admins-to-add-emoji",
-            "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
             "flush_caches",
             "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
+            # These are SCIM2 urls overridden from django-scim2 to return Not Implemented.
+            # We actually test them, but it's not being detected as a tested pattern,
+            # possibly due to the use of re_path. TODO: Investigate and get them
+            # recognized as tested.
+            "scim/v2/",
+            "scim/v2/.search",
+            "scim/v2/Bulk",
+            "scim/v2/Me",
+            "scim/v2/ResourceTypes(?:/(?P<uuid>[^/]+))?",
+            "scim/v2/Schemas(?:/(?P<uuid>[^/]+))?",
+            "scim/v2/ServiceProviderConfig",
+            "scim/v2/Groups(?:/(?P<uuid>[^/]+))?",
+            "scim/v2/Groups/.search",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
@@ -511,7 +549,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             sys.exit(1)
 
 
-def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:
+def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> ExternalAuthDataDict:
     assert isinstance(response, HttpResponseRedirect)
     token = response.url.rsplit("/", 1)[1]
     data = ExternalAuthResult(login_token=token, delete_stored_data=False).data_dict
@@ -525,27 +563,29 @@ FuncT = TypeVar("FuncT", bound=Callable[..., None])
 def use_s3_backend(method: FuncT) -> FuncT:
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
+    @override_settings(LOCAL_AVATARS_DIR=None)
+    @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
-        zerver.lib.upload.upload_backend = S3UploadBackend()
-        try:
+        with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
             return method(*args, **kwargs)
-        finally:
-            zerver.lib.upload.upload_backend = LocalUploadBackend()
 
     return new_method
 
 
 def create_s3_buckets(*bucket_names: str) -> List[Bucket]:
-    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+    session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     s3 = session.resource("s3")
     buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
     return buckets
 
 
+TestCaseT = TypeVar("TestCaseT", bound="MigrationsTestCase")
+
+
 def use_db_models(
-    method: Callable[["MigrationsTestCase", StateApps], None]
-) -> Callable[["MigrationsTestCase", StateApps], None]:  # nocoverage
-    def method_patched_with_mock(self: "MigrationsTestCase", apps: StateApps) -> None:
+    method: Callable[[TestCaseT, StateApps], None]
+) -> Callable[[TestCaseT, StateApps], None]:  # nocoverage
+    def method_patched_with_mock(self: TestCaseT, apps: StateApps) -> None:
         ArchivedAttachment = apps.get_model("zerver", "ArchivedAttachment")
         ArchivedMessage = apps.get_model("zerver", "ArchivedMessage")
         ArchivedUserMessage = apps.get_model("zerver", "ArchivedUserMessage")
@@ -693,15 +733,13 @@ def mock_queue_publish(
         yield inner
 
 
-def patch_queue_publish(
-    method_to_patch: str,
-) -> Callable[[Callable[..., None]], Callable[..., None]]:
-    def inner(func: Callable[..., None]) -> Callable[..., None]:
-        @wraps(func)
-        def _wrapped(*args: object, **kwargs: object) -> None:
-            with mock_queue_publish(method_to_patch) as m:
-                func(*args, m, **kwargs)
+@contextmanager
+def timeout_mock(mock_path: str) -> Iterator[None]:
+    # timeout() doesn't work in test environment with database operations
+    # and they don't get committed - so we need to replace it with a mock
+    # that just calls the function.
+    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
+        return func()
 
-        return _wrapped
-
-    return inner
+    with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
+        yield

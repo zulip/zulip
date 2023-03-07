@@ -33,12 +33,9 @@ import zulip
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
-from zerver.lib.actions import (
-    bulk_add_subscriptions,
-    do_change_avatar_fields,
-    do_create_user,
-    notify_created_bot,
-)
+from zerver.actions.create_user import do_create_user, notify_created_bot
+from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
@@ -209,7 +206,7 @@ def send_bot_payload_message(
     except requests.exceptions.ConnectionError:
         print(
             "This tool needs the local dev server to be running. "
-            "Please start it using tools/run-dev.py before running this tool."
+            "Please start it using tools/run-dev before running this tool."
         )
         sys.exit(1)
     if response.status_code != 200:

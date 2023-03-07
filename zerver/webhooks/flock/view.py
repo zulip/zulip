@@ -1,11 +1,10 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -15,17 +14,17 @@ from zerver.models import UserProfile
 def api_flock_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
-    if len(payload["text"]) != 0:
-        message_body = payload["text"]
+    text = payload["text"].tame(check_string)
+    if len(text) != 0:
+        message_body = text
     else:
-        message_body = payload["notification"]
+        message_body = payload["notification"].tame(check_string)
 
     topic = "Flock notifications"
     body = f"{message_body}"
 
     check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success()
+    return json_success(request)

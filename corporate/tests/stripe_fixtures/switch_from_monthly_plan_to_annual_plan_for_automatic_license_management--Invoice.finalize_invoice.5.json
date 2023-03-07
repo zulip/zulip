@@ -1,6 +1,6 @@
 {
   "account_country": "US",
-  "account_name": null,
+  "account_name": "NORMALIZED-1",
   "account_tax_ids": null,
   "amount_due": 240000,
   "amount_paid": 0,
@@ -36,16 +36,16 @@
   "due_date": null,
   "ending_balance": 0,
   "footer": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000005uuk0y",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9DQmlNcWc3djJzUDYwR3VzeGxvWjQxeXliUDZL0100p5Mfo7z7",
   "id": "in_NORMALIZED00000000000005",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000005uuk0y/pdf",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9DQmlNcWc3djJzUDYwR3VzeGxvWjQxeXliUDZL0100p5Mfo7z7/pdf",
   "last_finalization_error": null,
   "lines": {
     "data": [
       {
         "amount": 240000,
         "currency": "usd",
-        "description": "Zulip Standard - renewal",
+        "description": "Zulip Cloud Standard - renewal",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
@@ -72,6 +72,7 @@
           "object": "price",
           "product": "prod_NORMALIZED0007",
           "recurring": null,
+          "tax_behavior": "unspecified",
           "tiers_mode": null,
           "transform_quantity": null,
           "type": "one_time",
@@ -94,11 +95,11 @@
   "livemode": false,
   "metadata": {},
   "next_payment_attempt": 1000000000,
-  "number": "NORMALI-0005",
+  "number": "NORMALI-0006",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
-  "payment_intent": "pi_NORMALIZED00000000000004",
+  "payment_intent": "pi_NORMALIZED00000000000005",
   "payment_settings": {
     "payment_method_options": null,
     "payment_method_types": null
@@ -110,7 +111,7 @@
   "quote": null,
   "receipt_number": null,
   "starting_balance": 0,
-  "statement_descriptor": "Zulip Standard",
+  "statement_descriptor": "Zulip Cloud Standard",
   "status": "open",
   "status_transitions": {
     "finalized_at": 1000000000,
@@ -125,5 +126,5 @@
   "total_discount_amounts": [],
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

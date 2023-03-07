@@ -1,19 +1,10 @@
 import cProfile
 import logging
+import tempfile
 import time
 import traceback
-from typing import (
-    Any,
-    AnyStr,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    MutableMapping,
-    Optional,
-    Tuple,
-)
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
@@ -25,11 +16,16 @@ from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
+from django.utils.crypto import constant_time_compare
 from django.utils.deprecation import MiddlewareMixin
+from django.utils.log import log_response
 from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
+from django_scim.middleware import SCIMAuthCheckMiddleware
+from django_scim.settings import scim_settings
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
@@ -38,14 +34,19 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import RequestNotes, set_request, unset_request
-from zerver.lib.response import json_response, json_response_from_error, json_unauthorized
+from zerver.lib.request import REQ, RequestNotes, has_request_variables, set_request, unset_request
+from zerver.lib.response import (
+    AsynchronousResponse,
+    json_response,
+    json_response_from_error,
+    json_unauthorized,
+)
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
+ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
 slow_query_logger = logging.getLogger("zulip.slow_queries")
 
@@ -112,11 +113,11 @@ def format_timedelta(timedelta: float) -> str:
 def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
         return False
-    is_exempt = (
-        path in ["/activity", "/json/report/error", "/api/v1/deployments/report_error"]
-        or path.startswith("/realm_activity/")
-        or path.startswith("/user_activity/")
-    )
+    is_exempt = path in [
+        "/activity",
+        "/json/report/error",
+        "/api/v1/deployments/report_error",
+    ] or path.startswith(("/realm_activity/", "/user_activity/"))
     if is_exempt:
         return time_delta >= 5
     if "webathena_kerberos" in path:
@@ -169,7 +170,7 @@ def write_log_line(
             statsd_path = "webreq"
         else:
             statsd_path = "webreq.{}".format(path[1:].replace("/", "."))
-            # Remove non-ascii chars from path (there should be none, if there are it's
+            # Remove non-ascii chars from path (there should be none; if there are, it's
             # because someone manually entered a nonexistent path), as UTF-8 chars make
             # statsd sad when it sends the key name over the socket
             statsd_path = statsd_path.encode("ascii", errors="ignore").decode("ascii")
@@ -277,8 +278,11 @@ def write_log_line(
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
-        profile_path = "/tmp/profile.data.{}.{}".format(path.split("/")[-1], int(time_delta * 1000))
-        log_data["prof"].dump_stats(profile_path)
+        with tempfile.NamedTemporaryFile(
+            prefix="profile.data.{}.{}.".format(path.split("/")[-1], int(time_delta * 1000)),
+            delete=False,
+        ) as stats_file:
+            log_data["prof"].dump_stats(stats_file.name)
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
@@ -304,16 +308,23 @@ class RequestContext(MiddlewareMixin):
             unset_request()
 
 
-def parse_client(request: HttpRequest) -> Tuple[str, Optional[str]]:
+# We take advantage of `has_request_variables` being called multiple times
+# when processing a request in order to process any `client` parameter that
+# may have been sent in the request content.
+@has_request_variables
+def parse_client(
+    request: HttpRequest,
+    # As `client` is a common element to all API endpoints, we choose
+    # not to document on every endpoint's individual parameters.
+    req_client: Optional[str] = REQ("client", default=None, intentionally_undocumented=True),
+) -> Tuple[str, Optional[str]]:
     # If the API request specified a client in the request content,
-    # that has priority.  Otherwise, extract the client from the
-    # User-Agent.
-    if "client" in request.GET:  # nocoverage
-        return request.GET["client"], None
-    if "client" in request.POST:
-        return request.POST["client"], None
-    if "HTTP_USER_AGENT" in request.META:
-        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    # that has priority. Otherwise, extract the client from the
+    # USER_AGENT.
+    if req_client is not None:
+        return req_client, None
+    if "User-Agent" in request.headers:
+        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
     else:
         user_agent = None
     if user_agent is None:
@@ -351,15 +362,21 @@ class LogRequests(MiddlewareMixin):
             # Avoid re-initializing request_notes.log_data if it's already there.
             return
 
-        request_notes.client_name, request_notes.client_version = parse_client(request)
+        try:
+            request_notes.client_name, request_notes.client_version = parse_client(request)
+        except JsonableError as e:
+            logging.exception(e)
+            request_notes.client_name = "Unparsable"
+            request_notes.client_version = None
+
         request_notes.log_data = {}
         record_request_start_data(request_notes.log_data)
 
     def process_view(
         self,
         request: HttpRequest,
-        view_func: ViewFuncT,
-        args: List[str],
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
         kwargs: Dict[str, Any],
     ) -> None:
         request_notes = RequestNotes.get_notes(request)
@@ -385,8 +402,8 @@ class LogRequests(MiddlewareMixin):
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
-        if getattr(response, "asynchronous", False):
-            # This special Tornado "asynchronous" response is
+        if isinstance(response, AsynchronousResponse):
+            # This special AsynchronousResponse sentinel is
             # discarded after going through this code path as Tornado
             # intends to block, so we stop here to avoid unnecessary work.
             return response
@@ -397,22 +414,20 @@ class LogRequests(MiddlewareMixin):
         request_notes = RequestNotes.get_notes(request)
         requestor_for_logs = request_notes.requestor_for_logs
         if requestor_for_logs is None:
-            # Note that request.user is a Union[RemoteZulipServer, UserProfile, AnonymousUser],
-            # if it is present.
-            if hasattr(request, "user") and hasattr(request.user, "format_requestor_for_logs"):
+            if request_notes.remote_server is not None:
+                requestor_for_logs = request_notes.remote_server.format_requestor_for_logs()
+            elif request.user.is_authenticated:
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:
                 requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
 
-        if response.streaming:
-            assert isinstance(response, StreamingHttpResponse)
-            content_iter: Optional[Iterator[bytes]] = response.streaming_content
-            content = None
-        else:
-            content = response.content
-            content_iter = None
+        content_iter = (
+            response.streaming_content if isinstance(response, StreamingHttpResponse) else None
+        )
+        content = response.content if isinstance(response, HttpResponse) else None
 
         assert request_notes.client_name is not None and request_notes.log_data is not None
+        assert request.method is not None
         write_log_line(
             request_notes.log_data,
             request.path,
@@ -437,7 +452,7 @@ class JsonErrorHandler(MiddlewareMixin):
         self, request: HttpRequest, exception: Exception
     ) -> Optional[HttpResponse]:
         if isinstance(exception, MissingAuthenticationError):
-            if "text/html" in request.META.get("HTTP_ACCEPT", ""):
+            if "text/html" in request.headers.get("Accept", ""):
                 # If this looks like a request from a top-level page in a
                 # browser, send the user to the login page.
                 #
@@ -445,7 +460,9 @@ class JsonErrorHandler(MiddlewareMixin):
                 # execute the likely intent for intentionally visiting
                 # an API endpoint without authentication in a browser,
                 # but that's an unlikely to be done intentionally often.
-                return HttpResponseRedirect(f"{settings.HOME_NOT_LOGGED_IN}?next={request.path}")
+                return HttpResponseRedirect(
+                    f"{settings.HOME_NOT_LOGGED_IN}?{urlencode({'next': request.path})}"
+                )
             if request.path.startswith("/api"):
                 # For API routes, ask for HTTP basic auth (email:apiKey).
                 return json_unauthorized()
@@ -454,8 +471,23 @@ class JsonErrorHandler(MiddlewareMixin):
                 return json_unauthorized(www_authenticate="session")
 
         if isinstance(exception, JsonableError):
-            return json_response_from_error(exception)
-        if RequestNotes.get_notes(request).error_format == "JSON":
+            response = json_response_from_error(exception)
+            if response.status_code >= 500:
+                # Here we use Django's log_response the way Django uses
+                # it normally to log error responses. However, we make the small
+                # modification of including the traceback to make the log message
+                # more helpful. log_response takes care of knowing not to duplicate
+                # the logging, so Django won't generate a second log message.
+                log_response(
+                    "%s: %s",
+                    response.reason_phrase,
+                    request.path,
+                    response=response,
+                    request=request,
+                    exception=exception,
+                )
+            return response
+        if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             capture_exception(exception)
             json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
             json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
@@ -465,7 +497,11 @@ class JsonErrorHandler(MiddlewareMixin):
 
 class TagRequests(MiddlewareMixin):
     def process_view(
-        self, request: HttpRequest, view_func: ViewFuncT, args: List[str], kwargs: Dict[str, Any]
+        self,
+        request: HttpRequest,
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
+        kwargs: Dict[str, Any],
     ) -> None:
         self.process_request(request)
 
@@ -500,7 +536,6 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
-
         # This is the same as the default LocaleMiddleware, minus the
         # logic that redirects 404's that lack a prefixed language in
         # the path into having a language.  See
@@ -519,7 +554,16 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
         # and saved in the set_language flag so that it can be used here.
         set_language = RequestNotes.get_notes(request).set_language
         if set_language is not None:
-            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, set_language)
+            response.set_cookie(
+                settings.LANGUAGE_COOKIE_NAME,
+                set_language,
+                max_age=settings.LANGUAGE_COOKIE_AGE,
+                path=settings.LANGUAGE_COOKIE_PATH,
+                domain=settings.LANGUAGE_COOKIE_DOMAIN,
+                secure=settings.LANGUAGE_COOKIE_SECURE,
+                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+                samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+            )
 
         return response
 
@@ -614,9 +658,9 @@ class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
 
     def process_request(self, request: HttpRequest) -> None:
         try:
-            real_ip = request.META["HTTP_X_REAL_IP"]
+            real_ip = request.headers["X-Real-IP"]
         except KeyError:
-            return None
+            pass
         else:
             request.META["REMOTE_ADDR"] = real_ip
 
@@ -635,11 +679,10 @@ def alter_content(request: HttpRequest, content: bytes) -> bytes:
 
 class FinalizeOpenGraphDescription(MiddlewareMixin):
     def process_response(
-        self, request: HttpRequest, response: StreamingHttpResponse
-    ) -> StreamingHttpResponse:
-
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
         if RequestNotes.get_notes(request).placeholder_open_graph_description is not None:
-            assert not response.streaming
+            assert isinstance(response, HttpResponse)
             response.content = alter_content(request, response.content)
         return response
 
@@ -664,3 +707,72 @@ class ZulipCommonMiddleware(CommonMiddleware):
         if settings.RUNNING_INSIDE_TORNADO:
             return False
         return super().should_redirect_with_slash(request)
+
+
+def validate_scim_bearer_token(request: HttpRequest) -> bool:
+    """
+    This function verifies the request is allowed to make SCIM requests on this subdomain,
+    by checking the provided bearer token and ensuring it matches a scim client configured
+    for this subdomain in settings.SCIM_CONFIG.
+    Returns True if successful.
+    """
+
+    subdomain = get_subdomain(request)
+    scim_config_dict = settings.SCIM_CONFIG.get(subdomain)
+    if not scim_config_dict:
+        return False
+
+    valid_bearer_token = scim_config_dict.get("bearer_token")
+    scim_client_name = scim_config_dict.get("scim_client_name")
+    # We really don't want a misconfiguration where this is unset,
+    # allowing free access to the SCIM API:
+    assert valid_bearer_token
+    assert scim_client_name
+
+    authorization = request.headers.get("Authorization")
+    if authorization is None or not constant_time_compare(
+        authorization, f"Bearer {valid_bearer_token}"
+    ):
+        return False
+
+    request_notes = RequestNotes.get_notes(request)
+    assert request_notes.realm is not None
+    request_notes.requestor_for_logs = (
+        f"scim-client:{scim_client_name}:realm:{request_notes.realm.id}"
+    )
+
+    return True
+
+
+class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
+    """
+    Overridden version of middleware implemented in django-scim2
+    (https://github.com/15five/django-scim2/blob/master/src/django_scim/middleware.py)
+    to also handle authenticating the client.
+
+    This doesn't actually function as a regular middleware class that's registered in
+    settings.MIDDLEWARE, but rather is called inside django-scim2 logic to authenticate
+    the request when accessing SCIM endpoints.
+    """
+
+    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+        # Defensive assertion to ensure this can't accidentally get called on a request
+        # to a non-SCIM endpoint.
+        assert request.path.startswith(self.reverse_url)
+
+        # This determines whether this is a SCIM request based on the request's path
+        # and if it is, logs request information, including the body, as well as the response
+        # for debugging purposes to the `django_scim.middleware` logger, at DEBUG level.
+        # We keep those logs in /var/log/zulip/scim.log
+        if self.should_log_request(request):
+            self.log_request(request)
+
+        if not validate_scim_bearer_token(request):
+            # In case of failed authentication, a response should be returned to
+            # prevent going further down the codepath (to the SCIM endpoint), since
+            # this aspect works like regular middleware.
+            response = HttpResponse(status=401)
+            response["WWW-Authenticate"] = scim_settings.WWW_AUTHENTICATE_HEADER
+            return response
+
+        return None

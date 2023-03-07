@@ -2,11 +2,14 @@ name: Update one click apps
 on:
   release:
     types: [published]
+permissions:
+  contents: read
+
 jobs:
   update-digitalocean-oneclick-app:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Update DigitalOcean one click app
         env:
           DIGITALOCEAN_API_KEY: ${{ secrets.ONE_CLICK_ACTION_DIGITALOCEAN_API_KEY }}
@@ -19,6 +22,6 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           git clone https://github.com/zulip/marketplace-partners
-          pip3 install python-digitalocean zulip fab-classic
+          pip3 install python-digitalocean zulip fab-classic PyNaCl
           echo $PATH
           python3 tools/oneclickapps/prepare_digital_ocean_one_click_app_release.py

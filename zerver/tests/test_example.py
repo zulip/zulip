@@ -5,11 +5,11 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_change_can_create_users, do_change_user_role
+from zerver.actions.users import do_change_can_create_users, do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import most_recent_message, queries_captured
+from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.users import is_administrator_role
 from zerver.models import (
     UserProfile,
@@ -128,6 +128,7 @@ class TestFullStack(ZulipTestCase):
                 avatar_url=content["user"]["avatar_url"],
                 avatar_version=1,
                 date_joined=content["user"]["date_joined"],
+                delivery_email=None,
                 email=cordelia.email,
                 full_name=cordelia.full_name,
                 is_active=True,
@@ -137,7 +138,7 @@ class TestFullStack(ZulipTestCase):
                 is_guest=False,
                 is_owner=False,
                 role=UserProfile.ROLE_MEMBER,
-                timezone="",
+                timezone="Etc/UTC",
                 user_id=cordelia.id,
             ),
         )
@@ -357,8 +358,8 @@ class TestQueryCounts(ZulipTestCase):
     def test_capturing_queries(self) -> None:
         # It's a common pitfall in Django to accidentally perform
         # database queries in a loop, due to lazy evaluation of
-        # foreign keys. We use the queries_captured context manager to
-        # ensure our query count is predictable.
+        # foreign keys. We use the assert_database_query_count
+        # context manager to ensure our query count is predictable.
         #
         # When a test containing one of these query count assertions
         # fails, we'll want to understand the new queries and whether
@@ -368,15 +369,12 @@ class TestQueryCounts(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(15):
             self.send_personal_message(
                 from_user=hamlet,
                 to_user=cordelia,
                 content="hello there!",
             )
-
-        # The assert_length helper is another useful extra from ZulipTestCase.
-        self.assert_length(queries, 16)
 
 
 class TestDevelopmentEmailsLog(ZulipTestCase):
@@ -401,8 +399,9 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
         # https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertLogs
         with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"), self.settings(
             DEVELOPMENT_LOG_EMAILS=True
-        ), self.assertLogs(level="INFO") as logger:
-
+        ), self.assertLogs(level="INFO") as logger, mock.patch(
+            "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
+        ):
             result = self.client_get(
                 "/emails/generate/"
             )  # Generates emails and redirects to /emails/
@@ -494,17 +493,17 @@ class TestMocking(ZulipTestCase):
         # that is beyond the limit.
         #
         # Notice how mock.patch() is used here to do exactly the above mentioned.
-        # mock.patch() here makes any calls to `timezone_now` in `zerver.lib.actions`
+        # mock.patch() here makes any calls to `timezone_now` in `zerver.actions.message_edit`
         # to return the value passed to `return_value` in the its context.
         # You can also use mock.patch() as a decorator depending on the
-        # requirements. Read more at the documentaion link provided above.
+        # requirements. Read more at the documentation link provided above.
 
         time_beyond_edit_limit = message_sent_time + datetime.timedelta(
             seconds=MESSAGE_CONTENT_EDIT_LIMIT + 100
         )  # There's a buffer time applied to the limit, hence the extra 100s.
 
         with mock.patch(
-            "zerver.lib.actions.timezone_now",
+            "zerver.actions.message_edit.timezone_now",
             return_value=time_beyond_edit_limit,
         ):
             result = self.client_patch(

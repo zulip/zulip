@@ -2,13 +2,14 @@ from datetime import timedelta
 
 import orjson
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from analytics.models import RealmCount
+from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_delete_realm_export, notify_realm_export
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_json_publish
@@ -17,6 +18,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import RealmAuditLog, UserProfile
 
 
+@transaction.atomic(durable=True)
 @require_realm_admin
 def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     # Currently only supports public-data-only exports.
@@ -24,10 +26,13 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     event_time = timezone_now()
     realm = user.realm
     EXPORT_LIMIT = 5
-    # Conservative limit on the size of message history in
-    # organizations being exported; this exists to protect Zulip
-    # against a possible unmonitored accidental DoS caused by trying
-    # to export an organization with huge history.
+
+    # Exporting organizations with a huge amount of history can
+    # potentially consume a lot of disk or otherwise have accidental
+    # DoS risk; for that reason, we require large exports to be done
+    # manually on the command line.
+    #
+    # It's very possible that higher limits would be completely safe.
     MAX_MESSAGE_HISTORY = 250000
     MAX_UPLOAD_QUOTA = 10 * 1024 * 1024 * 1024
 
@@ -40,14 +45,22 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     if len(limit_check) >= EXPORT_LIMIT:
         raise JsonableError(_("Exceeded rate limit."))
 
-    total_messages = sum(
+    # The RealmCount analytics table lets us efficiently get an
+    # estimate for the number of public stream messages in an
+    # organization. It won't match the actual number of messages in
+    # the export, because this measures the number of messages that
+    # went to a public stream at the time they were sent. Thus,
+    # messages that were deleted or moved between streams will be
+    # treated differently for this check vs. in the export code.
+    exportable_messages_estimate = sum(
         realm_count.value
         for realm_count in RealmCount.objects.filter(
-            realm=user.realm, property="messages_sent:client:day"
+            realm=realm, property="messages_sent:message_type:day", subgroup="public_stream"
         )
     )
+
     if (
-        total_messages > MAX_MESSAGE_HISTORY
+        exportable_messages_estimate > MAX_MESSAGE_HISTORY
         or user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA
     ):
         raise JsonableError(
@@ -72,14 +85,14 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
         "user_profile_id": user.id,
         "id": row.id,
     }
-    queue_json_publish("deferred_work", event)
-    return json_success()
+    transaction.on_commit(lambda: queue_json_publish("deferred_work", event))
+    return json_success(request)
 
 
 @require_realm_admin
 def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm_exports = get_realm_exports_serialized(user)
-    return json_success({"exports": realm_exports})
+    return json_success(request, data={"exports": realm_exports})
 
 
 @require_realm_admin
@@ -95,4 +108,4 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
     if "deleted_timestamp" in export_data:
         raise JsonableError(_("Export already deleted"))
     do_delete_realm_export(user, audit_log_entry)
-    return json_success()
+    return json_success(request)

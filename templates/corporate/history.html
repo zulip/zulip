@@ -1,0 +1,55 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "History of the Zulip project" %}
+
+{% set PAGE_DESCRIPTION = "Learn how Zulip grew from a small startup to become
+  the project with the most active open-source development community of any team
+  chat software." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page">
+    <div class="hero bg-pycon">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">History of the Zulip project</h1>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="photo-description">
+                Zulip at the PyCon Sprints in Portland, Oregon.
+                Over seventy-five people sprinted during the four day event.
+            </div>
+
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/history.md') }}
+            </div>
+
+
+            <div class="inner-content history markdown">
+                <div class="sponsors">
+                    <div class="sponsor-picture">
+                        <a href="https://seedfund.nsf.gov/">
+                            <img src="{{ static('images/landing-page/history/nsf-logo.png') }}" alt="" />
+                        </a>
+                    </div>
+                    <div class="sponsor-picture">
+                        <a href="https://summerofcode.withgoogle.com/">
+                            <img src="{{ static('images/landing-page/history/gsoc-logo.png') }}" alt="" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -29,11 +29,7 @@ VENV_DEPENDENCIES = [
     # Needed by python-xmlsec:
     "libxmlsec1-dev",
     "pkg-config",
-    # This is technically a node dependency, but we add it here
-    # because we don't have another place that we install apt packages
-    # on upgrade of a production server, and it's not worth adding
-    # another call to `apt install` for.
-    "jq",  # Used by scripts/lib/install-yarn to check yarn version
+    "jq",  # No longer used in production (clean me up later)
     "libsasl2-dev",  # For building python-ldap from source
 ]
 
@@ -167,8 +163,8 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
     desired_python_version = python_version()
     venv_name = os.path.basename(venv_path)
 
-    overlaps = []  # type: List[Tuple[int, str, Set[str]]]
-    old_packages = set()  # type: Set[str]
+    overlaps: List[Tuple[int, str, Set[str]]] = []
+    old_packages: Set[str] = set()
     for sha1sum in os.listdir(VENV_CACHE_PATH):
         curr_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, venv_name)
         if curr_venv_path == venv_path or not os.path.exists(get_index_filename(curr_venv_path)):
@@ -178,9 +174,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         venv_python3 = os.path.join(curr_venv_path, "bin", "python3")
         if not os.path.exists(venv_python3):
             continue
-        venv_python_version = subprocess.check_output(
-            [venv_python3, "-VV"], universal_newlines=True
-        )
+        venv_python_version = subprocess.check_output([venv_python3, "-VV"], text=True)
         if desired_python_version != venv_python_version:
             continue
 
@@ -243,7 +237,6 @@ def create_log_entry(
     copied_packages: Set[str],
     new_packages: Set[str],
 ) -> None:
-
     venv_path = os.path.dirname(target_log)
     with open(target_log, "a") as writer:
         writer.write(f"{venv_path}\n")
@@ -282,7 +275,7 @@ def do_patch_activate_script(venv_path: str) -> None:
 
 def generate_hash(requirements_file: str) -> str:
     path = os.path.join(ZULIP_PATH, "scripts", "lib", "hash_reqs.py")
-    output = subprocess.check_output([path, requirements_file], universal_newlines=True)
+    output = subprocess.check_output([path, requirements_file], text=True)
     return output.split()[0]
 
 
@@ -291,7 +284,6 @@ def setup_virtualenv(
     requirements_file: str,
     patch_activate_script: bool = False,
 ) -> str:
-
     sha1sum = generate_hash(requirements_file)
     # Check if a cached version already exists
     if target_venv_path is None:
@@ -322,8 +314,7 @@ def add_cert_to_pipconf() -> None:
 
 
 def do_setup_virtualenv(venv_path: str, requirements_file: str) -> None:
-
-    # Setup Python virtualenv
+    # Set up Python virtualenv
     new_packages = set(get_package_names(requirements_file))
 
     run_as_root(["rm", "-rf", venv_path])

@@ -1,5 +1,7 @@
 import logging
 import re
+from email.errors import HeaderParseError
+from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Tuple
 
 import DNS
@@ -13,17 +15,22 @@ from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import get_language, gettext_lazy
 from django.utils.translation import gettext as _
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
-from zerver.lib.actions import do_change_password, email_not_system_bot
-from zerver.lib.email_validation import email_allowed_for_realm
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.actions.user_settings import do_change_password
+from zerver.lib.email_validation import (
+    email_allowed_for_realm,
+    email_reserved_for_system_bots_error,
+)
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
-from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import (
@@ -32,9 +39,9 @@ from zerver.models import (
     EmailContainsPlusError,
     Realm,
     UserProfile,
-    email_to_domain,
     get_realm,
     get_user_by_delivery_email,
+    is_cross_realm_bot_email,
 )
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
@@ -42,43 +49,34 @@ if settings.BILLING_ENABLED:
     from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
     from corporate.lib.stripe import LicenseLimitError
 
+# We don't mark this error for translation, because it's displayed
+# only to MIT users.
 MIT_VALIDATION_ERROR = (
-    "That user does not exist at MIT or is a "
-    + '<a href="https://ist.mit.edu/email-lists">mailing list</a>. '
-    + "If you want to sign up an alias for Zulip, "
-    + '<a href="mailto:support@zulip.com">contact us</a>.'
+    "That user does not exist at MIT or is a"
+    ' <a href="https://ist.mit.edu/email-lists">mailing list</a>.'
+    " If you want to sign up an alias for Zulip,"
+    ' <a href="mailto:support@zulip.com">contact us</a>.'
 )
-WRONG_SUBDOMAIN_ERROR = (
-    "Your Zulip account {username} is not a member of the "
-    + "organization associated with this subdomain.  "
-    + "Please contact your organization administrator with any questions."
+
+DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
+    "Your account {username} has been deactivated."
+    " Please contact your organization administrator to reactivate it."
 )
-DEACTIVATED_ACCOUNT_ERROR = (
-    "Your account {username} has been deactivated. "
-    + "Please contact your organization administrator to reactivate it."
-)
-PASSWORD_RESET_NEEDED_ERROR = (
-    "Your password has been disabled because it is too weak. "
-    "Reset your password to create a new one."
-)
-PASSWORD_TOO_WEAK_ERROR = "The password is too weak."
-AUTHENTICATION_RATE_LIMITED_ERROR = (
-    "You're making too many attempts to sign in. "
-    + "Try again in {} seconds or contact your organization administrator "
-    + "for help."
-)
+PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
 
 
 def email_is_not_mit_mailing_list(email: str) -> None:
     """Prevent MIT mailing lists from signing up for Zulip"""
-    if "@mit.edu" in email:
-        username = email.rsplit("@", 1)[0]
+    address = Address(addr_spec=email)
+    if address.domain == "mit.edu":
         # Check whether the user exists and can get mail.
         try:
-            DNS.dnslookup(f"{username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
+            DNS.dnslookup(f"{address.username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
-                raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
+                # This error is Markup only because 1. it needs to render HTML
+                # 2. It's not formatted with any user input.
+                raise ValidationError(Markup(MIT_VALIDATION_ERROR))
             else:
                 raise AssertionError("Unexpected DNS error")
 
@@ -117,6 +115,15 @@ class RegistrationForm(forms.Form):
     realm_type = forms.IntegerField(required=False)
     is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
+    email_address_visibility = forms.TypedChoiceField(
+        required=False,
+        coerce=int,
+        empty_value=None,
+        choices=[
+            (value, name)
+            for value, name in UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()
+        ],
+    )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we
@@ -125,7 +132,7 @@ class RegistrationForm(forms.Form):
         del kwargs["realm_creation"]
 
         super().__init__(*args, **kwargs)
-        if settings.TERMS_OF_SERVICE:
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
         self.fields["realm_name"] = forms.CharField(
             max_length=Realm.MAX_REALM_NAME_LENGTH, required=self.realm_creation
@@ -142,7 +149,7 @@ class RegistrationForm(forms.Form):
         if self.fields["password"].required and not check_password_strength(password):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.
-            raise ValidationError(mark_safe(PASSWORD_TOO_WEAK_ERROR))
+            raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
 
         return password
 
@@ -169,6 +176,7 @@ class HomepageForm(forms.Form):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm = kwargs.pop("realm", None)
         self.from_multiuse_invite = kwargs.pop("from_multiuse_invite", False)
+        self.invited_as = kwargs.pop("invited_as", None)
         super().__init__(*args, **kwargs)
 
     def clean_email(self) -> str:
@@ -216,8 +224,9 @@ class HomepageForm(forms.Form):
             email_is_not_mit_mailing_list(email)
 
         if settings.BILLING_ENABLED:
+            role = self.invited_as if self.invited_as is not None else UserProfile.ROLE_MEMBER
             try:
-                check_spare_licenses_available_for_registering_new_user(realm, email)
+                check_spare_licenses_available_for_registering_new_user(realm, email, role=role)
             except LicenseLimitError:
                 raise ValidationError(
                     _(
@@ -229,8 +238,24 @@ class HomepageForm(forms.Form):
         return email
 
 
+def email_not_system_bot(email: str) -> None:
+    if is_cross_realm_bot_email(email):
+        msg = email_reserved_for_system_bots_error(email)
+        code = msg
+        raise ValidationError(
+            msg,
+            code=code,
+            params=dict(deactivated=False),
+        )
+
+
 def email_is_not_disposable(email: str) -> None:
-    if is_disposable_domain(email_to_domain(email)):
+    try:
+        domain = Address(addr_spec=email).domain
+    except (HeaderParseError, ValueError):
+        raise ValidationError(_("Please use your real email address."))
+
+    if is_disposable_domain(domain):
         raise ValidationError(_("Please use your real email address."))
 
 
@@ -259,11 +284,12 @@ class LoggingSetPasswordForm(SetPasswordForm):
         if not check_password_strength(new_password):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.
-            raise ValidationError(PASSWORD_TOO_WEAK_ERROR)
+            raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
 
         return new_password
 
     def save(self, commit: bool = True) -> UserProfile:
+        assert isinstance(self.user, UserProfile)
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
         return self.user
 
@@ -280,13 +306,13 @@ def generate_password_reset_url(
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(
         self,
-        domain_override: Optional[bool] = None,
+        domain_override: Optional[str] = None,
         subject_template_name: str = "registration/password_reset_subject.txt",
         email_template_name: str = "registration/password_reset_email.html",
         use_https: bool = False,
         token_generator: PasswordResetTokenGenerator = default_token_generator,
         from_email: Optional[str] = None,
-        request: HttpRequest = None,
+        request: Optional[HttpRequest] = None,
         html_email_template_name: Optional[str] = None,
         extra_email_context: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -302,6 +328,9 @@ class ZulipPasswordResetForm(PasswordResetForm):
         are an artifact of using Django's password reset framework).
         """
         email = self.cleaned_data["email"]
+        # The form is only used in zerver.views.auth.password_rest, we know that
+        # the request must not be None
+        assert request is not None
 
         realm = get_realm(get_subdomain(request))
 
@@ -323,16 +352,20 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if settings.RATE_LIMITING:
             try:
                 rate_limit_password_reset_form_by_email(email)
-            except RateLimited:
-                # TODO: Show an informative, user-facing error message.
-                logging.info("Too many password reset attempts for email %s", email)
-                return
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+            except RateLimitedError:
+                logging.info(
+                    "Too many password reset attempts for email %s from %s",
+                    email,
+                    request.META["REMOTE_ADDR"],
+                )
+                # The view will handle the RateLimit exception and render an appropriate page
+                raise
 
-        user: Optional[UserProfile] = None
         try:
             user = get_user_by_delivery_email(email, realm)
         except UserProfile.DoesNotExist:
-            pass
+            user = None
 
         context = {
             "email": email,
@@ -347,6 +380,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if user is not None:
             context["active_account_in_realm"] = True
             context["reset_url"] = generate_password_reset_url(user, token_generator)
+            queue_soft_reactivation(user.id)
             send_email(
                 "zerver/emails/password_reset",
                 to_user_ids=[user.id],
@@ -363,7 +397,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
             )
             if active_accounts_in_other_realms:
                 context["active_accounts_in_other_realms"] = active_accounts_in_other_realms
-            language = request.LANGUAGE_CODE
+            language = get_language()
+
             send_email(
                 "zerver/emails/password_reset",
                 to_emails=[email],
@@ -389,9 +424,9 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
 
 
 def rate_limit_password_reset_form_by_email(email: str) -> None:
-    ratelimited, _ = RateLimitedPasswordResetByEmail(email).rate_limit()
+    ratelimited, secs_to_freedom = RateLimitedPasswordResetByEmail(email).rate_limit()
     if ratelimited:
-        raise RateLimited
+        raise RateLimitedError(secs_to_freedom)
 
 
 class CreateUserForm(forms.Form):
@@ -400,11 +435,14 @@ class CreateUserForm(forms.Form):
 
 
 class OurAuthenticationForm(AuthenticationForm):
+    logger = logging.getLogger("zulip.auth.OurAuthenticationForm")
+
     def clean(self) -> Dict[str, Any]:
         username = self.cleaned_data.get("username")
         password = self.cleaned_data.get("password")
 
         if username is not None and password:
+            assert self.request is not None
             subdomain = get_subdomain(self.request)
             realm = get_realm(subdomain)
 
@@ -417,30 +455,43 @@ class OurAuthenticationForm(AuthenticationForm):
                     realm=realm,
                     return_data=return_data,
                 )
-            except RateLimited as e:
+            except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
                 secs_to_freedom = int(e.secs_to_freedom)
-                raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR.format(secs_to_freedom))
+                error_message = _(
+                    "You're making too many attempts to sign in."
+                    " Try again in {} seconds or contact your organization administrator"
+                    " for help."
+                )
+                raise ValidationError(error_message.format(secs_to_freedom))
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")
 
             if return_data.get("password_reset_needed"):
-                raise ValidationError(mark_safe(PASSWORD_RESET_NEEDED_ERROR))
+                raise ValidationError(
+                    _(
+                        "Your password has been disabled because it is too weak. "
+                        "Reset your password to create a new one."
+                    )
+                )
 
             if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
                 # We exclude mirror dummy accounts here. They should be treated as the
                 # user never having had an account, so we let them fall through to the
                 # normal invalid_login case below.
                 error_message = DEACTIVATED_ACCOUNT_ERROR.format(username=username)
-                raise ValidationError(mark_safe(error_message))
+                raise ValidationError(error_message)
 
             if return_data.get("invalid_subdomain"):
-                logging.warning(
-                    "User %s attempted password login to wrong subdomain %s", username, subdomain
+                self.logger.info(
+                    "User attempted password login to wrong subdomain %s. Matching accounts: %s",
+                    subdomain,
+                    return_data.get("matching_user_ids_in_different_realms"),
                 )
-                error_message = WRONG_SUBDOMAIN_ERROR.format(username=username)
-                raise ValidationError(mark_safe(error_message))
+                # We don't want to leak information by revealing there are matching accounts
+                # on different subdomain - so we just fall through to the default error.
+                assert self.user_cache is None
 
             if self.user_cache is None:
                 raise forms.ValidationError(
@@ -474,7 +525,7 @@ class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
 
 
 class MultiEmailField(forms.Field):
-    def to_python(self, emails: str) -> List[str]:
+    def to_python(self, emails: Optional[str]) -> List[str]:
         """Normalize data to a list of strings."""
         if not emails:
             return []

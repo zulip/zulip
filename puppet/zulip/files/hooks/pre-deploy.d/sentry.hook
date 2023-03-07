@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Arguments: OLD_COMMIT NEW_COMMIT ...where both are `git describe`
+# output or tag names.  The CWD will be the new deploy directory.
+
+set -e
+set -u
+
+if ! grep -q 'SENTRY_DSN' /etc/zulip/settings.py; then
+    echo "sentry: No DSN configured!  Set SENTRY_DSN in /etc/zulip/settings.py"
+    exit 0
+fi
+
+if ! SENTRY_AUTH_TOKEN=$(crudini --get /etc/zulip/zulip-secrets.conf secrets sentry_release_auth_token); then
+    echo "sentry: No release auth token set!  Set sentry_release_auth_token in /etc/zulip/zulip-secrets.conf"
+    exit 0
+fi
+
+if ! SENTRY_ORG=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
+    echo "sentry: No organization set!  Set sentry.organization in /etc/zulip/zulip.conf"
+    exit 0
+fi
+
+if ! SENTRY_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry project); then
+    echo "sentry: No project set!  Set setry.project in /etc/zulip/zulip.conf"
+    exit 0
+fi
+
+if ! which sentry-cli >/dev/null; then
+    echo "sentry: No sentry-cli installed!"
+    exit 0
+fi
+
+NEW_VERSION="$2"
+
+MERGE_BASE=""
+if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null || true)" = "true" ]; then
+    # Extract the merge-base that tools/cache-zulip-git-version
+    # encoded into ./zulip-git-version, and turn it from a `git
+    # describe` into a commit hash
+    MERGE_BASE_DESCRIBED=$(head -n2 ./zulip-git-version | tail -1)
+    if [[ "$MERGE_BASE_DESCRIBED" =~ ^.*-g([0-9a-f]{7,})$ ]]; then
+        MERGE_BASE=$(git rev-parse "${BASH_REMATCH[1]}")
+    else
+        MERGE_BASE=$(git rev-parse "$MERGE_BASE_DESCRIBED")
+    fi
+fi
+
+SENTRY_RELEASE="zulip-server@$NEW_VERSION"
+echo "$SENTRY_RELEASE" >./sentry-release
+
+echo "sentry: Creating release $SENTRY_RELEASE"
+
+export SENTRY_AUTH_TOKEN
+sentry-cli releases --org="$SENTRY_ORG" --project="$SENTRY_PROJECT" new "$SENTRY_RELEASE"
+
+if [ -n "$MERGE_BASE" ]; then
+    echo "sentry: Setting commit range based on merge-base to upstream of $MERGE_BASE"
+    sudo -u zulip --preserve-env=SENTRY_AUTH_TOKEN sentry-cli releases --org="$SENTRY_ORG" --project="$SENTRY_PROJECT" set-commits "$SENTRY_RELEASE" --commit="zulip/zulip@$MERGE_BASE"
+fi

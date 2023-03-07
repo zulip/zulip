@@ -14,10 +14,10 @@ Some examples are:
   "announce") selected.
 - `/#narrow/stream/42-android/topic/fun`: Message feed showing stream
   "android" and topic "fun". (The `42` represents the id of the
-  stream.
+  stream.)
 
 The main module in the frontend that manages this all is
-`static/js/hashchange.js` (plus `hash_util.js` for all the parsing
+`web/src/hashchange.js` (plus `hash_util.js` for all the parsing
 code), which is unfortunately one of our thorniest modules. Part of
 the reason that it's thorny is that it needs to support a lot of
 different flows:
@@ -54,7 +54,7 @@ all of this (would be a good project to add them to the
 [Puppeteer suite][testing-with-puppeteer]) and there's enough complexity
 that it's easy to accidentally break something.
 
-The main external API lives in `static/js/browser_history.js`:
+The main external API lives in `web/src/browser_history.js`:
 
 - `browser_history.update` is used to update the browser
   history, and it should be called when the app code is taking care
@@ -97,7 +97,7 @@ reload itself:
   start looking for a good time to reload, based on when the user is
   idle (ideally, we'd reload when they're not looking and restore
   state so that the user never knew it happened!). The logic for
-  doing this is in `static/js/reload.js`; but regardless we'll reload
+  doing this is in `web/src/reload.js`; but regardless we'll reload
   within 30 minutes unconditionally.
 
   An important detail in server-initiated reloads is that we
@@ -121,4 +121,4 @@ box as a draft).
 
 [testing-with-puppeteer]: ../testing/testing-with-puppeteer.md
 [self-server-reloads]: #server-initiated-reloads
-[events-system]: ../subsystems/events-system.md
+[events-system]: events-system.md

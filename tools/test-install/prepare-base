@@ -10,10 +10,7 @@ RELEASE="$1"
 ARCH=amd64 # TODO: maybe i686 too
 
 case "$RELEASE" in
-    bionic)
-        extra_packages=(python-pip)
-        ;;
-    focal)
+    focal | jammy)
         extra_packages=(python3-pip)
         ;;
     *)

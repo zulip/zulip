@@ -1,9 +1,8 @@
 from typing import List, Optional, Tuple
 
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import F, Sum
 from django.db.models.functions import Length
-from django.db.models.query import F
 
 from zerver.models import BotStorageData, UserProfile
 

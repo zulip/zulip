@@ -3,6 +3,7 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from typing import Tuple
 
@@ -37,12 +38,11 @@ def start_server(logfile_name: str) -> Tuple[bool, str]:
 if __name__ == "__main__":
     print("Testing development server start!")
 
-    logfile_name = "/tmp/run-dev-output"
-    with open(logfile_name, "wb", buffering=0) as logfile:
+    with tempfile.NamedTemporaryFile(buffering=0) as logfile:
         run_dev = subprocess.Popen(
-            [os.path.join(TOOLS_DIR, "run-dev.py")], stdout=logfile, stderr=subprocess.STDOUT
+            [os.path.join(TOOLS_DIR, "run-dev")], stdout=logfile, stderr=subprocess.STDOUT
         )
-        failure, log = start_server(logfile_name)
+        failure, log = start_server(logfile.name)
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()

@@ -2,7 +2,7 @@
 
 Our node-based unit tests system is the preferred way to test
 JavaScript/TypeScript code in Zulip. We prefer it over the [Puppeteer
-black-box whole-app testing](../testing/testing-with-puppeteer.md),
+black-box whole-app testing](testing-with-puppeteer.md),
 system since it is much (>100x) faster and also easier to do correctly
 than the Puppeteer system.
 
@@ -17,8 +17,8 @@ whole suite is quite fast, it still saves time to run a single test by
 name when debugging something.
 
 The JS unit tests are written to work with node. You can find them
-in `frontend_tests/node_tests`. Here is an example test from
-`frontend_tests/node_tests/stream_data.js`:
+in `web/tests`. Here is an example test from
+`web/tests/stream_data.test.js`:
 
 ```js
 (function test_get_by_id() {
@@ -39,18 +39,18 @@ in `frontend_tests/node_tests`. Here is an example test from
 ```
 
 The names of the node tests generally align with the names of the
-modules they test. If you modify a JS module in `static/js` you should
-see if there are corresponding test in `frontend_tests/node_tests`. If
+modules they test. If you modify a JS module in `web/src` you should
+see if there are corresponding test in `web/tests`. If
 there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
 
 A good first test to read is
-[example1.js](https://github.com/zulip/zulip/blob/main/frontend_tests/node_tests/example1.js).
+[example1.js](https://github.com/zulip/zulip/blob/main/web/tests/example1.test.js).
 (And then there are several other example files.)
 
 ## How the node tests work
 
-Unlike the [Puppeteer unit tests](../testing/testing-with-puppeteer.md),
+Unlike the [Puppeteer unit tests](testing-with-puppeteer.md),
 which use a headless Chromium browser connected to a running Zulip
 development server, our node unit tests don't have a browser, don't
 talk to a server, and generally don't use a complete virtual DOM (a
@@ -60,10 +60,10 @@ those slow down the tests a lot, and often don't add much value.
 Instead, the preferred model for our unit tests is to mock DOM
 manipulations (which in Zulip are almost exclusively done via
 `jQuery`) using a custom library
-[zjquery](https://github.com/zulip/zulip/blob/main/frontend_tests/zjsunit/zjquery.js).
+[zjquery](https://github.com/zulip/zulip/blob/main/web/tests/lib/zjquery.js).
 
 The
-[unit test file](https://github.com/zulip/zulip/blob/main/frontend_tests/node_tests/zjquery.js)
+[unit test file](https://github.com/zulip/zulip/blob/main/web/tests/zjquery.test.js)
 for `zjquery` is designed to be also serve as nice documentation for
 how to use `zjquery`, and is **highly recommended reading** for anyone
 working on or debugging the Zulip node tests.
@@ -120,7 +120,7 @@ For modules that you want to completely stub out, use a pattern like
 this:
 
 ```js
-const reminder = mock_esm("../../static/js/reminder", {
+const reminder = mock_esm("../../web/src/reminder", {
     is_deferred_delivery: noop,
 });
 
@@ -150,7 +150,7 @@ narrow_state.stream = function () {
 ## Creating new test modules
 
 The test runner (`index.js`) automatically runs all .js files in the
-`frontend_tests/node_tests` directory, so you can simply start editing a file
+`web/tests` directory, so you can simply start editing a file
 in that directory to create a new test.
 
 ## Coverage reports
@@ -216,7 +216,7 @@ These instructions assume you're using the Vagrant development environment.
       1. **Set the `Node.js interpreter path` to `/usr/local/bin/node`**
       1. Hit `OK` 2 times to get back to the `Run/Debug Configurations` window.
    1. Under `Working Directory` select the root `zulip` directory.
-   1. Under `JavaScript file`, enter `frontend_tests/zjsunit/index.js`
+   1. Under `JavaScript file`, enter `web/tests/lib/index.js`
       -- this is the root script for Zulip's node unit tests.
 
 Congratulations! You've now set up the integration.
@@ -226,7 +226,7 @@ Congratulations! You've now set up the integration.
 To use Webstorm to debug a given node test file, do the following:
 
 1. Under `Application parameters` choose the node test file that you
-   are trying to test (e.g. `frontend_tests/node_tests/message_store.js`).
+   are trying to test (e.g. `web/tests/message_store.test.js`).
 1. Under `Path Mappings`, set `Project Root` to `/srv/zulip`
    (i.e. where the `zulip` Git repository is mounted in the Vagrant guest).
 1. Use the WebStorm debugger; see [this overview][webstorm-debugging]

@@ -6,7 +6,7 @@ maxdepth: 3
 ---
 
 overview
-user
+helpcenter
 integrations
 api
 openapi

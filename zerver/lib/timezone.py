@@ -1,19 +1,17 @@
 from functools import lru_cache
-from io import TextIOWrapper
 from typing import Dict
 
-import pytz
+from scripts.lib.zulip_tools import get_tzdata_zi
 
 
 @lru_cache(maxsize=None)
 def get_canonical_timezone_map() -> Dict[str, str]:
     canonical = {}
-    with TextIOWrapper(
-        pytz.open_resource("tzdata.zi")  # type: ignore[attr-defined] # Unclear if this is part of the public pytz API
-    ) as f:
+    with get_tzdata_zi() as f:
         for line in f:
-            if line.startswith("L "):
-                l, name, alias = line.split()
+            fields = line.split()
+            if fields and "link".startswith(fields[0].lower()):  # zic(8) accepts any prefix of Link
+                code, name, alias = fields
                 canonical[alias] = name
     return canonical
 

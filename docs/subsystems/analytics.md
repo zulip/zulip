@@ -178,13 +178,11 @@ the updated graphs.
 
 The relevant files are:
 
-- analytics/views.py: All chart data requests from the /stats page call
-  get_chart_data in this file. The bottom half of this file (with all the
-  raw sql queries) is for a different page (/activity), not related to
-  /stats.
-- static/js/stats/stats.js: The JavaScript and Plotly code.
+- analytics/views/stats.py: All chart data requests from the /stats page call
+  get_chart_data in this file.
+- web/src/stats/stats.js: The JavaScript and Plotly code.
 - templates/analytics/stats.html
-- static/styles/stats.css and static/styles/portico.css: We are in the
+- web/styles/stats.css and web/styles/portico.css: We are in the
   process of re-styling this page to use in-app css instead of portico css,
   but there is currently still a lot of portico influence.
 - analytics/urls.py: Has the URL routes; it's unlikely you will have to

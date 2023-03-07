@@ -1,11 +1,11 @@
 class zulip::supervisor {
   $supervisor_service = $zulip::common::supervisor_service
 
-  package { 'supervisor': ensure => 'installed' }
+  package { 'supervisor': ensure => installed }
 
   $system_conf_dir = $zulip::common::supervisor_system_conf_dir
   file { $system_conf_dir:
-    ensure  => 'directory',
+    ensure  => directory,
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
@@ -16,7 +16,7 @@ class zulip::supervisor {
   $should_purge = $facts['leave_supervisor'] != 'true'
   # lint:endignore
   file { $conf_dir:
-    ensure  => 'directory',
+    ensure  => directory,
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
@@ -29,26 +29,12 @@ class zulip::supervisor {
   # subdirectory in 2020-10 in version 4.0; these lines can be removed
   # in Zulip version 5.0 and later.
   file { [
-    "${zulip::common::supervisor_system_conf_dir}/cron.conf",
-    "${zulip::common::supervisor_system_conf_dir}/nginx.conf",
-    "${zulip::common::supervisor_system_conf_dir}/smokescreen.conf",
-    "${zulip::common::supervisor_system_conf_dir}/thumbor.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zulip.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zulip_db.conf",
-    ]:
-    ensure => absent,
-  }
-
-  # These were similarly moved, but were only referenced in zulip_ops,
-  # and thus can be removed as soon as all relevant hosts have been
-  # updated:
-  file { [
-    "${zulip::common::supervisor_system_conf_dir}/grafana.conf",
-    "${zulip::common::supervisor_system_conf_dir}/munin_tunnels.conf",
-    "${zulip::common::supervisor_system_conf_dir}/prometheus.conf",
-    "${zulip::common::supervisor_system_conf_dir}/prometheus_node_exporter.conf",
-    "${zulip::common::supervisor_system_conf_dir}/redis_tunnel.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zmirror.conf",
+    "${system_conf_dir}/cron.conf",
+    "${system_conf_dir}/nginx.conf",
+    "${system_conf_dir}/smokescreen.conf",
+    "${system_conf_dir}/thumbor.conf",
+    "${system_conf_dir}/zulip.conf",
+    "${system_conf_dir}/zulip_db.conf",
     ]:
     ensure => absent,
   }
@@ -81,7 +67,7 @@ class zulip::supervisor {
         Package['supervisor'],
       ],
       hasstatus  => true,
-      status     => 'supervisorctl status',
+      status     => $zulip::common::supervisor_status,
       # Restarting the whole supervisorctl on every update to its
       # configuration files has the unfortunate side-effect of
       # restarting all of the services it controls; this results in an
@@ -98,9 +84,6 @@ class zulip::supervisor {
       #
       # Also, to handle the case that supervisord wasn't running at
       # all, we check if it is not running and if so, start it.
-      #
-      # We use supervisor[d] as the pattern so the bash/grep commands
-      # don't match.
       hasrestart => true,
       # lint:ignore:140chars
       restart    => "bash -c 'if pgrep -x supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
@@ -108,6 +91,7 @@ class zulip::supervisor {
     }
     exec { 'supervisor-restart':
       refreshonly => true,
+      provider    => shell,
       command     => $zulip::common::supervisor_reload,
       require     => Service[$supervisor_service],
     }
@@ -121,5 +105,13 @@ class zulip::supervisor {
     mode    => '0644',
     content => template('zulip/supervisor/supervisord.conf.erb'),
     notify  => Exec['supervisor-restart'],
+  }
+
+  file { '/usr/local/bin/secret-env-wrapper':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zulip/secret-env-wrapper',
   }
 }

@@ -1,23 +1,24 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 
 IGNORED_EVENTS = [
-    "downloadChart",
-    "deleteChart",
-    "uploadChart",
-    "pullImage",
-    "deleteImage",
-    "scanningFailed",
+    "DOWNLOAD_CHART",
+    "DELETE_CHART",
+    "UPLOAD_CHART",
+    "PULL_ARTIFACT",
+    "DELETE_ARTIFACT",
+    "SCANNING_FAILED",
 ]
 
 
@@ -37,21 +38,13 @@ def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional
 
 
 def handle_push_image_event(
-    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+    payload: WildValue, user_profile: UserProfile, operator_username: str
 ) -> str:
-    image_name = payload["event_data"]["repository"]["repo_full_name"]
-    image_tag = payload["event_data"]["resources"][0]["tag"]
+    image_name = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)
+    image_tag = payload["event_data"]["resources"][0]["tag"].tame(check_string)
 
     return f"{operator_username} pushed image `{image_name}:{image_tag}`"
 
-
-VULNERABILITY_SEVERITY_NAME_MAP = {
-    1: "None",
-    2: "Unknown",
-    3: "Low",
-    4: "Medium",
-    5: "High",
-}
 
 SCANNING_COMPLETED_TEMPLATE = """
 Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity:
@@ -61,26 +54,31 @@ Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity
 
 
 def handle_scanning_completed_event(
-    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+    payload: WildValue, user_profile: UserProfile, operator_username: str
 ) -> str:
     scan_results = ""
-    scan_summaries = payload["event_data"]["resources"][0]["scan_overview"]["components"]["summary"]
-    summaries_sorted = sorted(scan_summaries, key=lambda x: x["severity"], reverse=True)
-    for scan_summary in summaries_sorted:
-        scan_results += "* {}: **{}**\n".format(
-            VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"]
-        )
+    scan_overview = payload["event_data"]["resources"][0]["scan_overview"]
+    if "application/vnd.security.vulnerability.report; version=1.1" not in scan_overview:
+        raise UnsupportedWebhookEventTypeError("Unsupported harbor scanning webhook payload")
+    scan_summaries = scan_overview["application/vnd.security.vulnerability.report; version=1.1"][
+        "summary"
+    ]["summary"]
+    if len(scan_summaries) > 0:
+        for severity, count in scan_summaries.items():
+            scan_results += f"* {severity}: **{count.tame(check_int)}**\n"
+    else:
+        scan_results += "None\n"
 
     return SCANNING_COMPLETED_TEMPLATE.format(
-        image_name=payload["event_data"]["repository"]["repo_full_name"],
-        image_tag=payload["event_data"]["resources"][0]["tag"],
+        image_name=payload["event_data"]["repository"]["repo_full_name"].tame(check_string),
+        image_tag=payload["event_data"]["resources"][0]["tag"].tame(check_string),
         scan_results=scan_results,
     )
 
 
 EVENT_FUNCTION_MAPPER = {
-    "pushImage": handle_push_image_event,
-    "scanningCompleted": handle_scanning_completed_event,
+    "PUSH_ARTIFACT": handle_push_image_event,
+    "SCANNING_COMPLETED": handle_scanning_completed_event,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -91,10 +89,9 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 def api_harbor_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
-    operator_username = "**{}**".format(payload["operator"])
+    operator_username = "**{}**".format(payload["operator"].tame(check_string))
 
     if operator_username != "auto":
         operator_profile = guess_zulip_user_from_harbor(operator_username, user_profile.realm)
@@ -102,20 +99,20 @@ def api_harbor_webhook(
     if operator_profile:
         operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
 
-    event = payload["type"]
-    topic = payload["event_data"]["repository"]["repo_full_name"]
+    event = payload["type"].tame(check_string)
+    topic = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)
 
     if event in IGNORED_EVENTS:
-        return json_success()
+        return json_success(request)
 
     content_func = EVENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
-        raise UnsupportedWebhookEventType(event)
+        raise UnsupportedWebhookEventTypeError(event)
 
     content: str = content_func(payload, user_profile, operator_username)
 
     check_send_webhook_message(
         request, user_profile, topic, content, event, unquote_url_parameters=True
     )
-    return json_success()
+    return json_success(request)

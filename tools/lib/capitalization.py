@@ -10,20 +10,14 @@ from bs4 import BeautifulSoup
 # this list without any modification.
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
-    r"Android",
     r"API",
     r"APNS",
-    r"App Store",
     r"Botserver",
     r"Cookie Bot",
     r"DevAuthBackend",
-    r"Dropbox",
     r"GCM",
     r"GitHub",
-    r"G Suite",
-    r"Google",
     r"Gravatar",
-    r"Hamlet",
     r"Help Center",
     r"HTTP",
     r"ID",
@@ -32,124 +26,79 @@ IGNORED_PHRASES = [
     r"JSON",
     r"Kerberos",
     r"LDAP",
-    r"Mac",
-    r"macOS",
     r"Markdown",
-    r"MiB",
-    r"OAuth",
     r"OTP",
     r"Pivotal",
-    r"Play Store",
-    r"PM",
-    r"PMs",
-    r"REMOTE_USER",
+    r"DM",
+    r"DMs",
     r"Slack",
-    r"SSO",
+    r"Google",
     r"Terms of Service",
     r"Tuesday",
     r"URL",
-    r"Ubuntu",
-    r"Updown",
-    r"V5",
+    r"UUID",
     r"Webathena",
-    r"Windows",
     r"WordPress",
-    r"XML",
     r"Zephyr",
     r"Zoom",
     r"Zulip",
+    r"Zulip Server",
     r"Zulip Account Security",
     r"Zulip Security",
-    r"Zulip Standard",
-    r"Zulip Team",
-    r"iPhone",
-    r"iOS",
-    r"Emoji One",
-    r"mailinator.com",
-    r"HQ",
+    r"Zulip Cloud Standard",
     r"BigBlueButton",
     # Code things
-    r".zuliprc",
-    r"__\w+\.\w+__",
+    r"\.zuliprc",
+    # BeautifulSoup will remove <z-user> which is horribly confusing,
+    # so we need more of the sentence.
+    r"<z-user></z-user> will have the same role",
+    r"<z-user></z-user> will have the same properties",
     # Things using "I"
-    r"I say",
-    r"I want",
+    r"I understand",
     r"I'm",
+    r"I've",
     # Specific short words
     r"beta",
     r"and",
     r"bot",
-    r"e.g.",
-    r"etc.",
-    r"images",
+    r"e\.g\.",
     r"enabled",
-    r"disabled",
-    r"zulip_org_id",
-    r"admins",
-    r"members",
     r"signups",
     # Placeholders
     r"keyword",
     r"streamname",
-    r"user@example.com",
+    r"user@example\.com",
     # Fragments of larger strings
     (r"your subscriptions on your Streams page"),
-    (
-        r"Change notification settings for individual streams on your "
-        '<a href="/#streams">Streams page</a>.'
-    ),
-    (
-        r"Looking for our "
-        '<a href="/integrations" target="_blank">Integrations</a> or '
-        '<a href="/api" target="_blank">API</a> documentation?'
-    ),
-    r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
-    r"one or more people...",
-    r"confirmation email",
-    r"invites remaining",
-    r"was too large; the maximum file size is 25MiB.",
-    r"selected message",
-    r"a-z",
-    r"organization administrator",
+    r"Add global time<br />Everyone sees global times in their own time zone\.",
     r"user",
     r"an unknown operating system",
     r"Go to Settings",
-    r"Like Organization logo",
     # SPECIAL CASES
-    # Enter is usually capitalized
-    r"Press Enter to send",
-    r"Send message on pressing Enter",
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
-    # For consistency with "more topics"
+    # Used alone in a parenthetical where capitalized looks worse.
+    r"^deprecated$",
+    # We want the similar text in the Private Messages section to have the same capitalization.
     r"more conversations",
+    r"back to streams",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",
     r"in 3 hours",
-    # We should probably just delete this string from translations
-    r"activation key",
     # these are used as topics
     r"^new streams$",
     r"^stream events$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",
-    r"^new_emoji$",
     # Used to refer custom time limits
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-    r"group private messages with {recipient}",
-    r"private messages with {recipient}",
-    r"private messages with yourself",
-    # TO CLEAN UP
-    # Just want to avoid churning login.html right now
-    r"or Choose a user",
-    # This is a parsing bug in the tool
-    r"argument ",
-    # I can't find this one
-    r"text",
+    r"group direct messages with \{recipient\}",
+    r"direct messages with \{recipient\}",
+    r"direct messages with yourself",
     r"GIF",
     # Emoji name placeholder
     r"leafy green vegetable",
@@ -157,12 +106,35 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Used in GIPHY integration setting. GIFs Rating.
+    r"rated Y",
+    r"rated G",
+    r"rated PG",
+    r"rated PG13",
+    r"rated R",
     # Used in GIPHY popover.
     r"GIFs",
     r"GIPHY",
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
+    # Used in stream creation form
+    r"email hidden",
+    # Use in compose box.
+    r"to send",
+    r"to add a new line",
+    # Used in showing Notification Bot read receipts message
+    "Notification Bot",
+    # Used in presence_enabled setting label
+    r"invisible mode off",
+    # Typeahead suggestions for "Pronouns" custom field type.
+    r"he/him",
+    r"she/her",
+    r"they/them",
+    # Used in message-move-time-limit setting label
+    r"does not apply to moderators and administrators",
+    # Used in message-delete-time-limit setting label
+    r"does not apply to administrators",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -177,7 +149,7 @@ COMPILED_IGNORED_PHRASES = [
 ]
 
 SPLIT_BOUNDARY = "?.!"  # Used to split string into sentences.
-SPLIT_BOUNDARY_REGEX = re.compile(fr"[{SPLIT_BOUNDARY}]")
+SPLIT_BOUNDARY_REGEX = re.compile(rf"[{SPLIT_BOUNDARY}]")
 
 # Regexes which check capitalization in sentences.
 DISALLOWED = [
@@ -272,7 +244,7 @@ def check_capitalization(strings: List[str]) -> Tuple[List[str], List[str], List
         capitalized = is_capitalized(safe_text)
         if not capitalized:
             errors.append(text)
-        elif capitalized and has_ignored_phrase:
+        elif has_ignored_phrase:
             ignored.append(text)
 
         banned_word_errors.extend(check_banned_words(text))

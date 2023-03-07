@@ -10,24 +10,28 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 import pygments
-from pytz import VERSION as timezones_version
 
 from scripts.lib import clean_unused_caches
 from scripts.lib.zulip_tools import (
     ENDC,
     OKBLUE,
     get_dev_uuid_var_path,
+    get_tzdata_zi,
     is_digest_obsolete,
     run,
+    run_as_root,
     write_new_digest,
 )
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 from version import PROVISION_VERSION
 
-pygments_version = pygments.__version__  # type: ignore[attr-defined] # private member missing from stubs
-
 VENV_PATH = "/srv/zulip-py3-venv"
 UUID_VAR_PATH = get_dev_uuid_var_path()
+
+with get_tzdata_zi() as f:
+    line = f.readline()
+    assert line.startswith("# version ")
+    timezones_version = line[len("# version ") :]
 
 
 def create_var_directories() -> None:
@@ -143,18 +147,18 @@ def setup_bash_profile() -> None:
 
 
 def need_to_run_build_pygments_data() -> bool:
-    if not os.path.exists("static/generated/pygments_data.json"):
+    if not os.path.exists("web/generated/pygments_data.json"):
         return True
 
     return is_digest_obsolete(
         "build_pygments_data_hash",
         build_pygments_data_paths(),
-        [pygments_version],
+        [pygments.__version__],
     )
 
 
 def need_to_run_build_timezone_data() -> bool:
-    if not os.path.exists("static/generated/timezones.json"):
+    if not os.path.exists("web/generated/timezones.json"):
         return True
 
     return is_digest_obsolete(
@@ -166,7 +170,7 @@ def need_to_run_build_timezone_data() -> bool:
 
 def need_to_run_compilemessages() -> bool:
     if not os.path.exists("locale/language_name_map.json"):
-        # User may have cleaned their git checkout.
+        # User may have cleaned their Git checkout.
         print("Need to run compilemessages due to missing language_name_map.json")
         return True
 
@@ -227,7 +231,7 @@ def main(options: argparse.Namespace) -> int:
         write_new_digest(
             "build_pygments_data_hash",
             build_pygments_data_paths(),
-            [pygments_version],
+            [pygments.__version__],
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
@@ -269,8 +273,9 @@ def main(options: argparse.Namespace) -> int:
             destroy_leaked_test_databases,
         )
 
+        assert settings.RABBITMQ_PASSWORD is not None
         if options.is_force or need_to_run_configure_rabbitmq([settings.RABBITMQ_PASSWORD]):
-            run(["scripts/setup/configure-rabbitmq"])
+            run_as_root(["scripts/setup/configure-rabbitmq"])
             write_new_digest(
                 "last_configure_rabbitmq_hash",
                 configure_rabbitmq_paths(),
@@ -357,7 +362,7 @@ def main(options: argparse.Namespace) -> int:
     version_file = os.path.join(UUID_VAR_PATH, "provision_version")
     print(f"writing to {version_file}\n")
     with open(version_file, "w") as f:
-        f.write(PROVISION_VERSION + "\n")
+        f.write(".".join(map(str, PROVISION_VERSION)) + "\n")
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)

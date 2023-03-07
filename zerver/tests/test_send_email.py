@@ -6,7 +6,7 @@ from django.core.mail.backends.smtp import EmailBackend as SMTPBackend
 from django.core.mail.message import sanitize_address
 
 from zerver.lib.send_email import (
-    EmailNotDeliveredException,
+    EmailNotDeliveredError,
     FromAddress,
     build_email,
     initialize_connection,
@@ -17,81 +17,56 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class TestBuildEmail(ZulipTestCase):
-    def test_build_SES_compatible_From_field_limit(self) -> None:
+    def test_limited_from_length(self) -> None:
         hamlet = self.example_user("hamlet")
+        # This is exactly the max length
         limit_length_name = "a" * (320 - len(sanitize_address(FromAddress.NOREPLY, "utf-8")) - 3)
         mail = build_email(
             "zerver/emails/password_reset",
-            to_emails=[hamlet],
+            to_emails=[hamlet.email],
             from_name=limit_length_name,
             from_address=FromAddress.NOREPLY,
             language="en",
         )
         self.assertEqual(mail.extra_headers["From"], f"{limit_length_name} <{FromAddress.NOREPLY}>")
 
-    def test_build_and_send_SES_incompatible_From_address(self) -> None:
-        hamlet = self.example_user("hamlet")
-        from_name = "Zulip"
-        # Address by itself is > 320 bytes even without the name. Should trigger exception.
-        overly_long_address = "a" * 320 + "@zulip.com"
+        # One more character makes it flip to just the address, with no name
         mail = build_email(
             "zerver/emails/password_reset",
-            to_emails=[hamlet],
-            from_name=from_name,
-            from_address=overly_long_address,
+            to_emails=[hamlet.email],
+            from_name=limit_length_name + "a",
+            from_address=FromAddress.NOREPLY,
             language="en",
         )
-        self.assertEqual(mail.extra_headers["From"], overly_long_address)
-        self.assertGreater(len(sanitize_address(mail.extra_headers["From"], "utf-8")), 320)
+        self.assertEqual(mail.extra_headers["From"], FromAddress.NOREPLY)
 
-        with mock.patch.object(
-            EmailBackend, "send_messages", side_effect=SMTPDataError(242, "From field too long.")
-        ):
-            with self.assertLogs(logger=logger) as info_log:
-                with self.assertRaises(EmailNotDeliveredException):
-                    send_email(
-                        "zerver/emails/password_reset",
-                        to_emails=[hamlet],
-                        from_name=from_name,
-                        from_address=overly_long_address,
-                        language="en",
-                    )
-        self.assert_length(info_log.records, 2)
-        self.assertEqual(
-            info_log.output[0], f"INFO:{logger.name}:Sending password_reset email to {mail.to}"
-        )
-        self.assertTrue(
-            info_log.output[1].startswith(
-                f"ERROR:{logger.name}:Error sending password_reset email to {mail.to} with error code 242: From field too long."
-            )
-        )
-
-    def test_build_and_send_refused(self) -> None:
+    def test_limited_to_length(self) -> None:
         hamlet = self.example_user("hamlet")
-        address = "zulip@example.com"
-        with mock.patch.object(
-            EmailBackend,
-            "send_messages",
-            side_effect=SMTPRecipientsRefused(recipients={address: (550, b"User unknown")}),
-        ):
-            with self.assertLogs(logger=logger) as info_log:
-                with self.assertRaises(EmailNotDeliveredException):
-                    send_email(
-                        "zerver/emails/password_reset",
-                        to_emails=[hamlet],
-                        from_name="Zulip",
-                        from_address=address,
-                        language="en",
-                    )
-        self.assert_length(info_log.records, 2)
-        self.assertEqual(
-            info_log.output[0], f"INFO:{logger.name}:Sending password_reset email to {[hamlet]}"
+        # This is exactly the max length
+        limit_length_name = "澳" * 61
+        hamlet.full_name = limit_length_name
+        hamlet.save()
+
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_user_ids=[hamlet.id],
+            from_name="Noreply",
+            from_address=FromAddress.NOREPLY,
+            language="en",
         )
-        self.assertFalse(
-            info_log.output[1].startswith(
-                f"ERROR:{logger.name}:Error sending password_reset email to {[hamlet]}: {{'{address}': (550, 'User unknown')}}"
-            )
+        self.assertEqual(mail.to[0], f"{hamlet.full_name} <{hamlet.delivery_email}>")
+
+        # One more character makes it flip to just the address, with no name
+        hamlet.full_name += "澳"
+        hamlet.save()
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_user_ids=[hamlet.id],
+            from_name="Noreply",
+            from_address=FromAddress.NOREPLY,
+            language="en",
         )
+        self.assertEqual(mail.to[0], hamlet.delivery_email)
 
 
 class TestSendEmail(ZulipTestCase):
@@ -132,29 +107,36 @@ class TestSendEmail(ZulipTestCase):
     def test_send_email_exceptions(self) -> None:
         hamlet = self.example_user("hamlet")
         from_name = FromAddress.security_email_from_name(language="en")
+        address = FromAddress.NOREPLY
         # Used to check the output
         mail = build_email(
             "zerver/emails/password_reset",
-            to_emails=[hamlet],
+            to_emails=[hamlet.email],
             from_name=from_name,
-            from_address=FromAddress.NOREPLY,
+            from_address=address,
             language="en",
         )
         self.assertEqual(mail.extra_headers["From"], f"{from_name} <{FromAddress.NOREPLY}>")
 
-        # We test the two cases that should raise an EmailNotDeliveredException
+        # We test the cases that should raise an EmailNotDeliveredError
         errors = {
             f"Unknown error sending password_reset email to {mail.to}": [0],
             f"Error sending password_reset email to {mail.to}": [SMTPException()],
+            f"Error sending password_reset email to {mail.to}: {{'{address}': (550, b'User unknown')}}": [
+                SMTPRecipientsRefused(recipients={address: (550, b"User unknown")})
+            ],
+            f"Error sending password_reset email to {mail.to} with error code 242: From field too long": [
+                SMTPDataError(242, "From field too long.")
+            ],
         }
 
         for message, side_effect in errors.items():
             with mock.patch.object(EmailBackend, "send_messages", side_effect=side_effect):
                 with self.assertLogs(logger=logger) as info_log:
-                    with self.assertRaises(EmailNotDeliveredException):
+                    with self.assertRaises(EmailNotDeliveredError):
                         send_email(
                             "zerver/emails/password_reset",
-                            to_emails=[hamlet],
+                            to_emails=[hamlet.email],
                             from_name=from_name,
                             from_address=FromAddress.NOREPLY,
                             language="en",
@@ -165,3 +147,35 @@ class TestSendEmail(ZulipTestCase):
                     f"INFO:{logger.name}:Sending password_reset email to {mail.to}",
                 )
                 self.assertTrue(info_log.output[1].startswith(f"ERROR:zulip.send_email:{message}"))
+
+    def test_send_email_config_error_logging(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        with self.settings(EMAIL_HOST_USER="test", EMAIL_HOST_PASSWORD=None):
+            with self.assertLogs(logger=logger, level="ERROR") as error_log:
+                send_email(
+                    "zerver/emails/password_reset",
+                    to_emails=[hamlet.email],
+                    from_name="From Name",
+                    from_address=FromAddress.NOREPLY,
+                    language="en",
+                )
+
+        self.assertEqual(
+            error_log.output,
+            [
+                "ERROR:zulip.send_email:"
+                "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD).  "
+                "To disable SMTP authentication, set EMAIL_HOST_USER to an empty string."
+            ],
+        )
+
+        # Empty string is OK
+        with self.settings(EMAIL_HOST_USER="test", EMAIL_HOST_PASSWORD=""):
+            send_email(
+                "zerver/emails/password_reset",
+                to_emails=[hamlet.email],
+                from_name="From Name",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+            )

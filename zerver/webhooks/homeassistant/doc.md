@@ -1,7 +1,6 @@
 1.  {!create-stream.md!}
 
-1.  Next, on your {{ settings_html|safe }}, create a bot and
-    note its email and API key.
+1.  {!create-an-incoming-webhook.md!}
 
 1.  In Home Assistant, you need to add the `notify` service to your
     `configuration.yaml` file.  This should look something like this:

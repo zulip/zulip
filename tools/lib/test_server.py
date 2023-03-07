@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 import time
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from typing import Iterator, Optional
 
 # Verify the Zulip venv is available.
@@ -58,45 +58,46 @@ def test_server_running(
     log_file: Optional[str] = None,
     dots: bool = False,
 ) -> Iterator[None]:
-    log = sys.stdout
-    if log_file:
-        if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
-            log = open(log_file, "a")
-            log.write("\n\n")
-        else:
-            log = open(log_file, "w")
+    with ExitStack() as stack:
+        log = sys.stdout
+        if log_file:
+            if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
+                log = stack.enter_context(open(log_file, "a"))
+                log.write("\n\n")
+            else:
+                log = stack.enter_context(open(log_file, "w"))
 
-    set_up_django(external_host)
+        set_up_django(external_host)
 
-    update_test_databases_if_required(rebuild_test_database=True)
+        update_test_databases_if_required(rebuild_test_database=True)
 
-    # Run this not through the shell, so that we have the actual PID.
-    run_dev_server_command = ["tools/run-dev.py", "--test", "--streamlined"]
-    if skip_provision_check:
-        run_dev_server_command.append("--skip-provision-check")
-    server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
+        # Run this not through the shell, so that we have the actual PID.
+        run_dev_server_command = ["tools/run-dev", "--test", "--streamlined"]
+        if skip_provision_check:
+            run_dev_server_command.append("--skip-provision-check")
+        server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
 
-    try:
-        # Wait for the server to start up.
-        print(end="\nWaiting for test server (may take a while)")
-        if not dots:
-            print("\n", flush=True)
-        t = time.time()
-        while not server_is_up(server, log_file):
-            if dots:
-                print(end=".", flush=True)
-            time.sleep(0.4)
-            if time.time() - t > MAX_SERVER_WAIT:
-                raise Exception("Timeout waiting for server")
-        print("\n\n--- SERVER IS UP! ---\n", flush=True)
+        try:
+            # Wait for the server to start up.
+            print(end="\nWaiting for test server (may take a while)")
+            if not dots:
+                print("\n", flush=True)
+            t = time.time()
+            while not server_is_up(server, log_file):
+                if dots:
+                    print(end=".", flush=True)
+                time.sleep(0.4)
+                if time.time() - t > MAX_SERVER_WAIT:
+                    raise Exception("Timeout waiting for server")
+            print("\n\n--- SERVER IS UP! ---\n", flush=True)
 
-        # DO OUR ACTUAL TESTING HERE!!!
-        yield
+            # DO OUR ACTUAL TESTING HERE!!!
+            yield
 
-    finally:
-        assert_server_running(server, log_file)
-        server.terminate()
-        server.wait()
+        finally:
+            assert_server_running(server, log_file)
+            server.terminate()
+            server.wait()
 
 
 if __name__ == "__main__":

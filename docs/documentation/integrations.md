@@ -64,7 +64,7 @@ phrases and steps at the location of the macros. Macros help eliminate
 repeated content in our documentation.
 
 The source for macros is the Markdown files under
-`templates/zerver/help/include` in the
+`templates/zerver/integrations/include/` in the
 [main Zulip server repository](https://github.com/zulip/zulip). If you find
 multiple instances of particular content in the documentation, you can
 always create a new macro by adding a new file to that folder.
@@ -76,11 +76,19 @@ Here are a few common macros used to document Zulip's integrations:
   integration or incoming webhook. For an example rendering, see **Step 1** of
   [the docs for Zulip's GitHub integration][github-integration].
 
-- `{!create-bot-construct-url-indented.md!}` macro - Instructs users to create a bot
-  for a given integration and construct a webhook URL using the bot API key
-  and stream name. The URL is generated automatically for every incoming webhook
-  by using attributes in the `WebhookIntegration` class in
-  [zerver/lib/integrations.py][integrations-file].
+- `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
+  for a given integration and select **Incoming webhook** as the **Bot type**.
+  This macro is usually used right after `{!create-stream!}`. For an example
+  rendering, see **Step 2** of [the docs for Zulip's Zendesk integration][zendesk].
+
+- `{!create-a-generic-bot.md!}` macro - Instructs users to create a bot
+  for a given integration and select **Generic bot** as the **Bot type**. For an
+  example rendering, see [the docs for Zulip's Matrix integration][matrix].
+
+- `{!create-bot-construct-url.md!}` macro - Instructs users to create a bot
+  for a given integration and select **Incoming webhook** as the **Bot type**.
+  The URL is generated automatically for every incoming webhook by using
+  attributes in the `WebhookIntegration` class in [zerver/lib/integrations.py][integrations-file].
   This macro is usually used right after `{!create-stream!}`. For an example
   rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
 
@@ -94,12 +102,12 @@ Here are a few common macros used to document Zulip's integrations:
 - `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`
   to a URL in cases where supplying a stream name in the URL is optional.
   Supplying a stream name is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url-indented.md!}`, this macro need not be used.
+  `{!create-bot-construct-url.md!}`, this macro need not be used.
 
 - `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
   to supply a custom topic for webhook notification messages. Supplying a custom
   topic is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url-indented.md!}`, this macro need not be used.
+  `{!create-bot-construct-url.md!}`, this macro need not be used.
 
 - `{!congrats.md!}` macro - Inserts congratulatory lines signifying the
   successful setup of a given integration. This macro is usually used at
@@ -111,7 +119,7 @@ Here are a few common macros used to document Zulip's integrations:
   [API page](https://zulip.com/api/) to download and install Zulip's
   API bindings. This macro is usually used in non-webhook integration docs under
   `templates/zerver/integrations/<integration_name>.md`. For an example
-  rendering, see **Step 2** of
+  rendering, see **Step 3** of
   [the docs for Zulip's Codebase integration][codebase].
 
 - `{!change-zulip-config-file.md!}` macro - Instructs users to create a bot and
@@ -127,11 +135,8 @@ Here are a few common macros used to document Zulip's integrations:
   see the last paragraph of **Step 2** in
   [the docs for Zulip's GitHub integration][github-integration].
 
-- `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url-indented.md!}`
+- `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url.md!}`
   to generate the webhook URL.
-
-- `{!zulip-config.md!}` - Used internally by `{!change-zulip-config-file.md!}`
-  to specify the lines in the config file for a non-webhook integration.
 
 - `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:
@@ -143,9 +148,17 @@ Here are a few common macros used to document Zulip's integrations:
   For an example rendering, see
   [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
 
+- `{!event-filtering-instructions}` macro - Instructs user to use the event
+  filtering feature and shows a list of event types that the integration supports.
+  For an example rendering, see the last 4 paragraphs of **Step 2** in
+  [the docs for Zulip's Front integration][front].
+
 [github-integration]: https://zulip.com/integrations/doc/github
+[zendesk]: https://zulip.com/integrations/doc/zendesk
+[matrix]: https://zulip.com/integrations/doc/matrix#configure-the-bridge
 [codebase]: https://zulip.com/integrations/doc/codebase
 [beanstalk]: https://zulip.com/integrations/doc/beanstalk
+[front]: https://zulip.com/integrations/doc/front
 [integrations-file]: https://github.com/zulip/zulip/blob/main/zerver/lib/integrations.py
 
 ## Writing guidelines
@@ -202,7 +215,7 @@ A typical doc will then have the following steps.
 
 ##### "Create the bot" step
 
-- Typically, use the `create-bot-construct-url-indented` macro.
+- Typically, use the `create-bot-construct-url` macro.
 - [Existing macros](#markdown-macros) should be used for this if they exist, but if the macro
   defaults don’t work, it may make sense to write something custom for the
   integration in question. This step is mandatory for all integrations.

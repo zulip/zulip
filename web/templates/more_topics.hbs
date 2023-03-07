@@ -1,0 +1,13 @@
+<li class="topic-list-item show-more-topics bottom_left_row {{#unless more_topics_unreads}}zero-topic-unreads{{/unless}}">
+    <span class='topic-box'>
+        <a class="topic-name" tabindex="0">{{t "more topics" }}</a>
+        {{#if more_topics_have_unread_mention_messages}}
+            <span class="unread_mention_info">
+                @
+            </span>
+        {{/if}}
+        <span class="unread_count {{#unless more_topics_unreads}}zero_count{{/unless}}">
+            {{more_topics_unreads}}
+        </span>
+    </span>
+</li>

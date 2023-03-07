@@ -4,7 +4,7 @@ sent by Zapier directly in Zulip.
 
 1. {!create-stream.md!}
 
-1. {!create-a-bot-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
 1. Create an account on [Zapier](https://zapier.com).
 
@@ -14,7 +14,7 @@ sent by Zapier directly in Zulip.
 1. Click **Make a Zap!** in the upper left.
 
 1. Follow the instructions to select a Trigger App and Event (**When this happens ...** (Step 1)).
-   This could be an app like Trello, Gmail, Calendar, or anything else.
+   This could be an app like Asana, Trello, Gmail, Calendar, or anything else.
 
 1. **Do this ...** (Step 2): Search for Zulip, and click on the Zulip icon. Follow the instructions.
 

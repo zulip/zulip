@@ -27,8 +27,8 @@ from .config import get_secret
 ## appear on 404 pages, is used as the sender's address for many automated
 ## emails, and is advertised as a support address. An email address like
 ## support@example.com is totally reasonable, as is admin@example.com.
-## Do not put a display name; e.g. 'support@example.com', not
-## 'Zulip Support <support@example.com>'.
+## Do not put a display name; e.g. "support@example.com", not
+## "Zulip Support <support@example.com>".
 ZULIP_ADMINISTRATOR = "zulip-admin@example.com"
 
 ## The user-accessible Zulip hostname for this installation, e.g.
@@ -44,19 +44,19 @@ EXTERNAL_HOST = "zulip.example.com"
 ## representing the host/domain names that your users can enter in
 ## their browsers to access Zulip.  This is a security measure; for
 ## details, see the Django documentation:
-## https://docs.djangoproject.com/en/2.2/ref/settings/#allowed-hosts
+## https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
 ##
-## Zulip automatically adds to this list 'localhost', '127.0.0.1', and
+## Zulip automatically adds to this list "localhost", "127.0.0.1", and
 ## patterns representing EXTERNAL_HOST and subdomains of it.  If you are
 ## accessing your server by other hostnames, list them here.
 ##
 ## Note that these should just be hostnames, without port numbers.
-# ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
+# ALLOWED_HOSTS = ["zulip-alias.example.com", "192.0.2.1"]
 
 ## If EXTERNAL_HOST is not a valid domain name (e.g. an IP address),
 ## set FAKE_EMAIL_DOMAIN below to a domain that Zulip can use when
 ## generating (fake) email addresses for bots, dummy users, etc.
-# FAKE_EMAIL_DOMAIN = 'fake-domain.example.com'
+# FAKE_EMAIL_DOMAIN = "fake-domain.example.com"
 
 
 ################
@@ -71,9 +71,11 @@ EXTERNAL_HOST = "zulip.example.com"
 ## advice for troubleshooting, see the Zulip documentation:
 ##   https://zulip.readthedocs.io/en/latest/production/email.html
 
-## EMAIL_HOST and EMAIL_HOST_USER are generally required.
-# EMAIL_HOST = 'smtp.example.com'
-# EMAIL_HOST_USER = ''
+## EMAIL_HOST and EMAIL_HOST_USER are generally required.  If your
+## SMTP server does not require authentication, leave EMAIL_HOST_USER
+## commented out.
+# EMAIL_HOST = "smtp.example.com"
+# EMAIL_HOST_USER = ""
 
 ## Passwords and secrets are not stored in this file.  The password
 ## for user EMAIL_HOST_USER goes in `/etc/zulip/zulip-secrets.conf`.
@@ -97,14 +99,14 @@ EXTERNAL_HOST = "zulip.example.com"
 ## contain confirmation links (where the security problem fixed by
 ## ADD_TOKENS_TO_NOREPLY_ADDRESS does not exist), as well as for
 ## confirmation emails when ADD_TOKENS_TO_NOREPLY_ADDRESS=False.
-# NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
+# NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
 ## Many countries and bulk mailers require certain types of email to display
 ## a physical mailing address to comply with anti-spam legislation.
 ## Non-commercial and non-public-facing installations are unlikely to need
 ## this setting.
 ## The address should have no newlines.
-# PHYSICAL_ADDRESS = ''
+# PHYSICAL_ADDRESS = ""
 
 
 ################
@@ -141,15 +143,15 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 ## initial realm and user.
 AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     "zproject.backends.EmailAuthBackend",  # Email and password; just requires SMTP setup
-    # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
-    # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
-    # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
-    # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
-    # 'zproject.backends.AppleAuthBackend',  # Apple auth, setup below
-    # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
-    # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
-    # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
-    # 'zproject.backends.GenericOpenIdConnectBackend',  # Generic OIDC integration, setup below
+    # "zproject.backends.GoogleAuthBackend",  # Google auth, setup below
+    # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
+    # "zproject.backends.GitLabAuthBackend",  # GitLab auth, setup below
+    # "zproject.backends.AzureADAuthBackend",  # Microsoft Azure Active Directory auth, setup below
+    # "zproject.backends.AppleAuthBackend",  # Apple auth, setup below
+    # "zproject.backends.SAMLAuthBackend",  # SAML, setup below
+    # "zproject.backends.ZulipLDAPAuthBackend",  # LDAP, setup below
+    # "zproject.backends.ZulipRemoteUserBackend",  # Local SSO, setup docs on readthedocs
+    # "zproject.backends.GenericOpenIdConnectBackend",  # Generic OIDC integration, setup below
 )
 
 ## LDAP integration.
@@ -158,7 +160,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
 ## optionally using LDAP as an authentication mechanism.
 
 import ldap
-from django_auth_ldap.config import GroupOfNamesType, LDAPGroupQuery, LDAPSearch
+from django_auth_ldap.config import GroupOfNamesType, LDAPGroupQuery, LDAPSearch  # noqa: F401
 
 ## Connecting to the LDAP server.
 ##
@@ -195,8 +197,8 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
     "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
 )
 
-## Configuration to lookup a user's LDAP data given their email address
-## (For Zulip reverse mapping).  If users log in as e.g. "sam" when
+## Configuration to look up a user's LDAP data given their email address
+## (for Zulip reverse mapping).  If users log in as e.g. "sam" when
 ## their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
 ## "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
 ## AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
@@ -273,19 +275,23 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## "APIs & Services" > "Credentials", and create a "Project" which will
 ## correspond to your Zulip instance.
 ##
-## (2) Navigate to "APIs & services" > "Library", and find the
-## "Identity Toolkit API".  Choose "Enable".
+## (2) Go to "Oauth consent screen" and create a consent screen,
+## authorizing your domain and enabling the .../auth/userinfo.email,
+## .../auth/userinfo.profile and openid scopes.  If all of your users
+## share a Google Workspace, you can select the "Internal" user type
+## during Oauth screen creation to limit authentication via this
+## backend to users within your Google Workspace organization.
 ##
 ## (3) Return to "Credentials", and select "Create credentials".
-## Choose "OAuth client ID", and follow prompts to create a consent
-## screen.  Fill in "Authorized redirect URIs" with a value like
+## Choose "OAuth client ID", and fill in the app name as desired
+## and "Authorized redirect URIs" with a value like
 ##   https://zulip.example.com/complete/google/
 ## based on your value for EXTERNAL_HOST.
 ##
 ## (4) You should get a client ID and a client secret. Copy them.
 ## Use the client ID as `SOCIAL_AUTH_GOOGLE_KEY` here, and put the
 ## client secret in zulip-secrets.conf as `social_auth_google_secret`.
-# SOCIAL_AUTH_GOOGLE_KEY = <your client ID from Google>
+# SOCIAL_AUTH_GOOGLE_KEY = "<your client ID from Google>"
 
 ########
 ## GitLab OAuth.
@@ -305,8 +311,8 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## zulip-secrets.conf as `social_auth_gitlab_secret`.
 ## (5) If you are self-hosting GitLab, provide the URL of the
 ## GitLab server as SOCIAL_AUTH_GITLAB_API_URL here.
-# SOCIAL_AUTH_GITLAB_KEY = <your Application ID from GitLab>
-# SOCIAL_AUTH_GITLAB_API_URL = https://gitlab.example.com
+# SOCIAL_AUTH_GITLAB_KEY = "<your Application ID from GitLab>"
+# SOCIAL_AUTH_GITLAB_API_URL = "https://gitlab.example.com"
 
 ########
 ## GitHub OAuth.
@@ -324,14 +330,14 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## showing a client ID and a client secret.  Use the client ID as
 ## `SOCIAL_AUTH_GITHUB_KEY` here, and put the client secret in
 ## zulip-secrets.conf as `social_auth_github_secret`.
-# SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
+# SOCIAL_AUTH_GITHUB_KEY = "<your client ID from GitHub>"
 
 ## (3) Optionally, you can configure the GitHub integration to only
 ## allow members of a particular GitHub team or organization to log
 ## into your Zulip server through GitHub authentication.  To enable
 ## this, set one of the two parameters below:
-# SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
-# SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
+# SOCIAL_AUTH_GITHUB_TEAM_ID = "<your team id>"
+# SOCIAL_AUTH_GITHUB_ORG_NAME = "<your org name>"
 
 ## (4) If you are serving multiple Zulip organizations on different
 ## subdomains, you need to set SOCIAL_AUTH_SUBDOMAIN.  You can set it
@@ -340,7 +346,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## subdomain; if you're using this setting, the "Callback URL" should be e.g.:
 ##   https://auth.zulip.example.com/complete/github/
 #
-# SOCIAL_AUTH_SUBDOMAIN = 'auth'
+# SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 ########
 ## Generic OpenID Connect (OIDC).  See also documentation here:
@@ -348,7 +354,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
 ##
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Any] = {
     ## This field (example: "idp_name") may appear in URLs during
     ## authentication, but is otherwise not user-visible.
     "idp_name": {
@@ -403,7 +409,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
         ##
         ## The part below corresponds to what's likely referred to as something like
-        ## "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with G Suite).
+        ## "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with Google Workspace).
         ## The names on the right side need to correspond to the names under which
         ## the IdP will send the user attributes. With these defaults, it's expected
         ## that the user's email will be sent with the "email" attribute name,
@@ -505,16 +511,20 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ## To set up Microsoft Azure AD authentication, you'll need to do the following:
 ##
-## (1) Register an OAuth2 application with Microsoft at:
-## https://apps.dev.microsoft.com
-## Generate a new password under Application Secrets
-## Generate a new platform (web) under Platforms. For Redirect URL, enter:
-##   https://zulip.example.com/complete/azuread-oauth2/
-## Add User.Read permission under Microsoft Graph Permissions
+## (1) Open "App registrations" at
+## https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
+## and click "New registration".
 ##
-## (2) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY here
-## (3) Put the application password in zulip-secrets.conf as 'azure_oauth2_secret'.
-# SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ''
+## (2) In the "Redirect URI (optional)" section, select Web as the platform
+## and enter https://zulip.example.com/complete/azuread-oauth2/ as the redirect URI,
+## based on your values of EXTERNAL_HOST and SOCIAL_AUTH_SUBDOMAIN.
+##
+## (3) After registering the app, go to "Certificates & secrets" and
+## generate a new client secret. Make sure to save the generated Value.
+##
+## (4) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY below
+## and the generated secret Value in zulip-secrets.conf as `social_auth_azuread_oauth2_secret`.
+# SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ""
 
 ########
 ## SSO via REMOTE_USER.
@@ -525,6 +535,27 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## email address is "username@example.com", set SSO_APPEND_DOMAIN =
 ## "example.com"), otherwise leave this as None.
 # SSO_APPEND_DOMAIN = None
+
+## JWT authentication.
+##
+## JWT authentication is supported both to transparently log users
+## into Zulip or to fetch users' API keys. The JWT secret key and
+## algorithm must be configured here.
+##
+## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#jwt
+# JWT_AUTH_KEYS: Dict[str, Any] = {
+#     # Subdomain for which this JWT configuration will apply.
+#     "zulip": {
+#         # Shared secret key used to validate jwt tokens, which should be stored
+#         # in zulip-secrets.conf and is read by the get_secret call below.
+#         # The key needs to be securely, randomly generated. Note that if you're
+#         # using the default HS256 algorithm, per RFC 7518, the key needs
+#         # to have at least 256 bits of entropy.
+#         "key": get_secret("jwt_auth_key"),
+#         # Algorithm with which the JWT token are signed.
+#         "algorithms": ["HS256"],
+#     }
+# }
 
 ################
 ## Service configuration
@@ -538,19 +569,21 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
 ## "SSL Mode Descriptions" table in
 ##   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
-# REMOTE_POSTGRES_HOST = 'dbserver.example.com'
-# REMOTE_POSTGRES_PORT = '5432'
-# REMOTE_POSTGRES_SSLMODE = 'require'
+# REMOTE_POSTGRES_HOST = "dbserver.example.com"
+# REMOTE_POSTGRES_PORT = "5432"
+# REMOTE_POSTGRES_SSLMODE = "require"
 
 ########
 ## RabbitMQ configuration.
 ##
-## By default, Zulip connects to RabbitMQ running locally on the machine,
-## but Zulip also supports connecting to RabbitMQ over the network;
-## to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
+## By default, Zulip connects to RabbitMQ running locally on the
+## machine, but Zulip also supports connecting to RabbitMQ over the
+## network; to use a remote RabbitMQ instance, set RABBITMQ_HOST, and
+## optionally RABBITMQ_PORT, to the hostname and port here.
 # RABBITMQ_HOST = "127.0.0.1"
-## To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
-# RABBITMQ_USERNAME = 'zulip'
+# RABBITMQ_PORT = 5672
+## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
+# RABBITMQ_USERNAME = "zulip"
 
 ########
 ## Redis configuration.
@@ -558,7 +591,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## By default, Zulip connects to Redis running locally on the machine,
 ## but Zulip also supports connecting to Redis over the network;
 ## to use a remote Redis instance, set REDIS_HOST here.
-# REDIS_HOST = '127.0.0.1'
+# REDIS_HOST = "127.0.0.1"
 ## For a different Redis port set the REDIS_PORT here.
 # REDIS_PORT = 6379
 ## If you set redis_password in zulip-secrets.conf, Zulip will use that password
@@ -573,8 +606,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Format HOST:PORT
 # MEMCACHED_LOCATION = 127.0.0.1:11211
 ## To authenticate to memcached, set memcached_password in zulip-secrets.conf,
-## and optionally change the default username 'zulip@localhost' here.
-# MEMCACHED_USERNAME = 'zulip@localhost'
+## and optionally change the default username "zulip@localhost" here.
+# MEMCACHED_USERNAME = "zulip@localhost"
 
 
 ################
@@ -619,7 +652,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # BROWSER_ERROR_REPORTING = False
 
 ## Controls the DSN used to report errors to Sentry.io
-# SENTRY_DSN = 'https://bbb@bbb.ingest.sentry.io/1235'
+# SENTRY_DSN = "https://bbb@bbb.ingest.sentry.io/1235"
 
 ## If True, each log message in the server logs will identify the
 ## Python module where it came from.  Useful for tracking down a
@@ -641,14 +674,13 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ## Controls the Zoom video call integration.  See:
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
-#
-# VIDEO_ZOOM_CLIENT_ID = <your Zoom client ID>
+# VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
 ## your own Jitsi Meet server, or if you'd like to disable the
 ## integration, set JITSI_SERVER_URL = None.
-# JITSI_SERVER_URL = 'https://jitsi.example.com'
+# JITSI_SERVER_URL = "https://jitsi.example.com"
 
 ## Controls the BigBlueButton video call integration.  You must also
 ## set big_blue_button_secret in zulip-secrets.conf.
@@ -666,7 +698,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## notification bouncer server to the mobile apps.  See
 ## https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 ## for information on how to sign up for and configure this.
-# PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'
+# PUSH_NOTIFICATION_BOUNCER_URL = "https://push.zulipchat.com"
 
 ## Whether to redact the content of push notifications.  This is less
 ## usable, but avoids sending message content over the wire.  In the
@@ -717,6 +749,7 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_AVATAR_BUCKET = ""
 # S3_REGION = None
 # S3_ENDPOINT_URL = None
+# S3_SKIP_PROXY = True
 
 ## Maximum allowed size of uploaded files, in megabytes.  This value is
 ## capped at 80MB in the nginx configuration, because the file upload
@@ -743,11 +776,11 @@ ENABLE_GRAVATAR = True
 ## To override the default avatar image if ENABLE_GRAVATAR is False, place your
 ## custom default avatar image at /home/zulip/local-static/default-avatar.png
 ## and uncomment the following line.
-# DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
+# DEFAULT_AVATAR_URI = "/local-static/default-avatar.png"
 
-## The default CAMO_URI of '/external_content/' is served by the camo
+## The default CAMO_URI of "/external_content/" is served by the camo
 ## setup in the default Zulip nginx configuration.  Setting CAMO_URI
-## to '' will disable the Camo integration.
+## to "" will disable the Camo integration.
 CAMO_URI = "/external_content/"
 
 ## Controls the tutorial popups for new users.
@@ -756,9 +789,33 @@ CAMO_URI = "/external_content/"
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
 
-## If you want to set a Terms of Service for your server, set the path
-## to your Markdown file, and uncomment the following line.
-# TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+## Entries in this dictionary will override Zulip's default rate
+## limits. Rules which are not explicitly overridden here
+## will be as default. View the current rules using:
+##   /home/zulip/deployments/current/scripts/get-django-setting RATE_LIMITING_RULES
+##
+## The limits are tuples of a number of seconds and a number of
+## requests allowed over that many seconds. If multiple tuples are
+## given in a rule, a request breaching any of them will trigger a
+## rate-limited response to the client. For example, to change the
+## limits for total API requests by each user to be at most 100
+## requests per minute, and at most 200 requests per hour, add:
+##   "api_by_user": [(60, 100), (3600, 200)],
+# RATE_LIMITING_RULES = {
+#     "api_by_ip": [
+#         (60, 100),
+#     ],
+# }
 
-## Similarly if you want to set a Privacy Policy.
-# PRIVACY_POLICY = '/etc/zulip/privacy.md'
+## Fetch TOR exit node list every hour, and group all TOR exit nodes
+## together into one bucket when applying rate-limiting.
+# RATE_LIMIT_TOR_TOGETHER = False
+
+## Configuration for Terms of Service and Privacy Policy for the
+## server.  If unset, Zulip will never prompt users to accept Terms of
+## Service.  Users will be prompted to accept the terms during account
+## registration, and during login if this value has changed.
+# TERMS_OF_SERVICE_VERSION = "1.0"
+
+## Directory containing Markdown files for the server's policies.
+# POLICIES_DIRECTORY = "/etc/zulip/policies/"

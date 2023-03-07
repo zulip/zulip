@@ -5,7 +5,7 @@ See also the [Slack-compatible webhook](/integrations/doc/slack_incoming).
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
     If you'd like to map Slack channels to different topics within the same
     stream, add `&channels_map_to_topics=1` to the end of the URL. The `topic`

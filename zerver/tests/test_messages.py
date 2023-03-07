@@ -3,7 +3,7 @@ from typing import List
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import get_active_presence_idle_user_ids
+from zerver.actions.message_send import get_active_presence_idle_user_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,
@@ -24,25 +24,16 @@ class MissedMessageTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
-        hamlet_alerted = False
         hamlet_notifications_data = self.create_user_notifications_data_object(user_id=hamlet.id)
-
-        othello_alerted = False
         othello_notifications_data = self.create_user_notifications_data_object(user_id=othello.id)
 
-        def assert_missing(user_ids: List[int]) -> None:
+        def assert_active_presence_idle_user_ids(user_ids: List[int]) -> None:
             presence_idle_user_ids = get_active_presence_idle_user_ids(
                 realm=realm,
                 sender_id=sender.id,
-                active_users_data=[
-                    dict(
-                        alerted=hamlet_alerted,
-                        notifications_data=hamlet_notifications_data,
-                    ),
-                    dict(
-                        alerted=othello_alerted,
-                        notifications_data=othello_notifications_data,
-                    ),
+                user_notifications_data_list=[
+                    hamlet_notifications_data,
+                    othello_notifications_data,
                 ],
             )
             self.assertEqual(sorted(user_ids), sorted(presence_idle_user_ids))
@@ -58,7 +49,7 @@ class MissedMessageTest(ZulipTestCase):
 
         hamlet_notifications_data.pm_push_notify = True
         othello_notifications_data.pm_push_notify = True
-        assert_missing([hamlet.id, othello.id])
+        assert_active_presence_idle_user_ids([hamlet.id, othello.id])
 
         # We have already thoroughly tested the `is_notifiable` function elsewhere,
         # so we needn't test all cases here. This test exists mainly to avoid a bug
@@ -69,30 +60,22 @@ class MissedMessageTest(ZulipTestCase):
         hamlet_notifications_data.pm_push_notify = False
         othello_notifications_data.pm_push_notify = False
         hamlet_notifications_data.stream_email_notify = True
-        assert_missing([hamlet.id])
+        assert_active_presence_idle_user_ids([hamlet.id])
 
-        # We don't currently send push or email notifications for alert words -- only
-        # desktop notifications, so `is_notifiable` will return False even if the message contains
-        # alert words. Test that `get_active_presence_idle_user_ids` correctly includes even
-        # the alert word case in the list.
-        hamlet_notifications_data.stream_email_notify = False
-        hamlet_alerted = True
-        assert_missing([hamlet.id])
-
-        # Hamlet is idle (and the message has an alert word), so he should be in the list.
+        # Hamlet is idle (and is supposed to receive stream notifications), so he should be in the list.
         set_presence(hamlet, "iPhone", ago=5000)
-        assert_missing([hamlet.id])
+        assert_active_presence_idle_user_ids([hamlet.id])
 
         # If Hamlet is active, don't include him in the `presence_idle` list.
         set_presence(hamlet, "website", ago=15)
-        assert_missing([])
+        assert_active_presence_idle_user_ids([])
 
         # Hamlet is active now, so only Othello should be in the list for a huddle
         # message.
-        hamlet_alerted = False
+        hamlet_notifications_data.stream_email_notify = False
         hamlet_notifications_data.pm_push_notify = False
         othello_notifications_data.pm_push_notify = True
-        assert_missing([othello.id])
+        assert_active_presence_idle_user_ids([othello.id])
 
 
 class TestBulkGetHuddleUserIds(ZulipTestCase):

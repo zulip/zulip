@@ -168,7 +168,7 @@ def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) 
 
 
 # We assume end_time is valid (e.g. is on a day or hour boundary as appropriate)
-# and is timezone aware. It is the caller's responsibility to enforce this!
+# and is time-zone-aware. It is the caller's responsibility to enforce this!
 def do_fill_count_stat_at_hour(
     stat: CountStat, end_time: datetime, realm: Optional[Realm] = None
 ) -> None:
@@ -206,7 +206,7 @@ def do_aggregate_to_summary_table(
     # Aggregate into RealmCount
     output_table = stat.data_collector.output_table
     if realm is not None:
-        realm_clause = SQL("AND zerver_realm.id = {}").format(Literal(realm.id))
+        realm_clause: Composable = SQL("AND zerver_realm.id = {}").format(Literal(realm.id))
     else:
         realm_clause = SQL("")
 
@@ -288,7 +288,8 @@ def do_aggregate_to_summary_table(
 
 ## Utility functions called from outside counts.py ##
 
-# called from zerver/lib/actions.py; should not throw any errors
+
+# called from zerver.actions; should not throw any errors
 def do_increment_logging_stat(
     zerver_object: Union[Realm, UserProfile, Stream],
     stat: CountStat,
@@ -357,7 +358,7 @@ def do_pull_by_sql_query(
 ) -> int:
     if group_by is None:
         subgroup: Composable = SQL("NULL")
-        group_by_clause = SQL("")
+        group_by_clause: Composable = SQL("")
     else:
         subgroup = Identifier(group_by[0]._meta.db_table, group_by[1])
         group_by_clause = SQL(", {}").format(subgroup)
@@ -443,7 +444,7 @@ def do_pull_minutes_active(
 
 def count_message_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = SQL("")
+        realm_clause: Composable = SQL("")
     else:
         realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
@@ -470,7 +471,7 @@ def count_message_by_user_query(realm: Optional[Realm]) -> QueryFn:
 # Note: ignores the group_by / group_by_clause.
 def count_message_type_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = SQL("")
+        realm_clause: Composable = SQL("")
     else:
         realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
@@ -519,7 +520,7 @@ def count_message_type_by_user_query(realm: Optional[Realm]) -> QueryFn:
 # table, consider writing a new query for efficiency.
 def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = SQL("")
+        realm_clause: Composable = SQL("")
     else:
         realm_clause = SQL("zerver_stream.realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
@@ -553,7 +554,7 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
 # currently the only stat that uses this.
 def count_user_by_realm_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = SQL("")
+        realm_clause: Composable = SQL("")
     else:
         realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
@@ -583,7 +584,7 @@ def count_user_by_realm_query(realm: Optional[Realm]) -> QueryFn:
 # In particular, it's important to ensure that migrations don't cause that to happen.
 def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = SQL("")
+        realm_clause: Composable = SQL("")
     else:
         realm_clause = SQL("realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
@@ -623,7 +624,7 @@ def check_realmauditlog_by_user_query(realm: Optional[Realm]) -> QueryFn:
 
 def check_useractivityinterval_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = SQL("")
+        realm_clause: Composable = SQL("")
     else:
         realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(
@@ -647,7 +648,7 @@ def check_useractivityinterval_by_user_query(realm: Optional[Realm]) -> QueryFn:
 
 def count_realm_active_humans_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
-        realm_clause = SQL("")
+        realm_clause: Composable = SQL("")
     else:
         realm_clause = SQL("realm_id = {} AND").format(Literal(realm.id))
     return lambda kwargs: SQL(

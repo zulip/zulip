@@ -1,10 +1,10 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Count
 
 
-def clear_duplicate_reactions(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def clear_duplicate_reactions(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """Zulip's data model for reactions has enforced via code,
     nontransactionally, that they can only react with one emoji_code
     for a given reaction_type.  This fixes any that were stored in the
@@ -27,7 +27,6 @@ def clear_duplicate_reactions(apps: StateApps, schema_editor: DatabaseSchemaEdit
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0286_merge_0260_0285"),
     ]

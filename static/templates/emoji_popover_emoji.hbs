@@ -1,9 +1,0 @@
-{{#with emoji_dict}}
-<div class="emoji-popover-emoji {{#if ../message_id }}{{#if has_reacted}} reacted {{/if}} reaction {{else}} {{#if ../is_status_emoji_popover}} status_emoji {{else}} composition {{/if}} {{/if}}" data-emoji-name="{{name}}" tabindex="0" data-emoji-id="{{../type}},{{../section}},{{../index}}">
-    {{#if is_realm_emoji}}
-    <img src="{{url}}" class="emoji"/>
-    {{else}}
-    <div class="emoji emoji-{{emoji_code}}"></div>
-    {{/if}}
-</div>
-{{/with}}

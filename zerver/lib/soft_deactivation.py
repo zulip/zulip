@@ -1,15 +1,16 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Optional, Union
+from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, Set, TypedDict, Union
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, QuerySet
 from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -27,18 +28,26 @@ log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
 BULK_CREATE_BATCH_SIZE = 10000
 
 
+class MissingMessageDict(TypedDict):
+    id: int
+    recipient__type_id: int
+
+
 def filter_by_subscription_history(
     user_profile: UserProfile,
-    all_stream_messages: DefaultDict[int, List[Message]],
+    all_stream_messages: DefaultDict[int, List[MissingMessageDict]],
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
 ) -> List[UserMessage]:
     user_messages_to_insert: List[UserMessage] = []
+    seen_message_ids: Set[int] = set()
 
-    def store_user_message_to_insert(message: Message) -> None:
-        message = UserMessage(user_profile=user_profile, message_id=message["id"], flags=0)
-        user_messages_to_insert.append(message)
+    def store_user_message_to_insert(message: MissingMessageDict) -> None:
+        if message["id"] not in seen_message_ids:
+            user_message = UserMessage(user_profile=user_profile, message_id=message["id"], flags=0)
+            user_messages_to_insert.append(user_message)
+            seen_message_ids.add(message["id"])
 
-    for (stream_id, stream_messages_raw) in all_stream_messages.items():
+    for stream_id, stream_messages_raw in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]
         # Make a copy of the original list of messages, which we will
         # mutate in the loop below.
@@ -85,22 +94,23 @@ def filter_by_subscription_history(
                         stream_messages = stream_messages[i:]
                         break
                 final_msg_count = len(stream_messages)
-                if initial_msg_count == final_msg_count:
-                    if stream_messages[-1]["id"] <= event_last_message_id:
-                        stream_messages = []
+                if (
+                    initial_msg_count == final_msg_count
+                    and stream_messages[-1]["id"] <= event_last_message_id
+                ):
+                    stream_messages = []
             else:
                 raise AssertionError(f"{log_entry.event_type} is not a subscription event.")
 
-        if len(stream_messages) > 0:
-            # We do this check for last event since if the last subscription
-            # event was a subscription_deactivated then we don't want to create
-            # UserMessage rows for any of the remaining messages.
-            if stream_subscription_logs[-1].event_type in (
-                RealmAuditLog.SUBSCRIPTION_ACTIVATED,
-                RealmAuditLog.SUBSCRIPTION_CREATED,
-            ):
-                for stream_message in stream_messages:
-                    store_user_message_to_insert(stream_message)
+        # We do this check for last event since if the last subscription
+        # event was a subscription_deactivated then we don't want to create
+        # UserMessage rows for any of the remaining messages.
+        if len(stream_messages) > 0 and stream_subscription_logs[-1].event_type in (
+            RealmAuditLog.SUBSCRIPTION_ACTIVATED,
+            RealmAuditLog.SUBSCRIPTION_CREATED,
+        ):
+            for stream_message in stream_messages:
+                store_user_message_to_insert(stream_message)
     return user_messages_to_insert
 
 
@@ -209,7 +219,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # Filter those messages for which UserMessage rows have been already created
     all_stream_msgs = [msg for msg in all_stream_msgs if msg["id"] not in already_created_ums]
 
-    stream_messages: DefaultDict[int, List[Message]] = defaultdict(list)
+    stream_messages: DefaultDict[int, List[MissingMessageDict]] = defaultdict(list)
     for msg in all_stream_msgs:
         stream_messages[msg["recipient__type_id"]].append(msg)
 
@@ -250,7 +260,9 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     logger.info("Soft deactivated user %s", user_profile.id)
 
 
-def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
+def do_soft_deactivate_users(
+    users: Union[Sequence[UserProfile], QuerySet[UserProfile]]
+) -> List[UserProfile]:
     BATCH_SIZE = 100
     users_soft_deactivated = []
     while True:
@@ -337,7 +349,7 @@ def get_users_for_soft_deactivation(
     return users_to_deactivate
 
 
-def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
+def do_soft_activate_users(users: Iterable[UserProfile]) -> List[UserProfile]:
     users_soft_activated = []
     for user_profile in users:
         user_activated = reactivate_user_if_soft_deactivated(user_profile)
@@ -346,7 +358,7 @@ def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     return users_soft_activated
 
 
-def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserProfile]:
+def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> List[UserProfile]:
     users_caught_up = []
     failures = []
     for user_profile in users:
@@ -363,7 +375,7 @@ def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserPro
     return users_caught_up
 
 
-def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProfile]:
+def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[UserProfile]:
     users_to_catch_up = UserProfile.objects.select_related().filter(
         long_term_idle=True,
         is_active=True,
@@ -371,3 +383,37 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProf
         **filter_kwargs,
     )
     return users_to_catch_up
+
+
+def queue_soft_reactivation(user_profile_id: int) -> None:
+    event = {
+        "type": "soft_reactivate",
+        "user_profile_id": user_profile_id,
+    }
+    queue_json_publish("deferred_work", event)
+
+
+def soft_reactivate_if_personal_notification(
+    user_profile: UserProfile, unique_triggers: Set[str], mentioned_user_group_name: Optional[str]
+) -> None:
+    """When we're about to send an email/push notification to a
+    long_term_idle user, it's very likely that the user will try to
+    return to Zulip. As a result, it makes sense to optimistically
+    soft-reactivate that user, to give them a good return experience.
+
+    It's important that we do nothing for wildcard or group mentions,
+    because soft-reactivating an entire realm would be very expensive
+    (and we can't easily check the group's size). The caller is
+    responsible for passing a mentioned_user_group_name that is None
+    for messages that contain both a personal mention and a group
+    mention.
+    """
+    if not user_profile.long_term_idle:
+        return
+
+    private_message = "private_message" in unique_triggers
+    personal_mention = "mentioned" in unique_triggers and mentioned_user_group_name is None
+    if not private_message and not personal_mention:
+        return
+
+    queue_soft_reactivation(user_profile.id)

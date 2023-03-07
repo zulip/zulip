@@ -1,4 +1,5 @@
 {
+    "root": true,
     "env": {
         "es2020": true,
         "node": true
@@ -7,17 +8,28 @@
         "eslint:recommended",
         "plugin:import/errors",
         "plugin:import/warnings",
+        "plugin:no-jquery/recommended",
+        "plugin:no-jquery/deprecated",
         "plugin:unicorn/recommended",
         "prettier"
     ],
     "parser": "@babel/eslint-parser",
     "parserOptions": {
+        "requireConfigFile": false,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
-    "plugins": ["formatjs"],
+    "plugins": ["formatjs", "no-jquery"],
     "settings": {
-        "additionalFunctionNames": ["$t", "$t_html"]
+        "formatjs": {
+            "additionalFunctionNames": ["$t", "$t_html"]
+        },
+        "no-jquery": {
+            "collectionReturningPlugins": {
+                "expectOne": "always"
+            },
+            "variablePattern": "^\\$(?!t$|t_html$)."
+        }
     },
     "reportUnusedDisableDirectives": true,
     "rules": {
@@ -38,14 +50,9 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
+        "import/no-self-import": "error",
         "import/no-useless-path-segments": "error",
-        "import/order": [
-            "error",
-            {
-                "alphabetize": {"order": "asc"},
-                "newlines-between": "always"
-            }
-        ],
+        "import/order": ["error", {"alphabetize": {"order": "asc"}, "newlines-between": "always"}],
         "import/unambiguous": "error",
         "lines-around-directive": "error",
         "new-cap": "error",
@@ -64,6 +71,8 @@
         "no-implied-eval": "error",
         "no-inner-declarations": "off",
         "no-iterator": "error",
+        "no-jquery/no-constructor-attributes": "error",
+        "no-jquery/no-parse-html-literal": "error",
         "no-label-var": "error",
         "no-labels": "error",
         "no-loop-func": "error",
@@ -83,19 +92,15 @@
         "no-undef-init": "error",
         "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
+        "no-unused-vars": ["error", {"ignoreRestSiblings": true}],
         "no-use-before-define": ["error", {"functions": false}],
         "no-useless-concat": "error",
         "no-useless-constructor": "error",
         "no-var": "error",
-        "object-shorthand": "error",
+        "object-shorthand": ["error", "always", {"avoidExplicitReturnArrows": true}],
         "one-var": ["error", "never"],
         "prefer-arrow-callback": "error",
-        "prefer-const": [
-            "error",
-            {
-                "ignoreReadBeforeAssign": true
-            }
-        ],
+        "prefer-const": ["error", {"ignoreReadBeforeAssign": true}],
         "radix": "error",
         "sort-imports": ["error", {"ignoreDeclarationSort": true}],
         "spaced-comment": ["error", "always", {"markers": ["/"]}],
@@ -103,30 +108,36 @@
         "unicorn/consistent-function-scoping": "off",
         "unicorn/explicit-length-check": "off",
         "unicorn/filename-case": "off",
-        "unicorn/no-nested-ternary": "off",
+        "unicorn/no-await-expression-member": "off",
+        "unicorn/no-negated-condition": "off",
         "unicorn/no-null": "off",
         "unicorn/no-process-exit": "off",
         "unicorn/no-useless-undefined": "off",
-        "unicorn/number-literal-case": "off",
         "unicorn/numeric-separators-style": "off",
         "unicorn/prefer-module": "off",
         "unicorn/prefer-node-protocol": "off",
-        "unicorn/prefer-spread": "off",
         "unicorn/prefer-ternary": "off",
+        "unicorn/prefer-top-level-await": "off",
         "unicorn/prevent-abbreviations": "off",
+        "unicorn/switch-case-braces": "off",
         "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
     },
     "overrides": [
         {
-            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
+            "files": ["web/tests/**"],
+            "rules": {
+                "no-jquery/no-selector-prop": "off"
+            }
+        },
+        {
+            "files": ["web/e2e-tests/**"],
             "globals": {
-                "$": false,
                 "zulip_test": false
             }
         },
         {
-            "files": ["static/js/**"],
+            "files": ["web/src/**"],
             "globals": {
                 "StripeCheckout": false
             }
@@ -139,6 +150,13 @@
             ],
             "parserOptions": {
                 "project": "tsconfig.json"
+            },
+            "settings": {
+                "import/resolver": {
+                    "node": {
+                        "extensions": [".ts", ".d.ts", ".js"] // https://github.com/import-js/eslint-plugin-import/issues/2267
+                    }
+                }
             },
             "globals": {
                 "JQuery": false
@@ -158,23 +176,23 @@
                     {"allowExpressions": true}
                 ],
                 "@typescript-eslint/member-ordering": "error",
-                "@typescript-eslint/no-duplicate-imports": "off",
-                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-duplicate-imports": "error",
                 "@typescript-eslint/no-extraneous-class": "error",
-                "@typescript-eslint/no-non-null-assertion": "off",
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
-                "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_"}],
+                "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
+                "@typescript-eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}],
                 "@typescript-eslint/no-use-before-define": "error",
                 "@typescript-eslint/no-useless-constructor": "error",
                 "@typescript-eslint/prefer-includes": "error",
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/unified-signatures": "error",
+                "import/no-cycle": "error",
                 "no-undef": "error"
             }
         },
@@ -185,7 +203,7 @@
             }
         },
         {
-            "files": ["frontend_tests/**"],
+            "files": ["web/e2e-tests/**", "web/tests/**"],
             "globals": {
                 "CSS": false,
                 "document": false,
@@ -200,7 +218,7 @@
             }
         },
         {
-            "files": ["tools/debug-require.js"],
+            "files": ["web/debug-require.js"],
             "env": {
                 "browser": true,
                 "es2020": false
@@ -214,7 +232,7 @@
             }
         },
         {
-            "files": ["static/**"],
+            "files": ["web/shared/**", "web/src/**", "web/third/**"],
             "env": {
                 "browser": true,
                 "node": false
@@ -223,11 +241,15 @@
                 "no-console": "error"
             },
             "settings": {
-                "import/resolver": "webpack"
+                "import/resolver": {
+                    "webpack": {
+                        "config": "./web/webpack.config.ts"
+                    }
+                }
             }
         },
         {
-            "files": ["static/shared/**"],
+            "files": ["web/shared/**"],
             "env": {
                 "browser": false,
                 "shared-node-browser": true
@@ -238,9 +260,9 @@
                     {
                         "zones": [
                             {
-                                "target": "./static/shared",
+                                "target": "./web/shared",
                                 "from": ".",
-                                "except": ["./node_modules", "./static/shared"]
+                                "except": ["./node_modules", "./web/shared"]
                             }
                         ]
                     }

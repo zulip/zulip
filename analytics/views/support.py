@@ -1,7 +1,9 @@
 import urllib
+from contextlib import suppress
+from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -15,16 +17,17 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, confirmation_url
-from confirmation.settings import STATUS_ACTIVE
-from zerver.decorator import require_server_admin
-from zerver.forms import check_subdomain_available
-from zerver.lib.actions import (
-    do_change_plan_type,
-    do_change_realm_subdomain,
+from confirmation.settings import STATUS_USED
+from zerver.actions.create_realm import do_change_realm_subdomain
+from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
+    do_change_realm_plan_type,
     do_deactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
 )
+from zerver.decorator import require_server_admin
+from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
@@ -34,6 +37,7 @@ from zerver.models import (
     MultiuseInvite,
     PreregistrationUser,
     Realm,
+    RealmReactivationStatus,
     UserProfile,
     get_org_type_display_name,
     get_realm,
@@ -53,15 +57,26 @@ if settings.BILLING_ENABLED:
         update_sponsorship_status,
         void_all_open_invoices,
     )
-    from corporate.models import get_current_plan_by_realm, get_customer_by_realm
+    from corporate.models import (
+        Customer,
+        CustomerPlan,
+        get_current_plan_by_realm,
+        get_customer_by_realm,
+    )
 
 
 def get_plan_name(plan_type: int) -> str:
-    return ["", "self hosted", "limited", "standard", "open source"][plan_type]
+    return {
+        Realm.PLAN_TYPE_SELF_HOSTED: "self-hosted",
+        Realm.PLAN_TYPE_LIMITED: "limited",
+        Realm.PLAN_TYPE_STANDARD: "standard",
+        Realm.PLAN_TYPE_STANDARD_FREE: "open source",
+        Realm.PLAN_TYPE_PLUS: "plus",
+    }[plan_type]
 
 
 def get_confirmations(
-    types: List[int], object_ids: List[int], hostname: Optional[str] = None
+    types: List[int], object_ids: Iterable[int], hostname: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     lowest_datetime = timezone_now() - timedelta(days=30)
     confirmations = Confirmation.objects.filter(
@@ -77,15 +92,17 @@ def get_confirmations(
 
         assert content_object is not None
         if hasattr(content_object, "status"):
-            if content_object.status == STATUS_ACTIVE:
-                link_status = "Link has been clicked"
+            if content_object.status == STATUS_USED:
+                link_status = "Link has been used"
             else:
-                link_status = "Link has never been clicked"
+                link_status = "Link has not been used"
         else:
             link_status = ""
 
         now = timezone_now()
-        if now < expiry_date:
+        if expiry_date is None:
+            expires_in = "Never"
+        elif now < expiry_date:
             expires_in = timesince(now, expiry_date)
         else:
             expires_in = "Expired"
@@ -120,6 +137,14 @@ VALID_BILLING_METHODS = [
 ]
 
 
+@dataclass
+class PlanData:
+    customer: Optional["Customer"] = None
+    current_plan: Optional["CustomerPlan"] = None
+    licenses: Optional[int] = None
+    licenses_used: Optional[int] = None
+
+
 @require_server_admin
 @has_request_variables
 def support(
@@ -133,12 +158,13 @@ def support(
         default=None, str_validator=check_string_in(VALID_BILLING_METHODS)
     ),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
-    approve_sponsorship: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
     downgrade_method: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_DOWNGRADE_METHODS)
     ),
-    scrub_realm: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    scrub_realm: bool = REQ(default=False, json_validator=check_bool),
     query: Optional[str] = REQ("q", default=None),
+    org_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -155,14 +181,20 @@ def support(
         if len(keys) != 2:
             raise JsonableError(_("Invalid parameters"))
 
+        assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
         acting_user = request.user
         assert isinstance(acting_user, UserProfile)
         if plan_type is not None:
             current_plan_type = realm.plan_type
-            do_change_plan_type(realm, plan_type, acting_user=acting_user)
+            do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(plan_type)} "
+            context["success_message"] = msg
+        elif org_type is not None:
+            current_realm_type = realm.org_type
+            do_change_realm_org_type(realm, org_type, acting_user=acting_user)
+            msg = f"Org type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
             context["success_message"] = msg
         elif discount is not None:
             current_discount = get_discount_for_realm(realm) or 0
@@ -254,28 +286,10 @@ def support(
                 if parse_result.port:
                     hostname = f"{hostname}:{parse_result.port}"
                 subdomain = get_subdomain_from_hostname(hostname)
-                try:
+                with suppress(Realm.DoesNotExist):
                     realms.add(get_realm(subdomain))
-                except Realm.DoesNotExist:
-                    pass
             except ValidationError:
                 users.update(UserProfile.objects.filter(full_name__iexact=key_word))
-
-        for realm in realms:
-            realm.customer = get_customer_by_realm(realm)
-
-            current_plan = get_current_plan_by_realm(realm)
-            if current_plan is not None:
-                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
-                    current_plan, timezone_now()
-                )
-                if last_ledger_entry is not None:
-                    if new_plan is not None:
-                        realm.current_plan = new_plan
-                    else:
-                        realm.current_plan = current_plan
-                    realm.current_plan.licenses = last_ledger_entry.licenses
-                    realm.current_plan.licenses_used = get_latest_seat_count(realm)
 
         # full_names can have , in them
         users.update(UserProfile.objects.filter(full_name__iexact=query))
@@ -285,21 +299,59 @@ def support(
 
         confirmations: List[Dict[str, Any]] = []
 
-        preregistration_users = PreregistrationUser.objects.filter(email__in=key_words)
+        preregistration_user_ids = [
+            user.id for user in PreregistrationUser.objects.filter(email__in=key_words)
+        ]
         confirmations += get_confirmations(
             [Confirmation.USER_REGISTRATION, Confirmation.INVITATION, Confirmation.REALM_CREATION],
-            preregistration_users,
+            preregistration_user_ids,
             hostname=request.get_host(),
         )
 
-        multiuse_invites = MultiuseInvite.objects.filter(realm__in=realms)
-        confirmations += get_confirmations([Confirmation.MULTIUSE_INVITE], multiuse_invites)
+        multiuse_invite_ids = [
+            invite.id for invite in MultiuseInvite.objects.filter(realm__in=realms)
+        ]
+        confirmations += get_confirmations([Confirmation.MULTIUSE_INVITE], multiuse_invite_ids)
 
+        realm_reactivation_status_objects = RealmReactivationStatus.objects.filter(realm__in=realms)
         confirmations += get_confirmations(
-            [Confirmation.REALM_REACTIVATION], [realm.id for realm in realms]
+            [Confirmation.REALM_REACTIVATION], [obj.id for obj in realm_reactivation_status_objects]
         )
 
         context["confirmations"] = confirmations
+
+        # We want a union of all realms that might appear in the search result,
+        # but not necessary as a separate result item.
+        # Therefore, we do not modify the realms object in the context.
+        all_realms = realms.union(
+            [
+                confirmation["object"].realm
+                for confirmation in confirmations
+                # For confirmations, we only display realm details when the type is USER_REGISTRATION
+                # or INVITATION.
+                if confirmation["type"] in (Confirmation.USER_REGISTRATION, Confirmation.INVITATION)
+            ]
+            + [user.realm for user in users]
+        )
+        plan_data: Dict[int, PlanData] = {}
+        for realm in all_realms:
+            current_plan = get_current_plan_by_realm(realm)
+            plan_data[realm.id] = PlanData(
+                customer=get_customer_by_realm(realm),
+                current_plan=current_plan,
+            )
+            if current_plan is not None:
+                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
+                    current_plan, timezone_now()
+                )
+                if last_ledger_entry is not None:
+                    if new_plan is not None:
+                        plan_data[realm.id].current_plan = new_plan
+                    else:
+                        plan_data[realm.id].current_plan = current_plan
+                    plan_data[realm.id].licenses = last_ledger_entry.licenses
+                    plan_data[realm.id].licenses_used = get_latest_seat_count(realm)
+        context["plan_data"] = plan_data
 
     def get_realm_owner_emails_as_string(realm: Realm) -> str:
         return ", ".join(
@@ -321,4 +373,8 @@ def support(
     context["get_org_type_display_name"] = get_org_type_display_name
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
+    context["sorted_realm_types"] = sorted(
+        Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
+    )
+
     return render(request, "analytics/support.html", context=context)

@@ -29,6 +29,10 @@
 # however, we wish to import `zerver.settings` since we have no
 # /etc/zulip/zulip.conf to read, and that case _requires_ loading the
 # venv.
+#
+# We also must handle the cases where we are run as the `nagios` user,
+# which may not have permission to read all configuration files, and
+# thus (2) will look like (3).
 
 import argparse
 import configparser
@@ -47,6 +51,7 @@ BATCH_SIZE = 1000
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true")
 parser.add_argument("--nagios-check", action="store_true")
+parser.add_argument("--nagios-user")
 options = parser.parse_args()
 
 logging.Formatter.converter = time.gmtime
@@ -64,7 +69,7 @@ def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
         [BATCH_SIZE],
     )
     ids = []
-    for (id, message_id) in cursor.fetchall():
+    for id, message_id in cursor.fetchall():
         if USING_PGROONGA:
             cursor.execute(
                 "UPDATE zerver_message SET "
@@ -133,14 +138,22 @@ try:
     pg_args["sslmode"] = settings.DATABASES["default"]["OPTIONS"].get("sslmode")
     pg_args["connect_timeout"] = "600"
     USING_PGROONGA = settings.USING_PGROONGA
-except ImportError:
+except (ImportError, PermissionError):
     # Case (3): we know that the PostgreSQL server is on this host.
     pg_args["user"] = "zulip"
 
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
 
-    if config_file.has_option("machine", "pgroonga"):
+    if get_config(config_file, "machine", "pgroonga", "false").lower() in [
+        "1",
+        "y",
+        "t",
+        "yes",
+        "true",
+        "enable",
+        "enabled",
+    ]:
         USING_PGROONGA = True
 
     pg_args["user"] = get_config(config_file, "postgresql", "database_user", "zulip")
@@ -154,7 +167,13 @@ except ImportError:
 conn: Optional[psycopg2.extensions.connection]
 
 if options.nagios_check:
-    conn = psycopg2.connect(**pg_args)
+    # Nagios connects as itself, unless you specify otherwise
+    if options.nagios_user:
+        pg_args["user"] = options.nagios_user
+    else:
+        del pg_args["user"]
+    # connection_factory=None lets mypy understand the return type
+    conn = psycopg2.connect(connection_factory=None, **pg_args)
     cursor = conn.cursor()
     cursor.execute("SELECT count(*) FROM fts_update_log")
     num = cursor.fetchall()[0][0]
@@ -171,7 +190,7 @@ if options.nagios_check:
     if num > 5:
         state = "CRITICAL"
     print(f"{state}: {num} rows in fts_update_log table")
-    exit(states[state])
+    sys.exit(states[state])
 
 
 conn = None
@@ -181,7 +200,8 @@ retries = 1
 while True:
     try:
         if conn is None:
-            conn = psycopg2.connect(**pg_args)
+            # connection_factory=None lets mypy understand the return type
+            conn = psycopg2.connect(connection_factory=None, **pg_args)
             cursor = conn.cursor()
             retries = 30
 
@@ -200,11 +220,11 @@ while True:
             # Catch up on any historical columns
             while True:
                 rows_updated = update_fts_columns(cursor)
-                notice = f"process_fts_updates: Processed {rows_updated} rows catching up"
-                if rows_updated > 0:
-                    logger.info(notice)
-                else:
-                    logger.debug(notice)
+                logger.log(
+                    logging.INFO if rows_updated > 0 else logging.DEBUG,
+                    "process_fts_updates: Processed %d rows catching up",
+                    rows_updated,
+                )
 
                 if rows_updated != BATCH_SIZE:
                     # We're caught up, so proceed to the listening for updates phase.

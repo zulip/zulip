@@ -32,7 +32,7 @@ Options:
       Sets the PostgreSQL database name.
   --postgresql-database-user=zulip
       Sets the PostgreSQL database user.
-  --postgresql-version=13
+  --postgresql-version=14
       Sets the version of PostgreSQL that will be installed.
   --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
@@ -140,7 +140,7 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
-POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-13}"
+POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-14}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
@@ -174,6 +174,13 @@ if [ "$EXTERNAL_HOST" = zulip.example.com ] \
     usage >&2
     exit 1
 fi
+
+case "$POSTGRESQL_VERSION" in
+    [0-9] | [0-9].* | 10 | 10.*)
+        echo "error: PostgreSQL 11 or newer is required." >&2
+        exit 1
+        ;;
+esac
 
 # Do set -x after option parsing is complete
 set -x
@@ -211,8 +218,8 @@ if [ -f /etc/os-release ]; then
     esac
 fi
 
-case "$os_id$os_version_id" in
-    debian10 | debian11 | ubuntu18.04 | ubuntu20.04) ;;
+case "$os_id $os_version_id" in
+    'debian 11' | 'ubuntu 20.04' | 'ubuntu 22.04') ;;
     *)
         set +x
         cat <<EOF
@@ -220,10 +227,9 @@ case "$os_id$os_version_id" in
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
- - Debian 10 "buster"
- - Debian 11 "bullseye"
- - Ubuntu 18.04 LTS "bionic"
- - Ubuntu 20.04 LTS "focal"
+ - Debian 11
+ - Ubuntu 20.04 LTS
+ - Ubuntu 22.04 LTS
 
 For more information, see:
   https://zulip.readthedocs.io/en/latest/production/requirements.html
@@ -232,8 +238,12 @@ EOF
         ;;
 esac
 
-if [ "$os_id" = ubuntu ] && ! apt-cache policy \
-    | grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"; then
+has_universe() {
+    apt-cache policy \
+        | grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"
+}
+
+if [ "$os_id" = ubuntu ] && ! has_universe && ! { apt-get update && has_universe; }; then
     set +x
     cat <<'EOF'
 
@@ -366,11 +376,10 @@ elif [ "$package_system" = yum ]; then
     fi
 fi
 
-if [ -n "$USE_CERTBOT" ]; then
-    "$ZULIP_PATH"/scripts/setup/setup-certbot \
-        --no-zulip-conf --method=standalone \
-        "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
-elif [ -n "$SELF_SIGNED_CERT" ]; then
+# We generate a self-signed cert even with certbot, so we can use the
+# webroot authenticator, which requires nginx be set up with a
+# certificate.
+if [ -n "$SELF_SIGNED_CERT" ] || [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/generate-self-signed-cert \
         --exists-ok "${EXTERNAL_HOST:-$(hostname)}"
 fi
@@ -381,7 +390,6 @@ if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
 fi
 
 "$ZULIP_PATH"/scripts/lib/install-node
-"$ZULIP_PATH"/scripts/lib/install-yarn
 
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip
@@ -410,10 +418,6 @@ deploy_type = production
 version = $POSTGRESQL_VERSION
 EOF
 
-    if [ -n "$USE_CERTBOT" ]; then
-        crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
-    fi
-
     if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ]; then
         crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
     fi
@@ -435,29 +439,6 @@ EOF
     if [ -n "$POSTGRESQL_DATABASE_USER" ]; then
         crudini --set /etc/zulip/zulip.conf postgresql database_user "$POSTGRESQL_DATABASE_USER"
     fi
-
-    # Note: there are four dpkg-query outputs to consider:
-    #
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # root@host# apt install rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # install ok installed
-    # root@host# apt remove rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # deinstall ok config-files
-    # root@host# apt purge rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # unknown ok not-installed
-    #
-    # (There are more possibilities in the case of dpkg errors.)  Here
-    # we are checking for either empty or not-installed.
-    if ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
-        cat <<EOF >>/etc/zulip/zulip.conf
-
-[rabbitmq]
-nodename = zulip@localhost
-EOF
-    fi
 fi
 
 if has_class "zulip::app_frontend_base"; then
@@ -477,10 +458,15 @@ fi
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 if [ "$package_system" = apt ]; then
-    apt-get -y upgrade
+    apt-get -y --with-new-pkgs upgrade
 elif [ "$package_system" = yum ]; then
     # No action is required because `yum update` already does upgrade.
     :
+fi
+
+if [ -n "$USE_CERTBOT" ]; then
+    "$ZULIP_PATH"/scripts/setup/setup-certbot \
+        "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 fi
 
 if has_class "zulip::nginx" && ! has_class "zulip::profile::docker"; then
@@ -517,30 +503,6 @@ For more information, see:
 EOF
         exit 1
     fi
-    "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
-fi
-
-if has_class "zulip::postgresql_common" && [ -z "$NO_INIT_DB" ]; then
-    "$ZULIP_PATH"/scripts/setup/postgresql-init-db
-fi
-
-if has_class "zulip::app_frontend_base"; then
-    deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
-    mv "$ZULIP_PATH" "$deploy_path"
-    ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
-    ln -nsf "$deploy_path" /home/zulip/deployments/next
-    ln -nsf "$deploy_path" /home/zulip/deployments/current
-    ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
-    mkdir -p "$deploy_path"/prod-static/serve
-    cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
-    chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
-
-    if ! [ -e "/home/zulip/prod-static/generated" ]; then
-        # If we're installing from a Git checkout, we need to run
-        # `tools/update-prod-static` in order to build the static
-        # assets.
-        su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
-    fi
 fi
 
 # Set up a basic .gitconfig for the 'zulip' user
@@ -552,21 +514,54 @@ if [ -n "$ZULIP_ADMINISTRATOR" ]; then
     )
 fi
 
+if ! has_class "zulip::app_frontend_base"; then
+    set +x
+    cat <<EOF
+
+Success!
+
+Not configuring PostgreSQL, or /home/zulip/deployments, because this
+is not a front-end install.
+
+EOF
+    exit 0
+fi
+
+# Frontend deploys use /home/zulip/deployments; without this, the
+# install directory is also only readable by root.
+deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
+mv "$ZULIP_PATH" "$deploy_path"
+ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
+ln -nsf "$deploy_path" /home/zulip/deployments/next
+ln -nsf "$deploy_path" /home/zulip/deployments/current
+ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
+mkdir -p "$deploy_path"/prod-static/serve
+cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
+chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
+
+if ! [ -e "/home/zulip/prod-static/generated" ]; then
+    # If we're installing from a Git checkout, we need to run
+    # `tools/update-prod-static` in order to build the static
+    # assets.
+    su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
+fi
+
 if [ -n "$NO_INIT_DB" ]; then
     set +x
     cat <<EOF
 
- Success!
+Success!
 
- Stopping because --no-init-db was passed.
- To complete the installation, configure PostgreSQL and then run:
+Stopping because --no-init-db was passed.  To complete the
+installation, configure PostgreSQL by creating the database and
+database user, and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 EOF
     exit 0
+else
+    /home/zulip/deployments/current/scripts/setup/create-database
+    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
+    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 fi
-
-su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
-
-su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'

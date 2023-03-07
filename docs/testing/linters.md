@@ -9,7 +9,7 @@ patterns that can lead to security bugs.
 ## Overview
 
 Zulip does extensive linting of much of its source code, including
-Python/JavaScript/TypeScript files, HTML templates (Django/handlebars), CSS files,
+Python/JavaScript/TypeScript files, HTML templates (Django/Handlebars), CSS files,
 JSON fixtures, Markdown documents, puppet manifests, and shell scripts.
 
 For some files we simply check for small things like trailing whitespace,
@@ -30,7 +30,7 @@ below will direct you to the official documentation for these projects.
 - [Prettier](https://prettier.io/)
 - [Puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
-- [pyflakes](https://pypi.python.org/pypi/pyflakes)
+- [ruff](https://github.com/charliermarsh/ruff)
 - [stylelint](https://github.com/stylelint/stylelint)
 
 Zulip also uses some home-grown code to perform tasks like validating
@@ -45,8 +45,8 @@ You can also run them individually or pass specific files:
 
 ```bash
 ./tools/lint
-./tools/lint static/js/compose.js
-./tools/lint static/js/
+./tools/lint web/src/compose.js
+./tools/lint web/src/
 ```
 
 `./tools/lint` has many useful options; you can read about them in its
@@ -65,14 +65,14 @@ but it is good practice to run lint checks locally.
 
 :::{important}
 We provide a
-[Git pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script)
+[Git pre-commit hook](../git/zulip-tools.md#set-up-git-repo-script)
 that can automatically run `tools/lint` on just the files that
 changed (in a few 100ms) whenever you make a commit. This can save
 you a lot of time, by automatically detecting linter errors as you
 make them.
 :::
 
-**Note:** The linters only check files that git tracks. Remember to `git add`
+**Note:** The linters only check files that Git tracks. Remember to `git add`
 new files before running lint checks.
 
 Our linting tools generally support the ability to lint files
@@ -93,7 +93,7 @@ extreme cases, but often it can be a simple matter of writing your code
 in a slightly different style to appease the linter. If you have
 problems getting something to lint, you can submit an unfinished PR
 and ask the reviewer to help you work through the lint problem, or you
-can find other people in the [Zulip Community](https://zulip.com/developer-community/)
+can find other people in the [Zulip Community](https://zulip.com/development-community/)
 to help you.
 
 Also, bear in mind that 100% of the lint code is open source, so if you
@@ -101,7 +101,7 @@ find limitations in either the Zulip home-grown stuff or our third party
 tools, feedback will be highly appreciated.
 
 Finally, one way to clean up your code is to thoroughly exercise it
-with tests. The [Zulip test documentation](../testing/testing.md)
+with tests. The [Zulip test documentation](testing.md)
 describes our test system in detail.
 
 ## Lint checks
@@ -109,7 +109,7 @@ describes our test system in detail.
 Most of our lint checks get performed by `./tools/lint`. These include the
 following checks:
 
-- Check Python code with pyflakes.
+- Check Python code with ruff.
 - Check Python formatting with Black and isort.
 - Check JavaScript and TypeScript code with ESLint.
 - Check CSS, JavaScript, TypeScript, and YAML formatting with Prettier.
@@ -120,7 +120,7 @@ following checks:
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
 - Running `mypy` to check static types in Python code. Our
-  [documentation on using mypy](../testing/mypy.md) covers mypy in
+  [documentation on using mypy](mypy.md) covers mypy in
   more detail.
 - Running `tsc` to compile TypeScript code. Our [documentation on
   TypeScript](typescript.md) covers TypeScript in more detail.
@@ -131,7 +131,7 @@ The rest of this document pertains to the checks that occur in `./tools/lint`.
 
 Zulip has a script called `lint` that lives in our "tools" directory.
 It is the workhorse of our linting system, although in some cases it
-dispatches the heavy lifting to other components such as pyflakes,
+dispatches the heavy lifting to other components such as ruff,
 eslint, and other home grown tools.
 
 You can find the source code [here](https://github.com/zulip/zulip/blob/main/tools/lint).
@@ -139,8 +139,7 @@ You can find the source code [here](https://github.com/zulip/zulip/blob/main/too
 In order for our entire lint suite to run in a timely fashion, the `lint`
 script performs several lint checks in parallel by forking out subprocesses.
 
-Note that our project does custom regex-based checks on the code, and we
-also customize how we call pyflakes and pycodestyle (pep8). The code for these
+Note that our project does custom regex-based checks on the code. The code for these
 types of checks mostly lives [here](https://github.com/zulip/zulip/tree/main/tools/linter_lib).
 
 ### Special options
@@ -182,10 +181,8 @@ Our Python code is formatted using Black (using the options in the
 options in `.isort.cfg`). The `lint` script enforces this by running
 Black and isort in check mode, or in write mode with `--fix`.
 
-The bulk of our Python linting gets outsourced to the "pyflakes" tool. We
-call "pyflakes" in a fairly vanilla fashion, and then we post-process its
-output to exclude certain specific errors that Zulip is comfortable
-ignoring.
+The bulk of our Python linting gets outsourced to the "ruff" tool,
+which is configured in the `tool.ruff` section of `pyproject.toml`.
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint`. Note that we
@@ -212,7 +209,7 @@ option of Puppet.
 
 Zulip uses two HTML templating systems:
 
-- [Django templates](https://docs.djangoproject.com/en/1.10/topics/templates/)
+- [Django templates](https://docs.djangoproject.com/en/3.2/topics/templates/)
 - [handlebars](https://handlebarsjs.com/)
 
 Zulip has an internal tool that validates both types of templates for

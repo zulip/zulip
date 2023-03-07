@@ -2,13 +2,13 @@
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.utils.timezone import now as timezone_now
 
 
 def backfill_user_activations_and_deactivations(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     migration_time = timezone_now()
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
@@ -33,14 +33,13 @@ def backfill_user_activations_and_deactivations(
         )
 
 
-def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
     RealmAuditLog.objects.filter(event_type="user_created").delete()
     RealmAuditLog.objects.filter(event_type="user_deactivated").delete()
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0056_userprofile_emoji_alt_code"),
     ]

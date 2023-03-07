@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, Tuple
 import ldap
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.lib.db import TimeTrackingConnection
-from zerver.lib.types import SAMLIdPConfigDict
+from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
+from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (
@@ -26,9 +26,6 @@ FAKE_EMAIL_DOMAIN = "zulip.testserver"
 # Clear out the REALM_HOSTS set in dev_settings.py
 REALM_HOSTS: Dict[str, str] = {}
 
-# Used to clone DBs in backend tests.
-BACKEND_DATABASE_TEMPLATE = "zulip_test_template"
-
 DATABASES["default"] = {
     "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
     "USER": "zulip_test",
@@ -37,7 +34,10 @@ DATABASES["default"] = {
     "SCHEMA": "zulip",
     "ENGINE": "django.db.backends.postgresql",
     "TEST_NAME": "django_zulip_tests",
-    "OPTIONS": {"connection_factory": TimeTrackingConnection},
+    "OPTIONS": {
+        "connection_factory": TimeTrackingConnection,
+        "cursor_factory": TimeTrackingCursor,
+    },
 }
 
 
@@ -93,7 +93,6 @@ RATE_LIMITING_AUTHENTICATE = False
 # real app.
 USING_RABBITMQ = False
 
-# Disable use of memcached for caching
 CACHES["database"] = {
     "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     "LOCATION": "zulip-database-test-cache",
@@ -113,9 +112,6 @@ if PUPPETEER_TESTS:
 else:
     WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-test.json")
 WEBPACK_BUNDLES = "webpack-bundles/"
-
-# Don't auto-restart Tornado server during automated tests
-AUTORELOAD = False
 
 if not PUPPETEER_TESTS:
     # Use local memory cache for backend tests.
@@ -150,12 +146,14 @@ if not PUPPETEER_TESTS:
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
 
-# These settings are set dynamically in `zerver/lib/test_runner.py`:
-TEST_WORKER_DIR = ""
+# This is set dynamically in `zerver/lib/test_runner.py`.
 # Allow setting LOCAL_UPLOADS_DIR in the environment so that the
 # frontend/API tests in test_server.py can control this.
 if "LOCAL_UPLOADS_DIR" in os.environ:
     LOCAL_UPLOADS_DIR = os.getenv("LOCAL_UPLOADS_DIR")
+    assert LOCAL_UPLOADS_DIR is not None
+    LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars")
+    LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files")
 # Otherwise, we use the default value from dev_settings.py
 
 S3_KEY = "test-key"
@@ -190,12 +188,8 @@ SOCIAL_AUTH_APPLE_KEY = "KEYISKEY"
 SOCIAL_AUTH_APPLE_TEAM = "TEAMSTRING"
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
 
-EXAMPLE_JWK = get_from_file_if_exists("zerver/tests/fixtures/example_jwk")
-APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
-    "zerver/tests/fixtures/apple/token_gen_private_key"
-)
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, OIDCIdPConfigDict] = {
     "testoidc": {
         "display_name": "Test OIDC",
         "oidc_url": "https://example.com/api/openid",
@@ -250,6 +244,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
     "test_idp": {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+        "slo_url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/Logout",
         "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",
@@ -265,9 +260,17 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "api_by_ip": [],
     "api_by_remote_server": [],
     "authenticate_by_username": [],
-    "create_realm_by_ip": [],
-    "find_account_by_ip": [],
+    "sends_email_by_ip": [],
+    "email_change_by_user": [],
     "password_reset_form_by_email": [],
 }
 
 FREE_TRIAL_DAYS: Optional[int] = None
+
+SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
+    "zulip": {
+        "bearer_token": "token1234",
+        "scim_client_name": "test-scim-client",
+        "name_formatted_included": True,
+    }
+}

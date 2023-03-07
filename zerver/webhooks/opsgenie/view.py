@@ -1,10 +1,9 @@
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -26,21 +25,22 @@ ALL_EVENT_TYPES = [
 ]
 
 
-@webhook_view("OpsGenie", all_event_types=ALL_EVENT_TYPES)
+@webhook_view("Opsgenie", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_opsgenie_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # construct the body of the message
     info = {
         "additional_info": "",
-        "alert_type": payload["action"],
-        "alert_id": payload["alert"]["alertId"],
-        "integration_name": payload["integrationName"],
-        "tags": ", ".join("`" + tag + "`" for tag in payload["alert"].get("tags", [])),
+        "alert_type": payload["action"].tame(check_string),
+        "alert_id": payload["alert"]["alertId"].tame(check_string),
+        "integration_name": payload["integrationName"].tame(check_string),
+        "tags": ", ".join(
+            "`" + tag.tame(check_string) + "`" for tag in payload["alert"].get("tags", [])
+        ),
     }
 
     topic = info["integration_name"]
@@ -49,42 +49,42 @@ def api_opsgenie_webhook(
     if "note" in payload["alert"]:
         info["additional_info"] += bullet_template.format(
             key="Note",
-            value=payload["alert"]["note"],
+            value=payload["alert"]["note"].tame(check_string),
         )
     if "recipient" in payload["alert"]:
         info["additional_info"] += bullet_template.format(
             key="Recipient",
-            value=payload["alert"]["recipient"],
+            value=payload["alert"]["recipient"].tame(check_string),
         )
     if "addedTags" in payload["alert"]:
         info["additional_info"] += bullet_template.format(
             key="Tags added",
-            value=payload["alert"]["addedTags"],
+            value=payload["alert"]["addedTags"].tame(check_string),
         )
     if "team" in payload["alert"]:
         info["additional_info"] += bullet_template.format(
             key="Team added",
-            value=payload["alert"]["team"],
+            value=payload["alert"]["team"].tame(check_string),
         )
     if "owner" in payload["alert"]:
         info["additional_info"] += bullet_template.format(
             key="Assigned owner",
-            value=payload["alert"]["owner"],
+            value=payload["alert"]["owner"].tame(check_string),
         )
     if "escalationName" in payload:
         info["additional_info"] += bullet_template.format(
             key="Escalation",
-            value=payload["escalationName"],
+            value=payload["escalationName"].tame(check_string),
         )
     if "removedTags" in payload["alert"]:
         info["additional_info"] += bullet_template.format(
             key="Tags removed",
-            value=payload["alert"]["removedTags"],
+            value=payload["alert"]["removedTags"].tame(check_string),
         )
     if "message" in payload["alert"]:
         info["additional_info"] += bullet_template.format(
             key="Message",
-            value=payload["alert"]["message"],
+            value=payload["alert"]["message"].tame(check_string),
         )
     if info["tags"]:
         info["additional_info"] += bullet_template.format(
@@ -93,7 +93,7 @@ def api_opsgenie_webhook(
         )
 
     body_template = """
-[OpsGenie alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
+[Opsgenie alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
 * **Type**: {alert_type}
 {additional_info}
 """.strip()
@@ -101,4 +101,4 @@ def api_opsgenie_webhook(
     body = body_template.format(**info)
     check_send_webhook_message(request, user_profile, topic, body, info["alert_type"])
 
-    return json_success()
+    return json_success(request)

@@ -3,9 +3,10 @@ import hashlib
 import logging
 import threading
 import traceback
+from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from logging import Logger
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import orjson
 from django.conf import settings
@@ -72,7 +73,7 @@ class _RateLimitFilter:
         try:
             # Track duplicate errors
             duplicate = False
-            rate = getattr(settings, f"{self.__class__.__name__.upper()}_LIMIT", 600)  # seconds
+            rate = getattr(settings, f"{type(self).__name__.upper()}_LIMIT", 600)  # seconds
 
             if rate > 0:
                 (use_cache, should_reset_handling_exception) = self.can_use_remote_cache()
@@ -81,7 +82,7 @@ class _RateLimitFilter:
                         tb = "\n".join(traceback.format_exception(*record.exc_info))
                     else:
                         tb = str(record)
-                    key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
+                    key = type(self).__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
                     duplicate = cache.get(key) == 1
                     if not duplicate:
                         cache.set(key, 1, rate)
@@ -117,28 +118,7 @@ class ReturnEnabled(logging.Filter):
 
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        from django.conf import settings
-
         return settings.PRODUCTION
-
-
-def skip_200_and_304(record: logging.LogRecord) -> bool:
-    # Apparently, `status_code` is added by Django and is not an actual
-    # attribute of LogRecord; as a result, mypy throws an error if we
-    # access the `status_code` attribute directly.
-    if getattr(record, "status_code", None) in [200, 304]:
-        return False
-
-    return True
-
-
-def skip_site_packages_logs(record: logging.LogRecord) -> bool:
-    # This skips the log records that are generated from libraries
-    # installed in site packages.
-    # Workaround for https://code.djangoproject.com/ticket/26886
-    if "site-packages" in record.pathname:
-        return False
-    return True
 
 
 def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
@@ -218,12 +198,10 @@ class ZulipFormatter(logging.Formatter):
         return " ".join(pieces)
 
     def format(self, record: logging.LogRecord) -> str:
-        if not getattr(record, "zulip_decorated", False):
-            # The `setattr` calls put this logic explicitly outside the bounds of the
-            # type system; otherwise mypy would complain LogRecord lacks these attributes.
-            setattr(record, "zulip_level_abbrev", abbrev_log_levelname(record.levelname))
-            setattr(record, "zulip_origin", find_log_origin(record))
-            setattr(record, "zulip_decorated", True)
+        if not hasattr(record, "zulip_decorated"):
+            record.zulip_level_abbrev = abbrev_log_levelname(record.levelname)
+            record.zulip_origin = find_log_origin(record)
+            record.zulip_decorated = True
         return super().format(record)
 
 
@@ -248,45 +226,40 @@ class ZulipWebhookFormatter(ZulipFormatter):
 
         request = get_current_request()
         if not request:
-            setattr(record, "user", None)
-            setattr(record, "client", None)
-            setattr(record, "url", None)
-            setattr(record, "content_type", None)
-            setattr(record, "custom_headers", None)
-            setattr(record, "payload", None)
+            record.user = None
+            record.client = None
+            record.url = None
+            record.content_type = None
+            record.custom_headers = None
+            record.payload = None
             return super().format(record)
 
         if request.content_type == "application/json":
-            payload = request.body
+            payload: Union[str, bytes] = request.body
         else:
-            payload = request.POST.get("payload")
+            payload = request.POST["payload"]
 
-        try:
+        with suppress(orjson.JSONDecodeError):
             payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
-        except orjson.JSONDecodeError:
-            pass
 
-        custom_header_template = "{header}: {value}\n"
+        header_text = "".join(
+            f"{header}: {value}\n"
+            for header, value in request.headers.items()
+            if header.lower().startswith("x-")
+        )
 
-        header_text = ""
-        for header in request.META.keys():
-            if header.lower().startswith("http_x"):
-                header_text += custom_header_template.format(
-                    header=header, value=request.META[header]
-                )
-
-        header_message = header_text if header_text else None
         from zerver.lib.request import RequestNotes
 
         client = RequestNotes.get_notes(request).client
         assert client is not None
 
-        setattr(record, "user", f"{request.user.delivery_email} ({request.user.realm.string_id})")
-        setattr(record, "client", client.name)
-        setattr(record, "url", request.META.get("PATH_INFO", None))
-        setattr(record, "content_type", request.content_type)
-        setattr(record, "custom_headers", header_message)
-        setattr(record, "payload", payload)
+        assert request.user.is_authenticated
+        record.user = f"{request.user.delivery_email} ({request.user.realm.string_id})"
+        record.client = client.name
+        record.url = request.META.get("PATH_INFO", None)
+        record.content_type = request.content_type
+        record.custom_headers = header_text or None
+        record.payload = payload
         return super().format(record)
 
 

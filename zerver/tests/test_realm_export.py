@@ -48,14 +48,15 @@ class RealmExportTest(ZulipTestCase):
             with self.settings(LOCAL_UPLOADS_DIR=None), stdout_suppressed(), self.assertLogs(
                 level="INFO"
             ) as info_logs:
-                result = self.client_post("/json/export/realm")
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["public_only"], True)
-        self.assertIn("/tmp/zulip-export-", args["output_dir"])
+        self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.
@@ -74,10 +75,10 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(bucket.Object(path_id).get()["Body"].read(), b"zulip!")
 
         result = self.client_get("/json/export/realm")
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
         # Test that the export we have is the export we created.
-        export_dict = result.json()["exports"]
+        export_dict = response_dict["exports"]
         self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
         self.assertEqual(
             export_dict[0]["export_url"],
@@ -118,14 +119,15 @@ class RealmExportTest(ZulipTestCase):
         # Test the export logic.
         with patch("zerver.lib.export.do_export_realm", return_value=tarball_path) as mock_export:
             with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
-                result = self.client_post("/json/export/realm")
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["public_only"], True)
-        self.assertIn("/tmp/zulip-export-", args["output_dir"])
+        self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
         self.assertEqual(args["threads"], 6)
 
         # Get the entry and test that iago initiated it.
@@ -141,13 +143,13 @@ class RealmExportTest(ZulipTestCase):
         export_path = orjson.loads(extra_data).get("export_path")
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 200)
-        self.assert_url_serves_contents_of_file(export_path, b"zulip!")
+        self.assert_streaming_content(response, b"zulip!")
 
         result = self.client_get("/json/export/realm")
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
         # Test that the export we have is the export we created.
-        export_dict = result.json()["exports"]
+        export_dict = response_dict["exports"]
         self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
         self.assertEqual(export_dict[0]["export_url"], admin.realm.uri + export_path)
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
@@ -205,9 +207,9 @@ class RealmExportTest(ZulipTestCase):
         realm_count = RealmCount.objects.create(
             realm_id=admin.realm.id,
             end_time=timezone_now(),
-            subgroup=1,
             value=0,
-            property="messages_sent:client:day",
+            property="messages_sent:message_type:day",
+            subgroup="public_stream",
         )
 
         # Space limit is set as 10 GiB

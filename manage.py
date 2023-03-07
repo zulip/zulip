@@ -2,20 +2,14 @@
 import configparser
 import os
 import sys
+from collections import defaultdict
 from typing import Dict, List, Optional
-
-if sys.version_info <= (3, 0):
-    print("Error: Zulip is a Python 3 project, and cannot be run with Python 2.")
-    print("Use e.g. `/path/to/manage.py` not `python /path/to/manage.py`.")
-    sys.exit(1)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 from scripts.lib.setup_path import setup_path
 
 setup_path()
-
-from collections import defaultdict
 
 from django.core.management import ManagementUtility, get_commands
 from django.core.management.color import color_style
@@ -64,9 +58,8 @@ def get_filtered_commands() -> Dict[str, str]:
     for command, app in all_commands.items():
         if app not in documented_apps:
             continue
-        if app in documented_command_subsets:
-            if command not in documented_command_subsets[app]:
-                continue
+        if app in documented_command_subsets and command not in documented_command_subsets[app]:
+            continue
 
         documented_commands[command] = app
     return documented_commands
@@ -91,7 +84,7 @@ class FilteredManagementUtility(ManagementUtility):
                 "",
                 "Available subcommands:",
             ]
-            commands_dict = defaultdict(lambda: [])
+            commands_dict = defaultdict(list)
             for name, app in get_filtered_commands().items():
                 if app == "django.core":
                     app = "django"

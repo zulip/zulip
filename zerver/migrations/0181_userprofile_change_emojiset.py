@@ -1,15 +1,14 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def change_emojiset_choice(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def change_emojiset_choice(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
     UserProfile.objects.exclude(emojiset__in=["google", "text"]).update(emojiset="google")
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0180_usermessage_add_active_mobile_push_notification"),
     ]

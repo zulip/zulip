@@ -7,12 +7,12 @@ supports English text, but there is an experimental
 full-text search for all languages.
 
 The user interface and feature set for Zulip's full-text search is
-documented in the "Search operators" documentation section in the Zulip
-app's gear menu.
+documented in the in-app "Search filters" reference which can be
+accessed from the Zulip app's gear menu.
 
 ## The default full-text search implementation
 
-Zulip's uses [PostgreSQL's built-in full-text search
+Zulip uses [PostgreSQL's built-in full-text search
 feature](https://www.postgresql.org/docs/current/textsearch.html),
 with a custom set of English stop words to improve the quality of the
 search results.

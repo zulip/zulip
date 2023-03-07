@@ -29,7 +29,7 @@
 import logging
 import time
 from datetime import timedelta
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -53,8 +53,6 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
-    get_realm,
-    get_user_including_cross_realm,
 )
 
 logger = logging.getLogger("zulip.retention")
@@ -89,6 +87,8 @@ models_with_message_key: List[Dict[str, Any]] = [
     },
 ]
 
+EXCLUDE_FIELDS = {Message._meta.get_field("search_tsvector")}
+
 
 @transaction.atomic(savepoint=False)
 def move_rows(
@@ -104,16 +104,14 @@ def move_rows(
         # Use base_model's db_table unless otherwise specified.
         src_db_table = base_model._meta.db_table
 
-    src_fields = [Identifier(src_db_table, field.column) for field in base_model._meta.fields]
-    dst_fields = [Identifier(field.column) for field in base_model._meta.fields]
-    sql_args = {
-        "src_fields": SQL(",").join(src_fields),
-        "dst_fields": SQL(",").join(dst_fields),
-    }
-    sql_args.update(kwargs)
+    fields = [field for field in base_model._meta.fields if field not in EXCLUDE_FIELDS]
+    src_fields = [Identifier(src_db_table, field.column) for field in fields]
+    dst_fields = [Identifier(field.column) for field in fields]
     with connection.cursor() as cursor:
         cursor.execute(
-            raw_query.format(**sql_args),
+            raw_query.format(
+                src_fields=SQL(",").join(src_fields), dst_fields=SQL(",").join(dst_fields), **kwargs
+            )
         )
         if returning_id:
             return [id for (id,) in cursor.fetchall()]  # return list of row ids
@@ -144,8 +142,9 @@ def run_archiving_in_chunks(
             new_chunk = move_rows(
                 Message,
                 query,
+                src_db_table=None,
                 chunk_size=Literal(chunk_size),
-                returning_id=Literal(True),
+                returning_id=True,
                 archive_transaction_id=Literal(archive_transaction.id),
                 **kwargs,
             )
@@ -190,7 +189,6 @@ def move_expired_messages_to_archive_by_recipient(
 ) -> int:
     assert message_retention_days != -1
 
-    # This function will archive appropriate messages and their related objects.
     query = SQL(
         """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
@@ -223,25 +221,16 @@ def move_expired_personal_and_huddle_messages_to_archive(
     assert message_retention_days != -1
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
-    # This function will archive appropriate messages and their related objects.
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    cross_realm_bot_ids = [
-        get_user_including_cross_realm(email, internal_realm).id
-        for email in settings.CROSS_REALM_BOT_EMAILS
-    ]
     recipient_types = (Recipient.PERSONAL, Recipient.HUDDLE)
 
-    # Archive expired personal and huddle Messages in the realm, except cross-realm messages.
-    # The condition zerver_userprofile.realm_id = {realm_id} assures the row won't be
-    # a message sent by a cross-realm bot, because cross-realm bots have their own separate realm.
+    # Archive expired personal and huddle Messages in the realm, including cross-realm messages.
     query = SQL(
         """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
         FROM zerver_message
         INNER JOIN zerver_recipient ON zerver_recipient.id = zerver_message.recipient_id
-        INNER JOIN zerver_userprofile ON zerver_userprofile.id = zerver_message.sender_id
-        WHERE zerver_userprofile.realm_id = {realm_id}
+        WHERE zerver_message.realm_id = {realm_id}
             AND zerver_recipient.type in {recipient_types}
             AND zerver_message.date_sent < {check_date}
         LIMIT {chunk_size}
@@ -254,38 +243,8 @@ def move_expired_personal_and_huddle_messages_to_archive(
         query,
         type=ArchiveTransaction.RETENTION_POLICY_BASED,
         realm=realm,
-        cross_realm_bot_ids=Literal(tuple(cross_realm_bot_ids)),
         realm_id=Literal(realm.id),
         recipient_types=Literal(recipient_types),
-        check_date=Literal(check_date.isoformat()),
-        chunk_size=chunk_size,
-    )
-
-    # Archive cross-realm personal messages to users in the realm.  We
-    # don't archive cross-realm huddle messages via retention policy,
-    # as we don't support them as a feature in Zulip, and the query to
-    # find and delete them would be a lot of complexity and potential
-    # performance work for a case that doesn't actually happen.
-    query = SQL(
-        """
-    INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
-        SELECT {src_fields}, {archive_transaction_id}
-        FROM zerver_message
-        INNER JOIN zerver_userprofile recipient_profile ON recipient_profile.recipient_id = zerver_message.recipient_id
-        WHERE zerver_message.sender_id IN {cross_realm_bot_ids}
-            AND recipient_profile.realm_id = {realm_id}
-            AND zerver_message.date_sent < {check_date}
-        LIMIT {chunk_size}
-    ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
-    RETURNING id
-    """
-    )
-    message_count += run_archiving_in_chunks(
-        query,
-        type=ArchiveTransaction.RETENTION_POLICY_BASED,
-        realm=realm,
-        cross_realm_bot_ids=Literal(tuple(cross_realm_bot_ids)),
-        realm_id=Literal(realm.id),
         check_date=Literal(check_date.isoformat()),
         chunk_size=chunk_size,
     )
@@ -417,6 +376,7 @@ def archive_stream_messages(
     recipients = [stream.recipient for stream in streams]
     message_count = 0
     for recipient in recipients:
+        assert recipient is not None
         message_count += archive_messages_by_recipient(
             recipient,
             retention_policy_dict[recipient.type_id],
@@ -535,7 +495,7 @@ def restore_messages_from_archive(archive_transaction_id: int) -> List[int]:
         Message,
         query,
         src_db_table="zerver_archivedmessage",
-        returning_id=Literal(True),
+        returning_id=True,
         archive_transaction_id=Literal(archive_transaction_id),
     )
 
@@ -624,7 +584,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
 
 
 def restore_data_from_archive_by_transactions(
-    archive_transactions: List[ArchiveTransaction],
+    archive_transactions: Iterable[ArchiveTransaction],
 ) -> int:
     # Looping over the list of ids means we're batching the restoration process by the size of the
     # transactions:
@@ -671,6 +631,23 @@ def restore_retention_policy_deletions_for_stream(stream: Stream) -> None:
 
 
 def clean_archived_data() -> None:
+    """This function deletes archived data that was archived at least
+    settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS days ago.
+
+    It works by deleting ArchiveTransaction objects that are
+    sufficiently old. We've configured most archive tables, like
+    ArchiveMessage, with on_delete=CASCADE, so that deleting an
+    ArchiveTransaction entails deleting associated objects, including
+    ArchivedMessage, ArchivedUserMessage, ArchivedReaction.
+
+    The exception to this rule is ArchivedAttachment. Archive
+    attachment objects that were only referenced by ArchivedMessage
+    objects that have now been deleted will be left with an empty
+    `.messages` relation. A separate step,
+    delete_old_unclaimed_attachments, will delete those
+    ArchivedAttachment objects (and delete the files themselves from
+    the storage).
+    """
     logger.info("Cleaning old archive data.")
     check_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS)
     # Associated archived objects will get deleted through the on_delete=CASCADE property:
@@ -691,7 +668,7 @@ def parse_message_retention_days(
     value: Union[int, str],
     special_values_map: Mapping[str, Optional[int]],
 ) -> Optional[int]:
-    if isinstance(value, str) and value in special_values_map.keys():
+    if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
         raise RequestVariableConversionError("message_retention_days", value)

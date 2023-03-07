@@ -3,7 +3,7 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
-  "default_source": "card_NORMALIZED00000000000001",
+  "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,

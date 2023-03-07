@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0252_realm_user_group_edit_policy"),
     ]
@@ -18,6 +17,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="subscription",
             name="wildcard_mentions_notify",
-            field=models.NullBooleanField(default=None),
+            field=models.BooleanField(null=True, default=None),
         ),
     ]

@@ -2,26 +2,39 @@ name: "Code scanning"
 
 on:
   push:
-    branches-ignore:
-      - dependabot/** # https://github.com/github/codeql-action/pull/435
-  pull_request: {}
+    branches: ["*.x", chat.zulip.org, main]
+    tags: ["*"]
+  pull_request:
+    branches: ["*.x", chat.zulip.org, main]
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   CodeQL:
+    permissions:
+      actions: read # for github/codeql-action/init to get workflow details
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/analyze to upload SARIF results
     if: ${{!github.event.repository.private}}
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
 
         # Override language selection by uncommenting this and choosing your languages
         # with:
         #   languages: go, javascript, csharp, python, cpp, java
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2

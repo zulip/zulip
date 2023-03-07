@@ -12,6 +12,7 @@ TOPIC_DEPLOYMENT = "public-repo / Deployment on production"
 TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / wiki pages"
+TOPIC_DISCUSSION = "public-repo discussion #90: Welcome to discussions!"
 
 
 class GitHubWebhookTest(WebhookTestCase):
@@ -43,57 +44,57 @@ class GitHubWebhookTest(WebhookTestCase):
         )
 
     def test_push_1_commit(self) -> None:
-        expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
+        expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
         self.check_webhook("push__1_commit", TOPIC_BRANCH, expected_message)
 
     def test_push_1_commit_without_username(self) -> None:
-        expected_message = "eeshangarg [pushed](https://github.com/eeshangarg/public-repo/compare/0383613da871...2e8cf535fb38) 1 commit to branch changes. Commits by John Snow (1).\n\n* Update the README ([2e8cf53](https://github.com/eeshangarg/public-repo/commit/2e8cf535fb38a3dab2476cdf856efda904ad4c94))"
+        expected_message = "eeshangarg [pushed](https://github.com/eeshangarg/public-repo/compare/0383613da871...2e8cf535fb38) 1 commit to branch changes. Commits by John Snow (1).\n\n* Update the README ([2e8cf535fb3](https://github.com/eeshangarg/public-repo/commit/2e8cf535fb38a3dab2476cdf856efda904ad4c94))"
         self.check_webhook("push__1_commit_without_username", TOPIC_BRANCH, expected_message)
 
     def test_push_1_commit_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url("master,changes")
-        expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
+        expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
         self.check_webhook("push__1_commit", TOPIC_BRANCH, expected_message)
 
-    def test_push_multiple_comitters(self) -> None:
-        commits_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
-        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 6 commits to branch changes. Commits by Tomasz (3), Ben (2) and baxterthehacker (1).\n\n{commits_info * 5}* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
+    def test_push_multiple_committers(self) -> None:
+        commits_info = "* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 6 commits to branch changes. Commits by Tomasz (3), Ben (2) and baxterthehacker (1).\n\n{commits_info * 5}* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
 
         self.check_webhook("push__multiple_committers", TOPIC_BRANCH, expected_message)
 
-    def test_push_multiple_comitters_with_others(self) -> None:
-        commits_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
-        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 10 commits to branch changes. Commits by Tomasz (4), Ben (3), James (2) and others (1).\n\n{commits_info * 9}* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
+    def test_push_multiple_committers_with_others(self) -> None:
+        commits_info = "* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 10 commits to branch changes. Commits by Tomasz (4), Ben (3), James (2) and others (1).\n\n{commits_info * 9}* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
 
         self.check_webhook("push__multiple_committers_with_others", TOPIC_BRANCH, expected_message)
 
-    def test_push_multiple_comitters_filtered_by_branches(self) -> None:
+    def test_push_multiple_committers_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url("master,changes")
-        commits_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
-        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 6 commits to branch changes. Commits by Tomasz (3), Ben (2) and baxterthehacker (1).\n\n{commits_info * 5}* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
+        commits_info = "* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 6 commits to branch changes. Commits by Tomasz (3), Ben (2) and baxterthehacker (1).\n\n{commits_info * 5}* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
 
         self.check_webhook("push__multiple_committers", TOPIC_BRANCH, expected_message)
 
-    def test_push_multiple_comitters_with_others_filtered_by_branches(self) -> None:
+    def test_push_multiple_committers_with_others_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url("master,changes")
-        commits_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
-        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 10 commits to branch changes. Commits by Tomasz (4), Ben (3), James (2) and others (1).\n\n{commits_info * 9}* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
+        commits_info = "* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 10 commits to branch changes. Commits by Tomasz (4), Ben (3), James (2) and others (1).\n\n{commits_info * 9}* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
 
         self.check_webhook("push__multiple_committers_with_others", TOPIC_BRANCH, expected_message)
 
     def test_push_50_commits(self) -> None:
-        commit_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        commit_info = "* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
         expected_message = f"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 50 commits to branch changes.\n\n{commit_info * COMMITS_LIMIT}[and 30 more commit(s)]"
         self.check_webhook("push__50_commits", TOPIC_BRANCH, expected_message)
 
     def test_push_50_commits_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches="master,changes")
-        commit_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        commit_info = "* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
         expected_message = f"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 50 commits to branch changes.\n\n{commit_info * COMMITS_LIMIT}[and 30 more commit(s)]"
         self.check_webhook("push__50_commits", TOPIC_BRANCH, expected_message)
 
     def test_commit_comment_msg(self) -> None:
-        expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394) on [9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b):\n~~~ quote\nThis is a really good change! :+1:\n~~~"
+        expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394) on [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b):\n~~~ quote\nThis is a really good change! :+1:\n~~~"
         self.check_webhook("commit_comment", TOPIC_REPO, expected_message)
 
     def test_create_msg(self) -> None:
@@ -216,18 +217,26 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker published release [0.0.1](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1) for tag 0.0.1."
         self.check_webhook("release", TOPIC_REPO, expected_message)
 
+    def test_release_msg_with_name(self) -> None:
+        expected_message = "baxterthehacker published release [0.0.1](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1) for tag 0.0.1."
+        self.check_webhook("release__with_name", TOPIC_REPO, expected_message)
+
     def test_page_build_msg(self) -> None:
         expected_message = (
             "GitHub Pages build, triggered by baxterthehacker, has finished building."
         )
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
+    def test_page_build_errored_msg(self) -> None:
+        expected_message = "GitHub Pages build, triggered by baxterthehacker, has failed: \n~~~ quote\nSomething went wrong.\n~~~."
+        self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
+
     def test_status_msg(self) -> None:
-        expected_message = "[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
+        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
         self.check_webhook("status", TOPIC_REPO, expected_message)
 
     def test_status_with_target_url_msg(self) -> None:
-        expected_message = "[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
+        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
@@ -337,7 +346,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_check_run(self) -> None:
         expected_topic = "hello-world / checks"
         expected_message = """
-Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed", expected_topic, expected_message)
 
@@ -410,12 +419,12 @@ A temporary team so that I can get some webhook fixtures!
         payload = self.get_body("push__50_commits")
         self.verify_post_is_ignored(payload, "push")
 
-    def test_push_multiple_comitters_filtered_by_branches_ignore(self) -> None:
+    def test_push_multiple_committers_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches="master,development")
         payload = self.get_body("push__multiple_committers")
         self.verify_post_is_ignored(payload, "push")
 
-    def test_push_multiple_comitters_with_others_filtered_by_branches_ignore(self) -> None:
+    def test_push_multiple_committers_with_others_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches="master,development")
         payload = self.get_body("push__multiple_committers_with_others")
         self.verify_post_is_ignored(payload, "push")
@@ -483,3 +492,11 @@ A temporary team so that I can get some webhook fixtures!
             msg,
         )
         self.assertTrue(stack_info)
+
+    def test_discussion_msg(self) -> None:
+        expected_message = "Codertocat created [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90) in General:\n```quote\n### Welcome to discussions!\nWe're glad to have you here!\n```"
+        self.check_webhook("discussion", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_comment_msg(self) -> None:
+        expected_message = "Codertocat [commented](https://github.com/baxterthehacker/public-repo/discussions/90#discussioncomment-544078) on [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90):\n```quote\nI have so many questions to ask you!\n```"
+        self.check_webhook("discussion_comment", TOPIC_DISCUSSION, expected_message)

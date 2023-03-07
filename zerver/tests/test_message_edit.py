@@ -1,29 +1,46 @@
 import datetime
 from operator import itemgetter
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from unittest import mock
 
 import orjson
 from django.db import IntegrityError
-from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    do_change_plan_type,
-    do_change_stream_post_policy,
-    do_change_user_role,
-    do_deactivate_stream,
-    do_delete_messages,
-    do_set_realm_property,
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import (
+    check_update_message,
     do_update_message,
-    get_topic_messages,
-    get_user_info_for_message_updates,
+    get_mentions_for_message_updates,
 )
-from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.actions.reactions import do_add_reaction
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
+from zerver.actions.users import do_change_user_role
+from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
+from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
-from zerver.lib.topic import LEGACY_PREV_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
-from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
+from zerver.lib.user_topics import (
+    get_topic_mutes,
+    get_users_muting_topic,
+    set_topic_mutes,
+    topic_is_muted,
+)
+from zerver.lib.utils import assert_is_not_none
+from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
+    Message,
+    Realm,
+    Stream,
+    UserMessage,
+    UserProfile,
+    get_realm,
+    get_stream,
+)
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class EditMessageTestCase(ZulipTestCase):
@@ -93,9 +110,9 @@ class EditMessageTestCase(ZulipTestCase):
 
         self.login(user_email)
         stream = self.make_stream(old_stream)
-        new_stream = self.make_stream(new_stream)
+        stream_to = self.make_stream(new_stream)
         self.subscribe(user_profile, stream.name)
-        self.subscribe(user_profile, new_stream.name)
+        self.subscribe(user_profile, stream_to.name)
         msg_id = self.send_stream_message(
             user_profile, stream.name, topic_name=topic, content="First"
         )
@@ -105,20 +122,18 @@ class EditMessageTestCase(ZulipTestCase):
 
         self.send_stream_message(user_profile, stream.name, topic_name=topic, content="third")
 
-        return (user_profile, stream, new_stream, msg_id, msg_id_lt)
+        return (user_profile, stream, stream_to, msg_id, msg_id_lt)
 
 
 class EditMessagePayloadTest(EditMessageTestCase):
     def test_edit_message_no_changes(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-            },
+            {},
         )
         self.assert_json_error(result, "Nothing to change")
 
@@ -133,12 +148,11 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": verona.id,
             },
         )
 
-        self.assert_json_error(result, "Private messages cannot be moved to streams.")
+        self.assert_json_error(result, "Direct messages cannot be moved to streams.")
 
     def test_private_message_edit_topic(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -149,16 +163,15 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "Should not exist",
             },
         )
 
-        self.assert_json_error(result, "Private messages cannot have topics.")
+        self.assert_json_error(result, "Direct messages cannot have topics.")
 
     def test_propagate_invalid(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
 
         result = self.client_patch(
             "/json/messages/" + str(id1),
@@ -183,16 +196,28 @@ class EditMessagePayloadTest(EditMessageTestCase):
     def test_edit_message_no_topic(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": " ",
             },
         )
-        self.assert_json_error(result, "Topic can't be empty")
+        self.assert_json_error(result, "Topic can't be empty!")
+
+    def test_edit_message_invalid_topic(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "editing\nfun",
+            },
+        )
+        self.assert_json_error(result, "Invalid character in topic, at position 8!")
 
     def test_move_message_to_stream_with_content(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -202,7 +227,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "content": "Not allowed",
@@ -221,14 +245,13 @@ class EditMessagePayloadTest(EditMessageTestCase):
         self.login("hamlet")
         msg_id = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="/poll Games?\nYES\nNO",
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": "/poll Games?\nYES\nNO\nMaybe",
             },
         )
@@ -259,30 +282,27 @@ class EditMessageTest(EditMessageTestCase):
         ]
 
         # Check number of queries performed
-        with queries_captured() as queries:
-            MessageDict.to_dict_uncached(messages)
         # 1 query for realm_id per message = 3
         # 1 query each for reactions & submessage for all messages = 2
-        self.assert_length(queries, 5)
+        with self.assert_database_query_count(5):
+            MessageDict.to_dict_uncached(messages)
 
         realm_id = 2  # Fetched from stream object
         # Check number of queries performed with realm_id
-        with queries_captured() as queries:
-            MessageDict.to_dict_uncached(messages, realm_id)
         # 1 query each for reactions & submessage for all messages = 2
-        self.assert_length(queries, 2)
+        with self.assert_database_query_count(2):
+            MessageDict.to_dict_uncached(messages, realm_id)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
         the cache against the database"""
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "after edit",
             },
         )
@@ -290,36 +310,76 @@ class EditMessageTest(EditMessageTestCase):
         self.check_message(msg_id, topic_name="editing", content="after edit")
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "edited",
             },
         )
         self.assert_json_success(result)
         self.check_topic(msg_id, topic_name="edited")
 
-    def test_fetch_raw_message(self) -> None:
+    def test_fetch_message_from_id(self) -> None:
         self.login("hamlet")
         msg_id = self.send_personal_message(
             from_user=self.example_user("hamlet"),
             to_user=self.example_user("cordelia"),
-            content="**before** edit",
+            content="Personal message",
         )
         result = self.client_get("/json/messages/" + str(msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "**before** edit")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "Personal message")
+        self.assertEqual(response_dict["message"]["id"], msg_id)
+        self.assertEqual(response_dict["message"]["flags"], [])
+
+        # Send message to web-public stream where hamlet is not subscribed.
+        # This will test case of user having no `UserMessage` but having access
+        # to message.
+        web_public_stream = self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(self.example_user("cordelia"), web_public_stream.name)
+        web_public_stream_msg_id = self.send_stream_message(
+            self.example_user("cordelia"), web_public_stream.name, content="web-public message"
+        )
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["id"], web_public_stream_msg_id)
+        self.assertEqual(response_dict["message"]["flags"], ["read", "historical"])
+
+        # Spectator should be able to fetch message in web-public stream.
+        self.logout()
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["id"], web_public_stream_msg_id)
+
+        # Verify default is apply_markdown=True
+        self.assertEqual(response_dict["message"]["content"], "<p>web-public message</p>")
+
+        # Verify apply_markdown=False works correctly.
+        result = self.client_get(
+            "/json/messages/" + str(web_public_stream_msg_id), {"apply_markdown": "false"}
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["content"], "web-public message")
+
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
 
         # Test error cases
+        self.login("hamlet")
         result = self.client_get("/json/messages/999999")
         self.assert_json_error(result, "Invalid message(s)")
 
         self.login("cordelia")
-        result = self.client_get("/json/messages/" + str(msg_id))
+        result = self.client_get(f"/json/messages/{msg_id}")
         self.assert_json_success(result)
 
         self.login("othello")
-        result = self.client_get("/json/messages/" + str(msg_id))
+        result = self.client_get(f"/json/messages/{msg_id}")
         self.assert_json_error(result, "Invalid message(s)")
 
     def test_fetch_raw_message_spectator(self) -> None:
@@ -333,8 +393,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         non_web_public_stream = self.make_stream("non-web-public-stream")
+        self.subscribe(user_profile, non_web_public_stream.name)
         non_web_public_stream_msg_id = self.send_stream_message(
-            user_profile, non_web_public_stream.name, content="non web-public message"
+            user_profile, non_web_public_stream.name, content="non-web-public message"
         )
 
         # Generate a private message to use in verification.
@@ -351,23 +412,41 @@ class EditMessageTest(EditMessageTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
+        do_set_realm_property(
+            user_profile.realm, "enable_spectator_access", False, acting_user=None
+        )
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+        do_set_realm_property(user_profile.realm, "enable_spectator_access", True, acting_user=None)
+
         # Verify success with web-public stream and default SELF_HOSTED plan type.
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "web-public message")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
         # Verify LIMITED plan type does not allow web-public access.
-        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
+        do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        do_set_realm_property(user_profile.realm, "enable_spectator_access", True, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401
         )
 
         # Verify works with STANDARD_FREE plan type too.
-        do_change_plan_type(user_profile.realm, Realm.STANDARD_FREE, acting_user=None)
+        do_change_realm_plan_type(
+            user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None
+        )
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "web-public message")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
 
         # Verify private messages are rejected.
         result = self.client_get("/json/messages/" + str(private_message_id))
@@ -402,12 +481,12 @@ class EditMessageTest(EditMessageTestCase):
         msg_id = self.send_stream_message(
             user_profile, stream.name, topic_name="test", content="test"
         )
-        result = self.client_get("/json/messages/" + str(msg_id))
+        result = self.client_get(f"/json/messages/{msg_id}")
         self.assert_json_success(result)
 
         mit_user = self.mit_user("sipbtest")
         self.login_user(mit_user)
-        result = self.client_get("/json/messages/" + str(msg_id), subdomain="zephyr")
+        result = self.client_get(f"/json/messages/{msg_id}", subdomain="zephyr")
         self.assert_json_error(result, "Invalid message(s)")
 
     def test_fetch_raw_message_private_stream(self) -> None:
@@ -418,21 +497,20 @@ class EditMessageTest(EditMessageTestCase):
         msg_id = self.send_stream_message(
             user_profile, stream.name, topic_name="test", content="test"
         )
-        result = self.client_get("/json/messages/" + str(msg_id))
+        result = self.client_get(f"/json/messages/{msg_id}")
         self.assert_json_success(result)
         self.login("othello")
-        result = self.client_get("/json/messages/" + str(msg_id))
+        result = self.client_get(f"/json/messages/{msg_id}")
         self.assert_json_error(result, "Invalid message(s)")
 
     def test_edit_message_no_permission(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("iago"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("iago"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content after edit",
             },
         )
@@ -441,12 +519,11 @@ class EditMessageTest(EditMessageTestCase):
     def test_edit_message_no_content(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": " ",
             },
         )
@@ -469,15 +546,14 @@ class EditMessageTest(EditMessageTestCase):
 
         new_content_1 = "content after edit"
         result_1 = self.client_patch(
-            "/json/messages/" + str(msg_id_1),
+            f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
         self.assert_json_success(result_1)
 
-        result = self.client_get("/json/messages/" + str(msg_id_1) + "/history")
+        result = self.client_get(f"/json/messages/{msg_id_1}/history")
         self.assert_json_error(result, "Message edit history is disabled in this organization")
 
         # Now verify that if we fetch the message directly, there's no
@@ -496,21 +572,20 @@ class EditMessageTest(EditMessageTestCase):
         # Single-line edit
         msg_id_1 = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="content before edit",
         )
         new_content_1 = "content after edit"
         result_1 = self.client_patch(
-            "/json/messages/" + str(msg_id_1),
+            f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
         self.assert_json_success(result_1)
 
-        message_edit_history_1 = self.client_get("/json/messages/" + str(msg_id_1) + "/history")
+        message_edit_history_1 = self.client_get(f"/json/messages/{msg_id_1}/history")
         json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1["message_history"]
 
@@ -520,10 +595,10 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             message_history_1[1]["content_html_diff"],
             (
-                "<p>content "
+                "<div><p>content "
                 '<span class="highlight_text_inserted">after</span> '
                 '<span class="highlight_text_deleted">before</span>'
-                " edit</p>"
+                " edit</p></div>"
             ),
         )
         # Check content of message before edit.
@@ -534,7 +609,7 @@ class EditMessageTest(EditMessageTestCase):
         # Edits on new lines
         msg_id_2 = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="content before edit, line 1\n\ncontent before edit, line 3",
         )
@@ -544,15 +619,14 @@ class EditMessageTest(EditMessageTestCase):
             "content before edit, line 3"
         )
         result_2 = self.client_patch(
-            "/json/messages/" + str(msg_id_2),
+            f"/json/messages/{msg_id_2}",
             {
-                "message_id": msg_id_2,
                 "content": new_content_2,
             },
         )
         self.assert_json_success(result_2)
 
-        message_edit_history_2 = self.client_get("/json/messages/" + str(msg_id_2) + "/history")
+        message_edit_history_2 = self.client_get(f"/json/messages/{msg_id_2}/history")
         json_response_2 = orjson.loads(message_edit_history_2.content)
         message_history_2 = json_response_2["message_history"]
 
@@ -571,9 +645,9 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             message_history_2[1]["content_html_diff"],
             (
-                "<p>content before edit, line 1<br> "
+                "<div><p>content before edit, line 1<br> "
                 'content <span class="highlight_text_inserted">after edit, line 2<br> '
-                "content</span> before edit, line 3</p>"
+                "content</span> before edit, line 3</p></div>"
             ),
         )
         self.assertEqual(
@@ -581,46 +655,77 @@ class EditMessageTest(EditMessageTestCase):
             "<p>content before edit, line 1</p>\n<p>content before edit, line 3</p>",
         )
 
+    def test_empty_message_edit(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Denmark",
+            topic_name="editing",
+            content="We will edit this to render as empty.",
+        )
+        # Edit that manually to simulate a rendering bug
+        message = Message.objects.get(id=msg_id)
+        message.rendered_content = ""
+        message.save(update_fields=["rendered_content"])
+
+        self.assert_json_success(
+            self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "content": "We will edit this to also render as empty.",
+                },
+            )
+        )
+        # And again tweak to simulate a rendering bug
+        message = Message.objects.get(id=msg_id)
+        message.rendered_content = ""
+        message.save(update_fields=["rendered_content"])
+
+        history = self.client_get("/json/messages/" + str(msg_id) + "/history")
+        message_history = orjson.loads(history.content)["message_history"]
+        self.assertEqual(message_history[0]["rendered_content"], "")
+        self.assertEqual(message_history[1]["rendered_content"], "")
+        self.assertEqual(message_history[1]["content_html_diff"], "<div></div>")
+
     def test_edit_link(self) -> None:
         # Link editing
         self.login("hamlet")
         msg_id_1 = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="Here is a link to [zulip](www.zulip.org).",
         )
         new_content_1 = "Here is a link to [zulip](www.zulipchat.com)."
         result_1 = self.client_patch(
-            "/json/messages/" + str(msg_id_1),
+            f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
         self.assert_json_success(result_1)
 
-        message_edit_history_1 = self.client_get("/json/messages/" + str(msg_id_1) + "/history")
+        message_edit_history_1 = self.client_get(f"/json/messages/{msg_id_1}/history")
         json_response_1 = orjson.loads(message_edit_history_1.content)
         message_history_1 = json_response_1["message_history"]
 
         # Check content of message after edit.
         self.assertEqual(
             message_history_1[0]["rendered_content"],
-            "<p>Here is a link to " '<a href="http://www.zulip.org">zulip</a>.</p>',
+            '<p>Here is a link to <a href="http://www.zulip.org">zulip</a>.</p>',
         )
         self.assertEqual(
             message_history_1[1]["rendered_content"],
-            "<p>Here is a link to " '<a href="http://www.zulipchat.com">zulip</a>.</p>',
+            '<p>Here is a link to <a href="http://www.zulipchat.com">zulip</a>.</p>',
         )
         self.assertEqual(
             message_history_1[1]["content_html_diff"],
             (
-                '<p>Here is a link to <a href="http://www.zulipchat.com"'
+                '<div><p>Here is a link to <a href="http://www.zulipchat.com"'
                 ">zulip "
                 '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com .'
                 '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
-                "</span> </a></p>"
+                "</span> </a></p></div>"
             ),
         )
 
@@ -629,36 +734,29 @@ class EditMessageTest(EditMessageTestCase):
 
         msg_id = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="This message has not been edited.",
         )
 
         result = self.client_get(f"/json/messages/{msg_id}/history")
 
-        self.assert_json_success(result)
-
-        message_history = result.json()["message_history"]
+        message_history = self.assert_json_success(result)["message_history"]
         self.assert_length(message_history, 1)
 
-    def test_user_info_for_updates(self) -> None:
+    def test_mentions_for_message_updates(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
         self.login_user(hamlet)
-        self.subscribe(hamlet, "Scotland")
-        self.subscribe(cordelia, "Scotland")
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(cordelia, "Denmark")
 
         msg_id = self.send_stream_message(
-            hamlet, "Scotland", content="@**Cordelia, Lear's daughter**"
+            hamlet, "Denmark", content="@**Cordelia, Lear's daughter**"
         )
 
-        user_info = get_user_info_for_message_updates(msg_id)
-        message_user_ids = user_info["message_user_ids"]
-        self.assertIn(hamlet.id, message_user_ids)
-        self.assertIn(cordelia.id, message_user_ids)
-
-        mention_user_ids = user_info["mention_user_ids"]
+        mention_user_ids = get_mentions_for_message_updates(msg_id)
         self.assertEqual(mention_user_ids, {cordelia.id})
 
     def test_edit_cases(self) -> None:
@@ -666,18 +764,24 @@ class EditMessageTest(EditMessageTestCase):
         history data structures."""
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
+        stream_1 = self.make_stream("stream 1")
+        stream_2 = self.make_stream("stream 2")
+        stream_3 = self.make_stream("stream 3")
+        self.subscribe(hamlet, stream_1.name)
+        self.subscribe(hamlet, stream_2.name)
+        self.subscribe(hamlet, stream_3.name)
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="topic 1", content="content 1"
+            self.example_user("hamlet"), "stream 1", topic_name="topic 1", content="content 1"
         )
+
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 2",
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
         self.assertEqual(history[0]["prev_content"], "content 1")
         self.assertEqual(history[0]["user_id"], hamlet.id)
         self.assertEqual(
@@ -692,36 +796,55 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "topic 2",
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 1")
+        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        self.assertEqual(history[0]["prev_topic"], "topic 1")
+        self.assertEqual(history[0]["topic"], "topic 2")
         self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(set(history[0].keys()), {"timestamp", LEGACY_PREV_TOPIC, "user_id"})
+        self.assertEqual(
+            set(history[0].keys()),
+            {"timestamp", "prev_topic", "topic", "user_id"},
+        )
 
+        self.login("iago")
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
+                "stream_id": stream_2.id,
+            },
+        )
+        self.assert_json_success(result)
+        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        self.assertEqual(history[0]["prev_stream"], stream_1.id)
+        self.assertEqual(history[0]["stream"], stream_2.id)
+        self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
+        self.assertEqual(set(history[0].keys()), {"timestamp", "prev_stream", "stream", "user_id"})
+
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
                 "content": "content 3",
                 "topic": "topic 3",
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
         self.assertEqual(history[0]["prev_content"], "content 2")
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 2")
+        self.assertEqual(history[0]["prev_topic"], "topic 2")
+        self.assertEqual(history[0]["topic"], "topic 3")
         self.assertEqual(history[0]["user_id"], hamlet.id)
         self.assertEqual(
             set(history[0].keys()),
             {
                 "timestamp",
-                LEGACY_PREV_TOPIC,
+                "prev_topic",
+                "topic",
                 "prev_content",
                 "user_id",
                 "prev_rendered_content",
@@ -730,41 +853,69 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 4",
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
+        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
         self.assertEqual(history[0]["prev_content"], "content 3")
         self.assertEqual(history[0]["user_id"], hamlet.id)
 
         self.login("iago")
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "topic 4",
+                "stream_id": stream_3.id,
             },
         )
         self.assert_json_success(result)
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
+        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+        self.assertEqual(history[0]["prev_topic"], "topic 3")
+        self.assertEqual(history[0]["topic"], "topic 4")
+        self.assertEqual(history[0]["prev_stream"], stream_2.id)
+        self.assertEqual(history[0]["stream"], stream_3.id)
         self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
+        self.assertEqual(
+            set(history[0].keys()),
+            {
+                "timestamp",
+                "prev_topic",
+                "topic",
+                "prev_stream",
+                "stream",
+                "user_id",
+            },
+        )
 
-        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
-        self.assertEqual(history[2][LEGACY_PREV_TOPIC], "topic 2")
-        self.assertEqual(history[3][LEGACY_PREV_TOPIC], "topic 1")
+        # Now, we verify that all of the edits stored in the message.edit_history
+        # have the correct data structure
+        history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
+
+        self.assertEqual(history[0]["prev_topic"], "topic 3")
+        self.assertEqual(history[0]["topic"], "topic 4")
+        self.assertEqual(history[0]["stream"], stream_3.id)
+        self.assertEqual(history[0]["prev_stream"], stream_2.id)
+
         self.assertEqual(history[1]["prev_content"], "content 3")
+
+        self.assertEqual(history[2]["prev_topic"], "topic 2")
+        self.assertEqual(history[2]["topic"], "topic 3")
         self.assertEqual(history[2]["prev_content"], "content 2")
-        self.assertEqual(history[4]["prev_content"], "content 1")
+
+        self.assertEqual(history[3]["stream"], stream_2.id)
+        self.assertEqual(history[3]["prev_stream"], stream_1.id)
+
+        self.assertEqual(history[4]["prev_topic"], "topic 1")
+        self.assertEqual(history[4]["topic"], "topic 2")
+
+        self.assertEqual(history[5]["prev_content"], "content 1")
 
         # Now, we verify that the edit history data sent back has the
         # correct filled-out fields
-        message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
+        message_edit_history = self.client_get(f"/json/messages/{msg_id}/history")
 
         json_response = orjson.loads(message_edit_history.content)
 
@@ -773,47 +924,63 @@ class EditMessageTest(EditMessageTestCase):
         i = 0
         for entry in message_history:
             expected_entries = {"content", "rendered_content", "topic", "timestamp", "user_id"}
-            if i in {0, 2, 3}:
+            if i in {0, 2, 4}:
                 expected_entries.add("prev_topic")
-            if i in {1, 2, 4}:
+                expected_entries.add("topic")
+            if i in {1, 2, 5}:
                 expected_entries.add("prev_content")
                 expected_entries.add("prev_rendered_content")
                 expected_entries.add("content_html_diff")
+            if i in {0, 3}:
+                expected_entries.add("prev_stream")
+                expected_entries.add("stream")
             i += 1
             self.assertEqual(expected_entries, set(entry.keys()))
-        self.assert_length(message_history, 6)
-        self.assertEqual(message_history[0]["prev_topic"], "topic 3")
+        self.assert_length(message_history, 7)
         self.assertEqual(message_history[0]["topic"], "topic 4")
-        self.assertEqual(message_history[1]["topic"], "topic 3")
-        self.assertEqual(message_history[2]["topic"], "topic 3")
-        self.assertEqual(message_history[2]["prev_topic"], "topic 2")
-        self.assertEqual(message_history[3]["topic"], "topic 2")
-        self.assertEqual(message_history[3]["prev_topic"], "topic 1")
-        self.assertEqual(message_history[4]["topic"], "topic 1")
-
+        self.assertEqual(message_history[0]["prev_topic"], "topic 3")
+        self.assertEqual(message_history[0]["stream"], stream_3.id)
+        self.assertEqual(message_history[0]["prev_stream"], stream_2.id)
         self.assertEqual(message_history[0]["content"], "content 4")
+
+        self.assertEqual(message_history[1]["topic"], "topic 3")
         self.assertEqual(message_history[1]["content"], "content 4")
         self.assertEqual(message_history[1]["prev_content"], "content 3")
+
+        self.assertEqual(message_history[2]["topic"], "topic 3")
+        self.assertEqual(message_history[2]["prev_topic"], "topic 2")
         self.assertEqual(message_history[2]["content"], "content 3")
         self.assertEqual(message_history[2]["prev_content"], "content 2")
-        self.assertEqual(message_history[3]["content"], "content 2")
-        self.assertEqual(message_history[4]["content"], "content 2")
-        self.assertEqual(message_history[4]["prev_content"], "content 1")
 
-        self.assertEqual(message_history[5]["content"], "content 1")
+        self.assertEqual(message_history[3]["topic"], "topic 2")
+        self.assertEqual(message_history[3]["stream"], stream_2.id)
+        self.assertEqual(message_history[3]["prev_stream"], stream_1.id)
+        self.assertEqual(message_history[3]["content"], "content 2")
+
+        self.assertEqual(message_history[4]["topic"], "topic 2")
+        self.assertEqual(message_history[4]["prev_topic"], "topic 1")
+        self.assertEqual(message_history[4]["content"], "content 2")
+
         self.assertEqual(message_history[5]["topic"], "topic 1")
+        self.assertEqual(message_history[5]["content"], "content 2")
+        self.assertEqual(message_history[5]["prev_content"], "content 1")
+
+        self.assertEqual(message_history[6]["content"], "content 1")
+        self.assertEqual(message_history[6]["topic"], "topic 1")
 
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(
             allow_message_editing: bool,
-            message_content_edit_limit_seconds: int,
+            message_content_edit_limit_seconds: Union[int, str],
             edit_topic_policy: int,
         ) -> None:
             result = self.client_patch(
                 "/json/realm",
                 {
                     "allow_message_editing": orjson.dumps(allow_message_editing).decode(),
-                    "message_content_edit_limit_seconds": message_content_edit_limit_seconds,
+                    "message_content_edit_limit_seconds": orjson.dumps(
+                        message_content_edit_limit_seconds
+                    ).decode(),
                     "edit_topic_policy": edit_topic_policy,
                 },
             )
@@ -824,10 +991,10 @@ class EditMessageTest(EditMessageTestCase):
         ) -> None:
             new_topic = "topic" + unique_str
             new_content = "content" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             if not topic_only:
                 params_dict["content"] = new_content
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             self.assert_json_success(result)
             if topic_only:
                 self.check_topic(id_, topic_name=new_topic)
@@ -842,10 +1009,10 @@ class EditMessageTest(EditMessageTestCase):
             old_content = message.content
             new_topic = "topic" + unique_str
             new_content = "content" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             if not topic_only:
                 params_dict["content"] = new_content
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
 
@@ -856,7 +1023,7 @@ class EditMessageTest(EditMessageTestCase):
         self.login("iago")
         # send a message in the past
         id_ = self.send_stream_message(
-            self.example_user("iago"), "Scotland", content="content", topic_name="topic"
+            self.example_user("iago"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
@@ -873,27 +1040,26 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_error(id_, "C", "The time limit for editing this message has passed")
 
         # infinite time, all edits allowed
-        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_success(id_, "D")
 
-        # without allow_message_editing, nothing is allowed
+        # without allow_message_editing, editing content is not allowed but
+        # editing topic is allowed if topic-edit time limit has not passed
+        # irrespective of content-edit time limit.
         set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "E", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "B", True)
+
+        set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
+        do_edit_message_assert_success(id_, "E", True)
         set_message_editing_params(False, 120, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "F", "Your organization has turned off message editing", True
-        )
-        set_message_editing_params(False, 0, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "G", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "F", True)
+        set_message_editing_params(False, "unlimited", Realm.POLICY_ADMINS_ONLY)
+        do_edit_message_assert_success(id_, "G", True)
 
     def test_edit_topic_policy(self) -> None:
         def set_message_editing_params(
             allow_message_editing: bool,
-            message_content_edit_limit_seconds: int,
+            message_content_edit_limit_seconds: Union[int, str],
             edit_topic_policy: int,
         ) -> None:
             self.login("iago")
@@ -901,7 +1067,9 @@ class EditMessageTest(EditMessageTestCase):
                 "/json/realm",
                 {
                     "allow_message_editing": orjson.dumps(allow_message_editing).decode(),
-                    "message_content_edit_limit_seconds": message_content_edit_limit_seconds,
+                    "message_content_edit_limit_seconds": orjson.dumps(
+                        message_content_edit_limit_seconds
+                    ).decode(),
                     "edit_topic_policy": edit_topic_policy,
                 },
             )
@@ -910,8 +1078,8 @@ class EditMessageTest(EditMessageTestCase):
         def do_edit_message_assert_success(id_: int, unique_str: str, acting_user: str) -> None:
             self.login(acting_user)
             new_topic = "topic" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            params_dict = {"topic": new_topic}
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             self.assert_json_success(result)
             self.check_topic(id_, topic_name=new_topic)
 
@@ -923,8 +1091,8 @@ class EditMessageTest(EditMessageTestCase):
             old_topic = message.topic_name()
             old_content = message.content
             new_topic = "topic" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
-            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            params_dict = {"topic": new_topic}
+            result = self.client_patch(f"/json/messages/{id_}", params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
             msg = Message.objects.get(id=id_)
@@ -933,7 +1101,7 @@ class EditMessageTest(EditMessageTestCase):
 
         # send a message in the past
         id_ = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", content="content", topic_name="topic"
+            self.example_user("hamlet"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
@@ -941,71 +1109,107 @@ class EditMessageTest(EditMessageTestCase):
 
         # Guest user must be subscribed to the stream to access the message.
         polonius = self.example_user("polonius")
-        self.subscribe(polonius, "Scotland")
+        self.subscribe(polonius, "Denmark")
 
         # any user can edit the topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "A", "polonius")
 
         # only members can edit topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_MEMBERS_ONLY)
         do_edit_message_assert_error(
             id_, "B", "You don't have permission to edit this message", "polonius"
         )
         do_edit_message_assert_success(id_, "B", "cordelia")
 
         # only full members can edit topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_FULL_MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_FULL_MEMBERS_ONLY)
 
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
         cordelia.save()
+        hamlet.date_joined = timezone_now() - datetime.timedelta(days=9)
+        hamlet.save()
         do_edit_message_assert_error(
             id_, "C", "You don't have permission to edit this message", "cordelia"
+        )
+        # User who sent the message but is not a full member cannot edit
+        # the topic
+        do_edit_message_assert_error(
+            id_, "C", "You don't have permission to edit this message", "hamlet"
         )
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
         cordelia.save()
+        hamlet.date_joined = timezone_now() - datetime.timedelta(days=11)
+        hamlet.save()
         do_edit_message_assert_success(id_, "C", "cordelia")
+        do_edit_message_assert_success(id_, "CD", "hamlet")
 
         # only moderators can edit topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_MODERATORS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_MODERATORS_ONLY)
         do_edit_message_assert_error(
             id_, "D", "You don't have permission to edit this message", "cordelia"
+        )
+        # even user who sent the message but is not a moderator cannot edit the topic.
+        do_edit_message_assert_error(
+            id_, "D", "You don't have permission to edit this message", "hamlet"
         )
         do_edit_message_assert_success(id_, "D", "shiva")
 
         # only admins can edit the topics of messages
-        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_error(
             id_, "E", "You don't have permission to edit this message", "shiva"
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
-        # users cannot edit topics if allow_message_editing is False
-        set_message_editing_params(False, 0, Realm.POLICY_EVERYONE)
+        # even owners and admins cannot edit the topics of messages
+        set_message_editing_params(True, "unlimited", Realm.POLICY_NOBODY)
         do_edit_message_assert_error(
-            id_, "D", "Your organization has turned off message editing", "cordelia"
+            id_, "H", "You don't have permission to edit this message", "desdemona"
+        )
+        do_edit_message_assert_error(
+            id_, "H", "You don't have permission to edit this message", "iago"
         )
 
-        # non-admin users cannot edit topics sent > 72 hrs ago
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
+        # users can edit topics even if allow_message_editing is False
+        set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
+        do_edit_message_assert_success(id_, "D", "cordelia")
+
+        # non-admin users cannot edit topics sent > 1 week ago including
+        # sender of the message.
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
         message.save()
-        set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")
         do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
             id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
         )
+        do_edit_message_assert_error(
+            id_, "G", "The time limit for editing this message's topic has passed", "hamlet"
+        )
+
+        # set the topic edit limit to two weeks
+        do_set_realm_property(
+            hamlet.realm,
+            "move_messages_within_stream_limit_seconds",
+            604800 * 2,
+            acting_user=None,
+        )
+        do_edit_message_assert_success(id_, "G", "cordelia")
+        do_edit_message_assert_success(id_, "H", "hamlet")
 
         # anyone should be able to edit "no topic" indefinitely
         message.set_topic_name("(no topic)")
         message.save()
         do_edit_message_assert_success(id_, "D", "cordelia")
 
-    @mock.patch("zerver.lib.actions.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1087,7 +1291,244 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
-    @mock.patch("zerver.lib.actions.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event")
+    def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Stream 123"
+        stream = self.make_stream(stream_name)
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        self.subscribe(hamlet, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="Topic1", content="Hello World"
+        )
+
+        self.subscribe(cordelia, stream_name)
+        self.login_user(cordelia)
+        self.subscribe(aaron, stream_name)
+        self.login_user(aaron)
+
+        already_muted_topic = "Already muted topic"
+        muted_topics = [
+            [stream_name, "Topic1"],
+            [stream_name, "Topic2"],
+            [stream_name, already_muted_topic],
+        ]
+        set_topic_mutes(hamlet, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        # Returns the users that need to be notified when a message topic is changed
+        def notify(user_id: int) -> Dict[str, Any]:
+            um = UserMessage.objects.get(message=message_id)
+            if um.user_profile_id == user_id:
+                return {
+                    "id": user_id,
+                    "flags": um.flags_list(),
+                }
+
+            else:
+                return {
+                    "id": user_id,
+                    "flags": ["read"],
+                }
+
+        users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
+        change_all_topic_name = "Topic 1 edited"
+
+        # This code path adds 9 (1 + 4/user with muted topics) + 1 to
+        # the number of database queries for moving a topic.
+        with self.assert_database_query_count(21):
+            check_update_message(
+                user_profile=hamlet,
+                message_id=message_id,
+                stream_id=None,
+                topic_name=change_all_topic_name,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+
+        for muting_user in get_users_muting_topic(stream.id, change_all_topic_name):
+            for user in users_to_be_notified:
+                if muting_user.id == user["id"]:
+                    user["muted_topics"] = get_topic_mutes(muting_user)
+                    break
+
+        self.assertFalse(topic_is_muted(hamlet, stream.id, "Topic1"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "Topic1"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "Topic1"))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, "Topic2"))
+        self.assertTrue(topic_is_muted(cordelia, stream.id, "Topic2"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "Topic2"))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_all_topic_name))
+        self.assertTrue(topic_is_muted(cordelia, stream.id, change_all_topic_name))
+        self.assertFalse(topic_is_muted(aaron, stream.id, change_all_topic_name))
+
+        change_later_topic_name = "Topic 1 edited again"
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=change_later_topic_name,
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_all_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+
+        # Make sure we safely handle the case of the new topic being already muted.
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=already_muted_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, already_muted_topic))
+
+        change_one_topic_name = "Topic 1 edited change_one"
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=change_one_topic_name,
+            propagate_mode="change_one",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_one_topic_name))
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+
+        # Move topic between two public streams.
+        desdemona = self.example_user("desdemona")
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic", content="Hello World"
+        )
+        new_public_stream = self.make_stream("New public stream")
+        self.subscribe(desdemona, new_public_stream.name)
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with self.assert_database_query_count(32):
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_public_stream.id,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "New topic"))
+
+        # Move topic to a private stream.
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic", content="Hello World"
+        )
+        new_private_stream = self.make_stream("New private stream", invite_only=True)
+        self.subscribe(desdemona, new_private_stream.name)
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with self.assert_database_query_count(33):
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_private_stream.id,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+
+        # Cordelia is not subscribed to the private stream, so
+        # Cordelia should have had the topic unmuted, while Desdemona
+        # should have had her muted topic record moved.
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(desdemona, new_private_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, new_private_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, new_private_stream.id, "New topic"))
+
+        # Move topic between two public streams with change in topic name.
+        desdemona = self.example_user("desdemona")
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic 2", content="Hello World"
+        )
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic 2"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with self.assert_database_query_count(32):
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_public_stream.id,
+                topic_name="changed topic name",
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic 2"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic 2"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic 2"))
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "changed topic name"))
+
+        # Moving only half the messages doesn't move MutedTopic records.
+        second_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="changed topic name", content="Second message"
+        )
+        with self.assert_database_query_count(24):
+            check_update_message(
+                user_profile=desdemona,
+                message_id=second_message_id,
+                stream_id=new_public_stream.id,
+                topic_name="final topic name",
+                propagate_mode="change_later",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(desdemona, new_public_stream.id, "final topic name"))
+        self.assertFalse(topic_is_muted(cordelia, new_public_stream.id, "final topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "final topic name"))
+
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1106,9 +1547,8 @@ class EditMessageTest(EditMessageTestCase):
 
         users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
         result = self.client_patch(
-            "/json/messages/" + str(message_id),
+            f"/json/messages/{message_id}",
             {
-                "message_id": message_id,
                 "content": "Hello @**everyone**",
             },
         )
@@ -1128,13 +1568,62 @@ class EditMessageTest(EditMessageTestCase):
                 called = True
         self.assertTrue(called)
 
+    def test_wildcard_mention_restrictions_when_editing(self) -> None:
+        cordelia = self.example_user("cordelia")
+        shiva = self.example_user("shiva")
+        self.login("cordelia")
+        stream_name = "Macbeth"
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(shiva, stream_name)
+        message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
+
+        realm = cordelia.realm
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            acting_user=None,
+        )
+
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use wildcard mentions in this stream."
+        )
+
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        message_id = self.send_stream_message(shiva, stream_name, "Hi everyone")
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_success(result)
+
     def test_topic_edit_history_saved_in_all_message(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topic1")
-        id4 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic2")
-        id5 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topic1")
+        id4 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic2")
+        id5 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
 
         def verify_edit_history(new_topic: str, len_edit_history: int) -> None:
             for msg_id in [id1, id2, id5]:
@@ -1147,7 +1636,9 @@ class EditMessageTest(EditMessageTestCase):
                 # Since edit history is being generated by do_update_message,
                 # it's contents can vary over time; So, to keep this test
                 # future proof, we only verify it's length.
-                self.assert_length(orjson.loads(msg.edit_history), len_edit_history)
+                self.assert_length(
+                    orjson.loads(assert_is_not_none(msg.edit_history)), len_edit_history
+                )
 
             for msg_id in [id3, id4]:
                 msg = Message.objects.get(id=msg_id)
@@ -1155,9 +1646,8 @@ class EditMessageTest(EditMessageTestCase):
 
         new_topic = "edited"
         result = self.client_patch(
-            "/json/messages/" + str(id1),
+            f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
             },
@@ -1168,9 +1658,8 @@ class EditMessageTest(EditMessageTestCase):
 
         new_topic = "edited2"
         result = self.client_patch(
-            "/json/messages/" + str(id1),
+            f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
             },
@@ -1181,19 +1670,14 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_topic_and_content_edit(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", "message 1", "topic"
-        )
-        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", "message 2", "topic")
-        id3 = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", "message 3", "topic"
-        )
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", "message 1", "topic")
+        id2 = self.send_stream_message(self.example_user("iago"), "Denmark", "message 2", "topic")
+        id3 = self.send_stream_message(self.example_user("hamlet"), "Denmark", "message 3", "topic")
 
         new_topic = "edited"
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
                 "content": "edited message",
@@ -1208,31 +1692,32 @@ class EditMessageTest(EditMessageTestCase):
         msg2 = Message.objects.get(id=id2)
         msg3 = Message.objects.get(id=id3)
 
-        msg1_edit_history = orjson.loads(msg1.edit_history)
-        self.assertTrue("prev_content" in msg1_edit_history[0].keys())
+        msg1_edit_history = orjson.loads(assert_is_not_none(msg1.edit_history))
+        self.assertTrue("prev_content" in msg1_edit_history[0])
 
         for msg in [msg2, msg3]:
-            self.assertFalse("prev_content" in orjson.loads(msg.edit_history)[0].keys())
+            self.assertFalse(
+                "prev_content" in orjson.loads(assert_is_not_none(msg.edit_history))[0]
+            )
 
         for msg in [msg1, msg2, msg3]:
             self.assertEqual(
                 new_topic,
                 msg.topic_name(),
             )
-            self.assert_length(orjson.loads(msg.edit_history), 1)
+            self.assert_length(orjson.loads(assert_is_not_none(msg.edit_history)), 1)
 
     def test_propagate_topic_forward(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topic1")
-        id4 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic2")
-        id5 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topic1")
+        id4 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic2")
+        id5 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
 
         result = self.client_patch(
-            "/json/messages/" + str(id1),
+            f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": "edited",
                 "propagate_mode": "change_later",
             },
@@ -1247,17 +1732,16 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_propagate_all_topics(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topic1")
-        id4 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic2")
-        id5 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
-        id6 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic3")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topic1")
+        id4 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic2")
+        id5 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
+        id6 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic3")
 
         result = self.client_patch(
-            "/json/messages/" + str(id2),
+            f"/json/messages/{id2}",
             {
-                "message_id": id2,
                 "topic": "edited",
                 "propagate_mode": "change_all",
             },
@@ -1273,15 +1757,14 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_propagate_all_topics_with_different_uppercase_letters(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="Topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topiC1")
-        id4 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="toPic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="Topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topiC1")
+        id4 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="toPic1")
 
         result = self.client_patch(
-            "/json/messages/" + str(id2),
+            f"/json/messages/{id2}",
             {
-                "message_id": id2,
                 "topic": "edited",
                 "propagate_mode": "change_all",
             },
@@ -1305,11 +1788,11 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
             },
             HTTP_ACCEPT_LANGUAGE="de",
         )
@@ -1320,14 +1803,14 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 1)
         self.assertEqual(
             messages[0].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**",
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_realm_admin_cant_move_to_another_realm(self) -> None:
@@ -1343,13 +1826,12 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
         )
 
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_move_message_realm_admin_cant_move_to_private_stream_without_subscription(
         self,
@@ -1364,13 +1846,12 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
         )
 
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_move_message_realm_admin_cant_move_from_private_stream_without_subscription(
         self,
@@ -1389,7 +1870,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": verona.id,
                 "propagate_mode": "change_all",
             },
@@ -1433,7 +1913,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(new_msg_id),
             {
-                "message_id": new_msg_id,
                 "stream_id": verona.id,
                 "propagate_mode": "change_all",
             },
@@ -1458,11 +1937,11 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id_later),
+            f"/json/messages/{msg_id_later}",
             {
-                "message_id": msg_id_later,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_later",
+                "send_notification_to_old_thread": "true",
             },
         )
         self.assert_json_success(result)
@@ -1472,7 +1951,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(messages[0].id, msg_id)
         self.assertEqual(
             messages[1].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**",
+            f"2 messages were moved from this topic to #**new stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
@@ -1480,7 +1959,98 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
             messages[2].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"2 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_stream_change_later_all_moved(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 4)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_stream_change_one(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id_later),
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].id, msg_id_later)
+        self.assertEqual(
+            messages[1].content,
+            f"A message was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_stream_change_all(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id_later),
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 4)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_between_streams_policy_setting(self) -> None:
@@ -1494,7 +2064,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                 },
@@ -1509,9 +2078,21 @@ class EditMessageTest(EditMessageTestCase):
             else:
                 self.assert_json_success(result)
                 messages = get_topic_messages(user_profile, old_stream, "test")
-                self.assert_length(messages, 1)
+                self.assert_length(messages, 0)
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
+
+        # Check sending messages when policy is Realm.POLICY_NOBODY.
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+        check_move_message_according_to_policy(UserProfile.ROLE_REALM_OWNER, expect_fail=True)
+        check_move_message_according_to_policy(
+            UserProfile.ROLE_REALM_ADMINISTRATOR, expect_fail=True
+        )
 
         # Check sending messages when policy is Realm.POLICY_ADMINS_ONLY.
         do_set_realm_property(
@@ -1567,6 +2148,92 @@ class EditMessageTest(EditMessageTestCase):
         check_move_message_according_to_policy(UserProfile.ROLE_GUEST, expect_fail=True)
         check_move_message_according_to_policy(UserProfile.ROLE_MEMBER)
 
+    def test_move_message_to_stream_time_limit(self) -> None:
+        shiva = self.example_user("shiva")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+
+        test_stream_1 = self.make_stream("test_stream_1")
+        test_stream_2 = self.make_stream("test_stream_2")
+
+        self.subscribe(shiva, test_stream_1.name)
+        self.subscribe(iago, test_stream_1.name)
+        self.subscribe(cordelia, test_stream_1.name)
+        self.subscribe(shiva, test_stream_2.name)
+        self.subscribe(iago, test_stream_2.name)
+        self.subscribe(cordelia, test_stream_2.name)
+
+        msg_id = self.send_stream_message(
+            cordelia, test_stream_1.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(cordelia, test_stream_1.name, topic_name="test", content="Second")
+
+        self.send_stream_message(cordelia, test_stream_1.name, topic_name="test", content="third")
+
+        do_set_realm_property(
+            cordelia.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_MEMBERS_ONLY,
+            acting_user=None,
+        )
+
+        def check_move_message_to_stream(
+            user: UserProfile,
+            old_stream: Stream,
+            new_stream: Stream,
+            *,
+            expect_error_message: Optional[str] = None,
+        ) -> None:
+            self.login_user(user)
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "stream_id": new_stream.id,
+                    "propagate_mode": "change_all",
+                    "send_notification_to_new_thread": orjson.dumps(False).decode(),
+                },
+            )
+
+            if expect_error_message is not None:
+                self.assert_json_error(result, expect_error_message)
+                messages = get_topic_messages(user, old_stream, "test")
+                self.assert_length(messages, 3)
+                messages = get_topic_messages(user, new_stream, "test")
+                self.assert_length(messages, 0)
+            else:
+                self.assert_json_success(result)
+                messages = get_topic_messages(user, old_stream, "test")
+                self.assert_length(messages, 0)
+                messages = get_topic_messages(user, new_stream, "test")
+                self.assert_length(messages, 3)
+
+        # non-admin and non-moderator users cannot move messages sent > 1 week ago
+        # including sender of the message.
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
+        message.save()
+        check_move_message_to_stream(
+            cordelia,
+            test_stream_1,
+            test_stream_2,
+            expect_error_message="The time limit for editing this message's stream has passed",
+        )
+
+        # admins and moderators can move messages irrespective of time limit.
+        check_move_message_to_stream(shiva, test_stream_1, test_stream_2, expect_error_message=None)
+        check_move_message_to_stream(iago, test_stream_2, test_stream_1, expect_error_message=None)
+
+        # set the topic edit limit to two weeks
+        do_set_realm_property(
+            cordelia.realm,
+            "move_messages_between_streams_limit_seconds",
+            604800 * 2,
+            acting_user=None,
+        )
+        check_move_message_to_stream(
+            cordelia, test_stream_1, test_stream_2, expect_error_message=None
+        )
+
     def test_move_message_to_stream_based_on_stream_post_policy(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_1", "new_stream_1", "test"
@@ -1584,7 +2251,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                 },
@@ -1599,12 +2265,14 @@ class EditMessageTest(EditMessageTestCase):
             else:
                 self.assert_json_success(result)
                 messages = get_topic_messages(user_profile, old_stream, "test")
-                self.assert_length(messages, 1)
+                self.assert_length(messages, 0)
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
         # Check when stream_post_policy is STREAM_POST_POLICY_ADMINS.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_ADMINS)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=user_profile
+        )
         error_msg = "Only organization administrators can send to this stream."
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_REALM_ADMINISTRATOR)
@@ -1614,7 +2282,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         # Check when stream_post_policy is STREAM_POST_POLICY_MODERATORS.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_MODERATORS)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=user_profile
+        )
         error_msg = "Only organization administrators and moderators can send to this stream."
         check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR)
@@ -1624,7 +2294,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         # Check when stream_post_policy is STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=user_profile
+        )
         error_msg = "New members cannot send to this stream."
 
         do_set_realm_property(
@@ -1643,7 +2315,9 @@ class EditMessageTest(EditMessageTestCase):
         # In this case also, guest is not allowed as we do not allow guest to move
         # messages between streams in any case, so stream_post_policy of new stream does
         # not matter.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_EVERYONE)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_EVERYONE, acting_user=user_profile
+        )
         do_set_realm_property(
             user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
         )
@@ -1672,7 +2346,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "topic": "new topic",
@@ -1681,16 +2354,15 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_error(result, "You don't have permission to edit this message")
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, old_stream, "test")
-        self.assert_length(messages, 1)
+        self.assert_length(messages, 0)
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 4)
 
@@ -1699,31 +2371,30 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with queries_captured() as queries, cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(53), cache_tries_captured() as cache_tries:
             result = self.client_patch(
-                "/json/messages/" + str(msg_id),
+                f"/json/messages/{msg_id}",
                 {
-                    "message_id": msg_id,
-                    "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
+                    "send_notification_to_old_thread": "true",
+                    "stream_id": new_stream.id,
                     "topic": "new topic",
                 },
             )
-        self.assert_length(queries, 52)
         self.assert_length(cache_tries, 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assert_length(messages, 1)
         self.assertEqual(
             messages[0].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>new topic**",
+            f"This topic was moved to #**new stream>new topic** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "new topic")
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
         self.assert_json_success(result)
 
@@ -1767,9 +2438,8 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "topic": "new topic",
@@ -1847,9 +2517,8 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -1871,9 +2540,8 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -1890,7 +2558,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_notify_old_thread_move_message_to_stream(self) -> None:
@@ -1899,9 +2567,8 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "true",
@@ -1915,11 +2582,465 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 1)
         self.assertEqual(
             messages[0].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**",
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 3)
+
+    def test_notify_new_topic(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 0)
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 4)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_old_topic(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 3)
+
+    def test_notify_both_topics(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 4)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_no_topic(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 0)
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 3)
+
+    def test_notify_new_topics_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "First")
+        self.assertEqual(
+            messages[1].content,
+            f"A message was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_old_topics_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0].content, "First")
+
+    def test_notify_both_topics_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "First")
+        self.assertEqual(
+            messages[1].content,
+            f"A message was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_no_topic_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0].content, "First")
+
+    def test_notify_resolve_topic_long_name(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login("hamlet")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        # Marking topics with a long name as resolved causes the new topic name to be truncated.
+        # We want to avoid having code paths believing that the topic is "moved" instead of
+        # "resolved" in this edge case.
+        topic_name = "a" * MAX_TOPIC_NAME_LENGTH
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name=topic_name, content="First"
+        )
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + topic_name
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        new_topic_name = truncate_topic(resolved_topic)
+        messages = get_topic_messages(user_profile, stream, new_topic_name)
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "First")
+        self.assertEqual(
+            messages[1].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
+        )
+
+        # Note that we are removing the prefix from the already truncated topic,
+        # so unresolved_topic_name will not be the same as the original topic_name
+        unresolved_topic_name = new_topic_name.replace(RESOLVED_TOPIC_PREFIX, "")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": unresolved_topic_name,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, unresolved_topic_name)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
+        )
+
+    def test_notify_resolve_and_move_topic(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login("hamlet")
+        stream = self.make_stream("public stream")
+        topic = "test"
+        self.subscribe(user_profile, stream.name)
+
+        # Resolve a topic normally first
+        msg_id = self.send_stream_message(user_profile, stream.name, "foo", topic_name=topic)
+        resolved_topic = RESOLVED_TOPIC_PREFIX + topic
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, resolved_topic)
+        self.assert_length(messages, 2)
+        self.assertEqual(
+            messages[1].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
+        )
+
+        # Test unresolving a topic while moving it (✔ test -> bar)
+        new_topic = "bar"
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": new_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, new_topic)
+        self.assert_length(messages, 4)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
+        )
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**public stream>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
+
+        # Now test moving the topic while also resolving it (bar -> ✔ baz)
+        new_resolved_topic = RESOLVED_TOPIC_PREFIX + "baz"
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": new_resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, new_resolved_topic)
+        self.assert_length(messages, 6)
+        self.assertEqual(
+            messages[4].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
+        )
+        self.assertEqual(
+            messages[5].content,
+            f"This topic was moved here from #**public stream>{new_topic}** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
+
+    def test_notify_resolve_topic_and_move_stream(self) -> None:
+        (
+            user_profile,
+            first_stream,
+            second_stream,
+            msg_id,
+            msg_id_later,
+        ) = self.prepare_move_topics("iago", "first stream", "second stream", "test")
+
+        # 'prepare_move_topics' sends 3 messages in the first_stream
+        messages = get_topic_messages(user_profile, first_stream, "test")
+        self.assert_length(messages, 3)
+
+        # Test resolving a topic (test ->  ✔ test) while changing stream (first_stream -> second_stream)
+        new_topic = "✔ test"
+        new_stream = second_stream
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "topic": new_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, new_stream, new_topic)
+        self.assert_length(messages, 5)
+        self.assertEqual(
+            messages[3].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
+        )
+        self.assertEqual(
+            messages[4].content,
+            f"This topic was moved here from #**{first_stream.name}>test** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
+
+        # Test unresolving a topic (✔ test -> test) while changing stream (second_stream -> first_stream)
+        new_topic = "test"
+        new_stream = first_stream
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "topic": new_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, new_stream, new_topic)
+        self.assert_length(messages, 7)
+        self.assertEqual(
+            messages[5].content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
+        )
+        self.assertEqual(
+            messages[6].content,
+            f"This topic was moved here from #**{second_stream.name}>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
 
     def parameterized_test_move_message_involving_private_stream(
         self,
@@ -1967,9 +3088,8 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         result = self.client_patch(
-            "/json/messages/" + str(msg_id),
+            f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1977,11 +3097,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
 
         messages = get_topic_messages(admin_user, old_stream, "test")
-        self.assert_length(messages, 1)
-        self.assertEqual(
-            messages[0].content,
-            f"This topic was moved by @_**Iago|{admin_user.id}** to #**new stream>test**",
-        )
+        self.assert_length(messages, 0)
 
         messages = get_topic_messages(admin_user, new_stream, "test")
         self.assert_length(messages, 3)
@@ -2049,24 +3165,32 @@ class EditMessageTest(EditMessageTestCase):
     def test_mark_topic_as_resolved(self) -> None:
         self.login("iago")
         admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+
         # Set the user's translation language to German to test that
         # it is overridden by the realm's default language.
         admin_user.default_language = "de"
         admin_user.save()
         stream = self.make_stream("new")
         self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(cordelia, stream.name)
+        self.subscribe(aaron, stream.name)
+
         original_topic = "topic 1"
-        id1 = self.send_stream_message(
-            self.example_user("hamlet"), "new", topic_name=original_topic
-        )
+        id1 = self.send_stream_message(hamlet, "new", topic_name=original_topic)
         id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
+
+        msg1 = Message.objects.get(id=id1)
+        do_add_reaction(aaron, msg1, "tada", "1f389", "unicode_emoji")
 
         # Check that we don't incorrectly send "unresolve topic"
         # notifications when asking the preserve the current topic.
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": original_topic,
                 "propagate_mode": "change_all",
             },
@@ -2074,13 +3198,9 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_error(result, "Nothing to change")
 
         resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "message_id": id1,
-                "topic": resolved_topic,
-                "propagate_mode": "change_all",
-            },
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id1,
             HTTP_ACCEPT_LANGUAGE="de",
         )
 
@@ -2099,12 +3219,28 @@ class EditMessageTest(EditMessageTestCase):
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
 
-        # Now move to a weird state and confirm no new messages
+        # Check topic resolved notification message is only unread for participants.
+        assert (
+            UserMessage.objects.filter(
+                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[2].id
+            )
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 3
+        )
+
+        assert (
+            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 0
+        )
+
+        # Now move to a weird state and confirm we get the normal topic moved message.
         weird_topic = "✔ ✔✔" + original_topic
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": weird_topic,
                 "propagate_mode": "change_all",
             },
@@ -2119,17 +3255,20 @@ class EditMessageTest(EditMessageTestCase):
             )
 
         messages = get_topic_messages(admin_user, stream, weird_topic)
-        self.assert_length(messages, 3)
+        self.assert_length(messages, 4)
         self.assertEqual(
             messages[2].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**new>✔ topic 1** by @_**Iago|{admin_user.id}**.",
         )
 
         unresolved_topic = original_topic
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": unresolved_topic,
                 "propagate_mode": "change_all",
             },
@@ -2144,10 +3283,30 @@ class EditMessageTest(EditMessageTestCase):
             )
 
         messages = get_topic_messages(admin_user, stream, unresolved_topic)
-        self.assert_length(messages, 4)
+        self.assert_length(messages, 5)
         self.assertEqual(
-            messages[3].content,
+            messages[2].content, f"@_**Iago|{admin_user.id}** has marked this topic as resolved."
+        )
+        self.assertEqual(
+            messages[4].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
+        )
+
+        # Check topic unresolved notification message is only unread for participants.
+        assert (
+            UserMessage.objects.filter(
+                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[4].id
+            )
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 3
+        )
+
+        assert (
+            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 0
         )
 
 
@@ -2155,7 +3314,7 @@ class DeleteMessageTest(ZulipTestCase):
     def test_delete_message_invalid_request_format(self) -> None:
         self.login("iago")
         hamlet = self.example_user("hamlet")
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
         result = self.client_delete(f"/json/messages/{msg_id + 1}", {"message_id": msg_id})
         self.assert_json_error(result, "Invalid message(s)")
         result = self.client_delete(f"/json/messages/{msg_id}")
@@ -2177,17 +3336,17 @@ class DeleteMessageTest(ZulipTestCase):
             )
             self.assert_json_success(result)
 
-        def test_delete_message_by_admin(msg_id: int) -> HttpResponse:
+        def test_delete_message_by_admin(msg_id: int) -> "TestHttpResponse":
             self.login("iago")
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
 
-        def test_delete_message_by_owner(msg_id: int) -> HttpResponse:
+        def test_delete_message_by_owner(msg_id: int) -> "TestHttpResponse":
             self.login("hamlet")
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
 
-        def test_delete_message_by_other_user(msg_id: int) -> HttpResponse:
+        def test_delete_message_by_other_user(msg_id: int) -> "TestHttpResponse":
             self.login("cordelia")
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
@@ -2196,7 +3355,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
 
         result = test_delete_message_by_owner(msg_id=msg_id)
         self.assert_json_error(result, "You don't have permission to delete this message")
@@ -2210,7 +3369,7 @@ class DeleteMessageTest(ZulipTestCase):
         # Test if message deleting is allowed.
         # Test if time limit is None(no limit).
         set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
         message.save()
@@ -2223,12 +3382,12 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test if time limit is non-zero.
         set_message_deleting_params(Realm.POLICY_EVERYONE, 240)
-        msg_id_1 = self.send_stream_message(hamlet, "Scotland")
+        msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
         message.save()
 
-        msg_id_2 = self.send_stream_message(hamlet, "Scotland")
+        msg_id_2 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_2)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=360)
         message.save()
@@ -2246,7 +3405,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Test multiple delete requests with no latency issues
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
         result = test_delete_message_by_owner(msg_id=msg_id)
         self.assert_json_success(result)
         result = test_delete_message_by_owner(msg_id=msg_id)
@@ -2328,11 +3487,11 @@ class DeleteMessageTest(ZulipTestCase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        self.send_stream_message(hamlet, "Scotland")
+        self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.message_edit.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )

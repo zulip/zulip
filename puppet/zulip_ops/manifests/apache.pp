@@ -3,7 +3,7 @@ class zulip_ops::apache {
                       'apache2',
                       'libapache2-mod-wsgi',
                       ]
-  package { $apache_packages: ensure => 'installed' }
+  package { $apache_packages: ensure => installed }
   service { 'apache2':
     require => Package['apache2'],
   }
@@ -19,7 +19,7 @@ class zulip_ops::apache {
     require => Package['apache2'],
     owner   => 'root',
     group   => 'root',
-    mode    => '0644',
+    mode    => '0755',
   }
 
   file { '/etc/apache2/ports.conf':
@@ -37,6 +37,6 @@ class zulip_ops::apache {
     require => Package[apache2],
     owner   => 'root',
     group   => 'root',
-    mode    => '0640',
+    mode    => '0750',
   }
 }

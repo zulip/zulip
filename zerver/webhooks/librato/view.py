@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -9,6 +9,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -20,7 +21,7 @@ SNAPSHOT = "image_url"
 class LibratoWebhookParser:
     ALERT_URL_TEMPLATE = "https://metrics.librato.com/alerts#/{alert_id}"
 
-    def __init__(self, payload: Dict[str, Any], attachments: List[Dict[str, Any]]) -> None:
+    def __init__(self, payload: Mapping[str, Any], attachments: List[Dict[str, Any]]) -> None:
         self.payload = payload
         self.attachments = attachments
 
@@ -64,7 +65,7 @@ class LibratoWebhookParser:
 
 
 class LibratoWebhookHandler(LibratoWebhookParser):
-    def __init__(self, payload: Dict[str, Any], attachments: List[Dict[str, Any]]) -> None:
+    def __init__(self, payload: Mapping[str, Any], attachments: List[Dict[str, Any]]) -> None:
         super().__init__(payload, attachments)
         self.payload_available_types = {
             ALERT_CLEAR: self.handle_alert_clear_message,
@@ -80,9 +81,9 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             if self.payload.get(available_type):
                 return self.payload_available_types[available_type]
         for available_type in self.attachments_available_types:
-            if self.attachments[0].get(available_type):
+            if len(self.attachments) > 0 and self.attachments[0].get(available_type):
                 return self.attachments_available_types[available_type]
-        raise Exception("Unexcepted message type")
+        raise Exception("Unexpected message type")
 
     def handle(self) -> str:
         return self.find_handle_method()()
@@ -162,7 +163,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 def api_librato_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(converter=orjson.loads, default={}),
+    payload: Mapping[str, Any] = REQ(json_validator=check_dict(), default={}),
 ) -> HttpResponse:
     try:
         attachments = orjson.loads(request.body).get("attachments", [])
@@ -181,4 +182,4 @@ def api_librato_webhook(
         raise JsonableError(str(e))
 
     check_send_webhook_message(request, user_profile, topic, content)
-    return json_success()
+    return json_success(request)

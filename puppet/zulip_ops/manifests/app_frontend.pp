@@ -8,7 +8,7 @@ class zulip_ops::app_frontend {
   $app_packages = [# Needed for the ssh tunnel to the redis server
     'autossh',
   ]
-  package { $app_packages: ensure => 'installed' }
+  package { $app_packages: ensure => installed }
   $redis_hostname = zulipconf('redis', 'hostname', undef)
 
   zulip_ops::firewall_allow{ 'smtp': }

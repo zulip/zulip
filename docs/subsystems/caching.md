@@ -44,7 +44,7 @@ doesn't need to worry about whether the data returned is up-to-date:
 it is. In the following sections, we'll talk about how we make this
 work.
 
-As a sidenote, the policy of using these accessor functions wherever
+As a side note, the policy of using these accessor functions wherever
 possible is a good idea, regardless of caching, because the functions
 also generally take care of details you might not think about
 (e.g. case-insensitive matching of stream names or email addresses).
@@ -219,9 +219,9 @@ test run).
 ### Manual testing and memcached
 
 Zulip's development environment will automatically flush (delete all
-keys in) `memcached` when provisioning and when starting `run-dev.py`.
+keys in) `memcached` when provisioning and when starting `run-dev`.
 You can run the server with that behavior disabled using
-`tools/run-dev.py --no-clear-memcached`.
+`tools/run-dev --no-clear-memcached`.
 
 ### Performance
 
@@ -256,10 +256,10 @@ avatars, similar details for streams, recent message history, etc.
 This data is fetched in the `/register` endpoint (or `page_params`
 for the web app), and kept correct over time. The key to keeping these
 state up to date is Zulip's
-[real-time events system](../subsystems/events-system.md), which
+[real-time events system](events-system.md), which
 allows the server to notify clients whenever state that might be
 cached by clients is changed. Clients are responsible for handling
 the events, updating their state, and rerendering any UI components
 that might display the modified state.
 
-[post-save-signals]: https://docs.djangoproject.com/en/2.0/ref/signals/#post-save
+[post-save-signals]: https://docs.djangoproject.com/en/3.2/ref/signals/#post-save

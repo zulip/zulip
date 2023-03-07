@@ -1,5 +1,6 @@
 class zulip_ops::profile::redis inherits zulip_ops::profile::base {
   include zulip::profile::redis
+  include zulip_ops::prometheus::redis
 
   # Need redis_password in its own file for Nagios
   file { '/var/lib/nagios/redis_password':

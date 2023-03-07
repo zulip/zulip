@@ -7,32 +7,28 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.cache import patch_cache_control
 
-from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import web_public_view, zulip_login_required, zulip_redirect_to_login
+from zerver.actions.user_settings import do_change_tos_version
+from zerver.context_processors import get_realm_from_request, get_valid_realm_from_request
+from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
-from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.user_counts import realm_user_count
 from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
-from zerver.views.auth import get_safe_redirect_to
-from zerver.views.portico import hello_view
 
 
 def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
     if user_profile is None:
         return False
 
-    if settings.TERMS_OF_SERVICE is None:  # nocoverage
+    if settings.TERMS_OF_SERVICE_VERSION is None:
         return False
 
-    if settings.TOS_VERSION is None:
-        return False
-
-    return int(settings.TOS_VERSION.split(".")[0]) > user_profile.major_tos_version()
+    return int(settings.TERMS_OF_SERVICE_VERSION.split(".")[0]) > user_profile.major_tos_version()
 
 
 @zulip_login_required
@@ -42,23 +38,34 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
-            do_change_tos_version(request.user, settings.TOS_VERSION)
+            assert settings.TERMS_OF_SERVICE_VERSION is not None
+            do_change_tos_version(request.user, settings.TERMS_OF_SERVICE_VERSION)
             return redirect(home)
     else:
         form = ToSForm()
 
-    email = request.user.delivery_email
-    special_message_template = None
-    if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
-        special_message_template = "zerver/" + settings.FIRST_TIME_TOS_TEMPLATE
+    context = {
+        "form": form,
+        "email": request.user.delivery_email,
+        # Text displayed when updating TERMS_OF_SERVICE_VERSION.
+        "terms_of_service_message": settings.TERMS_OF_SERVICE_MESSAGE,
+        # HTML template used when agreeing to terms of service the
+        # first time, e.g. after data import.
+        "first_time_terms_of_service_message_template": None,
+    }
+
+    if (
+        request.user.tos_version is None
+        and settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE is not None
+    ):
+        context[
+            "first_time_terms_of_service_message_template"
+        ] = settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE
+
     return render(
         request,
         "zerver/accounts_accept_terms.html",
-        context={
-            "form": form,
-            "email": email,
-            "special_message_template": special_message_template,
-        },
+        context,
     )
 
 
@@ -74,10 +81,11 @@ def detect_narrowed_window(
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
 
-    if request.GET.get("stream"):
+    if "stream" in request.GET:
         try:
             # TODO: We should support stream IDs and PMs here as well.
             narrow_stream_name = request.GET.get("stream")
+            assert narrow_stream_name is not None
             (narrow_stream, ignored_sub) = access_stream_by_name(user_profile, narrow_stream_name)
             narrow = [["stream", narrow_stream.name]]
         except Exception:
@@ -102,23 +110,30 @@ def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    if not settings.ROOT_DOMAIN_LANDING_PAGE:
-        return home_real(request)
-
-    # If settings.ROOT_DOMAIN_LANDING_PAGE, sends the user the landing
-    # page, not the login form, on the root domain
-
     subdomain = get_subdomain(request)
-    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-        return home_real(request)
 
-    return hello_view(request)
+    # If settings.ROOT_DOMAIN_LANDING_PAGE and this is the root
+    # domain, send the user the landing page.
+    if (
+        settings.ROOT_DOMAIN_LANDING_PAGE
+        and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        and settings.CORPORATE_ENABLED
+    ):
+        from corporate.views.portico import hello_view
+
+        return hello_view(request)
+
+    realm = get_realm_from_request(request)
+    if realm is None:
+        return render(request, "zerver/invalid_realm.html", status=404)
+    if realm.allow_web_public_streams_access():
+        return web_public_view(home_real)(request)
+    return zulip_login_required(home_real)(request)
 
 
-@web_public_view
 def home_real(request: HttpRequest) -> HttpResponse:
     # Before we do any real work, check if the app is banned.
-    client_user_agent = request.META.get("HTTP_USER_AGENT", "")
+    client_user_agent = request.headers.get("User-Agent", "")
     (insecure_desktop_app, banned_desktop_app, auto_update_broken) = is_outdated_desktop_app(
         client_user_agent
     )
@@ -150,29 +165,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         realm = user_profile.realm
     else:
         realm = get_valid_realm_from_request(request)
-
-        # TODO: Ideally, we'd open Zulip directly as a spectator if
-        # the URL had clicked a link to content on a web-public
-        # stream.  We could maybe do this by parsing `next`, but it's
-        # not super convenient with Zulip's hash-based URL scheme.
-
-        # The "Access without an account" button on the login page
-        # submits a POST to this page with this hidden field set.
-        if request.POST.get("prefers_web_public_view") == "true":
-            request.session["prefers_web_public_view"] = True
-            # We serve a redirect here, rather than serving a page, to
-            # avoid browser "Confirm form resubmission" prompts on reload.
-            redirect_to = get_safe_redirect_to(request.POST.get("next"), realm.uri)
-            return redirect(redirect_to)
-
-        prefers_web_public_view = request.session.get("prefers_web_public_view")
-        if not prefers_web_public_view:
-            # For users who haven't opted into the spectator
-            # experience, we redirect to the login page.
-            return zulip_redirect_to_login(request, settings.HOME_NOT_LOGGED_IN)
-
-        # For users who have selected public access, we load the
-        # spectator experience.  We fall through to the shared code
+        # We load the spectator experience.  We fall through to the shared code
         # for loading the application, with user_profile=None encoding
         # that we're a spectator, not a logged-in user.
         user_profile = None

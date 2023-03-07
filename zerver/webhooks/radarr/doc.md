@@ -2,7 +2,7 @@ Receive Radarr notifications in Zulip!
 
 1.  {!create-stream.md!}
 
-1.  {!create-bot-construct-url-indented.md!}
+1.  {!create-bot-construct-url.md!}
 
 1.  Go to your Radarr dashboard. Click **Settings** and click **Connect**.
     Click the **+** icon.

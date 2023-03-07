@@ -87,8 +87,8 @@ from markdown.preprocessors import Preprocessor
 from pygments.lexers import find_lexer_class_by_name
 from pygments.util import ClassNotFound
 
-from zerver.lib.exceptions import MarkdownRenderingException
-from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.exceptions import MarkdownRenderingError
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 from zerver.lib.tex import render_tex
 
 # Global vars
@@ -135,9 +135,8 @@ Missing required -X argument in curl command:
 
     for line in lines:
         regex = r'curl [-](sS)?X "?(GET|DELETE|PATCH|POST)"?'
-        if line.startswith("curl"):
-            if re.search(regex, line) is None:
-                raise MarkdownRenderingException(error_msg.format(command=line.strip()))
+        if line.startswith("curl") and re.search(regex, line) is None:
+            raise MarkdownRenderingError(error_msg.format(command=line.strip()))
 
 
 CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {
@@ -211,7 +210,7 @@ class ZulipBaseHandler:
         """Returns a formatted text.
         Subclasses should override this method.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 def generic_handler(
@@ -415,16 +414,16 @@ class FencedBlockPreprocessor(Preprocessor):
     def run(self, lines: Iterable[str]) -> List[str]:
         """Match and store Fenced Code Blocks in the HtmlStash."""
 
+        from zerver.lib.markdown import ZulipMarkdown
+
         output: List[str] = []
 
         processor = self
         self.handlers: List[ZulipBaseHandler] = []
 
         default_language = None
-        try:
+        if isinstance(self.md, ZulipMarkdown) and self.md.zulip_realm is not None:
             default_language = self.md.zulip_realm.default_code_block_language
-        except AttributeError:
-            pass
         handler = OuterHandler(processor, output, self.run_content_validators, default_language)
         self.push(handler)
 
@@ -457,7 +456,7 @@ class FencedBlockPreprocessor(Preprocessor):
             self.checked_for_codehilite = True
 
         # If config is not empty, then the codehighlite extension
-        # is enabled, so we call it to highlite the code
+        # is enabled, so we call it to highlight the code
         if self.codehilite_conf:
             highliter = CodeHilite(
                 text,

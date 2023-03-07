@@ -32,24 +32,28 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
-from zerver.lib.actions import (
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
-    do_create_realm,
     do_create_user,
-    do_deactivate_user,
-    do_invite_users,
-    do_mark_all_as_read,
-    do_mark_stream_messages_as_read,
     do_reactivate_user,
+)
+from zerver.actions.invites import (
+    do_invite_users,
     do_resend_user_invite_email,
     do_revoke_user_invite,
-    do_update_message_flags,
-    update_user_activity_interval,
 )
+from zerver.actions.message_flags import (
+    do_mark_all_as_read,
+    do_mark_stream_messages_as_read,
+    do_update_message_flags,
+)
+from zerver.actions.user_activity import update_user_activity_interval
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
+from zerver.lib.timestamp import TimeZoneNotUTCError, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -62,9 +66,11 @@ from zerver.models import (
     Recipient,
     Stream,
     UserActivityInterval,
+    UserGroup,
     UserProfile,
     get_client,
     get_user,
+    is_cross_realm_bot_email,
 )
 
 
@@ -80,10 +86,13 @@ class AnalyticsTestCase(ZulipTestCase):
         self.default_realm = do_create_realm(
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
         )
+        self.administrators_user_group = UserGroup.objects.get(
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=self.default_realm, is_system_group=True
+        )
 
         # used to generate unique names in self.create_*
         self.name_counter = 100
-        # used as defaults in self.assertCountEquals
+        # used as defaults in self.assert_table_count
         self.current_property: Optional[str] = None
 
     # Lightweight creation of users, streams, and messages
@@ -121,6 +130,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "name": f"stream name {self.name_counter}",
             "realm": self.default_realm,
             "date_created": self.TIME_LAST_HOUR,
+            "can_remove_subscribers_group": self.administrators_user_group,
         }
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
@@ -149,13 +159,18 @@ class AnalyticsTestCase(ZulipTestCase):
             "content": "hi",
             "date_sent": self.TIME_LAST_HOUR,
             "sending_client": get_client("website"),
+            "realm_id": sender.realm_id,
         }
+        # For simplicity, this helper doesn't support creating cross-realm messages
+        # since it'd require adding an additional realm argument.
+        assert not is_cross_realm_bot_email(sender.delivery_email)
+
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
 
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(
+    def assert_table_count(
         self,
         table: Type[BaseCount],
         value: int,
@@ -212,14 +227,13 @@ class AnalyticsTestCase(ZulipTestCase):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
                 kwargs[key] = kwargs.get(key, value)
-            if table is not InstallationCount:
-                if "realm" not in kwargs:
-                    if "user" in kwargs:
-                        kwargs["realm"] = kwargs["user"].realm
-                    elif "stream" in kwargs:
-                        kwargs["realm"] = kwargs["stream"].realm
-                    else:
-                        kwargs["realm"] = self.default_realm
+            if table is not InstallationCount and "realm" not in kwargs:
+                if "user" in kwargs:
+                    kwargs["realm"] = kwargs["user"].realm
+                elif "stream" in kwargs:
+                    kwargs["realm"] = kwargs["stream"].realm
+                else:
+                    kwargs["realm"] = self.default_realm
             self.assertEqual(table.objects.filter(**kwargs).count(), 1)
         self.assert_length(arg_values, table.objects.count())
 
@@ -275,7 +289,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat = self.make_dummy_count_stat("test stat")
         with self.assertRaises(ValueError):
             process_count_stat(stat, installation_epoch() + 65 * self.MINUTE)
-        with self.assertRaises(TimezoneNotUTCException):
+        with self.assertRaises(TimeZoneNotUTCError):
             process_count_stat(stat, installation_epoch().replace(tzinfo=None))
 
     # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
@@ -759,9 +773,9 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(UserCount, 1, subgroup="private_message")
-        self.assertCountEquals(UserCount, 1, subgroup="huddle_message")
-        self.assertCountEquals(UserCount, 1, subgroup="public_stream")
+        self.assert_table_count(UserCount, 1, subgroup="private_message")
+        self.assert_table_count(UserCount, 1, subgroup="huddle_message")
+        self.assert_table_count(UserCount, 1, subgroup="public_stream")
 
     def test_messages_sent_by_client(self) -> None:
         stat = COUNT_STATS["messages_sent:client:day"]
@@ -1367,12 +1381,12 @@ class TestLoggingCountStats(AnalyticsTestCase):
         user = self.create_user(email="first@domain.tld")
         stream, _ = self.create_stream_with_recipient()
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         assertInviteCountEquals(2)
 
@@ -1382,32 +1396,28 @@ class TestLoggingCountStats(AnalyticsTestCase):
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
-        try:
+        with self.assertRaises(InvitationError):
             do_invite_users(
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(4)
 
         # Test inviting existing users
-        try:
+        with self.assertRaises(InvitationError):
             do_invite_users(
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit
@@ -1431,8 +1441,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         self.subscribe(user2, stream.name)
 
         self.send_personal_message(user1, user2)
-        client = get_client("website")
-        do_mark_all_as_read(user2, client)
+        do_mark_all_as_read(user2)
         self.assertEqual(
             1,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[
@@ -1463,7 +1472,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         )
 
         message = self.send_stream_message(user2, stream.name)
-        do_update_message_flags(user1, client, "add", "read", [message])
+        do_update_message_flags(user1, "add", "read", [message])
         self.assertEqual(
             4,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[

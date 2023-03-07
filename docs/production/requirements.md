@@ -4,37 +4,46 @@ To run a Zulip server, you will need:
 
 - A dedicated machine or VM
 - A supported OS:
-  - Ubuntu 20.04 Focal
-  - Ubuntu 18.04 Bionic
-  - Debian 11 Bullseye
-  - Debian 10 Buster
-- At least 2GB RAM, and 10GB disk space
-  - If you expect 100+ users: 4GB RAM, and 2 CPUs
+  - Ubuntu 20.04
+  - Ubuntu 22.04
+  - Debian 11
+- A supported CPU architecture:
+  - x86-64
+  - aarch64
+- At least 2 GB RAM, and 10 GB disk space
+  - If you expect 100+ users: 4 GB RAM, and 2 CPUs
+  - If you intend to [upgrade from Git][upgrade-from-git]: 3 GB RAM, or
+    2G and at least 1G of swap configured.
 - A hostname in DNS
 - Credentials for sending email
 
 For details on each of these requirements, see below.
+
+[upgrade-from-git]: upgrade.md#upgrading-from-a-git-repository
 
 ## Server
 
 #### General
 
 The installer expects Zulip to be the **only thing** running on the
-system; it will install system packages with `apt` (like Nginx,
-PostgreSQL, and Redis) and configure them for its own use. We
-strongly recommend using either a fresh machine instance in a cloud
-provider, a fresh VM, or a dedicated machine. If you decide to
-disregard our advice and use a server that hosts other services, we
-can't support you, but
-[we do have some notes on issues you'll encounter](install-existing-server.md).
+system; it will install system packages with `apt` (like nginx,
+PostgreSQL, and Redis) and configure them for its own use. We strongly
+recommend using either a fresh machine instance in a cloud provider, a
+fresh VM, [our Docker image][docker-zulip-homepage], or a dedicated
+machine. If you decide to disregard our advice and use a server that
+hosts other services, we can't support you, but [we do have some notes
+on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 20.04 Focal, 18.04 Bionic, Debian 11 Bullseye, and Debian 10 Buster
-are supported for running Zulip in production. 64-bit is recommended.
+Ubuntu 20.04, Ubuntu 22.04, and Debian 11
+are supported for running Zulip in production. You can also
+run Zulip on other platforms that support Docker using
+[docker-zulip][docker-zulip-homepage].
+
 We recommend installing on the newest supported OS release you're
-comfortable with, to save a bit of future work [upgrading the operating
-system][upgrade-os].
+comfortable with, to save a bit of future work [upgrading the
+operating system][upgrade-os].
 
 If you're using Ubuntu, the
 [Ubuntu universe repository][ubuntu-repositories] must be
@@ -45,21 +54,22 @@ sudo add-apt-repository universe
 sudo apt update
 ```
 
-[upgrade-os]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
+[docker-zulip-homepage]: https://github.com/zulip/docker-zulip#readme
+[upgrade-os]: upgrade.md#upgrading-the-operating-system
 [ubuntu-repositories]: https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
 
 #### Hardware specifications
 
 - CPU and memory: For installations with 100+ users you'll need a
-  minimum of **2 CPUs** and **4GB RAM**. For installations with fewer
-  users, 1 CPU and 2GB RAM is sufficient. We strongly recommend against
-  installing with less than 2GB of RAM, as you will likely experience
+  minimum of **2 CPUs** and **4 GB RAM**. For installations with fewer
+  users, 1 CPU and 2 GB RAM is sufficient. We strongly recommend against
+  installing with less than 2 GB of RAM, as you will likely experience
   out of memory issues installing dependencies. We recommend against
   using highly CPU-limited servers like the AWS `t2` style instances
   for organizations with hundreds of users (active or no).
 
-- Disk space: You'll need at least 10GB of free disk space for a
+- Disk space: You'll need at least 10 GB of free disk space for a
   server with dozens of users. We recommend using an SSD and avoiding
   cloud storage backends that limit the IOPS per second, since the
   disk is primarily used for the Zulip database.
@@ -70,20 +80,25 @@ on hardware requirements for larger organizations.
 #### Network and security specifications
 
 - Incoming HTTPS access (usually port 443, though this is
-  [configurable](../production/deployment.html#using-an-alternate-port))
+  [configurable](deployment.md#using-an-alternate-port))
   from the networks where your users are (usually, the public
   Internet).
 - Incoming port 80 access (optional). Zulip only serves content over
   HTTPS, and will redirect HTTP requests to HTTPS.
 - Incoming port 25 if you plan to enable Zulip's [incoming email
-  integration](../production/email-gateway.md).
+  integration](email-gateway.md).
+- Incoming port 4369 should be protected by a firewall to prevent
+  exposing `epmd`, an Erlang service which does not support binding
+  only to localhost. Leaving this exposed will allow unauthenticated
+  remote users to determine that the server is running RabbitMQ, and
+  on which port, though no further information is leaked.
 - Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
   that Zulip can properly manage image and website previews and mobile
   push notifications. Outgoing Internet access is not required if you
   [disable those
   features](https://zulip.com/help/allow-image-link-previews).
 - Outgoing SMTP access (usually port 587) to your [SMTP
-  server](../production/email.md) so that Zulip can send emails.
+  server](email.md) so that Zulip can send emails.
 - A domain name (e.g. `zulip.example.com`) that your users will use to
   access the Zulip server. In order to generate valid SSL
   certificates [with Certbot][doc-certbot], and to enable other
@@ -92,14 +107,18 @@ on hardware requirements for larger organizations.
   address as its external hostname (though we don't recommend that
   configuration).
 - Zulip supports [running behind a reverse proxy][reverse-proxy].
-- Zulip servers running inside a private network should configure the
-  [Smokescreen integration][smokescreen-proxy] to protect against
-  [SSRF attacks][ssrf], where users could make the Zulip server make
-  requests to private resources.
+- Zulip configures [Smokescreen, an outgoing HTTP
+  proxy][smokescreen-proxy], to protect against [SSRF attacks][ssrf],
+  which prevents user from making the Zulip server make requests to
+  private resources. If your network has its own outgoing HTTP proxy,
+  Zulip supports using that instead.
+
+Zulip does not, itself, require SSH, but most installations will also require
+access to incoming port 22 for SSH access for remote access.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-proxy]: ../production/deployment.html#using-an-outgoing-http-proxy
-[reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
+[smokescreen-proxy]: deployment.md#customizing-the-outgoing-http-proxy
+[reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
 [email-mirror-code]: https://github.com/zulip/zulip/blob/main/zerver/management/commands/email_mirror.py
 
 ## Credentials needed
@@ -119,8 +138,8 @@ installer.
 If you'd rather acquire an SSL certificate another way, see our [SSL
 certificate documentation](ssl-certificates.md).
 
-[doc-certbot]: ssl-certificates.html#certbot-recommended
-[doc-self-signed]: ssl-certificates.html#self-signed-certificate
+[doc-certbot]: ssl-certificates.md#certbot-recommended
+[doc-self-signed]: ssl-certificates.md#self-signed-certificate
 
 #### Outgoing email
 
@@ -129,10 +148,10 @@ certificate documentation](ssl-certificates.md).
   during the signup process, message notification emails, password
   reset, etc.). If you don't have an existing outgoing SMTP solution,
   read about
-  [free outgoing SMTP options and options for prototyping](email.html#free-outgoing-email-services).
+  [free outgoing SMTP options and options for prototyping](email.md#free-outgoing-email-services).
 
 Once you have met these requirements, see [full instructions for installing
-Zulip in production](../production/install.md).
+Zulip in production](install.md).
 
 [trusty-eol]: https://wiki.ubuntu.com/Releases
 
@@ -154,7 +173,7 @@ server services, Django dominates the resource requirements. One can
 run every service on its own system (as
 [docker-zulip](https://github.com/zulip/docker-zulip) does) but for
 most use cases, there's little scalability benefit to doing so. See
-[deployment options](../production/deployment.md) for details on
+[deployment options](deployment.md) for details on
 installing Zulip with a dedicated database server.
 
 - **Dedicated database**. For installations with hundreds of daily
@@ -163,11 +182,11 @@ installing Zulip with a dedicated database server.
 
 - **RAM:** We recommended more RAM for larger installations:
 
-  - With 25+ daily active users, 4GB of RAM.
-  - With 100+ daily active users, 8GB of RAM.
-  - With 400+ daily active users, 16GB of RAM for the Zulip
-    application server, plus 16GB for the database.
-  - With 2000+ daily active users 32GB of RAM, plus 32GB for the
+  - With 25+ daily active users, 4 GB of RAM.
+  - With 100+ daily active users, 8 GB of RAM.
+  - With 400+ daily active users, 16 GB of RAM for the Zulip
+    application server, plus 16 GB for the database.
+  - With 2000+ daily active users 32 GB of RAM, plus 32 GB for the
     database.
   - Roughly linear scaling beyond that.
 
@@ -182,27 +201,27 @@ installing Zulip with a dedicated database server.
 
 - **Disk for application server:** We recommend using [the S3 file
   uploads backend][s3-uploads] to store uploaded files at scale. With
-  the S3 backend configuration, we recommend 50GB of disk for the OS,
+  the S3 backend configuration, we recommend 50 GB of disk for the OS,
   Zulip software, logs and scratch/free space. Disk needs when
   storing uploads locally
 
 - **Disk for database:** SSD disk is highly recommended. For
-  installations where most messages have <100 recipients, 10GB per 1M
-  messages of history is sufficient plus 1GB per 1000 users is
+  installations where most messages have <100 recipients, 10 GB per 1M
+  messages of history is sufficient plus 1 GB per 1000 users is
   sufficient. If most messages are to public streams with 10K+ users
-  subscribed (like on chat.zulip.org), add 20GB per (1000 user
+  subscribed (like on chat.zulip.org), add 20 GB per (1000 user
   accounts) per (1M messages to public streams).
 
-- **Example:** When the
-  [chat.zulip.org](https://zulip.com/developer-community/) community server
+- **Example:** When
+  [the Zulip development community](https://zulip.com/development-community/) server
   had 12K user accounts (~300 daily actives) and 800K messages of
   history (400K to public streams), it was a default configuration
-  single-server installation with 16GB of RAM, 4 cores (essentially
-  always idle), and its database was using about 100GB of disk.
+  single-server installation with 16 GB of RAM, 4 cores (essentially
+  always idle), and its database was using about 100 GB of disk.
 
-- **Disaster recovery:** One can easily run a hot spare application
-  server and a hot spare database (using [PostgreSQL streaming
-  replication][streaming-replication]). Make sure the hot spare
+- **Disaster recovery:** One can easily run a warm spare application
+  server and a warm spare database (using [PostgreSQL warm standby
+  replicas][streaming-replication]). Make sure the warm spare
   application server has copies of `/etc/zulip` and you're either
   syncing `LOCAL_UPLOADS_DIR` or using the [S3 file uploads
   backend][s3-uploads].
@@ -227,6 +246,6 @@ For readers interested in technical details around what features
 impact Zulip's scalability, this [performance and scalability design
 document](../subsystems/performance.md) may also be of interest.
 
-[s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
-[streaming-replication]: ../production/export-and-import.html#postgresql-streaming-replication
+[s3-uploads]: upload-backends.md#s3-backend-configuration
+[streaming-replication]: deployment.md#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support

@@ -1,14 +1,15 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Union, cast
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, TypedDict
 
+import dateutil.parser as date_parser
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
-from typing_extensions import TypedDict
+from django_otp.middleware import is_verified
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
@@ -18,9 +19,13 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key_id,
 )
-from zerver.lib.exceptions import JsonableError, OrganizationAdministratorRequired
+from zerver.lib.exceptions import (
+    JsonableError,
+    OrganizationAdministratorRequiredError,
+    OrganizationOwnerRequiredError,
+)
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import ProfileDataElementValue
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -28,7 +33,9 @@ from zerver.models import (
     Service,
     UserProfile,
     get_realm_user_dicts,
+    get_user,
     get_user_profile_by_id_in_realm,
+    is_cross_realm_bot_email,
 )
 
 
@@ -72,7 +79,9 @@ def check_short_name(short_name_raw: str) -> str:
     return short_name
 
 
-def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[str, str]) -> None:
+def check_valid_bot_config(
+    bot_type: int, service_name: str, config_data: Mapping[str, str]
+) -> None:
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
         from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
@@ -96,7 +105,7 @@ def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[s
         for key, validator in config_options.items():
             value = config_data[key]
             error = validator(key, value)
-            if error:
+            if error is not None:
                 raise JsonableError(_("Invalid {} value {} ({})").format(key, value, error))
 
     elif bot_type == UserProfile.EMBEDDED_BOT:
@@ -119,9 +128,9 @@ def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[s
 def add_service(
     name: str,
     user_profile: UserProfile,
-    base_url: Optional[str] = None,
-    interface: Optional[int] = None,
-    token: Optional[str] = None,
+    base_url: str,
+    interface: int,
+    token: str,
 ) -> None:
     Service.objects.create(
         name=name, user_profile=user_profile, base_url=base_url, interface=interface, token=token
@@ -136,12 +145,12 @@ def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
         return
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_ADMINS_ONLY:
-        raise OrganizationAdministratorRequired()
+        raise OrganizationAdministratorRequiredError
     if (
         user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
         and bot_type == UserProfile.DEFAULT_BOT
     ):
-        raise OrganizationAdministratorRequired()
+        raise OrganizationAdministratorRequiredError
 
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
@@ -159,7 +168,7 @@ def is_administrator_role(role: int) -> bool:
 
 
 def bulk_get_users(
-    emails: List[str], realm: Optional[Realm], base_query: "QuerySet[UserProfile]" = None
+    emails: List[str], realm: Optional[Realm], base_query: Optional[QuerySet[UserProfile]] = None
 ) -> Dict[str, UserProfile]:
     if base_query is None:
         assert realm is not None
@@ -175,7 +184,7 @@ def bulk_get_users(
         query = base_query
         realm_id = 0
 
-    def fetch_users_by_email(emails: List[str]) -> List[UserProfile]:
+    def fetch_users_by_email(emails: List[str]) -> QuerySet[UserProfile]:
         # This should be just
         #
         # UserProfile.objects.select_related("realm").filter(email__iexact__in=emails,
@@ -238,6 +247,35 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
         raise JsonableError(_("No such bot"))
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
+
+    if target.can_create_users and not user_profile.is_realm_owner:
+        # Organizations owners are required to administer a bot with
+        # the can_create_users permission. User creation via the API
+        # is a permission not available even to organization owners by
+        # default, because it can be abused to send spam. Requiring an
+        # owner is intended to ensure organizational responsibility
+        # for use of this permission.
+        raise OrganizationOwnerRequiredError
+
+    return target
+
+
+def access_user_common(
+    target: UserProfile,
+    user_profile: UserProfile,
+    allow_deactivated: bool,
+    allow_bots: bool,
+    for_admin: bool,
+) -> UserProfile:
+    if target.is_bot and not allow_bots:
+        raise JsonableError(_("No such user"))
+    if not target.is_active and not allow_deactivated:
+        raise JsonableError(_("User is deactivated"))
+    if not for_admin:
+        # Administrative access is not required just to read a user.
+        return target
+    if not user_profile.can_admin_user(target):
+        raise JsonableError(_("Insufficient permission"))
     return target
 
 
@@ -258,16 +296,24 @@ def access_user_by_id(
         target = get_user_profile_by_id_in_realm(target_user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
-    if target.is_bot and not allow_bots:
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
+
+
+def access_user_by_email(
+    user_profile: UserProfile,
+    email: str,
+    *,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> UserProfile:
+    try:
+        target = get_user(email, user_profile.realm)
+    except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
-    if not target.is_active and not allow_deactivated:
-        raise JsonableError(_("User is deactivated"))
-    if not for_admin:
-        # Administrative access is not required just to read a user.
-        return target
-    if not user_profile.can_admin_user(target):
-        raise JsonableError(_("Insufficient permission"))
-    return target
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
 
 
 class Accounts(TypedDict):
@@ -333,7 +379,7 @@ def validate_user_custom_profile_field(
 
 
 def validate_user_custom_profile_data(
-    realm_id: int, profile_data: List[Dict[str, Union[int, ProfileDataElementValue]]]
+    realm_id: int, profile_data: List[ProfileDataElementUpdateDict]
 ) -> None:
     # This function validate all custom field values according to their field type.
     for item in profile_data:
@@ -344,20 +390,31 @@ def validate_user_custom_profile_data(
             raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
         try:
-            validate_user_custom_profile_field(
-                realm_id, field, cast(ProfileDataElementValue, item["value"])
-            )
+            validate_user_custom_profile_field(realm_id, field, item["value"])
         except ValidationError as error:
             raise JsonableError(error.message)
 
 
-def can_access_delivery_email(user_profile: UserProfile) -> bool:
-    realm = user_profile.realm
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+def can_access_delivery_email(
+    user_profile: UserProfile,
+    target_user_id: int,
+    email_address_visibility: int,
+) -> bool:
+    if target_user_id == user_profile.id:
+        return True
+
+    # Bots always have email_address_visibility as EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        return True
+
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS:
         return user_profile.is_realm_admin
 
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
         return user_profile.is_realm_admin or user_profile.is_moderator
+
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS:
+        return not user_profile.is_guest
 
     return False
 
@@ -396,6 +453,14 @@ def format_user_row(
         date_joined=row["date_joined"].isoformat(),
     )
 
+    if acting_user is None:
+        # Remove data about other users which are not useful to spectators
+        # or can reveal personal information about a user.
+        # Only send day level precision date_joined data to spectators.
+        del result["is_billing_admin"]
+        del result["timezone"]
+        result["date_joined"] = str(date_parser.parse(result["date_joined"]).date())
+
     # Zulip clients that support using `GET /avatar/{user_id}` as a
     # fallback if we didn't send an avatar URL in the user object pass
     # user_avatar_url_field_optional in client_capabilities.
@@ -426,12 +491,16 @@ def format_user_row(
             client_gravatar=client_gravatar,
         )
 
-    if acting_user is not None and can_access_delivery_email(acting_user):
+    if acting_user is not None and can_access_delivery_email(
+        acting_user, row["id"], row["email_address_visibility"]
+    ):
         result["delivery_email"] = row["delivery_email"]
+    else:
+        result["delivery_email"] = None
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
-        if row["email"] in settings.CROSS_REALM_BOT_EMAILS:
+        if is_cross_realm_bot_email(row["email"]):
             result["is_system_bot"] = True
 
         # Note that bot_owner_id can be None with legacy data.
@@ -477,7 +546,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
         if user.realm.string_id != settings.SYSTEM_BOT_REALM:  # nocoverage
             continue
         user_row = user_profile_to_user_row(user)
-        # Because we want to avoid clients becing exposed to the
+        # Because we want to avoid clients being exposed to the
         # implementation detail that these bots are self-owned, we
         # just set bot_owner_id=None.
         user_row["bot_owner_id"] = None
@@ -497,7 +566,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
 
 
 def get_custom_profile_field_values(
-    custom_profile_field_values: List[CustomProfileFieldValue],
+    custom_profile_field_values: Iterable[CustomProfileFieldValue],
 ) -> Dict[int, Dict[str, Any]]:
     profiles_by_user_id: Dict[int, Dict[str, Any]] = defaultdict(dict)
     for profile_field in custom_profile_field_values:
@@ -549,13 +618,48 @@ def get_raw_user_data(
     for row in user_dicts:
         if profiles_by_user_id is not None:
             custom_profile_field_data = profiles_by_user_id.get(row["id"], {})
-
+        client_gravatar_for_user = (
+            client_gravatar
+            and row["email_address_visibility"] == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
         result[row["id"]] = format_user_row(
             realm,
             acting_user=acting_user,
             row=row,
-            client_gravatar=client_gravatar,
+            client_gravatar=client_gravatar_for_user,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             custom_profile_field_data=custom_profile_field_data,
         )
     return result
+
+
+def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet[UserProfile]:
+    return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
+
+
+def is_2fa_verified(user: UserProfile) -> bool:
+    """
+    It is generally unsafe to call is_verified directly on `request.user` since
+    the attribute `otp_device` does not exist on an `AnonymousUser`, and `is_verified`
+    does not make sense without 2FA being enabled.
+
+    This wraps the checks for all these assumptions to make sure the call is safe.
+    """
+    # Explicitly require the caller to ensure that settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+    # is True before calling `is_2fa_verified`.
+    assert settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+    return is_verified(user)
+
+
+def get_users_with_access_to_real_email(user_profile: UserProfile) -> List[int]:
+    active_users = user_profile.realm.get_active_users()
+    user_ids_with_real_email_access = []
+    for user in active_users:
+        if can_access_delivery_email(
+            user,
+            user_profile.id,
+            user_profile.email_address_visibility,
+        ):
+            user_ids_with_real_email_access.append(user.id)
+
+    return user_ids_with_real_email_access

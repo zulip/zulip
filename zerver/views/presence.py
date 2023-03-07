@@ -6,8 +6,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from zerver.actions.presence import update_user_presence
+from zerver.actions.user_status import do_update_user_status
 from zerver.decorator import human_users_only
-from zerver.lib.actions import do_update_user_status, update_user_presence
 from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
@@ -60,7 +61,7 @@ def get_presence_backend(
     for val in result["presence"].values():
         val.pop("client", None)
         val.pop("pushable", None)
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 @human_users_only
@@ -77,7 +78,6 @@ def update_user_status_backend(
     # that the reactions endpoint would prefer such a change.
     emoji_type: Optional[str] = REQ("reaction_type", default=None),
 ) -> HttpResponse:
-
     if status_text is not None:
         status_text = status_text.strip()
 
@@ -126,7 +126,7 @@ def update_user_status_backend(
         reaction_type=emoji_type,
     )
 
-    return json_success()
+    return json_success(request)
 
 
 @human_users_only
@@ -167,11 +167,11 @@ def update_active_status_backend(
         except UserActivity.DoesNotExist:
             ret["zephyr_mirror_active"] = False
 
-    return json_success(ret)
+    return json_success(request, data=ret)
 
 
 def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
-    return json_success(get_presence_response(user_profile, slim_presence=False))
+    return json_success(request, data=get_presence_response(user_profile, slim_presence=False))

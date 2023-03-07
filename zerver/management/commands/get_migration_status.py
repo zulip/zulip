@@ -20,7 +20,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--database",
             default=DEFAULT_DB_ALIAS,
-            help="Nominates a database to synchronize. " 'Defaults to the "default" database.',
+            help='Nominates a database to synchronize. Defaults to the "default" database.',
         )
 
         parser.add_argument("--output", help="Path to store the status to (default to stdout).")

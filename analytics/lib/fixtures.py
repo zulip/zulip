@@ -59,7 +59,7 @@ def generate_time_series_data(
         )
     growth_base = growth ** (1.0 / (length - 1))
     values_no_noise = [
-        seasonality[i % len(seasonality)] * (growth_base ** i) for i in range(length)
+        seasonality[i % len(seasonality)] * (growth_base**i) for i in range(length)
     ]
 
     seed(random_seed)

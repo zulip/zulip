@@ -12,7 +12,7 @@ class zulip_ops::profile::staging_app_frontend {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/sites-enabled/zulip-staging':
-    ensure  => 'link',
+    ensure  => link,
     require => Package['nginx-full'],
     target  => '/etc/nginx/sites-available/zulip-staging',
     notify  => Service['nginx'],

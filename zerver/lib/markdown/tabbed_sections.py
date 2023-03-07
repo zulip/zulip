@@ -5,7 +5,7 @@ import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
@@ -53,10 +53,10 @@ TAB_SECTION_LABELS = {
     "desktop": "Desktop",
     "mobile": "Mobile",
     "mm-default": "Default installation",
+    "mm-cloud": "Cloud instance",
     "mm-docker": "Docker",
     "mm-gitlab-omnibus": "GitLab Omnibus",
-    "send-email-invitations": "Send email invitations",
-    "share-an-invite-link": "Share an invite link",
+    "mm-self-hosting-cloud-export": "Self hosting (cloud export)",
     "require-invitations": "Require invitations",
     "allow-anyone-to-join": "Allow anyone to join",
     "restrict-by-email-domain": "Restrict by email domain",
@@ -71,9 +71,28 @@ TAB_SECTION_LABELS = {
     "custom-proxy-settings": "Custom proxy settings",
     "stream": "From a stream view",
     "not-stream": "From other views",
-    "via-recent-topics": "Via recent topics",
+    "via-recent-conversations": "Via recent conversations",
     "via-left-sidebar": "Via left sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
+    "public-streams": "Public streams",
+    "private-streams": "Private streams",
+    "web-public-streams": "Web-public streams",
+    "via-user-card": "Via user card",
+    "via-organization-settings": "Via organization settings",
+    "via-personal-settings": "Via personal settings",
+    "default-subdomain": "Default subdomain",
+    "custom-subdomain": "Custom subdomain",
+    "zulip-cloud": "Zulip Cloud",
+    "self-hosting": "Self hosting",
+    "okta": "Okta",
+    "onelogin": "OneLogin",
+    "azuread": "AzureAD",
+    "keycloak": "Keycloak",
+    "logged-in": "If you are logged in",
+    "logged-out": "If you are logged out",
+    "user": "User",
+    "bot": "Bot",
+    "on-sign-up": "On sign-up",
 }
 
 

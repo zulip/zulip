@@ -1,11 +1,13 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 
 
-def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def backfill_subscription_log_events(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
     migration_time = timezone_now()
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
     Subscription = apps.get_model("zerver", "Subscription")
@@ -46,14 +48,13 @@ def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSch
     objects_to_create = []
 
 
-def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
     RealmAuditLog.objects.filter(event_type="subscription_created").delete()
     RealmAuditLog.objects.filter(event_type="subscription_deactivated").delete()
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0092_create_scheduledemail"),
     ]

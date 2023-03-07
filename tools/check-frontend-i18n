@@ -41,7 +41,7 @@ if __name__ == "__main__":
     if not found:
         sys.exit(0)
 
-    print(WARNING + "Translation strings contain handlebars:" + ENDC)
+    print(WARNING + "Translation strings contain Handlebars:" + ENDC)
     print("\n".join(found))
 
     print(

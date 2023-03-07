@@ -3,7 +3,7 @@ your build statuses.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Add the following to your `Config.XML` file.
 

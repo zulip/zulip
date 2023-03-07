@@ -12,16 +12,25 @@ exclude_lines =
     # Don't require coverage for __str__ statements just used for printing
     def __str__[(]self[)] -> .*:
     # Don't require coverage for errors about unsupported webhook event types
-    raise UnsupportedWebhookEventType
+    raise UnsupportedWebhookEventTypeError
     # Don't require coverage for blocks only run when type-checking
     if TYPE_CHECKING:
     # Don't require coverage for abstract methods; they're never called.
     @abstractmethod
     # PEP 484 overloading syntax
     ^\s*\.\.\.
+    # Skipped unit tests
+    @skip
 
 [run]
 data_file=var/.coverage
+
+# dynamic_context=test_function, combined with using
+# html_report(..., show_contexts=True), means the HTML report can detail
+# which test(s) executed each line with coverage. This has modest
+# overhead but is very useful for finding existing tests for a code path.
+dynamic_context=test_function
+
 omit =
     */zulip-venv-cache/*
     */migrations/*

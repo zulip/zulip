@@ -1,12 +1,12 @@
 class zulip::static_asset_compiler {
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $static_asset_compiler_packages = [
         # Used by makemessages i18n
         'gettext',
       ]
     }
-    'redhat': {
+    'RedHat': {
       $static_asset_compiler_packages = [
         'gettext',
       ]
@@ -16,5 +16,5 @@ class zulip::static_asset_compiler {
     }
   }
 
-  zulip::safepackage { $static_asset_compiler_packages: ensure => 'installed' }
+  zulip::safepackage { $static_asset_compiler_packages: ensure => installed }
 }

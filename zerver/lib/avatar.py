@@ -2,20 +2,22 @@ import urllib
 from typing import Any, Dict, Optional
 
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 from zerver.lib.avatar_hash import (
     gravatar_hash,
     user_avatar_content_hash,
     user_avatar_path_from_ids,
 )
-from zerver.lib.upload import MEDIUM_AVATAR_SIZE, upload_backend
+from zerver.lib.upload import get_avatar_url
+from zerver.lib.upload.base import MEDIUM_AVATAR_SIZE
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
 
 
 def avatar_url(
     user_profile: UserProfile, medium: bool = False, client_gravatar: bool = False
 ) -> Optional[str]:
-
     return get_avatar_field(
         user_id=user_profile.id,
         realm_id=user_profile.realm_id,
@@ -42,8 +44,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool = False) -> str:
         email=userdict["email"],
         medium=medium,
     )
-    url += "&version={:d}".format(userdict["avatar_version"])
-    return url
+    return append_url_query_string(url, "version={:d}".format(userdict["avatar_version"]))
 
 
 def get_avatar_field(
@@ -78,9 +79,8 @@ def get_avatar_field(
         will return None and let the client compute the gravatar
         url.
         """
-        if settings.ENABLE_GRAVATAR:
-            if avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
-                return None
+        if settings.ENABLE_GRAVATAR and avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+            return None
 
     """
     If we get this far, we'll compute an avatar URL that may be
@@ -94,14 +94,12 @@ def get_avatar_field(
         email=email,
         medium=medium,
     )
-    url += f"&version={avatar_version:d}"
-    return url
+    return append_url_query_string(url, f"version={avatar_version:d}")
 
 
 def get_gravatar_url(email: str, avatar_version: int, medium: bool = False) -> str:
     url = _get_unversioned_gravatar_url(email, medium)
-    url += f"&version={avatar_version:d}"
-    return url
+    return append_url_query_string(url, f"version={avatar_version:d}")
 
 
 def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
@@ -109,7 +107,10 @@ def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
         gravitar_query_suffix = f"&s={MEDIUM_AVATAR_SIZE}" if medium else ""
         hash_key = gravatar_hash(email)
         return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon{gravitar_query_suffix}"
-    return settings.DEFAULT_AVATAR_URI + "?x=x"
+    elif settings.DEFAULT_AVATAR_URI is not None:
+        return settings.DEFAULT_AVATAR_URI
+    else:
+        return staticfiles_storage.url("images/default-avatar.png")
 
 
 def _get_unversioned_avatar_url(
@@ -121,7 +122,7 @@ def _get_unversioned_avatar_url(
 ) -> str:
     if avatar_source == "U":
         hash_key = user_avatar_path_from_ids(user_profile_id, realm_id)
-        return upload_backend.get_avatar_url(hash_key, medium=medium)
+        return get_avatar_url(hash_key, medium=medium)
     assert email is not None
     return _get_unversioned_gravatar_url(email, medium)
 
@@ -140,10 +141,9 @@ def absolute_avatar_url(user_profile: UserProfile) -> str:
 def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
     new_avatar_hash = user_avatar_content_hash(ldap_avatar)
 
-    if user_profile.avatar_hash:
-        if user_profile.avatar_hash == new_avatar_hash:
-            # If an avatar exists and is the same as the new avatar,
-            # then, no need to change the avatar.
-            return False
+    if user_profile.avatar_hash and user_profile.avatar_hash == new_avatar_hash:
+        # If an avatar exists and is the same as the new avatar,
+        # then, no need to change the avatar.
+        return False
 
     return True

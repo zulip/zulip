@@ -2,7 +2,7 @@ Get Mention notifications within Zulip via Zapier!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your Mention feed, and click on your profile in the top-right
    corner. Select **Settings**. Click on **Integrations**. Select the

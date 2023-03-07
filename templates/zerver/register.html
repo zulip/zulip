@@ -1,10 +1,15 @@
 {% extends "zerver/portico_signup.html" %}
 {% set entrypoint = "register" %}
+
+{% block title %}
+<title>{{ _("Registration") }} | Zulip</title>
+{% endblock %}
+
 {#
 Gather other user information, after having confirmed
 their email address.
 
-Form is validated both client-side using jquery-validate (see signup.js) and server-side.
+Form is validated both client-side using jquery-validation (see signup.js) and server-side.
 #}
 
 {% block portico_content %}
@@ -12,7 +17,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
     <div class="center-block new-style" style="padding: 20px 0px">
 
         <div class="pitch">
-            {% if creating_new_team %}
+            {% if creating_new_realm %}
             <h1>{{ _('Create your organization') }}</h1>
             {% else %}
             <h1>{{ _('Create your account') }}</h1>
@@ -23,11 +28,12 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endtrans %}
         </div>
 
-        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('accounts_register') }}">
+        <form method="post" class="white-box" id="registration" action="{{ url('accounts_register') }}">
             {{ csrf_input }}
 
             <fieldset class="org-registration">
-                {% if creating_new_team %}
+                {% if creating_new_realm %}
+                <legend>{{ _('Your organization') }}</legend>
                 <div class="input-box">
                     <div class="inline-block relative">
                         <input id="id_team_name" class="required" type="text"
@@ -93,18 +99,15 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             {% endfor %}
                         {% endif %}
                     </div>
-                    <div class="help-text">
-                        {{ _("The URL users will use to access the new organization.") }}
-                    </div>
                 </div>
                 {% endif %}
             </fieldset>
 
             <fieldset class="user-registration">
-                {% if creating_new_team %}
+                {% if creating_new_realm %}
                 <legend>{{ _('Your account') }}</legend>
                 {% endif %}
-                {% if realm_name and not creating_new_team %}
+                {% if realm_name and not creating_new_realm %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
                     <div class="organization-name">{{ realm_name }}</div>
@@ -115,28 +118,51 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
+                    <input type="hidden" name="email_address_visibility" id="email_address_visibility"/>
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
                     <div id="id_email">{{ email }}</div>
+                    {% if not creating_new_realm %}
+                    <p id="new-user-email-address-visibility">
+                        <span class="current-selected-option">
+                            {% if default_email_address_visibility == email_address_visibility_admins_only %}
+                                {% trans %}Administrators of this Zulip organization will be able to see this email address.
+                                {% endtrans %}
+                            {% elif default_email_address_visibility == email_address_visibility_moderators %}
+                                {% trans %}Administrators and moderators of this Zulip organization will be able to see this email address.
+                                {% endtrans %}
+                            {% elif default_email_address_visibility == email_address_visibility_nobody %}
+                                {% trans %}Nobody in this Zulip organization will be able to see this email address.
+                                {% endtrans %}
+                            {% else %}
+                                {% trans %}Other users in this Zulip organization will be able to see this email address.
+                                {% endtrans %}
+                            {% endif %}
+                        </span>
+                        <a target="_blank" class="change_email_address_visibility" rel="noopener noreferrer">{{ _('Change') }}</a>
+                    </p>
+                    {% endif %}
                 </div>
 
                 {% if accounts %}
                 <div class="input-box">
-                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}</label>
-                </div>
-                <div id="source_realm_select_section" class="input-group m-10 inline-block">
-                    <select class="select" name="source_realm_id" id="source_realm_select">
-                        <option value=""
-                          {% if "source_realm_id" in form.data and form.data["source_realm_id"] == "" %}selected {% endif %}>
-                            {{ _('Don&rsquo;t import settings') }}
-                        </option>
-                        {% for account in accounts %}
-                        <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
-                          {% if ("source_realm_id" in form.data and account.realm_id == form.data["source_realm_id"]|int)
-                          or ("source_realm_id" not in form.data and loop.index0 == 0) %} selected {% endif %}>
-                            {{ account.realm_name }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <div class="inline-block relative">
+                        <select class="select" name="source_realm_id" id="source_realm_select">
+                            <option value=""
+                              {% if "source_realm_id" in form.data and form.data["source_realm_id"] == "" %}selected {% endif %}>
+                                {{ _('Don&rsquo;t import settings') }}
+                            </option>
+                            {% for account in accounts %}
+                            <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
+                              {% if ("source_realm_id" in form.data and account.realm_id == form.data["source_realm_id"]|int)
+                              or ("source_realm_id" not in form.data and loop.index0 == 0) %} selected {% endif %}>
+                                {{ account.realm_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}
+                        <a href="{{ root_domain_uri }}/help/import-your-settings"><i class="fa fa-question-circle"></i></a>
+                    </label>
                 </div>
                 {% endif %}
 
@@ -249,6 +275,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% endif %}
                 </div>
                 {% endif %}
+                {% if corporate_enabled %}
                 <div class="input-group">
                     <label for="id_enable_marketing_emails" class="inline-block checkbox marketing_emails_checkbox">
                         <input id="id_enable_marketing_emails" type="checkbox" name="enable_marketing_emails"
@@ -257,10 +284,11 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
                     </label>
                 </div>
+                {% endif %}
                 <div class="register-button-box">
                     <button class="register-button" type="submit">
                         <span>{{ _('Sign up') }}</span>
-                        <object class="loader" type="image/svg+xml" data="/static/images/loader-white.svg"></object>
+                        <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                     </button>
                     <input type="hidden" name="next" value="{{ next }}" />
                 </div>
@@ -269,5 +297,41 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
     </div>
 </div>
+
+{% if not creating_new_realm %}
+<div class="micromodal" id="change-email-address-visibility-modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    {{ _('Configure email address privacy') }}
+                </h1>
+                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    {{ _('Zulip lets you control which roles in the organization can view your email address.') }}
+                    {{ _('Do you want to change the privacy setting for your email from the default configuration for this organization?') }}
+                </p>
+                <label for="new_user_email_address_visibility">{{ _('Who can access your email address') }}</label>
+                <select id="new_user_email_address_visibility" class="modal_select">
+                    {% for value, name in email_address_visibility_options_dict.items() %}
+                        <option value="{{ value }}" {% if value == default_email_address_visibility %}selected{% endif %}>{{name}}</option>
+                    {% endfor %}
+                </select>
+                <p>
+                    {% trans %}You can also change this setting <a href="{{ root_domain_uri }}/help/configure-email-visibility" target="_blank" rel="noopener noreferrer">after you join</a>.{% endtrans %}
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn dialog_cancel_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
+                <button class="modal__btn dialog_submit_button">
+                    <span>{{ _('Confirm') }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}

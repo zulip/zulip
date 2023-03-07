@@ -22,7 +22,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 
-EVENTS_JS = "frontend_tests/node_tests/lib/events.js"
+EVENTS_JS = "web/tests/lib/events.js"
 
 # check for the venv
 from tools.lib import sanity_check
@@ -141,11 +141,13 @@ def from_openapi(node: Dict[str, Any]) -> Any:
         return UnionType([from_openapi(n) for n in node["oneOf"]])
 
     if node["type"] == "object":
-        if "additionalProperties" in node:
+        if (
+            "additionalProperties" in node
             # this might be a glitch in our current spec?  or
             # maybe I just understand it yet
-            if isinstance(node["additionalProperties"], dict):
-                return StringDictType(from_openapi(node["additionalProperties"]))
+            and isinstance(node["additionalProperties"], dict)
+        ):
+            return StringDictType(from_openapi(node["additionalProperties"]))
 
         if "properties" not in node:
             return dict

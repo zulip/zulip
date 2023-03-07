@@ -3,6 +3,7 @@ import logging
 import re
 import shlex
 import subprocess
+from email.headerregistry import Address
 from typing import Optional
 
 import orjson
@@ -31,7 +32,6 @@ kerberos_alter_egos = {
 def webathena_kerberos_login(
     request: HttpRequest, user_profile: UserProfile, cred: Optional[str] = REQ(default=None)
 ) -> HttpResponse:
-    global kerberos_alter_egos
     if cred is None:
         raise JsonableError(_("Could not find Kerberos credential"))
     if not user_profile.realm.webathena_enabled:
@@ -42,7 +42,7 @@ def webathena_kerberos_login(
         user = parsed_cred["cname"]["nameString"][0]
         if user in kerberos_alter_egos:
             user = kerberos_alter_egos[user]
-        assert user == user_profile.email.split("@")[0]
+        assert user == Address(addr_spec=user_profile.email).username
         # Limit characters in usernames to valid MIT usernames
         # This is important for security since DNS is not secure.
         assert re.match(r"^[a-z0-9_.-]+$", user) is not None
@@ -58,6 +58,10 @@ def webathena_kerberos_login(
     except Exception:
         raise JsonableError(_("Invalid Kerberos cache"))
 
+    if settings.PERSONAL_ZMIRROR_SERVER is None:
+        logging.error("PERSONAL_ZMIRROR_SERVER is not properly configured", stack_info=True)
+        raise JsonableError(_("We were unable to set up mirroring for you"))
+
     # TODO: Send these data via (say) RabbitMQ
     try:
         api_key = get_api_key(user_profile)
@@ -67,11 +71,9 @@ def webathena_kerberos_login(
             api_key,
             base64.b64encode(ccache).decode(),
         ]
-        subprocess.check_call(
-            ["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--", " ".join(map(shlex.quote, command))]
-        )
+        subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--", shlex.join(command)])
     except subprocess.CalledProcessError:
         logging.exception("Error updating the user's ccache", stack_info=True)
         raise JsonableError(_("We were unable to set up mirroring for you"))
 
-    return json_success()
+    return json_success(request)

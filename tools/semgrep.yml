@@ -39,32 +39,8 @@ rules:
         - zerver/migrations/0206_stream_rendered_description.py
         - zerver/migrations/0209_user_profile_no_empty_password.py
         - zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py
+        - zerver/migrations/0387_reupload_realmemoji_again.py
         - pgroonga/migrations/0002_html_escape_subject.py
-
-  - id: logging-format
-    languages: [python]
-    patterns:
-      - pattern-either:
-          - pattern: $LOGGER.debug($FORMATTED)
-          - pattern: $LOGGER.info($FORMATTED)
-          - pattern: $LOGGER.warning($FORMATTED)
-          - pattern: $LOGGER.error($FORMATTED)
-          - pattern: $LOGGER.critical($FORMATTED)
-          - pattern: $LOGGER.exception($FORMATTED)
-      - metavariable-pattern:
-          metavariable: $LOGGER
-          patterns:
-            - pattern-either:
-                - pattern: logging
-                - pattern: logger
-      - metavariable-pattern:
-          metavariable: $FORMATTED
-          patterns:
-            - pattern-either:
-                - pattern: ... .format(...)
-                - pattern: f"..."
-    severity: ERROR
-    message: "Pass format arguments to logging (https://docs.python.org/3/howto/logging.html#optimization)"
 
   - id: sql-format
     languages: [python]
@@ -100,34 +76,16 @@ rules:
     languages: [python]
     pattern-either:
       - pattern: |
-          def $F(..., $A: typing.List[...] = [...], ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.List[...]] = [...], ...) -> ...:
-              ...
-      - pattern: |
           def $F(..., $A: typing.List[...] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
               ...
       - pattern: |
           def $F(..., $A: typing.Optional[typing.List[...]] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
               ...
       - pattern: |
-          def $F(..., $A: typing.Dict[...] = {}, ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.Dict[...]] = {}, ...) -> ...:
-              ...
-      - pattern: |
           def $F(..., $A: typing.Dict[...] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
               ...
       - pattern: |
           def $F(..., $A: typing.Optional[typing.Dict[...]] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Set[...] = set(), ...) -> ...:
-              ...
-      - pattern: |
-          def $F(..., $A: typing.Optional[typing.Set[...]] = set(), ...) -> ...:
               ...
     severity: ERROR
     message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"
@@ -141,18 +99,6 @@ rules:
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
 
-  - id: eval
-    languages: [python]
-    pattern: eval
-    severity: ERROR
-    message: "Do not use eval under any circumstances; consider json.loads instead"
-
-  - id: typing-text
-    languages: [python]
-    pattern: typing.Text
-    severity: ERROR
-    message: "Use str instead of typing.Text"
-
   - id: change-user-is-active
     languages: [python]
     patterns:
@@ -165,4 +111,22 @@ rules:
           def change_user_is_active(...):
             ...
     message: "Use change_user_is_active to mutate user_profile.is_active"
+    severity: ERROR
+    paths:
+      exclude:
+        - zerver/migrations/0373_fix_deleteduser_dummies.py
+
+  - id: confirmation-object-get
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: Confirmation.objects.get(...)
+          - pattern: Confirmation.objects.filter(..., confirmation_key=..., ...)
+      - pattern-not-inside: |
+          def get_object_from_key(...):
+            ...
+    paths:
+      exclude:
+        - zerver/tests/
+    message: "Do not fetch a Confirmation object directly, use get_object_from_key instead"
     severity: ERROR

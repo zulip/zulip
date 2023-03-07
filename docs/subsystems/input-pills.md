@@ -18,15 +18,15 @@ The pills will automatically be inserted in before the ".input" in order.
 ## Basic usage
 
 ```js
-var pill_containter = $("#input_container");
+var $pill_container = $("#input_container");
 var pills = input_pill.create({
-    container: pill_container,
+    $container: $pill_container,
     create_item_from_text: user_pill.create_item_from_email,
     get_text_from_item: user_pill.get_email_from_item,
 });
 ```
 
-You can look at `static/js/user_pill.js` to see how the above
+You can look at `web/src/user_pill.js` to see how the above
 methods are implemented. Essentially you just need to convert
 from raw data (like an email) to structured data (like an object
 with display_value, email, and user_id for a user), and vice

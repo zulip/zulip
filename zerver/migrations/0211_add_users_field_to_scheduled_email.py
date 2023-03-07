@@ -2,12 +2,12 @@
 
 from django.conf import settings
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def set_users_for_existing_scheduledemails(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
     for email in ScheduledEmail.objects.all():
@@ -17,7 +17,6 @@ def set_users_for_existing_scheduledemails(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0210_stream_first_message_id"),
     ]

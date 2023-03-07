@@ -45,10 +45,10 @@ from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
 
 strip_whitespace_right = re.compile(
-    f"({BLOCK_TAG_START}-?\\s*(trans|pluralize).*?-{BLOCK_TAG_END})\\s+", re.U
+    f"({BLOCK_TAG_START}-?\\s*(trans|pluralize).*?-{BLOCK_TAG_END})\\s+"
 )
 strip_whitespace_left = re.compile(
-    f"\\s+({BLOCK_TAG_START}-\\s*(endtrans|pluralize).*?-?{BLOCK_TAG_END})", re.U
+    f"\\s+({BLOCK_TAG_START}-\\s*(endtrans|pluralize).*?-?{BLOCK_TAG_END})"
 )
 
 regexes = [
@@ -75,7 +75,6 @@ def strip_whitespaces(src: str) -> str:
 
 
 class Command(makemessages.Command):
-
     xgettext_options = makemessages.Command.xgettext_options
     for func, tag in tags:
         xgettext_options += [f'--keyword={func}:1,"{tag}"']
@@ -84,7 +83,7 @@ class Command(makemessages.Command):
         super().add_arguments(parser)
         parser.add_argument(
             "--frontend-source",
-            default="static/templates",
+            default="web/templates",
             help="Name of the Handlebars template directory",
         )
         parser.add_argument(
@@ -151,6 +150,8 @@ class Command(makemessages.Command):
         try:
             ignore_patterns = options.get("ignore_patterns", [])
             ignore_patterns.append("docs/*")
+            ignore_patterns.append("templates/zerver/emails/compiled/*")
+            ignore_patterns.append("templates/zerver/emails/custom/*")
             ignore_patterns.append("var/*")
             options["ignore_patterns"] = ignore_patterns
             super().handle(*args, **options)
@@ -189,9 +190,9 @@ class Command(makemessages.Command):
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
         for dirpath, dirnames, filenames in itertools.chain(
-            os.walk("static/js"), os.walk("static/shared/js")
+            os.walk("web/src"), os.walk("web/shared/src")
         ):
-            for filename in [f for f in filenames if f.endswith(".js") or f.endswith(".ts")]:
+            for filename in [f for f in filenames if f.endswith((".js", ".ts"))]:
                 if filename.startswith("."):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:
@@ -206,8 +207,8 @@ class Command(makemessages.Command):
                 "--additional-function-names=$t,$t_html",
                 "--format=simple",
                 "--ignore=**/*.d.ts",
-                "static/js/**/*.js",
-                "static/js/**/*.ts",
+                "web/src/**/*.js",
+                "web/src/**/*.ts",
             ]
         )
         translation_strings.extend(json.loads(extracted).values())
@@ -225,7 +226,10 @@ class Command(makemessages.Command):
         exclude = self.frontend_exclude
         process_all = self.frontend_all
 
-        paths = glob.glob(f"{self.default_locale_path}/*")
+        # After calling super().handle(), default_locale_path gets set on self
+        # so that we can reuse it here.
+        default_locale_path = self.default_locale_path  # type: ignore[attr-defined] # not in stubs
+        paths = glob.glob(f"{default_locale_path}/*")
         all_locales = [os.path.basename(path) for path in paths if os.path.isdir(path)]
 
         # Account for excluded locales

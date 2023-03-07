@@ -39,10 +39,34 @@ Since 500 errors in any Zulip server are usually a problem the server
 administrator should investigate and/or report upstream, we have this
 email reporting system configured to report errors by default.
 
-Zulip's optional [Sentry][sentry] integration will aggregate errors to
-show which users and realms are affected, any logging which happened
-prior to the exception, local variables in each frame of the
+### Sentry error logging
+
+Zulip's optional backend [Sentry][sentry] integration will aggregate
+errors to show which users and realms are affected, any logging which
+happened prior to the exception, local variables in each frame of the
 exception, and the full request headers which triggered it.
+
+You can enable it by:
+
+1.  Create a [project][sentry-project] in your Sentry organization
+    with a platform of "Django."
+2.  Copy your [Sentry DSN][sentry-dsn] into `/etc/zulip/settings.py`
+    as `SENTRY_DSN`:
+    ```python3
+    ## Controls the DSN used to report errors to Sentry.io
+    SENTRY_DSN = "https://bbb@bbb.ingest.sentry.io/1234"
+    ```
+3.  As the `zulip` user, restart Zulip by running:
+    ```shell
+    /home/zulip/deployments/current/scripts/restart-server
+    ```
+
+You may also want to enable Zulip's [Sentry deploy
+hook][sentry-deploy-hook].
+
+[sentry-project]: https://docs.sentry.io/product/projects/
+[sentry-dsn]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
+[sentry-relase-hook]: ../production/deployment.md#sentry-deploy-hook
 
 ### Backend logging
 
@@ -61,9 +85,9 @@ The main Zulip server log contains a line for each backend request.
 It also contains warnings, errors, and the full tracebacks for any
 Python exceptions. In production, it goes to
 `/var/log/zulip/server.log`; in development, it goes to the terminal
-where you run `run-dev.py`.
+where you run `run-dev`.
 
-In development, it's good to keep an eye on the `run-dev.py` console
+In development, it's good to keep an eye on the `run-dev` console
 as you work on backend changes, since it's a great way to notice bugs
 you just introduced.
 
@@ -110,6 +134,49 @@ great deal of Python processing overhead to marshall the data from the
 database into Django objects that is not accounted for in these
 numbers.
 
+#### Searching backend log files
+
+Zulip comes with a tool, `./scripts/log-search`, to quickly search
+through the main `server.log` log file based on a number of different
+axes -- including client IP address, client user-id, request path,
+response code. It can also search the NGINX logs, which provide
+similar information.
+
+Because often the requests to static resources, or to things like user
+avatars, are not as important, they are also filtered out of the
+output by default.
+
+The output shows timestamp, request duration, client IP address,
+response code, and request method, hostname, and path; any property
+which is limited by the tool is not displayed, for conciseness:
+
+```
+zulip@example-prod:~/deployments/current$ ./scripts/log-search realm-name
+22:30:36.593     1ms         2606:2800:220:1:248:1893:25c8:1946       302 GET    /
+22:30:42.508   366ms         2606:2800:220:1:248:1893:25c8:1946       200 GET    /login/
+23:18:30.977     1ms         93.184.216.34                            302 GET    /
+23:18:31.286   132ms         93.184.216.34                            200 GET    /login/
+23:18:48.094    20ms         93.184.216.34                            200 GET    /accounts/password/reset/
+23:18:51.520   149ms         93.184.216.34                            200 GET    /login/
+23:18:59.420    20ms         93.184.216.34                            200 GET    /accounts/password/reset/
+23:19:02.929  1300ms         93.184.216.34                            302 POST   /accounts/password/reset/
+23:19:03.056    93ms         93.184.216.34                            200 GET    /accounts/password/reset/done/
+23:19:08.911    26ms         93.184.216.34                            302 GET    /accounts/password/reset/OA/b56jfp-bd80ee99b98e703456b3bdcd91892be2/
+23:19:09.189   116ms         93.184.216.34                            200 GET    /accounts/password/reset/OA/set-password/
+23:19:18.743   215ms         93.184.216.34                            302 POST   /accounts/password/reset/OA/set-password/
+23:19:18.779    12ms         93.184.216.34                            200 GET    /accounts/password/done/
+23:19:20.796    12ms         93.184.216.34                            200 GET    /accounts/login/
+23:19:29.323   295ms 8@      93.184.216.34                            302 POST   /accounts/login/
+23:19:29.704   362ms 8@      93.184.216.34                            200 GET    /
+23:20:04.980   110ms 8@      93.184.216.34                            200 DELETE /json/users/me/subscriptions
+
+zulip@example-prod:~/deployments/current$ ./scripts/log-search 2606:2800:220:1:248:1893:25c8:1946
+22:30:36.593     1ms          302 GET    https://realm-one.example-prod.example.com/
+22:30:42.508   366ms          200 GET    https://realm-one.example-prod.example.com/login/
+```
+
+See `./scripts/log-search --help` for complete documentation.
+
 ## Blueslip frontend error reporting
 
 We have a custom library, called `blueslip` (named after the form used
@@ -124,7 +191,7 @@ might use). In development, this means displaying a highly visible
 overlay over the message view area, to make exceptions in testing a
 new feature hard to miss.
 
-- Blueslip is implemented in `static/js/blueslip.js`.
+- Blueslip is implemented in `web/src/blueslip.js`.
 - In order to capture essentially any error occurring in the browser,
   Blueslip listens for the `error` event on `window`, and has methods
   for being manually triggered by Zulip JavaScript code for warnings
@@ -133,7 +200,7 @@ new feature hard to miss.
   browser session, and includes them in reports to the server, so that
   one can see cases where exceptions chained together. You can print
   this log from the browser console using
-  `blueslip = require("./static/js/blueslip"); blueslip.get_log()`.
+  `blueslip = require("./src/blueslip"); blueslip.get_log()`.
 
 Blueslip supports several error levels:
 
@@ -167,9 +234,9 @@ and report to the server the following whenever a message is sent:
 - Whether the message was locally echoed.
 - If so, whether there was a disparity between the echoed content and
   the server-rendered content, which can be used for statistics on how
-  effective our [local echo system](../subsystems/markdown.md) is.
+  effective our [local echo system](markdown.md) is.
 
-The code is all in `zerver/lib/report.py` and `static/js/sent_messages.js`.
+The code is all in `zerver/lib/report.py` and `web/src/sent_messages.js`.
 
 We have similar reporting for the time it takes to narrow / switch to
 a new view:
@@ -179,7 +246,7 @@ a new view:
 - The time when the browser was idle again after switching views
   (intended to catch issues where we generate a lot of deferred work).
 
-[django-errors]: https://docs.djangoproject.com/en/2.2/howto/error-reporting/
+[django-errors]: https://docs.djangoproject.com/en/3.2/howto/error-reporting/
 [python-logging]: https://docs.python.org/3/library/logging.html
-[django-logging]: https://docs.djangoproject.com/en/2.2/topics/logging/
+[django-logging]: https://docs.djangoproject.com/en/3.2/topics/logging/
 [sentry]: https://sentry.io

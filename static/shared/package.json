@@ -1,9 +1,0 @@
-{
-  "name": "@zulip/shared",
-  "version": "0.0.6",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "katex": "^0.12.0",
-    "lodash": "^4.17.19"
-  }
-}

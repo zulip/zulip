@@ -70,7 +70,7 @@ class Command(compilemessages.Command):
             raise Exception(f"Unknown language {locale}")
 
     def get_locales(self) -> List[str]:
-        output = check_output(["git", "ls-files", "locale"], universal_newlines=True)
+        output = check_output(["git", "ls-files", "locale"], text=True)
         tracked_files = output.split()
         regex = re.compile(r"locale/(\w+)/LC_MESSAGES/django.po")
         locales = ["en"]
@@ -96,7 +96,7 @@ class Command(compilemessages.Command):
             locales.append("en")
             locales = list(set(locales))
 
-        for locale in locales:
+        for locale in sorted(locales):
             if locale == "en":
                 data["languages"].append(
                     {
@@ -138,7 +138,6 @@ class Command(compilemessages.Command):
             writer.write("\n")
 
     def get_translation_percentage(self, locale_path: str, locale: str) -> int:
-
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))
         not_translated = len(po.untranslated_entries())

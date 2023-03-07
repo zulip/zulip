@@ -14,14 +14,13 @@ import random
 import sys
 import time
 import traceback
+from typing import Any, Dict, List, NoReturn, Optional
 
 sys.path.append(".")
 sys.path.append("/home/zulip/deployments/current")
 from scripts.lib.setup_path import setup_path
 
 setup_path()
-
-from typing import Any, Dict, List, Optional
 
 import django
 import zulip
@@ -48,18 +47,17 @@ if not options.nagios and not options.munin:
     print("No output options specified! Please provide --munin or --nagios")
     sys.exit(0)
 
-if options.munin:
-    if options.config == "config":
-        print(
-            """graph_title Send-Receive times
+if options.munin and options.config == "config":
+    print(
+        """graph_title Send-Receive times
 graph_info The number of seconds it takes to send and receive a message from the server
 graph_args -u 5 -l 0
 graph_vlabel RTT (seconds)
 sendreceive.label Send-receive round trip time
 sendreceive.warning 3
 sendreceive.critical 5"""
-        )
-        sys.exit(0)
+    )
+    sys.exit(0)
 
 sys.path.append("/home/zulip/deployments/current")
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
@@ -78,7 +76,7 @@ states = {
 }
 
 
-def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None:
+def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> NoReturn:
     now = int(time.time())
     if msg is None:
         msg = f"send time was {timestamp}"
@@ -87,7 +85,7 @@ def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None
         f.write(f"{now}|{states[state]}|{state}|{msg}\n")
     os.rename(state_file_path + ".tmp", state_file_path)
     print(f"{state}: {msg}")
-    exit(states[state])
+    sys.exit(states[state])
 
 
 def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
@@ -97,7 +95,7 @@ def send_zulip(sender: zulip.Client, message: Dict[str, Any]) -> None:
 
 
 def get_zulips() -> List[Dict[str, Any]]:
-    global queue_id, last_event_id
+    global last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if "error" in res.get("result", {}):
         report("CRITICAL", msg="Error receiving Zulips, error was: {}".format(res["msg"]))

@@ -12,7 +12,9 @@ email addresses and send notifications.
 1. Fill out the section of `/etc/zulip/settings.py` headed "Outgoing
    email (SMTP) settings". This includes the hostname and typically
    the port to reach your SMTP provider, and the username to log in to
-   it. You'll also want to fill out the noreply email section.
+   it. If your SMTP server does not require authentication, leave
+   `EMAIL_HOST_USER` empty. You'll also want to fill out the noreply
+   email section.
 
 1. Put the password for the SMTP user account in
    `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For
@@ -205,7 +207,7 @@ aren't receiving emails from Zulip:
   will try to use the TLS protocol on port 465, which won't work.
 
 - Zulip's email sending configuration is based on the standard Django
-  [SMTP backend](https://docs.djangoproject.com/en/2.0/topics/email/#smtp-backend)
+  [SMTP backend](https://docs.djangoproject.com/en/3.2/topics/email/#smtp-backend)
   configuration. So if you're having trouble getting your email
   provider working, you may want to search for documentation related
   to using your email provider with Django.

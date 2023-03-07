@@ -4,11 +4,12 @@
 
 /docs/_build
 /static/generated
-/static/third
 /static/webpack-bundles
 /var/*
 !/var/puppeteer
 /var/puppeteer/*
 !/var/puppeteer/test_credentials.d.ts
+/web/generated
+/web/third
 /zulip-current-venv
 /zulip-py3-venv

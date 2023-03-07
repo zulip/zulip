@@ -1,0 +1,23 @@
+<tr data-subscriber-id="{{user_id}}">
+    <td class="subscriber-name">
+        <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">{{name}}</a>
+        {{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
+    </td>
+    {{#if email}}
+    <td class="subscriber-email">{{email}}</td>
+    {{else}}
+    <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>
+    {{/if}}
+    <td class="subscriber-user-id">{{user_id}}</td>
+    {{#if can_remove_subscribers}}
+    <td class="unsubscribe">
+        <div class="subscriber_list_remove">
+            <form class="remove-subscriber-form">
+                <button type="submit" name="unsubscribe" class="remove-subscriber-button button small rounded btn-danger">
+                    {{t 'Unsubscribe' }}
+                </button>
+            </form>
+        </div>
+    </td>
+    {{/if}}
+</tr>

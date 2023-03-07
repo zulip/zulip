@@ -1,17 +1,25 @@
 import re
+import sys
 from datetime import datetime
 from html import escape
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Collection, Dict, List, Optional, Sequence
+from urllib.parse import urlencode
 
-import pytz
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
-from django.db.models.query import QuerySet
 from django.template import loader
 from django.urls import reverse
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup
 
-eastern_tz = pytz.timezone("US/Eastern")
+from zerver.lib.url_encoding import append_url_query_string
+from zerver.models import UserActivity, get_realm
+
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
+
+eastern_tz = zoneinfo.ZoneInfo("America/New_York")
 
 
 if settings.BILLING_ENABLED:
@@ -21,7 +29,6 @@ if settings.BILLING_ENABLED:
 def make_table(
     title: str, cols: Sequence[str], rows: Sequence[Any], has_row_class: bool = False
 ) -> str:
-
     if not has_row_class:
 
         def fix_row(row: Any) -> Dict[str, Any]:
@@ -40,7 +47,7 @@ def make_table(
 
 
 def dictfetchall(cursor: CursorWrapper) -> List[Dict[str, Any]]:
-    "Returns all rows from a cursor as a dict"
+    """Returns all rows from a cursor as a dict"""
     desc = cursor.description
     return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
 
@@ -52,47 +59,59 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
         return ""
 
 
-def user_activity_link(email: str) -> mark_safe:
+def user_activity_link(email: str, user_profile_id: int) -> Markup:
     from analytics.views.user_activity import get_user_activity
 
-    url = reverse(get_user_activity, kwargs=dict(email=email))
+    url = reverse(get_user_activity, kwargs=dict(user_profile_id=user_profile_id))
     email_link = f'<a href="{escape(url)}">{escape(email)}</a>'
-    return mark_safe(email_link)
+    return Markup(email_link)
 
 
-def realm_activity_link(realm_str: str) -> mark_safe:
+def realm_activity_link(realm_str: str) -> Markup:
     from analytics.views.realm_activity import get_realm_activity
 
     url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
     realm_link = f'<a href="{escape(url)}">{escape(realm_str)}</a>'
-    return mark_safe(realm_link)
+    return Markup(realm_link)
 
 
-def realm_stats_link(realm_str: str) -> mark_safe:
+def realm_stats_link(realm_str: str) -> Markup:
     from analytics.views.stats import stats_for_realm
 
     url = reverse(stats_for_realm, kwargs=dict(realm_str=realm_str))
-    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(realm_str)}</a>'
-    return mark_safe(stats_link)
+    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i></a>'
+    return Markup(stats_link)
 
 
-def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
+def realm_support_link(realm_str: str) -> Markup:
+    support_url = reverse("support")
+    query = urlencode({"q": realm_str})
+    url = append_url_query_string(support_url, query)
+    support_link = f'<a href="{escape(url)}">{escape(realm_str)}</a>'
+    return Markup(support_link)
+
+
+def realm_url_link(realm_str: str) -> Markup:
+    url = get_realm(realm_str).uri
+    realm_link = f'<a href="{escape(url)}"><i class="fa fa-home"></i></a>'
+    return Markup(realm_link)
+
+
+def remote_installation_stats_link(server_id: int, hostname: str) -> Markup:
     from analytics.views.stats import stats_for_remote_installation
 
     url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
     stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(hostname)}</a>'
-    return mark_safe(stats_link)
+    return Markup(stats_link)
 
 
-def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
-    #: `Any` used above should be `Union(int, datetime)`.
-    #: However current version of `Union` does not work inside other function.
-    #: We could use something like:
-    # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
-    #: but that would require this long `Union` to carry on throughout inner functions.
-    summary: Dict[str, Dict[str, Any]] = {}
+def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, Any]:
+    #: The type annotation used above is clearly overly permissive.
+    #: We should perhaps use TypedDict to clearly lay out the schema
+    #: for the user activity summary.
+    summary: Dict[str, Any] = {}
 
-    def update(action: str, record: QuerySet) -> None:
+    def update(action: str, record: UserActivity) -> None:
         if action not in summary:
             summary[action] = dict(
                 count=record.count,
@@ -106,7 +125,9 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
             )
 
     if records:
-        summary["name"] = records[0].user_profile.full_name
+        first_record = next(iter(records))
+        summary["name"] = first_record.user_profile.full_name
+        summary["user_profile_id"] = first_record.user_profile.id
 
     for record in records:
         client = record.client.name

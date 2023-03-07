@@ -3,6 +3,7 @@ from typing import Iterable, List, Optional, Sequence, Union, cast
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.string_validation import check_stream_topic
 from zerver.models import (
     Realm,
     Stream,
@@ -32,15 +33,6 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
             raise JsonableError(_("Invalid user ID {}").format(user_id))
         user_profiles.append(user_profile)
     return user_profiles
-
-
-def validate_topic(topic: str) -> str:
-    assert topic is not None
-    topic = topic.strip()
-    if topic == "":
-        raise JsonableError(_("Topic can't be empty"))
-
-    return topic
 
 
 class Addressee:
@@ -110,7 +102,6 @@ class Addressee:
         topic_name: Optional[str],
         realm: Optional[Realm] = None,
     ) -> "Addressee":
-
         # For legacy reason message_to used to be either a list of
         # emails or a list of streams.  We haven't fixed all of our
         # callers yet.
@@ -126,9 +117,9 @@ class Addressee:
             else:
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
-                # callpath).
+                # call path).
                 if sender.default_sending_stream:
-                    # Use the users default stream
+                    # Use the user's default stream
                     stream_name_or_id = sender.default_sending_stream.id
                 else:
                     raise JsonableError(_("Missing stream"))
@@ -155,7 +146,8 @@ class Addressee:
 
     @staticmethod
     def for_stream(stream: Stream, topic: str) -> "Addressee":
-        topic = validate_topic(topic)
+        topic = topic.strip()
+        check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream=stream,
@@ -164,7 +156,8 @@ class Addressee:
 
     @staticmethod
     def for_stream_name(stream_name: str, topic: str) -> "Addressee":
-        topic = validate_topic(topic)
+        topic = topic.strip()
+        check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream_name=stream_name,
@@ -173,7 +166,8 @@ class Addressee:
 
     @staticmethod
     def for_stream_id(stream_id: int, topic: str) -> "Addressee":
-        topic = validate_topic(topic)
+        topic = topic.strip()
+        check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream_id=stream_id,

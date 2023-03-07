@@ -1,0 +1,18 @@
+{{! Client-side Handlebars template for rendering messages. }}
+
+{{#each message_groups}}
+    {{#with this}}
+        {{#if bookend_top}}
+        {{> bookend}}
+        {{/if}}
+
+        <div class="recipient_row" id="{{message_group_id}}">
+            {{> recipient_row use_match_properties=../use_match_properties}}
+            {{#each message_containers}}
+                {{#with this}}
+                {{> single_message use_match_properties=../../use_match_properties table_name=../../table_name}}
+                {{/with}}
+            {{/each}}
+        </div>
+    {{/with}}
+{{/each}}
