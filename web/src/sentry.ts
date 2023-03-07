@@ -12,7 +12,10 @@ type UserInfo = {
 };
 
 if (page_params.server_sentry_dsn) {
-    const url_regex = new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/");
+    const url_matches = [/^\//, new RegExp("^" + _.escapeRegExp(page_params.webpack_public_path))];
+    if (page_params.realm_uri !== undefined) {
+        url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
+    }
     const user_info: UserInfo = {
         realm: page_params.realm_sentry_key!,
         role: page_params.is_owner
@@ -38,14 +41,14 @@ if (page_params.server_sentry_dsn) {
         release: "zulip-server@" + ZULIP_VERSION,
         integrations: [
             new BrowserTracing({
-                tracePropagationTargets: [url_regex],
+                tracePropagationTargets: url_matches,
             }),
             new HttpClientIntegration({
                 failedRequestStatusCodes: [500, 502, 503, 504],
-                failedRequestTargets: [url_regex],
+                failedRequestTargets: url_matches,
             }),
         ],
-        allowUrls: [url_regex, page_params.webpack_public_path],
+        allowUrls: url_matches,
         sampleRate: page_params.server_sentry_sample_rate || 0,
         tracesSampleRate: page_params.server_sentry_trace_rate || 0,
         initialScope: {
