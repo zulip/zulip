@@ -754,15 +754,6 @@ strong {
                 );
             }
 
-            .search_list_item {
-                display: flex;
-                align-items: center;
-            }
-
-            .search_list_item .pill-container {
-                margin-left: 5px;
-            }
-
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
             in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
             Most of the style rules related to color, gradient etc. which are generally common throughout
@@ -2657,9 +2648,7 @@ select.invite-as {
         margin-right: 7px;
     }
 
-    .top-navbar-container,
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
+    .top-navbar-container {
         width: calc(100% - 84px);
     }
 
@@ -2735,12 +2724,6 @@ select.invite-as {
         margin-left: 40px;
         width: calc(100% - 108px);
     }
-    /* todo: Figure out why this has to be different
-       from above at this width and resolve it */
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
-    }
 
     .search_closed .fa-search {
         right: 115px;
@@ -2784,11 +2767,6 @@ select.invite-as {
 
     .spectator_narrow_login_button {
         height: var(--header-height) !important;
-    }
-
-    #search_query {
-        height: var(--header-height) !important;
-        vertical-align: text-bottom;
     }
 
     #streamlist-toggle-button {
