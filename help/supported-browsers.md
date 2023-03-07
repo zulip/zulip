@@ -13,13 +13,17 @@ browsers below are recommended.
 * [Edge](https://microsoft.com/en-us/edge/)
 * [Safari](https://apple.com/safari/)
 
-## Cross-protocol apps
+## Multi protocol chat apps
 
-Zulip is supported by most multi-protocol desktop chat apps like
+Zulip is supported by most browser-based multi protocol desktop chat apps like
 [Rambox](https://rambox.pro) and [Ferdium](https://ferdium.org/).
 
-We recommend choosing a product in this space that regularly releases
-security updates; several popular cross-protocol Electron apps have
-gone defunct over the years. Using a poorly maintained Electron app is
-a major security risk similar to using an old version of Chrome with
-dozens of published security vulnerabilities.
+!!! tip ""
+
+    Choose an app that releases regular security updates. Running
+    an out-of-date app is a major security risk for your computer.
+
+## Related articles
+
+* [Desktop installation guides](/help/desktop-app-install-guide)
+* [Zulip in a Terminal](/help/zulip-in-a-terminal)
