@@ -1165,6 +1165,10 @@ div.settings-radio-input-parent {
         .save-button-controls {
             display: block;
             margin: 0 0 10px;
+
+            &.hide {
+                display: none;
+            }
         }
     }
 }
