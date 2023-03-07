@@ -187,7 +187,7 @@ use `git grep assertLogs` to see dozens of correct examples.
 
 You should be able to quickly reproduce this failure with:
 
-test-backend --ban-console-output {self.id()}
+./tools/test-backend --ban-console-output {self.id()}
 
 Output:
 {extra_output_finder.full_extra_output.decode(errors="replace")}
