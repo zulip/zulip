@@ -48,7 +48,7 @@ Use `:)` and `:/` instead of typing `:smile:` and `:confused:`.
 {end_tabs}
 
 The list of supported emoticons is available
-[here](/help/enable-emoticon-translations).
+[here](/help/configure-emoticon-translations).
 
 ### Paste from another site
 

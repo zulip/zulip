@@ -20,6 +20,7 @@ preference settings, including the following:
       [All messages](/help/reading-strategies#all-messages))
     * [Light theme vs. dark theme](/help/dark-theme)
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
+    * [Time format](/help/change-the-time-format)
 * Notification settings, including:
     * [What types of messages trigger notifications][default-notifications]
     * [Configurations for email notifications](/help/email-notifications)
