@@ -51,6 +51,10 @@ function get_full_url(hash) {
 }
 
 function set_hash(hash) {
+    if (hash === window.location.hash) {
+        // Avoid adding duplicate entries in browser history.
+        return;
+    }
     if (history.pushState) {
         const url = get_full_url(hash);
         history.pushState(null, null, url);
