@@ -26,18 +26,18 @@ const search = zrequire("search");
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");
     $("#search_query").trigger("focus");
-    $(".search_button").prop("disabled", false);
+    $(".search_close_button").prop("disabled", false);
 
     search.clear_search_form();
 
     assert.equal($("#search_query").is_focused(), false);
     assert.equal($("#search_query").val(), "");
-    assert.equal($(".search_button").prop("disabled"), true);
+    assert.equal($(".search_close_button").prop("disabled"), true);
 });
 
 run_test("update_button_visibility", () => {
     const $search_query = $("#search_query");
-    const $search_button = $(".search_button");
+    const $search_button = $(".search_close_button");
 
     $search_query.is = () => false;
     $search_query.val("");
@@ -71,7 +71,7 @@ run_test("update_button_visibility", () => {
 run_test("initialize", ({mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
-    const $search_button = $(".search_button");
+    const $search_button = $(".search_close_button");
 
     mock_template("search_list_item.hbs", true, (data, html) => {
         assert.equal(typeof data.description_html, "string");
