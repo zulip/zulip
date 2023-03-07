@@ -16,8 +16,9 @@ if (page_params.server_sentry_dsn) {
     if (page_params.realm_uri !== undefined) {
         url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
     }
+    const sentry_key = page_params.realm_sentry_key || "(root)";
     const user_info: UserInfo = {
-        realm: page_params.realm_sentry_key!,
+        realm: sentry_key,
         role: page_params.is_owner
             ? "Organization owner"
             : page_params.is_admin
@@ -53,7 +54,7 @@ if (page_params.server_sentry_dsn) {
         tracesSampleRate: page_params.server_sentry_trace_rate || 0,
         initialScope: {
             tags: {
-                realm: page_params.realm_sentry_key || "(root)",
+                realm: sentry_key,
                 server_version: page_params.zulip_version,
             },
             user: user_info,
