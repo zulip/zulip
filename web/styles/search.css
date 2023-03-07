@@ -165,3 +165,37 @@
         }
     }
 }
+
+@media (width < $xl_min) {
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
+        width: calc(100% - 84px);
+    }
+}
+
+@media (width < $md_min) {
+    /* todo: Figure out why this has to be different
+       from top-navbar-border at this width and resolve it */
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
+        width: calc(100% - 123px);
+    }
+}
+
+@media (width < $sm_min) {
+    #search_query {
+        height: var(--header-height) !important;
+        vertical-align: text-bottom;
+    }
+}
+
+.typeahead-menu li a {
+    .search_list_item {
+        display: flex;
+        align-items: center;
+    }
+
+    .search_list_item .pill-container {
+        margin-left: 5px;
+    }
+}
