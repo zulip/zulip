@@ -82,6 +82,67 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
     return recent_invites
 
 
+def apply_invite_realm_heuristics(realm: Realm) -> None:
+    if realm.plan_type != Realm.PLAN_TYPE_LIMITED:
+        return
+    if realm._max_invites is not None:
+        return
+
+    # If they're a non-paid plan with default invitation limits,
+    # we further limit how many invitations can be sent in a day
+    # as a function of how many current users they have. The
+    # allowed ratio has some heuristics to lock down likely-spammy
+    # realms.  This ratio likely only matters for the first
+    # handful of invites; if those users accept, then the realm is
+    # unlikely to hit these limits.  If a real realm hits them,
+    # the resulting message suggests that they contact support if
+    # they have a real use case.
+    suspicion_score = 0
+    if zxcvbn(realm.string_id)["score"] == 4:
+        # Very high entropy realm names are suspicious
+        suspicion_score += 1
+
+    if not realm.description:
+        suspicion_score += 1
+
+    if realm.icon_source == Realm.ICON_FROM_GRAVATAR:
+        suspicion_score += 1
+
+    if realm.date_created >= timezone_now() - datetime.timedelta(hours=1):
+        suspicion_score += 1
+
+    current_user_count = len(UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True))
+    if current_user_count == 1:
+        suspicion_score += 1
+
+    estimated_sent = RealmCount.objects.filter(
+        realm=realm, property="messages_sent:message_type:day"
+    ).aggregate(messages=Sum("value"))
+    if estimated_sent["messages"] == 0:
+        suspicion_score += 1
+
+    if suspicion_score == 6:
+        permitted_ratio = 2
+    elif suspicion_score >= 3:
+        permitted_ratio = 3
+    else:
+        permitted_ratio = 5
+
+    # For now, simply log the data; this will change to a raise of
+    # InvitationError once we've done some auditing.
+    logging.warning(
+        "%s (suspicion %d/6) inviting %d more, have %d recent, %d max, but only %d current users.  Ratio %.1f, %d allowed",
+        realm.string_id,
+        suspicion_score,
+        num_invitees,
+        recent_invites,
+        realm.max_invites,
+        current_user_count,
+        (num_invitees + recent_invites) / current_user_count,
+        permitted_ratio,
+    )
+
+
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     """Discourage using invitation emails as a vector for carrying spam."""
     msg = _(
@@ -99,62 +160,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
             daily_limit_reached=True,
         )
 
-    if realm.plan_type == Realm.PLAN_TYPE_LIMITED and realm._max_invites is None:
-        # If they're a non-paid plan with default invitation limits,
-        # we further limit how many invitations can be sent in a day
-        # as a function of how many current users they have. The
-        # allowed ratio has some heuristics to lock down likely-spammy
-        # realms.  This ratio likely only matters for the first
-        # handful of invites; if those users accept, then the realm is
-        # unlikely to hit these limits.  If a real realm hits them,
-        # the resulting message suggests that they contact support if
-        # they have a real use case.
-        suspicion_score = 0
-        if zxcvbn(realm.string_id)["score"] == 4:
-            # Very high entropy realm names are suspicious
-            suspicion_score += 1
-
-        if not realm.description:
-            suspicion_score += 1
-
-        if realm.icon_source == Realm.ICON_FROM_GRAVATAR:
-            suspicion_score += 1
-
-        if realm.date_created >= timezone_now() - datetime.timedelta(hours=1):
-            suspicion_score += 1
-
-        current_user_count = len(
-            UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True)
-        )
-        if current_user_count == 1:
-            suspicion_score += 1
-
-        estimated_sent = RealmCount.objects.filter(
-            realm=realm, property="messages_sent:message_type:day"
-        ).aggregate(messages=Sum("value"))
-        if estimated_sent["messages"] == 0:
-            suspicion_score += 1
-
-        if suspicion_score == 6:
-            permitted_ratio = 2
-        elif suspicion_score >= 3:
-            permitted_ratio = 3
-        else:
-            permitted_ratio = 5
-
-        # For now, simply log the data; this will change to a raise of
-        # InvitationError once we've done some auditing.
-        logging.warning(
-            "%s (suspicion %d/6) inviting %d more, have %d recent, %d max, but only %d current users.  Ratio %.1f, %d allowed",
-            realm.string_id,
-            suspicion_score,
-            num_invitees,
-            recent_invites,
-            realm.max_invites,
-            current_user_count,
-            (num_invitees + recent_invites) / current_user_count,
-            permitted_ratio,
-        )
+    apply_invite_realm_heuristics(realm)
 
     default_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
     newrealm_age = datetime.timedelta(days=settings.INVITES_NEW_REALM_DAYS)
