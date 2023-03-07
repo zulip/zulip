@@ -432,6 +432,7 @@ export function initialize() {
             ),
             html_body: change_stream_info_modal,
             id: "change_stream_info_modal",
+            loading_spinner: true,
             on_click: save_stream_info,
             post_render() {
                 $("#change_stream_info_modal .dialog_submit_button")
@@ -461,6 +462,7 @@ export function initialize() {
         const new_description = $("#change_stream_description").val().trim();
 
         if (new_name === sub.name && new_description === sub.description) {
+            dialog_widget.hide_dialog_spinner();
             return;
         }
         if (new_name !== sub.name) {
@@ -470,9 +472,7 @@ export function initialize() {
             data.description = new_description;
         }
 
-        const $status_element = $(".stream_change_property_info");
-        dialog_widget.close_modal();
-        settings_ui.do_settings_change(channel.patch, url, data, $status_element);
+        dialog_widget.submit_api_request(channel.patch, url, data);
     }
 
     $("#streams_overlay_container").on("click", ".copy_email_button", (e) => {
