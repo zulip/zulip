@@ -26,4 +26,3 @@ Zulip is supported by most browser-based multi protocol desktop chat apps like
 ## Related articles
 
 * [Desktop installation guides](/help/desktop-app-install-guide)
-* [Zulip in a Terminal](/help/zulip-in-a-terminal)
