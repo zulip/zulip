@@ -5,4 +5,4 @@ the timestamp to the right of the message.
 
 ## Related articles
 
-* [Use 24-hour time](/help/change-the-time-format)
+* [Change the time format](/help/change-the-time-format)

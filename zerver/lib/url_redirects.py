@@ -72,6 +72,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     ),
     URLRedirect("/help/add-custom-emoji", "/help/custom-emoji"),
     URLRedirect("/help/night-mode", "/help/dark-theme"),
+    URLRedirect("/help/enable-emoticon-translations", "/help/configure-emoticon-translations"),
     URLRedirect("/help/web-public-streams", "/help/public-access-option"),
 ]
 

@@ -8906,7 +8906,7 @@ paths:
         - name: translate_emoticons
           in: query
           description: |
-            Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+            Whether to [translate emoticons to emoji](/help/configure-emoticon-translations)
             in messages the user sends.
           schema:
             type: boolean
@@ -10933,7 +10933,7 @@ paths:
                           translate_emoticons:
                             type: boolean
                             description: |
-                              Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+                              Whether to [translate emoticons to emoji](/help/configure-emoticon-translations)
                               in messages the user sends.
                           display_emoji_reaction_users:
                             type: boolean
@@ -12874,7 +12874,7 @@ paths:
                           translate_emoticons:
                             type: boolean
                             description: |
-                              Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+                              Whether to [translate emoticons to emoji](/help/configure-emoticon-translations)
                               in messages the user sends.
                           display_emoji_reaction_users:
                             type: boolean
@@ -13853,7 +13853,7 @@ paths:
         - name: translate_emoticons
           in: query
           description: |
-            Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+            Whether to [translate emoticons to emoji](/help/configure-emoticon-translations)
             in messages the user sends.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
