@@ -1,28 +1,3 @@
-/*
-This is the header, aka the navbar.
-*/
-$header_height: 40px;
-$header_height_sm: 30px;
-
-/*
-We have a 10px gutter below the header,
-which often needs to be respected by both
-the elements above it and below it on
-the y-axis, due to absolute positioning.
-*/
-$header_padding_bottom: 10px;
-
-/*
-Our sidebars (and anything that top-align
-with them) go beneath the header.
-*/
-$sidebar_top: calc($header_height + $header_padding_bottom);
-$sidebar_top_sm: calc($header_height_sm + $header_padding_bottom);
-
-$left_sidebar_collapse_widget_gutter: 10px;
-$left_sidebar_width: 270px;
-$right_sidebar_width: 250px;
-
 body,
 html {
     width: 100%;
@@ -55,6 +30,31 @@ body,
 
     --color-default-text: hsl(0, 0%, 15%);
     --color-date: hsl(0, 0%, 15%, 0.75);
+
+    /*
+    This is the header, aka the navbar.
+    */
+    --header-height: 40px;
+    @media (width < $sm_min) {
+        --header-height: 30px;
+    }
+
+    /*
+    We have a 10px gutter below the header,
+    which often needs to be respected by both
+    the elements above it and below it on
+    the y-axis, due to absolute positioning.
+    */
+    --header-padding-bottom: 10px;
+
+    /*
+    Our sidebars (and anything that top-align
+    with them) go beneath the header.
+    */
+    --sidebar-top: calc(var(--header-height) + var(--header-padding-bottom));
+    --left-sidebar-collapse-widget-gutter: 10px;
+    --left-sidebar-width: 270px;
+    --right-sidebar-width: 250px;
 }
 
 :root.dark-theme {
@@ -173,7 +173,7 @@ p.n-margin {
 .top-messages-logo {
     /* Since padding under message header is not transparent
        we need to position it below the padding. */
-    padding-top: $header_padding_bottom;
+    padding-top: var(--header-padding-bottom);
 }
 
 .alert-zulip-logo,
@@ -267,8 +267,8 @@ p.n-margin {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
-    height: $header_height;
-    padding-bottom: $header_padding_bottom;
+    height: var(--header-height);
+    padding-bottom: var(--header-padding-bottom);
     /* Since the headers are sticky, we need non-transparent background. */
     background-color: hsl(0, 0%, 100%);
 }
@@ -403,8 +403,8 @@ p.n-margin {
 }
 
 .column-right {
-    width: $right_sidebar_width;
-    max-width: $right_sidebar_width;
+    width: var(--right-sidebar-width);
+    max-width: var(--right-sidebar-width);
     position: absolute;
     right: 0;
     top: 0;
@@ -470,8 +470,8 @@ p.n-margin {
 }
 
 .column-left {
-    width: $left_sidebar_width;
-    max-width: $left_sidebar_width;
+    width: var(--left-sidebar-width);
+    max-width: var(--left-sidebar-width);
     position: absolute;
     left: 0;
     top: 0;
@@ -484,13 +484,13 @@ p.n-margin {
     .column-left .left-sidebar,
     .column-right .right-sidebar {
         position: fixed;
-        margin-top: $sidebar_top;
+        margin-top: var(--sidebar-top);
         z-index: 100;
     }
 
     .column-left .left-sidebar {
-        width: $left_sidebar_width;
-        padding-left: $left_sidebar_collapse_widget_gutter;
+        width: var(--left-sidebar-width);
+        padding-left: var(--left-sidebar-collapse-widget-gutter);
     }
 
     .column-right .right-sidebar {
@@ -506,9 +506,9 @@ p.n-margin {
 
 .column-middle,
 #compose-content {
-    margin-right: $right_sidebar_width;
+    margin-right: var(--right-sidebar-width);
     margin-left: calc(
-        $left_sidebar_width + $left_sidebar_collapse_widget_gutter
+        var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter)
     );
     position: relative;
 }
@@ -1105,13 +1105,9 @@ td.pointer {
 
     .message_header {
         position: sticky;
-        top: $sidebar_top;
+        top: var(--sidebar-top);
         z-index: 3;
         box-shadow: 0 -1px 0 0 hsl(0, 0%, 100%);
-
-        @media (width < $sm_min) {
-            top: $sidebar_top_sm;
-        }
 
         &.sticky_header {
             .recipient_row_date {
@@ -1733,9 +1729,9 @@ div.focused_table {
 #message_view_header {
     z-index: 2;
     float: left;
-    height: $header_height;
+    height: var(--header-height);
     width: 100%;
-    line-height: $header_height;
+    line-height: var(--header-height);
     font-size: 16px;
     display: flex;
     align-content: flex-start;
@@ -1913,7 +1909,7 @@ div.focused_table {
 #searchbox,
 #searchbox_legacy {
     width: 100%;
-    height: $header_height;
+    height: var(--header-height);
 
     .navbar-search:not(.expanded) {
         display: none;
@@ -1956,7 +1952,7 @@ div.focused_table {
     #search_query {
         width: 100%;
         font-size: 16px;
-        height: $header_height;
+        height: var(--header-height);
         padding: 0;
         padding-left: 5px;
         padding-right: 40px;
@@ -1964,7 +1960,7 @@ div.focused_table {
         border-radius: 0;
         font-family: "Source Sans 3", sans-serif;
         font-weight: 300;
-        line-height: $header_height;
+        line-height: var(--header-height);
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
@@ -2644,7 +2640,7 @@ select.invite-as {
 }
 
 #message_feed_container {
-    padding-top: $sidebar_top;
+    padding-top: var(--sidebar-top);
 }
 
 .screen {
@@ -2783,8 +2779,8 @@ select.invite-as {
                 /* We use both margin and padding to
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
-                margin-top: $header_height;
-                padding: $header_padding_bottom 15px 0 15px;
+                margin-top: var(--header-height);
+                padding: var(--header-padding-bottom) 15px 0 15px;
                 height: 100%;
                 right: 0;
             }
@@ -2847,12 +2843,12 @@ select.invite-as {
                 /* We use both margin and padding to
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
-                margin-top: $header_height;
-                padding-top: $header_padding_bottom;
+                margin-top: var(--header-height);
+                padding-top: var(--header-padding-bottom);
 
                 height: 100%;
                 padding-left: 10px;
-                width: $left_sidebar_width;
+                width: var(--left-sidebar-width);
             }
         }
     }
@@ -2934,21 +2930,21 @@ select.invite-as {
     #searchbox,
     #searchbox_legacy,
     .header {
-        line-height: $header_height_sm;
-        height: $header_height_sm;
+        line-height: var(--header-height);
+        height: var(--header-height);
     }
 
     .spectator_narrow_login_button {
-        height: $header_height_sm !important;
+        height: var(--header-height) !important;
     }
 
     #search_query {
-        height: $header_height_sm !important;
+        height: var(--header-height) !important;
         vertical-align: text-bottom;
     }
 
     #streamlist-toggle-button {
-        height: $header_height_sm;
+        height: var(--header-height);
         padding-top: 0;
         padding-bottom: 0;
     }
@@ -2981,7 +2977,7 @@ select.invite-as {
     }
 
     #floating_recipient_bar {
-        top: $sidebar_top_sm;
+        top: var(--sidebar-top);
     }
 
     .message_content {
