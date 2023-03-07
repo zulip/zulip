@@ -137,6 +137,10 @@
     margin-left: 12px;
     background-color: hsl(240, 96%, 68%);
     color: hsl(0, 0%, 100%) !important;
+
+    &:disabled {
+        background-color: hsl(0, 0%, 65%);
+    }
 }
 
 #read_receipts_error,
