@@ -1126,7 +1126,6 @@ div.settings-radio-input-parent {
 
         .settings {
             overflow: auto;
-            height: calc(100% - 20px);
             -webkit-overflow-scrolling: touch;
         }
     }
