@@ -82,10 +82,10 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
     return recent_invites
 
 
-def apply_invite_realm_heuristics(realm: Realm) -> None:
+def apply_invite_realm_heuristics(realm: Realm, recent_invites: int, num_invitees: int) -> None:
     if realm.plan_type != Realm.PLAN_TYPE_LIMITED:
         return
-    if realm._max_invites is not None:
+    if realm.max_invites != settings.INVITES_DEFAULT_REALM_DAILY_MAX:
         return
 
     # If they're a non-paid plan with default invitation limits,
@@ -160,7 +160,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
             daily_limit_reached=True,
         )
 
-    apply_invite_realm_heuristics(realm)
+    apply_invite_realm_heuristics(realm, recent_invites, num_invitees)
 
     default_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
     newrealm_age = datetime.timedelta(days=settings.INVITES_NEW_REALM_DAYS)
