@@ -415,6 +415,12 @@ h4.user_group_setting_subsection_title {
 
                 .large-icon {
                     display: inline-block;
+
+                    .zulip-icon {
+                        font-size: 20px;
+                        position: relative;
+                        top: 3px;
+                    }
                 }
 
                 .fa-lock {
@@ -828,9 +834,8 @@ h4.user_group_setting_subsection_title {
         .large-icon {
             display: inline-block;
             vertical-align: top;
-            margin-right: 5px;
+            margin-right: 8px;
             margin-top: -5px;
-            font-size: 1.5em;
 
             &.hash::after {
                 top: -1px;
@@ -838,8 +843,10 @@ h4.user_group_setting_subsection_title {
                 font-weight: 800;
             }
 
-            .zulip-icon-globe {
-                font-size: 15px;
+            .zulip-icon {
+                font-size: 18px;
+                position: relative;
+                top: 1px;
             }
         }
 

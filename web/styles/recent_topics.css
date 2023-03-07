@@ -458,8 +458,12 @@
         }
     }
 
-    .stream-privacy .zulip-icon.zulip-icon-globe {
-        left: -1px;
+    .stream-privacy {
+        .zulip-icon {
+            position: relative;
+            left: -1px;
+            top: 1.5px;
+        }
     }
 }
 

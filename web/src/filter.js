@@ -626,36 +626,47 @@ export class Filter {
         return "#"; // redirect to All
     }
 
-    get_icon() {
+    add_icon_data(context) {
         // We have special icons for the simple narrows available for the via sidebars.
         const term_types = this.sorted_term_types();
         switch (term_types[0]) {
             case "in-home":
             case "in-all":
-                return "home";
+                context.icon = "home";
+                break;
             case "stream":
                 if (!this._sub) {
-                    return "question-circle-o";
+                    context.icon = "question-circle-o";
+                    break;
                 }
                 if (this._sub.invite_only) {
-                    return "lock";
+                    context.zulip_icon = "lock";
+                    break;
                 }
                 if (this._sub.is_web_public) {
-                    return "globe";
+                    context.zulip_icon = "globe";
+                    break;
                 }
-                return "hashtag";
+                context.zulip_icon = "hashtag";
+                break;
             case "is-private":
-                return "envelope";
+                context.icon = "envelope";
+                break;
             case "is-starred":
-                return "star";
+                context.icon = "star";
+                break;
             case "is-mentioned":
-                return "at";
+                context.icon = "at";
+                break;
             case "pm-with":
-                return "envelope";
+                context.icon = "envelope";
+                break;
             case "is-resolved":
-                return "check";
+                context.icon = "check";
+                break;
             default:
-                return undefined;
+                context.icon = undefined;
+                break;
         }
     }
 

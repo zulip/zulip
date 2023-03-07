@@ -1167,6 +1167,16 @@ td.pointer {
                 top: 0.5px;
             }
         }
+
+        .stream-privacy i {
+            font-size: 15px;
+
+            &.zulip-icon-globe,
+            &.zulip-icon-hashtag {
+                position: relative;
+                top: -0.5px;
+            }
+        }
     }
 }
 
@@ -1202,7 +1212,6 @@ td.pointer {
     align-items: center;
     gap: 5px;
     padding: 5px 2px 5px 10px;
-    font-weight: normal;
     height: 17px;
     line-height: 17px;
     position: relative;
@@ -1791,7 +1800,7 @@ div.focused_table {
         display: none;
     }
 
-    .zulip-icon.zulip-icon-globe {
+    .zulip-icon {
         font-size: 14px;
         position: relative;
         top: 1px;
