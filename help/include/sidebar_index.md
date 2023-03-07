@@ -129,6 +129,7 @@
 * [Do not disturb](/help/do-not-disturb)
 
 ## Apps
+* [Download apps for every platform](https://zulip.com/apps/)
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Supported browsers](/help/supported-browsers)
 * [Connect through a proxy](/help/connect-through-a-proxy)
