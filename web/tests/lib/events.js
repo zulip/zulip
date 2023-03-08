@@ -963,6 +963,13 @@ exports.fixtures = {
         value: 2,
     },
 
+    user_settings__web_mark_read_on_scroll_policy: {
+        type: "user_settings",
+        op: "update",
+        property: "web_mark_read_on_scroll_policy",
+        value: 1,
+    },
+
     user_status__set_status_emoji: {
         type: "user_status",
         user_id: test_user.user_id,
