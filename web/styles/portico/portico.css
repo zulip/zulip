@@ -364,10 +364,6 @@ input.text-error {
         flex: 1 0 auto;
     }
 
-    .footer {
-        flex-shrink: 0;
-    }
-
     .if-zulip-electron {
         display: none;
     }
@@ -377,91 +373,6 @@ input.text-error {
 .portico-container[data-platform="ZulipElectron"] .if-zulip-electron {
     display: block;
 }
-
-/* -- new footer -- */
-.footer {
-    margin: 0;
-    z-index: 100;
-    width: calc(100%);
-    text-align: center;
-    font-size: 16px;
-    background-color: hsl(33, 34%, 96%);
-    display: grid;
-    grid-template-columns: repeat(4, max-content);
-    justify-content: center;
-    padding-top: 50px;
-    padding-bottom: 50px;
-
-    a {
-        color: inherit !important;
-    }
-
-    .footer-section {
-        margin: 0 20px;
-        vertical-align: top;
-        text-align: left;
-        /* 20-22vw for fitting content in the 4 column grid layout. We
-           need to set max-width so to avoid content overflow in different
-           languagues on different widths. */
-        max-width: 21vw;
-
-        @media (width < 1200px) {
-            ul li {
-                text-indent: -5px;
-                padding-left: 5px;
-            }
-        }
-
-        h3 {
-            text-transform: uppercase;
-            font-size: 1em;
-            font-weight: 600;
-            line-height: 1.2;
-            margin-bottom: 5px;
-        }
-
-        ul {
-            color: hsl(0, 0%, 40%);
-            list-style-type: none;
-            margin-left: 0;
-            font-weight: 400;
-        }
-
-        .coloured-text {
-            color: hsl(0, 0%, 20%);
-            font-weight: bold;
-        }
-    }
-}
-
-.self-hosted-footer {
-    padding: 20px 0 10px;
-    display: flex;
-    flex-wrap: wrap;
-
-    .break {
-        flex-basis: 100%;
-        height: 0;
-    }
-
-    .powered-by-zulip {
-        padding: 0;
-        padding-top: 10px;
-        opacity: 0.9;
-        font-size: 15px;
-    }
-
-    .footer-section {
-        padding-bottom: 5px;
-        margin: 0 15px;
-    }
-
-    .footer-section ul {
-        margin: 0;
-    }
-}
-
-/* -- end new footer -- */
 
 .header-main {
     .logo {
@@ -1171,20 +1082,6 @@ input.new-organization-button {
     }
 }
 
-@media (width <= 815px) {
-    .footer {
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-        grid-template-columns: repeat(2, max-content);
-
-        .footer-section {
-            /* 40vw to fit content in 2 grid columns. */
-            max-width: 40vw;
-        }
-    }
-}
-
 @media (width <= 767px) {
     body {
         padding: 0 !important;
@@ -1269,16 +1166,6 @@ input.new-organization-button {
     .header-main {
         max-width: 100vw;
         padding: 0 10px;
-    }
-
-    .footer {
-        grid-template-columns: repeat(1, max-content);
-
-        .footer-section {
-            width: calc(100% - 40px);
-            max-width: none;
-            text-align: center;
-        }
     }
 }
 
