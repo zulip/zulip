@@ -65,7 +65,7 @@
                     <h4 class="sidebar-title toggle_private_messages_section">{{t 'DIRECT MESSAGES' }}</h4>
                 </span>
                 <span class="unread_count"></span>
-                <a id="show_all_private_messages" href="#narrow/is/private">
+                <a id="show_all_private_messages" class="tippy-zulip-delayed-tooltip" href="#narrow/is/private" data-tooltip-template-id="show-all-pms-template">
                     <i class="fa fa-align-right" aria-label="{{t 'All direct messages' }}"></i>
                 </a>
             </div>
@@ -74,6 +74,10 @@
             <span> {{t 'back to streams' }}</span>
         </a>
     </div>
+    <template id="show-all-pms-template">
+        {{t 'All direct messages' }}
+        {{tooltip_hotkey_hints "P"}}
+    </template>
     {{~!-- squash whitespace --~}}
     <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar>
         <div class="private_messages_container zoom-out hidden-for-spectators">
