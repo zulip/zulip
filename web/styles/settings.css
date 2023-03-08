@@ -359,7 +359,8 @@ td .button {
         color: hsl(0, 0%, 20%);
     }
 
-    .settings_select {
+    .settings_select,
+    .dropdown-list-widget .dropdown-toggle {
         height: 30px;
         min-width: 325px;
         max-width: 100%;
