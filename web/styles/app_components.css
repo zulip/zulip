@@ -842,3 +842,15 @@ div.overlay {
         font-size: 1em;
     }
 }
+
+#settings_content,
+#stream_settings,
+#edit_bot_modal {
+    .dropdown-list-widget .dropdown-list-wrapper {
+        width: fit-content;
+
+        span {
+            width: fit-content;
+        }
+    }
+}

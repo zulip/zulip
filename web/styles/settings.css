@@ -1515,6 +1515,8 @@ $option_title_width: 180px;
 
     .dropdown-search > input[type="text"] {
         margin: 9px;
+        /* 100% - 2* (9px (margin) + 1px (border) + 6px (padding)) */
+        width: calc(100% - 32px);
     }
 
     .dropdown-menu {
