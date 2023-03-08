@@ -20,11 +20,11 @@ export function maybe_show_deprecation_notice(key) {
     let message;
     const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
     switch (key) {
-        case "C":
-            message = get_hotkey_deprecation_notice("C", "x");
+        case "Shift + C":
+            message = get_hotkey_deprecation_notice("Shift + C", "X");
             break;
         case "*":
-            message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
+            message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + S");
             break;
         case "Shift + S":
             message = get_hotkey_deprecation_notice("Shift + S", "S");
