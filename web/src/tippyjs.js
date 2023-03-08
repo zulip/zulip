@@ -105,6 +105,16 @@ export function initialize() {
         target: ".tippy-zulip-tooltip",
     });
 
+    // variant of tippy-zulip-tooltip above having delay=LONG_HOVER_DELAY.
+    // default placement="bottom" which can be changed by using
+    // data-tippy-placement on element in case of custom placement.
+    delegate("body", {
+        target: ".tippy-zulip-delayed-tooltip",
+        placement: "bottom",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
     // The below definitions are for specific tooltips that require
     // custom JavaScript code or configuration.  Note that since the
     // below specify the target directly, elements using those should
@@ -449,24 +459,6 @@ export function initialize() {
             }
             return true;
         },
-        delay: LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-    });
-
-    delegate("body", {
-        target: "#show_all_private_messages",
-        placement: "bottom",
-        content: $t({
-            defaultMessage: "All direct messages (P)",
-        }),
-        appendTo: () => document.body,
-    });
-
-    delegate("body", {
-        target: ".view_user_card_tooltip",
-        content: $t({
-            defaultMessage: "View user card (u)",
-        }),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
