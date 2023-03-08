@@ -17,7 +17,7 @@
                 </template>
                 <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_recent_topics top_left_row" title="{{t 'Recent conversations' }} (t)">
+            <li class="top_left_recent_topics top_left_row tippy-zulip-delayed-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
                 <a href="#recent">
                     <span class="filter-icon">
                         <i class="fa fa-clock-o" aria-hidden="true"></i>
@@ -25,6 +25,10 @@
                     {{~!-- squash whitespace --~}}
                     <span>{{t 'Recent conversations' }}</span>
                 </a>
+                <template id="recent-conversations-tooltip-template">
+                    {{t 'Recent conversations' }}
+                    {{tooltip_hotkey_hints "T"}}
+                </template>
             </li>
             <li class="top_left_mentions top_left_row hidden-for-spectators" title="{{t 'Mentions' }}">
                 <a href="#narrow/is/mentioned">
