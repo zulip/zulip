@@ -13,10 +13,6 @@ export function path_parts() {
     return window.location.pathname.split("/").filter((chunk) => chunk !== "");
 }
 
-const hello_events = function () {
-    $(".footer").addClass("hello");
-};
-
 const apps_events = function () {
     const info = {
         windows: {
@@ -157,10 +153,6 @@ const events = function () {
 
     if (path_parts().includes("apps")) {
         apps_events();
-    }
-
-    if (path_parts().includes("hello")) {
-        hello_events();
     }
 };
 
