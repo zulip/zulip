@@ -43,7 +43,7 @@
                     {{t 'Mentions' }}
                 </template>
             </li>
-            <li class="top_left_starred_messages top_left_row hidden-for-spectators" title="{{t 'Starred messages' }}">
+            <li class="top_left_starred_messages top_left_row hidden-for-spectators tippy-zulip-delayed-tooltip" data-tooltip-template-id="starred-messages-tooltip-template">
                 <a href="#narrow/is/starred">
                     <span class="filter-icon">
                         <i class="fa fa-star" aria-hidden="true"></i>
@@ -52,6 +52,9 @@
                     <span>{{t 'Starred messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
+                <template id="starred-messages-tooltip-template">
+                    {{t 'Starred messages' }}
+                </template>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_drafts top_left_row hidden-for-spectators" title="{{t 'Drafts' }} (d)">
