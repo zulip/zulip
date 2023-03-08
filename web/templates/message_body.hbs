@@ -56,8 +56,17 @@
 <div class="message_edit">
     <div class="message_edit_form"></div>
 </div>
-<div class="message_expander message_length_controller" title="{{t 'Expand message (-)' }}">{{t "[More…]" }}</div>
-<div class="message_condenser message_length_controller" title="{{t 'Show less' }} (-)">[{{t "Show less" }}]</div>
+<div class="message_expander message_length_controller tippy-zulip-delayed-tooltip" data-tooltip-template-id="message-expander-tooltip-template">{{t "[More…]" }}</div>
+<div class="message_condenser message_length_controller tippy-zulip-delayed-tooltip" data-tooltip-template-id="message-condenser-tooltip-template">[{{t "Show less" }}]</div>
+
+<template id="message-expander-tooltip-template">
+    {{t 'Expand message' }}
+    {{tooltip_hotkey_hints "-"}}
+</template>
+<template id="message-condenser-tooltip-template">
+    {{t 'Show less' }}
+    {{tooltip_hotkey_hints "-"}}
+</template>
 
 {{#unless is_hidden}}
 <div class="message_reactions">{{> message_reactions }}</div>
