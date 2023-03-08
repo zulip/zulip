@@ -552,7 +552,7 @@ class RecipientTest(ZulipTestCase):
             type_id=stream.id,
             type=Recipient.STREAM,
         )
-        self.assertEqual(str(recipient), f"<Recipient: Verona ({stream.id}, {Recipient.STREAM})>")
+        self.assertEqual(repr(recipient), f"<Recipient: Verona ({stream.id}, {Recipient.STREAM})>")
 
 
 class StreamAdminTest(ZulipTestCase):
@@ -5111,11 +5111,11 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         subscription = self.get_subscription(user_profile, invite_streams[0])
 
-        with mock.patch("zerver.models.Recipient.__str__", return_value="recip"):
+        with mock.patch("zerver.models.Recipient.__repr__", return_value="recip"):
             self.assertEqual(
-                str(subscription),
+                repr(subscription),
                 "<Subscription: "
-                f"<UserProfile: {user_profile.email} {user_profile.realm}> -> recip>",
+                f"<UserProfile: {user_profile.email} {user_profile.realm!r}> -> recip>",
             )
 
         self.assertIsNone(subscription.desktop_notifications)

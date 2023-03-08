@@ -390,7 +390,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1_attachment = Attachment.objects.get(path_id=d1_path_id)
         d1_attachment.create_time = two_week_ago
         d1_attachment.save()
-        self.assertEqual(str(d1_attachment), "<Attachment: dummy_1.txt>")
+        self.assertEqual(repr(d1_attachment), "<Attachment: dummy_1.txt>")
         # This Attachment won't have any messages.
         d2_attachment = Attachment.objects.get(path_id=d2_path_id)
         d2_attachment.create_time = two_week_ago

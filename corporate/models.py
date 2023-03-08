@@ -43,7 +43,7 @@ class Customer(models.Model):
         return is_cloud
 
     def __str__(self) -> str:
-        return f"<Customer {self.realm} {self.stripe_customer_id}>"
+        return f"{self.realm!r} {self.stripe_customer_id}"
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:

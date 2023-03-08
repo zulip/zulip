@@ -62,7 +62,7 @@ class CountStat:
         else:
             self.interval = self.time_increment
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<CountStat: {self.property}>"
 
     def last_successful_fill(self) -> Optional[datetime]:
