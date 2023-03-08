@@ -6,13 +6,11 @@ import render_all_messages_sidebar_actions from "../templates/all_messages_sideb
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
-import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as confirm_dialog from "./confirm_dialog";
@@ -37,7 +35,6 @@ import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as unread_ops from "./unread_ops";
-import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 
 // We handle stream popovers and topic popovers in this
@@ -45,7 +42,6 @@ import * as user_topics from "./user_topics";
 let current_stream_sidebar_elem;
 let current_topic_sidebar_elem;
 let all_messages_sidebar_elem;
-let starred_messages_sidebar_elem;
 let drafts_sidebar_elem;
 let stream_widget;
 let $stream_header_colorblock;
@@ -89,11 +85,6 @@ export function all_messages_sidebar_menu_handle_keyboard(key) {
     popovers.popover_items_handle_keyboard(key, items);
 }
 
-export function starred_messages_sidebar_menu_handle_keyboard(key) {
-    const items = get_popover_menu_items(starred_messages_sidebar_elem);
-    popovers.popover_items_handle_keyboard(key, items);
-}
-
 function elem_to_stream_id($elem) {
     const stream_id = Number.parseInt($elem.attr("data-stream-id"), 10);
 
@@ -118,10 +109,6 @@ export function topic_popped() {
 
 export function all_messages_popped() {
     return all_messages_sidebar_elem !== undefined;
-}
-
-export function starred_messages_popped() {
-    return starred_messages_sidebar_elem !== undefined;
 }
 
 export function drafts_popped() {
@@ -149,14 +136,6 @@ export function hide_all_messages_popover() {
         $(all_messages_sidebar_elem).popover("destroy");
         hide_left_sidebar_menu_icon();
         all_messages_sidebar_elem = undefined;
-    }
-}
-
-export function hide_starred_messages_popover() {
-    if (starred_messages_popped()) {
-        $(starred_messages_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
-        starred_messages_sidebar_elem = undefined;
     }
 }
 
@@ -344,36 +323,6 @@ function build_all_messages_popover(e) {
 
     $(elt).popover("show");
     all_messages_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
-    e.stopPropagation();
-}
-
-function build_starred_messages_popover(e) {
-    const elt = e.target;
-
-    if (starred_messages_popped() && starred_messages_sidebar_elem === elt) {
-        hide_starred_messages_popover();
-        e.stopPropagation();
-        return;
-    }
-
-    popovers.hide_all_except_sidebars();
-
-    const show_unstar_all_button = starred_messages.get_count() > 0;
-    const content = render_starred_messages_sidebar_actions({
-        show_unstar_all_button,
-        starred_message_counts: user_settings.starred_message_counts,
-    });
-
-    $(elt).popover({
-        content,
-        html: true,
-        trigger: "manual",
-        fixed: true,
-    });
-
-    $(elt).popover("show");
-    starred_messages_sidebar_elem = elt;
     show_left_sidebar_menu_icon(elt);
     e.stopPropagation();
 }
@@ -624,12 +573,6 @@ export function register_click_handlers() {
 
     $("#global_filters").on("click", ".all-messages-sidebar-menu-icon", build_all_messages_popover);
 
-    $("#global_filters").on(
-        "click",
-        ".starred-messages-sidebar-menu-icon",
-        build_starred_messages_popover,
-    );
-
     $("#global_filters").on("click", ".drafts-sidebar-menu-icon", build_drafts_popover);
 
     $("body").on("click keypress", ".move-topic-dropdown .list_item", (e) => {
@@ -684,14 +627,6 @@ export function register_stream_handlers() {
         unread_ops.confirm_mark_all_as_read();
     });
 
-    // Unstar all messages
-    $("body").on("click", "#unstar_all_messages", (e) => {
-        hide_starred_messages_popover();
-        e.preventDefault();
-        e.stopPropagation();
-        starred_messages_ui.confirm_unstar_all_messages();
-    });
-
     $("body").on("click", "#delete_all_drafts_sidebar", (e) => {
         hide_drafts_popover();
         e.stopPropagation();
@@ -711,19 +646,6 @@ export function register_stream_handlers() {
         );
     });
 
-    // Toggle displaying starred message count
-    $("body").on("click", "#toggle_display_starred_msg_count", (e) => {
-        hide_starred_messages_popover();
-        e.preventDefault();
-        e.stopPropagation();
-        const starred_msg_counts = user_settings.starred_message_counts;
-        const data = {};
-        data.starred_message_counts = JSON.stringify(!starred_msg_counts);
-        channel.patch({
-            url: "/json/settings",
-            data,
-        });
-    });
     // Mute/unmute
     $("body").on("click", ".toggle_stream_muted", (e) => {
         const sub = stream_popover_sub(e);
