@@ -435,7 +435,7 @@ class RateLimitTests(ZulipTestCase):
             self.assertEqual(
                 m.output,
                 [
-                    f"WARNING:zilencer.auth:Remote server <RemoteZulipServer demo.example.com {server_uuid[:12]}> exceeded rate limits on domain api_by_remote_server"
+                    f"WARNING:zilencer.auth:Remote server <RemoteZulipServer: demo.example.com {server_uuid[:12]}> exceeded rate limits on domain api_by_remote_server"
                 ],
             )
         finally:

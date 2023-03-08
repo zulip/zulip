@@ -17,7 +17,7 @@ class FillState(models.Model):
     state = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return f"<FillState: {self.property} {self.end_time} {self.state}>"
+        return f"{self.property} {self.end_time} {self.state}"
 
 
 # The earliest/starting end_time in FillState
@@ -59,7 +59,7 @@ class InstallationCount(BaseCount):
         ]
 
     def __str__(self) -> str:
-        return f"<InstallationCount: {self.property} {self.subgroup} {self.value}>"
+        return f"{self.property} {self.subgroup} {self.value}"
 
 
 class RealmCount(BaseCount):
@@ -82,7 +82,7 @@ class RealmCount(BaseCount):
         index_together = ["property", "end_time"]
 
     def __str__(self) -> str:
-        return f"<RealmCount: {self.realm} {self.property} {self.subgroup} {self.value}>"
+        return f"{self.realm!r} {self.property} {self.subgroup} {self.value}"
 
 
 class UserCount(BaseCount):
@@ -108,7 +108,7 @@ class UserCount(BaseCount):
         index_together = ["property", "realm", "end_time"]
 
     def __str__(self) -> str:
-        return f"<UserCount: {self.user} {self.property} {self.subgroup} {self.value}>"
+        return f"{self.user!r} {self.property} {self.subgroup} {self.value}"
 
 
 class StreamCount(BaseCount):
@@ -134,6 +134,4 @@ class StreamCount(BaseCount):
         index_together = ["property", "realm", "end_time"]
 
     def __str__(self) -> str:
-        return (
-            f"<StreamCount: {self.stream} {self.property} {self.subgroup} {self.value} {self.id}>"
-        )
+        return f"{self.stream!r} {self.property} {self.subgroup} {self.value} {self.id}"
