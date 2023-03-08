@@ -998,15 +998,6 @@ div.settings-radio-input-parent {
             min-width: 325px;
             max-width: 100%;
         }
-
-        ul.dropdown-menu {
-            width: 325px;
-
-            input {
-                /* 325 - 2* (9px (margin) + 1px (border) + 6px (padding)) */
-                width: 293px;
-            }
-        }
     }
 }
 
