@@ -226,6 +226,7 @@ function initialize_compose_box() {
             giphy_enabled: giphy.is_giphy_enabled(),
             max_stream_name_length: page_params.max_stream_name_length,
             max_topic_length: page_params.max_topic_length,
+            enter_sends_true: user_settings.enter_sends,
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
