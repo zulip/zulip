@@ -57,6 +57,7 @@ from zerver.views.events_register import events_register_backend
 from zerver.views.home import accounts_accept_terms, desktop_home, home
 from zerver.views.hotspots import mark_hotspot_as_read
 from zerver.views.invite import (
+    edit_multiuse_invite,
     generate_multiuse_invite_backend,
     get_user_invites,
     invite_users_backend,
@@ -307,7 +308,7 @@ v1_api_and_json_patterns = [
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
     rest_path("invites", GET=get_user_invites, POST=invite_users_backend),
-    rest_path("invites/<int:prereg_id>", DELETE=revoke_user_invite),
+    rest_path("invites/<int:prereg_id>", DELETE=revoke_user_invite, PATCH=edit_multiuse_invite),
     rest_path("invites/<int:prereg_id>/resend", POST=resend_user_invite_email),
     # invites/multiuse -> zerver.views.invite
     rest_path("invites/multiuse", POST=generate_multiuse_invite_backend),

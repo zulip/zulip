@@ -2,28 +2,36 @@ import $ from "jquery";
 
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
+import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
+import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
+import render_edit_invite_user_modal from "../templates/settings/edit_invite_user_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
+import {beforeSend, get_invite_streams} from "./invite";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
 const meta = {
     loaded: false,
+    invites: [],
 };
 
 export function reset() {
     meta.loaded = false;
+    meta.invites = [];
 }
 
 function failed_listing_invites(xhr) {
@@ -58,6 +66,7 @@ function populate_invites(invites_data) {
 
     add_invited_as_text(invites_data.invites);
 
+    meta.invites = invites_data.invites;
     const $invites_table = $("#admin_invites_table").expectOne();
     ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
@@ -177,6 +186,83 @@ export function set_up(initialize_event_handlers = true) {
     });
 }
 
+function get_invitation_data() {
+    const invite_as = Number.parseInt($("#invite_as").val(), 10);
+    const stream_ids = [];
+
+    $("#invite-stream-checkboxes input:checked").each(function () {
+        const stream_id = Number.parseInt($(this).val(), 10);
+        stream_ids.push(stream_id);
+    });
+
+    const data = {
+        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
+        invite_as,
+        stream_ids: JSON.stringify(stream_ids),
+    };
+    return data;
+}
+
+function submit_invitation_form(invite_id) {
+    const $invite_status = $("#dialog_error");
+    const data = get_invitation_data(invite_id);
+
+    channel.patch({
+        url: "/json/invites/" + invite_id,
+        data,
+        beforeSend,
+        success() {
+            ui_report.success(
+                $t_html({defaultMessage: "Invite updated successfully."}),
+                $invite_status,
+            );
+
+            if (page_params.development_environment) {
+                const rendered_email_msg = render_settings_dev_env_email_access();
+                $("#dev_env_msg").html(rendered_email_msg).addClass("alert-info").show();
+            }
+        },
+        error(xhr) {
+            const arr = JSON.parse(xhr.responseText);
+            if (arr.errors === undefined) {
+                // There was a fatal error, no partial processing occurred.
+                ui_report.error("", xhr, $invite_status);
+            } else {
+                // Some users were not invited.
+                // This might happen in the case when an email becomes invalid or deactivated
+                // between the time of creation of the invite and its edit.
+                const error_list = [];
+                let is_invitee_deactivated = false;
+                for (const value of arr.errors) {
+                    const [email, error_message, deactivated] = value;
+                    error_list.push(`${email}: ${error_message}`);
+                    if (deactivated) {
+                        is_invitee_deactivated = true;
+                    }
+                }
+
+                const error_response = render_invitation_failed_error({
+                    error_message: arr.msg,
+                    error_list,
+                    is_admin: page_params.is_admin,
+                    is_invitee_deactivated,
+                    license_limit_reached: arr.license_limit_reached,
+                    has_billing_access: page_params.is_owner || page_params.is_billing_admin,
+                    daily_limit_reached: arr.daily_limit_reached,
+                });
+                ui_report.message(error_response, $invite_status, "alert-warning");
+            }
+        },
+        complete() {
+            $("#invite-user-modal .dialog_submit_button").text(
+                $t({defaultMessage: "Save changes"}),
+            );
+            $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
+        },
+    });
+}
+
 export function on_load_success(invites_data, initialize_event_handlers) {
     meta.loaded = true;
     populate_invites(invites_data);
@@ -211,6 +297,62 @@ export function on_load_success(invites_data, initialize_event_handlers) {
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
         $(".dialog_submit_button").attr("data-is-multiuse", meta.is_multiuse);
+    });
+
+    $(".admin_invites_table").on("click", ".edit", (e) => {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        e.stopPropagation();
+        e.preventDefault();
+
+        const invite_id = Number.parseInt(e.currentTarget.dataset.inviteId, 10);
+        const invite = meta.invites.find((invite) => invite.id === invite_id);
+
+        const html_body = render_edit_invite_user_modal({
+            development_environment: page_params.development_environment,
+            invite_as_options: settings_config.user_role_values,
+            is_admin: page_params.is_admin,
+            is_owner: page_params.is_owner,
+            streams: get_invite_streams(),
+            notifications_stream: stream_data.get_notifications_stream(),
+            invite,
+        });
+
+        function invite_user_modal_post_render() {
+            $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+
+            for (const stream_id of invite.streams) {
+                $(`[value=${stream_id}]`).prop("checked", true);
+            }
+
+            function enable_invite_submit_button() {
+                $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            }
+
+            $("#invite-user-modal").on("input", "input, select", () => {
+                enable_invite_submit_button();
+            });
+
+            $("#invite_check_all_button").on("click", () => {
+                $("#streams_to_add :checkbox").prop("checked", true);
+                enable_invite_submit_button();
+            });
+
+            $("#invite_uncheck_all_button").on("click", () => {
+                $("#streams_to_add :checkbox").prop("checked", false);
+                $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+            });
+        }
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Edit invite to users"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Save changes"}),
+            id: "invite-user-modal",
+            loading_spinner: true,
+            on_click: () => submit_invitation_form(invite.id),
+            post_render: invite_user_modal_post_render,
+        });
     });
 
     $(".admin_invites_table").on("click", ".resend", (e) => {

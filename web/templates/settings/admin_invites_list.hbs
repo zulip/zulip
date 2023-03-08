@@ -37,8 +37,11 @@
             {{t "Resend" }}
         </button>
         {{/unless}}
+        <button class="button rounded small edit btn-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
+            <i class="fa fa-pencil"></i>
+        </button>
         <button class="button rounded small revoke btn-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
-            {{t "Revoke" }}
+            <i class="fa fa-times"></i>
         </button>
     </td>
 </tr>

@@ -380,6 +380,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
                 ),
                 invited_as=invite.invited_as,
                 is_multiuse=True,
+                streams=list(invite.streams.values_list("id", flat=True)),
             )
         )
     return invites
@@ -464,6 +465,21 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
         ).delete()
         multiuse_invite.status = confirmation_settings.STATUS_REVOKED
         multiuse_invite.save(update_fields=["status"])
+    notify_invites_changed(realm)
+
+
+def do_edit_multiuse_invite_link(
+    multiuse_invite: MultiuseInvite,
+    invited_as: int,
+    streams: Sequence[Stream],
+) -> None:
+    # The `streams` and `invited_as` fields of a `multiuse_invite` can be edited.
+    invite = MultiuseInvite.objects.get(id=multiuse_invite.id)
+    invite.streams.set(streams)
+    invite.invited_as = invited_as
+    invite.save()
+
+    realm = multiuse_invite.referred_by.realm
     notify_invites_changed(realm)
 
 
