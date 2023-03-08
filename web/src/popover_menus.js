@@ -11,7 +11,9 @@ import render_compose_control_buttons_popover from "../templates/compose_control
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
+import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_actions from "./compose_actions";
@@ -28,6 +30,8 @@ import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import * as starred_messages from "./starred_messages";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -36,16 +40,45 @@ import {user_settings} from "./user_settings";
 let left_sidebar_stream_setting_popover_displayed = false;
 let compose_mobile_button_popover_displayed = false;
 export let compose_enter_sends_popover_displayed = false;
-let compose_control_buttons_popover_instance;
 let message_actions_popover_displayed = false;
 let message_actions_popover_keyboard_toggle = false;
+
+let compose_control_buttons_popover_instance;
+let starred_messages_popover_instance;
 
 export function actions_popped() {
     return message_actions_popover_displayed;
 }
 
+export function is_starred_messages_visible() {
+    return starred_messages_popover_instance?.state.isVisible;
+}
+
 export function get_compose_control_buttons_popover() {
     return compose_control_buttons_popover_instance;
+}
+
+export function get_starred_messages_popover() {
+    return starred_messages_popover_instance;
+}
+
+function get_popover_items_for_instance(instance) {
+    const $current_elem = $(instance.popper);
+    const class_name = $current_elem.attr("class");
+
+    if (!$current_elem) {
+        blueslip.error(
+            `Trying to get menu items when popover with class "${class_name}" is closed.`,
+        );
+        return undefined;
+    }
+
+    return $current_elem.find("li:not(.divider):visible a");
+}
+
+export function starred_messages_sidebar_menu_handle_keyboard(key) {
+    const items = get_popover_items_for_instance(starred_messages_popover_instance);
+    popovers.popover_items_handle_keyboard(key, items);
 }
 
 const default_popover_props = {
@@ -69,7 +102,8 @@ export function any_active() {
         compose_mobile_button_popover_displayed ||
         compose_control_buttons_popover_instance ||
         compose_enter_sends_popover_displayed ||
-        message_actions_popover_displayed
+        message_actions_popover_displayed ||
+        is_starred_messages_visible()
     );
 }
 
@@ -439,6 +473,65 @@ export function initialize() {
             instance.destroy();
             message_actions_popover_displayed = false;
             message_actions_popover_keyboard_toggle = false;
+        },
+    });
+
+    // Starred messages popover
+    tippy_no_propagation(".starred-messages-sidebar-menu-icon", {
+        placement: "right",
+        maxWidth: "none",
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+                {
+                    name: "preventOverflow",
+                    options: {
+                        padding: 40,
+                    },
+                },
+            ],
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            starred_messages_popover_instance = instance;
+
+            $popper.one("click", "#unstar_all_messages", () => {
+                starred_messages_ui.confirm_unstar_all_messages();
+                instance.hide();
+            });
+            $popper.one("click", "#toggle_display_starred_msg_count", () => {
+                const data = {};
+                const starred_msg_counts = user_settings.starred_message_counts;
+                data.starred_message_counts = JSON.stringify(!starred_msg_counts);
+
+                channel.patch({
+                    url: "/json/settings",
+                    data,
+                });
+                instance.hide();
+            });
+        },
+        onShow(instance) {
+            popovers.hide_all_except_sidebars();
+            const show_unstar_all_button = starred_messages.get_count() > 0;
+
+            instance.setContent(
+                parse_html(
+                    render_starred_messages_sidebar_actions({
+                        show_unstar_all_button,
+                        starred_message_counts: user_settings.starred_message_counts,
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            starred_messages_popover_instance = undefined;
         },
     });
 }

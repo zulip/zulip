@@ -362,6 +362,11 @@ function handle_popover_events(event_name) {
         return true;
     }
 
+    if (popover_menus.is_starred_messages_visible()) {
+        popover_menus.starred_messages_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
     if (popovers.user_info_manage_menu_popped()) {
         popovers.user_info_popover_manage_menu_handle_keyboard(event_name);
         return true;
@@ -397,10 +402,6 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (stream_popover.starred_messages_popped()) {
-        stream_popover.starred_messages_sidebar_menu_handle_keyboard(event_name);
-        return true;
-    }
     return false;
 }
 
