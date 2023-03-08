@@ -881,7 +881,7 @@ export function process_hotkey(e, hotkey) {
             browser_history.go_to_location("drafts");
             return true;
         case "C_deprecated":
-            deprecated_feature_notice.maybe_show_deprecation_notice("C");
+            deprecated_feature_notice.maybe_show_deprecation_notice("Shift + C");
             return true;
         case "star_deprecated":
             deprecated_feature_notice.maybe_show_deprecation_notice("*");
