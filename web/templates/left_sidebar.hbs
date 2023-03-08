@@ -57,7 +57,7 @@
                 </template>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_drafts top_left_row hidden-for-spectators" title="{{t 'Drafts' }} (d)">
+            <li class="top_left_drafts top_left_row hidden-for-spectators tippy-zulip-delayed-tooltip" data-tooltip-template-id="drafts-tooltip-template">
                 <a href="#drafts">
                     <span class="filter-icon">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
@@ -70,6 +70,10 @@
             </li>
         </ul>
     </div>
+    <template id="drafts-tooltip-template">
+        {{t 'Drafts' }}
+        {{tooltip_hotkey_hints "D"}}
+    </template>
 
     <div id="private_messages_sticky_header" class="private_messages_container zoom-out hidden-for-spectators">
         <div id="private_messages_section">
