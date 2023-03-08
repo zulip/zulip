@@ -15,10 +15,15 @@
             {{t 'Toggle subscription' }}
             {{tooltip_hotkey_hints "S"}}
         </template>
+        <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
         <button class="button small rounded btn-danger deactivate tippy-zulip-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
         {{/if}}
     </div>
+    <template id="view-stream-tooltip-template">
+        {{t 'View stream' }}
+        {{tooltip_hotkey_hints "V"}}
+    </template>
     {{/with}}
 </div>
 <div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
