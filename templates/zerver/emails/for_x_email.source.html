@@ -1,0 +1,28 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+
+<p>{{ _("We hope you have been enjoying Zulip so far!") }}</p>
+
+<p>{{ _("As you are getting started, check out this guide to key Zulip features
+for organizations like yours.") }}</p>
+
+<a class="button" href="{{ for_business_link }}">{{ _("View Zulip's guide for business organizations") }}</a>
+
+<p>
+    {% trans support_email=macros.email_tag(support_email) %}Questions? Contact
+us any time at {{ support_email }}.{% endtrans %}
+</p>
+
+{% endblock %}
+
+{% block manage_preferences %}
+<p>
+    <a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> |
+    <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from welcome emails") }}</a>
+</p>
+{% endblock %}

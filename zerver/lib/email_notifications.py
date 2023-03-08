@@ -708,6 +708,9 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
     )
     context["getting_user_started_link"] = user.realm.uri + "/help/getting-started-with-zulip"
 
+    # /for/X links
+    context["for_business_link"] = "https://zulip.com/for/business"
+
     # Imported here to avoid import cycles.
     from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap
 
@@ -740,6 +743,16 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
             context=context,
             delay=followup_day2_email_delay(user),
         )
+
+    send_future_email(
+        "zerver/emails/for_x_email",
+        user.realm,
+        to_user_ids=[user.id],
+        from_name=from_name,
+        from_address=from_address,
+        context=context,
+        delay=followup_day2_email_delay(user),
+    )
 
 
 def convert_html_to_markdown(html: str) -> str:
