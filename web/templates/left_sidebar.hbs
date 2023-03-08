@@ -30,7 +30,7 @@
                     {{tooltip_hotkey_hints "T"}}
                 </template>
             </li>
-            <li class="top_left_mentions top_left_row hidden-for-spectators" title="{{t 'Mentions' }}">
+            <li class="top_left_mentions top_left_row hidden-for-spectators tippy-zulip-delayed-tooltip" data-tooltip-template-id="mentions-tooltip-template">
                 <a href="#narrow/is/mentioned">
                     <span class="filter-icon">
                         <i class="fa fa-at" aria-hidden="true"></i>
@@ -39,6 +39,9 @@
                     <span>{{t 'Mentions' }}</span>
                     <span class="unread_count"></span>
                 </a>
+                <template id="mentions-tooltip-template">
+                    {{t 'Mentions' }}
+                </template>
             </li>
             <li class="top_left_starred_messages top_left_row hidden-for-spectators" title="{{t 'Starred messages' }}">
                 <a href="#narrow/is/starred">
