@@ -4,9 +4,13 @@
     <span>
         {{> message_avatar ~}}
         <span class="sender_name auto-select" role="button" tabindex="0">
-            <span class="sender_name_padding view_user_card_tooltip"></span>
-            <span class="view_user_card_tooltip">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info}}</span>
+            <span class="sender_name_padding tippy-zulip-delayed-tooltip" data-tippy-placement="top" data-tooltip-template-id="view-user-card-tooltip-template" ></span>
+            <span class="tippy-zulip-delayed-tooltip" data-tippy-placement="top" data-tooltip-template-id="view-user-card-tooltip-template">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info}}</span>
         </span>
+        <template id="view-user-card-tooltip-template">
+            {{t 'View user card' }}
+            {{tooltip_hotkey_hints "U"}}
+        </template>
         {{#if sender_is_bot}}
         <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
         {{/if}}
