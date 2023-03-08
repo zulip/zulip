@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_mark_as_read_disabled_banner from "../templates/mark_as_read_disabled_banner.hbs";
 import render_mark_as_read_turned_off_banner from "../templates/mark_as_read_turned_off_banner.hbs";
 
 import * as activity from "./activity";
@@ -7,13 +8,31 @@ import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 import {notify_server_messages_read} from "./unread_ops";
+import {user_settings} from "./user_settings";
 
 let user_closed_unread_banner = false;
+
+export function update_unread_banner() {
+    if (
+        user_settings.web_mark_read_on_scroll_policy ===
+        web_mark_read_on_scroll_policy_values.never.code
+    ) {
+        $("#mark_as_read_turned_off_banner").html(render_mark_as_read_disabled_banner());
+    } else {
+        $("#mark_as_read_turned_off_banner").html(render_mark_as_read_turned_off_banner());
+
+        if (message_lists.current.can_mark_messages_read_without_setting()) {
+            hide_unread_banner();
+        }
+    }
+}
+
 export function hide_unread_banner() {
     // Use visibility instead of hide() to prevent messages on the screen from
     // shifting vertically.
@@ -96,10 +115,7 @@ export function should_display_bankruptcy_banner() {
 
 export function initialize() {
     update_unread_counts();
-
-    $("#mark_as_read_turned_off_banner").html(render_mark_as_read_turned_off_banner());
-    hide_unread_banner();
-    $("#mark_view_read").on("click", () => {
+    $("body").on("click", "#mark_view_read", () => {
         // Mark all messages in the current view as read.
         //
         // BUG: This logic only supports marking messages visible in
@@ -114,8 +130,15 @@ export function initialize() {
 
         hide_unread_banner();
     });
-    $("#mark_as_read_close").on("click", () => {
+    $("body").on("click", "#mark_as_read_close", () => {
         hide_unread_banner();
         user_closed_unread_banner = true;
     });
+
+    // The combination of these functions in sequence ensures we have
+    // at least one copy of the unread banner in the DOM, invisible;
+    // this somewhat strange pattern allows our CSS to reserve space for
+    // the banner, to avoid scroll position jumps when it is shown/hidden.
+    update_unread_banner();
+    hide_unread_banner();
 }

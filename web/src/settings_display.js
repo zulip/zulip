@@ -167,6 +167,9 @@ export function set_up(settings_panel) {
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
     $container
+        .find(".setting_web_mark_read_on_scroll_policy")
+        .val(settings_object.web_mark_read_on_scroll_policy);
+    $container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
     $container

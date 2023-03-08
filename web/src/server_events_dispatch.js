@@ -67,6 +67,7 @@ import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
@@ -625,6 +626,7 @@ export function dispatch_normal_event(event) {
                 "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
+                "web_mark_read_on_scroll_policy",
                 "emojiset",
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
@@ -674,6 +676,9 @@ export function dispatch_normal_event(event) {
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
                 $("body").toggleClass("more_dense_mode");
+            }
+            if (event.property === "web_mark_read_on_scroll_policy") {
+                unread_ui.update_unread_banner();
             }
             if (event.property === "color_scheme") {
                 $("body").fadeOut(300);

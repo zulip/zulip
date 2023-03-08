@@ -71,6 +71,7 @@ mock_esm("../src/top_left_corner", {
 const typing_events = mock_esm("../src/typing_events");
 const ui = mock_esm("../src/ui");
 const unread_ops = mock_esm("../src/unread_ops");
+const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
 const user_groups = mock_esm("../src/user_groups");
 const user_group_edit = mock_esm("../src/user_group_edit");
@@ -822,6 +823,12 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.high_contrast_mode, true);
     assert_same(toggled, ["high-contrast"]);
+
+    event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
+    user_settings.web_mark_read_on_scroll_policy = 3;
+    override(unread_ui, "update_unread_banner", noop);
+    dispatch(event);
+    assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
 
     event = event_fixtures.user_settings__dense_mode;
     user_settings.dense_mode = false;
