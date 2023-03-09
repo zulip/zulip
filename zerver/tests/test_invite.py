@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
+from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.http import HttpRequest
 from django.urls import reverse
@@ -66,22 +67,20 @@ if TYPE_CHECKING:
 
 class InviteUserBase(ZulipTestCase):
     def check_sent_emails(self, correct_recipients: List[str]) -> None:
-        from django.core.mail import outbox
-
-        self.assert_length(outbox, len(correct_recipients))
-        email_recipients = [email.recipients()[0] for email in outbox]
+        self.assert_length(mail.outbox, len(correct_recipients))
+        email_recipients = [email.recipients()[0] for email in mail.outbox]
         self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
-        if len(outbox) == 0:
+        if len(mail.outbox) == 0:
             return
 
-        self.assertIn("Zulip", self.email_display_from(outbox[0]))
+        self.assertIn("Zulip", self.email_display_from(mail.outbox[0]))
 
-        self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertEqual(self.email_envelope_from(mail.outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            self.email_display_from(outbox[0]), rf" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
+            self.email_display_from(mail.outbox[0]), rf" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
         )
 
-        self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
+        self.assertEqual(mail.outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
 
     def invite(
         self,
@@ -554,8 +553,6 @@ class InviteUserTest(InviteUserBase):
 
         self.check_sent_emails([email, email2])
 
-        from django.core import mail
-
         mail.outbox = []
 
         do_set_realm_property(
@@ -723,7 +720,6 @@ earl-test@zulip.com""",
         invitee_emails = "1@zulip.com, 2@zulip.com"
         self.invite(invitee_emails, ["Denmark"])
         self.check_sent_emails(["1@zulip.com", "2@zulip.com"])
-        from django.core import mail
 
         mail.outbox = []
         invitee_emails = ", ".join(
@@ -813,11 +809,9 @@ earl-test@zulip.com""",
         result = self.invite("newuser@zulip.com", ["Denmark"])
         self.assert_json_success(result)
         self.check_sent_emails(["newuser@zulip.com"])
-        from django.core.mail import outbox
-
-        assert isinstance(outbox[0], EmailMultiAlternatives)
-        assert isinstance(outbox[0].alternatives[0][0], str)
-        body = self.normalize_string(outbox[0].alternatives[0][0])
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
+        body = self.normalize_string(mail.outbox[0].alternatives[0][0])
 
         # Verify that one can't get Zulip to send invitation emails
         # that third-party products will linkify using the full_name
@@ -1019,8 +1013,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
     def test_invitation_reminder_email(self) -> None:
-        from django.core.mail import outbox
-
         # All users belong to zulip realm
         referrer_name = "hamlet"
         current_user = self.example_user(referrer_name)
@@ -1057,12 +1049,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             scheduled_timestamp__lte=timezone_now()
         )
         self.assert_length(email_jobs_to_deliver, 1)
-        email_count = len(outbox)
+        email_count = len(mail.outbox)
         for job in email_jobs_to_deliver:
             deliver_scheduled_emails(job)
-        self.assert_length(outbox, email_count + 1)
-        self.assertEqual(self.email_envelope_from(outbox[-1]), settings.NOREPLY_EMAIL_ADDRESS)
-        self.assertIn(FromAddress.NOREPLY, self.email_display_from(outbox[-1]))
+        self.assert_length(mail.outbox, email_count + 1)
+        self.assertEqual(self.email_envelope_from(mail.outbox[-1]), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertIn(FromAddress.NOREPLY, self.email_display_from(mail.outbox[-1]))
 
         # Now verify that signing up clears invite_reminder emails
         with self.settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
@@ -1731,9 +1723,7 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify and then clear from the outbox the original invite email
         self.check_sent_emails([invitee])
-        from django.core.mail import outbox
-
-        outbox.pop()
+        mail.outbox.pop()
 
         # Verify that the scheduled email exists.
         scheduledemail_filter = ScheduledEmail.objects.filter(
@@ -1779,9 +1769,7 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify and then clear from the outbox the original invite email
         self.check_sent_emails([invitee])
-        from django.core.mail import outbox
-
-        outbox.pop()
+        mail.outbox.pop()
 
         # Verify that the scheduled email exists.
         scheduledemail_filter = ScheduledEmail.objects.filter(
@@ -1868,9 +1856,7 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify and then clear from the outbox the original invite email
         self.check_sent_emails([invitee])
-        from django.core.mail import outbox
-
-        outbox.pop()
+        mail.outbox.pop()
 
         result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assert_json_success(result)
@@ -2002,9 +1988,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assertEqual(prereg_user.email, email)
         self.assertEqual(prereg_user.multiuse_invite, multiuse_invite)
 
-        from django.core.mail import outbox
-
-        outbox.pop()
+        mail.outbox.pop()
 
     def test_valid_multiuse_link(self) -> None:
         email1 = self.nonreg_email("test")
