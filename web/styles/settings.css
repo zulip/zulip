@@ -1024,6 +1024,7 @@ label.display-settings-radio-choice-label {
     }
 }
 
+
 .emojiset_choices {
     width: 350px;
 
@@ -1032,6 +1033,24 @@ label.display-settings-radio-choice-label {
         width: 22px;
     }
 }
+
+.checkbox-link-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .checkbox-container {
+    margin-right: 2px;
+  }
+  
+  .link-container {
+    margin-bottom: 17px;
+    margin-left: 2px;
+  }
+  
+  .link-container>*{
+    color: #8b91a0;
+  }
 
 $right_sidebar_width: 170px;
 $option_title_width: 180px;
