@@ -86,87 +86,151 @@ check out GitHub's excellent [blog post](https://github.blog/2022-06-30-write-be
 
 ## Commit messages
 
-First, check out
-[these](https://github.com/zulip/zulip/commit/4869e1b0b2bc6d56fcf44b7d0e36ca20f45d0521)
-[examples](https://github.com/zulip/zulip/commit/cd5b38f5d8bdcc1771ad794f37262a61843c56c0)
-of commits with good commit messages.
+Commit messages have two parts:
 
-The first line of the commit message is the **summary**. The summary:
+1. A **summary**, which is a one-line overview of the changes made.
+2. A **description**, which provides further details on the changes made, and the
+   motivation behind them.
 
-- is written in the imperative (e.g., "Fix ...", "Add ...")
-- is kept short (max 76 characters, ideally less), while concisely
-  explaining what the commit does
-- is clear about what part of the code is affected -- often by prefixing
-  with the name of the subsystem and a colon, like "zjsunit: ..." or "docs: ..."
-- is a complete sentence.
+The commit summary itself has a two-part structure:
 
-### Good summaries:
+1. A one or two word description of the part of the code base changed by the
+   commit.
+2. A short sentence summarizing your changes.
 
-Below is an example of a good commit summary line. It starts with the
-prefix "provision:", using lowercase "**p**". Next, "Improve performance of
-install npm." starts with a capital "**I**", uses imperative tense,
-and ends with a period.
+Here is an
+[example](https://github.com/zulip/zulip/commit/084dd216f017c32e15c1b13469bcbc928cd0bce9)
+of a good commit message:
 
-> _provision: Improve performance of installing npm._
+> tests: Remove ignored realm_str parameter from message send test.
+>
+> In commit
+> [8181ec4](https://github.com/zulip/zulip/commit/8181ec4b56abf598223112e7bc65ce20f3a6236b),
+> we removed the `realm_str` as a parameter for `send_message_backed`. This
+> removes a missed test that included this as a parameter for that
+> endpoint/function.
 
-Here are some more positive examples:
-
-> channel: Discard all HTTP responses while reloading.
-
-> integrations: Add GitLab integration.
-
-> typeahead: Convert to ES6 module.
-
-> tests: Compile Handlebars templates with source maps.
-
-> blueslip: Add feature to time common operations.
-
-> gather_subscriptions: Fix exception handling bad input.
-
-Compare "_gather_subscriptions: Fix exception handling bad input._" with:
-
-- "_gather_subscriptions was broken_", which doesn't explain how
-  it was broken (and isn't in the imperative)
-- "_Fix exception when given bad input_", in which it's impossible to
-  tell from the summary what part of the codebase was changed
-- "_gather_subscriptions: Fixing exception when given bad input._",
-  not in the imperative
-- "_gather_subscriptions: Fixed exception when given bad input._",
-  not in the imperative
-
-The summary is followed by a blank line, and then the body of the
-commit message.
+The commit message is a key piece of how you communicate with reviewers and
+future contributors, and is no less important than the code you write. This
+section provides detailed guidance on how to write an excellent commit message.
 
 **Tip:** You can set up [Zulip's Git pre-commit hook][commit-hook] to
-automatically catch common mistakes in the commit message itself.
+automatically catch common mistakes in the commit message.
 
 [commit-hook]: ../git/zulip-tools.md#set-up-git-repo-script
 
-### Message body:
+### Commit summary, part 1
 
-- The body is written in prose, with full paragraphs; each paragraph should
-  be separated from the next by a single blank line.
-- The body explains:
-  - why and how the change was made
-  - any manual testing you did in addition to running the automated tests
-  - any aspects of the commit that you think are questionable and
-    you'd like special attention applied to.
-- If the commit makes performance improvements, you should generally
-  include some rough benchmarks showing that it actually improves the
-  performance.
-- When you fix a GitHub issue, [mark that you've fixed the issue in
-  your commit
-  message](https://help.github.com/en/articles/closing-issues-via-commit-messages)
-  so that the issue is automatically closed when your code is merged.
-  Zulip's preferred style for this is to have the final paragraph of
-  the commit message read e.g. "Fixes: \#123.".
-- Avoid `Partially fixes #1234`; GitHub's regular expressions ignore
-  the "partially" and close the issue. `Fixes part of #1234` is a good alternative.
-- Any paragraph content in the commit message should be line-wrapped
-  to about 68 characters per line, but no more than 70, so that your
-  commit message will be reasonably readable in `git log` in a normal
-  terminal. You may find it helpful to:
-  - configure Git to use your preferred editor, with the EDITOR
-    environment variable or `git config --global core.editor`, and
-  - configure the editor to automatically wrap text to 70 or fewer
-    columns per line (all text editors support this).
+The first part of the commit summary should only be 1-2 words, followed by a
+`:`. In most cases, it will describe the part of the product you are changing.
+
+Common examples include: settings, message feed, compose, left sidebar, right
+sidebar, recent (for **Recent conversations**), search, markdown, tooltips,
+popovers, drafts, integrations, email, docs, help, and api docs. In some cases,
+it's helpful to be a little more specific, e.g., emoji, spoilers, polls. If your
+commit doesn't cleanly map to a part of the product, you might use something
+like "css" for CSS-only changes, or the name of the file you refactored (not the
+full path).
+
+There is no need to be creative here! If one of the examples above fits your
+commit, use it. Consistency makes it easier for others to scan commit messages
+to find what they need.
+
+Additional tips:
+
+- Use lowercase (e.g., "settings", not "Settings").
+- If it's hard to find a 1-2 word description of the part of the code base
+  affected by your commit, consider again whether you have structured your
+  commits well.
+- Never use a generic term like "bug", "fix", or "refactor".
+
+### Commit summary, part 2
+
+This is a **complete sentence** that briefly summarizes your changes. There are
+a few rules to keep in mind:
+
+- Start the sentence with an
+  [imperative](https://en.wikipedia.org/wiki/Imperative_mood) verb, e.g.
+  "fix", "add", "change", etc.
+- Use proper capitalization and punctuation.
+- Avoid acronyms.
+- Use no more than 76 characters for the entire commit summary (parts 1 and 2).
+
+### Examples of good commit summaries
+
+- provision: Improve performance of installing npm.
+
+- channel: Discard all HTTP responses while reloading.
+
+- integrations: Add GitLab integration.
+
+- typeahead: Convert to ES6 module.
+
+- tests: Compile Handlebars templates with source maps.
+
+- blueslip: Add feature to time common operations.
+
+- gather_subscriptions: Fix exception handling bad input.
+
+#### Detailed example
+
+- **Good summary**: "gather_subscriptions: Fix exception handling bad input."
+- **Not so good alternatives**:
+  - "gather_subscriptions was broken": This doesn't explain how it was broken, and
+    doesn't follow the format guidelines for commit summaries.
+  - "Fix exception when given bad input": It's impossible to tell what part of the
+    codebase was changed.
+  - Not using the imperative:
+    - "gather_subscriptions: Fixing exception when given bad input."
+    - "gather_subscriptions: Fixed exception when given bad input."
+
+### Commit description
+
+The body of the commit message should explain why and how the change was made.
+Like a good code comment, it should provide context and motivation that will
+help a developer looking at your changes a year later understand the motivation
+behind your decisions.
+
+Many decisions should be documented in both the commit message and the
+description for your pull request. The general rule of thumb is:
+
+- If the information is helpful for reviewing your work, include it in the PR
+  description.
+- If the information will be helpful long-term for someone trying to
+  understand the code base, include it in the commit message.
+
+For example, if you have a question that you expect to be resolved during the
+review process, put it in the PR description. Later, update the commit
+description to document the reasoning behind the decision.
+
+When you fix a GitHub issue, [mark that you have fixed the issue in your commit
+message](https://help.github.com/en/articles/closing-issues-via-commit-messages)
+so that the issue is automatically closed when your code is merged. Zulip's
+preferred style for this is to have the final paragraph of the commit message
+read, e.g., "Fixes: \#123."
+
+**Note:** Avoid using a phrase like `Partially fixes #1234`, as GitHub's regular
+expressions ignore the "partially" and close the issue. `Fixes part of #1234` is
+a good alternative.
+
+There are a few specific formatting guidelines to keep in mind:
+
+- The commit description should be separated from the summary by a blank line.
+- Use full sentences and paragraphs, with proper punctuation and capitalization.
+  Paragraphs should be separated with a single blank line.
+- Be sure to review your description for typos, spelling, and grammar mistakes.
+- Your commit message should be line-wrapped to about 68 characters per line,
+  but no more than 70, so that your commit message will be easy to read in `git
+log` in a normal terminal.
+
+**Tip:** You may find it helpful to configure Git to use your preferred editor
+using the `EDITOR` environment variable or `git config --global core.editor`,
+and configure the editor to automatically wrap text to 70 or fewer columns per
+line (all text editors support this).
+
+### Examples of good commit messages
+
+- [A backend testing
+  commit](https://github.com/zulip/zulip/commit/4869e1b0b2bc6d56fcf44b7d0e36ca20f45d0521)
+- [A development environment provisioning
+  commit](https://github.com/zulip/zulip/commit/cd5b38f5d8bdcc1771ad794f37262a61843c56c0)
