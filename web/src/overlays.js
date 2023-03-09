@@ -3,16 +3,32 @@ import Micromodal from "micromodal";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as popovers from "./popovers";
 
 let $active_overlay;
 let close_handler;
 let open_overlay_name;
 
+const pre_open_hooks = [];
+const pre_close_hooks = [];
+
 function reset_state() {
     $active_overlay = undefined;
     close_handler = undefined;
     open_overlay_name = undefined;
+}
+
+export function register_pre_open_hook(func) {
+    pre_open_hooks.push(func);
+}
+
+export function register_pre_close_hook(func) {
+    pre_close_hooks.push(func);
+}
+
+function call_hooks(func_list) {
+    for (const element of func_list) {
+        element();
+    }
 }
 
 export function is_active() {
@@ -62,7 +78,7 @@ export function active_modal() {
 }
 
 export function open_overlay(opts) {
-    popovers.hide_all();
+    call_hooks(pre_open_hooks);
 
     if (!opts.name || !opts.$overlay || !opts.on_close) {
         blueslip.error("Programming error in open_overlay");
@@ -210,7 +226,7 @@ export function open_modal(selector, conf = {}) {
 }
 
 export function close_overlay(name) {
-    popovers.hide_all();
+    call_hooks(pre_close_hooks);
 
     if (name !== open_overlay_name) {
         blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open.");
