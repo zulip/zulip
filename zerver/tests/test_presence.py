@@ -25,7 +25,7 @@ class TestClientModel(ZulipTestCase):
         This test is designed to cover __str__ method for Client.
         """
         client = make_client("some_client")
-        self.assertEqual(str(client), "<Client: some_client>")
+        self.assertEqual(repr(client), "<Client: some_client>")
 
 
 class UserPresenceModelTests(ZulipTestCase):

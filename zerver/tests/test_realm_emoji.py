@@ -109,8 +109,8 @@ class RealmEmojiTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.get(name="green_tick")
         file_name = str(realm_emoji.id) + ".png"
         self.assertEqual(
-            str(realm_emoji),
-            f"<RealmEmoji(zulip): {realm_emoji.id} green_tick False {file_name}>",
+            repr(realm_emoji),
+            f"<RealmEmoji: zulip: {realm_emoji.id} green_tick False {file_name}>",
         )
 
     def test_upload_exception(self) -> None:

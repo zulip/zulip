@@ -180,7 +180,7 @@ class Confirmation(models.Model):
     type = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return f"<Confirmation: {self.content_object}>"
+        return f"{self.content_object!r}"
 
     class Meta:
         unique_together = ("type", "confirmation_key")
