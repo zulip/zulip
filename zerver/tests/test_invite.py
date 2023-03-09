@@ -722,11 +722,18 @@ earl-test@zulip.com""",
         self.login("iago")
         invitee_emails = "1@zulip.com, 2@zulip.com"
         self.invite(invitee_emails, ["Denmark"])
-        invitee_emails = ", ".join(str(i) for i in range(get_realm("zulip").max_invites - 1))
+        self.check_sent_emails(["1@zulip.com", "2@zulip.com"])
+        from django.core import mail
+
+        mail.outbox = []
+        invitee_emails = ", ".join(
+            f"more-{i}@zulip.com" for i in range(get_realm("zulip").max_invites - 1)
+        )
         self.assert_json_error(
             self.invite(invitee_emails, ["Denmark"]),
             "To protect users, Zulip limits the number of invitations you can send in one day. Because you have reached the limit, no invitations were sent.",
         )
+        self.check_sent_emails([])
 
     def test_missing_or_invalid_params(self) -> None:
         """
