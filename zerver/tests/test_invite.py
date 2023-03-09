@@ -1091,12 +1091,18 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # Check invitation reminder email is scheduled with 4 day link expiry
         self.invite("alice@zulip.com", ["Denmark"], invite_expires_in_minutes=4 * 24 * 60)
         self.assertEqual(
-            ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1
+            ScheduledEmail.objects.filter(
+                address="alice@zulip.com", type=ScheduledEmail.INVITATION_REMINDER
+            ).count(),
+            1,
         )
         # Check invitation reminder email is not scheduled with 3 day link expiry
         self.invite("bob@zulip.com", ["Denmark"], invite_expires_in_minutes=3 * 24 * 60)
         self.assertEqual(
-            ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1
+            ScheduledEmail.objects.filter(
+                address="bob@zulip.com", type=ScheduledEmail.INVITATION_REMINDER
+            ).count(),
+            0,
         )
 
     # make sure users can't take a valid confirmation key from another
