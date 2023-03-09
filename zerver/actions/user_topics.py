@@ -2,15 +2,13 @@ import datetime
 from typing import Any, Dict, Optional
 
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_topics import (
     get_topic_mutes,
     set_user_topic_visibility_policy_in_database,
 )
-from zerver.models import Stream, UserProfile, UserTopic
+from zerver.models import Stream, UserProfile
 from zerver.tornado.django_api import send_event
 
 
@@ -27,24 +25,15 @@ def do_set_user_topic_visibility_policy(
     if last_updated is None:
         last_updated = timezone_now()
 
-    if visibility_policy == UserTopic.VISIBILITY_POLICY_INHERIT:
-        try:
-            set_user_topic_visibility_policy_in_database(
-                user_profile, stream.id, topic, visibility_policy=visibility_policy
-            )
-        except UserTopic.DoesNotExist:
-            raise JsonableError(_("Nothing to be done"))
-    else:
-        assert stream.recipient_id is not None
-        set_user_topic_visibility_policy_in_database(
-            user_profile,
-            stream.id,
-            topic,
-            visibility_policy=visibility_policy,
-            recipient_id=stream.recipient_id,
-            last_updated=last_updated,
-            ignore_duplicate=ignore_duplicate,
-        )
+    set_user_topic_visibility_policy_in_database(
+        user_profile,
+        stream.id,
+        topic,
+        visibility_policy=visibility_policy,
+        recipient_id=stream.recipient_id,
+        last_updated=last_updated,
+        ignore_duplicate=ignore_duplicate,
+    )
 
     # This first muted_topics event is deprecated and will be removed
     # once clients are migrated to handle the user_topic event type
