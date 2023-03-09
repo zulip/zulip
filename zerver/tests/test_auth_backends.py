@@ -1409,7 +1409,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         confirmation_data = {"from_confirmation": "1", "key": confirmation_key}
         result = self.client_post("/accounts/register/", confirmation_data)
         if not skip_registration_form:
-            self.assert_in_response("We just need you to do one last thing", result)
+            self.assert_in_response("Enter your account details to complete registration.", result)
 
             # Verify that the user is asked for name but not password
             self.assert_not_in_success_response(["id_password"], result)
@@ -4282,7 +4282,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             "key": confirmation_key,
         }
         result = self.client_post("/accounts/register/", confirmation_data, subdomain="zulip")
-        self.assert_in_response("We just need you to do one last thing", result)
+        self.assert_in_response("Enter your account details to complete registration.", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(["id_password"], result)
@@ -4318,7 +4318,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             "key": confirmation_key,
         }
         result = self.client_post("/accounts/register/", confirmation_data, subdomain="zulip")
-        self.assert_in_response("We just need you to do one last thing", result)
+        self.assert_in_response("Enter your account details to complete registration.", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(["id_password"], result)
@@ -4372,7 +4372,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_response('action="/accounts/register/"', result)
         data2 = {"from_confirmation": "1", "full_name": data["full_name"], "key": confirmation_key}
         result = self.client_post("/accounts/register/", data2, subdomain="zulip")
-        self.assert_in_response("We just need you to do one last thing", result)
+        self.assert_in_response("Enter your account details to complete registration.", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(["id_password"], result)

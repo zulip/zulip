@@ -2431,7 +2431,9 @@ class UserSignUpTest(ZulipTestCase):
         result = self.verify_signup(email=email, password=password, full_name="")
         # _WSGIPatchedWSGIResponse does not exist in Django, thus the inverted isinstance check.
         assert not isinstance(result, UserProfile)
-        self.assert_in_success_response(["We just need you to do one last thing."], result)
+        self.assert_in_success_response(
+            ["Enter your account details to complete registration."], result
+        )
 
         # Verify that the user is asked for name and password
         self.assert_in_success_response(["id_password", "id_full_name"], result)
@@ -2486,7 +2488,9 @@ class UserSignUpTest(ZulipTestCase):
                 "from_confirmation": "1",
             },
         )
-        self.assert_in_success_response(["We just need you to do one last thing."], result)
+        self.assert_in_success_response(
+            ["Enter your account details to complete registration."], result
+        )
 
     def test_signup_with_weak_password(self) -> None:
         """
@@ -2521,7 +2525,9 @@ class UserSignUpTest(ZulipTestCase):
                     "from_confirmation": "1",
                 },
             )
-            self.assert_in_success_response(["We just need you to do one last thing."], result)
+            self.assert_in_success_response(
+                ["Enter your account details to complete registration."], result
+            )
 
             result = self.submit_reg_form_for_user(email, "easy", full_name="New Guy")
             self.assert_in_success_response(["The password is too weak."], result)
@@ -2588,7 +2594,7 @@ class UserSignUpTest(ZulipTestCase):
             email, password, full_name="New Guy", from_confirmation="1"
         )
         self.assert_in_success_response(
-            ["We just need you to do one last thing.", "New Guy", email], result
+            ["Enter your account details to complete registration.", "New Guy", email], result
         )
         result = self.submit_reg_form_for_user(email, password, full_name="New Guy")
         user_profile = UserProfile.objects.get(delivery_email=email)
@@ -2733,7 +2739,7 @@ class UserSignUpTest(ZulipTestCase):
             [
                 "Import settings from existing Zulip account",
                 "selected >\n                                Zulip Dev",
-                "We just need you to do one last thing.",
+                "Enter your account details to complete registration.",
             ],
             result,
         )
@@ -3007,7 +3013,7 @@ class UserSignUpTest(ZulipTestCase):
 
             self.assert_in_success_response(
                 [
-                    "We just need you to do one last thing.",
+                    "Enter your account details to complete registration.",
                     "New LDAP fullname",
                     "newuser@zulip.com",
                 ],
@@ -3034,7 +3040,8 @@ class UserSignUpTest(ZulipTestCase):
                     HTTP_HOST=subdomain + ".testserver",
                 )
             self.assert_in_success_response(
-                ["We just need you to do one last thing.", "newuser@zulip.com"], result
+                ["Enter your account details to complete registration.", "newuser@zulip.com"],
+                result,
             )
 
     @override_settings(
@@ -3096,7 +3103,7 @@ class UserSignUpTest(ZulipTestCase):
 
             self.assert_in_success_response(
                 [
-                    "We just need you to do one last thing.",
+                    "Enter your account details to complete registration.",
                     "New LDAP fullname",
                     "newuser@zulip.com",
                 ],
@@ -3159,7 +3166,12 @@ class UserSignUpTest(ZulipTestCase):
 
             # Full name should be set from LDAP
             self.assert_in_success_response(
-                ["We just need you to do one last thing.", full_name, "newuser@zulip.com"], result
+                [
+                    "Enter your account details to complete registration.",
+                    full_name,
+                    "newuser@zulip.com",
+                ],
+                result,
             )
 
             # Submit the final form with the wrong password.
@@ -3821,7 +3833,8 @@ class UserSignUpTest(ZulipTestCase):
                 HTTP_HOST=subdomain + ".testserver",
             )
             self.assert_in_success_response(
-                ["We just need you to do one last thing.", "newuser@zulip.com"], result
+                ["Enter your account details to complete registration.", "newuser@zulip.com"],
+                result,
             )
 
     @patch(
