@@ -211,7 +211,7 @@ jobs:
       - name: Generate failure report string
         id: failure_report_string
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
-        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+        run: /tmp/generate-failure-message >> $GITHUB_OUTPUT
 
       - name: Report status to CZO
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
@@ -296,7 +296,7 @@ jobs:
       - name: Generate failure report string
         id: failure_report_string
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
-        run: tools/ci/generate-failure-message >> $GITHUB_OUTPUT
+        run: /tmp/generate-failure-message >> $GITHUB_OUTPUT
 
       - name: Report status to CZO
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
