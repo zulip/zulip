@@ -12,6 +12,7 @@ import random
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -236,12 +237,25 @@ def run(args: Sequence[str], **kwargs: Any) -> None:
 
     try:
         subprocess.check_call(args, **kwargs)
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as error:
         print()
-        print(
-            WHITEONRED + f"Error running a subcommand of {sys.argv[0]}: {shlex.join(args)}" + ENDC
-        )
-        print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
+        if error.returncode < 0:
+            try:
+                signal_name = signal.Signals(-error.returncode).name
+            except ValueError:
+                signal_name = f"unknown signal {-error.returncode}"
+            print(
+                WHITEONRED
+                + f"Subcommand of {sys.argv[0]} died with {signal_name}: {shlex.join(args)}"
+                + ENDC
+            )
+        else:
+            print(
+                WHITEONRED
+                + f"Subcommand of {sys.argv[0]} failed with exit status {error.returncode}: {shlex.join(args)}"
+                + ENDC
+            )
+            print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
         sys.exit(1)
 
