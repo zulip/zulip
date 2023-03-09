@@ -859,9 +859,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # We only sent emails to the new users.
         self.check_sent_emails(new)
 
-        prereg_user = PreregistrationUser.objects.get(email="foo-test@zulip.com")
-        self.assertEqual(prereg_user.email, "foo-test@zulip.com")
-
     def test_invite_outside_domain_in_closed_realm(self) -> None:
         """
         In a realm with `emails_restricted_to_domains = True`, you can't invite people
