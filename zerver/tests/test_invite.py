@@ -803,7 +803,7 @@ earl-test@zulip.com""",
 
     def test_invite_links_in_name(self) -> None:
         """
-        If you invite an address already using Zulip, no invitation is sent.
+        Names are escaped in the emails which are sent.
         """
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
