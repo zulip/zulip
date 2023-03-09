@@ -1,4 +1,4 @@
-# Configure how links open
+# Configure how links open in mobile apps
 
 You can configure whether website links will open directly in the Zulip app, or
 in your device's default browser.

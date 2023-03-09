@@ -86,7 +86,6 @@
 * [View your mentions](/help/view-your-mentions)
 * [Star a message](/help/star-a-message)
 * [View and browse images](/help/view-and-browse-images)
-* [Configure how links open](/help/configure-how-links-open)
 * [View messages sent by a user](/help/view-messages-sent-by-a-user)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Searching for messages](/help/search-for-messages)
@@ -133,6 +132,7 @@
 * [Download apps for every platform](https://zulip.com/apps/)
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Supported browsers](/help/supported-browsers)
+* [Configure how links open](/help/configure-how-links-open)
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
 
