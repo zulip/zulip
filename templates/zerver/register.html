@@ -24,7 +24,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {% endif %}
 
             {% trans %}
-            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>
+            <p>Enter your account details to complete registration.</p>
             {% endtrans %}
         </div>
 
@@ -33,11 +33,31 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 
             <fieldset class="org-registration">
                 {% if creating_new_realm %}
-                <legend>{{ _('Your organization') }}</legend>
+                <legend>{{ _('Your organization') }}
+                    {% if not form.realm_subdomain.errors %}
+                    <span class="edit-realm-details" role="button" tabindex="0"><i class="fa fa-pencil"></i></span>
+                    {% endif %}
+                </legend>
                 {% with %}
                     {% set user_registration_form = "true" %}
                     {% include 'zerver/realm_creation_form.html' %}
                 {% endwith %}
+                {% if not form.realm_subdomain.errors %}
+                <div class="not-editable-realm-details">
+                    <div class="input-box">
+                        <label for="id_realm_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+                        <div id="id_realm_name" class="not-editable-realm-field">{{ form.realm_name.value() }}</div>
+                    </div>
+                    <div class="input-box">
+                        <label for="id_realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
+                        <div id="id_realm_type" class="not-editable-realm-field">{{ selected_realm_type_name }}</div>
+                    </div>
+                    <div class="input-box">
+                        <label for="id_realm_subdomain" class="inline-block label-title">{{ _('Organization URL') }}</label>
+                        <div id="id_realm_subdomain" class="not-editable-realm-field">{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}.{% endif %}{{external_host}}</div>
+                    </div>
+                </div>
+                {% endif %}
                 {% endif %}
             </fieldset>
 

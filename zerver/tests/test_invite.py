@@ -1436,7 +1436,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         response = self.client_post(
             url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
         )
-        self.assert_in_success_response(["We just need you to do one last thing."], response)
+        self.assert_in_success_response(
+            ["Enter your account details to complete registration."], response
+        )
         response = self.submit_reg_form_for_user(email, password, key=registration_key)
         self.assertEqual(response.status_code, 302)
 

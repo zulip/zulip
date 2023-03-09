@@ -72,6 +72,7 @@ from zerver.models import (
     Stream,
     UserProfile,
     get_default_stream_groups,
+    get_org_type_display_name,
     get_realm,
     get_source_profile,
     get_user_by_delivery_email,
@@ -175,6 +176,14 @@ def check_prereg_key(
         assert prereg_object.created_user is None
 
     return prereg_object, realm_creation
+
+
+def get_selected_realm_type_name(prereg_realm: Optional[PreregistrationRealm]) -> Optional[str]:
+    if prereg_realm is None:
+        # We show the selected realm type only when creating new realm.
+        return None
+
+    return get_org_type_display_name(prereg_realm.org_type)
 
 
 @add_google_analytics
@@ -597,6 +606,7 @@ def registration_helper(
                 Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
             ),
             "default_email_address_visibility": default_email_address_visibility,
+            "selected_realm_type_name": get_selected_realm_type_name(prereg_realm),
             "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
             "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,

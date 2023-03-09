@@ -284,4 +284,19 @@ $(() => {
         }
         $("#new-user-email-address-visibility .current-selected-option").text(selected_option_text);
     });
+
+    $("#registration").on("click keypress", ".edit-realm-details", (e) => {
+        if (e.type === "keypress" && e.key !== "Enter") {
+            return;
+        }
+
+        $("#registration .not-editable-realm-details").addClass("hide");
+        $("#registration .realm-creation-editable-inputs").removeClass("hide");
+        $("#id_team_name").trigger("focus");
+        // This is a hack to have cursor at end after focussing the input.
+        const name_val = $("#id_team_name").val();
+        $("#id_team_name").val("").val(name_val);
+
+        $(e.target).hide();
+    });
 });
