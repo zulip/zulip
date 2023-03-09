@@ -19,8 +19,8 @@ Anyone with your API key can impersonate you, so be doubly careful with it.
 
 1. Under **API key**, click **Show/change your API key**.
 
-1. Enter your password, and click **Get API key**. If you never had a
-   password, click **Never had one? Forgotten it?** and follow the
+1. Enter your password, and click **Get API key**. If you don't know your
+   password, click **reset it** and follow the
    instructions from there.
 
 1. Copy your API key.
