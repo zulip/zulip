@@ -56,6 +56,11 @@ let userlist_placement = "right";
 
 let list_of_popovers = [];
 
+export function initialize() {
+    overlays.register_pre_open_hook(hide_all);
+    overlays.register_pre_close_hook(hide_all);
+}
+
 export function clear_for_testing() {
     $current_message_info_popover_elem = undefined;
     $current_user_info_popover_elem = undefined;
