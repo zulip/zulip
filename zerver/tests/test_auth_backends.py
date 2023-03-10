@@ -5655,6 +5655,7 @@ class ZulipLDAPTestCase(ZulipTestCase):
         # method separately, we need to set them manually.
         self.backend._realm = get_realm("zulip")
         self.backend._prereg_user = None
+        self.backend._prereg_realm = None
 
     def setup_subdomain(self, user_profile: UserProfile) -> None:
         realm = user_profile.realm

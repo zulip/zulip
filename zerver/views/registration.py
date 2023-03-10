@@ -461,6 +461,7 @@ def registration_helper(
                 password=password,
                 realm=realm,
                 prereg_user=prereg_user,
+                prereg_realm=prereg_realm,
                 return_data=return_data,
             )
             if user is None:
