@@ -54,7 +54,7 @@ export function remove_diacritics(s: string): string {
 // * query is the user-entered search query
 // * source_str is the string we're matching in, e.g. a user's name
 // * split_char is the separator for this syntax (e.g. ' ').
-export function query_matches_string(
+export function query_matches_string_in_order(
     query: string,
     source_str: string,
     split_char: string,
@@ -111,7 +111,7 @@ export function get_emoji_matcher(query: string): (emoji: Emoji) => boolean {
         const matches_emoji_literal =
             emoji.reaction_type === "unicode_emoji" &&
             parse_unicode_emoji_code(emoji.emoji_code) === query;
-        return matches_emoji_literal || query_matches_string(query, emoji.emoji_name, "_");
+        return matches_emoji_literal || query_matches_string_in_order(query, emoji.emoji_name, "_");
     };
 }
 
