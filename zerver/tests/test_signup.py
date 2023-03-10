@@ -1251,6 +1251,7 @@ class RealmCreationTest(ZulipTestCase):
         signups_stream, _ = create_stream_if_needed(notification_bot.realm, "signups")
 
         string_id = "zuliptest"
+        org_name = "Zulip Test"
         # Make sure the realm does not exist
         with self.assertRaises(Realm.DoesNotExist):
             get_realm(string_id)
@@ -1276,7 +1277,9 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
-        result = self.submit_reg_form_for_user(email, password, realm_subdomain=string_id)
+        result = self.submit_reg_form_for_user(
+            email, password, realm_subdomain=string_id, realm_name=org_name
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith("http://zuliptest.testserver/accounts/login/subdomain/")
@@ -1307,12 +1310,15 @@ class RealmCreationTest(ZulipTestCase):
             self.assert_length(messages, message_count)
             self.assertIn(text, messages[0].content)
 
-        # Check signup messages
+        # Check admin organization's signups stream messages
         recipient = signups_stream.recipient
         messages = Message.objects.filter(recipient=recipient).order_by("id")
         self.assert_length(messages, 1)
-        self.assertIn("Signups enabled", messages[0].content)
-        self.assertEqual("zuliptest", messages[0].topic_name())
+        # Check organization name, subdomain and organization type are in message content
+        self.assertIn("Zulip Test", messages[0].content)
+        self.assertIn("zuliptest", messages[0].content)
+        self.assertIn("Organization type: Business", messages[0].content)
+        self.assertEqual("new organizations", messages[0].topic_name())
 
         realm_creation_audit_log = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_CREATED
