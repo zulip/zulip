@@ -16,7 +16,7 @@ whenever you need a reminder of the formatting syntax below.
 * [Text emphasis](#text-emphasis)
 * [Bulleted lists](#bulleted-lists)
 * [Numbered lists](#numbered-lists)
-* [Links and images](#links)
+* [Links](#links)
 * [Code blocks](#code)
 * [LaTeX](#latex)
 * [Quotes](#quotes)
@@ -42,32 +42,14 @@ whenever you need a reminder of the formatting syntax below.
 
 ## Links
 
-Zulip auto-linkifies URLs and [valid stream (and topic) names][link-to-conversation].
-You can also add a [custom linkifier](/help/add-a-custom-linkifier) to link
-patterns like `#1234` to your ticketing system.
+{!links-intro.md!}
 
-[link-to-conversation]: /help/link-to-a-message-or-conversation
+{!links-examples.md!}
 
-```
-Auto-detected URL: zulip.com
-Named link: [Zulip homepage](zulip.com)
-Stream: #**stream name**
-Topic: #**stream name>topic name**
-Custom linkifier: #1234 (links to ticket 1234 in your ticketing system)
-```
-
-![Markdown links](/static/images/help/markdown-links.png)
-
-## Images
-
-See [Share and upload files](/help/share-and-upload-files) to learn more
-about dropping, pasting, and attaching images.
-
-```
-[A whale of a good time](https://your.zulip.domain/user_uploads/1/46/IPvysqXEtiTG1ZdNBrwAZODi/whale-time.png)
-```
-
-![Markdown image](/static/images/help/markdown-image.png)
+!!! tip ""
+    You can also use a button or a keyboard shortcut (<kbd>Ctrl</kbd> +
+    <kbd>Shift</kbd> + <kbd>L</kbd>) to insert a link.
+    [Learn more](/help/insert-a-link).
 
 ## Code
 
