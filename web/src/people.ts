@@ -220,7 +220,7 @@ export function user_ids_string_to_emails_string(user_ids_string) {
     let emails = util.try_parse_as_truthy(
         user_ids.map((user_id) => {
             const person = people_by_user_id_dict.get(user_id);
-            return person && person.email;
+            return person?.email;
         }),
     );
 
@@ -274,7 +274,7 @@ export function reply_to_to_user_ids_string(emails_string) {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
-            return person && person.user_id;
+            return person?.user_id;
         }),
     );
 
@@ -337,7 +337,7 @@ export function email_list_to_user_ids_string(emails) {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
-            return person && person.user_id;
+            return person?.user_id;
         }),
     );
 
@@ -538,7 +538,7 @@ export function pm_with_url(message) {
         suffix = "group";
     } else {
         const person = maybe_get_user_by_id(user_ids[0]);
-        if (person && person.full_name) {
+        if (person?.full_name) {
             suffix = person.full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
         } else {
             blueslip.error("Unknown people in message");
@@ -786,7 +786,7 @@ export function small_avatar_url(message) {
 
     // The first time we encounter a sender in a message, we may
     // not have person.avatar_url set, but if we do, then use that.
-    if (person && person.avatar_url) {
+    if (person?.avatar_url) {
         return small_avatar_url_for_person(person);
     }
 
@@ -1116,7 +1116,7 @@ export function filter_people_by_search_terms(users, search_terms) {
     for (const user of users) {
         const person = get_by_email(user.email);
         // Get person object (and ignore errors)
-        if (!person || !person.full_name) {
+        if (!person?.full_name) {
             continue;
         }
 
