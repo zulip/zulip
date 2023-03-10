@@ -120,16 +120,20 @@ def set_user_topic_visibility_policy_in_database(
     ignore_duplicate: bool = False,
 ) -> None:
     if visibility_policy == UserTopic.VISIBILITY_POLICY_INHERIT:
-        # Will throw UserTopic.DoesNotExist if the user doesn't
-        # already have a visibility policy for this topic.
-        UserTopic.objects.get(
-            user_profile=user_profile,
-            stream_id=stream_id,
-            topic_name__iexact=topic_name,
-        ).delete()
-        return
+        try:
+            # Will throw UserTopic.DoesNotExist if the user doesn't
+            # already have a visibility policy for this topic.
+            UserTopic.objects.get(
+                user_profile=user_profile,
+                stream_id=stream_id,
+                topic_name__iexact=topic_name,
+            ).delete()
+            return
+        except UserTopic.DoesNotExist:
+            raise JsonableError(_("Nothing to be done"))
 
     assert last_updated is not None
+    assert recipient_id is not None
     (row, created) = UserTopic.objects.get_or_create(
         user_profile=user_profile,
         stream_id=stream_id,
