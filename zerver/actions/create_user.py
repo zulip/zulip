@@ -34,6 +34,7 @@ from zerver.lib.users import (
 from zerver.models import (
     DefaultStreamGroup,
     Message,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -382,6 +383,7 @@ def do_create_user(
     default_events_register_stream: Optional[Stream] = None,
     default_all_public_streams: Optional[bool] = None,
     prereg_user: Optional[PreregistrationUser] = None,
+    prereg_realm: Optional[PreregistrationRealm] = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     source_profile: Optional[UserProfile] = None,
     realm_creation: bool = False,
@@ -470,6 +472,10 @@ def do_create_user(
         do_send_user_group_members_update_event(
             "add_members", full_members_system_group, [user_profile.id]
         )
+
+    if prereg_realm is not None:
+        prereg_realm.created_user = user_profile
+        prereg_realm.save(update_fields=["created_user"])
 
     if bot_type is None:
         process_new_human_user(

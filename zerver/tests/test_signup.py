@@ -17,6 +17,7 @@ from django.test import Client, override_settings
 from django.utils import translation
 from django.utils.translation import gettext as _
 
+from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     one_click_unsubscribe_link,
@@ -76,6 +77,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -1311,6 +1313,12 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.emails_restricted_to_domains, False)
         self.assertEqual(realm.invite_required, True)
 
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        # Check created_realm and created_user field of PreregistrationRealm object
+        self.assertEqual(prereg_realm.created_realm, realm)
+        self.assertEqual(prereg_realm.created_user, user)
+        self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
+
         # Check welcome messages
         for stream_name, text, message_count in [
             (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "with the topic", 3),
@@ -1768,7 +1776,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_two_realms(self) -> None:
         """
-        Verify correct behavior and PreregistrationUser handling when using
+        Verify correct behavior and PreregistrationRealm handling when using
         two pre-generated realm creation links to create two different realms.
         """
         password = "test"
@@ -1803,7 +1811,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email", result)
         first_confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 1)
+        self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 1)
 
         # Get a second realm creation link.
         result = self.client_post(
@@ -1826,7 +1834,7 @@ class RealmCreationTest(ZulipTestCase):
         second_confirmation_url = self.get_confirmation_url_from_outbox(email)
 
         self.assertNotEqual(first_confirmation_url, second_confirmation_url)
-        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 2)
+        self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 2)
 
         # Create and verify the first realm
         result = self.client_get(first_confirmation_url)
@@ -1844,8 +1852,8 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.string_id, first_string_id)
         self.assertEqual(realm.name, first_realm_name)
 
-        # One of the PreregistrationUsers should have been used up:
-        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 1)
+        # One of the PreregistrationRealm should have been used up:
+        self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 1)
 
         # Create and verify the second realm
         result = self.client_get(second_confirmation_url)
@@ -1863,8 +1871,8 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.string_id, second_string_id)
         self.assertEqual(realm.name, second_realm_name)
 
-        # The remaining PreregistrationUser should have been used up:
-        self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 0)
+        # The remaining PreregistrationRealm should have been used up:
+        self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 0)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_invalid_email_signup(self) -> None:
