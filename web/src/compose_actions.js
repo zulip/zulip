@@ -535,7 +535,7 @@ export function quote_and_reply(opts) {
     const message_id = message_lists.current.selected_id();
     const message = message_lists.current.selected_message();
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
-
+    
     if (compose_state.has_message_content()) {
         // The user already started typing a message,
         // so we won't re-open the compose box.
@@ -554,7 +554,7 @@ export function quote_and_reply(opts) {
         respond_to_message(opts);
     }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea);
+    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n" , $textarea, true);
 
     function replace_content(message) {
         // Final message looks like:
@@ -562,6 +562,7 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
+        
         let content = $t(
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
