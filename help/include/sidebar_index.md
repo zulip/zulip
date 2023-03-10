@@ -60,6 +60,7 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Quote and reply](/help/quote-and-reply)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
+* [Insert a link](/help/insert-a-link)
 * [Share and upload files](/help/share-and-upload-files)
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
 * [Text emphasis](/help/text-emphasis)
