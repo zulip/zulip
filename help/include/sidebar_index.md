@@ -58,13 +58,13 @@
 ## Writing messages
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Mention a user or group](/help/mention-a-user-or-group)
-* [Emoji and emoticons](/help/emoji-and-emoticons)
-* [Start a video call](/help/start-a-call)
-* [Share and upload files](/help/share-and-upload-files)
 * [Quote and reply](/help/quote-and-reply)
-* [Code blocks](/help/code-blocks)
+* [Emoji and emoticons](/help/emoji-and-emoticons)
+* [Share and upload files](/help/share-and-upload-files)
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
+* [Code blocks](/help/code-blocks)
 * [Create a poll](/help/create-a-poll)
+* [Start a video call](/help/start-a-call)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)

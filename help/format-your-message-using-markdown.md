@@ -3,10 +3,15 @@
 [//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
 [//]: # (Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.)
 
-Zulip uses a variant of Markdown to allow you to easily format your
-messages. There is a convenient [**message formatting
-reference**](#message-formatting-reference) in the Zulip app that you
-can use whenever you need a reminder of the formatting syntax below.
+Zulip uses Markdown to allow you to easily format your messages. Even if you've
+never heard of Markdown, you are probably familiar with basic Markdown
+formatting, such as using `*` at the start of a line in a bulleted list, or
+around text to indicate emphasis.
+
+This page provides an overview of all the formatting available in Zulip. There
+is a convenient [**message formatting
+reference**](#message-formatting-reference) in the Zulip app that you can use
+whenever you need a reminder of the formatting syntax below.
 
 * [Emphasis](#emphasis)
 * [Lists](#lists)
