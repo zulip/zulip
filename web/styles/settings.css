@@ -1034,39 +1034,6 @@ label.display-settings-radio-choice-label {
     }
 }
 
-.checkbox-link-container {
-    /* display: flex;
-    align-items: center; */
-  }
-  
-  .checkbox-container {
-    /* margin-right: 2px; */
-  }
-  
-  .link-container {
-    /* margin-bottom: 17px; */
-    /* margin-left: 2px; */
-  }
-  
-  .link-container>*{
-    color: #8b91a0;
-  }
-
-  @media screen and (max-width: 768px) {
-    .checkbox-link-container {
-      flex-direction: column;
-    }
-  
-    .checkbox-container {
-      margin-right: 0;
-      /* margin-bottom: 10px; */
-    }
-  
-    .link-container {
-      margin-left: 0;
-    }
-  }
-
 $right_sidebar_width: 170px;
 $option_title_width: 180px;
 

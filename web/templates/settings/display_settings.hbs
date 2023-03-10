@@ -61,20 +61,14 @@
             </div>
         </div>
 
-        
-
-        <div class="checkbox-link-container">
-            <div class="checkbox-container">
-                {{> settings_checkbox
-                setting_name="translate_emoticons"
-                is_checked=settings_object.translate_emoticons
-                label=settings_label.translate_emoticons
-                prefix=prefix}}
-            </div>
-            <span class="link-container">
-                {{> ../help_link_widget link="/help/enable-emoticon-translations" }}
-            </span>
-        </div>
+        {{> settings_checkbox
+            setting_name="translate_emoticons"
+            is_checked=settings_object.translate_emoticons
+            label=settings_label.translate_emoticons
+            prefix=prefix
+            help_link="/help/enable-emoticon-translations"
+        }}
+          
 
         {{> settings_checkbox
           setting_name="display_emoji_reaction_users"
