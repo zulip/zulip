@@ -7,6 +7,7 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as util from "./util";
 
 // Any single user should send add a finite number of tasks
@@ -171,6 +172,7 @@ export function activate(opts) {
 
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
+            popovers.hide_all();
             $elem.find(".widget-error").text("");
             const task = $elem.find("input.add-task").val().trim();
             const desc = $elem.find("input.add-desc").val().trim();

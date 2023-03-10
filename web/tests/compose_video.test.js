@@ -14,6 +14,9 @@ const upload = mock_esm("../src/upload");
 mock_esm("../src/resize", {
     watch_manual_resize() {},
 });
+mock_esm("../src/popovers", {
+    hide_all() {},
+});
 set_global("document", {
     querySelector() {},
 });

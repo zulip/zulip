@@ -14,6 +14,7 @@ import * as dialog_widget from "./dialog_widget";
 import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
+import * as popovers from "./popovers";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as ui from "./ui";
@@ -239,6 +240,7 @@ function set_custom_time_inputs_visibility() {
 function open_invite_user_modal(e) {
     e.stopPropagation();
     e.preventDefault();
+    popovers.hide_all();
 
     gear_menu.close();
 

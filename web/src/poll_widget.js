@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as people from "./people";
+import * as popovers from "./popovers";
 
 export function activate({
     $elem,
@@ -141,21 +142,25 @@ export function activate({
 
         $elem.find(".poll-edit-question").on("click", (e) => {
             e.stopPropagation();
+            popovers.hide_all();
             start_editing();
         });
 
         $elem.find("button.poll-question-check").on("click", (e) => {
             e.stopPropagation();
+            popovers.hide_all();
             submit_question();
         });
 
         $elem.find("button.poll-question-remove").on("click", (e) => {
             e.stopPropagation();
+            popovers.hide_all();
             abort_edit();
         });
 
         $elem.find("button.poll-option").on("click", (e) => {
             e.stopPropagation();
+            popovers.hide_all();
             check_option_button();
             submit_option();
         });
@@ -203,6 +208,7 @@ export function activate({
             .off("click")
             .on("click", (e) => {
                 e.stopPropagation();
+                popovers.hide_all();
                 const key = $(e.target).attr("data-key");
                 submit_vote(key);
             });

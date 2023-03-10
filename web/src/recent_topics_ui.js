@@ -1249,6 +1249,7 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
@@ -1259,6 +1260,7 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
@@ -1267,11 +1269,13 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         change_focused_element($(e.target), "click");
     });
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         const $elt = $(e.currentTarget);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.read);
@@ -1296,6 +1300,7 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.
             return;
@@ -1309,6 +1314,7 @@ export function initialize() {
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         const topic_row_index = $(e.target).closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.stream);
         window.location.href = $(e.currentTarget).find("a").attr("href");
@@ -1316,6 +1322,7 @@ export function initialize() {
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         // The element's parent may re-render while it is being passed to
         // other functions, so, we get topic_key first.
         const $topic_row = $(e.target).closest("tr");
@@ -1337,6 +1344,7 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_search_clear", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         $("#recent_topics_search").val("");
         update_filters_view();
     });

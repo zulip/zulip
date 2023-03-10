@@ -230,6 +230,7 @@ export function initialize() {
 
     $("#main_div").on("click", ".message_reaction", function (e) {
         e.stopPropagation();
+        popovers.hide_all();
 
         if (page_params.is_spectator) {
             spectators.login_to_access();
@@ -248,6 +249,7 @@ export function initialize() {
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
         e.preventDefault();
+        popovers.hide_all();
     });
 
     $("#main_div").on("click", "a.stream", function (e) {
@@ -265,6 +267,7 @@ export function initialize() {
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         navigate.to_end();
     });
@@ -369,6 +372,7 @@ export function initialize() {
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
@@ -377,6 +381,7 @@ export function initialize() {
 
     $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
@@ -386,11 +391,13 @@ export function initialize() {
     // TOPIC MUTING
     $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         muted_topics_ui.mute_or_unmute_topic($(e.target), true);
     });
 
     $("body").on("click", ".message_header .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         muted_topics_ui.mute_or_unmute_topic($(e.target), false);
     });
 
@@ -688,6 +695,7 @@ export function initialize() {
 
     $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
+        popovers.hide_all();
         stream_list.toggle_filter_displayed(e);
     });
 
@@ -702,6 +710,7 @@ export function initialize() {
 
             e.preventDefault();
             e.stopPropagation();
+            popovers.hide_all();
             const $left_sidebar_scrollbar = $(
                 "#left_sidebar_scroll_container .simplebar-content-wrapper",
             );
@@ -727,6 +736,7 @@ export function initialize() {
         (e) => {
             e.preventDefault();
             e.stopPropagation();
+            popovers.hide_all();
 
             window.location.hash = "narrow/is/private";
         },

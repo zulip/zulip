@@ -14,6 +14,7 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as popovers from "./popovers";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
@@ -401,6 +402,7 @@ function hashchanged(from_reload, e) {
 export function initialize() {
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
+        popovers.hide_all();
     });
     hashchanged(true);
 }

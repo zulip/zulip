@@ -6,6 +6,7 @@ import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as popovers from "./popovers";
 import * as recent_topics_util from "./recent_topics_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
@@ -98,6 +99,7 @@ function bind_title_area_handlers() {
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
     });
 
     $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
@@ -111,6 +113,7 @@ function bind_title_area_handlers() {
             search.initiate_search();
             e.preventDefault();
             e.stopPropagation();
+            popovers.hide_all();
         }
     });
 
@@ -175,6 +178,7 @@ export function initialize() {
         exit_search();
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
     });
 }
 

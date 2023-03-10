@@ -30,6 +30,9 @@ const fake_now = 555;
 const autosize = () => {};
 autosize.update = () => {};
 mock_esm("autosize", {default: autosize});
+mock_esm("../src/popovers", {
+    hide_all() {},
+});
 
 const channel = mock_esm("../src/channel");
 const compose_actions = mock_esm("../src/compose_actions");

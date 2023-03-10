@@ -14,6 +14,9 @@ set_global("to_$", () => $window_stub);
 mock_esm("../src/search", {
     update_button_visibility() {},
 });
+mock_esm("../src/popovers", {
+    hide_all() {},
+});
 set_global("document", "document-stub");
 const history = set_global("history", {});
 

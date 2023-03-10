@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
+import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as topic_zoom from "./topic_zoom";
@@ -208,6 +209,7 @@ export function initialize() {
     $(".private_messages_container").on("click", "#show_more_private_messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
+        popovers.hide_all();
 
         zoom_in();
     });
@@ -215,6 +217,7 @@ export function initialize() {
     $(".private_messages_container").on("click", "#hide_more_private_messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
+        popovers.hide_all();
 
         zoom_out();
     });

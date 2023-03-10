@@ -21,6 +21,7 @@ import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -582,6 +583,7 @@ export function initialize() {
     $("#compose").on("click", ".compose_upload_file", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         $("#compose .file_input").trigger("click");
     });
@@ -589,6 +591,7 @@ export function initialize() {
     $("body").on("click", ".video_link", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         let $target_textarea;
         let edit_message_id;
@@ -674,6 +677,7 @@ export function initialize() {
     $("body").on("click", ".time_pick", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         $(e.target).toggleClass("has_popover");
 
@@ -708,6 +712,7 @@ export function initialize() {
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
@@ -726,6 +731,7 @@ export function initialize() {
     $("#compose").on("click", ".undo_markdown_preview", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         clear_preview_area();
     });
@@ -733,6 +739,7 @@ export function initialize() {
     $("#compose").on("click", ".expand_composebox_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         compose_ui.make_compose_box_full_size();
     });
@@ -745,6 +752,7 @@ export function initialize() {
     $("#compose").on("click", ".collapse_composebox_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         compose_ui.make_compose_box_original_size();
     });
