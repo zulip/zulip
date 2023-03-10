@@ -13,7 +13,7 @@ is a convenient [**message formatting
 reference**](#message-formatting-reference) in the Zulip app that you can use
 whenever you need a reminder of the formatting syntax below.
 
-* [Emphasis](#emphasis)
+* [Text emphasis](#text-emphasis)
 * [Lists](#lists)
 * [Links and images](#links)
 * [Code blocks](#code)
@@ -28,15 +28,14 @@ whenever you need a reminder of the formatting syntax below.
 * [To-do lists](#to-do-lists)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
-## Emphasis
+## Text emphasis
 
-```
-**bold**, *italic*, and ~~strikethrough~~ text
-***~~All three at once~~***
-```
+{!emphasis.md!}
 
-![Markdown emphasis](/static/images/help/markdown-emphasis.png)
-
+!!! tip ""
+    You can also use buttons or keyboard shortcuts (<kbd>Ctrl</kbd> +
+    <kbd>B</kbd> or <kbd>Ctrl</kbd> + <kbd>I</kbd>) to make text bold or italic.
+    [Learn more](/help/text-emphasis).
 
 ## Lists
 
