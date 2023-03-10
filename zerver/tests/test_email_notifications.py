@@ -1,5 +1,6 @@
 import random
 import re
+import tempfile
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from typing import List, Optional, Sequence
@@ -40,23 +41,31 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         reply_to = "reply_to_test"
         from_name = "from_name_test"
-        markdown_template_path = "templates/zerver/emails/email_base_default.source.html"
-        send_custom_email(
-            [hamlet],
-            options={
-                "markdown_template_path": markdown_template_path,
-                "reply_to": reply_to,
-                "subject": email_subject,
-                "from_name": from_name,
-                "dry_run": False,
-            },
-        )
+
+        with tempfile.NamedTemporaryFile() as markdown_template:
+            markdown_template.write(b"# Some heading\n\nSome content\n{{ realm_name }}")
+            markdown_template.flush()
+            send_custom_email(
+                [hamlet],
+                options={
+                    "markdown_template_path": markdown_template.name,
+                    "reply_to": reply_to,
+                    "subject": email_subject,
+                    "from_name": from_name,
+                    "dry_run": False,
+                },
+            )
         self.assert_length(mail.outbox, 1)
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, email_subject)
         self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
+        self.assertIn("# Some heading", msg.body)
+        self.assertIn("Zulip Dev", msg.body)
+
+        assert isinstance(msg, EmailMultiAlternatives)
+        self.assertIn("Some heading</h1>", str(msg.alternatives[0][0]))
 
     def test_send_custom_email_remote_server(self) -> None:
         email_subject = "subject_test"
@@ -83,9 +92,10 @@ class TestCustomEmails(ZulipTestCase):
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
         # Verify that the HTML version contains the footer.
+        assert isinstance(msg, EmailMultiAlternatives)
         self.assertIn(
             "You are receiving this email to update you about important changes to Zulip",
-            str(msg.message()),
+            str(msg.alternatives[0][0]),
         )
 
     def test_send_custom_email_headers(self) -> None:
