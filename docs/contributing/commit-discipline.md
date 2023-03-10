@@ -88,14 +88,14 @@ check out GitHub's excellent [blog post](https://github.blog/2022-06-30-write-be
 
 Commit messages have two parts:
 
-1. A **summary**, which is a one-line overview of the changes made.
-2. A **description**, which provides further details on the changes made, and the
-   motivation behind them.
+1. A **summary**, which is a brief one-line overview of the changes.
+2. A **description**, which provides further details on the changes,
+   the motivation behind them, and why they improve the project.
 
-The commit summary itself has a two-part structure:
+In Zulip, commit summaries have a two-part structure:
 
-1. A one or two word description of the part of the code base changed by the
-   commit.
+1. A one or two word description of the part of the code base changed
+   by the commit.
 2. A short sentence summarizing your changes.
 
 Here is an
@@ -106,7 +106,7 @@ of a good commit message:
 >
 > In commit
 > [8181ec4](https://github.com/zulip/zulip/commit/8181ec4b56abf598223112e7bc65ce20f3a6236b),
-> we removed the `realm_str` as a parameter for `send_message_backed`. This
+> we removed the `realm_str` as a parameter for `send_message_backend`. This
 > removes a missed test that included this as a parameter for that
 > endpoint/function.
 
@@ -115,26 +115,36 @@ future contributors, and is no less important than the code you write. This
 section provides detailed guidance on how to write an excellent commit message.
 
 **Tip:** You can set up [Zulip's Git pre-commit hook][commit-hook] to
-automatically catch common mistakes in the commit message.
+automatically catch common commit message mistakes.
 
 [commit-hook]: ../git/zulip-tools.md#set-up-git-repo-script
 
 ### Commit summary, part 1
 
-The first part of the commit summary should only be 1-2 words, followed by a
-`:`. In most cases, it will describe the part of the product you are changing.
+The first part of the commit summary should only be 1-2 **lower-case**
+words, followed by a `:`, describing what the part of the product the
+commit changes. These prefixes are essential for maintainers to
+efficiently skim commits when doing release management or
+investigating regressions.
 
-Common examples include: settings, message feed, compose, left sidebar, right
-sidebar, recent (for **Recent conversations**), search, markdown, tooltips,
-popovers, drafts, integrations, email, docs, help, and api docs. In some cases,
-it's helpful to be a little more specific, e.g., emoji, spoilers, polls. If your
-commit doesn't cleanly map to a part of the product, you might use something
-like "css" for CSS-only changes, or the name of the file you refactored (not the
-full path).
+Common examples include: settings, message feed, compose, left
+sidebar, right sidebar, recent (for **Recent conversations**), search,
+markdown, tooltips, popovers, drafts, integrations, email, docs, help,
+and api docs; issue trackers can be a good source of inspiration (but
+may be overly verbose).
 
-There is no need to be creative here! If one of the examples above fits your
-commit, use it. Consistency makes it easier for others to scan commit messages
-to find what they need.
+When it's possible to do so concisely, it's helpful to be a little
+more specific, e.g., emoji, spoilers, polls, but it's better to just
+use `settings:` than a lengthy description of a specific setting.
+
+If your commit doesn't cleanly map to a part of the product, you might
+use something like "css" for CSS-only changes, or the name of the file
+or technical subsystem principally being modified (not the full path,
+so `realm_icon`, not `zerver/lib/realm_icon.py`).
+
+There is no need to be creative here! If one of the examples above
+fits your commit, use it. Consistency makes it easier for others to
+scan commit messages to find what they need.
 
 Additional tips:
 
@@ -151,26 +161,27 @@ a few rules to keep in mind:
 
 - Start the sentence with an
   [imperative](https://en.wikipedia.org/wiki/Imperative_mood) verb, e.g.
-  "fix", "add", "change", etc.
+  "fix", "add", "change", "rename", etc.
 - Use proper capitalization and punctuation.
-- Avoid acronyms.
+- Be concise, without abbreviations, acronyms, or unnecessary
+  details. For example, "Change X and update tests/docs." would be
+  better written as just "Change X."; as discussed above, every commit
+  is expected to update to tests and documentation.
+- Be readable to a reader familiar with Zulip's code base, but who hasn't
+  been involved with the project in question.
 - Use no more than 76 characters for the entire commit summary (parts 1 and 2).
 
 ### Examples of good commit summaries
 
-- provision: Improve performance of installing npm.
-
-- channel: Discard all HTTP responses while reloading.
-
-- integrations: Add GitLab integration.
-
-- typeahead: Convert to ES6 module.
-
-- tests: Compile Handlebars templates with source maps.
-
-- blueslip: Add feature to time common operations.
-
-- gather_subscriptions: Fix exception handling bad input.
+- `provision: Improve performance of installing npm.`
+- `channel: Discard all HTTP responses while reloading.`
+- `integrations: Add GitLab integration.`
+- `typeahead: Rename compare_by_popularity() for clarity.`
+- `typeahead: Convert to ES6 module.`
+- `tests: Compile Handlebars templates with source maps.`
+- `blueslip: Add feature to time common operations.`
+- `gather_subscriptions: Fix exception handling bad input.`
+- `stream_settings: Fix save/discard widget on narrow screens.`
 
 #### Detailed example
 
@@ -186,42 +197,99 @@ a few rules to keep in mind:
 
 ### Commit description
 
-The body of the commit message should explain why and how the change was made.
-Like a good code comment, it should provide context and motivation that will
-help a developer looking at your changes a year later understand the motivation
-behind your decisions.
+The body of the commit message should explain why and how the change
+was made. Like a good code comment, it should provide context and
+motivation that will help both a reviewer now and a developer looking
+at your changes a year later understand the motivation behind your
+decisions.
 
-Many decisions should be documented in both the commit message and the
-description for your pull request. The general rule of thumb is:
+Many decisions may be documented in multiple places (for example, both
+in a commit message and a code comment). The general rules of thumb are:
 
-- If the information is helpful for reviewing your work, include it in the PR
-  description.
+- If the information is the description of a calculation or function,
+  consider the abstractions you're using. Often a better name for a
+  variable or function is a better path to readable code than writing
+  a prose explanation.
 - If the information will be helpful long-term for someone trying to
-  understand the code base, include it in the commit message.
+  read and understand the code base, include it a code comment.
+- If the information will be helpful long-term for someone trying to
+  investigate why these changes are a complete and correct
+  implementation of the commit's idea, include it in the commit
+  message.
+- If the information is helpful for reviewing your work (for example,
+  an alternative approach that you rejected or are considering,
+  something you noticed that seemed weird, or an error you aren't sure
+  you resolved correctly), include it in the PR description /
+  discussion.
+- If the information is the description of an additional change that
+  you made while working on the commit that is separable from the rest
+  of the project, consider moving that change to its own commit, with
+  its own commit message explaining it. It is far easier to review and
+  integrate a series of several well-written commits than it is to
+  review those same changes in a single commit.
 
-For example, if you have a question that you expect to be resolved during the
-review process, put it in the PR description. Later, update the commit
-description to document the reasoning behind the decision.
+For example, if you have a question that you expect to be resolved
+during the review process, put it in a PR comment attached to a
+relevant part of the changes. When the question is resolved, remember
+to update code comments and/or commit description to document the
+reasoning behind decisions.
 
-When you fix a GitHub issue, [mark that you have fixed the issue in your commit
+When you fix a GitHub issue, [mark that you have fixed the issue in
+your commit
 message](https://help.github.com/en/articles/closing-issues-via-commit-messages)
-so that the issue is automatically closed when your code is merged. Zulip's
-preferred style for this is to have the final paragraph of the commit message
-read, e.g., "Fixes: \#123."
+so that the issue is automatically closed when your code is merged,
+and the commit has a permanent reference to the issue(s) that it
+resolves. Zulip's preferred style for this is to have the final
+paragraph of the commit message read, e.g., `Fixes #123.`.
 
-**Note:** Avoid using a phrase like `Partially fixes #1234`, as GitHub's regular
-expressions ignore the "partially" and close the issue. `Fixes part of #1234` is
-a good alternative.
+**Note:** Avoid using a phrase like `Partially fixes #1234.`, as
+GitHub's regular expressions ignore the "partially" and close the
+issue. `Fixes part of #1234.` is a good alternative.
+
+#### The purpose of the commit description
+
+The commit summary and description should, taken together, explain to
+another Zulip developer (who may not be deeply familiar with the
+specific files/subsystems you're changing) why this commit improves
+the project (both what it accomplishes, and why it won't break things
+one might worry it would break).
+
+- Include any important investigation/reasoning that another developer
+  would need to understand in order to verify the correctness of your
+  change. For example, if you're removing a parameter from a function,
+  the commit message might say "It's safe to remove this parameter
+  because it was always False." or "This behavior needs to be removed
+  because ...". A reviewer will likely check that indeed it was always
+  `False` as part of checking your work -- what you're doing is
+  providing them a chain of reasoning that they can verify.
+- Provide background context. A good pattern in a commit message
+  description is "Previously, when X happened, this caused Y to
+  happen, which resulted in ..." followed by a description of the
+  negative outcome.
+- Don't include details that are obvious from looking at the diff for
+  the commit, such as lists of the names of the files or functions
+  that were changed, or the fact that you updated the tests.
+- Avoid unnecessary personal narrative about the process through which
+  you developed this commit or pull request, like "First I tried X" or
+  "I changed Y".
+
+#### Formatting guidelines
 
 There are a few specific formatting guidelines to keep in mind:
 
-- The commit description should be separated from the summary by a blank line.
-- Use full sentences and paragraphs, with proper punctuation and capitalization.
-  Paragraphs should be separated with a single blank line.
-- Be sure to review your description for typos, spelling, and grammar mistakes.
-- Your commit message should be line-wrapped to about 68 characters per line,
-  but no more than 70, so that your commit message will be easy to read in `git
-log` in a normal terminal.
+- The commit description should be separated from the commit summary
+  by a blank line. Most tools, including GitHub, will misrender commit
+  messages that don't do this.
+- Use full sentences and paragraphs, with proper punctuation and
+  capitalization. Paragraphs should be separated with a single blank
+  line.
+- Be sure to check your description for typos, spelling, and grammar
+  mistakes; commit messages are important technical writing and
+  English mistakes will distract reviewers from your ideas.
+- Your commit message should be line-wrapped to about 68 characters
+  per line, but no more than 70, so that your commit message will be
+  easy to read in `git log` in a normal terminal. (It's OK for links
+  to be longer, ignore `gitlint` will complain about them).
 
 **Tip:** You may find it helpful to configure Git to use your preferred editor
 using the `EDITOR` environment variable or `git config --global core.editor`,
