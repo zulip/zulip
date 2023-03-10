@@ -14,7 +14,8 @@ reference**](#message-formatting-reference) in the Zulip app that you can use
 whenever you need a reminder of the formatting syntax below.
 
 * [Text emphasis](#text-emphasis)
-* [Lists](#lists)
+* [Bulleted lists](#bulleted-lists)
+* [Numbered lists](#numbered-lists)
 * [Links and images](#links)
 * [Code blocks](#code)
 * [LaTeX](#latex)
@@ -37,33 +38,7 @@ whenever you need a reminder of the formatting syntax below.
     <kbd>B</kbd> or <kbd>Ctrl</kbd> + <kbd>I</kbd>) to make text bold or italic.
     [Learn more](/help/text-emphasis).
 
-## Lists
-
-Bulleted lists
-```
-* bulleted lists
-  * with sub-bullets too
-  * sub-bullets start with 2 spaces
-    * start sub-sub-bullets with 4 spaces
-* multi
-line
-bullet
-- dashes and
-+ pluses are ok too
-```
-
-![Markdown bullets](/static/images/help/markdown-bullets.png)
-
-Numbered lists
-
-```
-1. numbered lists
-1. increment automatically
-1. one more
-```
-
-![Markdown numbered lists](/static/images/help/markdown-numbered-lists.png)
-
+{!lists.md!}
 
 ## Links
 
