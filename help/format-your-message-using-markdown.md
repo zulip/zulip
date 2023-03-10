@@ -17,7 +17,7 @@ whenever you need a reminder of the formatting syntax below.
 * [Bulleted lists](#bulleted-lists)
 * [Numbered lists](#numbered-lists)
 * [Links](#links)
-* [Code blocks](#code)
+* [Code blocks](#code-blocks)
 * [LaTeX](#latex)
 * [Quotes](#quotes)
 * [Spoilers](#spoilers)
@@ -51,32 +51,11 @@ whenever you need a reminder of the formatting syntax below.
     <kbd>Shift</kbd> + <kbd>L</kbd>) to insert a link.
     [Learn more](/help/insert-a-link).
 
-## Code
+## Code blocks
 
-~~~
-Inline: `let x = 5`
+{!code-blocks-intro.md!}
 
-Code block:
-```
-def f(x):
-   return x+1
-```
-
-Syntax highlighting:
-```python
-def fib(n):
-    # TODO: base case
-    return fib(n-1) + fib(n-2)
-```
-~~~
-
-![Markdown code](/static/images/help/markdown-code.png)
-
-You can also use `~~~` to start code blocks, or just indent the code 4 or more spaces.
-
-See the main [code blocks article](/help/code-blocks) for details on
-[syntax highlighting](/help/code-blocks#language-tagging), [code
-playgrounds](/help/code-blocks#code-playgrounds), and other features.
+{!code-blocks-examples.md!}
 
 ## LaTeX
 ~~~
