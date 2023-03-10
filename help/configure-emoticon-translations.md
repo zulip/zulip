@@ -1,7 +1,7 @@
-# Enable emoticon translation
+# Configure emoticon translations
 
-If you use emoticons like `:)` or `:/`, you can have them translated into
-emoji equivalents like
+If you use emoticons like `:)` or `:/`, you can configure whether to have them
+translated into emoji equivalents like
 <img
     src="/static/generated/emoji/images-google-64/1f642.png"
     alt="smile"
@@ -15,13 +15,13 @@ or
 />
 automatically by Zulip.
 
-### Enable emoticon translations
+## Configure emoticon translations
 
 {start_tabs}
 
 {settings_tab|display-settings}
 
-1. Under **Theme**, select **Convert emoticons before sending**.
+1. Under **Emoji**, toggle **Convert emoticons before sending**.
 
 {end_tabs}
 

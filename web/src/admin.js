@@ -218,7 +218,7 @@ export function build_page() {
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 
-    settings_bots.update_bot_settings_tip();
+    settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"), true);
     settings_invites.update_invite_users_setting_tip();
     insert_tip_box();
 

@@ -48,7 +48,7 @@ Use `:)` and `:/` instead of typing `:smile:` and `:confused:`.
 {end_tabs}
 
 The list of supported emoticons is available
-[here](/help/enable-emoticon-translations).
+[here](/help/configure-emoticon-translations).
 
 ### Paste from another site
 
@@ -64,7 +64,7 @@ you send. Zulip emoji are compatible with screen readers and other accessibility
 
 {settings_tab|display-settings}
 
-1. Under **Theme**, select **Google**,
+1. Under **Emoji**, select **Google**,
    **Twitter**, **Plain text**, or **Google blobs** for the emoji theme.
 
 {end_tabs}

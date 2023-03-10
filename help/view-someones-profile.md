@@ -54,12 +54,7 @@ Additional tabs showing:
 
 1. Tap on a user's profile picture or name.
 
-!!! tip ""
-
-    If you are viewing a direct message conversation, you can also tap the
-    **information**
-    (<img src="/static/images/help/mobile-info-circle-icon.svg" alt="information" class="mobile-icon"/>)
-    button in the top right corner of the app.
+{!mobile-view-user-profile-tip.md!}
 
 {end_tabs}
 

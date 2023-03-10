@@ -176,7 +176,7 @@ Clicking the arrow will expand the spoiler content:
 ## Emoji and emoticons
 
 To translate emoticons into emoji, you'll need to
-[enable emoticon translations](/help/enable-emoticon-translations).
+[enable emoticon translations](/help/configure-emoticon-translations).
 You can also [add custom emoji](/help/custom-emoji).
 
 ```
