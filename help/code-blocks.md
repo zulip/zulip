@@ -1,40 +1,16 @@
-# Code spans and blocks
+# Code blocks
 
-Zulip supports the standard [Markdown syntax][markdown] for inline
-code spans and code blocks:
+{!code-blocks-intro.md!}
 
-~~~
-Inline code span: `let x = 5`
+## Examples
 
-Code block:
-```
-def f(x):
-   return x+1
-```
-
-Syntax highlighting:
-```python
-def fib(n):
-    # TODO: base case
-    return fib(n-1) + fib(n-2)
-```
-~~~
-
-Sending the above message in Zulip will render like this:
-
-![Markdown code](/static/images/help/markdown-code.png)
-
-You can also use `~~~` to start code blocks, or just indent the code 4 or more
-spaces.
-
-A widget in the top right corner of code blocks allows you to easily
-copy the code to your clipboard.
+{!code-blocks-examples.md!}
 
 ## Language tagging
 
 Tagging a code block with a language enables syntax highlighting and
-(if configured) [code playgrounds](#code-playgrounds). Zulip supports syntax highlighting
-for hundreds of languages.
+(if configured) [code playgrounds](#code-playgrounds). Zulip supports syntax
+highlighting for hundreds of languages.
 
 A code block can be tagged by typing the language name after the fence
 (` ``` `) that begins a code block, as shown here.  Typeahead will
@@ -121,19 +97,16 @@ you can just get the prefix from your browser's URL bar.
 For example, a code block tagged with the "language" `send_tweet` could be
 used with a "playground" that sends the content of the code block as a Tweet.
 
-If you have any trouble setting in setting up a code playground, please [contact
+If you have any trouble setting up a code playground, please [contact
 us](/help/contact-support) with details on what you're trying to do, and we'll
 be happy to help you out.
 
 ## Related articles
 
-[Math blocks][math-block], [spoiler blocks][spoiler-block], and [quote
-blocks][quote-block] use similar fenced block syntax.
+* [Message formatting](/help/format-your-message-using-markdown)
+* [LaTeX](/help/latex)
+* [Spoilers](/help/spoilers)
+* [Quote and reply](/help/quote-and-reply)
 
 [pygments-lexers]: https://pygments.org/docs/lexers/
 [get_lexer_by_name]: https://pygments-doc.readthedocs.io/en/latest/lexers/lexers.html#pygments.lexers.get_lexer_by_name
-
-[markdown]: /help/format-your-message-using-markdown
-[math-block]: /help/format-your-message-using-markdown#latex
-[quote-block]: /help/format-your-message-using-markdown#quotes
-[spoiler-block]: /help/format-your-message-using-markdown#spoilers
