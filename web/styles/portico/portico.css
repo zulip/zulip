@@ -128,8 +128,11 @@ html {
 
         -webkit-overflow-scrolling: touch;
 
+        --help-sidebar-padding: 20px;
+        --help-sidebar-indent: 12px;
+
         .content {
-            padding: 10px 20px;
+            padding: 10px var(--help-sidebar-padding);
         }
 
         h1 {
@@ -191,7 +194,7 @@ html {
         }
 
         ul {
-            margin: 5px 0 10px 12px;
+            margin: 5px 0 10px var(--help-sidebar-indent);
         }
 
         &.slide ul {
@@ -210,19 +213,23 @@ html {
             a {
                 color: inherit;
                 display: block;
+
+                /* Extend to entire width of sidebar, not just link area */
+                margin-left: calc(
+                    0px - var(--help-sidebar-padding) -
+                        var(--help-sidebar-indent)
+                );
+                margin-right: calc(0px - var(--help-sidebar-padding));
+                padding-left: calc(
+                    var(--help-sidebar-padding) + var(--help-sidebar-indent)
+                );
+                padding-right: calc(var(--help-sidebar-padding));
             }
         }
 
         a {
             &.highlighted {
                 background-color: hsl(152, 40%, 42%);
-
-                /* Extend highlight to entire width of sidebar, not just link area */
-                /* This has been changed from "+" to "- -" because of issue #8403.
-                   If the issue has been fixed, please change this back to "+" again. */
-                width: calc(100% + 20px);
-                margin-left: -40px;
-                padding-left: 40px;
 
                 /* Don't show the focus outline for the highlighted page. */
                 outline: 0;
