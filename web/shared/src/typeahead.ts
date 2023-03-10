@@ -62,6 +62,9 @@ export function query_matches_string(
     source_str = source_str.toLowerCase();
     source_str = remove_diacritics(source_str);
 
+    query = query.toLowerCase();
+    query = remove_diacritics(query);
+
     if (!query.includes(split_char)) {
         // If query is a single token (doesn't contain a separator),
         // the match can be anywhere in the string.
