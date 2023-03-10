@@ -18,10 +18,12 @@ export function initialize(current_user_join_date: Date): void {
     about page_params and settings_config details.
 */
 
-export function get_time_preferences(user_timezone: string): {
+export type TimePreferences = {
     timezone: string;
     format: string;
-} {
+};
+
+export function get_time_preferences(user_timezone: string): TimePreferences {
     if (user_settings.twenty_four_hour_time) {
         return {
             timezone: user_timezone,
