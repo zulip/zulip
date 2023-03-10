@@ -62,6 +62,7 @@
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Share and upload files](/help/share-and-upload-files)
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
+* [Text emphasis](/help/text-emphasis)
 * [Code blocks](/help/code-blocks)
 * [Create a poll](/help/create-a-poll)
 * [Start a video call](/help/start-a-call)
