@@ -83,7 +83,7 @@ $time_column_max_width: 150px;
         .message_time {
             line-height: 1;
             justify-self: end;
-            padding-right: 6px;
+            padding-right: 5px;
             min-width: $time_column_min_width;
             text-align: end;
             grid-row-start: 1;

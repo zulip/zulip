@@ -1080,11 +1080,7 @@ td.pointer {
     cursor: pointer;
     vertical-align: top;
     border: none;
-    /* 3px on all sides because outline doesn't have a border-box option. */
-    /* +2px on the left to account for the stream-color line and unread marker. */
-    /* +1px on the right to make left/right more balanced, since the unread marker
-       is not visible most of the time. */
-    padding: 4px 4px 3px 5px;
+    padding: 5px;
 
     &:hover .message_controls,
     &:focus-within .message_controls,
@@ -1185,7 +1181,6 @@ td.pointer {
 
             .messagebox {
                 border-radius: 0 0 5px 5px;
-                padding-bottom: 4px;
             }
         }
     }
@@ -1442,7 +1437,7 @@ td.pointer {
 .selected_message {
     .messagebox-content {
         outline: 1px solid hsl(217deg 64% 59% / 60%);
-        border-radius: 4px;
+        border-radius: 3px;
     }
 }
 
@@ -1554,6 +1549,8 @@ div.message_table {
             text-align: right;
             letter-spacing: 0.04em;
             color: var(--color-date);
+            /* To match time in message row and date in recipient row. */
+            padding-right: 6px;
         }
     }
 }
