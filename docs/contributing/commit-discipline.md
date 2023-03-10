@@ -130,12 +130,11 @@ investigating regressions.
 Common examples include: settings, message feed, compose, left
 sidebar, right sidebar, recent (for **Recent conversations**), search,
 markdown, tooltips, popovers, drafts, integrations, email, docs, help,
-and api docs; issue trackers can be a good source of inspiration (but
-may be overly verbose).
+and api docs.
 
-When it's possible to do so concisely, it's helpful to be a little
-more specific, e.g., emoji, spoilers, polls, but it's better to just
-use `settings:` than a lengthy description of a specific setting.
+When it's possible to do so concisely, it's helpful to be a little more
+specific, e.g., emoji, spoilers, polls. However, a simple `settings:` is better
+than a lengthy description of a specific setting.
 
 If your commit doesn't cleanly map to a part of the product, you might
 use something like "css" for CSS-only changes, or the name of the file
@@ -163,12 +162,13 @@ a few rules to keep in mind:
   [imperative](https://en.wikipedia.org/wiki/Imperative_mood) verb, e.g.
   "fix", "add", "change", "rename", etc.
 - Use proper capitalization and punctuation.
-- Be concise, without abbreviations, acronyms, or unnecessary
-  details. For example, "Change X and update tests/docs." would be
-  better written as just "Change X."; as discussed above, every commit
-  is expected to update to tests and documentation.
-- Be readable to a reader familiar with Zulip's code base, but who hasn't
-  been involved with the project in question.
+- Avoid abbreviations and acronyms.
+- Be concise, and don't include unnecessary details. For example, "Change X and
+  update tests/docs," would be better written as just, "Change X," since (as
+  discussed above) _every_ commit is expected to update tests and documentation
+  as needed.
+- Make it readable to someone who is familiar with Zulip's code base, but hasn't
+  been involved with the effort you're working on.
 - Use no more than 76 characters for the entire commit summary (parts 1 and 2).
 
 ### Examples of good commit summaries
@@ -199,40 +199,46 @@ a few rules to keep in mind:
 
 The body of the commit message should explain why and how the change
 was made. Like a good code comment, it should provide context and
-motivation that will help both a reviewer now and a developer looking
-at your changes a year later understand the motivation behind your
+motivation that will help both a reviewer now, and a developer looking
+at your changes a year later, understand the motivation behind your
 decisions.
 
 Many decisions may be documented in multiple places (for example, both
 in a commit message and a code comment). The general rules of thumb are:
 
-- If the information is the description of a calculation or function,
-  consider the abstractions you're using. Often a better name for a
-  variable or function is a better path to readable code than writing
-  a prose explanation.
-- If the information will be helpful long-term for someone trying to
-  read and understand the code base, include it a code comment.
-- If the information will be helpful long-term for someone trying to
-  investigate why these changes are a complete and correct
-  implementation of the commit's idea, include it in the commit
-  message.
+- Use the commit message for information that's relevant for someone
+  trying to understand the change this commit is making, or the difference
+  between the old version of the code and the new version. In particular,
+  this includes information about why the new version of the code is better than,
+  or not worse than, the old version.
+- Use code comments, or the code itself, for information that's relevant
+  for someone trying to read and understand the new version of the code
+  in the future, without comparing it to the old version.
 - If the information is helpful for reviewing your work (for example,
   an alternative approach that you rejected or are considering,
   something you noticed that seemed weird, or an error you aren't sure
   you resolved correctly), include it in the PR description /
   discussion.
-- If the information is the description of an additional change that
-  you made while working on the commit that is separable from the rest
-  of the project, consider moving that change to its own commit, with
-  its own commit message explaining it. It is far easier to review and
-  integrate a series of several well-written commits than it is to
-  review those same changes in a single commit.
 
-For example, if you have a question that you expect to be resolved
+As an example, if you have a question that you expect to be resolved
 during the review process, put it in a PR comment attached to a
 relevant part of the changes. When the question is resolved, remember
-to update code comments and/or commit description to document the
-reasoning behind decisions.
+to update code comments and/or the commit description to document the
+reasoning behind the decisions.
+
+There are some cases when the best approach is improving the code or commit
+structure, not writing up details in a comment or a commit message. For example:
+
+- If the information is the description of a calculation or function,
+  consider the abstractions you're using. Often, a better name for a
+  variable or function is a better path to readable code than writing
+  a prose explanation.
+- If the information describes an additional change that you made while working
+  on the commit, consider whether it is separable from the rest of the changes.
+  If it is, it should probably be moved to its own commit, with its own commit
+  message explaining it. Reviewing and integrating a series of several
+  well-written commits is far easier than reviewing those same changes in a
+  single commit.
 
 When you fix a GitHub issue, [mark that you have fixed the issue in
 your commit
@@ -248,23 +254,23 @@ issue. `Fixes part of #1234.` is a good alternative.
 
 #### The purpose of the commit description
 
-The commit summary and description should, taken together, explain to
-another Zulip developer (who may not be deeply familiar with the
-specific files/subsystems you're changing) why this commit improves
-the project (both what it accomplishes, and why it won't break things
-one might worry it would break).
+The commit summary and description should, taken together, explain to another
+Zulip developer (who may not be deeply familiar with the specific
+files/subsystems you're changing) why this commit improves the project. This
+means explaining both what it accomplishes, and why it won't break things one
+might worry about it breaking.
 
 - Include any important investigation/reasoning that another developer
   would need to understand in order to verify the correctness of your
   change. For example, if you're removing a parameter from a function,
-  the commit message might say "It's safe to remove this parameter
-  because it was always False." or "This behavior needs to be removed
+  the commit message might say, "It's safe to remove this parameter
+  because it was always False," or, "This behavior needs to be removed
   because ...". A reviewer will likely check that indeed it was always
   `False` as part of checking your work -- what you're doing is
   providing them a chain of reasoning that they can verify.
 - Provide background context. A good pattern in a commit message
-  description is "Previously, when X happened, this caused Y to
-  happen, which resulted in ..." followed by a description of the
+  description is, "Previously, when X happened, this caused Y to
+  happen, which resulted in ...", followed by a description of the
   negative outcome.
 - Don't include details that are obvious from looking at the diff for
   the commit, such as lists of the names of the files or functions
@@ -289,7 +295,7 @@ There are a few specific formatting guidelines to keep in mind:
 - Your commit message should be line-wrapped to about 68 characters
   per line, but no more than 70, so that your commit message will be
   easy to read in `git log` in a normal terminal. (It's OK for links
-  to be longer, ignore `gitlint` will complain about them).
+  to be longer -- ignore `gitlint` when it complains about them.)
 
 **Tip:** You may find it helpful to configure Git to use your preferred editor
 using the `EDITOR` environment variable or `git config --global core.editor`,
