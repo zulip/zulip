@@ -352,7 +352,7 @@ test_people("basics", () => {
     assert.equal(person.full_name, "Me Myself");
 
     // Test undefined people
-    assert.equal(people.is_cross_realm_email("unknown@example.com"), undefined);
+    assert.equal(people.is_cross_realm_email("unknown@example.com"), false);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);

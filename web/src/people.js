@@ -943,7 +943,7 @@ export function get_non_active_realm_users() {
 export function is_cross_realm_email(email) {
     const person = get_by_email(email);
     if (!person) {
-        return undefined;
+        return false;
     }
     return cross_realm_dict.has(person.user_id);
 }
