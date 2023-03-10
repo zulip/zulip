@@ -406,7 +406,11 @@ def registration_helper(
             realm_type = form.cleaned_data["realm_type"]
             is_demo_org = form.cleaned_data["is_demo_organization"]
             realm = do_create_realm(
-                string_id, realm_name, org_type=realm_type, is_demo_organization=is_demo_org
+                string_id,
+                realm_name,
+                org_type=realm_type,
+                is_demo_organization=is_demo_org,
+                prereg_realm=prereg_realm,
             )
         assert realm is not None
 
@@ -518,6 +522,7 @@ def registration_helper(
                 realm,
                 full_name,
                 prereg_user=prereg_user,
+                prereg_realm=prereg_realm,
                 role=role,
                 tos_version=settings.TERMS_OF_SERVICE_VERSION,
                 timezone=timezone,
