@@ -813,6 +813,9 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 
         followup_day2_context.update(
             unsubscribe_link=unsubscribe_link,
+            move_messages_link=realm_url + "/help/move-content-to-another-topic",
+            rename_topics_link=realm_url + "/help/rename-a-topic",
+            move_topic_to_different_stream_link=realm_url + "/help/move-content-to-another-stream",
         )
 
         send_future_email(
