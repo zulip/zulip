@@ -2,6 +2,7 @@ import $ from "jquery";
 
 const t1 = performance.now();
 export const page_params: {
+    seat_count: number;
     zulip_version: number;
     zulip_merge_base:  number;
     language_list: {

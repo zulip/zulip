@@ -15,8 +15,8 @@ export function create_update_license_request() {
 export function initialize() {
     helpers.set_tab("billing");
 
-    $("#update-card-button").on("click", (e) => {
-        const success_callback = (response) => {
+    $("#update-card-button").on("click", (e:InputEvent) => {
+        const success_callback = (response: { stripe_session_url: string | URL; }) => {
             window.location.replace(response.stripe_session_url);
         };
         helpers.create_ajax_request(
@@ -29,7 +29,7 @@ export function initialize() {
         e.preventDefault();
     });
 
-    $("#update-licenses-button").on("click", (e) => {
+    $("#update-licenses-button").on("click", (e:InputEvent) => {
         if (helpers.is_valid_input($("#new_licenses_input")) === false) {
             return;
         }
@@ -49,7 +49,7 @@ export function initialize() {
         create_update_license_request();
     });
 
-    $("#update-licenses-at-next-renewal-button").on("click", (e) => {
+    $("#update-licenses-at-next-renewal-button").on("click", (e:InputEvent) => {
         e.preventDefault();
         helpers.create_ajax_request(
             "/json/billing/plan",
@@ -60,7 +60,7 @@ export function initialize() {
         );
     });
 
-    $("#change-plan-status").on("click", (e) => {
+    $("#change-plan-status").on("click", (e:InputEvent) => {
         helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
             window.location.replace("/billing"),
         );

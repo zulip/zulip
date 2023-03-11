@@ -3,12 +3,14 @@ import $ from "jquery";
 import * as loading from "../loading";
 import {page_params} from "../page_params";
 
+
+
 export function create_ajax_request(
-    url,
-    form_name,
-    ignored_inputs = [],
+    url:string,
+    form_name:string,
+    ignored_inputs:string[],
     type = "POST",
-    success_callback,
+    success_callback: (response: any) => void,
 ) {
     const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
@@ -17,8 +19,8 @@ export function create_ajax_request(
     const form_error = `#${CSS.escape(form_name)}-error`;
     const form_loading = `#${CSS.escape(form_name)}-loading`;
 
-    const zulip_limited_section = "#zulip-limited-section";
-    const free_trial_alert_message = "#free-trial-alert-message";
+    const zulip_limited_section:string = "#zulip-limited-section";
+    const free_trial_alert_message:string = "#free-trial-alert-message";
 
     loading.make_indicator($(form_loading_indicator), {
         text: "Processing ...",
@@ -30,7 +32,8 @@ export function create_ajax_request(
     $(zulip_limited_section).hide();
     $(free_trial_alert_message).hide();
 
-    const data = {};
+    type data =  { [key: string]: string;}
+    const data: data = {};
 
     for (const item of $form.serializeArray()) {
         if (ignored_inputs.includes(item.name)) {
@@ -43,7 +46,7 @@ export function create_ajax_request(
         type,
         url,
         data,
-        success(response) {
+        success(response:object) {
             $(form_loading).hide();
             $(form_error).hide();
             $(form_success).show();
@@ -56,7 +59,7 @@ export function create_ajax_request(
             }
             success_callback(response);
         },
-        error(xhr) {
+        error(xhr:XMLHttpRequest) {
             $(form_loading).hide();
             $(form_error).show().text(JSON.parse(xhr.responseText).msg);
             $(form_input_section).show();
@@ -66,7 +69,7 @@ export function create_ajax_request(
     });
 }
 
-export function format_money(cents) {
+export function format_money(cents: number) {
     // allow for small floating point errors
     cents = Math.ceil(cents - 0.001);
     let precision;
@@ -79,11 +82,19 @@ export function format_money(cents) {
     return (cents / 100).toFixed(precision);
 }
 
-export function update_charged_amount(prices, schedule) {
+export function update_charged_amount(prices: { [x: string]: number; }, schedule: string | number) {
     $("#charged_amount").text(format_money(page_params.seat_count * prices[schedule]));
 }
+interface DiscountDetails {
+    opensource: string;
+    research: string;
+    nonprofit: string;
+    event: string;
+    education: string;
+    education_nonprofit: string;
 
-export function update_discount_details(organization_type) {
+}
+export function update_discount_details(organization_type: string | number) {
     let discount_notice =
         "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
     const discount_details = {
@@ -95,13 +106,13 @@ export function update_discount_details(organization_type) {
         education_nonprofit:
             "Zulip Cloud Standard is discounted 90% for education non-profits with online purchase.",
     };
-    if (discount_details[organization_type]) {
-        discount_notice = discount_details[organization_type];
+    if (discount_details[organization_type as keyof DiscountDetails]) {
+        discount_notice = discount_details[organization_type as keyof DiscountDetails];
     }
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
-export function show_license_section(license) {
+export function show_license_section(license: string) {
     $("#license-automatic-section").hide();
     $("#license-manual-section").hide();
 
@@ -114,21 +125,21 @@ export function show_license_section(license) {
     $(input_id).prop("disabled", false);
 }
 
-let current_page;
+let current_page: string;
 
 function handle_hashchange() {
     $(`#${CSS.escape(current_page)}-tabs.nav a[href="${CSS.escape(location.hash)}"]`).tab("show");
     $("html").scrollTop(0);
 }
 
-export function set_tab(page) {
+export function set_tab(page: string) {
     const hash = location.hash;
     if (hash) {
         $(`#${CSS.escape(page)}-tabs.nav a[href="${CSS.escape(hash)}"]`).tab("show");
         $("html").scrollTop(0);
     }
 
-    $(`#${CSS.escape(page)}-tabs.nav-tabs a`).on("click", function () {
+    $(`#${CSS.escape(page )}-tabs.nav-tabs a`).on("click", function (this:any) {
         location.hash = this.hash;
     });
 
@@ -136,6 +147,6 @@ export function set_tab(page) {
     window.addEventListener("hashchange", handle_hashchange);
 }
 
-export function is_valid_input(elem) {
+export function is_valid_input(elem: { checkValidity: () => any; }[]) {
     return elem[0].checkValidity();
 }
