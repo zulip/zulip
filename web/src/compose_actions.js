@@ -554,7 +554,7 @@ export function quote_and_reply(opts) {
         respond_to_message(opts);
     }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea);
+    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea, true);
 
     function replace_content(message) {
         // Final message looks like:
