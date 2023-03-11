@@ -38,6 +38,10 @@
     align-items: center;
 }
 
+.modal__header__container {
+    text-align: center;
+}
+
 .modal__footer {
     display: flex;
     justify-content: flex-end;
