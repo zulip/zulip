@@ -292,8 +292,10 @@ export function emails_to_full_names_string(emails: string[]): string {
         .join(", ");
 }
 
-export function get_user_time_preferences(user_id) {
-    const user_timezone = get_by_user_id(user_id).timezone;
+export function get_user_time_preferences(
+    user_id: number,
+): settings_data.TimePreferences | undefined {
+    const user_timezone = get_by_user_id(user_id)!.timezone;
     if (user_timezone) {
         return settings_data.get_time_preferences(user_timezone);
     }
