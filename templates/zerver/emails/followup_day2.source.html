@@ -5,26 +5,41 @@
 {% endblock %}
 
 {% block content %}
-<p>{{ _("Hey,") }}</p>
+<p>
+    {{ _("Here are some tips for keeping your Zulip conversations organized with
+      topics.") }}
+</p>
 
-<p>{{ _("I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.") }}</p>
+<p>
+    {{ _("In Zulip, <b>streams</b> determine who gets a message. <b>Topics</b>
+      tell you what the message is about. Using topics, you can read Zulip one
+      conversation at a time. You'll see each message in context, no matter how many
+      different discussions are going on.") }}
+</p>
+
+<img src="/static/images/help/streams-and-topics.png" alt="{{ _('Streams and
+  topics in the Zulip app') }}"/>
+
+<p>
+    {{ _("To kick off a new conversation, just pick a stream and start a new
+      topic. This way, the new conversation thread won’t interrupt ongoing
+      discussions. For a good topic name, think about finishing the sentence:
+      “Hey, can we chat about…?”") }}
+</p>
 
 <img src="{{ email_images_base_uri }}/day2_2.png" alt="{{ _('Examples of short topics') }}"/>
 
-<p>{{ _("Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. Two or three words will do it. Don't overthink 'em&mdash;you can always edit the message later!") }}</p>
+<p>
+    {% trans %}Don’t stress about picking the perfect name for your topic. If
+anything is out of place, it’s easy to <a href="{{ move_messages_help_link }}">move messages</a>, <a href="{{ rename_topics_help_link }}">rename
+    topics</a>, or even <a href="{{ move_topic_to_different_stream_help_link }}">move a topic to a different stream</a>.
+    {% endtrans %}
+</p>
 
-<ul>
-    <li>{{ _("Good topics: design mockup, Bug 345, acme burgers") }}</li>
-    <li>{% trans %}Not recommended: "What do people think of this new design mockup?", "I'm looking at Bug 345", "Is Acme Burgers open for lunch?"{% endtrans %}</li>
-</ul>
+<p>
+    <a href="{{ realm_uri }}">{{ _("It’s time to chat.") }}</a>
+</p>
 
-<img src="{{ email_images_base_uri }}/day2_3.png" alt="{{ _('Example of a topic that is too long') }}"/>
-
-<p>{{ _("Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away&mdash;read the topics that are relevant to you, and ignore the ones that aren't!") }}</p>
-
-<p><a href="{{ realm_uri }}">{{ _("Take it for a spin now.") }}</a></p>
-
-<p>{{ _("Thanks,") }}<br />{{ _("Zulip") }}</p>
 {% endblock %}
 
 {% block manage_preferences %}

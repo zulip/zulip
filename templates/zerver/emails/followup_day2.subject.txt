@@ -1,1 +1,1 @@
-{{ _("One last thing: using topics like a pro") }}
+{{ _("Keep your conversations organized with topics") }}

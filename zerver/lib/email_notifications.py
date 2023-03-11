@@ -708,6 +708,14 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
     )
     context["getting_user_started_link"] = user.realm.uri + "/help/getting-started-with-zulip"
 
+    context["move_messages_help_link"] = user.realm.uri + "/help/move-content-to-another-topic"
+
+    context["rename_topics_help_link"] = user.realm.uri + "/help/rename-a-topic"
+
+    context["move_topic_to_different_stream_help_link"] = (
+        user.realm.uri + "/help/move-content-to-another-stream"
+    )
+
     # Imported here to avoid import cycles.
     from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap
 
