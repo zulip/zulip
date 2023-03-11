@@ -12,6 +12,7 @@ export const page_params: {
     }[];
     development_environment: boolean;
     is_admin: boolean;
+    is_bot: boolean;
     is_guest: boolean;
     is_moderator: boolean;
     is_owner: boolean;
