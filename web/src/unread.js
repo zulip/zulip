@@ -2,7 +2,6 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
 import * as people from "./people";
-import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
@@ -637,10 +636,14 @@ export function process_unread_message(message) {
 }
 
 export function update_message_for_mention(message, content_edited = false) {
+    // Returns true if this is a stream message whose content was
+    // changed, and thus the caller might need to trigger a rerender
+    // of UI elements displaying whether the message's topic contains
+    // an unread mention of the user.
     if (!message.unread) {
         unread_mentions_counter.delete(message.id);
         remove_message_from_unread_mention_topics(message.id);
-        return;
+        return false;
     }
 
     const is_unmuted_mention =
@@ -657,11 +660,9 @@ export function update_message_for_mention(message, content_edited = false) {
     }
 
     if (content_edited && message.type === "stream") {
-        // We only need to update recent topics here if this was a content change in an unread
-        // mention, since in other cases recent topics gets rerendered by other functions.
-        const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
-        recent_topics_ui.inplace_rerender(topic_key);
+        return true;
     }
+    return false;
 }
 
 export function mark_as_read(message_id) {
