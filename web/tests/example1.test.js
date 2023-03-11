@@ -20,7 +20,7 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const util = zrequire("util");
 
-// Let's start with testing a function from util.js.
+// Let's start with testing a function from util.ts.
 //
 // The most basic unit tests load up code, call functions,
 // and assert truths:

@@ -115,7 +115,7 @@ The main goal is then to triage which events should lead to
 display changes.
 
 The web app client maintains a list of incoming "typists" using
-code in `web/src/typing_data.js`. The API here has functions
+code in `web/src/typing_data.ts`. The API here has functions
 like the following:
 
 - `add_typist`

@@ -191,7 +191,7 @@ might use). In development, this means displaying a highly visible
 overlay over the message view area, to make exceptions in testing a
 new feature hard to miss.
 
-- Blueslip is implemented in `web/src/blueslip.js`.
+- Blueslip is implemented in `web/src/blueslip.ts`.
 - In order to capture essentially any error occurring in the browser,
   Blueslip listens for the `error` event on `window`, and has methods
   for being manually triggered by Zulip JavaScript code for warnings
