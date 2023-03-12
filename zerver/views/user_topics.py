@@ -36,7 +36,7 @@ def mute_topic(
         user_profile,
         stream,
         topic_name,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         last_updated=date_muted,
     )
 
@@ -56,7 +56,7 @@ def unmute_topic(
         stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
 
     do_set_user_topic_visibility_policy(
-        user_profile, stream, topic_name, visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT
+        user_profile, stream, topic_name, visibility_policy=UserTopic.VisibilityPolicy.INHERIT
     )
 
 

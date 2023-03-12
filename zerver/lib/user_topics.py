@@ -68,7 +68,7 @@ def get_topic_mutes(
         user_profile=user_profile,
         include_deactivated=include_deactivated,
         include_stream_name=True,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     )
 
     return [
@@ -88,7 +88,7 @@ def set_topic_mutes(
 
     UserTopic.objects.filter(
         user_profile=user_profile,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     ).delete()
 
     if date_muted is None:
@@ -103,7 +103,7 @@ def set_topic_mutes(
             stream_id=stream.id,
             recipient_id=recipient_id,
             topic_name=topic_name,
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             last_updated=date_muted,
         )
 
@@ -119,7 +119,7 @@ def set_user_topic_visibility_policy_in_database(
     last_updated: Optional[datetime.datetime] = None,
     ignore_duplicate: bool = False,
 ) -> None:
-    if visibility_policy == UserTopic.VISIBILITY_POLICY_INHERIT:
+    if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
         try:
             # Will throw UserTopic.DoesNotExist if the user doesn't
             # already have a visibility policy for this topic.
@@ -174,7 +174,7 @@ def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     ).exists()
     return is_muted
 
@@ -187,7 +187,7 @@ def exclude_topic_mutes(
     # never filtered from the query in this method.
     query = UserTopic.objects.filter(
         user_profile=user_profile,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     )
 
     if stream_id is not None:
@@ -220,7 +220,7 @@ def exclude_topic_mutes(
 
 def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
     rows = UserTopic.objects.filter(
-        user_profile=user_profile, visibility_policy=UserTopic.MUTED
+        user_profile=user_profile, visibility_policy=UserTopic.VisibilityPolicy.MUTED
     ).values(
         "recipient_id",
         "topic_name",
@@ -242,7 +242,7 @@ def get_users_muting_topic(stream_id: int, topic_name: str) -> QuerySet[UserProf
     return UserProfile.objects.select_related("realm").filter(
         id__in=UserTopic.objects.filter(
             stream_id=stream_id,
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             topic_name__iexact=topic_name,
         ).values("user_profile_id")
     )

@@ -28,7 +28,7 @@ class MutedTopicsTests(ZulipTestCase):
             user,
             stream,
             "Verona3",
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
         )
 
@@ -51,7 +51,9 @@ class MutedTopicsTests(ZulipTestCase):
             topic_name=topic_name,
         )
 
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.MUTED
+        )
         self.assertEqual(user_ids, set())
 
         def mute_topic_for_user(user: UserProfile) -> None:
@@ -59,23 +61,27 @@ class MutedTopicsTests(ZulipTestCase):
                 user,
                 stream,
                 "test TOPIC",
-                visibility_policy=UserTopic.MUTED,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
                 last_updated=date_muted,
             )
 
         mute_topic_for_user(hamlet)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.MUTED
+        )
         self.assertEqual(user_ids, {hamlet.id})
         hamlet_date_muted = UserTopic.objects.filter(
-            user_profile=hamlet, visibility_policy=UserTopic.MUTED
+            user_profile=hamlet, visibility_policy=UserTopic.VisibilityPolicy.MUTED
         )[0].last_updated
         self.assertEqual(hamlet_date_muted, date_muted)
 
         mute_topic_for_user(cordelia)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.MUTED
+        )
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
         cordelia_date_muted = UserTopic.objects.filter(
-            user_profile=cordelia, visibility_policy=UserTopic.MUTED
+            user_profile=cordelia, visibility_policy=UserTopic.VisibilityPolicy.MUTED
         )[0].last_updated
         self.assertEqual(cordelia_date_muted, date_muted)
 
@@ -108,7 +114,7 @@ class MutedTopicsTests(ZulipTestCase):
                 user,
                 stream,
                 "Verona3",
-                visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
             )
 
         assert stream.recipient is not None
@@ -139,7 +145,7 @@ class MutedTopicsTests(ZulipTestCase):
                 user,
                 stream,
                 "Verona3",
-                visibility_policy=UserTopic.MUTED,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
                 last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
@@ -157,7 +163,11 @@ class MutedTopicsTests(ZulipTestCase):
 
         stream = get_stream("Verona", realm)
         do_set_user_topic_visibility_policy(
-            user, stream, "Verona3", visibility_policy=UserTopic.MUTED, last_updated=timezone_now()
+            user,
+            stream,
+            "Verona3",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            last_updated=timezone_now(),
         )
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
@@ -222,7 +232,9 @@ class UnmutedTopicsTests(ZulipTestCase):
             topic_name=topic_name,
         )
 
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
         self.assertEqual(user_ids, set())
 
         def set_topic_visibility_for_user(user: UserProfile, visibility_policy: int) -> None:
@@ -234,19 +246,23 @@ class UnmutedTopicsTests(ZulipTestCase):
                 last_updated=date_unmuted,
             )
 
-        set_topic_visibility_for_user(hamlet, UserTopic.UNMUTED)
-        set_topic_visibility_for_user(cordelia, UserTopic.MUTED)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        set_topic_visibility_for_user(hamlet, UserTopic.VisibilityPolicy.UNMUTED)
+        set_topic_visibility_for_user(cordelia, UserTopic.VisibilityPolicy.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
         self.assertEqual(user_ids, {hamlet.id})
         hamlet_date_unmuted = UserTopic.objects.filter(
-            user_profile=hamlet, visibility_policy=UserTopic.UNMUTED
+            user_profile=hamlet, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
         )[0].last_updated
         self.assertEqual(hamlet_date_unmuted, date_unmuted)
 
-        set_topic_visibility_for_user(cordelia, UserTopic.UNMUTED)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        set_topic_visibility_for_user(cordelia, UserTopic.VisibilityPolicy.UNMUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
         cordelia_date_unmuted = UserTopic.objects.filter(
-            user_profile=cordelia, visibility_policy=UserTopic.UNMUTED
+            user_profile=cordelia, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
         )[0].last_updated
         self.assertEqual(cordelia_date_unmuted, date_unmuted)

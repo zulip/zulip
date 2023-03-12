@@ -1429,7 +1429,10 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         events = self.verify_action(
             lambda: do_set_user_topic_visibility_policy(
-                self.user_profile, stream, "topic", visibility_policy=UserTopic.MUTED
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             ),
             num_events=2,
         )
@@ -1441,7 +1444,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 stream,
                 "topic",
-                visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
             ),
             num_events=2,
         )
@@ -1450,7 +1453,10 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: do_set_user_topic_visibility_policy(
-                self.user_profile, stream, "topic", visibility_policy=UserTopic.MUTED
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             ),
             event_types=["muted_topics", "user_topic"],
         )
@@ -1460,7 +1466,10 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         events = self.verify_action(
             lambda: do_set_user_topic_visibility_policy(
-                self.user_profile, stream, "topic", visibility_policy=UserTopic.UNMUTED
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
             ),
             num_events=2,
         )

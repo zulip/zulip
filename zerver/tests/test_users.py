@@ -1850,7 +1850,7 @@ class RecipientInfoTest(ZulipTestCase):
             hamlet,
             stream,
             topic_name,
-            visibility_policy=UserTopic.UNMUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
 
         info = get_recipient_info(
@@ -1865,7 +1865,7 @@ class RecipientInfoTest(ZulipTestCase):
         sub.is_muted = False
         sub.save()
         do_set_user_topic_visibility_policy(
-            hamlet, stream, topic_name, visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT
+            hamlet, stream, topic_name, visibility_policy=UserTopic.VisibilityPolicy.INHERIT
         )
 
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
@@ -1873,7 +1873,7 @@ class RecipientInfoTest(ZulipTestCase):
             hamlet,
             stream,
             topic_name,
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
         info = get_recipient_info(
