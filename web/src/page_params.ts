@@ -2,6 +2,9 @@ import $ from "jquery";
 
 const t1 = performance.now();
 export const page_params: {
+    monthly_price: number;
+    percent_off: number;
+    annual_price: number;
     seat_count: number;
     zulip_version: number;
     zulip_merge_base:  number;

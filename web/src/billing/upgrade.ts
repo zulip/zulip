@@ -3,10 +3,11 @@ import $ from "jquery";
 import {page_params} from "../page_params";
 
 import * as helpers from "./helpers";
+type E = InputEvent | Event;
 
-export const initialize = () => {
+export const initialize = (prices: { [x: string]: number }):void => {
     helpers.set_tab("upgrade");
-    $("#add-card-button").on("click", (e) => {
+    $("#add-card-button").on("click", (e:InputEvent) => {
         const license_management = $("input[type=radio][name=license_management]:checked").val();
         if (
             helpers.is_valid_input($(`#${CSS.escape(license_management)}_license_count`)) === false
@@ -14,7 +15,7 @@ export const initialize = () => {
             return;
         }
         e.preventDefault();
-        const success_callback = (response) => {
+        const success_callback = (response: { stripe_session_url: string | URL; }) => {
             window.location.replace(response.stripe_session_url);
         };
         helpers.create_ajax_request(
@@ -26,7 +27,8 @@ export const initialize = () => {
         );
     });
 
-    $("#invoice-button").on("click", (e) => {
+    
+    $("#invoice-button").on("click", (e:E) => {
         if (helpers.is_valid_input($("#invoiced_licenses")) === false) {
             return;
         }
@@ -36,7 +38,7 @@ export const initialize = () => {
         );
     });
 
-    $("#sponsorship-button").on("click", (e) => {
+    $("#sponsorship-button").on("click", (e:E) => {
         if (!helpers.is_valid_input($("#sponsorship-form"))) {
             return;
         }
@@ -46,19 +48,19 @@ export const initialize = () => {
         );
     });
 
-    const prices = {};
+    
     prices.annual = page_params.annual_price * (1 - page_params.percent_off / 100);
     prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
 
-    $("input[type=radio][name=license_management]").on("change", function () {
+    $("input[type=radio][name=license_management]").on("change", function (this:any) {
         helpers.show_license_section(this.value);
     });
 
-    $("input[type=radio][name=schedule]").on("change", function () {
-        helpers.update_charged_amount(prices, this.value);
+    $("input[type=radio][name=schedule]").on("change", function (this:any,prices: { [x: string]: number; }) {
+        helpers.update_charged_amount(prices , this.value);
     });
 
-    $("select[name=organization-type]").on("change", (e) => {
+    $("select[name=organization-type]").on("change", (e:E) => {
         const string_value = $(e.currentTarget).find(":selected").attr("data-string-value");
         helpers.update_discount_details(string_value);
     });
@@ -74,5 +76,5 @@ export const initialize = () => {
 };
 
 $(() => {
-    initialize();
+    initialize({});
 });
