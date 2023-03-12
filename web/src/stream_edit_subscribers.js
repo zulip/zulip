@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_members from "../templates/stream_settings/stream_members.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
@@ -252,6 +253,9 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
 
     if (sub.invite_only && people.is_my_user_id(target_user_id)) {
         const sub_count = peer_data.get_subscriber_count(stream_id);
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({
+            stream: sub,
+        });
 
         const html_body = render_unsubscribe_private_stream_modal({
             message: $t({
@@ -262,8 +266,8 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
 
         confirm_dialog.launch({
             html_heading: $t_html(
-                {defaultMessage: "Unsubscribe from {stream_name}"},
-                {stream_name: sub.name},
+                {defaultMessage: "Unsubscribe from <z-link></z-link>"},
+                {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
             html_body,
             on_click: remove_user_from_private_stream,

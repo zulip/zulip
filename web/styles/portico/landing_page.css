@@ -1952,14 +1952,6 @@ nav {
     filter: invert(0.9);
 }
 
-.footer.hello li a {
-    color: hsl(220, 15%, 76%);
-}
-
-.footer.hello li a:hover {
-    color: hsl(0, 0%, 100%);
-}
-
 /* -- apps page -- */
 .portico-landing.apps {
     padding-top: 0;
@@ -3607,10 +3599,6 @@ nav {
         padding: 20px;
     }
 
-    .footer {
-        width: 100vw;
-    }
-
     /* the gradients leave the bottom of the text and the button white so we
        want to have the gradients stay darker for longer.
     */
@@ -3964,6 +3952,10 @@ nav {
 
 .case-study-page,
 .solutions-page {
+    .bottom-register-buttons.extra_margin_before_footer {
+        margin-bottom: 60px;
+    }
+
     .hero-text {
         position: relative;
         width: 80%;
