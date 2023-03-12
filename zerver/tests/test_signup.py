@@ -4999,6 +4999,70 @@ class UserSignUpTest(InviteUserBase):
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(
+            "zproject.backends.SAMLAuthBackend",
+            "zproject.backends.ZulipLDAPAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_ldap_registration_email_backend_disabled_bypass_attempt(self) -> None:
+        """
+        Tests for the case of LDAP + external auth backend being the ones enabled and
+        a user using the registration page to get a confirmation link and then trying
+        to use it to create a new account with their own email that's not authenticated
+        by either of the backends.
+        """
+        email = "no_such_user_in_ldap@example.com"
+        subdomain = "zulip"
+
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {"full_name": "cn"}
+        full_name = "New LDAP fullname"
+
+        result = self.client_post("/register/", {"email": email}, subdomain=subdomain)
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email", result)
+
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        ):
+            # Click confirmation link
+            result = self.submit_reg_form_for_user(
+                email,
+                None,
+                full_name="Ignore",
+                from_confirmation="1",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+
+            self.assert_in_success_response(
+                ["We just need you to do one last thing.", email], result
+            )
+
+            # Submit the final form, attempting to register the user despite
+            # no match in ldap.
+            result = self.submit_reg_form_for_user(
+                email,
+                "newpassword",
+                full_name=full_name,
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+            # Didn't create an account
+            with self.assertRaises(UserProfile.DoesNotExist):
+                UserProfile.objects.get(delivery_email=email)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(
+                result["Location"], "/accounts/login/?email=no_such_user_in_ldap%40example.com"
+            )
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
             "zproject.backends.ZulipLDAPAuthBackend",
             "zproject.backends.ZulipDummyBackend",
         )
