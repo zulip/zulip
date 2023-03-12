@@ -152,7 +152,7 @@ test("set_user_topics", () => {
         stream_id: design.stream_id,
         topic_name: "typography",
         last_updated: "1577836800",
-        visibility_policy: visibility_policy.VISIBILITY_POLICY_INHERIT,
+        visibility_policy: visibility_policy.INHERIT,
     });
     assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
 });
