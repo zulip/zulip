@@ -193,3 +193,6 @@ circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
 django-stubs-ext
+
+# Needed for preferred HTTP responses
+accept-types 

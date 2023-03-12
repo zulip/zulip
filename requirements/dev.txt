@@ -7,6 +7,10 @@
 #
 # For details, see requirements/README.md .
 #
+accept-types==0.4.1 \
+    --hash=sha256:c87feccdffb66b02f9343ff387d7fd5c451ccb2e1221fbd37ea0cedef5cf290f \
+    --hash=sha256:fb27099716d8f0360408c8ca86d69dbfed44455834b70d1506250abe521b535a
+    # via -r requirements/common.in
 aioapns==2.2 \
     --hash=sha256:36f55048008e07c14de16d30980df5cf14fcbddc6e80b454813e8d65e1a9f39b \
     --hash=sha256:dc530d221219aecb4f2937c756637e2b6f144761b6e876794bf26d5e66859357

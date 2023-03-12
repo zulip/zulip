@@ -1,5 +1,6 @@
 from typing import Optional, Union
 
+from accept_types import get_best_match
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
@@ -39,7 +40,14 @@ def backend_serve_thumbnail(
         assert isinstance(maybe_user_profile, UserProfile)
         realm = maybe_user_profile.realm
 
-    if not validate_thumbnail_request(realm, maybe_user_profile, url):
+    is_authorized = validate_thumbnail_request(realm, maybe_user_profile, url)
+    if is_authorized is None:
+        if get_best_match(
+            request.META.get("HTTP_ACCEPT", ""),
+            ["image/jpeg", "image/png", "image/webp", "image/avif", "image/svg+xml"],
+        ):
+            return redirect(generate_thumbnail_url("static/images/errors/imageNotFound.png"))
+    elif not is_authorized:  # nocoverage
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
 
     thumbnail_url = generate_thumbnail_url(url)
