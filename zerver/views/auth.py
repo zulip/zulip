@@ -154,7 +154,6 @@ def maybe_send_to_registration(
     mobile_flow_otp: Optional[str] = None,
     desktop_flow_otp: Optional[str] = None,
     is_signup: bool = False,
-    password_required: bool = True,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
 ) -> HttpResponse:
@@ -241,13 +240,13 @@ def maybe_send_to_registration(
         except PreregistrationUser.DoesNotExist:
             existing_prereg_user = None
 
-        # password_required and full_name data passed here as argument should take precedence
+        # full_name data passed here as argument should take precedence
         # over the defaults with which the existing PreregistrationUser that we've just fetched
         # was created.
         prereg_user = create_preregistration_user(
             email,
             realm,
-            password_required=password_required,
+            password_required=False,
             full_name=full_name,
             full_name_validated=full_name_validated,
             multiuse_invite=multiuse_obj,
@@ -316,7 +315,6 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         if key not in kwargs_to_pass:
             kwargs.pop(key, None)
 
-    kwargs["password_required"] = False
     return maybe_send_to_registration(request, **kwargs)
 
 
