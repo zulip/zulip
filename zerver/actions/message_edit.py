@@ -50,6 +50,7 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.types import EditHistoryEvent
+from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -187,6 +188,7 @@ def maybe_send_resolve_topic_notifications(
 
 
 def send_message_moved_breadcrumbs(
+    target_message: Message,
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
@@ -207,6 +209,13 @@ def send_message_moved_breadcrumbs(
     user_mention = silent_mention_syntax_for_user(user_profile)
     old_topic_link = f"#**{old_stream.name}>{old_topic}**"
     new_topic_link = f"#**{new_stream.name}>{new_topic}**"
+    message = {
+        "id": target_message.id,
+        "stream_id": new_stream.id,
+        "display_recipient": new_stream.name,
+        "topic": new_topic,
+    }
+    moved_message_link = near_stream_message_url(target_message.realm, message)
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
@@ -215,6 +224,7 @@ def send_message_moved_breadcrumbs(
                 new_stream,
                 new_topic,
                 new_thread_notification_string.format(
+                    message_link=moved_message_link,
                     old_location=old_topic_link,
                     user=user_mention,
                     changed_messages_count=changed_messages_count,
@@ -925,7 +935,7 @@ def do_update_message(
             else:
                 if changed_messages_count == 1:
                     new_thread_notification_string = gettext_lazy(
-                        "A message was moved here from {old_location} by {user}."
+                        "[A message]({message_link}) was moved here from {old_location} by {user}."
                     )
                 else:
                     new_thread_notification_string = gettext_lazy(
@@ -933,6 +943,7 @@ def do_update_message(
                     )
 
         send_message_moved_breadcrumbs(
+            target_message,
             user_profile,
             stream_being_edited,
             orig_topic_name,

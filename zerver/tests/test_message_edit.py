@@ -21,6 +21,7 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
+from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
@@ -2322,11 +2323,18 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
+        message = {
+            "id": msg_id_later,
+            "stream_id": new_stream.id,
+            "display_recipient": new_stream.name,
+            "topic": "test",
+        }
+        moved_message_link = near_stream_message_url(messages[1].realm, message)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
             messages[1].content,
-            f"A message was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+            f"[A message]({moved_message_link}) was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_to_preexisting_topic_change_one(self) -> None:
@@ -2360,11 +2368,18 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
+        message = {
+            "id": msg_id_later,
+            "stream_id": new_stream.id,
+            "display_recipient": new_stream.name,
+            "topic": "test",
+        }
+        moved_message_link = near_stream_message_url(messages[2].realm, message)
         self.assert_length(messages, 3)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
             messages[2].content,
-            f"A message was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+            f"[A message]({moved_message_link}) was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_to_stream_change_all(self) -> None:
@@ -3130,11 +3145,18 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(messages[1].content, "Third")
 
         messages = get_topic_messages(user_profile, stream, "edited")
+        message = {
+            "id": msg_id,
+            "stream_id": stream.id,
+            "display_recipient": stream.name,
+            "topic": "edited",
+        }
+        moved_message_link = near_stream_message_url(messages[1].realm, message)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
             messages[1].content,
-            f"A message was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+            f"[A message]({moved_message_link}) was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_notify_old_topics_after_message_move(self) -> None:
@@ -3206,11 +3228,18 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         messages = get_topic_messages(user_profile, stream, "edited")
+        message = {
+            "id": msg_id,
+            "stream_id": stream.id,
+            "display_recipient": stream.name,
+            "topic": "edited",
+        }
+        moved_message_link = near_stream_message_url(messages[0].realm, message)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
             messages[1].content,
-            f"A message was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+            f"[A message]({moved_message_link}) was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_notify_no_topic_after_message_move(self) -> None:
