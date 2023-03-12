@@ -2640,32 +2640,28 @@ class UserTopic(models.Model):
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
 
-    # Implicitly, if a UserTopic does not exist, the (user, topic)
-    # pair should have normal behavior for that (user, stream) pair.
+    class VisibilityPolicy(models.IntegerChoices):
+        # A normal muted topic. No notifications and unreads hidden.
+        MUTED = 1, "Muted topic"
 
-    # We use this in our code to represent the condition in the comment above.
-    VISIBILITY_POLICY_INHERIT = 0
+        # This topic will behave like an unmuted topic in an unmuted stream even if it
+        # belongs to a muted stream.
+        UNMUTED = 2, "Unmuted topic in muted stream"
 
-    # A normal muted topic. No notifications and unreads hidden.
-    MUTED = 1
+        # This topic will behave like `UNMUTED`, plus some additional
+        # display and/or notifications priority that is TBD and likely to
+        # be configurable; see #6027. Not yet implemented.
+        FOLLOWED = 3, "Followed topic"
 
-    # This topic will behave like an unmuted topic in an unmuted stream even if it
-    # belongs to a muted stream.
-    UNMUTED = 2
+        # Implicitly, if a UserTopic does not exist, the (user, topic)
+        # pair should have normal behavior for that (user, stream) pair.
 
-    # This topic will behave like `UNMUTED`, plus some additional
-    # display and/or notifications priority that is TBD and likely to
-    # be configurable; see #6027. Not yet implemented.
-    FOLLOWED = 3
+        # We use this in our code to represent the condition in the comment above.
+        INHERIT = 0, "User's default policy for the stream."
 
-    visibility_policy_choices = (
-        (MUTED, "Muted topic"),
-        (UNMUTED, "Unmuted topic in muted stream"),
-        (FOLLOWED, "Followed topic"),
-        (VISIBILITY_POLICY_INHERIT, "User's default policy for the stream."),
+    visibility_policy = models.SmallIntegerField(
+        choices=VisibilityPolicy.choices, default=VisibilityPolicy.MUTED
     )
-
-    visibility_policy = models.SmallIntegerField(choices=visibility_policy_choices, default=MUTED)
 
     class Meta:
         constraints = [

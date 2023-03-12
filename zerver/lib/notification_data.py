@@ -184,10 +184,10 @@ def user_allows_notifications_in_StreamTopic(
     Captures the hierarchy of notification settings, where visibility policy is considered first,
     followed by stream-specific settings, and the global-setting in the UserProfile is the fallback.
     """
-    if stream_is_muted and visibility_policy != UserTopic.UNMUTED:
+    if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
         return False
 
-    if visibility_policy == UserTopic.MUTED:
+    if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
         return False
 
     if stream_specific_setting is not None:

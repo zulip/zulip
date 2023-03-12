@@ -476,7 +476,7 @@ class FixUnreadTests(ZulipTestCase):
                 user,
                 stream,
                 topic_name,
-                visibility_policy=UserTopic.MUTED,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             )
 
         def force_unsubscribe(stream_name: str) -> None:
@@ -715,7 +715,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile,
             stream,
             topic_name,
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
     def test_raw_unread_stream(self) -> None:
