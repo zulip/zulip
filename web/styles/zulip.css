@@ -1988,13 +1988,18 @@ div.focused_table {
 }
 
 .nav .dropdown-menu {
+    --dropdown-menu-position-top: 30px;
     left: auto;
     right: 0;
-    top: 30px;
+    top: var(--dropdown-menu-position-top);
     /* Match the width of the right sidebar so that we don't have
        the presence dots distracting you when looking at this. */
     min-width: 240px;
     box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
+
+    /* make the max height equal to the height of the dropdown menu */
+    max-height: calc(100vh - var(--dropdown-menu-position-top) - 100px);
+    overflow-y: scroll;
 
     &::after {
         position: absolute;
