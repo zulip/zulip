@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from email.headerregistry import Address
 from functools import lru_cache, reduce
 from operator import or_
-from typing import Any
+from typing import Any, Tuple
 
 from django.core.management.base import CommandError
 from django.db.models import Q
@@ -17,6 +17,7 @@ from zerver.models import Message, Recipient, Stream, UserProfile, get_user_by_d
 
 ignore_keys = [
     "realm",
+    "subject",
     "rendered_content_version",
     "sending_client",
     "search_tsvector",
@@ -133,16 +134,23 @@ This is most often used for legal compliance.
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
         print(f"Exporting {len(messages_query)} messages...")
 
+        @lru_cache(maxsize=1000)
         def format_sender(full_name: str, delivery_email: str) -> str:
             return str(Address(display_name=full_name, addr_spec=delivery_email))
 
-        @lru_cache(maxsize=None)
-        def format_recipient(recipient_id: int) -> str:
+        def format_full_recipient(recipient_id: int, subject: str) -> str:
+            recip_str, has_subject = format_recipient(recipient_id)
+            if not has_subject:
+                return recip_str
+            return f"{recip_str} > {subject}"
+
+        @lru_cache(maxsize=1000)
+        def format_recipient(recipient_id: int) -> Tuple[str, bool]:
             recipient = Recipient.objects.get(id=recipient_id)
 
             if recipient.type == Recipient.STREAM:
                 stream = Stream.objects.values("name").get(id=recipient.type_id)
-                return "#" + stream["name"]
+                return "#" + stream["name"], True
 
             users = (
                 UserProfile.objects.filter(
@@ -152,12 +160,12 @@ This is most often used for legal compliance.
                 .values_list("full_name", "delivery_email")
             )
 
-            return ", ".join([format_sender(e[0], e[1]) for e in users])
+            return ", ".join([format_sender(e[0], e[1]) for e in users]), False
 
         message_dicts = []
         for message in messages_query:
             item = model_to_dict(message)
-            item["recipient_name"] = format_recipient(message.recipient_id)
+            item["recipient_name"] = format_full_recipient(message.recipient_id, message.subject)
             item["sender_name"] = format_sender(
                 message.sender.full_name, message.sender.delivery_email
             )
