@@ -131,6 +131,22 @@ helpful for writing clear and thorough pull request comments:
   web/templates/...
   ```
 
+- If there has been a conversation about the changes you've made in
+  your pull request, or the issue your pull request addresses, in
+  [the Zulip development community][zulip-dev-community], then
+  cross-linking between GitHub and those conversations is extremely
+  helpful in providing context for maintainers and reviewers. We
+  recommend [linking to a specific message][link-to-message] from
+  the Zulip development community in your pull request comment so
+  that the link is permanent and works even if the topic of the
+  conversation changes or is resolved. Once you've created the pull
+  request on GitHub, you can use one of the [custom
+  linkifiers][dev-community-linkifiers] in the development community
+  to easily link to your pull request in the relevant conversation.
+
 [github-syntax]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 [git-grep]: https://git-scm.com/docs/git-grep
 [screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
+[zulip-dev-community]: https://chat.zulip.org
+[link-to-message]: https://zulip.com/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
+[dev-community-linkifiers]: https://zulip.com/development-community/#linking-to-github-issues-and-pull-requests
