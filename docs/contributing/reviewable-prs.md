@@ -82,7 +82,7 @@ helpful for writing clear and thorough pull request comments:
 - For [screenshots or screencasts][screenshots-gifs] of changes,
   putting them in details/summary tags reduces visual clutter
   and scroll length of pull request comments. This is especially
-  useful when you have various screenshots and/or screencasts to
+  useful when you have several screenshots and/or screencasts to
   include in your comment as you can put each image, or group of
   images, in separate details/summary tags.
 
@@ -96,8 +96,8 @@ helpful for writing clear and thorough pull request comments:
 
 - For before and after images or videos of changes, using GithHub's table
   syntax renders them side-by-side for quick and clear comparison.
-  While this this works well for narrow or small images, it can be hard
-  to see details in large, full screen images and videos in this format.
+  While this works well for narrow or small images, it can be hard to
+  see details in large, full screen images and videos in this format.
 
   Note that you can put the table syntax inside the details/summary
   tags described above as well.
