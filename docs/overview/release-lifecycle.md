@@ -92,7 +92,7 @@ The Zulip server and clients apps are all carefully engineered to
 ensure compatibility with old versions. In particular:
 
 - The Zulip mobile and desktop apps maintain backwards-compatibility
-  code to support any Zulip server since 3.0. (They may also work
+  code to support any Zulip server since 4.0. (They may also work
   with older versions, with a degraded experience).
 - Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
