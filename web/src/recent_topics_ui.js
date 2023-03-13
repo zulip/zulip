@@ -413,10 +413,11 @@ function format_conversation(conversation_data) {
             )
             .map((user) =>
                 render_user_with_status_icon({
-                    name: user.full_name,
+                    name: people.get_display_full_name(user.id),
                     status_emoji_info: user_status.get_status_emoji(user.id),
                 }),
             )
+            .sort()
             .join(", ");
         context.recipient_id = last_msg.recipient_id;
         context.pm_url = last_msg.pm_with_url;

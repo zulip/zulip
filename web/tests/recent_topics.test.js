@@ -13,6 +13,8 @@ const test_url = () => "https://www.example.com";
 // We assign this in our test() wrapper.
 let messages;
 
+const private_messages = [];
+
 // sender1 == current user
 // sender2 == any other user
 const sender1 = 1;
@@ -88,7 +90,12 @@ mock_esm("../src/message_list_data", {
     MessageListData: class {},
 });
 mock_esm("../src/message_store", {
-    get: (msg_id) => messages[msg_id - 1],
+    get(msg_id) {
+        if (msg_id < 12) {
+            return messages[msg_id - 1];
+        }
+        return private_messages[msg_id - 12];
+    },
 });
 mock_esm("../src/message_view_header", {
     render_title_area: noop,
@@ -113,6 +120,11 @@ mock_esm("../src/pm_list", {
 });
 mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
+    get_pm_recent_senders(user_ids_string) {
+        return {
+            participants: user_ids_string.split(",").map((user_id) => Number.parseInt(user_id, 10)),
+        };
+    },
 });
 mock_esm("../src/stream_data", {
     is_muted: () =>
@@ -152,6 +164,9 @@ mock_esm("../src/unread", {
         }
         return 1;
     },
+    num_unread_for_user_ids_string() {
+        return 0;
+    },
     topic_has_any_unread_mentions: () => false,
 });
 
@@ -160,6 +175,7 @@ const people = zrequire("people");
 const rt = zrequire("recent_topics_ui");
 const recent_topics_util = zrequire("recent_topics_util");
 const rt_data = zrequire("recent_topics_data");
+const muted_users = zrequire("muted_users");
 
 people.add_active_user({
     email: "alice@zulip.com",
@@ -171,7 +187,14 @@ people.add_active_user({
     user_id: 2,
     full_name: "Fred Flintstone",
 });
+people.add_active_user({
+    email: "spike@zulip.com",
+    user_id: 3,
+    full_name: "Spike Spiegel",
+});
+
 people.initialize_current_user(1);
+muted_users.add_muted_user(2, 17947949);
 
 let id = 0;
 
@@ -276,6 +299,15 @@ sample_messages[10] = {
     type: "stream",
 };
 
+private_messages[0] = {
+    id: (id += 1),
+    sender_id: sender1,
+    to_user_ids: "2,3",
+    type: "private",
+    display_recipient: [{id: 1}, {id: 2}, {id: 3}],
+    pm_with_url: test_url(),
+};
+
 function get_topic_key(stream_id, topic) {
     return stream_id + ":" + topic.toLowerCase();
 }
@@ -327,7 +359,7 @@ function stub_out_filter_buttons() {
     //
     //       See show_selected_filters() and set_filter() in the
     //       implementation.
-    for (const filter of ["all", "unread", "muted", "participated"]) {
+    for (const filter of ["all", "unread", "muted", "participated", "include_private"]) {
         const $stub = $.create(`filter-${filter}-stub`);
         const selector = `[data-filter="${filter}"]`;
         $("#recent_topics_filter_buttons").set_find_results(selector, $stub);
@@ -434,6 +466,48 @@ test("test_filter_all", ({mock_template}) => {
         rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
         false,
     );
+});
+
+test("test_filter_pm", ({mock_template}) => {
+    page_params.is_spectator = false;
+    const expected = {
+        filter_participated: false,
+        filter_unread: false,
+        filter_muted: false,
+        filter_pm: true,
+        search_val: "",
+        is_spectator: false,
+    };
+
+    const expected_user_with_icon = [
+        {name: "translated: Muted user", status_emoji_info: undefined},
+        {name: "Spike Spiegel", status_emoji_info: undefined},
+    ];
+    let i = 0;
+
+    mock_template("recent_topics_table.hbs", false, (data) => {
+        assert.deepEqual(data, expected);
+    });
+
+    mock_template("user_with_status_icon", false, (data) => {
+        assert.deepEqual(data, expected_user_with_icon[i]);
+        i += 1;
+    });
+
+    mock_template("recent_topic_row.hbs", true, (data, html) => {
+        assert.ok(html.startsWith('<tr id="recent_conversation'));
+    });
+
+    rt.clear_for_tests();
+    stub_out_filter_buttons();
+    recent_topics_util.set_visible(true);
+    rt.set_filter("include_private");
+
+    expected_data_to_replace_in_list_widget = [
+        {last_msg_id: 12, participated: true, type: "private"},
+    ];
+
+    rt.process_messages([private_messages[0]]);
 });
 
 test("test_filter_unread", ({mock_template}) => {
