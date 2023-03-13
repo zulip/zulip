@@ -86,6 +86,7 @@ This is most often used for legal compliance.
             )
 
         realm = self.get_realm(options)
+        assert realm is not None
         limits = Q()
 
         limits = reduce(
