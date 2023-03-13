@@ -1,11 +1,12 @@
 import csv
 import os
+import shutil
 from argparse import ArgumentParser
 from datetime import datetime, timezone
 from email.headerregistry import Address
 from functools import lru_cache, reduce
 from operator import or_
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Set, Tuple
 
 import orjson
 from django.core.management.base import CommandError
@@ -13,7 +14,23 @@ from django.db.models import Q
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
-from zerver.models import Message, Recipient, Stream, UserProfile, get_user_by_delivery_email
+from zerver.lib.upload import save_attachment_contents
+from zerver.models import (
+    Attachment,
+    Message,
+    Recipient,
+    Stream,
+    UserProfile,
+    get_user_by_delivery_email,
+)
+
+
+def write_attachment(base_path: str, attachment: Attachment) -> None:
+    dir_path_id = os.path.dirname(attachment.path_id)
+    assert "../" not in dir_path_id
+    os.makedirs(base_path + "/" + dir_path_id, exist_ok=True)
+    with open(base_path + "/" + attachment.path_id, "wb") as attachment_file:
+        save_attachment_contents(attachment.path_id, attachment_file)
 
 
 class Command(ZulipBaseCommand):
@@ -30,6 +47,11 @@ This is most often used for legal compliance.
             metavar="<path>",
             help="File to output JSON/CSV results to; it must not exist, unless --force is given",
             required=True,
+        )
+        parser.add_argument(
+            "--write-attachments",
+            metavar="<directory>",
+            help="If provided, export all referenced attachments into the directory",
         )
         parser.add_argument(
             "--force", action="store_true", help="Overwrite the output file if it exists already"
@@ -98,6 +120,13 @@ This is most often used for legal compliance.
                 f"Output path '{options['output']}' already exists; use --force to overwrite"
             )
 
+        if options["write_attachments"] and os.path.exists(options["write_attachments"]):
+            if not options["force"]:
+                raise CommandError(
+                    f"Attachments output path '{options['write_attachments']}' already exists; use --force to overwrite"
+                )
+            shutil.rmtree(options["write_attachments"])
+
         realm = self.get_realm(options)
         assert realm is not None
         limits = Q()
@@ -128,6 +157,7 @@ This is most often used for legal compliance.
                 [Q(sender__delivery_email__iexact=e) for e in options["sender"]],
             )
 
+        attachments_written: Set[str] = set()
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
         print(f"Exporting {len(messages_query)} messages...")
 
@@ -160,7 +190,7 @@ This is most often used for legal compliance.
             return ", ".join([format_sender(e[0], e[1]) for e in users]), False
 
         def transform_message(message: Message) -> Dict[str, str]:
-            return {
+            row = {
                 "id": str(message.id),
                 "timestamp (UTC)": message.date_sent.astimezone(timezone.utc).strftime(
                     "%Y-%m-%d %H:%M:%S"
@@ -170,6 +200,18 @@ This is most often used for legal compliance.
                 "content": message.content,
                 "edit history": message.edit_history if message.edit_history is not None else "",
             }
+            if options["write_attachments"]:
+                if message.has_attachment:
+                    attachments = message.attachment_set.all()
+                    row["attachments"] = " ".join(a.path_id for a in attachments)
+                    for attachment in attachments:
+                        if attachment.path_id in attachments_written:
+                            continue
+                        write_attachment(options["write_attachments"], attachment)
+                        attachments_written.add(attachment.path_id)
+                else:
+                    row["attachments"] = ""
+            return row
 
         if options["output"].endswith(".json"):
             with open(options["output"], "wb") as json_file:
@@ -181,9 +223,17 @@ This is most often used for legal compliance.
                 )
         elif options["output"].endswith(".csv"):
             with open(options["output"], "w") as csv_file:
-                csvwriter = csv.DictWriter(
-                    csv_file,
-                    ["id", "timestamp (UTC)", "sender", "recipient", "content", "edit history"],
-                )
+                columns = [
+                    "id",
+                    "timestamp (UTC)",
+                    "sender",
+                    "recipient",
+                    "content",
+                    "edit history",
+                ]
+
+                if options["write_attachments"]:
+                    columns += ["attachments"]
+                csvwriter = csv.DictWriter(csv_file, columns)
                 csvwriter.writeheader()
                 csvwriter.writerows(transform_message(m) for m in messages_query)
