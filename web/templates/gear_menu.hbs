@@ -48,77 +48,77 @@
                 <ul class="popover-list">
                     <li class="popover-list__link-item hidden-for-spectators" role="presentation">
                         <a href="#streams/subscribed" role="menuitem">
-                            <i class="fa fa-exchange" aria-hidden="true"></i> {{t 'Manage streams' }}
+                            <i class="zulip-icon zulip-icon-hash-italic" aria-hidden="true"></i> {{t 'Manage streams' }}
                         </a>
                     </li>
                     <li class="popover-list__link-item hidden-for-spectators" role="presentation">
                         <a href="#settings" role="menuitem">
-                            <i class="fa fa-wrench" aria-hidden="true"></i> {{t 'Personal settings' }}
+                            <i class="zulip-icon zulip-icon-tool" aria-hidden="true"></i> {{t 'Personal settings' }}
                         </a>
                     </li>
                     <li class="popover-list__link-item admin-menu-item hidden-for-spectators" role="presentation">
                         <a href="#organization" role="menuitem">
-                            <i class="fa fa-bolt" aria-hidden="true"></i>
+                            <i class="zulip-icon zulip-icon-building" aria-hidden="true"></i>
                             <span>{{t 'Organization settings' }}</span>
                         </a>
                     </li>
                     {{#unless is_guest}}
                     <li class="popover-list__link-item hidden-for-spectators" role="presentation">
                         <a href="/stats" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                            <i class="zulip-icon zulip-icon-bar-chart" aria-hidden="true"></i>
                             <span>{{t 'Usage statistics' }}</span>
                         </a>
                     </li>
                     {{/unless}}
                     <li role="presentation" class="popover-list__link-item only-visible-for-spectators">
                         <a class="change-language-spectator" role="menuitem">
-                            <i class="zulip-icon zulip-icon-language" aria-hidden="true"></i> {{t 'Select language' }}
+                            <i class="zulip-icon zulip-icon-f-globe" aria-hidden="true"></i> {{t 'Select language' }}
                         </a>
                     </li>
                     <li role="presentation" class="popover-list__link-item only-visible-for-spectators">
                         <a class="dark-theme" role="menuitem">
-                            <i class="fa fa-moon-o" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
+                            <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
                         </a>
                     </li>
                     <li role="presentation" class="popover-list__link-item only-visible-for-spectators">
                         <a class="light-theme" role="menuitem">
-                            <i class="fa fa-sun-o" aria-hidden="true"></i> {{t 'Switch to light theme' }}
+                            <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i> {{t 'Switch to light theme' }}
                         </a>
                     </li>
                 </ul>
                 <ul class="popover-list">
                     <li class="popover-list__link-item" role="presentation">
                         <a href="/help/" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-question-circle" aria-hidden="true"></i> {{t 'Help center' }}
+                            <i class="zulip-icon zulip-icon-help" aria-hidden="true"></i> {{t 'Help center' }}
                         </a>
                     </li>
                     <li class="popover-list__link-item" role="presentation">
                         <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
-                            <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span>
+                            <i class="zulip-icon zulip-icon-keyboard" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span>
                         </a>
                     </li>
                     <li role="presentation" class="popover-list__link-item hidden-for-spectators">
                         <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
-                            <i class="fa fa-pencil" aria-hidden="true"></i> {{t 'Message formatting' }}
+                            <i class="zulip-icon zulip-icon-edit" aria-hidden="true"></i> {{t 'Message formatting' }}
                         </a>
                     </li>
                     <li class="popover-list__link-item" role="presentation">
                         <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
-                            <i class="fa fa-search" aria-hidden="true"></i> {{t 'Search filters' }}
+                            <i class="zulip-icon zulip-icon-manage-search" aria-hidden="true"></i> {{t 'Search filters' }}
                         </a>
                     </li>
                 </ul>
                 <ul class="popover-list">
                     <li class="popover-list__link-item" role="presentation" id="gear_menu_about_zulip">
                         <a href="#about-zulip" role="menuitem" class="menuitem-version">
-                            <i class="zulip-icon zulip-icon-logo"></i>
+                            <i class="zulip-icon zulip-icon-info"></i>
                             <span class="about_zulip_text">{{t "About Zulip" }}</span>
                         </a>
                     </li>
                     {{#if corporate_enabled}}
                     <li class="popover-list__link-item" role="presentation">
                         <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-envelope" aria-hidden="true"></i> {{t 'Contact support' }}
+                            <i class="zulip-icon zulip-icon-life-buoy" aria-hidden="true"></i> {{t 'Contact support' }}
                         </a>
                     </li>
                     {{/if}}
@@ -126,30 +126,30 @@
                 <ul class="popover-list hidden-for-spectators">
                     <li role="presentation" class="popover-list__link-item">
                         <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-desktop" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
+                            <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
                         </a>
                     </li>
                     <li role="presentation" class="popover-list__link-item">
                         <a href="/integrations/" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-github" aria-hidden="true"></i> {{t 'Integrations' }}
+                            <i class="zulip-icon zulip-icon-git-pull-request" aria-hidden="true"></i> {{t 'Integrations' }}
                         </a>
                     </li>
                     <li role="presentation" class="popover-list__link-item">
                         <a href="/api" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-sitemap" aria-hidden="true"></i> {{t 'API documentation' }}
+                            <i class="zulip-icon zulip-icon-file-text" aria-hidden="true"></i> {{t 'API documentation' }}
                         </a>
                     </li>
                     {{#if show_billing}}
                     <li role="presentation" class="popover-list__link-item">
                         <a href="/billing/" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
+                            <i class="zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
                         </a>
                     </li>
                     {{/if}}
                     {{#if promote_sponsoring_zulip}}
                     <li role="presentation" class="popover-list__link-item">
                         <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" role="menuitem">
-                            <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
+                            <i class="zulip-icon zulip-icon-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
                         </a>
                     </li>
                     {{/if}}
@@ -165,7 +165,7 @@
                 <ul class="popover-list">
                     <li class="popover-list__link-item" role="presentation">
                         <a class="invite-user-link" role="menuitem">
-                            <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
+                            <i class="zulip-icon zulip-icon-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
                         </a>
                     </li>
                 </ul>
@@ -180,12 +180,12 @@
                     {{/if}}
                     <li role="presentation" class="popover-list__link-item only-visible-for-spectators">
                         <a href="{{login_link}}" role="menuitem">
-                            <i class="fa fa-sign-in" aria-hidden="true"></i> {{t 'Log in' }}
+                            <i class="zulip-icon zulip-icon-power" aria-hidden="true"></i> {{t 'Log in' }}
                         </a>
                     </li>
                     <li class="popover-list__link-item" role="presentation">
                         <a href="#logout" class="logout_button hidden-for-spectators" role="menuitem">
-                            <i class="fa fa-power-off" aria-hidden="true"></i> {{t 'Log out' }}
+                            <i class="zulip-icon zulip-icon-power" aria-hidden="true"></i> {{t 'Log out' }}
                         </a>
                     </li>
                 </ul>
