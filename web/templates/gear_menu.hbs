@@ -3,21 +3,21 @@
         <a id="settings-dropdown" tabindex="0" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{t 'Menu' }} (g)">
             <i class="fa fa-cog settings-dropdown-cog" aria-hidden="true"></i>
         </a>
-        <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
+        <nav class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
             <aside class="org-info">
-                <li class="org-name">{{realm_name}}</li>
-                <li class="org-url">{{realm_uri}}</li>
+                <h3 class="org-name">{{realm_name}}</h3>
+                <p class="org-url">{{realm_uri}}</p>
                 {{#if is_self_hosted }}
-                <li class="org-version">
+                <p class="org-version">
                     <a href="#about-zulip" role="menuitem">{{version_display_string}}</a>
-                </li>
+                </p>
                 {{#if server_needs_upgrade }}
-                <li class="org-upgrade small-font-size">
+                <p class="org-upgrade small-font-size">
                     <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Upgrade to the latest release' }}</a>
-                </li>
+                </p>
                 {{/if}}
                 {{else}}
-                <li class="org-plan hidden-for-spectators small-font-size">
+                <p class="org-plan hidden-for-spectators small-font-size">
                     {{#if is_plan_limited }}
                     <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
                     {{else if is_plan_standard}}
@@ -25,22 +25,22 @@
                     {{else if is_plan_standard_sponsored_for_free}}
                     <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
                     {{/if}}
-                </li>
+                </p>
                 {{/if}}
                 {{#if (and is_plan_limited is_owner) }}
-                <li class="org-upgrade small-font-size">
+                <p class="org-upgrade small-font-size">
                     <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t "Upgrade to {standard_plan_name}" }}</a>
-                </li>
+                </p>
                 {{/if}}
                 {{#if is_plan_limited }}
                 {{#if is_education_org }}
-                <li class="org-upgrade small-font-size">
+                <p class="org-upgrade small-font-size">
                     <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
-                </li>
+                </p>
                 {{else if (not is_business_org) }}
-                <li class="org-upgrade small-font-size">
+                <p class="org-upgrade small-font-size">
                     <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
-                </li>
+                </p>
                 {{/if}}
                 {{/if}}
             </aside>
@@ -190,6 +190,6 @@
                     </li>
                 </ul>
             </section>
-        </ul>
+        </nav>
     </li>
 </ul>
