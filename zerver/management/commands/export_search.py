@@ -77,7 +77,7 @@ This is most often used for legal compliance.
                 terms.update(f.read().splitlines())
         terms.update(options["search_terms"])
 
-        if not terms and not options["before"] and not options["after"]:
+        if not terms and not options["before"] and not options["after"] and not options["sender"]:
             raise CommandError("One or more limits are required!")
 
         if os.path.exists(options["output"]) and not options["force"]:
