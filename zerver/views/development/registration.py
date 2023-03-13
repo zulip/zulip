@@ -10,7 +10,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import get_realm_from_request
 from zerver.lib.response import json_success
 from zerver.models import Realm, UserProfile
-from zerver.views.auth import create_preregistration_user
+from zerver.views.auth import create_preregistration_realm, create_preregistration_user
 from zerver.views.registration import accounts_register
 
 if TYPE_CHECKING:
@@ -67,8 +67,11 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
     email = f"{name}@zulip.com"
     realm_name = f"realm-{count}"
     realm_type = Realm.ORG_TYPES["business"]["id"]
-    prereg = create_preregistration_user(email, None, realm_creation=True, password_required=False)
-    activation_url = create_confirmation_link(prereg, Confirmation.REALM_CREATION)
+    realm_subdomain = realm_name
+    prereg_realm = create_preregistration_realm(email, realm_name, realm_subdomain, realm_type)
+    activation_url = create_confirmation_link(
+        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+    )
     key = activation_url.split("/")[-1]
     # Need to add test data to POST request as it doesn't originally contain the required parameters
     modify_postdata(
@@ -78,7 +81,7 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
         realm_type=realm_type,
         full_name=name,
         password="test",
-        realm_subdomain=realm_name,
+        realm_subdomain=realm_subdomain,
         terms="true",
     )
 
@@ -92,8 +95,11 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     email = f"{name}@zulip.com"
     realm_name = generate_demo_realm_name()
     realm_type = Realm.ORG_TYPES["business"]["id"]
-    prereg = create_preregistration_user(email, None, realm_creation=True, password_required=False)
-    activation_url = create_confirmation_link(prereg, Confirmation.REALM_CREATION)
+    realm_subdomain = realm_name
+    prereg_realm = create_preregistration_realm(email, realm_name, realm_subdomain, realm_type)
+    activation_url = create_confirmation_link(
+        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+    )
     key = activation_url.split("/")[-1]
     # Need to add test data to POST request as it doesn't originally contain the required parameters
     modify_postdata(
@@ -103,7 +109,7 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         realm_type=realm_type,
         full_name=name,
         password="test",
-        realm_subdomain=realm_name,
+        realm_subdomain=realm_subdomain,
         terms="true",
         is_demo_organization="true",
     )
