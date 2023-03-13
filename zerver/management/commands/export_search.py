@@ -1,27 +1,19 @@
+import csv
 import os
 from argparse import ArgumentParser
 from datetime import datetime, timezone
 from email.headerregistry import Address
 from functools import lru_cache, reduce
 from operator import or_
-from typing import Any, Tuple
+from typing import Any, Dict, Tuple
 
+import orjson
 from django.core.management.base import CommandError
 from django.db.models import Q
-from django.forms.models import model_to_dict
 
-from zerver.lib.export import floatify_datetime_fields, write_table_data
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.models import Message, Recipient, Stream, UserProfile, get_user_by_delivery_email
-
-ignore_keys = [
-    "realm",
-    "subject",
-    "rendered_content_version",
-    "sending_client",
-    "search_tsvector",
-]
 
 
 class Command(ZulipBaseCommand):
@@ -36,7 +28,7 @@ This is most often used for legal compliance.
         parser.add_argument(
             "--output",
             metavar="<path>",
-            help="File to output JSON results to; it must not exist, unless --force is given",
+            help="File to output JSON/CSV results to; it must not exist, unless --force is given",
             required=True,
         )
         parser.add_argument(
@@ -95,6 +87,11 @@ This is most often used for legal compliance.
             and not options["recipient"]
         ):
             raise CommandError("One or more limits are required!")
+
+        if not options["output"].endswith((".json", ".csv")):
+            raise CommandError(
+                "Unknown file format: {options['output']}  Only .csv and .json are supported"
+            )
 
         if os.path.exists(options["output"]) and not options["force"]:
             raise CommandError(
@@ -162,23 +159,31 @@ This is most often used for legal compliance.
 
             return ", ".join([format_sender(e[0], e[1]) for e in users]), False
 
-        message_dicts = []
-        for message in messages_query:
-            item = model_to_dict(message)
-            item["recipient_name"] = format_full_recipient(message.recipient_id, message.subject)
-            item["sender_name"] = format_sender(
-                message.sender.full_name, message.sender.delivery_email
-            )
-            for key in ignore_keys:
-                del item[key]
+        def transform_message(message: Message) -> Dict[str, str]:
+            return {
+                "id": str(message.id),
+                "timestamp (UTC)": message.date_sent.astimezone(timezone.utc).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+                "sender": format_sender(message.sender.full_name, message.sender.delivery_email),
+                "recipient": format_full_recipient(message.recipient_id, message.subject),
+                "content": message.content,
+                "edit history": message.edit_history if message.edit_history is not None else "",
+            }
 
-            message_dicts.append(item)
-
-        output = {"zerver_message": message_dicts}
-        floatify_datetime_fields(output, "zerver_message")
-        for item in output["zerver_message"]:
-            item["date_sent_utc"] = datetime.fromtimestamp(
-                int(item["date_sent"]), timezone.utc
-            ).strftime("%Y-%m-%d %H:%M:%S")
-
-        write_table_data(options["output"], output)
+        if options["output"].endswith(".json"):
+            with open(options["output"], "wb") as json_file:
+                json_file.write(
+                    # orjson doesn't support dumping from a generator
+                    orjson.dumps(
+                        [transform_message(m) for m in messages_query], option=orjson.OPT_INDENT_2
+                    )
+                )
+        elif options["output"].endswith(".csv"):
+            with open(options["output"], "w") as csv_file:
+                csvwriter = csv.DictWriter(
+                    csv_file,
+                    ["id", "timestamp (UTC)", "sender", "recipient", "content", "edit history"],
+                )
+                csvwriter.writeheader()
+                csvwriter.writerows(transform_message(m) for m in messages_query)
