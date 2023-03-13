@@ -12,7 +12,8 @@ from django.forms.models import model_to_dict
 
 from zerver.lib.export import floatify_datetime_fields, write_table_data
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Recipient, Stream, UserProfile
+from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.models import Message, Recipient, Stream, UserProfile, get_user_by_delivery_email
 
 ignore_keys = [
     "realm",
@@ -23,7 +24,8 @@ ignore_keys = [
 
 
 class Command(ZulipBaseCommand):
-    help = """Exports the messages matching certain search terms.
+    help = """Exports the messages matching certain search terms, or from
+senders/recipients.
 
 This is most often used for legal compliance.
 """
@@ -63,11 +65,18 @@ This is most often used for legal compliance.
             help="Limit to messages on or before this ISO datetime, treated as UTC",
             type=lambda s: datetime.fromisoformat(s).astimezone(timezone.utc),
         )
-        parser.add_argument(
+        users = parser.add_mutually_exclusive_group()
+        users.add_argument(
             "--sender",
             action="append",
             metavar="<email>",
             help="Limit to messages sent by users with any of these emails (may be specified more than once)",
+        )
+        users.add_argument(
+            "--recipient",
+            action="append",
+            metavar="<email>",
+            help="Limit to messages received by users with any of these emails (may be specified more than once).  This is a superset of --sender, since senders receive every message they send.",
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -77,7 +86,13 @@ This is most often used for legal compliance.
                 terms.update(f.read().splitlines())
         terms.update(options["search_terms"])
 
-        if not terms and not options["before"] and not options["after"] and not options["sender"]:
+        if (
+            not terms
+            and not options["before"]
+            and not options["after"]
+            and not options["sender"]
+            and not options["recipient"]
+        ):
             raise CommandError("One or more limits are required!")
 
         if os.path.exists(options["output"]) and not options["force"]:
@@ -99,8 +114,17 @@ This is most often used for legal compliance.
             limits &= Q(date_sent__gt=options["after"])
         if options["before"]:
             limits &= Q(date_sent__lt=options["before"])
-        if options["sender"]:
-            print(options["sender"])
+        if options["recipient"]:
+            user_profiles = [get_user_by_delivery_email(e, realm) for e in options["recipient"]]
+            for user_profile in user_profiles:
+                # Users need to not be long-term idle for the
+                # UserMessages to be a judge of which messages they
+                # received.
+                reactivate_user_if_soft_deactivated(user_profile)
+            limits &= Q(
+                usermessage__user_profile_id__in=[user_profile.id for user_profile in user_profiles]
+            )
+        elif options["sender"]:
             limits &= reduce(
                 or_,
                 [Q(sender__delivery_email__iexact=e) for e in options["sender"]],
