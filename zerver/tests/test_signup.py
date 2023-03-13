@@ -958,7 +958,7 @@ class LoginTest(ZulipTestCase):
         ContentType.objects.clear_cache()
 
         # Ensure the number of queries we make is not O(streams)
-        with self.assert_database_query_count(95), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(93), cache_tries_captured() as cache_tries:
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -966,7 +966,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assert_length(cache_tries, 22)
+        self.assert_length(cache_tries, 20)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -3451,10 +3451,9 @@ class RealmCreationTest(ZulipTestCase):
         # Check signup messages
         recipient = signups_stream.recipient
         messages = Message.objects.filter(recipient=recipient).order_by("id")
-        self.assert_length(messages, 2)
+        self.assert_length(messages, 1)
         self.assertIn("Signups enabled", messages[0].content)
-        self.assertIn("signed up", messages[1].content)
-        self.assertEqual("zuliptest", messages[1].topic_name())
+        self.assertEqual("zuliptest", messages[0].topic_name())
 
         realm_creation_audit_log = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_CREATED

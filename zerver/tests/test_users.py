@@ -790,7 +790,7 @@ class QueryCountTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
 
-        with self.assert_database_query_count(90):
+        with self.assert_database_query_count(88):
             with cache_tries_captured() as cache_tries:
                 with self.tornado_redirected_to_list(events, expected_num_events=11):
                     fred = do_create_user(
@@ -802,7 +802,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(cache_tries, 28)
+        self.assert_length(cache_tries, 26)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
         notifications = set()
