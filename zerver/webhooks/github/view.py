@@ -73,13 +73,18 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     changes = payload.get("changes", {})
     if "body" in changes or action == "opened":
         description = pull_request["body"].tame(check_none_or(check_string))
+    target_branch = None
+    base_branch = None
+    if action == "opened" or action == "merged":
+        target_branch = pull_request["head"]["label"].tame(check_string)
+        base_branch = pull_request["base"]["label"].tame(check_string)
 
     return get_pull_request_event_message(
         get_sender_name(payload),
         action,
         pull_request["html_url"].tame(check_string),
-        target_branch=pull_request["head"]["ref"].tame(check_string),
-        base_branch=pull_request["base"]["ref"].tame(check_string),
+        target_branch=target_branch,
+        base_branch=base_branch,
         message=description,
         assignee=assignee,
         number=pull_request["number"].tame(check_int),
