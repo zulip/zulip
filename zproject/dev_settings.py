@@ -62,6 +62,13 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
 )
 
 EXTERNAL_URI_SCHEME = "http://"
+
+if os.getenv("BEHIND_HTTPS_PROXY"):
+    # URLs served by the development environment will be HTTPS
+    EXTERNAL_URI_SCHEME = "https://"
+    # Trust requests from this host (required due to Nginx proxy)
+    CSRF_TRUSTED_ORIGINS = [EXTERNAL_URI_SCHEME + EXTERNAL_HOST]
+
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST_WITHOUT_PORT
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"

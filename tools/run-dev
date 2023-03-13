@@ -57,6 +57,11 @@ parser.add_argument(
     action="store_true",
     help="Enable access logs from tornado proxy server.",
 )
+parser.add_argument(
+    "--behind-https-proxy",
+    action="store_true",
+    help="Start app server in HTTPS mode, using reverse proxy",
+)
 add_provision_check_override_param(parser)
 options = parser.parse_args()
 
@@ -92,6 +97,9 @@ else:
 
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+
+if options.behind_https_proxy:
+    os.environ["BEHIND_HTTPS_PROXY"] = "1"
 
 from scripts.lib.zulip_tools import CYAN, ENDC
 
@@ -323,7 +331,10 @@ def print_listeners() -> None:
     else:
         default_hostname = "localhost"
     external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
-    print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
+    http_protocol = "https" if options.behind_https_proxy else "http"
+    print(
+        f"\nStarting Zulip on:\n\n\t{CYAN}{http_protocol}://{external_host}/{ENDC}\n\nInternal ports:"
+    )
     ports = [
         (proxy_port, "Development server proxy (connect here)"),
         (django_port, "Django"),
