@@ -107,6 +107,7 @@ This is most often used for legal compliance.
             )
 
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
+        print(f"Exporting {len(messages_query)} messages...")
 
         def format_sender(full_name: str, delivery_email: str) -> str:
             return str(Address(display_name=full_name, addr_spec=delivery_email))
