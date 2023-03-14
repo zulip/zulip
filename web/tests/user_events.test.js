@@ -12,6 +12,7 @@ const settings_account = mock_esm("../src/settings_account", {
     update_email() {},
     update_full_name() {},
     update_account_settings_display() {},
+    update_custom_profile_field_value() {},
 });
 
 mock_esm("../src/activity", {

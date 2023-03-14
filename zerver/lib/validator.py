@@ -50,6 +50,7 @@ from typing import (
 )
 
 import orjson
+import phonenumbers
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -91,6 +92,22 @@ def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator[st
         return s
 
     return validator
+
+
+def check_phone_number(var_name: str, val: object) -> str:
+    if not isinstance(val, str):
+        raise ValidationError(_("Invalid {var_name}").format(var_name=var_name))
+    try:
+        phone_number = phonenumbers.parse(val)
+        if not phonenumbers.is_valid_number(phone_number):
+            raise ValidationError(
+                _("{var_name} is not a valid phone number").format(var_name=var_name)
+            )
+        return val
+    except phonenumbers.NumberParseException:
+        raise ValidationError(
+            _("{var_name} is not a valid number format").format(var_name=var_name)
+        )
 
 
 def check_short_string(var_name: str, val: object) -> str:

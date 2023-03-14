@@ -122,6 +122,10 @@ export const update_person = function update(person) {
 
     if (Object.hasOwn(person, "custom_profile_field")) {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
+        settings_account.update_custom_profile_field_value(
+            person.custom_profile_field.id,
+            person.custom_profile_field.value,
+        );
     }
 
     if (Object.hasOwn(person, "timezone")) {

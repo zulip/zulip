@@ -1658,7 +1658,7 @@ paths:
                                       {
                                         "id": 1,
                                         "name": "Phone number",
-                                        "type": 1,
+                                        "type": 9,
                                         "hint": "",
                                         "field_data": "",
                                         "order": 1,
@@ -8599,7 +8599,7 @@ paths:
                             {
                               "id": 1,
                               "name": "Phone number",
-                              "type": 1,
+                              "type": 9,
                               "hint": "",
                               "field_data": "",
                               "order": 1,
@@ -8741,8 +8741,10 @@ paths:
             - **6**: Person picker
             - **7**: External account
             - **8**: Pronouns
+            - **9**: Phone number
 
             **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
+            Field type `9` added in Zulip 7.0 (feature level 168).
           schema:
             type: integer
           example: 3
@@ -15954,8 +15956,10 @@ components:
             - **6**: Person picker
             - **7**: External account
             - **8**: Pronouns
+            - **9**: Phone Number
 
             **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
+            Field type `9` added in Zulip 7.0 (feature level 167).
         order:
           type: integer
           description: |
