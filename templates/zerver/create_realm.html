@@ -16,7 +16,7 @@
                 <h1 class="get-started">{{ _("Create a new Zulip organization") }}</h1>
             </div>
             <div class="white-box">
-                <form class="form-inline" id="send_confirm" name="email_form"
+                <form class="form-inline" id="create_realm" name="email_form"
                   action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
                     <div class="input-box horizontal">

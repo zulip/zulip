@@ -17,7 +17,7 @@ async function realm_creation_tests(page: Page): Promise<void> {
     await page.type("#email", email);
     await Promise.all([
         page.waitForNavigation(),
-        page.$eval("#send_confirm", (form) => (form as HTMLFormElement).submit()),
+        page.$eval("#create_realm", (form) => (form as HTMLFormElement).submit()),
     ]);
 
     // Make sure confirmation email is sent.
