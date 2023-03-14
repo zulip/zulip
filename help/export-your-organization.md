@@ -9,16 +9,22 @@
 
 Zulip has high quality export tools that can be used to migrate from the
 hosted Zulip Cloud service (zulip.com) to your own servers. There are
-three types of Zulip Cloud exports.
+four types of Zulip Cloud exports.
 
 * **Export of public data**: An export of all users, settings, and all the data that
   appears in public streams.
 * **Full export with member consent**: Everything in export of public data, plus all
   the private data of members that opt-in to the export.
 * **Full export without member consent**: All the data in the organization.
+* **Compliance export**: A targeted, human-readable export of messages
+  matching some combination of criteria (e.g. sender, recipient,
+  message keyword, or timestamp).
 
-All organizations have access to the first two kinds of export. Only corporate
-Zulip Cloud Standard customers have access to **full export without member consent**.
+All organizations have access to the first two kinds of export. Only
+corporate [Zulip Cloud Standard][standard] customers have access to
+**full export without member consent** and **compliance** exports.
+
+[standard]: https://zulip.com/plans/
 
 ## Export of public data
 
@@ -40,18 +46,21 @@ file from that page.
 Note that generating the export can take up to an hour for organizations
 with lots of messages or uploaded files.
 
+{!not-human-export-format.md!}
+
 ## Full export with member consent
 
 {!owner-only.md!}
 
 {start_tabs}
 
-1. Email support@zulip.com with your organization's zulip.com URL, asking for
-   a full export with member consent. Email us from the same address that
-   you use to sign in to Zulip.
+1. Email [support@zulip.com](mailto:support@zulip.com) with your
+   organization's zulipchat.com URL, asking for a full export with
+   member consent. You should send the email from the same address
+   that you use to sign in to Zulip.
 
-1. We will verify that you are an organization administrator, and email you
-   instructions on how to collect member consent.
+1. After verifying that you are an organization administrator, you
+   will be emailed instructions on how to collect member consent.
 
 1. The end result of that process with be an archive in the same
    format as the exports of public data discussed above, including extra
@@ -62,7 +71,7 @@ with lots of messages or uploaded files.
 {end_tabs}
 
 Note that such an export will include all the messages received by any user
-in the organization that consents to the data export.  In particular, it
+in the organization that consents to the data export. In particular, it
 will include all public stream content and any private stream or direct
 message content where at least one of the participants gives consent.
 
@@ -70,24 +79,65 @@ Users who do not provide consent will have their settings and stream
 subscriptions exported, but will otherwise be treated as new users after
 import.
 
+{!not-human-export-format.md!}
+
 ## Full export without member consent
 
 {!owner-only.md!}
 
-This export is limited to paid Zulip Cloud Standard customers, though in rare
-cases may be available to other organizations in case of due legal process.
+This export is limited to paid [Zulip Cloud Standard][standard]
+customers, though in rare cases may be available to other
+organizations in case of due legal process.
 
-To start this export, email support@zulip.com with your zulip.com
+To start this export, email
+[support@zulip.com](mailto:support@zulip.com) with your zulipchat.com
 URL, asking for a full export without member consent.
 
-You'll also need to email us evidence that you have authority to read
-members' direct messages. Typically, this will be because the zulip.com
-URL is administered by a corporation, and you are an official
-representative of that corporation. By requesting and approving this export,
-you will also assume full legal responsibility that the appropriate employment
-agreements and corporate policy for this type of export are in place. Note
-that many countries have laws that require employers to notify employees of
-their use of such an export.
+You'll also need to provide evidence that you have authority to read
+members' direct messages. Typically, this will be because the
+zulip.com URL is administered by a corporation, and you are an
+official representative of that corporation. By requesting and
+approving this export, you will also assume full legal responsibility
+that the appropriate employment agreements and corporate policy for
+this type of export are in place. Note that many countries have laws
+that require employers to notify employees of their use of such an
+export.
+
+{!not-human-export-format.md!}
+
+## Compliance export
+
+{!owner-only.md!}
+
+This export is limited to paid [Zulip Cloud Standard][standard]
+customers, though in rare cases may be available to other
+organizations in case of due legal process. As with full exports
+without member consent, you will also need to provide evidence that
+you have authority to read members' direct messages.
+
+To start this export, email
+[support@zulip.com](mailto:support@zulip.com), from the email address
+you use to log into Zulip.  Please specify:
+
+1. That you're asking for a compliance export.
+
+1. The zulipchat.com URL for your organization
+
+1. What limits you would like on the export.  Currently, compliance
+   exports can apply any combination of the below filters:
+
+    - Message sender
+    - Message recipient
+    - Message contents, by specific keywords
+    - Sent timestamp before, after, or between dates
+
+    If you need other limits, please ask.
+
+1. What output format you would prefer: CSV or JSON.
+
+1. If you would like a copy of all attachments referenced in the
+   matching messages.
+
 
 ## Related articles
 
@@ -95,4 +145,4 @@ their use of such an export.
 
 [production-backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
 [export-and-import]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html#data-export
-[import-only]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html#import-into-a-new-zulip-server
+[import-only]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html#import-into-a-new-zulip-serve
