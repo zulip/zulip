@@ -217,6 +217,7 @@ export function restore_message(draft) {
 
     if (draft.type === "stream") {
         compose_args = {
+            draft_id: draft.id,
             type: "stream",
             stream: draft.stream,
             topic: draft.topic,
@@ -224,6 +225,7 @@ export function restore_message(draft) {
         };
     } else {
         compose_args = {
+            draft_id: draft.id,
             type: draft.type,
             private_message_recipient: draft.private_message_recipient,
             content: draft.content,
@@ -319,7 +321,6 @@ export function restore_draft(draft_id) {
     compose.clear_preview_area();
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
-    $("#compose-textarea").data("draft-id", draft_id);
     compose_validate.check_overflow_text();
 }
 
