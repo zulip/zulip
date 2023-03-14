@@ -3,7 +3,7 @@ import os
 import re
 import unicodedata
 from datetime import datetime
-from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple
 
 from django.utils.translation import gettext as _
 from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
@@ -196,6 +196,9 @@ class ZulipUploadBackend:
         user_profile: UserProfile,
         target_realm: Optional[Realm] = None,
     ) -> str:
+        raise NotImplementedError
+
+    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
         raise NotImplementedError
 
     def delete_message_attachment(self, path_id: str) -> bool:

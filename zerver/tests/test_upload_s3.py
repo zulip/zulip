@@ -2,7 +2,7 @@ import io
 import os
 import re
 import urllib
-from io import StringIO
+from io import BytesIO, StringIO
 from unittest.mock import patch
 
 import botocore.exceptions
@@ -25,6 +25,7 @@ from zerver.lib.upload import (
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
+    save_attachment_contents,
     upload_export_tarball,
     upload_message_attachment,
 )
@@ -66,6 +67,19 @@ class S3Test(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = f"First message ...[zulip.txt](http://{user_profile.realm.host}{uri})"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+
+    @use_s3_backend
+    def test_save_attachment_contents(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+        user_profile = self.example_user("hamlet")
+        uri = upload_message_attachment(
+            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+        )
+
+        path_id = re.sub("/user_uploads/", "", uri)
+        output = BytesIO()
+        save_attachment_contents(path_id, output)
+        self.assertEqual(output.getvalue(), b"zulip!")
 
     @use_s3_backend
     def test_upload_message_attachment_s3_cross_realm_path(self) -> None:
