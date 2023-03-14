@@ -284,7 +284,7 @@ export function restore_draft(draft_id) {
         return;
     }
 
-    const compose_args = restore_message(draft);
+    const compose_args = {...restore_message(draft), draft_id};
 
     if (compose_args.type === "stream") {
         if (draft.stream_id !== "" && draft.topic !== "") {
@@ -309,7 +309,6 @@ export function restore_draft(draft_id) {
     compose.clear_preview_area();
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
-    $("#compose-textarea").data("draft-id", draft_id);
     compose_validate.check_overflow_text();
 }
 
