@@ -23,6 +23,11 @@ developers during daylight hours in North America (roughly between
 15:00 UTC and 1:00 UTC), but the sun never sets on the Zulip
 community. Most questions get a reply within minutes to a few hours.
 
+You can also [read conversations](https://chat.zulip.org/) in the community
+without creating an account. If you are evaluating using Zulip for your
+organization, check out these [tips](/try-zulip/) for exploring the product in
+action in the development community.
+
 <br/>
 # Community norms
 
