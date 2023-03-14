@@ -4,7 +4,7 @@ import secrets
 import urllib
 from datetime import datetime
 from mimetypes import guess_type
-from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple
 
 import boto3
 import botocore
@@ -230,6 +230,10 @@ class S3UploadBackend(ZulipUploadBackend):
             uploaded_file_name, s3_file_name, user_profile, target_realm, uploaded_file_size
         )
         return url
+
+    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
+        for chunk in self.uploads_bucket.Object(path_id).get()["Body"]:
+            filehandle.write(chunk)
 
     def delete_message_attachment(self, path_id: str) -> bool:
         return self.delete_file_from_s3(path_id, self.uploads_bucket)

@@ -3,7 +3,7 @@ import logging
 import urllib
 from datetime import datetime
 from mimetypes import guess_type
-from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -105,6 +105,10 @@ def upload_message_attachment_from_request(
     return upload_message_attachment(
         uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
     )
+
+
+def save_attachment_contents(path_id: str, filehandle: BinaryIO) -> None:
+    return upload_backend.save_attachment_contents(path_id, filehandle)
 
 
 def delete_message_attachment(path_id: str) -> bool:
