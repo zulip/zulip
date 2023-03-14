@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 from unittest import mock
 
-from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -120,11 +119,20 @@ class MutedTopicsTests(ZulipTestCase):
         assert stream.recipient is not None
         result = self.api_patch(user, url, data)
 
-        # Now check that error is raised when attempted to mute an already
-        # muted topic. This should be case-insensitive.
+        # Now check that no error is raised when attempted to mute
+        # an already muted topic. This should be case-insensitive.
+        user_topic_count = UserTopic.objects.count()
         data["topic"] = "VERONA3"
-        result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Topic already muted")
+        with self.assertLogs(level="INFO") as info_logs:
+            result = self.api_patch(user, url, data)
+            self.assert_json_success(result)
+        self.assertEqual(
+            info_logs.output[0],
+            f"INFO:root:User {user.id} tried to set visibility_policy to its current value of {UserTopic.VisibilityPolicy.MUTED}",
+        )
+        # Verify that we didn't end up with duplicate UserTopic rows
+        # with the two different cases after the previous API call.
+        self.assertEqual(UserTopic.objects.count() - user_topic_count, 0)
 
     def test_remove_muted_topic(self) -> None:
         user = self.example_user("hamlet")
@@ -195,15 +203,16 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 
-        with transaction.atomic():
-            # This API call needs a new nested transaction with 'savepoint=True',
-            # because it calls 'set_user_topic_visibility_policy_in_database',
-            # which on failure rollbacks the test-transaction.
-            # If it is not used, the test-transaction will be rolled back during this API call,
-            # and the next API call will result in a "TransactionManagementError."
-            data = {"stream": stream.name, "topic": "BOGUS", "op": "remove"}
+        # Check that removing mute from a topic for which the user
+        # doesn't already have a visibility_policy doesn't cause an error.
+        data = {"stream": stream.name, "topic": "BOGUS", "op": "remove"}
+        with self.assertLogs(level="INFO") as info_logs:
             result = self.api_patch(user, url, data)
-            self.assert_json_error(result, "Nothing to be done")
+            self.assert_json_success(result)
+        self.assertEqual(
+            info_logs.output[0],
+            f"INFO:root:User {user.id} tried to remove visibility_policy, which actually doesn't exist",
+        )
 
         data = {"stream_id": 999999999, "topic": "BOGUS", "op": "remove"}
         result = self.api_patch(user, url, data)

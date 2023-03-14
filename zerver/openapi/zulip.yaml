@@ -8202,6 +8202,10 @@ paths:
         This endpoint mutes/unmutes a topic within a stream that the current
         user is subscribed to. Muted topics are displayed faded in the Zulip
         UI, and are not included in the user's unread count totals.
+
+        **Changes**: Before Zulip 7.0 (feature level 169), this endpoint
+        returned an error if asked to mute a topic that was already muted
+        or asked to unmute a topic that had not previously been muted.
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -8257,26 +8261,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {"msg": "Topic already muted", "result": "error"}
-                        description: |
-                          An example JSON response for when an `add` operation is requested for a topic
-                          that has already been muted:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {"msg": "Topic is not muted", "result": "error"}
-                        description: |
-                          An example JSON response for when a `remove` operation is requested for a
-                          topic that had not been previously muted:
   /users/me/muted_users/{muted_user_id}:
     post:
       operationId: mute-user

@@ -19,21 +19,25 @@ def do_set_user_topic_visibility_policy(
     *,
     visibility_policy: int,
     last_updated: Optional[datetime.datetime] = None,
-    ignore_duplicate: bool = False,
     skip_muted_topics_event: bool = False,
 ) -> None:
     if last_updated is None:
         last_updated = timezone_now()
 
-    set_user_topic_visibility_policy_in_database(
+    database_changed = set_user_topic_visibility_policy_in_database(
         user_profile,
         stream.id,
         topic,
         visibility_policy=visibility_policy,
         recipient_id=stream.recipient_id,
         last_updated=last_updated,
-        ignore_duplicate=ignore_duplicate,
     )
+
+    # Requests to set the visibility_policy to its current value
+    # or to delete a UserTopic row that doesn't exist shouldn't
+    # send an unnecessary event.
+    if not database_changed:
+        return
 
     # This first muted_topics event is deprecated and will be removed
     # once clients are migrated to handle the user_topic event type

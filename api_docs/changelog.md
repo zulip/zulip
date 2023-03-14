@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 169**
+
+* [`PATCH /users/me/subscriptions/muted_topics`](/api/mute-topic):
+  Trying to mute a topic that is already muted or unmute a topic
+  that was not previously muted now results in a success response
+  rather than an error.
+
 **Feature level 168**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

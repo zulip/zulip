@@ -809,7 +809,6 @@ def do_update_message(
                     new_stream if new_stream is not None else stream_being_edited,
                     topic_name if topic_name is not None else orig_topic_name,
                     visibility_policy=UserTopic.VisibilityPolicy.MUTED,
-                    ignore_duplicate=True,
                 )
 
     send_event(user_profile.realm, event, users_to_be_notified)
