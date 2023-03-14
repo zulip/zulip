@@ -133,7 +133,7 @@ $(() => {
         $("input[name='next']").attr("value", next_value + window.location.hash);
     }
 
-    $("#send_confirm").validate({
+    $("#send_confirm", "#create_realm").validate({
         errorElement: "div",
         errorPlacement($error) {
             $(".email-frontend-error").empty();
