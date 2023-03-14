@@ -1,14 +1,13 @@
 import datetime
-from typing import Callable, Dict, List, Optional, Tuple, TypedDict
+import logging
+from typing import Callable, List, Optional, Tuple, TypedDict
 
 from django.db import transaction
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 from sqlalchemy.types import Integer
 
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
 from zerver.lib.types import UserTopicDict
@@ -117,20 +116,22 @@ def set_user_topic_visibility_policy_in_database(
     visibility_policy: int,
     recipient_id: Optional[int] = None,
     last_updated: Optional[datetime.datetime] = None,
-    ignore_duplicate: bool = False,
-) -> None:
+) -> bool:
+    # returns True if it modifies the database and False otherwise.
     if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
-        try:
-            # Will throw UserTopic.DoesNotExist if the user doesn't
-            # already have a visibility policy for this topic.
-            UserTopic.objects.get(
-                user_profile=user_profile,
-                stream_id=stream_id,
-                topic_name__iexact=topic_name,
-            ).delete()
-            return
-        except UserTopic.DoesNotExist:
-            raise JsonableError(_("Nothing to be done"))
+        (num_deleted, ignored) = UserTopic.objects.filter(
+            user_profile=user_profile,
+            stream_id=stream_id,
+            topic_name__iexact=topic_name,
+        ).delete()
+        if num_deleted == 0:
+            # If the user doesn't already have a visibility_policy for this topic
+            logging.info(
+                "User %s tried to remove visibility_policy, which actually doesn't exist",
+                user_profile.id,
+            )
+            return False
+        return True
 
     assert last_updated is not None
     assert recipient_id is not None
@@ -147,26 +148,23 @@ def set_user_topic_visibility_policy_in_database(
     )
 
     if created:
-        return
+        return True
 
     duplicate_request: bool = row.visibility_policy == visibility_policy
 
-    if duplicate_request and ignore_duplicate:
-        return
-
-    if duplicate_request and not ignore_duplicate:
-        visibility_policy_string: Dict[int, str] = {
-            1: "muted",
-            2: "unmuted",
-            3: "followed",
-        }
-        raise JsonableError(
-            _("Topic already {}").format(visibility_policy_string[visibility_policy])
+    if duplicate_request:
+        logging.info(
+            "User %s tried to set visibility_policy to its current value of %s",
+            user_profile.id,
+            visibility_policy,
         )
+        return False
+
     # The request is to just 'update' the visibility policy of a topic
     row.visibility_policy = visibility_policy
     row.last_updated = last_updated
     row.save(update_fields=["visibility_policy", "last_updated"])
+    return True
 
 
 def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -> bool:
