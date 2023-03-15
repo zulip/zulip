@@ -25,7 +25,7 @@ from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
     fix_emojis,
     fix_spoilers_in_html,
-    followup_day2_email_delay,
+    get_onboarding_email_schedule,
     handle_missedmessage_emails,
     include_realm_name_in_missedmessage_emails_subject,
     relative_to_full_url,
@@ -1749,14 +1749,84 @@ class TestMissedMessages(ZulipTestCase):
 
 
 class TestFollowupEmailDelay(ZulipTestCase):
-    def test_followup_day2_email_delay(self) -> None:
+    def test_get_onboarding_email_schedule(self) -> None:
         user_profile = self.example_user("hamlet")
-        # Test date_joined == Thursday
-        user_profile.date_joined = datetime(2018, 1, 4, 1, 0, 0, 0, tzinfo=timezone.utc)
-        self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=1, hours=-1))
-        # Test date_joined == Friday
+        dates_joined = {
+            "Monday": datetime(2018, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Tuesday": datetime(2018, 1, 2, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Wednesday": datetime(2018, 1, 3, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Thursday": datetime(2018, 1, 4, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Friday": datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Saturday": datetime(2018, 1, 6, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Sunday": datetime(2018, 1, 7, 1, 0, 0, 0, tzinfo=timezone.utc),
+        }
+
+        user_profile.date_joined = dates_joined["Monday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Wednesday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=2, hours=-1),
+        )
+
+        user_profile.date_joined = dates_joined["Tuesday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Thursday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=2, hours=-1),
+        )
+
+        user_profile.date_joined = dates_joined["Wednesday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Friday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=2, hours=-1),
+        )
+
+        user_profile.date_joined = dates_joined["Thursday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Friday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=1, hours=-1),
+        )
+
+        user_profile.date_joined = dates_joined["Friday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Monday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=3, hours=-1),
+        )
+
+        user_profile.date_joined = dates_joined["Saturday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Monday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=2, hours=-1),
+        )
+
+        user_profile.date_joined = dates_joined["Sunday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Tuesday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=2, hours=-1),
+        )
+
+        # Time offset of America/Phoenix is -07:00
+        user_profile.timezone = "America/Phoenix"
+        # Test date_joined == Friday in UTC, but Thursday in the user's time zone
         user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
-        self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=3, hours=-1))
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+        # followup_day2 email sent on Friday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            timedelta(days=1, hours=-1),
+        )
 
 
 class TestCustomEmailSender(ZulipTestCase):

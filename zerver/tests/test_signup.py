@@ -38,7 +38,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
-from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
+from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import (
@@ -4168,49 +4168,6 @@ class MobileAuthOTPTest(ZulipTestCase):
 
         decrypted = otp_decrypt_api_key(result, otp)
         self.assertEqual(decrypted, api_key)
-
-
-class FollowupEmailTest(ZulipTestCase):
-    def test_followup_day2_email(self) -> None:
-        user_profile = self.example_user("hamlet")
-        # Test date_joined == Sunday
-        user_profile.date_joined = datetime.datetime(
-            2018, 1, 7, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        )
-        self.assertEqual(
-            followup_day2_email_delay(user_profile), datetime.timedelta(days=2, hours=-1)
-        )
-        # Test date_joined == Tuesday
-        user_profile.date_joined = datetime.datetime(
-            2018, 1, 2, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        )
-        self.assertEqual(
-            followup_day2_email_delay(user_profile), datetime.timedelta(days=2, hours=-1)
-        )
-        # Test date_joined == Thursday
-        user_profile.date_joined = datetime.datetime(
-            2018, 1, 4, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        )
-        self.assertEqual(
-            followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1)
-        )
-        # Test date_joined == Friday
-        user_profile.date_joined = datetime.datetime(
-            2018, 1, 5, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        )
-        self.assertEqual(
-            followup_day2_email_delay(user_profile), datetime.timedelta(days=3, hours=-1)
-        )
-
-        # Time offset of America/Phoenix is -07:00
-        user_profile.timezone = "America/Phoenix"
-        # Test date_joined == Friday in UTC, but Thursday in the user's time zone
-        user_profile.date_joined = datetime.datetime(
-            2018, 1, 5, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        )
-        self.assertEqual(
-            followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1)
-        )
 
 
 class NoReplyEmailTest(ZulipTestCase):
