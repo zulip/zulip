@@ -67,3 +67,6 @@ recipients of GIFs from GIPHY.
 
 [configure-giphy]: https://zulip.readthedocs.io/en/stable/production/giphy-gif-integration.html
 
+## Related articles
+
+* [Share and upload files](/help/share-and-upload-files)
