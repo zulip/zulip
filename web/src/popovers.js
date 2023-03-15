@@ -917,7 +917,7 @@ export function register_click_handlers() {
     // Clicking on one's own status emoji should open the user status modal.
     $("#user_presences").on(
         "click",
-        ".user_sidebar_entry_me .status_emoji",
+        ".user_sidebar_entry_me .status-emoji",
         open_user_status_modal,
     );
 
