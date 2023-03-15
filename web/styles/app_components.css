@@ -409,7 +409,7 @@ div.overlay {
         box-shadow: none;
         z-index: 5;
 
-        #set_user_status_modal & {
+        #set-user-status-modal & {
             margin-left: -26px;
             right: 0;
             padding-top: 6px;
