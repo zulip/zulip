@@ -54,18 +54,21 @@ To configure the delay for message notification emails:
 
 ### Include organization name in subject line
 
-If you belong to multiple Zulip organizations, it can be helpful to have the
-name of the organization in the subject line of your message notification emails.
+You can configure whether the name of your Zulip organization is included in the
+subject of message notification emails.
+
+Zulip offers a convenient **Automatic** configuration option, which includes the
+name of the organization in the subject only if you have accounts in multiple
+Zulip Cloud organizations, or in multiple organizations on the same Zulip server.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Under **Email message notifications**, toggle
+1. Under **Email message notifications**, configure
    **Include organization name in subject of message notification emails**.
 
 {end_tabs}
-
 
 ### Hide message content
 
