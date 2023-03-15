@@ -16,6 +16,8 @@ import * as ui_util from "./ui_util";
 // Exported for unit testing
 export let is_using_input_method = false;
 
+const regexSearchWithoutValue = /^[A-Za-z-]+:[\s"']*$/;
+
 export function narrow_or_search_for_term(search_string) {
     const $search_query_box = $("#search_query");
     if (is_using_input_method) {
@@ -122,6 +124,8 @@ export function initialize() {
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
         on_escape: message_view_header.exit_search,
+        validate_selection: (sel, keycode) =>
+            keycode === 13 && !regexSearchWithoutValue.test(sel || ""),
     });
 
     $searchbox_form.on("compositionend", () => {
@@ -149,7 +153,13 @@ export function initialize() {
                 return;
             }
 
-            if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
+            const is_enter = keydown_util.is_enter_event(e);
+            if (is_enter && regexSearchWithoutValue.test(e.target?.value || "")) {
+                e.preventDefault();
+                return;
+            }
+
+            if (is_enter && $search_query_box.is(":focus")) {
                 // We just pressed Enter and the box had focus, which
                 // means we didn't use the typeahead at all.  In that
                 // case, we should act as though we're searching by
