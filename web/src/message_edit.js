@@ -397,16 +397,25 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
             document.querySelector(`#edit_form_${CSS.escape(message_id)} .message_edit_content`),
     });
 
-    clipboard.on("success", () => {
+    clipboard.on("success", (e) => {
         end_message_row_edit($row);
         $row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
         $row.find(".alert-msg").css("display", "block");
         $row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
+
+        // Add a tooltip to show the "Copied!" message on hover
+        $(e.trigger).attr("data-original-title", $t({defaultMessage: "Copied!"}));
+        $(e.trigger).tooltip("show");
+        setTimeout(() => $(e.trigger).tooltip("hide"), 1000);
+    });
+
+    // Set up the tooltip plugin
+    $(source).tooltip({
+        trigger: "manual",
+        placement: "top",
     });
 }
+
 
 export function get_available_streams_for_moving_messages(current_stream_id) {
     return stream_data
