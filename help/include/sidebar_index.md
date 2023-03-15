@@ -66,6 +66,7 @@
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
 * [Text emphasis](/help/text-emphasis)
 * [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
+* [Tables](/help/tables)
 * [Code blocks](/help/code-blocks)
 * [LaTeX](/help/latex)
 * [Spoilers](/help/spoilers)
