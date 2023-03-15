@@ -8,9 +8,9 @@ changelog][server-changelog].
 The API feature levels system used in this changelog is designed to
 make it possible to write API clients, such as the Zulip mobile and
 terminal apps, that work with a wide range of Zulip server
-versions. Every change to the Zulip API is recorded both here and in
-**Changes** entries in the API documentation for the modified
-endpoint(s).
+versions. Every change to the Zulip API is recorded briefly here and
+with full details in **Changes** entries in the API documentation for
+the modified endpoint(s).
 
 When using an API endpoint whose behavior has changed, Zulip API
 clients should check the `zulip_feature_level` field, present in the
