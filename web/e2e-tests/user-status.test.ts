@@ -43,12 +43,12 @@ async function test_user_status(page: Page): Promise<void> {
     await page.waitForFunction(
         () => (document.querySelector(".user-status") as HTMLInputElement).value === "",
     );
-    await page.waitForSelector(".status_emoji_wrapper .smiley_icon", {visible: true});
+    await page.waitForSelector(".status-emoji-wrapper .smiley_icon", {visible: true});
 
     // Manually adding everything.
     await page.type(".user-status", "Busy");
     const tada_emoji_selector = ".emoji-1f389";
-    await page.click(".status_emoji_wrapper .smiley_icon");
+    await page.click(".status-emoji-wrapper .smiley_icon");
     // Wait until emoji popover is opened.
     await page.waitForSelector(`.emoji-popover  ${tada_emoji_selector}`, {visible: true});
     await page.click(`.emoji-popover  ${tada_emoji_selector}`);
