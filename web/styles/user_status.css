@@ -40,11 +40,11 @@
 
             /* For custom emojis and smiley icon to take full width. */
             & img.selected-emoji,
-            .smiley_icon {
+            .smiley-icon {
                 min-width: 20px;
             }
 
-            .smiley_icon {
+            .smiley-icon {
                 display: block;
                 font-size: 18px;
                 position: relative;
