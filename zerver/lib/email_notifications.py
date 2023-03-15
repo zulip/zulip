@@ -679,24 +679,31 @@ def handle_missedmessage_emails(
         )
 
 
-def followup_day2_email_delay(user: UserProfile) -> timedelta:
-    days_to_delay = 2
+def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
+    onboarding_emails = {
+        # The delay should be 1 hour before the below specified number of days
+        # as our goal is to maximize the chance that this email is near the top
+        # of the user's inbox when the user sits down to deal with their inbox,
+        # or comes in while they are dealing with their inbox.
+        "followup_day2": timedelta(days=2, hours=-1),
+    }
+
     user_tz = user.timezone
     if user_tz == "":
         user_tz = "UTC"
     signup_day = user.date_joined.astimezone(zoneinfo.ZoneInfo(user_tz)).isoweekday()
-    if signup_day == 5:
-        # If the day is Friday then delay should be till Monday
-        days_to_delay = 3
-    elif signup_day == 4:
-        # If the day is Thursday then delay should be till Friday
-        days_to_delay = 1
 
-    # The delay should be 1 hour before the above calculated delay as
-    # our goal is to maximize the chance that this email is near the top
-    # of the user's inbox when the user sits down to deal with their inbox,
-    # or comes in while they are dealing with their inbox.
-    return timedelta(days=days_to_delay, hours=-1)
+    # User signed up on Thursday
+    if signup_day == 4:
+        # Send followup_day2 on Friday
+        onboarding_emails["followup_day2"] = timedelta(days=1, hours=-1)
+
+    # User signed up on Friday
+    if signup_day == 5:
+        # Send followup_day2 on Monday
+        onboarding_emails["followup_day2"] = timedelta(days=3, hours=-1)
+
+    return onboarding_emails
 
 
 def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
@@ -754,6 +761,10 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         context=context,
     )
 
+    # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
+    # to determine how long to delay sending the email based on when the user signed up.
+    onboarding_email_schedule = get_onboarding_email_schedule(user)
+
     if other_account_count == 0:
         send_future_email(
             "zerver/emails/followup_day2",
@@ -762,7 +773,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
             from_name=from_name,
             from_address=from_address,
             context=context,
-            delay=followup_day2_email_delay(user),
+            delay=onboarding_email_schedule["followup_day2"],
         )
 
 
