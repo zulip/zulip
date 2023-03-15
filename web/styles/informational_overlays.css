@@ -1,4 +1,12 @@
 .informational-overlays {
+
+    --color-title: hsl(0, 0%, 0%);
+    --color-text: hsl(0, 0%, 20%);
+    --color-sub-text: hsl(0, 0%, 45%);
+    --color-keyboard: hsl(227, 78%, 59%);
+    --color-text-link: hsl(217, 100%, 50%);
+    --color-table-border: hsl(0, 0%, 93%);
+
     .overlay-content {
         /* because zoom breaks at 525px perhaps due to rounding errors, so add a
            trivial amount of width so it doesn't break. */
@@ -42,18 +50,17 @@
             text-align: center;
             outline: none;
 
-            .help-table {
-                table-layout: fixed;
-            }
+    a {
+        color: var(--color-text-link);
 
-            th {
-                font-weight: 400;
-            }
+        &:hover {
+            color: var(--color-text-link) !important;
         }
     }
 
-    td.operator {
-        font-size: 0.9em;
+    .documentation-link {
+        text-align: center;
+        margin-top: 3rem;
     }
 
     kbd {
@@ -86,76 +93,119 @@
     }
 }
 
-.hotkeys_table {
-    table-layout: fixed;
-    width: 100%;
-    vertical-align: middle;
-    display: table;
-
-    td.definition {
-        /* keeps dividing line at same width for all tables in model. */
-        width: calc(50% - 11px);
-        text-align: right;
-    }
-
-    .hotkey {
-        font-weight: normal;
-    }
-
-    .small_hotkey {
-        font-size: 0.9em !important;
-        line-height: 12px;
-
-        kbd {
-            font-size: 0.9em;
-        }
-    }
-
-    .arrow-key {
-        font-size: 1.36em;
-        line-height: 1;
-        padding: 0 0.2em 0.2em;
-    }
-
-    th {
-        width: 245px;
-        text-align: center;
-        /* aligns table name with dividing line */
-    }
-
-    td:not(.definition) {
-        text-align: left;
-        white-space: normal;
-        font-weight: bold;
+#markdown-instructions {
+    kbd:first-child {
+        margin-left: 0;
     }
 }
 
-#keyboard-shortcuts table {
-    margin-bottom: 10px !important;
+.help-table {
+    width: 100%;
+    margin-bottom: 2rem;
+    color: var(--color-text);
+
+    .operator {
+        width: 30%;
+    }
+
+    tbody {
+        tr {
+            border-collapse: collapse;
+            border-bottom: solid 1px var(--color-table-border);
+
+            &:first-child {
+                border-top: solid 1px var(--color-table-border);
+            }
+        }
+    }
+
+    thead {
+        background: none !important;
+    }
+
+    th {
+        color: var(--color-title);
+        font-size: 1.3rem;
+        line-height: 125%;
+        text-align: left;
+        padding: 0 0 1rem;
+    }
+
+    td {
+        padding: 0.75rem 1rem 0.75rem 0;
+        width: 50%;
+        color: var(--color-text);
+        text-align: left;
+        vertical-align: middle;
+
+        &[colspan] {
+            text-align: center;
+        }
+    }
+}
+
+.hotkeys-table {
+    th {
+        text-align: center;
+    }
+
+    th,
+    td {
+        padding: 0.5rem 0;
+    }
+
+    td {
+        &:not(.definition) {
+            /* contradict top-margin of kbd tag */
+            padding-top: calc(0.5rem - 6px);
+
+            width: 47%;
+            color: var(--color-sub-text);
+            text-align: right;
+        }
+
+        &.definition {
+            padding-left: 0.4rem;
+
+            .emoji {
+                width: 1.35em;
+                height: 1.35em;
+            }
+        }
+    }
 }
 
 @media only screen and (width < $md_min) {
     .informational-overlays {
-        .overlay-content {
-            width: calc(100% - 20px);
-        }
-
-        .tab-switcher {
-            display: flex;
-
-            &.large .ind-tab {
-                width: 100%;
-            }
-        }
-
         .table.table-condensed.table-striped {
             margin-left: auto;
             margin-right: auto;
         }
+    }
+}
 
-        .hotkeys_table {
-            width: 100%;
-            display: table;
+:root.dark-theme {
+    .informational-overlays {
+        --color-title: hsl(0, 0%, 100%);
+        --color-text: hsla(0, 0%, 100%, 0.75);
+        --color-sub-text: hsla(0, 0%, 100%, 0.6);
+        --color-keyboard: hsl(225, 100%, 84%);
+        --color-text-link: hsla(217, 100%, 65%, 1);
+        --color-table-border: hsla(0, 0%, 0%, 0.4);
+
+        .overlay-content {
+            background: hsla(0, 0%, 14%, 1);
         }
+
+        .overlay-tabs {
+            background: hsla(0, 0%, 14%, 1);
+            box-shadow: 0 2px 8px hsla(0, 0%, 0%, 0.45);
+        }
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    html.color-scheme-automatic {
+        @extend :root.dark-theme;
     }
 }
