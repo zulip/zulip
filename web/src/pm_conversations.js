@@ -15,7 +15,7 @@ export function is_partner(user_id) {
 function filter_muted_pms(conversation) {
     // We hide muted users from the top left corner, as well as those huddles
     // in which all participants are muted.
-    const recipients = conversation.user_ids_string.split(",").map((id) => Number.parseInt(id, 10));
+    const recipients = people.split_to_ints(conversation.user_ids_string);
 
     if (recipients.every((id) => muted_users.is_user_muted(id))) {
         return false;

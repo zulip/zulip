@@ -50,7 +50,7 @@ export function init() {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
-function split_to_ints(lst) {
+export function split_to_ints(lst) {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
 
