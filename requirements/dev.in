@@ -75,3 +75,6 @@ codespell
 
 # Finds appropriate directories for data, config, cache, etc.
 platformdirs
+
+# For mocking time
+time-machine
