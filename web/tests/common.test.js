@@ -106,7 +106,7 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     ]);
 
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
-    const inserted_fn_key = "<kbd>Fn</kbd> + ";
+    const inserted_fn_key = "<kbd>Fn</kbd>";
 
     override(navigator, "platform", "MacIntel");
 
@@ -122,7 +122,11 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
             $stub.before = ($elem) => {
                 assert.equal($elem, inserted_fn_key);
             };
+            $stub.wrap = ($elem) => {
+                assert.equal($elem, '<span class="hotkeys__concurrent">');
+            };
         }
+
         test_item.$stub = $stub;
         test_item.mac_key = mac_key;
         test_item.adds_arrow_key = fn_shortcuts.has(old_key);

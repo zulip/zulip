@@ -72,7 +72,8 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         let key_text = $(this).text();
 
         if (fn_shortcuts.has(key_text)) {
-            $(this).before("<kbd>Fn</kbd> + ");
+            $(this).wrap('<span class="hotkeys__concurrent">');
+            $(this).before("<kbd>Fn</kbd>");
             $(this).addClass("arrow-key");
         }
 

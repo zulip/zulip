@@ -23,18 +23,19 @@ export let toggler;
 const markdown_help_rows = [
     {
         markdown: "*italic*",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>I</kbd>)",
+        usage_html: "<span class='hotkeys__concurrent'><kbd>Ctrl</kbd><kbd>I</kbd></span>",
     },
     {
         markdown: "**bold**",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>B</kbd>)",
+        usage_html: "<span class='hotkeys__concurrent'><kbd>Ctrl</kbd><kbd>B</kbd></span>",
     },
     {
         markdown: "~~strikethrough~~",
     },
     {
         markdown: "[Zulip website](https://zulip.org)",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
+        usage_html:
+            "<span class='hotkeys__concurrent'><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>L</kbd></span>",
     },
     {
         markdown: `\
@@ -250,7 +251,7 @@ export function set_up_toggler() {
         "notdisplayed",
         !user_settings.escape_navigates_to_default_view,
     );
-    common.adjust_mac_kbd_tags(".hotkeys_table .hotkey kbd");
+    common.adjust_mac_kbd_tags(".hotkeys__table kbd");
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");
 }
 

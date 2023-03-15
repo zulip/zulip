@@ -55,6 +55,35 @@
     td.operator {
         font-size: 0.9em;
     }
+
+    kbd {
+        font-family: "Source Sans 3", sans-serif;
+        font-feature-settings: "ss01" on;
+        margin: 6px 6px 0;
+        padding: 1px 0.5em;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--color-keyboard);
+        background: none;
+        border: solid 1.5px var(--color-keyboard);
+        border-radius: 5px;
+        text-shadow: none;
+    }
+
+    .concurrent-hotkeys {
+        display: inline-block;
+        white-space: nowrap;
+
+        kbd {
+            &:not(:first-child) {
+                margin-left: 4px;
+            }
+
+            &:not(:last-child) {
+                margin-right: 0;
+            }
+        }
+    }
 }
 
 .hotkeys_table {
