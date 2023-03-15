@@ -11,7 +11,7 @@
     {{#each default_status_messages_and_emoji_info}}
         <button type="button" class="button no-style user-status-value">
             {{#if emoji.emoji_alt_code}}
-                <div class="emoji_alt_code">&nbsp:{{emoji.emoji_name}}:</div>
+                <div class="emoji_alt_code">&nbsp;:{{emoji.emoji_name}}:</div>
             {{else if emoji.url}}
                 <img src="{{emoji.url}}" class="emoji status_emoji" />
             {{else}}
