@@ -13,9 +13,9 @@
             {{#if emoji.emoji_alt_code}}
                 <div class="emoji_alt_code">&nbsp;:{{emoji.emoji_name}}:</div>
             {{else if emoji.url}}
-                <img src="{{emoji.url}}" class="emoji status_emoji" />
+                <img src="{{emoji.url}}" class="emoji status-emoji" />
             {{else}}
-                <div class="emoji status_emoji emoji-{{emoji.emoji_code}}"></div>
+                <div class="emoji status-emoji emoji-{{emoji.emoji_code}}"></div>
             {{/if}}
             {{status_text}}
         </button>

@@ -2322,7 +2322,7 @@ select.invite-as {
     top: 3px;
 }
 
-.status_emoji {
+.status-emoji {
     height: 16px;
     width: 16px;
     /* We are setting minimum width here because when the user's name is very long,

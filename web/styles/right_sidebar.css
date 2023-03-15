@@ -114,7 +114,7 @@ $user_status_emoji_width: 24px;
 .user-presence-link {
     width: calc(100% - $user_status_emoji_width);
 
-    .status_emoji {
+    .status-emoji {
         top: 9px;
     }
 }
@@ -140,7 +140,7 @@ $user_status_emoji_width: 24px;
             text-overflow: ellipsis;
         }
 
-        .status_emoji {
+        .status-emoji {
             line-height: 20px;
             top: -2px;
         }

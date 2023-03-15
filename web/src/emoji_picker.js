@@ -303,7 +303,7 @@ function is_composition(emoji) {
 }
 
 function is_status_emoji(emoji) {
-    return $(emoji).hasClass("status_emoji");
+    return $(emoji).hasClass("status-emoji");
 }
 
 function process_enter_while_filtering(e) {
@@ -795,7 +795,7 @@ export function register_click_handlers() {
         $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "none");
     });
 
-    $(document).on("click", ".emoji-popover-emoji.status_emoji", function (e) {
+    $(document).on("click", ".emoji-popover-emoji.status-emoji", function (e) {
         e.preventDefault();
         e.stopPropagation();
         hide_emoji_popover();

@@ -784,7 +784,7 @@ ul {
 .user_info_status_text {
     opacity: 0.8;
 
-    .status_emoji {
+    .status-emoji {
         height: 18px;
         width: 18px;
         /* Override the default 3px left margin for status emoji, which is
