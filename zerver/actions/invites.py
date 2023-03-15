@@ -82,11 +82,16 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
     return recent_invites
 
 
-def apply_invite_realm_heuristics(realm: Realm, recent_invites: int, num_invitees: int) -> None:
+def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
+    # Basic check that we're blow the realm-set limit
+    recent_invites = estimate_recent_invites([realm], days=1)
+    if num_invitees + recent_invites > realm.max_invites:
+        return True
+
     if realm.plan_type != Realm.PLAN_TYPE_LIMITED:
-        return
+        return False
     if realm.max_invites != settings.INVITES_DEFAULT_REALM_DAILY_MAX:
-        return
+        return False
 
     # If they're a non-paid plan with default invitation limits,
     # we further limit how many invitations can be sent in a day
@@ -97,50 +102,50 @@ def apply_invite_realm_heuristics(realm: Realm, recent_invites: int, num_invitee
     # unlikely to hit these limits.  If a real realm hits them,
     # the resulting message suggests that they contact support if
     # they have a real use case.
-    suspicion_score = 0
+    warning_flags = []
     if zxcvbn(realm.string_id)["score"] == 4:
         # Very high entropy realm names are suspicious
-        suspicion_score += 1
+        warning_flags.append("random-realm-name")
 
     if not realm.description:
-        suspicion_score += 1
+        warning_flags.append("no-realm-description")
 
     if realm.icon_source == Realm.ICON_FROM_GRAVATAR:
-        suspicion_score += 1
+        warning_flags.append("no-realm-icon")
 
     if realm.date_created >= timezone_now() - datetime.timedelta(hours=1):
-        suspicion_score += 1
+        warning_flags.append("realm-created-in-last-hour")
 
     current_user_count = len(UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True))
     if current_user_count == 1:
-        suspicion_score += 1
+        warning_flags.append("only-one-user")
 
     estimated_sent = RealmCount.objects.filter(
         realm=realm, property="messages_sent:message_type:day"
     ).aggregate(messages=Sum("value"))
     if not estimated_sent["messages"]:
-        suspicion_score += 1
+        warning_flags.append("no-messages-sent")
 
-    if suspicion_score == 6:
+    if len(warning_flags) == 6:
         permitted_ratio = 2
-    elif suspicion_score >= 3:
+    elif len(warning_flags) >= 3:
         permitted_ratio = 3
     else:
         permitted_ratio = 5
 
-    # For now, simply log the data; this will change to a raise of
-    # InvitationError once we've done some auditing.
-    logging.warning(
-        "%s (suspicion %d/6) inviting %d more, have %d recent, %d max, but only %d current users.  Ratio %.1f, %d allowed",
+    ratio = (num_invitees + recent_invites) / current_user_count
+    logging.log(
+        logging.WARNING if ratio > permitted_ratio else logging.INFO,
+        "%s (!: %s) inviting %d more, have %d recent, but only %d current users.  Ratio %.1f, %d allowed",
         realm.string_id,
-        suspicion_score,
+        ",".join(warning_flags),
         num_invitees,
         recent_invites,
-        realm.max_invites,
         current_user_count,
-        (num_invitees + recent_invites) / current_user_count,
+        ratio,
         permitted_ratio,
     )
+    return ratio > permitted_ratio
 
 
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
@@ -151,16 +156,13 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     if not settings.OPEN_REALM_CREATION:
         return
 
-    recent_invites = estimate_recent_invites([realm], days=1)
-    if num_invitees + recent_invites > realm.max_invites:
+    if too_many_recent_realm_invites(realm, num_invitees):
         raise InvitationError(
             msg,
             [],
             sent_invitations=False,
             daily_limit_reached=True,
         )
-
-    apply_invite_realm_heuristics(realm, recent_invites, num_invitees)
 
     default_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
     newrealm_age = datetime.timedelta(days=settings.INVITES_NEW_REALM_DAYS)
