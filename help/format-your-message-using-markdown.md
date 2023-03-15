@@ -23,7 +23,7 @@ whenever you need a reminder of the formatting syntax below.
 * [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mention a user or group](#mention-a-user-or-group)
-* [Status messages](#status-messages)
+* [/me action messages](#me-action-messages)
 * [Global times](#global-times)
 * [Tables](#tables)
 * [To-do lists](#to-do-lists)
@@ -92,13 +92,11 @@ whenever you need a reminder of the formatting syntax below.
 
 {!mentions-examples.md!}
 
-## Status messages
+## /me action messages
 
-```
-/me is away
-```
+{!me-action-messages-intro.md!}
 
-![Markdown status](/static/images/help/markdown-status.png)
+{!me-action-messages-examples.md!}
 
 ## Global times
 
