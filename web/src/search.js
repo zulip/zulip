@@ -155,6 +155,9 @@ export function initialize() {
 
             const is_enter = keydown_util.is_enter_event(e);
             if (is_enter && regexSearchWithoutValue.test(e.target?.value || "")) {
+                const $active_item = $(".typeahead-menu .active");
+                $active_item.addClass("nudge-down");
+                setTimeout(() => $active_item.removeClass("nudge-down"), 600);
                 e.preventDefault();
                 return;
             }
