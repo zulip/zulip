@@ -118,18 +118,13 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
 def create_preregistration_user(
     email: str,
     realm: Optional[Realm],
-    realm_creation: bool = False,
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
     multiuse_invite: Optional[MultiuseInvite] = None,
 ) -> PreregistrationUser:
-    assert not (realm_creation and realm is not None)
-    assert not (realm is None and not realm_creation)
-
     return PreregistrationUser.objects.create(
         email=email,
-        realm_creation=realm_creation,
         password_required=password_required,
         realm=realm,
         full_name=full_name,

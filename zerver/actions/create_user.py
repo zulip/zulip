@@ -228,24 +228,20 @@ def process_new_human_user(
         prereg_user.created_user = user_profile
         prereg_user.save(update_fields=["status", "created_user"])
 
-    # In the special case of realm creation, there can be no additional PreregistrationUser
-    # for us to want to modify - because other realm_creation PreregistrationUsers should be
-    # left usable for creating different realms.
-    if not realm_creation:
-        # Mark any other PreregistrationUsers in the realm that are STATUS_USED as
-        # inactive so we can keep track of the PreregistrationUser we
-        # actually used for analytics.
-        if prereg_user is not None:
-            PreregistrationUser.objects.filter(
-                email__iexact=user_profile.delivery_email, realm=user_profile.realm
-            ).exclude(id=prereg_user.id).update(status=confirmation_settings.STATUS_REVOKED)
-        else:
-            PreregistrationUser.objects.filter(
-                email__iexact=user_profile.delivery_email, realm=user_profile.realm
-            ).update(status=confirmation_settings.STATUS_REVOKED)
+    # Mark any other PreregistrationUsers in the realm that are STATUS_USED as
+    # inactive so we can keep track of the PreregistrationUser we
+    # actually used for analytics.
+    if prereg_user is not None:
+        PreregistrationUser.objects.filter(
+            email__iexact=user_profile.delivery_email, realm=user_profile.realm
+        ).exclude(id=prereg_user.id).update(status=confirmation_settings.STATUS_REVOKED)
+    else:
+        PreregistrationUser.objects.filter(
+            email__iexact=user_profile.delivery_email, realm=user_profile.realm
+        ).update(status=confirmation_settings.STATUS_REVOKED)
 
-        if prereg_user is not None and prereg_user.referred_by is not None:
-            notify_invites_changed(user_profile.realm)
+    if prereg_user is not None and prereg_user.referred_by is not None:
+        notify_invites_changed(user_profile.realm)
 
     notify_new_user(user_profile)
     # Clear any scheduled invitation emails to prevent them

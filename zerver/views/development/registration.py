@@ -49,9 +49,7 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
     count = UserProfile.objects.count()
     name = f"user-{count}"
     email = f"{name}@zulip.com"
-    prereg = create_preregistration_user(
-        email, realm, realm_creation=False, password_required=False
-    )
+    prereg = create_preregistration_user(email, realm, password_required=False)
     activation_url = create_confirmation_link(prereg, Confirmation.USER_REGISTRATION)
     key = activation_url.split("/")[-1]
     # Need to add test data to POST request as it doesn't originally contain the required parameters
