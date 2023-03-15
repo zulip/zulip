@@ -17,6 +17,7 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
+import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -548,6 +549,14 @@ export function filters_should_hide_topic(topic_data) {
 
     if (!filters.has("include_private") && topic_data.type === "private") {
         return true;
+    }
+
+    if (filters.has("include_private") && topic_data.type === "private") {
+        const recipients = people.split_to_ints(msg.to_user_ids);
+
+        if (recipients.every((id) => muted_users.is_user_muted(id))) {
+            return true;
+        }
     }
 
     const search_keyword = $("#recent_topics_search").val();
