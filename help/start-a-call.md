@@ -48,3 +48,7 @@ supported by zulip are:
 
 [big-blue-button-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#bigbluebutton
 [zoom-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#zoom
+
+## Related articles
+
+* [Insert a link](/help/insert-a-link)
