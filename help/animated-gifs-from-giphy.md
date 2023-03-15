@@ -70,3 +70,4 @@ recipients of GIFs from GIPHY.
 ## Related articles
 
 * [Share and upload files](/help/share-and-upload-files)
+* [Insert a link](/help/insert-a-link)
