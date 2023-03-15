@@ -26,7 +26,7 @@ whenever you need a reminder of the formatting syntax below.
 * [/me action messages](#me-action-messages)
 * [Global times](#global-times)
 * [Tables](#tables)
-* [To-do lists](#to-do-lists)
+* [Collaborative to-do lists](#collaborative-to-do-lists)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
 ## Text emphasis
@@ -110,18 +110,11 @@ whenever you need a reminder of the formatting syntax below.
 
 {!tables-examples.md!}
 
-## To-do lists
+## Collaborative to-do lists
 
-Sending a message with the text `/todo` creates a simple collaborative
-to-do list. Any user who can access the message can add tasks by
-entering the task's title and description and clicking "Add task". Once
-created, task titles and descriptions cannot be edited.
+{!to-do-lists-intro.md!}
 
-Tasks can be marked (and unmarked) as completed by clicking the
-checkboxes on the left.
-
-![Markdown todo-lists](/static/images/help/markdown-todo.png)
-
+{!to-do-lists-examples.md!}
 
 ## Paragraphs and lines
 
