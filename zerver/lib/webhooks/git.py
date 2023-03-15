@@ -163,6 +163,7 @@ def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
 
 
 def get_pull_request_event_message(
+    *,
     user_name: str,
     action: str,
     url: str,
@@ -244,10 +245,10 @@ def get_issue_event_message(
     title: Optional[str] = None,
 ) -> str:
     return get_pull_request_event_message(
-        user_name,
-        action,
-        url,
-        number,
+        user_name=user_name,
+        action=action,
+        url=url,
+        number=number,
         message=message,
         assignee=assignee,
         assignees=assignees,
