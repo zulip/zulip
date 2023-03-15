@@ -258,6 +258,8 @@ Handlebars [helpers][] that Zulip registers. The syntax for simple strings is:
 
 ```html+handlebars
 {{t 'English text' }}
+
+{{t 'Block of English text with a {variable}.' }}
 ```
 
 If you are passing a translated string to a Handlebars partial, you can use:
@@ -268,17 +270,17 @@ If you are passing a translated string to a Handlebars partial, you can use:
     }}
 ```
 
-The syntax for block strings or strings containing variables is:
+The syntax for HTML strings is:
 
 <!-- The html+handlebars lexer fails to lex the single braces. -->
 
 ```text
 {{#tr}}
-    Block of English text.
+    <p>Block of English text.</p>
 {{/tr}}
 
 {{#tr}}
-    Block of English text with a {variable}.
+    <p>Block of English text with a {variable}.</p>
 {{/tr}}
 ```
 

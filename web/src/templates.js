@@ -51,13 +51,19 @@ Handlebars.registerHelper({
     },
 });
 
-Handlebars.registerHelper("t", (message) => {
+Handlebars.registerHelper("t", function (message) {
     // Marks a string for translation.
-    // Example usage:
+    // Example usage 1:
     //     {{t "some English text"}}
+    //
+    // Example usage 2:
+    //     {{t "This {variable} will get value from the current context"}}
+    //
+    // Note: use `{` and `}` instead of `{{` and `}}` to declare
+    // variables.
 
     const descriptor = {id: message, defaultMessage: message};
-    return intl.formatMessage(descriptor);
+    return intl.formatMessage(descriptor, this);
 });
 
 Handlebars.registerHelper("tr", function (options) {
@@ -90,7 +96,7 @@ Handlebars.registerHelper("tr", function (options) {
             ]),
         ),
         ...Object.fromEntries(
-            Object.entries(this ?? {}).map(([key, value]) => [
+            Object.entries(this).map(([key, value]) => [
                 key,
                 Handlebars.Utils.escapeExpression(value),
             ]),
