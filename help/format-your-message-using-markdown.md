@@ -27,7 +27,7 @@ whenever you need a reminder of the formatting syntax below.
 * [Global times](#global-times)
 * [Tables](#tables)
 * [Collaborative to-do lists](#collaborative-to-do-lists)
-* [Paragraphs and lines](#paragraphs-and-lines)
+* [Paragraph and section formatting](#paragraph-and-section-formatting)
 
 ## Text emphasis
 
@@ -116,23 +116,11 @@ whenever you need a reminder of the formatting syntax below.
 
 {!to-do-lists-examples.md!}
 
-## Paragraphs and lines
+## Paragraph and section formatting
 
-```
-One blank space for a new paragraph
-New line, same paragraph
+{!paragraphs-and-sections-intro.md!}
 
-New paragraph
-
----, ***, or ___ for a horizontal line
-Over the line
-
----
-
-Under the line
-```
-
-![Markdown paragraph](/static/images/help/markdown-paragraph.png)
+{!paragraphs-and-sections-examples.md!}
 
 ## Message formatting reference
 

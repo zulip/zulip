@@ -65,6 +65,7 @@
 * [Share and upload files](/help/share-and-upload-files)
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
 * [Text emphasis](/help/text-emphasis)
+* [Paragraph and section formatting](/help/paragraph-and-section-formatting)
 * [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
 * [Tables](/help/tables)
 * [Code blocks](/help/code-blocks)
