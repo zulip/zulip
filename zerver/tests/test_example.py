@@ -409,7 +409,7 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
             )
             # logger.output is a list of all the log messages captured. Verify it is as expected.
-            self.assertEqual(logger.output, [output_log] * 15)
+            self.assertEqual(logger.output, [output_log] * 17)
 
             # Now, lets actually go the URL the above call redirects to, i.e., /emails/
             result = self.client_get(result["Location"])

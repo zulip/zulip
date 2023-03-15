@@ -939,7 +939,7 @@ class LoginTest(ZulipTestCase):
         ContentType.objects.clear_cache()
 
         # Ensure the number of queries we make is not O(streams)
-        with self.assert_database_query_count(94), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(96), cache_tries_captured() as cache_tries:
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -1134,9 +1134,9 @@ class EmailUnsubscribeTests(ZulipTestCase):
         click even when logged out to stop receiving them.
         """
         user_profile = self.example_user("hamlet")
-        # Simulate a new user signing up, which enqueues 2 welcome e-mails.
+        # Simulate a new user signing up, which enqueues 3 welcome e-mails.
         enqueue_welcome_emails(user_profile)
-        self.assertEqual(2, ScheduledEmail.objects.filter(users=user_profile).count())
+        self.assertEqual(3, ScheduledEmail.objects.filter(users=user_profile).count())
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
