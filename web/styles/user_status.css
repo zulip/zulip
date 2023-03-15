@@ -27,7 +27,7 @@
             border-color: inherit;
             cursor: pointer;
 
-            .selected_emoji {
+            .selected-emoji {
                 width: 20px;
                 height: 20px;
                 cursor: pointer;
@@ -39,7 +39,7 @@
             }
 
             /* For custom emojis and smiley icon to take full width. */
-            & img.selected_emoji,
+            & img.selected-emoji,
             .smiley_icon {
                 min-width: 20px;
             }
