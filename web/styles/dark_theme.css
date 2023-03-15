@@ -442,7 +442,7 @@
     .new-style .tab-switcher .ind-tab:not(.selected),
     select,
     .pill-container,
-    .user_status_content_wrapper {
+    .user-status-content-wrapper {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;

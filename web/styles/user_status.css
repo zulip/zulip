@@ -2,7 +2,7 @@
     /* A narrower width is more attractive for this modal. */
     width: 384px;
 
-    .user_status_content_wrapper {
+    .user-status-content-wrapper {
         display: flex;
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
