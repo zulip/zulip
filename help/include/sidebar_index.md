@@ -68,6 +68,7 @@
 * [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
 * [Code blocks](/help/code-blocks)
 * [LaTeX](/help/latex)
+* [Spoilers](/help/spoilers)
 * [Create a poll](/help/create-a-poll)
 * [Start a video call](/help/start-a-call)
 
