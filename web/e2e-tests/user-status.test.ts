@@ -36,7 +36,7 @@ async function test_user_status(page: Page): Promise<void> {
         () => (document.querySelector(".user-status") as HTMLInputElement).value === "In a meeting",
     );
     // It should select calendar emoji.
-    await page.waitForSelector(".selected_emoji.emoji-1f4c5");
+    await page.waitForSelector(".selected-emoji.emoji-1f4c5");
 
     // Clear everything.
     await page.click("#clear_status_message_button");
@@ -53,7 +53,7 @@ async function test_user_status(page: Page): Promise<void> {
     await page.waitForSelector(`.emoji-popover  ${tada_emoji_selector}`, {visible: true});
     await page.click(`.emoji-popover  ${tada_emoji_selector}`);
     await page.waitForSelector(".emoji-info-popover", {hidden: true});
-    await page.waitForSelector(`.selected_emoji${tada_emoji_selector}`);
+    await page.waitForSelector(`.selected-emoji${tada_emoji_selector}`);
 
     await page.click("#set-user-status-modal .dialog_submit_button");
     // It should close the modal after saving.
