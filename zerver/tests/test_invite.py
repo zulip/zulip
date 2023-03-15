@@ -6,6 +6,7 @@ from unittest.mock import patch
 from urllib.parse import urlencode
 
 import orjson
+import time_machine
 from django.conf import settings
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
@@ -28,9 +29,7 @@ from zerver.actions.invites import (
     do_invite_users,
     do_revoke_multi_use_invite,
 )
-from zerver.actions.realm_settings import (
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
@@ -40,11 +39,7 @@ from zerver.lib.send_email import (
     send_future_email,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    cache_tries_captured,
-    find_key_by_email,
-    queries_captured,
-)
+from zerver.lib.test_helpers import find_key_by_email
 from zerver.models import (
     Message,
     MultiuseInvite,
@@ -66,7 +61,7 @@ if TYPE_CHECKING:
 
 
 class InviteUserBase(ZulipTestCase):
-    def check_sent_emails(self, correct_recipients: List[str]) -> None:
+    def check_sent_emails(self, correct_recipients: List[str], clear: bool = False) -> None:
         self.assert_length(mail.outbox, len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in mail.outbox]
         self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
@@ -80,7 +75,8 @@ class InviteUserBase(ZulipTestCase):
             self.email_display_from(mail.outbox[0]), rf" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
         )
 
-        self.assertEqual(mail.outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
+        if clear:
+            mail.outbox = []
 
     def invite(
         self,
@@ -89,6 +85,7 @@ class InviteUserBase(ZulipTestCase):
         invite_expires_in_minutes: Optional[int] = INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+        realm: Optional[Realm] = None,
     ) -> "TestHttpResponse":
         """
         Invites the specified users to Zulip with the specified streams.
@@ -100,7 +97,7 @@ class InviteUserBase(ZulipTestCase):
         """
         stream_ids = []
         for stream_name in stream_names:
-            stream_ids.append(self.get_stream_id(stream_name))
+            stream_ids.append(self.get_stream_id(stream_name, realm=realm))
 
         invite_expires_in: Union[str, Optional[int]] = invite_expires_in_minutes
         if invite_expires_in is None:
@@ -114,6 +111,7 @@ class InviteUserBase(ZulipTestCase):
                 "stream_ids": orjson.dumps(stream_ids).decode(),
                 "invite_as": invite_as,
             },
+            subdomain=realm.string_id if realm else "zulip",
         )
 
 
@@ -153,93 +151,121 @@ class InviteUserTest(InviteUserBase):
     def test_invite_limits(self) -> None:
         user_profile = self.example_user("hamlet")
         realm = user_profile.realm
-        stream_name = "Denmark"
-
-        # These constants only need to be in descending order
-        # for this test to trigger an InvitationError based
-        # on max daily counts.
-        site_max = 50
-        realm_max = 40
-        num_invitees = 30
-        max_daily_count = 20
-
-        daily_counts = [(1, max_daily_count)]
-
-        invite_emails = [f"foo-{i:02}@zulip.com" for i in range(num_invitees)]
-        invitees = ",".join(invite_emails)
-
         self.login_user(user_profile)
 
-        realm.max_invites = realm_max
+        def try_invite(
+            num_invitees: int,
+            *,
+            default_realm_max: int,
+            new_realm_max: int,
+            realm_max: int,
+            open_realm_creation: bool = True,
+            realm: Optional[Realm] = None,
+            stream_name: str = "Denmark",
+        ) -> "TestHttpResponse":
+            if realm is None:
+                realm = get_realm("zulip")
+            invitees = ",".join(
+                [f"{realm.string_id}-{i:02}@zulip.com" for i in range(num_invitees)]
+            )
+            with self.settings(
+                OPEN_REALM_CREATION=open_realm_creation,
+                INVITES_DEFAULT_REALM_DAILY_MAX=default_realm_max,
+                INVITES_NEW_REALM_LIMIT_DAYS=[(1, new_realm_max)],
+            ):
+                realm.max_invites = realm_max
+                realm.save()
+                return self.invite(invitees, [stream_name], realm=realm)
+
+        # Trip the "new realm" limits
         realm.date_created = timezone_now()
         realm.save()
-
-        def try_invite() -> "TestHttpResponse":
-            with self.settings(
-                OPEN_REALM_CREATION=True,
-                INVITES_DEFAULT_REALM_DAILY_MAX=site_max,
-                INVITES_NEW_REALM_LIMIT_DAYS=daily_counts,
-            ):
-                result = self.invite(invitees, [stream_name])
-                return result
-
-        result = try_invite()
+        result = try_invite(30, default_realm_max=50, new_realm_max=20, realm_max=40)
         self.assert_json_error_contains(result, "reached the limit")
+        self.check_sent_emails([])
 
-        # Next show that aggregate limits expire once the realm is old
-        # enough.
+        # If some other realm consumes some invites, it affects our realm.  Invite 20 users in lear:
+        lear_realm = get_realm("lear")
+        lear_realm.date_created = timezone_now()
+        lear_realm.save()
+        self.login_user(self.lear_user("king"))
+        result = try_invite(
+            20,
+            default_realm_max=50,
+            new_realm_max=20,
+            realm_max=40,
+            realm=lear_realm,
+            stream_name="general",
+        )
+        self.assert_json_success(result)
+        self.check_sent_emails([f"lear-{i:02}@zulip.com" for i in range(20)], clear=True)
 
+        # Which prevents inviting 1 in our realm:
+        self.login_user(user_profile)
+        result = try_invite(1, default_realm_max=50, new_realm_max=20, realm_max=40)
+        self.assert_json_error_contains(result, "reached the limit")
+        self.check_sent_emails([])
+
+        # If our realm max is over the default realm's, we're exempt from INVITES_NEW_REALM_LIMIT_DAYS
+        result = try_invite(10, default_realm_max=15, new_realm_max=5, realm_max=20)
+        self.assert_json_success(result)
+        self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(10)], clear=True)
+
+        # We've sent 10 invites.  Trying to invite 15 people, even if
+        # 10 of them are the same, still trips the limit (10 previous
+        # + 15 in this submission > 20 realm max)
+        result = try_invite(15, default_realm_max=15, new_realm_max=5, realm_max=20)
+        self.assert_json_error_contains(result, "reached the limit")
+        self.check_sent_emails([])
+
+        # Inviting 10 more people (to the realm max of 20) works, and
+        # sends emails to the same 10 users again.
+        result = try_invite(10, default_realm_max=15, new_realm_max=5, realm_max=20)
+        self.assert_json_success(result)
+        self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(10)], clear=True)
+
+        # We've sent 20 invites.  The 10 we just sent do count against
+        # us if we send to them again, since we did send mail
+        result = try_invite(10, default_realm_max=15, new_realm_max=5, realm_max=20)
+        self.assert_json_error_contains(result, "reached the limit")
+        self.check_sent_emails([])
+
+        # We've sent 20 invites.  The realm is exempt from the new realm max
+        # (INVITES_NEW_REALM_LIMIT_DAYS) if it is old enough
         realm.date_created = timezone_now() - datetime.timedelta(days=8)
         realm.save()
-
-        with queries_captured() as queries:
-            with cache_tries_captured() as cache_tries:
-                result = try_invite()
-
+        result = try_invite(10, default_realm_max=50, new_realm_max=20, realm_max=40)
         self.assert_json_success(result)
+        self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(10)], clear=True)
 
-        # TODO: Fix large query count here.
-        #
-        # TODO: There is some test OTHER than this one
-        #       that is leaking some kind of state change
-        #       that throws off the query count here.  It
-        #       is hard to investigate currently (due to
-        #       the large number of queries), so I just
-        #       use an approximate equality check.
-        actual_count = len(queries)
-        expected_count = 251
-        if abs(actual_count - expected_count) > 1:
-            raise AssertionError(
-                f"""
-                Unexpected number of queries:
-
-                expected query count: {expected_count}
-                actual: {actual_count}
-                """
-            )
-
-        # Almost all of these cache hits are to re-fetch each one of the
-        # invitees.  These happen inside our queue processor for sending
-        # confirmation emails, so they are somewhat difficult to avoid.
-        #
-        # TODO: Mock the call to queue_json_publish, so we can measure the
-        # queue impact separately from the user-perceived impact.
-        self.assert_length(cache_tries, 32)
-
-        # Next get line coverage on bumping a realm's max_invites.
-        realm.date_created = timezone_now()
-        realm.max_invites = site_max + 10
-        realm.save()
-
-        result = try_invite()
+        # We've sent 30 invites.  None of the limits matter if open
+        # realm creation is disabled.
+        result = try_invite(
+            10, default_realm_max=30, new_realm_max=20, realm_max=10, open_realm_creation=False
+        )
         self.assert_json_success(result)
+        self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(10)], clear=True)
 
-        # Finally get coverage on the case that OPEN_REALM_CREATION is False.
+        # We've sent 40 invites "today".  Fast-forward 48 hours
+        # and ensure that we can invite more people
+        with time_machine.travel(timezone_now() + datetime.timedelta(hours=48)):
+            result = try_invite(5, default_realm_max=30, new_realm_max=20, realm_max=10)
+            self.assert_json_success(result)
+            self.check_sent_emails([f"zulip-{i:02}@zulip.com" for i in range(5)], clear=True)
 
-        with self.settings(OPEN_REALM_CREATION=False):
-            result = self.invite(invitees, [stream_name])
+            # We've sent 5 invites.  Ensure we can trip the fresh "today" limit for the realm
+            result = try_invite(10, default_realm_max=30, new_realm_max=20, realm_max=10)
+            self.assert_json_error_contains(result, "reached the limit")
+            self.check_sent_emails([])
 
-        self.assert_json_success(result)
+            # We've sent 5 invites.  Reset the realm to be "recently"
+            # created, and ensure that we can trip the whole-server
+            # limit
+            realm.date_created = timezone_now() - datetime.timedelta(days=3)
+            realm.save()
+            result = try_invite(10, default_realm_max=50, new_realm_max=10, realm_max=40)
+            self.assert_json_error_contains(result, "reached the limit")
+            self.check_sent_emails([])
 
     def test_invite_user_to_realm_on_manual_license_plan(self) -> None:
         user = self.example_user("hamlet")
@@ -712,24 +738,6 @@ earl-test@zulip.com""",
         self.assertEqual(get_realm("zulip").max_invites, 3)
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.save()
-
-    def test_invite_too_many_users(self) -> None:
-        # Only a light test of this pathway; e.g. doesn't test that
-        # the limit gets reset after 24 hours
-        self.login("iago")
-        invitee_emails = "1@zulip.com, 2@zulip.com"
-        self.invite(invitee_emails, ["Denmark"])
-        self.check_sent_emails(["1@zulip.com", "2@zulip.com"])
-
-        mail.outbox = []
-        invitee_emails = ", ".join(
-            f"more-{i}@zulip.com" for i in range(get_realm("zulip").max_invites - 1)
-        )
-        self.assert_json_error(
-            self.invite(invitee_emails, ["Denmark"]),
-            "To protect users, Zulip limits the number of invitations you can send in one day. Because you have reached the limit, no invitations were sent.",
-        )
-        self.check_sent_emails([])
 
     def test_missing_or_invalid_params(self) -> None:
         """

@@ -72,3 +72,6 @@ natsort
 
 # For spell check linter
 codespell
+
+# For mocking time
+time-machine
