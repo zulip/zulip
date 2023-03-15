@@ -5,9 +5,9 @@
         <div class="sub_unsub_button_wrapper inline-block">
             <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}tippy-zulip-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}data-tippy-content="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
                 {{#if subscribed }}
-                    {{#tr}}Unsubscribe{{/tr}}
+                    {{t "Unsubscribe" }}
                 {{else}}
-                    {{#tr}}Subscribe{{/tr}}
+                    {{t "Subscribe" }}
                 {{/if}}
             </button>
         </div>
@@ -74,7 +74,7 @@
                 </p>
                 <p>
                     <button class="button rounded copy_email_button" type="button" name="button">
-                        <span class="copy_button">{{#tr}}Generate email address{{/tr}}</span>
+                        <span class="copy_button">{{t "Generate email address" }}</span>
                     </button>
                 </p>
             </div>

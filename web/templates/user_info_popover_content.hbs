@@ -30,21 +30,21 @@
         </div>
         {{/if}}
     {{else}}
-        <li class="user_popover_email half-opacity italic">{{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}</li>
+        <li class="user_popover_email half-opacity italic">{{#if is_bot}}{{t "This bot has been deactivated." }}{{else}}{{t "This user has been deactivated." }}{{/if}}</li>
     {{/if}}
 
 
     {{#if is_bot}}
         {{#if bot_owner}}
-            <li class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{#tr}}Bot owner{{/tr}}:
+            <li class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{t "Bot owner" }}:
                 <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
                     {{bot_owner.full_name}}
                 </span>
             </li>
         {{else if is_system_bot}}
-            <li>{{#tr}}System bot{{/tr}}</li>
+            <li>{{t "System bot" }}</li>
         {{else}}
-            <li>{{#tr}}Bot{{/tr}}</li>
+            <li>{{t "Bot" }}</li>
         {{/if}}
     {{else}}
         <li>{{ user_type }}</li>
@@ -52,13 +52,13 @@
     {{!-- Display selected custom profile fields in this popover. --}}
     {{> user_custom_profile_fields profile_fields=display_profile_fields for_user_info_popover=true}}
 
-    <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
+    <li class="only-visible-for-spectators">{{t "Joined {date_joined}" }}</li>
 
     {{#if (or (and user_time is_active) is_me status_content_available) }}
         <hr />
     {{/if}}
     {{#if (and user_time is_active)}}
-        <li class="hidden-for-spectators local_time">{{#tr}}{user_time} local time{{/tr}}</li>
+        <li class="hidden-for-spectators local_time">{{t "{user_time} local time" }}</li>
     {{/if}}
 
     {{#if status_content_available}}
@@ -76,7 +76,7 @@
                 <span class="status_text">
                     {{status_text}}
                     {{#if is_me}}
-                    <span class="clear_status_button">(<a tabindex="0" class="clear_status">{{#tr}}clear{{/tr}}</a>)</span>
+                    <span class="clear_status_button">(<a tabindex="0" class="clear_status">{{t "clear" }}</a>)</span>
                     {{/if}}
                 </span>
             </span>
@@ -88,22 +88,22 @@
             <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
                 {{#if status_text}}
-                    {{#tr}}Edit status{{/tr}}
+                    {{t "Edit status" }}
                 {{else}}
-                    {{#tr}}Set a status{{/tr}}
+                    {{t "Set a status" }}
                 {{/if}}
             </a>
         </li>
         {{#if invisible_mode}}
         <li>
             <a tabindex="0" class="invisible_mode_turn_off">
-                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Turn off invisible mode{{/tr}}
+                <i class="fa fa-circle-o" aria-hidden="true"></i> {{t "Turn off invisible mode" }}
             </a>
         </li>
         {{else}}
         <li>
             <a tabindex="0" class="invisible_mode_turn_on">
-                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Go invisible{{/tr}}
+                <i class="fa fa-circle-o" aria-hidden="true"></i> {{t "Go invisible" }}
             </a>
         </li>
         {{/if}}
@@ -115,16 +115,16 @@
         <li>
             <a tabindex="0" class="view_full_user_profile">
                 {{#if is_me}}
-                    <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View your profile{{/tr}}
+                    <i class="fa fa-user" aria-hidden="true"></i> {{t "View your profile" }}
                 {{else}}
-                    <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View profile{{/tr}}
+                    <i class="fa fa-user" aria-hidden="true"></i> {{t "View profile" }}
                 {{/if}}
             </a>
         </li>
         {{#if can_send_private_message}}
             <li>
                 <a tabindex="0" class="{{ private_message_class }}">
-                    <i class="fa fa-comment" aria-hidden="true"></i> {{#tr}}Send direct message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+                    <i class="fa fa-comment" aria-hidden="true"></i> {{t "Send direct message" }} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
                 </a>
             </li>
         {{/if}}
@@ -133,13 +133,13 @@
             {{#if has_message_context}}
             <a tabindex="0" class="mention_user">
                 <i class="fa fa-at" aria-hidden="true"></i>
-                {{#if is_bot}}{{#tr}}Reply mentioning bot{{/tr}}{{else}}{{#tr}}Reply mentioning user{{/tr}}{{/if}}
+                {{#if is_bot}}{{t "Reply mentioning bot" }}{{else}}{{t "Reply mentioning user" }}{{/if}}
                 {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
             </a>
             {{else}}
             <a tabindex="0" class="copy_mention_syntax" data-clipboard-text="{{ user_mention_syntax }}">
                 <i class="fa fa-at" aria-hidden="true"></i>
-                {{#tr}}Copy mention syntax{{/tr}}
+                {{t "Copy mention syntax" }}
                 {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
             </a>
             {{/if}}
@@ -148,7 +148,7 @@
         {{#if is_me}}
         <li>
             <a href="/#settings/profile">
-                <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Edit your profile{{/tr}}
+                <i class="fa fa-edit" aria-hidden="true"></i> {{t "Edit your profile" }}
             </a>
         </li>
         {{/if}}
@@ -157,15 +157,15 @@
             <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
                 <i class="fa fa-envelope" aria-hidden="true"></i>
                 {{#if is_me}}
-                    {{#tr}}View messages with yourself{{/tr}}
+                    {{t "View messages with yourself" }}
                 {{else}}
-                    {{#tr}}View direct messages{{/tr}}
+                    {{t "View direct messages" }}
                 {{/if}}
             </a>
         </li>
         <li>
             <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
-                <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr}}View messages sent{{/tr}}
+                <i class="fa fa-paper-plane" aria-hidden="true"></i> {{t "View messages sent" }}
             </a>
         </li>
     {{/unless}}
