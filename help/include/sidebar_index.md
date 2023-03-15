@@ -71,6 +71,7 @@
 * [Spoilers](/help/spoilers)
 * [/me action messages](/help/me-action-messages)
 * [Create a poll](/help/create-a-poll)
+* [Global times](/help/global-times)
 * [Start a video call](/help/start-a-call)
 
 ## Sending messages
