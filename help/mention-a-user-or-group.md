@@ -1,9 +1,6 @@
 # Mention a user or group
 
-You can mention a team member or [user group](/help/user-groups) to call their attention to a
-message. Mentions follow the same
-[notification settings](/help/dm-mention-alert-notifications) as direct
-messages and alert words.
+{!mentions-intro.md!}
 
 ## Mention a user or group
 
@@ -70,8 +67,13 @@ wildcard mentions, either
 [globally](/help/dm-mention-alert-notifications) or for [individual
 streams](/help/stream-notifications).
 
+## Examples
+
+{!mentions-examples.md!}
+
 ## Related articles
 
+* [Message formatting](/help/format-your-message-using-markdown)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Quote and reply](/help/quote-and-reply)
 * [View your mentions](/help/view-your-mentions)
