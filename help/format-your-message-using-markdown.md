@@ -82,15 +82,9 @@ whenever you need a reminder of the formatting syntax below.
 
 ## Emoji and emoticons
 
-To translate emoticons into emoji, you'll need to
-[enable emoticon translations](/help/configure-emoticon-translations).
-You can also [add custom emoji](/help/custom-emoji).
+{!emoji-and-emoticons-intro.md!}
 
-```
-:octopus: :heart: :zulip: :)
-```
-
-![Markdown emoji](/static/images/help/markdown-emoji.png)
+{!emoji-and-emoticons-examples.md!}
 
 ## Mentions
 

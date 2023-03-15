@@ -1,27 +1,34 @@
 # Emoji and emoticons
 
-## Add emoji to a message
+{!emoji-and-emoticons-intro.md!}
 
-There are several ways to add emoji to a message: typing emoji codes,
-selecting from an emoji picker, using emoticons, or pasting from another
-site.
+!!! tip ""
 
-### Type an emoji code
+    You can also quickly respond to a message by using [emoji reactions](/help/emoji-reactions).
+
+## Use an emoji in your message
+
+### Enter an emoji name
 
 {start_tabs}
 
 {!start-composing.md!}
 
-1. Type `:` followed by a few letters to open the emoji autocomplete. The
-   letters don't have to be at the beginning of the emoji name; `:ppl` will
-   match `:apple:`
+1. Type `:`, followed by a few letters from the emoji name, to see autocomplete
+   suggestions. The letters don't have to be at the beginning of the emoji name.
+   For example, `:app` will match both `:apple:` and `:pineapple:`.
+
+1. Type the full emoji name followed by `:`, or select an emoji from the list of
+   suggestions.
 
 {end_tabs}
 
-If you don't know the code for an emoji, you can see what it's called in the
-emoji picker, or hover over the emoji in a message.
+!!! tip ""
 
-### Select from the emoji picker
+    You can hover over an emoji in the emoji picker, a message, or an [emoji
+    reaction](/help/emoji-reactions) to learn its name.
+
+### Select an emoji from the emoji picker
 
 {start_tabs}
 
@@ -35,9 +42,16 @@ emoji picker, or hover over the emoji in a message.
 
 {end_tabs}
 
-### Use emoticons
+### Use an emoticon
 
-Use `:)` and `:/` instead of typing `:smile:` and `:confused:`.
+You can configure Zulip to convert emoticons into emoji, so that, e.g., `:)`
+will be displayed as
+<img
+    src="/static/generated/emoji/images-google-64/1f642.png"
+    alt="smile"
+    class="emoji-small"
+/>
+.
 
 {start_tabs}
 
@@ -50,10 +64,14 @@ Use `:)` and `:/` instead of typing `:smile:` and `:confused:`.
 The list of supported emoticons is available
 [here](/help/configure-emoticon-translations).
 
-### Paste from another site
+### Paste an emoji
 
-Copying and pasting emoji from other sites generally works.
-[Contact us](/help/contact-support) if you find a site where it doesn't!
+You can paste an emoji copied from outside of Zulip directly into the compose
+box.
+
+## Examples
+
+{!emoji-and-emoticons-examples.md!}
 
 ## Change your emoji set
 
@@ -80,3 +98,4 @@ you send. Zulip emoji are compatible with screen readers and other accessibility
 
 * [Add custom emoji](/help/custom-emoji)
 * [Emoji reactions](/help/emoji-reactions)
+* [Configure emoticon translations](/help/configure-emoticon-translations)
