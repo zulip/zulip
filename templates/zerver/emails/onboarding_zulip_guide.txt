@@ -1,0 +1,26 @@
+{{ _("We hope you have been enjoying Zulip so far!") }}
+
+{{ _("As you are getting started, check out this guide to key Zulip features for organizations like yours.") }}
+
+{% if organization_type == "business" %}
+{{ _("View Zulip guide for businesses") }}:
+{% elif organization_type == "opensource" %}
+{{ _("View Zulip guide for open-source projects") }}:
+{% elif organization_type == "education" %}
+{{ _("View Zulip guide for education") }}:
+{% elif organization_type == "research" %}
+{{ _("View Zulip guide for research") }}:
+{% elif organization_type == "event" %}
+{{ _("View Zulip guide for events and conferences") }}:
+{% elif organization_type == "nonprofit" %}
+{{ _("View Zulip guide for non-profits") }}:
+{% elif organization_type == "community" %}
+{{ _("View Zulip guide for communities") }}:
+{% endif %}
+<{{ zulip_guide_link }}>
+
+{% trans %}Questions? Contact us any time at {{ support_email }}.{% endtrans %}
+
+----
+{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}:
+{{ unsubscribe_link }}

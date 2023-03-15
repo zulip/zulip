@@ -37,6 +37,7 @@ from zerver.lib.url_encoding import (
 )
 from zerver.models import (
     Message,
+    Realm,
     Recipient,
     Stream,
     UserMessage,
@@ -686,6 +687,7 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
         # of the user's inbox when the user sits down to deal with their inbox,
         # or comes in while they are dealing with their inbox.
         "followup_day2": timedelta(days=2, hours=-1),
+        "onboarding_zulip_guide": timedelta(days=4, hours=-1),
     }
 
     user_tz = user.timezone
@@ -693,17 +695,54 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
         user_tz = "UTC"
     signup_day = user.date_joined.astimezone(zoneinfo.ZoneInfo(user_tz)).isoweekday()
 
+    # General rules for scheduling welcome emails flow:
+    # -Do not send emails on Saturday or Sunday
+    # -Have at least one weekday between each (potential) email
+
+    # User signed up on Tuesday
+    if signup_day == 2:
+        # Send followup_day2 on Thursday
+        # Send onboarding_zulip_guide on Monday
+        onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
+
+    # User signed up on Wednesday
+    if signup_day == 3:
+        # Send followup_day2 on Friday
+        # Send onboarding_zulip_guide on Tuesday
+        onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
+
     # User signed up on Thursday
     if signup_day == 4:
-        # Send followup_day2 on Friday
-        onboarding_emails["followup_day2"] = timedelta(days=1, hours=-1)
+        # Send followup_day2 on Monday
+        onboarding_emails["followup_day2"] = timedelta(days=4, hours=-1)
+        # Send onboarding_zulip_guide on Wednesday
+        onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
 
     # User signed up on Friday
     if signup_day == 5:
-        # Send followup_day2 on Monday
-        onboarding_emails["followup_day2"] = timedelta(days=3, hours=-1)
+        # Send followup_day2 on Tuesday
+        onboarding_emails["followup_day2"] = timedelta(days=4, hours=-1)
+        # Send onboarding_zulip_guide on Thursday
+        onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
 
     return onboarding_emails
+
+
+def get_org_type_zulip_guide(realm: Realm) -> Tuple[Any, str]:
+    for realm_type, realm_type_details in Realm.ORG_TYPES.items():
+        if realm_type_details["id"] == realm.org_type:
+            organization_type_in_template = realm_type
+
+            # There are two education organization types that receive the same email
+            # content, so we simplify to one shared template context value here.
+            if organization_type_in_template == "education_nonprofit":
+                organization_type_in_template = "education"
+
+            return (realm_type_details["onboarding_zulip_guide_url"], organization_type_in_template)
+
+    # Log problem, and return values that will not send onboarding_zulip_guide email.
+    logging.error("Unknown organization type '%s'", realm.org_type)
+    return (None, "")
 
 
 def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
@@ -774,6 +813,38 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
             from_address=from_address,
             context=context,
             delay=onboarding_email_schedule["followup_day2"],
+        )
+
+    # We only send the onboarding_zulip_guide email for a subset of Realm.ORG_TYPES
+    onboarding_zulip_guide_url, organization_type_reference = get_org_type_zulip_guide(user.realm)
+
+    # Only send follow_zulip_guide to "/for/communities/" guide if user is realm admin.
+    # TODO: Remove this condition and related tests when guide is updated;
+    # see https://github.com/zulip/zulip/issues/24822.
+    if (
+        onboarding_zulip_guide_url == Realm.ORG_TYPES["community"]["onboarding_zulip_guide_url"]
+        and not user.is_realm_admin
+    ):
+        onboarding_zulip_guide_url = None
+
+    if onboarding_zulip_guide_url is not None:
+        onboarding_zulip_guide_context = common_context(user)
+        onboarding_zulip_guide_context.update(
+            # We use the same unsubscribe link in both followup_day2
+            # and onboarding_zulip_guide as these links do not expire.
+            unsubscribe_link=unsubscribe_link,
+            organization_type=organization_type_reference,
+            zulip_guide_link=onboarding_zulip_guide_url,
+        )
+
+        send_future_email(
+            "zerver/emails/onboarding_zulip_guide",
+            user.realm,
+            to_user_ids=[user.id],
+            from_name=from_name,
+            from_address=from_address,
+            context=onboarding_zulip_guide_context,
+            delay=onboarding_email_schedule["onboarding_zulip_guide"],
         )
 
 

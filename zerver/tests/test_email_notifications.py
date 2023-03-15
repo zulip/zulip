@@ -32,7 +32,7 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
+from zerver.models import Realm, ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
 
 
 class TestCustomEmails(ZulipTestCase):
@@ -224,7 +224,9 @@ class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
         enqueue_welcome_emails(hamlet)
-        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
+        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
+            "scheduled_timestamp"
+        )
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
@@ -238,7 +240,7 @@ class TestFollowupEmails(ZulipTestCase):
 
         iago = self.example_user("iago")
         enqueue_welcome_emails(iago)
-        scheduled_emails = ScheduledEmail.objects.filter(users=iago)
+        scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
@@ -274,9 +276,11 @@ class TestFollowupEmails(ZulipTestCase):
                 self.ldap_password("newuser_email_as_uid@zulip.com"),
             )
             user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user)
+            scheduled_emails = ScheduledEmail.objects.filter(users=user).order_by(
+                "scheduled_timestamp"
+            )
 
-            self.assert_length(scheduled_emails, 2)
+            self.assert_length(scheduled_emails, 3)
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(
@@ -300,9 +304,10 @@ class TestFollowupEmails(ZulipTestCase):
             self.login_with_return("newuser@zulip.com", self.ldap_password("newuser"))
 
             user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user)
-
-            self.assert_length(scheduled_emails, 2)
+            scheduled_emails = ScheduledEmail.objects.filter(users=user).order_by(
+                "scheduled_timestamp"
+            )
+            self.assert_length(scheduled_emails, 3)
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser")
@@ -323,49 +328,129 @@ class TestFollowupEmails(ZulipTestCase):
         ):
             self.login_with_return("newuser_with_email", self.ldap_password("newuser_with_email"))
             user = UserProfile.objects.get(delivery_email="newuser_email@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user)
-
-            self.assert_length(scheduled_emails, 2)
+            scheduled_emails = ScheduledEmail.objects.filter(users=user).order_by(
+                "scheduled_timestamp"
+            )
+            self.assert_length(scheduled_emails, 3)
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser_with_email")
 
     def test_followup_emails_count(self) -> None:
         hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
+        realm = get_realm("zulip")
 
+        # Hamlet has account only in Zulip realm so day1, day2 and zulip_guide emails should be sent
         enqueue_welcome_emails(self.example_user("hamlet"))
-        # Hamlet has account only in Zulip realm so both day1 and day2 emails should be sent
+        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
+            "scheduled_timestamp"
+        )
+        self.assert_length(scheduled_emails, 3)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[2].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
+        )
+
+        ScheduledEmail.objects.all().delete()
+
+        # The onboarding_zulip_guide email should not be sent to non-admin users in organizations
+        # that are sent the `/for/communities/` guide; see note in enqueue_welcome_emails.
+        realm.org_type = Realm.ORG_TYPES["community"]["id"]
+        realm.save()
+
+        # Hamlet is not an admin so the `/for/communities/` zulip_guide should not be sent
+        enqueue_welcome_emails(self.example_user("hamlet"))
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
         )
         self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
         )
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
         )
 
         ScheduledEmail.objects.all().delete()
 
-        enqueue_welcome_emails(cordelia)
-        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
+        # Iago is an admin so the `/for/communities/` zulip_guide should be sent
+        enqueue_welcome_emails(self.example_user("iago"))
+        scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
+        self.assert_length(scheduled_emails, 3)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[2].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
+        )
+
+        ScheduledEmail.objects.all().delete()
+
+        # The organization_type context for "education_nonprofit" orgs is simplified to be "education"
+        realm.org_type = Realm.ORG_TYPES["education_nonprofit"]["id"]
+        realm.save()
+
         # Cordelia has account in more than 1 realm so day2 email should not be sent
+        enqueue_welcome_emails(self.example_user("cordelia"))
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+            "scheduled_timestamp"
+        )
+        self.assert_length(scheduled_emails, 2)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["context"]["organization_type"],
+            "education",
+        )
+
+        ScheduledEmail.objects.all().delete()
+
+        # Only a subset of Realm.ORG_TYPES are sent the zulip_guide_followup email
+        realm.org_type = Realm.ORG_TYPES["other"]["id"]
+        realm.save()
+
+        # In this case, Cordelia should only be sent the day1 email
+        enqueue_welcome_emails(self.example_user("cordelia"))
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         self.assert_length(scheduled_emails, 1)
-        email_data = orjson.loads(scheduled_emails[0].data)
-        self.assertEqual(email_data["template_prefix"], "zerver/emails/followup_day1")
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+        )
 
     def test_followup_emails_for_regular_realms(self) -> None:
         cordelia = self.example_user("cordelia")
         enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
-        scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
-        assert scheduled_email is not None
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+            "scheduled_timestamp"
+        )
+        assert scheduled_emails is not None
+        self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
         )
 
-        deliver_scheduled_emails(scheduled_email)
+        deliver_scheduled_emails(scheduled_emails[0])
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -381,19 +466,47 @@ class TestFollowupEmails(ZulipTestCase):
         )
         cordelia.realm.save()
         enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
-        scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
-        assert scheduled_email is not None
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+            "scheduled_timestamp"
+        )
+        assert scheduled_emails is not None
+        self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
         )
 
-        deliver_scheduled_emails(scheduled_email)
+        deliver_scheduled_emails(scheduled_emails[0])
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
 
         message = outbox[0]
         self.assertIn("you have created a new demo Zulip organization", message.body)
+
+    def test_onboarding_zulip_guide_with_invalid_org_type(self) -> None:
+        cordelia = self.example_user("cordelia")
+        realm = get_realm("zulip")
+
+        invalid_org_type_id = 999
+        realm.org_type = invalid_org_type_id
+        realm.save()
+
+        with self.assertLogs(level="ERROR") as m:
+            enqueue_welcome_emails(self.example_user("cordelia"))
+
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
+        self.assert_length(scheduled_emails, 1)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+        self.assertEqual(
+            m.output,
+            [f"ERROR:root:Unknown organization type '{invalid_org_type_id}'"],
+        )
 
 
 class TestMissedMessages(ZulipTestCase):
@@ -1760,72 +1873,155 @@ class TestFollowupEmailDelay(ZulipTestCase):
             "Saturday": datetime(2018, 1, 6, 1, 0, 0, 0, tzinfo=timezone.utc),
             "Sunday": datetime(2018, 1, 7, 1, 0, 0, 0, tzinfo=timezone.utc),
         }
+        days_delayed = {
+            "2": timedelta(days=2, hours=-1),
+            "4": timedelta(days=4, hours=-1),
+            "6": timedelta(days=6, hours=-1),
+        }
 
+        # joined Monday
         user_profile.date_joined = dates_joined["Monday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+
         # followup_day2 email sent on Wednesday
         self.assertEqual(
             onboarding_email_schedule["followup_day2"],
-            timedelta(days=2, hours=-1),
+            days_delayed["2"],
         )
+        self.assertEqual((dates_joined["Monday"] + days_delayed["2"]).isoweekday(), 3)
 
+        # onboarding_zulip_guide sent on Friday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["4"],
+        )
+        self.assertEqual((dates_joined["Monday"] + days_delayed["4"]).isoweekday(), 5)
+
+        # joined Tuesday
         user_profile.date_joined = dates_joined["Tuesday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+
         # followup_day2 email sent on Thursday
         self.assertEqual(
             onboarding_email_schedule["followup_day2"],
-            timedelta(days=2, hours=-1),
+            days_delayed["2"],
         )
+        self.assertEqual((dates_joined["Tuesday"] + days_delayed["2"]).isoweekday(), 4)
 
+        # onboarding_zulip_guide sent on Monday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["6"],
+        )
+        self.assertEqual((dates_joined["Tuesday"] + days_delayed["6"]).isoweekday(), 1)
+
+        # joined Wednesday
         user_profile.date_joined = dates_joined["Wednesday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+
         # followup_day2 email sent on Friday
         self.assertEqual(
             onboarding_email_schedule["followup_day2"],
-            timedelta(days=2, hours=-1),
+            days_delayed["2"],
         )
+        self.assertEqual((dates_joined["Wednesday"] + days_delayed["2"]).isoweekday(), 5)
 
+        # onboarding_zulip_guide sent on Tuesday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["6"],
+        )
+        self.assertEqual((dates_joined["Wednesday"] + days_delayed["6"]).isoweekday(), 2)
+
+        # joined Thursday
         user_profile.date_joined = dates_joined["Thursday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-        # followup_day2 email sent on Friday
+
+        # followup_day2 email sent on Monday
         self.assertEqual(
             onboarding_email_schedule["followup_day2"],
-            timedelta(days=1, hours=-1),
+            days_delayed["4"],
         )
+        self.assertEqual((dates_joined["Thursday"] + days_delayed["4"]).isoweekday(), 1)
 
+        # onboarding_zulip_guide sent on Wednesday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["6"],
+        )
+        self.assertEqual((dates_joined["Thursday"] + days_delayed["6"]).isoweekday(), 3)
+
+        # joined Friday
         user_profile.date_joined = dates_joined["Friday"]
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-        # followup_day2 email sent on Monday
-        self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
-            timedelta(days=3, hours=-1),
-        )
 
-        user_profile.date_joined = dates_joined["Saturday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-        # followup_day2 email sent on Monday
-        self.assertEqual(
-            onboarding_email_schedule["followup_day2"],
-            timedelta(days=2, hours=-1),
-        )
-
-        user_profile.date_joined = dates_joined["Sunday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
         # followup_day2 email sent on Tuesday
         self.assertEqual(
             onboarding_email_schedule["followup_day2"],
-            timedelta(days=2, hours=-1),
+            days_delayed["4"],
         )
+        self.assertEqual((dates_joined["Friday"] + days_delayed["4"]).isoweekday(), 2)
+
+        # onboarding_zulip_guide sent on Thursday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["6"],
+        )
+        self.assertEqual((dates_joined["Friday"] + days_delayed["6"]).isoweekday(), 4)
+
+        # joined Saturday
+        user_profile.date_joined = dates_joined["Saturday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+
+        # followup_day2 email sent on Monday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            days_delayed["2"],
+        )
+        self.assertEqual((dates_joined["Saturday"] + days_delayed["2"]).isoweekday(), 1)
+
+        # onboarding_zulip_guide sent on Wednesday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["4"],
+        )
+        self.assertEqual((dates_joined["Saturday"] + days_delayed["4"]).isoweekday(), 3)
+
+        # joined Sunday
+        user_profile.date_joined = dates_joined["Sunday"]
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+
+        # followup_day2 email sent on Tuesday
+        self.assertEqual(
+            onboarding_email_schedule["followup_day2"],
+            days_delayed["2"],
+        )
+        self.assertEqual((dates_joined["Sunday"] + days_delayed["2"]).isoweekday(), 2)
+
+        # onboarding_zulip_guide sent on Thursday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["4"],
+        )
+        self.assertEqual((dates_joined["Sunday"] + days_delayed["4"]).isoweekday(), 4)
 
         # Time offset of America/Phoenix is -07:00
         user_profile.timezone = "America/Phoenix"
+
         # Test date_joined == Friday in UTC, but Thursday in the user's time zone
         user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
         onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-        # followup_day2 email sent on Friday
+
+        # followup_day2 email sent on Monday
         self.assertEqual(
             onboarding_email_schedule["followup_day2"],
-            timedelta(days=1, hours=-1),
+            days_delayed["4"],
+        )
+
+        # onboarding_zulip_guide sent on Wednesday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["6"],
         )
 
 
@@ -1841,7 +2037,9 @@ class TestCustomEmailSender(ZulipTestCase):
         ):
             hamlet = self.example_user("hamlet")
             enqueue_welcome_emails(hamlet)
-            scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
+            scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
+                "scheduled_timestamp"
+            )
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
             self.assertEqual(email_data["from_name"], name)
