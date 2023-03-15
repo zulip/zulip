@@ -75,7 +75,7 @@
 * [Polls](/help/create-a-poll)
 * [Collaborative to-do lists](/help/collaborative-to-do-lists)
 * [Global times](/help/global-times)
-* [Start a video call](/help/start-a-call)
+* [Video calls](/help/start-a-call)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)
