@@ -80,9 +80,9 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
         base_branch = pull_request["base"]["label"].tame(check_string)
 
     return get_pull_request_event_message(
-        get_sender_name(payload),
-        action,
-        pull_request["html_url"].tame(check_string),
+        user_name=get_sender_name(payload),
+        action=action,
+        url=pull_request["html_url"].tame(check_string),
         target_branch=target_branch,
         base_branch=base_branch,
         message=description,
@@ -101,9 +101,9 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
         stringified_assignee = assignee["login"].tame(check_string)
 
     base_message = get_pull_request_event_message(
-        get_sender_name(payload),
-        payload["action"].tame(check_string),
-        pull_request["html_url"].tame(check_string),
+        user_name=get_sender_name(payload),
+        action=payload["action"].tame(check_string),
+        url=pull_request["html_url"].tame(check_string),
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
     )
@@ -118,9 +118,9 @@ def get_closed_pull_request_body(helper: Helper) -> str:
     pull_request = payload["pull_request"]
     action = "merged" if pull_request["merged"].tame(check_bool) else "closed without merge"
     return get_pull_request_event_message(
-        get_sender_name(payload),
-        action,
-        pull_request["html_url"].tame(check_string),
+        user_name=get_sender_name(payload),
+        action=action,
+        url=pull_request["html_url"].tame(check_string),
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
     )
@@ -485,9 +485,9 @@ def get_pull_request_review_body(helper: Helper) -> str:
         payload["pull_request"]["title"].tame(check_string),
     )
     return get_pull_request_event_message(
-        get_sender_name(payload),
-        "submitted",
-        payload["review"]["html_url"].tame(check_string),
+        user_name=get_sender_name(payload),
+        action="submitted",
+        url=payload["review"]["html_url"].tame(check_string),
         type="PR review",
         title=title if include_title else None,
     )
@@ -507,9 +507,9 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
     )
 
     return get_pull_request_event_message(
-        get_sender_name(payload),
-        action,
-        payload["comment"]["html_url"].tame(check_string),
+        user_name=get_sender_name(payload),
+        action=action,
+        url=payload["comment"]["html_url"].tame(check_string),
         message=message,
         type="PR review comment",
         title=title if include_title else None,
