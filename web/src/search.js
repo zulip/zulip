@@ -16,7 +16,7 @@ import * as ui_util from "./ui_util";
 // Exported for unit testing
 export let is_using_input_method = false;
 
-const regexSearchWithoutValue = /^[A-Za-z-]+:['"\s]*$/
+const regexSearchWithoutValue = /^[A-Za-z-]+:[\s'"]*$/
 
 export function narrow_or_search_for_term(search_string) {
     const $search_query_box = $("#search_query");
@@ -124,7 +124,7 @@ export function initialize() {
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
         on_escape: message_view_header.exit_search,
-        validate_selection: (sel) => !sel || !sel.match(regexSearchWithoutValue),
+        validate_selection: (sel) => !sel || !regexSearchWithoutValue.test(sel),
     });
 
     $searchbox_form.on("compositionend", () => {
@@ -152,10 +152,7 @@ export function initialize() {
                 return;
             }
             const is_enter = keydown_util.is_enter_event(e);
-            if (is_enter && (e.target?.value || "").match(regexSearchWithoutValue)) {
-                const $active_item = $(".typeahead-menu .active")
-                $active_item.addClass("nudge-down");
-                setTimeout(() => $active_item.removeClass("nudge-down"), 600);
+            if (is_enter && regexSearchWithoutValue.test(e.target?.value || "")) {
                 e.preventDefault();
                 return
             }
