@@ -81,6 +81,11 @@ def get_code_push_commits_body(payload: WildValue) -> str:
         commits_data,
     )
 
+def get_workitem_body(payload: WildValue) -> str:
+    return get_workitem_markdown(payload)
+
+def get_workitem_markdown(payload: WildValue) -> str:
+    return payload["detailedMessage"]["markdown"].tame(check_string)
 
 def get_code_push_user_name(payload: WildValue) -> str:
     return payload["resource"]["pushedBy"]["displayName"].tame(check_string)
@@ -155,6 +160,11 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], str]] = {
     "git.pullrequest.created": get_code_pull_request_opened_body,
     "git.pullrequest.merged": get_code_pull_request_merged_body,
     "git.pullrequest.updated": get_code_pull_request_updated_body,
+    "workitem.created": get_workitem_body,
+    "workitem.updated": get_workitem_body,
+    "workitem.deleted": get_workitem_body,
+    "workitem.commented": get_workitem_body,
+    "workitem.restored": get_workitem_body
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
