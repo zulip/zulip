@@ -1,4 +1,6 @@
 .informational-overlays {
+    display: grid;
+    place-items: center;
 
     --color-title: hsl(0, 0%, 0%);
     --color-text: hsl(0, 0%, 20%);
@@ -8,47 +10,55 @@
     --color-table-border: hsl(0, 0%, 93%);
 
     .overlay-content {
-        /* because zoom breaks at 525px perhaps due to rounding errors, so add a
-           trivial amount of width so it doesn't break. */
-        width: 550px;
+        width: 90%;
+        max-width: 650px;
         margin: 0 auto;
         position: relative;
-        top: calc((30vh - 50px) / 2);
-        border-radius: 4px;
+        top: unset;
+        border-radius: 6px;
         overflow: hidden;
 
         background-color: hsl(0, 0%, 100%);
     }
 
     .overlay-tabs {
-        padding: 10px 0;
-        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+        position: relative;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        gap: 15px;
+        padding: 0 5%;
+        height: 60px;
+        background: hsl(0, 0%, 100%);
+        box-shadow: 0 3px 12px 1px hsla(207, 100%, 11%, 0.08);
+        z-index: 2;
 
         .tab-switcher {
-            margin-left: 15px;
+            flex-grow: 1;
         }
 
         .exit {
-            float: right;
-            font-size: 1.5rem;
-            color: hsl(0, 0%, 67%);
-            font-weight: 600;
-            margin: 0 15px;
+            display: inline-block;
+            font-size: 16px;
+            line-height: 1em;
+            text-align: center;
+            width: 1em;
+            color: hsl(0, 0%, 60%);
             cursor: pointer;
+            order: 1;
         }
     }
 
-    .overlay-modal {
-        padding-bottom: 10px;
+    .modal-body {
+        height: 75vh;
+        max-height: unset;
+        text-align: center;
+        outline: none;
+    }
 
-        .modal-header h3 {
-            font-weight: 300;
-        }
-
-        .modal-body {
-            height: 70vh;
-            text-align: center;
-            outline: none;
+    .simplebar-content {
+        padding: 35px 30px 35px 25px !important;
+    }
 
     a {
         color: var(--color-text-link);
