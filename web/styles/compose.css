@@ -289,7 +289,7 @@
     & p {
         margin: 0; /* override bootstrap */
         /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
-        padding: 12px 5px 12px 15px;
+        padding: 8px 5px 8px 15px;
     }
 
     .banner_content {
@@ -315,9 +315,9 @@
     }
 
     .compose_banner_close_button {
-        font-size: 17px;
+        font-size: 16px;
         text-decoration: none;
-        padding: 12px 10px;
+        padding: 9px 8px;
     }
 
     &.success {
