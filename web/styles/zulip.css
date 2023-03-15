@@ -724,6 +724,25 @@ strong {
     display: none;
 }
 
+@keyframes nudgeBackgroundDown {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(5px); }
+    100% { transform: translateY(0px); }
+}
+  
+@keyframes nudgeBackgroundUp {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+.nudge-down {
+    animation: nudgeBackgroundDown 500ms ease-in-out 1;
+    span:not(.pill-value) {
+        animation: nudgeBackgroundUp 500ms ease-in-out 1;
+    }
+}
+
 /* .dropdown-menu from v2.3.2
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
