@@ -98,6 +98,11 @@
  *   We add a new event handler, resizeHandler, for window.on('resize', ...)
  *   that calls this.show to re-render the typeahead in the correct position.
  *
+ * 10. Selection validation:
+ *
+ *   We add an optional callback, `validate_selection`, passing in the text field string.
+ *   If a falsy value is returned, auto selection behavior (enter/tab keys) is cancelled.
+ *
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -136,6 +141,7 @@ import {get_string_diff} from "../../src/util";
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+    this.validate_selection = this.options.validate_selection || this.validate_selection;
     this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     this.header = this.options.header || this.header;
@@ -191,6 +197,10 @@ import {get_string_diff} from "../../src/util";
 
   , trigger_selection: function() {
     return false;
+  }
+
+  , validate_selection: function() {
+    return true;
   }
 
   , header: function() {
@@ -464,7 +474,9 @@ import {get_string_diff} from "../../src/util";
         case 9: // tab
         case 13: // enter
           if (!this.shown) return
-          this.select(e)
+          if (this.validate_selection(this.$element.val())) {
+            this.select(e)
+          }
           break
 
         case 27: // escape
