@@ -1,6 +1,6 @@
 # Configure emoticon translations
 
-If you use emoticons like `:)` or `:/`, you can configure whether to have them
+You can configure whether emoticons like `:)` or `:(` will be automatically
 translated into emoji equivalents like
 <img
     src="/static/generated/emoji/images-google-64/1f642.png"
@@ -13,7 +13,7 @@ or
     alt="slight_frown"
     class="emoji-small"
 />
-automatically by Zulip.
+by Zulip.
 
 ## Configure emoticon translations
 
@@ -25,6 +25,12 @@ automatically by Zulip.
 
 {end_tabs}
 
-## Current emoticon translations
+## List of emoticon translations
 
 {emoticon_translations}
+
+## Related articles
+
+* [Emoji and emoticons](/help/emoji-and-emoticons)
+* [Add custom emoji](/help/custom-emoji)
+* [Emoji reactions](/help/emoji-reactions)
