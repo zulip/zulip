@@ -192,9 +192,15 @@ people.add_active_user({
     user_id: 3,
     full_name: "Spike Spiegel",
 });
+people.add_active_user({
+    email: "eren@zulip.com",
+    user_id: 4,
+    full_name: "Eren Yeager",
+});
 
 people.initialize_current_user(1);
 muted_users.add_muted_user(2, 17947949);
+muted_users.add_muted_user(4, 17947949);
 
 let id = 0;
 
@@ -305,6 +311,22 @@ private_messages[0] = {
     to_user_ids: "2,3",
     type: "private",
     display_recipient: [{id: 1}, {id: 2}, {id: 3}],
+    pm_with_url: test_url(),
+};
+private_messages[1] = {
+    id: (id += 1),
+    sender_id: sender1,
+    to_user_ids: "2,4",
+    type: "private",
+    display_recipient: [{id: 1}, {id: 2}, {id: 4}],
+    pm_with_url: test_url(),
+};
+private_messages[2] = {
+    id: (id += 1),
+    sender_id: sender1,
+    to_user_ids: "3",
+    type: "private",
+    display_recipient: [{id: 1}, {id: 3}],
     pm_with_url: test_url(),
 };
 
@@ -508,6 +530,10 @@ test("test_filter_pm", ({mock_template}) => {
     ];
 
     rt.process_messages([private_messages[0]]);
+
+    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 12}), false);
+    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 13}), true);
+    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 14}), false);
 });
 
 test("test_filter_unread", ({mock_template}) => {
