@@ -118,7 +118,7 @@ function rebuild_status_emoji_selector_ui(selected_emoji_info) {
         selected_emoji = selected_emoji_info;
     }
     const rendered_status_emoji_selector = render_status_emoji_selector({selected_emoji});
-    $("#set-user-status-modal .status_emoji_wrapper").html(rendered_status_emoji_selector);
+    $("#set-user-status-modal .status-emoji-wrapper").html(rendered_status_emoji_selector);
 }
 
 function user_status_post_render() {
