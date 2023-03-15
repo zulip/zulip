@@ -18,7 +18,7 @@ export function set_selected_emoji_info(emoji_info) {
     rebuild_status_emoji_selector_ui(selected_emoji_info);
 }
 export function input_field() {
-    return $("#set-user-status-modal input.user_status");
+    return $("#set-user-status-modal input.user-status");
 }
 
 export function submit_button() {
@@ -136,7 +136,7 @@ function user_status_post_render() {
     $("#set-user-status-modal .user-status-value").on("click", (event) => {
         event.stopPropagation();
         const user_status_value = $(event.currentTarget).text().trim();
-        $("input.user_status").val(user_status_value);
+        $("input.user-status").val(user_status_value);
 
         const emoji_info = default_status_messages_and_emoji_info.find(
             (status) => status.status_text === user_status_value,
