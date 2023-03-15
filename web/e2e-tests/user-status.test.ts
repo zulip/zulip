@@ -33,7 +33,7 @@ async function test_user_status(page: Page): Promise<void> {
     // Check by clicking on common statues.
     await page.click(".user-status-value:nth-child(2)");
     await page.waitForFunction(
-        () => (document.querySelector(".user_status") as HTMLInputElement).value === "In a meeting",
+        () => (document.querySelector(".user-status") as HTMLInputElement).value === "In a meeting",
     );
     // It should select calendar emoji.
     await page.waitForSelector(".selected_emoji.emoji-1f4c5");
@@ -41,12 +41,12 @@ async function test_user_status(page: Page): Promise<void> {
     // Clear everything.
     await page.click("#clear_status_message_button");
     await page.waitForFunction(
-        () => (document.querySelector(".user_status") as HTMLInputElement).value === "",
+        () => (document.querySelector(".user-status") as HTMLInputElement).value === "",
     );
     await page.waitForSelector(".status_emoji_wrapper .smiley_icon", {visible: true});
 
     // Manually adding everything.
-    await page.type(".user_status", "Busy");
+    await page.type(".user-status", "Busy");
     const tada_emoji_selector = ".emoji-1f389";
     await page.click(".status_emoji_wrapper .smiley_icon");
     // Wait until emoji popover is opened.

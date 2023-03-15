@@ -8,7 +8,7 @@
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
 
-        & input.user_status {
+        & input.user-status {
             width: 95%;
             border: none;
             background-color: transparent;
