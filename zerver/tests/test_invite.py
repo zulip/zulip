@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.http import HttpRequest
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
@@ -22,14 +23,16 @@ from confirmation.models import (
     get_object_from_key,
 )
 from corporate.lib.stripe import get_latest_seat_count
+from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import do_create_user, process_new_human_user
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
     do_revoke_multi_use_invite,
+    too_many_recent_realm_invites,
 )
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
@@ -266,6 +269,164 @@ class InviteUserTest(InviteUserBase):
             result = try_invite(10, default_realm_max=50, new_realm_max=10, realm_max=40)
             self.assert_json_error_contains(result, "reached the limit")
             self.check_sent_emails([])
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_limited_plan_heuristics(self) -> None:
+        # There additional limits only apply if OPEN_REALM_CREATION is
+        # True and the plan is "limited," which is primarily only
+        # relevant on Zulip Cloud.
+
+        realm = do_create_realm("sdfoijt23489fuskdfjhksdf", "Totally Normal")
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
+        realm.invite_required = False
+        realm.save()
+
+        # Create a first user
+        admin_user = do_create_user(
+            "someone@example.com",
+            "password",
+            realm,
+            "full name",
+            role=UserProfile.ROLE_REALM_OWNER,
+            realm_creation=True,
+            acting_user=None,
+        )
+
+        # Inviting would work at all
+        with self.assertLogs(level="INFO") as m:
+            self.assertFalse(too_many_recent_realm_invites(realm, 1))
+        self.assertEqual(
+            m.output,
+            [
+                (
+                    "INFO:root:sdfoijt23489fuskdfjhksdf "
+                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "inviting 1 more, have 0 recent, but only 1 current users.  "
+                    "Ratio 1.0, 2 allowed"
+                )
+            ],
+        )
+
+        # This realm is currently very suspicious, so can only invite
+        # 2 users at once (2x current 1 user)
+        with self.assertLogs(level="INFO") as m:
+            self.assertFalse(too_many_recent_realm_invites(realm, 2))
+            self.assertTrue(too_many_recent_realm_invites(realm, 3))
+        self.assertEqual(
+            m.output,
+            [
+                (
+                    "INFO:root:sdfoijt23489fuskdfjhksdf "
+                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "inviting 2 more, have 0 recent, but only 1 current users.  "
+                    "Ratio 2.0, 2 allowed"
+                ),
+                (
+                    "WARNING:root:sdfoijt23489fuskdfjhksdf "
+                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "inviting 3 more, have 0 recent, but only 1 current users.  "
+                    "Ratio 3.0, 2 allowed"
+                ),
+            ],
+        )
+
+        # Having another user makes it slightly less suspicious, and
+        # also able to invite more in ratio with the current count of
+        # users (3x current 2 users)
+        self.register("other@example.com", "test", subdomain=realm.string_id)
+        with self.assertLogs(level="INFO") as m:
+            self.assertFalse(too_many_recent_realm_invites(realm, 6))
+            self.assertTrue(too_many_recent_realm_invites(realm, 7))
+        self.assertEqual(
+            m.output,
+            [
+                (
+                    "INFO:root:sdfoijt23489fuskdfjhksdf "
+                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
+                    "inviting 6 more, have 0 recent, but only 2 current users.  "
+                    "Ratio 3.0, 3 allowed"
+                ),
+                (
+                    "WARNING:root:sdfoijt23489fuskdfjhksdf "
+                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
+                    "inviting 7 more, have 0 recent, but only 2 current users.  "
+                    "Ratio 3.5, 3 allowed"
+                ),
+            ],
+        )
+
+        # Remove some more warning flags
+        do_change_realm_subdomain(realm, "reasonable", acting_user=None)
+        realm.description = "A real place"
+        realm.date_created = timezone_now() - datetime.timedelta(hours=2)
+        realm.save()
+
+        # This is now more allowable (5x current 2 users)
+        with self.assertLogs(level="INFO") as m:
+            self.assertFalse(too_many_recent_realm_invites(realm, 10))
+            self.assertTrue(too_many_recent_realm_invites(realm, 11))
+        self.assertEqual(
+            m.output,
+            [
+                (
+                    "INFO:root:reasonable "
+                    "(!: no-realm-icon,no-messages-sent) "
+                    "inviting 10 more, have 0 recent, but only 2 current users.  "
+                    "Ratio 5.0, 5 allowed"
+                ),
+                (
+                    "WARNING:root:reasonable "
+                    "(!: no-realm-icon,no-messages-sent) "
+                    "inviting 11 more, have 0 recent, but only 2 current users.  "
+                    "Ratio 5.5, 5 allowed"
+                ),
+            ],
+        )
+
+        # If we have a different max_invites on the realm that kicks in, though
+        realm.max_invites = 8
+        realm.save()
+        self.assertFalse(too_many_recent_realm_invites(realm, 8))
+        self.assertTrue(too_many_recent_realm_invites(realm, 9))
+
+        # And if we have a non-default max invite then that applies
+        # but not the heuristics (which would limit us to 10, here)
+        realm.max_invites = 12
+        realm.save()
+        self.assertFalse(too_many_recent_realm_invites(realm, 12))
+        self.assertTrue(too_many_recent_realm_invites(realm, 13))
+
+        # Not being a limited plan also opens us up from the
+        # heuristics.  First, set us back to the default invite limit
+        realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
+        realm.save()
+        with self.assertLogs(level="INFO") as m:
+            self.assertFalse(too_many_recent_realm_invites(realm, 10))
+            self.assertTrue(too_many_recent_realm_invites(realm, 11))
+        self.assertEqual(
+            m.output,
+            [
+                (
+                    "INFO:root:reasonable "
+                    "(!: no-realm-icon,no-messages-sent) "
+                    "inviting 10 more, have 0 recent, but only 2 current users.  "
+                    "Ratio 5.0, 5 allowed"
+                ),
+                (
+                    "WARNING:root:reasonable "
+                    "(!: no-realm-icon,no-messages-sent) "
+                    "inviting 11 more, have 0 recent, but only 2 current users.  "
+                    "Ratio 5.5, 5 allowed"
+                ),
+            ],
+        )
+        # Become a Standard plan
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=admin_user)
+        self.assertFalse(too_many_recent_realm_invites(realm, 3000))
+        self.assertTrue(too_many_recent_realm_invites(realm, 3001))
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=admin_user)
+        self.assertFalse(too_many_recent_realm_invites(realm, 3000))
+        self.assertTrue(too_many_recent_realm_invites(realm, 3001))
 
     def test_invite_user_to_realm_on_manual_license_plan(self) -> None:
         user = self.example_user("hamlet")

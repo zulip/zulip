@@ -1382,7 +1382,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         stream, _ = self.create_stream_with_recipient()
 
         invite_expires_in_minutes = 2 * 24 * 60
-        with mock.patch("zerver.actions.invites.apply_invite_realm_heuristics"):
+        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
@@ -1393,7 +1393,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         # We currently send emails when re-inviting users that haven't
         # turned into accounts, so count them towards the total
-        with mock.patch("zerver.actions.invites.apply_invite_realm_heuristics"):
+        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
@@ -1404,7 +1404,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         # Test mix of good and malformed invite emails
         with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.apply_invite_realm_heuristics"
+            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
         ):
             do_invite_users(
                 user,
@@ -1416,7 +1416,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         # Test inviting existing users
         with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.apply_invite_realm_heuristics"
+            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
         ):
             do_invite_users(
                 user,
@@ -1433,7 +1433,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        with mock.patch("zerver.actions.invites.apply_invite_realm_heuristics"):
+        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
             do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 
