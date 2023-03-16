@@ -725,38 +725,36 @@ strong {
 }
 
 @keyframes nudgeDown {
-    0% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(5px);
-    }
-
+    0%,
+    50%,
     100% {
         transform: translateY(0);
+    }
+
+    25%,
+    75% {
+        transform: translateY(4px);
     }
 }
 
 @keyframes nudgeUp {
-    0% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-5px);
-    }
-
+    0%,
+    50%,
     100% {
         transform: translateY(0);
+    }
+
+    25%,
+    75% {
+        transform: translateY(-4px);
     }
 }
 
 .nudge-down {
-    animation: nudgeBackgroundDown 500ms ease-in-out 1;
+    animation: nudgeDown 500ms ease-in-out 1;
 
     span:not(.pill-value) {
-        animation: nudgeBackgroundUp 500ms ease-in-out 1;
+        animation: nudgeUp 500ms ease-in-out 1;
     }
 }
 
