@@ -161,11 +161,11 @@ def get_issue_body(helper: Helper) -> str:
     issue = payload["issue"]
     assignee = issue["assignee"]
     return get_issue_event_message(
-        get_sender_name(payload),
-        action,
-        issue["html_url"].tame(check_string),
-        issue["number"].tame(check_int),
-        issue["body"].tame(check_none_or(check_string)),
+        user_name=get_sender_name(payload),
+        action=action,
+        url=issue["html_url"].tame(check_string),
+        number=issue["number"].tame(check_int),
+        message=issue["body"].tame(check_none_or(check_string)),
         assignee=assignee["login"].tame(check_string) if assignee else None,
         title=issue["title"].tame(check_string) if include_title else None,
     )
@@ -185,11 +185,11 @@ def get_issue_comment_body(helper: Helper) -> str:
     action += "({}) on".format(comment["html_url"].tame(check_string))
 
     return get_issue_event_message(
-        get_sender_name(payload),
-        action,
-        issue["html_url"].tame(check_string),
-        issue["number"].tame(check_int),
-        comment["body"].tame(check_string),
+        user_name=get_sender_name(payload),
+        action=action,
+        url=issue["html_url"].tame(check_string),
+        number=issue["number"].tame(check_int),
+        message=comment["body"].tame(check_string),
         title=issue["title"].tame(check_string) if include_title else None,
     )
 

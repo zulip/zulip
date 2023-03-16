@@ -322,12 +322,12 @@ def get_issue_action_body(payload: WildValue, action: str, include_title: bool) 
         message = issue["content"]["raw"].tame(check_string)
 
     return get_issue_event_message(
-        get_actor_info(payload),
-        action,
-        issue["links"]["html"]["href"].tame(check_string),
-        issue["id"].tame(check_int),
-        message,
-        assignee,
+        user_name=get_actor_info(payload),
+        action=action,
+        url=issue["links"]["html"]["href"].tame(check_string),
+        number=issue["id"].tame(check_int),
+        message=message,
+        assignee=assignee,
         title=issue["title"].tame(check_string) if include_title else None,
     )
 
