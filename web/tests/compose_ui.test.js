@@ -297,7 +297,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     $("#compose-textarea")[0] = "compose-textarea";
     override(text_field_edit, "insert", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
-        assert.equal(syntax, "translated: [Quoting…]\n");
+        assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
 
     function set_compose_content_with_caret(content) {
