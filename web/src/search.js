@@ -125,7 +125,7 @@ export function initialize() {
         // the search bar as soon as the user hits Esc.
         on_escape: message_view_header.exit_search,
         validate_selection: (sel, keycode) =>
-            keycode === 13 && !regexSearchWithoutValue.test(sel || ""),
+            keycode !== 13 || !regexSearchWithoutValue.test(sel || ""),
     });
 
     $searchbox_form.on("compositionend", () => {

@@ -142,6 +142,7 @@ import {get_string_diff} from "../../src/util";
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+    this.validate_selection = this.options.validate_selection || this.validate_selection;
     this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     this.header = this.options.header || this.header;
