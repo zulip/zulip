@@ -82,7 +82,7 @@ function pick_empty_narrow_banner() {
                   },
               ),
     };
-    const empty_search_narrow_title = $t({defaultMessage: "No search results"});
+    const default_banner_for_multiple_filters = $t({defaultMessage: "No search results"});
 
     const current_filter = narrow_state.filter();
 
@@ -102,7 +102,7 @@ function pick_empty_narrow_banner() {
         // No message can have multiple streams
         if (streams.length > 1) {
             return {
-                title: empty_search_narrow_title,
+                title: default_banner_for_multiple_filters,
                 html: $t_html({
                     defaultMessage:
                         "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
@@ -112,7 +112,7 @@ function pick_empty_narrow_banner() {
         // No message can have multiple topics
         if (current_filter.operands("topic").length > 1) {
             return {
-                title: empty_search_narrow_title,
+                title: default_banner_for_multiple_filters,
                 html: $t_html({
                     defaultMessage:
                         "<p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
@@ -122,7 +122,7 @@ function pick_empty_narrow_banner() {
         // No message can have multiple senders
         if (current_filter.operands("sender").length > 1) {
             return {
-                title: empty_search_narrow_title,
+                title: default_banner_for_multiple_filters,
                 html: $t_html({
                     defaultMessage:
                         "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
@@ -133,7 +133,7 @@ function pick_empty_narrow_banner() {
         // For empty stream searches within other narrows, we display the stop words
         if (current_filter.operands("search").length > 0) {
             return {
-                title: empty_search_narrow_title,
+                title: default_banner_for_multiple_filters,
                 search_data: retrieve_search_query_data(),
             };
         }
@@ -149,7 +149,9 @@ function pick_empty_narrow_banner() {
         }
 
         // For other multi-operator narrows, we just use the default banner
-        return default_banner;
+        return {
+            title: default_banner_for_multiple_filters,
+        };
     }
 
     switch (first_operator) {
@@ -277,7 +279,7 @@ function pick_empty_narrow_banner() {
         case "search": {
             // You are narrowed to empty search results.
             return {
-                title: empty_search_narrow_title,
+                title: $t({defaultMessage: "No search results"}),
                 search_data: retrieve_search_query_data(),
             };
         }
