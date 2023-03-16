@@ -516,6 +516,7 @@ export function maybe_reset_right_panel() {
         $(".right .settings").hide();
         $(".nothing-selected").show();
         $(".stream-row.active").removeClass("active");
+        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
     }
 }
 
