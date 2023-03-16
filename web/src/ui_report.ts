@@ -94,7 +94,7 @@ export function show_error($target: JQuery): void {
 export function loading(
     response_html: string,
     $status_box: JQuery,
-    successfully_loaded: boolean = false,
+    successfully_loaded = false,
 ): void {
     $status_box.find(".alert-content").html(response_html);
     if (!successfully_loaded) {

@@ -49,7 +49,7 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
 
 export function update_unread_mention_info_in_dom(
     $unread_mention_info_elem: JQuery,
-    stream_has_any_unread_mention_messages: Boolean,
+    stream_has_any_unread_mention_messages: boolean,
 ): void {
     const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
     if (!stream_has_any_unread_mention_messages) {

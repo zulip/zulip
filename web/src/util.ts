@@ -347,7 +347,7 @@ export function filter_by_word_prefix_match<T>(
     items: T[],
     search_term: string,
     item_to_text: (item: T) => string,
-    word_separator_regex: RegExp = /\s/,
+    word_separator_regex = /\s/,
 ): T[] {
     if (search_term === "") {
         return items;
