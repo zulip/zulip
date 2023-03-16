@@ -2354,14 +2354,35 @@ select.invite-as {
     }
 }
 
-#invite-method-choice {
-    margin-top: 2px;
+.invite_type_radio_section {
+    margin: 2px 0 2px 5px;
+    padding: 2px 0;
+
+    & label.radio {
+        display: inline;
+        margin: 5px;
+    }
+
+    & input {
+        float: left;
+        width: auto;
+        cursor: pointer;
+        margin: 5.5px 0 1px;
+
+        &:focus {
+            outline: 1px dotted hsl(0deg 0% 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
 }
 
-#multiuse_radio_section {
-    margin-top: 4px;
-    margin-bottom: -2px;
-    display: none;
+#generate_multiuse_invite_radio_container {
+    width: fit-content;
 }
 
 #custom-invite-expiration-time {
