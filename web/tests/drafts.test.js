@@ -520,7 +520,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             dark_background: "",
             topic: "topic",
             raw_content: "Test stream message",
-            time_stamp: "7:55 AM",
+            time_stamp: "7:55 AM",
         },
         {
             draft_id: "id2",
@@ -685,7 +685,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             dark_background: "",
             topic: "topic",
             raw_content: "Test stream message",
-            time_stamp: "7:55 AM",
+            time_stamp: "7:55 AM",
         },
         {
             draft_id: "id3",
