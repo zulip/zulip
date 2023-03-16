@@ -2,7 +2,6 @@ import $ from "jquery";
 import Micromodal from "micromodal";
 
 import * as blueslip from "./blueslip";
-import * as browser_history from "./browser_history";
 
 let $active_overlay;
 let close_handler;
@@ -317,16 +316,6 @@ export function close_for_hash_change() {
     if ($active_overlay) {
         close_handler();
     }
-}
-
-export function open_settings() {
-    open_overlay({
-        name: "settings",
-        $overlay: $("#settings_overlay_container"),
-        on_close() {
-            browser_history.exit_overlay();
-        },
-    });
 }
 
 export function initialize() {

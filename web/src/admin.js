@@ -4,7 +4,6 @@ import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
 import {$t, get_language_name, language_list} from "./i18n";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
@@ -234,7 +233,7 @@ export function launch(section) {
     build_page();
     settings_sections.reset_sections();
 
-    overlays.open_settings();
+    settings.open_settings_overlay();
     settings_panel_menu.org_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("organization");
 }
