@@ -34,6 +34,12 @@ def get_code_pull_request_merged_body(payload: WildValue) -> str:
         "merged",
         get_code_pull_request_url(payload),
         get_code_pull_request_id(payload),
+        target_branch=payload["resource"]["sourceRefName"]
+        .tame(check_string)
+        .replace("refs/heads/", ""),
+        base_branch=payload["resource"]["targetRefName"]
+        .tame(check_string)
+        .replace("refs/heads/", ""),
         title=get_code_pull_request_title(payload),
     )
 
