@@ -39,49 +39,40 @@ export function smart_insert($textarea, syntax, block_format) {
     const before_str = $textarea.val().slice(0, pos);
     const after_str = $textarea.val().slice(pos);
 
-    if (pos > 0) {
-        // If there isn't space either at the end of the content
-        // before the insert or (unlikely) at the start of the syntax,
-        // add one.
-        if (!is_space(before_str.slice(-1)) && !is_space(syntax[0])) {
-            syntax = " " + syntax;
-        }
-
-        // If there isn't whitespace either at the end of the syntax or the
-        // start of the content after the syntax, add one.
-        if (
-            !(
-                (after_str.length > 0 && is_space(after_str[0])) ||
-                (syntax.length > 0 && is_space(syntax.slice(-1)))
-            )
-        ) {
-            syntax += " ";
-        }
-    }
-
     // For inserting newlines above and below the syntax, if the option is true.
     if (block_format === true) {
         // If there are non-whitespace characters before the syntax then insert
         // two newline characters before the syntax if the previous character in
         // the content before the syntax is not a newline itself, else, insert only
         // a single newline character.
-
         if (before_str.trim().length > 0) {
             if (before_str[before_str.length - 1] !== "\n") {
-                syntax = "\n\n" + syntax;
+                syntax = '\n\n' + syntax;
             } else {
-                syntax = "\n" + syntax;
+                syntax = '\n' + syntax;
             }
         }
-
         // If there is now content after the syntax, or if the first character after
         // syntax is not a newline character, then append two newline characters to
-        // the syntax. Otherwise, append only a single newline character to the string
-
-        if (after_str.length === 0 || after_str[0] !== "\n") {
-            syntax += "\n\n";
+        // the syntax. Otherwise, append only a single newline character to the string.
+        if (after_str.length === 0 || after_str[0] !== '\n') {
+            syntax += '\n\n';
         } else {
-            syntax += "\n";
+            syntax += '\n';
+        }
+    } else {
+        if (pos > 0 && !is_space(before_str.slice(-1)) && !is_space(syntax[0]))  {
+            // If there isn't space either at the end of the content
+            // before the insert or (unlikely) at the start of the syntax,
+            // add one.
+            syntax = ' ' + syntax;
+        }
+
+        // If there isn't whitespace either at the end of the syntax or the
+        // start of the content after the syntax, add one.
+        if (!(after_str.length > 0 && is_space(after_str[0]) ||
+              syntax.length > 0 && is_space(syntax.slice(-1)))) {
+            syntax += ' ';
         }
     }
 
@@ -92,7 +83,7 @@ export function smart_insert($textarea, syntax, block_format) {
     autosize_textarea($textarea);
 }
 
-export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea"), block_format) {
+export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea"), block_format = false) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert.
