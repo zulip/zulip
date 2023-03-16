@@ -1263,7 +1263,11 @@ export function initialize() {
             const topic = $elt.attr("data-topic-name");
             unread_ops.mark_topic_as_read(stream_id, topic);
         }
-        change_focused_element($elt, "down_arrow");
+        // If `unread` filter is selected, the focused topic row gets removed
+        // and we automatically move one row down.
+        if (!filters.has("unread")) {
+            change_focused_element($elt, "down_arrow");
+        }
     });
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
