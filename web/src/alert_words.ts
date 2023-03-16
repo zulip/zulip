@@ -54,8 +54,8 @@ export function process_message(message: Message):void {
     }
 
     for (const word of my_alert_words) {
-        const clean:string = _.escapeRegExp(word).replace(/["&'<>]/g, (c:string) =>
-            alert_regex_replacements.get(c),
+        const clean:string = _.escapeRegExp(word).replace(/["&'<>]/g, (c: string) =>
+            alert_regex_replacements.get(c!),
         );
         const before_punctuation:string = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation:string = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
