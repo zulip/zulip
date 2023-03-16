@@ -6520,6 +6520,11 @@ paths:
         Before Zulip 7.0 (feature level 159), message senders were allowed
         to edit the topic indefinitely.
 
+        **Changes**: Before Zulip 7.0 (feature level 172), anyone could add
+        a topic to messages without topic regardless of topic edit
+        permissions. Now topic editing restrictions apply to messages without a
+        topic as well.
+
         [config-message-editing]: /help/restrict-message-editing-and-deletion
       x-curl-examples-parameters:
         oneOf:

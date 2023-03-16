@@ -106,22 +106,6 @@ def validate_message_edit_payload(
         raise JsonableError(_("Widgets cannot be edited."))
 
 
-def can_edit_topic(
-    user_profile: UserProfile,
-    is_no_topic_msg: bool,
-) -> bool:
-    # We allow anyone to edit (no topic) messages to help tend them.
-    if is_no_topic_msg:
-        return True
-
-    # The can_move_messages_to_another_topic helper returns whether the user can edit
-    # the topic or not based on edit_topic_policy setting and the user's role.
-    if user_profile.can_move_messages_to_another_topic():
-        return True
-
-    return False
-
-
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
@@ -995,9 +979,7 @@ def check_update_message(
     ):
         raise JsonableError(_("You don't have permission to edit this message"))
 
-    is_no_topic_msg = message.topic_name() == "(no topic)"
-
-    if topic_name is not None and not can_edit_topic(user_profile, is_no_topic_msg):
+    if topic_name is not None and not user_profile.can_move_messages_to_another_topic():
         raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
@@ -1019,7 +1001,6 @@ def check_update_message(
         and user_profile.realm.move_messages_within_stream_limit_seconds is not None
         and not user_profile.is_realm_admin
         and not user_profile.is_moderator
-        and not is_no_topic_msg
     ):
         deadline_seconds = (
             user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
