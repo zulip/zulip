@@ -167,6 +167,12 @@ html {
             & a {
                 color: inherit;
                 display: block;
+
+                /* Extend to entire width of sidebar, not just link area */
+                margin-left: calc(0px - var(--help-sidebar-padding));
+                margin-right: calc(0px - var(--help-sidebar-padding));
+                padding-left: calc(var(--help-sidebar-padding));
+                padding-right: calc(var(--help-sidebar-padding));
             }
         }
 
