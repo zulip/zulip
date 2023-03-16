@@ -82,7 +82,7 @@ function pick_empty_narrow_banner() {
                   },
               ),
     };
-    const default_banner_for_multiple_filters = $t({defaultMessage: "No search results"});
+    const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     const current_filter = narrow_state.filter();
 
@@ -279,7 +279,7 @@ function pick_empty_narrow_banner() {
         case "search": {
             // You are narrowed to empty search results.
             return {
-                title: $t({defaultMessage: "No search results"}),
+                title: $t({defaultMessage: "No search results."}),
                 search_data: retrieve_search_query_data(),
             };
         }
