@@ -86,7 +86,7 @@ interface Messages {
     alerted: boolean;
 }
 
-export function notifies(message: Messages) {
+export function notifies(message: Messages) :boolean {
     // We exclude ourselves from notifications when we type one of our own
     // alert words into a message, just because that can be annoying for
     // certain types of workflows where everybody on your team, including
