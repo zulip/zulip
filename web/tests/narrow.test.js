@@ -282,7 +282,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: There are no messages here.", ""),
+        empty_narrow_html("translated: No search results", ""),
     );
     page_params.is_spectator = false;
 
@@ -520,10 +520,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
-        ),
+        empty_narrow_html("translated: No search results"),
     );
 
     set_filter([["is", "invalid"]]);
