@@ -2534,14 +2534,25 @@ select.invite-as {
     }
 }
 
-#invite-method-choice {
-    margin-top: 2px;
+.invite_type_radio_section {
+    margin: 2px 2px 2px 5px;
+
+    & input[type="radio"] {
+        cursor: pointer;
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+
+    .control-label-disabled label {
+        pointer-events: none;
+        cursor: not-allowed;
+    }
 }
 
-#multiuse_radio_section {
-    margin-top: 4px;
-    margin-bottom: -2px;
-    display: none;
+#generate_multiuse_invite_radio_container {
+    width: fit-content;
 }
 
 #custom-invite-expiration-time {

@@ -269,6 +269,13 @@ function open_invite_user_modal(e) {
 
     function invite_user_modal_post_render() {
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+        $("#email_invite_radio").prop("checked", true);
+
+        if (!page_params.is_admin) {
+            $("#generate_multiuse_invite_radio").prop("disabled", true);
+            $("#generate_multiuse_invite_radio_container").addClass("control-label-disabled");
+            $("#generate_multiuse_invite_radio_container").addClass("disabled_setting_tooltip");
+        }
 
         autosize($("#invitee_emails").trigger("focus"));
 
@@ -288,24 +295,19 @@ function open_invite_user_modal(e) {
             toggle_invite_submit_button();
         });
 
-        $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
-            $("#invitee_emails").prop("disabled", false);
+        $("#invite-user-modal").on("change", "#email_invite_radio", () => {
+            $("#invitee_emails_container").show();
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").data(
                 "loading-text",
                 $t({defaultMessage: "Inviting..."}),
             );
-            $("#multiuse_radio_section").hide();
-            $("#invite-method-choice").show();
             toggle_invite_submit_button();
             reset_error_messages();
         });
 
-        $("#generate_multiuse_invite_button").on("click", () => {
-            $("#generate_multiuse_invite_radio").prop("checked", true);
-            $("#multiuse_radio_section").show();
-            $("#invite-method-choice").hide();
-            $("#invitee_emails").prop("disabled", true);
+        $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
+            $("#invitee_emails_container").hide();
             $("#invite-user-modal .dialog_submit_button").text(
                 $t({defaultMessage: "Generate invite link"}),
             );
