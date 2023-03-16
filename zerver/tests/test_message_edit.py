@@ -1195,6 +1195,13 @@ class EditMessageTest(EditMessageTestCase):
             id_, "G", "The time limit for editing this message's topic has passed", "hamlet"
         )
 
+        # topic edit permissions apply on "no topic" messages as well
+        message.set_topic_name("(no topic)")
+        message.save()
+        do_edit_message_assert_error(
+            id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
+        )
+
         # set the topic edit limit to two weeks
         do_set_realm_property(
             hamlet.realm,
@@ -1204,11 +1211,6 @@ class EditMessageTest(EditMessageTestCase):
         )
         do_edit_message_assert_success(id_, "G", "cordelia")
         do_edit_message_assert_success(id_, "H", "hamlet")
-
-        # anyone should be able to edit "no topic" indefinitely
-        message.set_topic_name("(no topic)")
-        message.save()
-        do_edit_message_assert_success(id_, "D", "cordelia")
 
     @mock.patch("zerver.actions.message_edit.send_event")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:

@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 172**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Topic editing
+  restrictions now apply to messages without a topic as well.
+
 **Feature level 171**:
 
 * [`POST /fetch_api_key`](/api/fetch-api-key),
