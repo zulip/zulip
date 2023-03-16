@@ -95,11 +95,11 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
         stringified_description = None
 
     return get_issue_event_message(
-        get_issue_user_name(payload),
-        "created",
-        get_object_url(payload),
-        payload["object_attributes"]["iid"].tame(check_int),
-        stringified_description,
+        user_name=get_issue_user_name(payload),
+        action="created",
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        message=stringified_description,
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
@@ -107,10 +107,10 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
 
 def get_issue_event_body(payload: WildValue, action: str, include_title: bool) -> str:
     return get_issue_event_message(
-        get_issue_user_name(payload),
-        action,
-        get_object_url(payload),
-        payload["object_attributes"]["iid"].tame(check_int),
+        user_name=get_issue_user_name(payload),
+        action=action,
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
 
@@ -159,8 +159,12 @@ def get_merge_request_open_or_updated_body(
         action=action,
         url=pull_request["url"].tame(check_string),
         number=pull_request["iid"].tame(check_int),
-        target_branch=pull_request["source_branch"].tame(check_string) if action == "created" else None,
-        base_branch=pull_request["target_branch"].tame(check_string) if action == "created" else None,
+        target_branch=pull_request["source_branch"].tame(check_string)
+        if action == "created"
+        else None,
+        base_branch=pull_request["target_branch"].tame(check_string)
+        if action == "created"
+        else None,
         message=pull_request["description"].tame(check_string),
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type="MR",

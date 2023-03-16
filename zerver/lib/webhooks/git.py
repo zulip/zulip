@@ -235,6 +235,7 @@ def get_pull_request_event_message(
 
 
 def get_issue_event_message(
+    *,
     user_name: str,
     action: str,
     url: str,
