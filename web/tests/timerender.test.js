@@ -54,13 +54,13 @@ run_test("get_localized_date_or_time_for_format returns correct format", () => {
         {
             format: "time",
             expected: {
-                date: "1:53 AM",
+                date: "1:53 AM",
             },
         },
         {
             format: "time_sec",
             expected: {
-                date: "1:53:08 AM",
+                date: "1:53:08 AM",
             },
         },
         {
@@ -78,7 +78,7 @@ run_test("get_localized_date_or_time_for_format returns correct format", () => {
         {
             format: "dayofyear_time",
             expected: {
-                date: "Jan 27, 1:53 AM",
+                date: "Jan 27, 1:53 AM",
             },
         },
         {
@@ -90,7 +90,7 @@ run_test("get_localized_date_or_time_for_format returns correct format", () => {
         {
             format: "dayofyear_year_time",
             expected: {
-                date: "Jan 27, 2021, 1:53 AM",
+                date: "Jan 27, 2021, 1:53 AM",
             },
         },
         {
@@ -102,7 +102,7 @@ run_test("get_localized_date_or_time_for_format returns correct format", () => {
         {
             format: "weekday_dayofyear_year_time",
             expected: {
-                date: "Wed, Jan 27, 2021, 1:53 AM",
+                date: "Wed, Jan 27, 2021, 1:53 AM",
             },
         },
     ];
@@ -125,7 +125,7 @@ run_test("get_localized_date_or_time_for_format returns correct localized date",
         {
             language: "ru",
             expected: {
-                date: "четверг, 12 апреля 2018 г.",
+                date: "четверг, 12 апреля 2018 г.",
             },
         },
         {
@@ -259,7 +259,7 @@ run_test("format_time_modern", () => {
 
     assert.equal(timerender.format_time_modern(few_minutes_in_future, today), "Jan 27, 2021");
     assert.equal(timerender.format_time_modern(weeks_in_future, today), "Feb 16, 2021");
-    assert.equal(timerender.format_time_modern(less_than_24_hours_ago, today), "2:53 AM");
+    assert.equal(timerender.format_time_modern(less_than_24_hours_ago, today), "2:53 AM");
     assert.equal(
         timerender.format_time_modern(twenty_four_hours_ago, today),
         "translated: Yesterday",
@@ -287,7 +287,7 @@ run_test("format_time_modern_different_timezones", () => {
     assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
 
     process.env.TZ = "America/Juneau";
-    let expected = "translated: 5/16/2017 at 11:12:53 PM AKDT (UTC-08:00)";
+    let expected = "translated: 5/16/2017 at 11:12:53 PM AKDT (UTC-08:00)";
     assert.equal(timerender.get_full_datetime(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
     process.env.TZ = utc_tz;
@@ -298,7 +298,7 @@ run_test("format_time_modern_different_timezones", () => {
     assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
 
     process.env.TZ = "Asia/Brunei";
-    expected = "translated: 5/17/2017 at 5:12:53 AM (UTC+08:00)";
+    expected = "translated: 5/17/2017 at 5:12:53 AM (UTC+08:00)";
     assert.equal(timerender.get_full_datetime(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
     process.env.TZ = utc_tz;
@@ -309,7 +309,7 @@ run_test("format_time_modern_different_timezones", () => {
     assert.equal(timerender.format_time_modern(yesterday, today), "Friday");
 
     process.env.TZ = "America/Juneau";
-    expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
+    expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
     assert.equal(timerender.get_full_datetime(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
     process.env.TZ = utc_tz;
@@ -386,13 +386,13 @@ run_test("absolute_time_12_hour", () => {
     let timestamp = date_2019.getTime();
 
     let today = date_2019;
-    let expected = "Apr 12, 5:52 PM";
+    let expected = "Apr 12, 5:52 PM";
     let actual = timerender.absolute_time(timestamp, today);
     assert.equal(actual, expected);
 
     // timestamp with hour > 12, different year
     let next_year = add(today, {years: 1});
-    expected = "Apr 12, 2019, 5:52 PM";
+    expected = "Apr 12, 2019, 5:52 PM";
     actual = timerender.absolute_time(timestamp, next_year);
     assert.equal(actual, expected);
 
@@ -400,13 +400,13 @@ run_test("absolute_time_12_hour", () => {
     timestamp = date_2017.getTime();
 
     today = date_2017;
-    expected = "May 18, 7:12 AM";
+    expected = "May 18, 7:12 AM";
     actual = timerender.absolute_time(timestamp, today);
     assert.equal(actual, expected);
 
     // timestamp with hour < 12, different year
     next_year = add(today, {years: 1});
-    expected = "May 18, 2017, 7:12 AM";
+    expected = "May 18, 2017, 7:12 AM";
     actual = timerender.absolute_time(timestamp, next_year);
     assert.equal(actual, expected);
 });
@@ -443,7 +443,7 @@ run_test("absolute_time_24_hour", () => {
 run_test("get_full_datetime", () => {
     const time = date_2017_PM;
 
-    let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
+    let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
     assert.equal(timerender.get_full_datetime(time), expected);
 
     // test 24 hour time setting.
@@ -456,7 +456,7 @@ run_test("get_full_datetime", () => {
     // Test the GMT[+-]x:y logic.
     const previous_env_tz = process.env.TZ;
     process.env.TZ = "Asia/Kolkata";
-    expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+05:30)";
+    expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+05:30)";
     assert.equal(timerender.get_full_datetime(time), expected);
     process.env.TZ = previous_env_tz;
 });
@@ -526,12 +526,12 @@ run_test("set_full_datetime", () => {
 
     user_settings.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
-    expected = "5:52 PM";
+    expected = "5:52 PM";
     assert.equal(time_str, expected);
 
     time = add(time, {hours: -7}); // time between 1 to 12 o'clock time.
     user_settings.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
-    expected = "10:52 AM";
+    expected = "10:52 AM";
     assert.equal(time_str, expected);
 });
