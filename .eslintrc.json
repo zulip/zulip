@@ -145,6 +145,7 @@
         {
             "files": ["**/*.ts"],
             "extends": [
+                "plugin:@typescript-eslint/recommended",
                 "plugin:@typescript-eslint/recommended-requiring-type-checking",
                 "plugin:import/typescript"
             ],
@@ -164,7 +165,6 @@
             "rules": {
                 // Disable base rule to avoid conflict
                 "no-duplicate-imports": "off",
-                "no-unused-vars": "off",
                 "no-useless-constructor": "off",
                 "no-use-before-define": "off",
 
@@ -178,6 +178,7 @@
                 "@typescript-eslint/member-ordering": "error",
                 "@typescript-eslint/no-duplicate-imports": "error",
                 "@typescript-eslint/no-extraneous-class": "error",
+                "@typescript-eslint/no-non-null-assertion": "off",
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unsafe-argument": "off",
