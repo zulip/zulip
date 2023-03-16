@@ -62,6 +62,11 @@ Handlebars.registerHelper("t", function (message) {
     // Note: use `{` and `}` instead of `{{` and `}}` to declare
     // variables.
 
+    message = message
+        .trim()
+        .split("\n")
+        .map((s) => s.trim())
+        .join(" ");
     const descriptor = {id: message, defaultMessage: message};
     return intl.formatMessage(descriptor, this);
 });
