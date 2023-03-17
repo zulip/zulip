@@ -13,11 +13,12 @@ module.exports = ({file}) => ({
             require("postcss-import")({
                 plugins: [require("postcss-prefixwrap")("%dark-theme")],
             }),
-        require("postcss-nested"),
         require("postcss-extend-rule"),
         require("postcss-simple-vars")({variables: media_breakpoints}),
-        require("postcss-calc"),
-        require("postcss-media-minmax"),
-        require("autoprefixer"),
+        require("postcss-preset-env")({
+            features: {
+                "nesting-rules": true,
+            },
+        }),
     ],
 });
