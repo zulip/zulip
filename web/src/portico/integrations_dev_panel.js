@@ -42,9 +42,7 @@ function clear_elements(elements) {
     for (const element_name of elements) {
         const handler = clear_handlers[element_name];
         if (typeof handler === "string") {
-            const element_object = $(handler)[0];
-            element_object.value = "";
-            element_object.innerHTML = "";
+            $(handler).val("").empty();
         } else {
             handler();
         }
@@ -59,10 +57,7 @@ const results_notice_level_to_color_map = {
 };
 
 function set_results_notice(msg, level) {
-    const results_notice_field = $("#results_notice")[0];
-    results_notice_field.innerHTML = msg;
-    results_notice_field.style.color = results_notice_level_to_color_map[level];
-    return;
+    $("#results_notice").text(msg).css("color", results_notice_level_to_color_map[level]);
 }
 
 function get_api_key_from_selected_bot() {
@@ -145,7 +140,7 @@ function load_fixture_options(integration_name) {
     for (const fixture_name of fixtures_names) {
         const new_dropdown_option = document.createElement("option");
         new_dropdown_option.value = fixture_name;
-        new_dropdown_option.innerHTML = fixture_name;
+        new_dropdown_option.textContent = fixture_name;
         fixtures_options_dropdown.add(new_dropdown_option);
     }
     load_fixture_body(fixtures_names[0]);
@@ -167,17 +162,17 @@ function update_url() {
     if (integration_name === "" || api_key === "") {
         clear_elements(["URL"]);
     } else {
-        let url = url_base + integration_name + "?api_key=" + api_key;
+        const params = new URLSearchParams({api_key});
         const stream_name = $("#stream_name").val();
         if (stream_name !== "") {
-            url += "&stream=" + stream_name;
+            params.set("stream", stream_name);
             const topic_name = $("#topic_name").val();
             if (topic_name !== "") {
-                url += "&topic=" + topic_name;
+                params.set("topic", topic_name);
             }
         }
+        const url = `${url_base}${integration_name}?${params}`;
         url_field.value = url;
-        url_field.innerHTML = url;
     }
 
     return;
@@ -280,7 +275,7 @@ function send_webhook_fixture_message() {
             // let the user easily know that this fixture body was
             // also sent successfully.
             set_results(response);
-            if ($("#results_notice")[0].innerHTML === "Success!") {
+            if ($("#results_notice").text() === "Success!") {
                 set_results_notice("Success!!!", "success");
             } else {
                 set_results_notice("Success!", "success");
