@@ -1038,6 +1038,23 @@ export function get_bot_ids(): number[] {
 
     return bot_ids;
 }
+export function verify_non_active_human_id(user_id: number): boolean {
+    if (non_active_user_dict.has(user_id)) {
+        return true;
+    }
+
+    return false;
+}
+
+export function get_names_for_deactivated_users(user_ids: number[]): string[] {
+    const filtered_deactivated_users: string[] = user_ids.map((user_id) => {
+        if (verify_non_active_human_id(user_id)) {
+            return get_by_user_id(user_id)?.full_name ?? "";
+        }
+        return "";
+    });
+    return filtered_deactivated_users.filter((full_name) => full_name !== "");
+}
 
 export function get_active_human_count(): number {
     let count = 0;
