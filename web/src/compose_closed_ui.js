@@ -6,6 +6,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as stream_data from "./stream_data";
 
 export function get_recipient_label(message) {
@@ -96,6 +97,24 @@ function update_buttons(text_stream, disable_reply) {
     update_reply_button_state(disable_reply);
 }
 
+// disable compose box reply button, when the recipient is a deactivated user.
+function update_reply_button_disable_status(disable = false) {
+    $(".compose_reply_button").attr("disabled", disable);
+    if (!disable) {
+        if (narrow_state.is_message_feed_visible()) {
+            $("#compose_buttons > .reply_button_container").attr(
+                "data-tooltip-template-id",
+                "compose_reply_message_button_tooltip_template",
+            );
+        } else {
+            $("#compose_buttons > .reply_button_container").attr(
+                "data-tooltip-template-id",
+                "compose_reply_selected_topic_button_tooltip_template",
+            );
+        }
+    }
+}
+
 export function update_buttons_for_private() {
     const text_stream = $t({defaultMessage: "New stream message"});
     if (
@@ -128,6 +147,76 @@ export function update_buttons_for_stream() {
     update_buttons(text_stream);
 }
 
+function update_button_for_deactivated_users(function_to_get_user_ids) {
+    const check_user_is_deactivated = compose_actions.check_pm_deactivated(
+        function_to_get_user_ids,
+        false,
+    );
+    if (check_user_is_deactivated.is_user_id_deactivated) {
+        const disable_reply = true;
+        if (check_user_is_deactivated.user_ids_length === 1) {
+            $("#compose_buttons > .reply_button_container").attr(
+                "data-tooltip-template-id",
+                "compose_reply_button_disabled_for_deactivated_user_tooltip_template",
+            );
+        } else {
+            $("#compose_buttons > .reply_button_container").attr(
+                "data-tooltip-template-id",
+                "compose_reply_button_disabled_for_deactivated_users_tooltip_template",
+            );
+        }
+        compose_actions.cancel();
+        return update_reply_button_disable_status(disable_reply);
+    }
+    return update_reply_button_disable_status();
+}
+// Disable the reply button if the recipient is a deactivated user.
+// There are three different ways to obtain the recipient's ID:
+// First, get it from the recent_topics_ui focused row for the recent topics table.
+// Second, retrieve it from the narrow_state for private messages.
+// Third, acquire the ID from the selected_message, which is useful for all message narrows.
+// In the case of private messages, selected_message.display_recipient is an array.
+// For stream/topic, it is a string.
+export function update_reply_button_deactivated_users(message) {
+    if (message) {
+        if (message.display_reply_to) {
+            const recent_topic_recipient = recent_topics_ui.get_focused_row_message().reply_to;
+            return update_button_for_deactivated_users(
+                people.emails_strings_to_user_ids_string(recent_topic_recipient),
+            );
+        }
+
+        return update_reply_button_disable_status();
+    } else if (narrow_state.pm_ids_string()) {
+        return update_button_for_deactivated_users(narrow_state.pm_ids_string());
+    } else if (
+        message_lists.current.selected_message() &&
+        Array.isArray(message_lists.current.selected_message().display_recipient)
+    ) {
+        const ids_array = message_lists.current
+            .selected_message()
+            .display_recipient.map((object) => object.id);
+        const check_user_is_deactivated = compose_actions.check_pm_deactivated(false, ids_array);
+        if (check_user_is_deactivated.is_user_id_deactivated) {
+            const disable_reply = true;
+            if (check_user_is_deactivated.user_ids_length < 3) {
+                $("#compose_buttons > .reply_button_container").attr(
+                    "data-tooltip-template-id",
+                    "compose_reply_button_disabled_for_deactivated_user_tooltip_template",
+                );
+            } else {
+                $("#compose_buttons > .reply_button_container").attr(
+                    "data-tooltip-template-id",
+                    "compose_reply_button_disabled_for_deactivated_users_tooltip_template",
+                );
+            }
+            compose_actions.cancel();
+            return update_reply_button_disable_status(disable_reply);
+        }
+    }
+    return update_reply_button_disable_status();
+}
+
 export function update_buttons_for_recent_topics() {
     const text_stream = $t({defaultMessage: "New stream message"});
     $("#left_bar_compose_stream_button_big").attr(
@@ -146,6 +235,8 @@ export function set_standard_text_for_reply_button() {
 }
 
 export function update_reply_recipient_label(message) {
+    // Change the reply button status whenever the recipient_label changes.
+    update_reply_button_deactivated_users(message);
     const recipient_label = get_recipient_label(message);
     if (recipient_label) {
         set_reply_button_label(

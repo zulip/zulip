@@ -181,6 +181,33 @@ function same_recipient_as_before(msg_type, opts) {
     );
 }
 
+// it checks for any deactivated pm-recipients and returns,
+// true if any deactivated user exists with number of recipients
+// present else returns false.
+export function check_pm_deactivated(opts, ids_array) {
+    let user_ids_array;
+    if (ids_array) {
+        user_ids_array = ids_array;
+    } else {
+        user_ids_array = people.user_ids_string_to_ids_array(opts);
+    }
+    const is_user_id_deactivated = user_ids_array.map((user_id) =>
+        people.verify_non_active_human_id(Number.parseInt(user_id, 10)),
+    );
+    return {
+        is_user_id_deactivated: is_user_id_deactivated.includes(true),
+        user_ids_length: user_ids_array.length,
+    };
+}
+
+function check_new_topic_or_pm_trigger(msg_type, opts) {
+    return (
+        (msg_type === "stream" && opts.trigger === "new topic button") ||
+        (msg_type === "private" && opts.trigger === "new private message") ||
+        (msg_type === "private" && opts.trigger === "compose_hotkey")
+    );
+}
+
 export function start(msg_type, opts) {
     if (page_params.is_spectator) {
         spectators.login_to_access();
@@ -197,9 +224,26 @@ export function start(msg_type, opts) {
         return;
     }
     compose_banner.clear_message_sent_banners();
-    expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+
+    // Close and block compose box for the pm-with case, if
+    // the recipient is a deactivated user else,
+    // expand compose box.
+    if (
+        opts.private_message_recipient !== "" &&
+        check_pm_deactivated(
+            people.emails_strings_to_user_ids_string(opts.private_message_recipient),
+            false,
+        ).is_user_id_deactivated &&
+        // Expand compose box with a deactivated user also,
+        // if it is the case with stream or new private message button.
+        !check_new_topic_or_pm_trigger(msg_type, opts)
+    ) {
+        cancel();
+    } else {
+        expand_compose_box();
+    }
 
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or

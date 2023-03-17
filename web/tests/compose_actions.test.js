@@ -186,8 +186,16 @@ test("start", ({override, override_rewire, mock_template}) => {
     stream_data.clear_subscriptions();
 
     // Start direct message
+    const pm_recipient = {
+        user_id: 101,
+        email: "foo@example.com",
+        full_name: "Foo",
+    };
+
+    people.add_active_user(pm_recipient);
+
     compose_defaults = {
-        private_message_recipient: "foo@example.com",
+        private_message_recipient: pm_recipient.email,
     };
 
     opts = {

@@ -9,6 +9,7 @@ import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -446,6 +447,7 @@ export function dispatch_normal_event(event) {
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
                     }
+                    compose_closed_ui.update_reply_button_deactivated_users();
                     break;
                 case "remove":
                     people.deactivate(event.person);
@@ -456,6 +458,7 @@ export function dispatch_normal_event(event) {
                     if (people.user_is_bot(event.person.user_id)) {
                         settings_users.update_bot_data(event.person.user_id);
                     }
+                    compose_closed_ui.update_reply_button_deactivated_users();
                     break;
                 case "update":
                     user_events.update_person(event.person);
