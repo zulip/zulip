@@ -239,11 +239,9 @@ def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], 
     return is_muted
 
 
-def get_users_muting_topic(stream_id: int, topic_name: str) -> QuerySet[UserProfile]:
-    return UserProfile.objects.select_related("realm").filter(
-        id__in=UserTopic.objects.filter(
-            stream_id=stream_id,
-            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
-            topic_name__iexact=topic_name,
-        ).values("user_profile_id")
-    )
+def get_users_with_user_topic_visibility_policy(
+    stream_id: int, topic_name: str
+) -> QuerySet[UserTopic]:
+    return UserTopic.objects.filter(
+        stream_id=stream_id, topic_name__iexact=topic_name
+    ).select_related("user_profile", "user_profile__realm")
