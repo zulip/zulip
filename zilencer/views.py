@@ -194,10 +194,10 @@ def unregister_remote_push_device(
     validate_bouncer_token_request(token, token_kind)
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
-    deleted = RemotePushDeviceToken.objects.filter(
+    (num_deleted, ignored) = RemotePushDeviceToken.objects.filter(
         user_identity.filter_q(), token=token, kind=token_kind, server=server
     ).delete()
-    if deleted[0] == 0:
+    if num_deleted == 0:
         raise JsonableError(err_("Token does not exist"))
 
     return json_success(request)

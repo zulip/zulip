@@ -322,14 +322,14 @@ def delete_messages(msg_ids: List[int]) -> None:
 
 
 def delete_expired_attachments(realm: Realm) -> None:
-    attachments_deleted, _ = Attachment.objects.filter(
+    (num_deleted, ignored) = Attachment.objects.filter(
         messages__isnull=True,
         realm_id=realm.id,
         id__in=ArchivedAttachment.objects.filter(realm_id=realm.id),
     ).delete()
 
-    if attachments_deleted > 0:
-        logger.info("Cleaned up %s attachments for realm %s", attachments_deleted, realm.string_id)
+    if num_deleted > 0:
+        logger.info("Cleaned up %s attachments for realm %s", num_deleted, realm.string_id)
 
 
 def move_related_objects_to_archive(msg_ids: List[int]) -> None:
