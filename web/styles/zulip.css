@@ -914,10 +914,6 @@ td.pointer {
         text-decoration: none;
         color: var(--color-default-text);
     }
-
-    a& {
-        z-index: 1;
-    }
 }
 
 /* The way this overrides the menus with a background-color and a high
