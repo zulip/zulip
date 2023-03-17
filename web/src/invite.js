@@ -17,6 +17,7 @@ import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -265,6 +266,7 @@ function open_invite_user_modal(e) {
         streams: get_invite_streams(),
         notifications_stream: stream_data.get_notifications_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
+        user_has_email_set: !settings_data.user_email_not_configured(),
     });
 
     function invite_user_modal_post_render() {
@@ -276,6 +278,8 @@ function open_invite_user_modal(e) {
             $("#generate_multiuse_invite_radio_container").addClass("control-label-disabled");
             $("#generate_multiuse_invite_radio_container").addClass("disabled_setting_tooltip");
         }
+
+        const user_has_email_set = !settings_data.user_email_not_configured();
 
         autosize($("#invitee_emails").trigger("focus"));
 
@@ -351,6 +355,10 @@ function open_invite_user_modal(e) {
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
         });
+
+        if (!user_has_email_set) {
+            $("#invite-user-form :input").prop("disabled", !user_has_email_set);
+        }
     }
 
     function invite_users() {
