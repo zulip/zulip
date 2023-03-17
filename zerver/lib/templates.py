@@ -68,7 +68,6 @@ def display_list(values: List[str], display_limit: int) -> str:
 
 
 md_extensions: Optional[List[markdown.Extension]] = None
-md_macro_extension: Optional[markdown.Extension] = None
 # Prevent the automatic substitution of macros in these docs. If
 # they contain a macro, it is always used literally for documenting
 # the macro system.
@@ -108,7 +107,6 @@ def render_markdown_path(
     set_relative_help_links(bool(context.get("html_settings_links")))
 
     global md_extensions
-    global md_macro_extension
     if md_extensions is None:
         md_extensions = [
             markdown.extensions.extra.makeExtension(),
@@ -145,18 +143,23 @@ def render_markdown_path(
     else:
         extensions = md_extensions
 
-    if integration_doc:
-        md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path="templates/zerver/integrations/include/"
-        )
-    elif help_center:
-        md_macro_extension = zerver.lib.markdown.include.makeExtension(base_path="help/include/")
-    else:
-        md_macro_extension = zerver.lib.markdown.include.makeExtension(
-            base_path="api_docs/include/"
-        )
+    def process_jinja(markdown_string: str) -> str:
+        return jinja.from_string(markdown_string).render(context)
+
     if not any(doc in markdown_file_path for doc in docs_without_macros):
-        extensions = [md_macro_extension, *extensions]
+        if integration_doc:
+            include_path = "templates/zerver/integrations/include"
+        elif help_center:
+            include_path = "help/include"
+        else:
+            include_path = "api_docs/include"
+
+        extensions = [
+            zerver.lib.markdown.include.makeExtension(
+                base_path=include_path, preprocessor=process_jinja
+            ),
+            *extensions,
+        ]
 
     md_engine = markdown.Markdown(extensions=extensions)
     md_engine.reset()
@@ -181,10 +184,7 @@ def render_markdown_path(
         else:
             raise e
 
-    API_ENDPOINT_NAME = context.get("API_ENDPOINT_NAME", "")
-    markdown_string = markdown_string.replace("API_ENDPOINT_NAME", API_ENDPOINT_NAME)
-    html = md_engine.convert(markdown_string)
-    rendered_html = jinja.from_string(html).render(context)
+    rendered_html = md_engine.convert(process_jinja(markdown_string))
 
     return mark_safe(rendered_html)
 

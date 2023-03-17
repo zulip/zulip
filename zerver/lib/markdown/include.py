@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Match
+from typing import Callable, List, Match
 from xml.etree.ElementTree import Element
 
 from markdown import Extension, Markdown
@@ -12,13 +12,14 @@ from zerver.lib.markdown.priorities import BLOCK_PROCESSOR_PRIORITIES
 
 
 class IncludeExtension(Extension):
-    def __init__(self, base_path: str) -> None:
+    def __init__(self, base_path: str, preprocessor: Callable[[str], str]) -> None:
         super().__init__()
         self.base_path = base_path
+        self.preprocessor = preprocessor
 
     def extendMarkdown(self, md: Markdown) -> None:
         md.parser.blockprocessors.register(
-            IncludeBlockProcessor(md.parser, self.base_path),
+            IncludeBlockProcessor(md.parser, self.base_path, self.preprocessor),
             "include",
             BLOCK_PROCESSOR_PRIORITIES["include"],
         )
@@ -27,9 +28,12 @@ class IncludeExtension(Extension):
 class IncludeBlockProcessor(BlockProcessor):
     RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.M)
 
-    def __init__(self, parser: BlockParser, base_path: str) -> None:
+    def __init__(
+        self, parser: BlockParser, base_path: str, preprocessor: Callable[[str], str]
+    ) -> None:
         super().__init__(parser)
         self.base_path = base_path
+        self.preprocessor = preprocessor
 
     def test(self, parent: Element, block: str) -> bool:
         return bool(self.RE.search(block))
@@ -37,10 +41,12 @@ class IncludeBlockProcessor(BlockProcessor):
     def expand_include(self, m: Match[str]) -> str:
         try:
             with open(os.path.normpath(os.path.join(self.base_path, m[1]))) as f:
-                lines = f.read().splitlines()
+                source = f.read()
         except OSError as e:
             raise InvalidMarkdownIncludeStatementError(m[0].strip()) from e
 
+        source = self.preprocessor(source)
+        lines = source.splitlines()
         for prep in self.parser.md.preprocessors:
             lines = prep.run(lines)
 
@@ -52,5 +58,5 @@ class IncludeBlockProcessor(BlockProcessor):
         self.parser.state.reset()
 
 
-def makeExtension(base_path: str) -> IncludeExtension:
-    return IncludeExtension(base_path=base_path)
+def makeExtension(base_path: str, preprocessor: Callable[[str], str]) -> IncludeExtension:
+    return IncludeExtension(base_path=base_path, preprocessor=preprocessor)
