@@ -23,7 +23,7 @@ from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.user_topics import (
     get_topic_mutes,
-    get_users_muting_topic,
+    get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
     topic_has_visibility_policy,
 )
@@ -1371,10 +1371,12 @@ class EditMessageTest(EditMessageTestCase):
                 content=None,
             )
 
-        for muting_user in get_users_muting_topic(stream.id, change_all_topic_name):
+        for user_topic in get_users_with_user_topic_visibility_policy(
+            stream.id, change_all_topic_name
+        ):
             for user in users_to_be_notified:
-                if muting_user.id == user["id"]:
-                    user["muted_topics"] = get_topic_mutes(muting_user)
+                if user_topic.user_profile_id == user["id"]:
+                    user["muted_topics"] = get_topic_mutes(user_topic.user_profile)
                     break
 
         assert_is_topic_muted(hamlet, stream.id, "Topic1", muted=False)
@@ -1534,7 +1536,7 @@ class EditMessageTest(EditMessageTestCase):
         assert_is_topic_muted(cordelia, new_public_stream.id, "changed topic name", muted=True)
         assert_is_topic_muted(aaron, new_public_stream.id, "changed topic name", muted=False)
 
-        # Moving only half the messages doesn't move MutedTopic records.
+        # Moving only half the messages doesn't move UserTopic records.
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
@@ -1556,6 +1558,136 @@ class EditMessageTest(EditMessageTestCase):
         assert_is_topic_muted(desdemona, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
+
+    @mock.patch("zerver.actions.user_topics.send_event")
+    def test_edit_unmuted_topic(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Stream 123"
+        stream = self.make_stream(stream_name)
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+
+        def assert_has_visibility_policy(
+            user_profile: UserProfile,
+            topic_name: str,
+            visibility_policy: int,
+            *,
+            expected: bool,
+        ) -> None:
+            if expected:
+                self.assertTrue(
+                    topic_has_visibility_policy(
+                        user_profile, stream.id, topic_name, visibility_policy
+                    )
+                )
+            else:
+                self.assertFalse(
+                    topic_has_visibility_policy(
+                        user_profile, stream.id, topic_name, visibility_policy
+                    )
+                )
+
+        self.subscribe(hamlet, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="Topic1", content="Hello World"
+        )
+
+        self.subscribe(cordelia, stream_name)
+        self.login_user(cordelia)
+        self.subscribe(aaron, stream_name)
+        self.login_user(aaron)
+
+        # Initially, hamlet sets visibility_policy as UNMUTED for 'Topic1' and 'Topic2',
+        # cordelia sets visibility_policy as MUTED for 'Topic1' and 'Topic2', while
+        # aaron doesn't have a visibility_policy set for 'Topic1' or 'Topic2'.
+        #
+        # After moving messages from 'Topic1' to 'Topic 1 edited', the expected behaviour is:
+        # hamlet has UNMUTED 'Topic 1 edited' and no visibility_policy set for 'Topic1'
+        # cordelia has MUTED 'Topic 1 edited' and no visibility_policy set for 'Topic1'
+        #
+        # There is no change in visibility_policy configurations for 'Topic2', i.e.
+        # hamlet has UNMUTED 'Topic2' + cordelia has MUTED 'Topic2'
+        # aaron still doesn't have visibility_policy set for any topic.
+        topics = [
+            [stream_name, "Topic1"],
+            [stream_name, "Topic2"],
+        ]
+        set_topic_visibility_policy(hamlet, topics, UserTopic.VisibilityPolicy.UNMUTED)
+        set_topic_visibility_policy(cordelia, topics, UserTopic.VisibilityPolicy.MUTED)
+
+        # users that need to be notified by send_event in the case of change-topic-name operation.
+        users_to_be_notified_via_muted_topics_event: List[int] = []
+        users_to_be_notified_via_user_topic_event: List[int] = []
+        for user_topic in get_users_with_user_topic_visibility_policy(stream.id, "Topic1"):
+            # We are appending the same data twice because 'user_topic' event notifies
+            # the user during delete and create operation.
+            users_to_be_notified_via_user_topic_event.append(user_topic.user_profile_id)
+            users_to_be_notified_via_user_topic_event.append(user_topic.user_profile_id)
+            # 'muted_topics' event notifies the user of muted topics during create
+            # operation only.
+            users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
+
+        change_all_topic_name = "Topic 1 edited"
+        with self.assert_database_query_count(19):
+            check_update_message(
+                user_profile=hamlet,
+                message_id=message_id,
+                stream_id=None,
+                topic_name=change_all_topic_name,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+
+        # Extract the send_event call where event type is 'user_topic' or 'muted_topics.
+        # Here we assert that the expected users are notified properly.
+        users_notified_via_muted_topics_event: List[int] = []
+        users_notified_via_user_topic_event: List[int] = []
+        for call_args in mock_send_event.call_args_list:
+            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "user_topic":
+                users_notified_via_user_topic_event.append(*arg_notified_users)
+            elif arg_event["type"] == "muted_topics":
+                users_notified_via_muted_topics_event.append(*arg_notified_users)
+        self.assertEqual(
+            sorted(users_notified_via_muted_topics_event),
+            sorted(users_to_be_notified_via_muted_topics_event),
+        )
+        self.assertEqual(
+            sorted(users_notified_via_user_topic_event),
+            sorted(users_to_be_notified_via_user_topic_event),
+        )
+
+        assert_has_visibility_policy(
+            hamlet, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        )
+        assert_has_visibility_policy(
+            cordelia, "Topic1", UserTopic.VisibilityPolicy.MUTED, expected=False
+        )
+        assert_has_visibility_policy(
+            aaron, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        )
+        assert_has_visibility_policy(
+            hamlet, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        assert_has_visibility_policy(
+            cordelia, "Topic2", UserTopic.VisibilityPolicy.MUTED, expected=True
+        )
+        assert_has_visibility_policy(
+            aaron, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        )
+        assert_has_visibility_policy(
+            hamlet, change_all_topic_name, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        assert_has_visibility_policy(
+            cordelia, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED, expected=True
+        )
+        assert_has_visibility_policy(
+            aaron, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED, expected=False
+        )
 
     @mock.patch("zerver.actions.message_edit.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
