@@ -929,6 +929,15 @@ td.pointer {
     }
 }
 
+.messagebox-content .slow-send-spinner {
+    display: block;
+    font-size: 12px;
+    text-align: right;
+    opacity: 0.6;
+    color: var(--color-default-text);
+    animation: rotate 1s infinite linear;
+}
+
 /* The way this overrides the menus with a background-color and a high
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */

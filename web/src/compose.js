@@ -290,6 +290,9 @@ export function send_message(request = create_message_object()) {
 
     if (locally_echoed) {
         clear_compose_box();
+        // Schedule a timer to display a spinner when the message is
+        // taking a longtime to send.
+        setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
     }
 }
 
