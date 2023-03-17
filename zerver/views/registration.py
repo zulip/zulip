@@ -55,7 +55,7 @@ from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
-from zerver.lib.subdomains import get_subdomain, is_root_domain_available
+from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.validator import to_converted_or_fallback, to_non_negative_int, to_timezone_or_empty
@@ -578,41 +578,35 @@ def registration_helper(
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         default_email_address_visibility = realm_user_default.email_address_visibility
 
-    return TemplateResponse(
-        request,
-        "zerver/register.html",
-        context={
-            "form": form,
-            "email": email,
-            "key": key,
-            "full_name": request.session.get("authenticated_full_name", None),
-            "lock_name": name_validated and name_changes_disabled(realm),
-            # password_auth_enabled is normally set via our context processor,
-            # but for the registration form, there is no logged in user yet, so
-            # we have to set it here.
-            "creating_new_realm": realm_creation,
-            "password_required": password_auth_enabled(realm) and password_required,
-            "require_ldap_password": require_ldap_password,
-            "password_auth_enabled": password_auth_enabled(realm),
-            "root_domain_available": is_root_domain_available(),
-            "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
-            "accounts": get_accounts_for_email(email),
-            "MAX_REALM_NAME_LENGTH": str(Realm.MAX_REALM_NAME_LENGTH),
-            "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
-            "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
-            "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
-            "corporate_enabled": settings.CORPORATE_ENABLED,
-            "sorted_realm_types": sorted(
-                Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
-            ),
-            "default_email_address_visibility": default_email_address_visibility,
-            "selected_realm_type_name": get_selected_realm_type_name(prereg_realm),
-            "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-            "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
-            "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
-        },
-    )
+    context = {
+        "form": form,
+        "email": email,
+        "key": key,
+        "full_name": request.session.get("authenticated_full_name", None),
+        "lock_name": name_validated and name_changes_disabled(realm),
+        # password_auth_enabled is normally set via our context processor,
+        # but for the registration form, there is no logged in user yet, so
+        # we have to set it here.
+        "creating_new_realm": realm_creation,
+        "password_required": password_auth_enabled(realm) and password_required,
+        "require_ldap_password": require_ldap_password,
+        "password_auth_enabled": password_auth_enabled(realm),
+        "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
+        "accounts": get_accounts_for_email(email),
+        "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
+        "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
+        "corporate_enabled": settings.CORPORATE_ENABLED,
+        "default_email_address_visibility": default_email_address_visibility,
+        "selected_realm_type_name": get_selected_realm_type_name(prereg_realm),
+        "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
+    }
+    # Add context for realm creation part of the form.
+    context.update(get_realm_create_form_context())
+
+    return TemplateResponse(request, "zerver/register.html", context=context)
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
