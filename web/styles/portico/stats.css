@@ -34,7 +34,7 @@ p {
     background-color: hsl(0, 0%, 100%);
     width: 395px;
 
-    h1 {
+    & h1 {
         margin-top: 0;
         font-size: 1.5em;
     }
@@ -53,12 +53,12 @@ p {
     border: 2px solid hsl(0, 0%, 93%);
     background-color: hsl(0, 0%, 100%);
 
-    button {
+    & button {
         position: relative;
         z-index: 1;
     }
 
-    h1 {
+    & h1 {
         margin-top: 0;
         font-size: 1.5em;
     }

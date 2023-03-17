@@ -17,11 +17,11 @@
     }
 
     #forward_email_modal {
-        label.radio {
+        & label.radio {
             padding-left: 20px;
         }
 
-        input[type="radio"] {
+        & input[type="radio"] {
             float: left;
             width: auto;
             cursor: pointer;
@@ -36,7 +36,7 @@
         }
     }
 
-    input[type="checkbox"] {
+    & input[type="checkbox"] {
         width: auto;
         cursor: pointer;
 

@@ -180,7 +180,7 @@
         padding-bottom: 0;
     }
 
-    hr {
+    & hr {
         margin: 10px 0;
     }
 
@@ -195,7 +195,7 @@
     #read_receipts_list {
         margin-left: 0;
 
-        li {
+        & li {
             .read_receipts_user_avatar {
                 display: inline-block;
                 height: 20px;
@@ -306,7 +306,7 @@
 .modal__spinner .loading_indicator_spinner {
     height: 16px;
 
-    path {
+    & path {
         fill: hsl(0, 0%, 100%);
     }
 }

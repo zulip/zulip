@@ -2,7 +2,7 @@
 $user_status_emoji_width: 24px;
 
 .right-sidebar {
-    a:hover {
+    & a:hover {
         text-decoration: none;
     }
 }
@@ -18,7 +18,7 @@ $user_status_emoji_width: 24px;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
 
-    li {
+    & li {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -37,7 +37,7 @@ $user_status_emoji_width: 24px;
             text-align: center;
             padding: 0 6px;
 
-            i {
+            & i {
                 padding-right: 0.25em;
                 display: inline-block;
                 width: 13px;
@@ -83,7 +83,7 @@ $user_status_emoji_width: 24px;
         display: block;
     }
 
-    a {
+    & a {
         color: inherit;
         margin-left: 0;
     }
@@ -171,7 +171,7 @@ $user_status_emoji_width: 24px;
         font-size: 90%;
     }
 
-    span.status-text:not(:empty) {
+    & span.status-text:not(:empty) {
         margin-top: -3px;
     }
 
@@ -268,7 +268,7 @@ $user_status_emoji_width: 24px;
 }
 
 #user_search_section {
-    input {
+    & input {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -302,7 +302,7 @@ $user_status_emoji_width: 24px;
         margin-bottom: 10px;
     }
 
-    hr {
+    & hr {
         width: 90%;
     }
 }
