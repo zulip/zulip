@@ -61,7 +61,7 @@
         color: hsl(200, 100%, 40%);
     }
 
-    i {
+    & i {
         font-size: 1.3em;
         float: left;
         color: hsl(0, 0%, 33%);
@@ -77,7 +77,7 @@
         display: flex;
         align-items: center;
 
-        i {
+        & i {
             font-size: 1em;
         }
 

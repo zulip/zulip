@@ -473,7 +473,7 @@ div.overlay {
     overflow: hidden;
     white-space: nowrap;
 
-    input {
+    & input {
         padding-right: 20px;
     }
 }
@@ -666,7 +666,7 @@ div.overlay {
     color: hsl(0, 0%, 0%);
     border-radius: 4px;
 
-    span {
+    & span {
         color: hsl(0, 0%, 0%);
     }
 
@@ -675,7 +675,7 @@ div.overlay {
         background-color: hsl(240, 96%, 68%);
         color: hsl(0, 0%, 100%);
 
-        span {
+        & span {
             color: hsl(0, 0%, 100%);
             transition: all 0.2s ease;
         }
@@ -697,7 +697,7 @@ div.overlay {
     table-layout: auto;
     border-collapse: separate;
 
-    thead th {
+    & thead th {
         color: inherit;
         background-color: hsl(0, 0%, 100%);
         border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
@@ -849,7 +849,7 @@ div.overlay {
     .dropdown-list-widget .dropdown-list-wrapper {
         width: fit-content;
 
-        span {
+        & span {
             width: fit-content;
         }
     }

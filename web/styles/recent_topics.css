@@ -25,7 +25,7 @@
          */
         min-height: 100vw;
 
-        td {
+        & td {
             vertical-align: middle;
             padding: 3px 8px;
         }
@@ -43,7 +43,7 @@
             }
         }
 
-        a {
+        & a {
             color: hsl(205, 47%, 42%);
             text-decoration: none;
 
@@ -265,7 +265,7 @@
             line-height: 24px;
         }
 
-        tr {
+        & tr {
             background-color: hsl(100, 11%, 96%);
 
             &:hover {
@@ -282,7 +282,7 @@
             margin-right: 5px;
         }
 
-        thead th {
+        & thead th {
             background-color: hsl(0, 0%, 100%);
             color: inherit;
             border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
@@ -328,7 +328,7 @@
             width: 25%;
             padding: 8px 0 8px 8px;
 
-            a {
+            & a {
                 word-break: break-word;
                 hyphens: auto;
             }
@@ -337,7 +337,7 @@
         .recent_topic_name {
             width: 40%;
 
-            a {
+            & a {
                 word-break: break-word;
                 /* No hyphes for word break since it caused hyphens to appear before
                    the ellipsis `longText-...` which is not desirable. Ellipsis appears due
@@ -365,7 +365,7 @@
             width: 15%;
         }
 
-        thead .last_msg_time_header {
+        & thead .last_msg_time_header {
             /* The responsive table of bootstrap
                somehow ignores the width of ::after
                element. This ensures it is always visible.

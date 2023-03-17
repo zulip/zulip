@@ -65,8 +65,8 @@ html {
         background-color: hsl(0, 0%, 98%);
     }
 
-    ul.nav {
-        li.active {
+    & ul.nav {
+        & li.active {
             background-color: hsl(0, 0%, 98%);
             border-bottom: 1px solid hsl(0, 0%, 98%);
         }
@@ -110,7 +110,7 @@ html {
     }
 
     /* Markdown processor generates lots of spurious <p></p> */
-    p:empty {
+    & p:empty {
         margin: 0;
     }
 
@@ -135,7 +135,7 @@ html {
             padding: 10px var(--help-sidebar-padding);
         }
 
-        h1 {
+        & h1 {
             font-weight: 400;
             font-size: 1.25em;
             line-height: 1.5;
@@ -146,7 +146,7 @@ html {
                 margin-top: 20px;
                 margin-bottom: 17px;
 
-                a::before {
+                & a::before {
                     display: inline-block;
                     font: normal normal normal 14px/1 FontAwesome;
                     font-size: inherit;
@@ -157,20 +157,20 @@ html {
             }
         }
 
-        h1,
+        & h1,
         h2,
         h3 {
             &:not(:first-of-type) {
                 margin-top: 0;
             }
 
-            a {
+            & a {
                 color: inherit;
                 display: block;
             }
         }
 
-        h2 {
+        & h2 {
             font-weight: 400;
             font-size: 1.1em;
             line-height: 1.05;
@@ -193,7 +193,7 @@ html {
             }
         }
 
-        ul {
+        & ul {
             margin: 5px 0 10px var(--help-sidebar-indent);
         }
 
@@ -202,7 +202,7 @@ html {
             display: none;
         }
 
-        li {
+        & li {
             list-style-type: none;
             font-size: 0.95em;
             font-weight: 400;
@@ -210,7 +210,7 @@ html {
 
             cursor: pointer;
 
-            a {
+            & a {
                 color: inherit;
                 display: block;
 
@@ -227,7 +227,7 @@ html {
             }
         }
 
-        a {
+        & a {
             &.highlighted {
                 background-color: hsl(152, 40%, 42%);
 
@@ -322,12 +322,12 @@ img.screenshot {
 .landing-page {
     padding: 2em 0;
 
-    h2,
+    & h2,
     h4 {
         font-weight: lighter;
     }
 
-    p {
+    & p {
         font-size: 120%;
     }
 }
@@ -381,11 +381,11 @@ input.text-error {
         position: relative;
         line-height: 0.8;
 
-        svg {
+        & svg {
             vertical-align: -5px;
         }
 
-        a,
+        & a,
         a:focus,
         a:hover {
             text-decoration: none;
@@ -412,7 +412,7 @@ input.text-error {
         position: relative;
         display: inline-block;
 
-        ul {
+        & ul {
             display: none;
             position: absolute;
             right: 0;
@@ -436,7 +436,7 @@ input.text-error {
                 transform: scale(1.8, 1);
             }
 
-            li {
+            & li {
                 display: list-item;
                 margin: 0;
                 padding: 3px 10px;
@@ -449,7 +449,7 @@ input.text-error {
                     transition: none;
                 }
 
-                a {
+                & a {
                     display: block;
                     margin: 2px 0;
                     padding: 0;
@@ -463,7 +463,7 @@ input.text-error {
                     background-color: transparent;
                 }
 
-                a i {
+                & a i {
                     margin-right: 5px;
                 }
 
@@ -596,14 +596,14 @@ input.text-error {
             font-size: 0.8em;
             opacity: 0.8;
 
-            p {
+            & p {
                 /* Avoid double-applying the 1.2em font-size here */
                 font-size: 1em;
             }
         }
     }
 
-    input {
+    & input {
         display: none;
 
         &:checked + label {
@@ -613,7 +613,7 @@ input.text-error {
         }
     }
 
-    label {
+    & label {
         font-size: initial;
         display: inline-block;
         padding: 10px;
@@ -641,7 +641,7 @@ input.text-error {
         border-radius: 4px;
         transition: all 0.3s ease;
 
-        a {
+        & a {
             color: inherit;
         }
 
@@ -787,7 +787,7 @@ input.new-organization-button {
 .top-links {
     text-align: right;
 
-    a {
+    & a {
         display: inline-block;
         color: hsl(0, 0%, 100%);
         padding: 2px 7px 1px 8px;
@@ -814,7 +814,7 @@ input.new-organization-button {
     text-align: left;
     width: 328px;
 
-    form {
+    & form {
         margin: 0;
     }
 
@@ -830,7 +830,7 @@ input.new-organization-button {
     .input-group {
         margin: 15px 0;
 
-        input[type="text"],
+        & input[type="text"],
         input[type="password"] {
             width: calc(100% - 14px);
         }
@@ -844,7 +844,7 @@ input.new-organization-button {
         }
     }
 
-    p {
+    & p {
         margin: 0;
     }
 
@@ -870,17 +870,17 @@ input.new-organization-button {
     }
 
     /* --- new settings styling --- */
-    input[type="radio"],
+    & input[type="radio"],
     input[type="checkbox"] {
         margin: 0 10px 0 0;
     }
 
-    input[type="radio"] {
+    & input[type="radio"] {
         position: relative;
         top: 8px;
     }
 
-    label {
+    & label {
         margin: 0;
         padding: 5px 0;
 
@@ -898,7 +898,7 @@ input.new-organization-button {
         padding: 10px 0;
         border-bottom: 1px solid hsl(0, 0%, 87%);
 
-        label.inline-block {
+        & label.inline-block {
             width: 200px;
         }
     }
@@ -914,7 +914,7 @@ input.new-organization-button {
 }
 
 #registration-email {
-    label {
+    & label {
         float: left;
         padding-top: 5px;
         width: 100%;
@@ -1204,7 +1204,7 @@ label.label-title {
 #devtools-registration {
     float: left;
 
-    form {
+    & form {
         display: inline;
     }
 }
@@ -1312,7 +1312,7 @@ label.label-title {
     border-bottom: 1px solid hsl(177, 52%, 55%);
     z-index: 5;
 
-    a {
+    & a {
         color: hsl(0, 0%, 100%);
         text-decoration: underline;
     }

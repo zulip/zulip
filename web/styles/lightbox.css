@@ -15,7 +15,7 @@
         background-repeat: no-repeat;
         background-position: center center;
 
-        img {
+        & img {
             cursor: move;
             max-height: 100%;
             max-width: 100%;
@@ -141,7 +141,7 @@
         justify-content: center;
         align-items: center;
 
-        iframe {
+        & iframe {
             /* maintain 16:9 ratio. */
             width: calc((100vh - 65px - 95px) * 16 / 9);
             height: 100%;

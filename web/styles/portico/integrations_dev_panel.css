@@ -11,7 +11,7 @@
     background-color: hsla(0, 0%, 100%, 0.48);
     box-shadow: 0 0 40px hsla(0, 0%, 0%, 0.06);
 
-    textarea {
+    & textarea {
         color: hsl(0, 0%, 33%);
         background-color: hsl(0, 0%, 100%);
         border-radius: 4px;
@@ -38,13 +38,13 @@
         }
     }
 
-    select,
+    & select,
     textarea,
     input {
         font-family: inherit;
     }
 
-    select {
+    & select {
         height: 30px;
         padding: 4px 6px;
         width: 220px;

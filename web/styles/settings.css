@@ -17,7 +17,7 @@ h3,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
-    a {
+    & a {
         color: inherit;
     }
 
@@ -75,7 +75,7 @@ h3,
     }
 
     .grid {
-        label {
+        & label {
             min-width: 200px;
         }
 
@@ -91,7 +91,7 @@ h3,
     #account-settings,
     #profile-field-settings {
         .grid {
-            label {
+            & label {
                 min-width: 120px;
             }
 
@@ -112,7 +112,7 @@ h3,
     }
 
     .button {
-        ul {
+        & ul {
             text-align: left;
         }
     }
@@ -133,7 +133,7 @@ h3,
 }
 
 #admin_profile_fields_table {
-    th.display,
+    & th.display,
     td.display_in_profile_summary_cell {
         text-align: center;
     }
@@ -195,7 +195,7 @@ h3,
     display: inline;
     margin-right: 4px;
 
-    i {
+    & i {
         font-size: 22px;
         cursor: pointer;
     }
@@ -206,7 +206,7 @@ h3,
 }
 
 .table {
-    tbody {
+    & tbody {
         border-bottom: 1px solid hsl(0, 0%, 87%);
     }
 }
@@ -223,7 +223,7 @@ h3,
 }
 
 #settings_content {
-    table + .progressive-table-wrapper table tr.user_row td:first-of-type {
+    & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
     }
 
@@ -265,13 +265,13 @@ td .button {
 }
 
 #language_selection_modal {
-    table {
+    & table {
         width: 90%;
         margin-top: 20px;
         border-collapse: separate;
     }
 
-    td {
+    & td {
         padding-top: 1px;
     }
 }
@@ -285,7 +285,7 @@ td .button {
         display: block;
     }
 
-    form {
+    & form {
         margin: 0;
     }
 
@@ -341,7 +341,7 @@ td .button {
 
     /* Messy implementation of buttons with text and a pencil icon in them
        having spacing before the pencil icon. */
-    button.btn-link i.fa-pencil,
+    & button.btn-link i.fa-pencil,
     button[data-dismiss="modal"] i.fa-pencil,
     .dropdown-toggle i.fa-pencil {
         margin-left: 3px;
@@ -405,7 +405,7 @@ td .button {
         margin-bottom: 10px;
     }
 
-    label.checkbox + label {
+    & label.checkbox + label {
         cursor: pointer;
     }
 }
@@ -434,7 +434,7 @@ input[type="checkbox"] {
 }
 
 .admin-realm-form {
-    h3 {
+    & h3 {
         margin-bottom: 10px;
     }
 
@@ -549,7 +549,7 @@ input[type="checkbox"] {
         vertical-align: top;
     }
 
-    img {
+    & img {
         margin-right: 6px;
         vertical-align: middle;
         margin-top: -2px;
@@ -567,7 +567,7 @@ input[type="checkbox"] {
 
 #user-notification-settings {
     .notification-table {
-        th,
+        & th,
         td {
             text-align: center;
             vertical-align: middle;
@@ -578,12 +578,12 @@ input[type="checkbox"] {
                 padding-right: 0;
             }
 
-            label {
+            & label {
                 cursor: default;
             }
         }
 
-        td:first-child {
+        & td:first-child {
             text-align: left;
             font-weight: bold;
             word-break: break-all;
@@ -641,18 +641,18 @@ input[type="checkbox"] {
 }
 
 .add-new-default-stream-box {
-    input[type="text"] {
+    & input[type="text"] {
         padding: 6px;
     }
     margin-bottom: 15px;
 }
 
 #add-custom-emoji-modal {
-    form {
+    & form {
         margin: 0;
     }
 
-    input[type="text"] {
+    & input[type="text"] {
         padding: 6px;
     }
 
@@ -683,7 +683,7 @@ input[type="checkbox"] {
 
 .add-new-linkifier-box,
 .add-new-playground-box {
-    button {
+    & button {
         margin-left: calc(10em + 20px) !important;
     }
     margin-bottom: 15px;
@@ -769,7 +769,7 @@ input[type="checkbox"] {
     .edit-bot-buttons {
         padding-top: 5px;
 
-        button {
+        & button {
             background-color: transparent;
         }
 
@@ -816,7 +816,7 @@ input[type="checkbox"] {
         }
     }
 
-    img.avatar {
+    & img.avatar {
         margin: 10px 5px 0 10px;
         height: 50px;
         width: 50px;
@@ -895,18 +895,18 @@ input[type="checkbox"] {
 }
 
 #add-alert-word {
-    form {
+    & form {
         margin-bottom: 4px;
     }
 
-    input {
+    & input {
         margin-bottom: 0;
     }
 }
 
 .admin-linkifier-form,
 .admin-playground-form {
-    label {
+    & label {
         float: left;
         padding-top: 5px;
         width: 10em;
@@ -922,7 +922,7 @@ input[type="checkbox"] {
 #alert-words-table {
     margin: 0;
 
-    li {
+    & li {
         list-style-type: none;
 
         &.alert-word-item:first-child {
@@ -968,7 +968,7 @@ input[type="checkbox"] {
     .password-div {
         position: relative;
 
-        input[type="text"] {
+        & input[type="text"] {
             margin-bottom: 10px;
         }
 
@@ -999,7 +999,7 @@ label.display-settings-radio-choice-label {
         border-bottom: none;
     }
 
-    input[type="radio"] {
+    & input[type="radio"] {
         position: relative;
         top: -2px;
         margin: 0 5px 0 0;
@@ -1099,7 +1099,7 @@ $option_title_width: 180px;
         padding: 10px;
         border-radius: 5px;
 
-        h4 {
+        & h4 {
             font-weight: normal;
             margin: 0;
             display: flex;
@@ -1107,7 +1107,7 @@ $option_title_width: 180px;
             justify-content: left;
         }
 
-        span[contenteditable] {
+        & span[contenteditable] {
             display: inline-block;
             word-break: break-all;
 
@@ -1118,7 +1118,7 @@ $option_title_width: 180px;
             }
         }
 
-        span[contenteditable]:focus,
+        & span[contenteditable]:focus,
         span[contenteditable="true"]:hover {
             border-bottom: 1px solid hsl(0, 0%, 80%);
             margin-bottom: -1px;
@@ -1135,7 +1135,7 @@ $option_title_width: 180px;
         margin-bottom: 10px;
     }
 
-    p {
+    & p {
         line-height: 2;
         margin: 0;
     }
@@ -1152,7 +1152,7 @@ $option_title_width: 180px;
     .ntm {
         cursor: not-allowed;
 
-        h4 > .button {
+        & h4 > .button {
             cursor: not-allowed;
             display: none;
 
@@ -1207,13 +1207,13 @@ $option_title_width: 180px;
         vertical-align: middle;
     }
 
-    h3 {
+    & h3 {
         font-size: 1.5em;
         font-weight: normal;
         line-height: 1.5;
     }
 
-    h5 {
+    & h5 {
         font-size: 1.2em;
         font-weight: normal;
         line-height: 1.2;
@@ -1251,13 +1251,13 @@ $option_title_width: 180px;
             border-bottom: 1px solid hsl(0, 0%, 87%);
         }
 
-        ul {
+        & ul {
             list-style: none;
             margin: 0;
             padding: 0;
         }
 
-        li {
+        & li {
             padding: 5px 0;
             outline: none;
             cursor: pointer;
@@ -1343,7 +1343,7 @@ $option_title_width: 180px;
             }
         }
 
-        h1 {
+        & h1 {
             text-align: center;
             font-size: 1.1em;
             line-height: 1;
@@ -1385,7 +1385,7 @@ $option_title_width: 180px;
             box-sizing: border-box;
             border-bottom: 1px solid hsl(0, 0%, 87%);
 
-            h1 .section {
+            & h1 .section {
                 font-weight: 400;
                 color: inherit;
                 opacity: 0.6;
@@ -1418,7 +1418,7 @@ $option_title_width: 180px;
             color: hsl(0, 0%, 67%);
         }
 
-        textarea {
+        & textarea {
             width: max(206px, 25vw);
             max-width: 320px;
             height: 80px;
@@ -1461,7 +1461,7 @@ $option_title_width: 180px;
         vertical-align: middle;
     }
 
-    input,
+    & input,
     input[type="url"] {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
@@ -1469,7 +1469,7 @@ $option_title_width: 180px;
 }
 
 .dropdown-list-widget {
-    button.dropdown-toggle {
+    & button.dropdown-toggle {
         text-align: left;
 
         .fa-chevron-down {
@@ -1485,7 +1485,7 @@ $option_title_width: 180px;
             /* Match settings for select elements. */
             padding: 4px 6px;
 
-            span {
+            & span {
                 line-height: 20px;
                 height: 1.4em;
             }
@@ -1496,13 +1496,13 @@ $option_title_width: 180px;
         }
     }
 
-    button.multiselect_btn {
+    & button.multiselect_btn {
         /* Matches the dropdown input margin so as to keep it aligned */
         margin-left: 9px;
         margin-top: 4px;
     }
 
-    a.dropdown_list_reset_button {
+    & a.dropdown_list_reset_button {
         /* Prevent dark theme from overriding background. */
         background: unset !important;
         border: none;
@@ -1545,7 +1545,7 @@ $option_title_width: 180px;
         the structure cannot be possible since simplebar inserts
         elements of its own, so we copy over that style
         from bootstrap to here. */
-        li a {
+        & li a {
             display: block;
             padding: 3px 20px;
             clear: both;
@@ -1579,7 +1579,7 @@ $option_title_width: 180px;
     width: 90%;
     margin: 0 auto;
 
-    tbody {
+    & tbody {
         border-bottom: none;
     }
 }
@@ -1604,7 +1604,7 @@ $option_title_width: 180px;
 
 #payload_url_inputbox,
 #service_name_list {
-    input[type="text"] {
+    & input[type="text"] {
         width: 340px;
     }
 }
@@ -1625,7 +1625,7 @@ $option_title_width: 180px;
 .profile-field-choices {
     display: inline-block;
 
-    hr {
+    & hr {
         margin-top: 0;
         margin-bottom: 5px;
     }
@@ -1633,11 +1633,11 @@ $option_title_width: 180px;
     .choice-row {
         margin-top: 8px;
 
-        input {
+        & input {
             width: 190px;
         }
 
-        button {
+        & button {
             margin-left: 2px;
         }
     }
@@ -1792,7 +1792,7 @@ $option_title_width: 180px;
             /* 48px is the height of settings header and 45px is the height of tab-container */
             height: calc(100% - 93px);
 
-            li.active {
+            & li.active {
                 /* Don't highlight the active section in the settings list. */
                 background: inherit;
                 border-bottom: 1px solid hsl(0, 0%, 93%);
@@ -1874,7 +1874,7 @@ $option_title_width: 180px;
         width: 400px;
     }
 
-    label {
+    & label {
         margin-bottom: 4px;
     }
 
@@ -1883,7 +1883,7 @@ $option_title_width: 180px;
         margin-top: 10px;
     }
 
-    input {
+    & input {
         margin-bottom: 0;
     }
 }
@@ -1891,11 +1891,11 @@ $option_title_width: 180px;
 .settings_panel_list_header {
     position: relative;
 
-    h3 {
+    & h3 {
         display: inline-block;
     }
 
-    input.search {
+    & input.search {
         float: right;
         font-size: 1em;
         max-width: 160px;

@@ -8,7 +8,7 @@
         border-color: hsla(0, 0%, 0%, 0.6);
         border-radius: 5px;
 
-        input.user_status {
+        & input.user_status {
             width: 95%;
             border: none;
             background-color: transparent;
@@ -38,7 +38,7 @@
             }
 
             /* For custom emojis and smiley icon to take full width. */
-            img.selected_emoji,
+            & img.selected_emoji,
             .smiley_icon {
                 min-width: 20px;
             }
@@ -61,7 +61,7 @@
         padding-top: 15px;
         padding-left: 2px;
 
-        button.user-status-value:hover {
+        & button.user-status-value:hover {
             /* Important is required for generic night them styling to not
                have precedence over this. */
             color: hsl(200, 100%, 40%) !important;

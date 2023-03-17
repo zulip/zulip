@@ -3,7 +3,7 @@
 %dark-theme {
     color-scheme: dark;
 
-    body {
+    & body {
         color: hsl(236, 33%, 90%);
     }
 
@@ -12,20 +12,20 @@
         opacity: 1;
     }
 
-    textarea::placeholder,
+    & textarea::placeholder,
     input::placeholder {
         @extend .placeholder;
     }
 
-    a:hover {
+    & a:hover {
         color: hsl(200, 79%, 66%);
 
-        code {
+        & code {
             color: hsl(200, 79%, 66%);
         }
     }
 
-    ul.filters a:hover {
+    & ul.filters a:hover {
         color: inherit;
     }
 
@@ -68,7 +68,7 @@
     .enter_sends_choices {
         color: hsl(236, 33%, 90%);
 
-        kbd {
+        & kbd {
             background-color: hsl(211, 29%, 14%);
             border-color: hsl(211, 29%, 14%);
             box-shadow: inset 0 -1px 0 hsl(210, 5%, 34%, 0.2);
@@ -81,7 +81,7 @@
         }
     }
 
-    table.table-striped thead.table-sticky-headers th {
+    & table.table-striped thead.table-sticky-headers th {
         background-color: hsl(0, 0%, 0%);
 
         &[data-sort]:hover {
@@ -155,7 +155,7 @@
         }
     }
 
-    body,
+    & body,
     .app-main,
     .header-main,
     .column-middle,
@@ -175,7 +175,7 @@
     #scroll-to-bottom-button-container {
         background: transparent;
 
-        span {
+        & span {
             color: hsl(0, 0%, 27%);
         }
     }
@@ -291,7 +291,7 @@
         }
     }
 
-    textarea.new_message_textarea {
+    & textarea.new_message_textarea {
         &.invalid,
         &.invalid:focus {
             border-color: hsl(3, 73%, 74%);
@@ -323,7 +323,7 @@
     .streams_popover .sp-container {
         background-color: transparent;
 
-        button {
+        & button {
             background-color: hsl(208, 35%, 11%);
             border: 1px solid hsl(210, 36%, 4%);
             color: hsl(236, 31%, 90%);
@@ -428,7 +428,7 @@
         }
     }
 
-    input[type="text"],
+    & input[type="text"],
     input[type="email"],
     input[type="password"],
     input[type="number"],
@@ -444,7 +444,7 @@
         color: inherit;
     }
 
-    select option {
+    & select option {
         background-color: hsl(212, 28%, 18%);
         color: hsl(236, 33%, 90%);
     }
@@ -526,7 +526,7 @@
         box-shadow: 0 0 1px hsl(0, 0%, 98%);
     }
 
-    input[type="text"]:focus,
+    & input[type="text"]:focus,
     input[type="email"]:focus,
     input[type="number"]:focus,
     textarea:focus,
@@ -601,7 +601,7 @@
         color: hsla(0, 0%, 90%, 1);
     }
 
-    div.overlay,
+    & div.overlay,
     #subscription_overlay
         #stream-creation
         #stream_creation_form
@@ -616,7 +616,7 @@
         background-color: hsla(212, 28%, 8%, 0.75);
     }
 
-    div.overlay .flex.overlay-content > div,
+    & div.overlay .flex.overlay-content > div,
     .dropdown-menu.typeahead,
     #settings_page,
     .informational-overlays .overlay-content {
@@ -745,7 +745,7 @@
         }
     }
 
-    li.active-filter,
+    & li.active-filter,
     li.active-sub-filter {
         background-color: hsla(199, 33%, 46%, 0.2);
     }
@@ -862,7 +862,7 @@
         }
     }
 
-    thead,
+    & thead,
     .drafts-container .drafts-header,
     .nav > li > a:focus,
     .nav > li > a:hover,
@@ -1134,7 +1134,7 @@
         }
     }
 
-    time {
+    & time {
         background: hsla(0, 0%, 0%, 0.2);
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
     }
@@ -1238,7 +1238,7 @@
 
     #invite-user-modal {
         #clipboard_image {
-            path {
+            & path {
                 fill: hsl(236, 33%, 90%);
             }
         }
@@ -1313,12 +1313,12 @@
     .alert-zulip-logo,
     .top-messages-logo,
     .bottom-messages-logo {
-        svg path {
+        & svg path {
             fill: hsl(214, 27%, 18%);
             stroke: hsl(214, 27%, 18%);
         }
 
-        svg circle {
+        & svg circle {
             fill: hsl(0, 0%, 100%);
             stroke: hsl(0, 0%, 100%);
         }
@@ -1380,7 +1380,7 @@
     #request-progress-status-banner .loading-indicator,
     #loading_older_messages_indicator,
     #recent_topics_loading_messages_indicator {
-        path {
+        & path {
             fill: hsl(0, 0%, 100%);
         }
     }
@@ -1396,7 +1396,7 @@
         }
     }
 
-    a:not(:active):focus,
+    & a:not(:active):focus,
     button:focus,
     .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
@@ -1448,8 +1448,8 @@
 
     /* Widgets: Todo */
     .todo-widget {
-        label.checkbox {
-            input[type="checkbox"] {
+        & label.checkbox {
+            & input[type="checkbox"] {
                 ~ span {
                     border-color: hsl(185, 40%, 45%);
                     opacity: 0.7;
