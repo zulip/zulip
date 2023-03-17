@@ -4,23 +4,33 @@ import * as people from "./people";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
-let my_alert_words = [];
+let my_alert_words:string[] = [];
 
-export function set_words(words) {
+
+interface AlertWord {
+    word: string;
+}
+
+interface Message {
+    alerted: boolean;
+    content: string;
+}
+
+export function set_words(words:string[]) :void{
     my_alert_words = words;
 }
 
-export function get_word_list() {
+export function get_word_list() :AlertWord[] {
     // Returns a array of objects
     // (with each alert_word as value and 'word' as key to the object.)
-    const words = [];
+    const words:AlertWord[] = [];
     for (const word of my_alert_words) {
         words.push({word});
     }
     return words;
 }
 
-export function has_alert_word(word) {
+export function has_alert_word(word: string) : boolean {
     return my_alert_words.includes(word);
 }
 
@@ -33,7 +43,7 @@ const alert_regex_replacements = new Map([
     ["'", "(?:'|&#39;)"],
 ]);
 
-export function process_message(message) {
+export function process_message(message: Message) :void{
     // Parsing for alert words is expensive, so we rely on the host
     // to tell us there any alert words to even look for.
     if (!message.alerted) {
@@ -41,7 +51,7 @@ export function process_message(message) {
     }
 
     for (const word of my_alert_words) {
-        const clean = _.escapeRegExp(word).replace(/["&'<>]/g, (c) =>
+        const clean:string = _.escapeRegExp(word).replace(/["&'<>]/g, (c: string) =>
             alert_regex_replacements.get(c),
         );
         const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
@@ -50,7 +60,7 @@ export function process_message(message) {
         const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
         message.content = message.content.replace(
             regex,
-            (match, before, word, after, offset, content) => {
+            (match:string, before:string, word:string, after:string, offset:number, content:string):string => {
                 // Logic for ensuring that we don't muck up rendered HTML.
                 const pre_match = content.slice(0, offset);
                 // We want to find the position of the `<` and `>` only in the
@@ -69,7 +79,12 @@ export function process_message(message) {
     }
 }
 
-export function notifies(message) {
+interface Notifies {
+    sender_email: string;
+    alerted: boolean;
+}
+
+export function notifies(message:Notifies) :boolean {
     // We exclude ourselves from notifications when we type one of our own
     // alert words into a message, just because that can be annoying for
     // certain types of workflows where everybody on your team, including
@@ -77,6 +92,6 @@ export function notifies(message) {
     return !people.is_current_user(message.sender_email) && message.alerted;
 }
 
-export const initialize = (params) => {
+export const initialize = (params: { alert_words: string[]; }) :void => {
     my_alert_words = params.alert_words;
 };
