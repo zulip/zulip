@@ -31,6 +31,10 @@
     {{timestr}}
 </a>
 
+{{#if msg/locally_echoed}}
+    <span class="fa fa-circle-o-notch slow-send-spinner hidden"></span>
+{{/if}}
+
 {{> message_controls}}
 
 {{#unless status_message}}

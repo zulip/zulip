@@ -48,6 +48,10 @@ function hide_tooltip_if_reference_removed(
     const callback = function (mutationsList) {
         for (const mutation of mutationsList) {
             for (const node of nodes_to_check_for_removal) {
+                // Hide instance if reference's class changes.
+                if (mutation.type === "attributes" && mutation.attributeName === "class") {
+                    instance.hide();
+                }
                 // Hide instance if reference is in the removed node list.
                 if (Array.prototype.includes.call(mutation.removedNodes, node)) {
                     instance.hide();
@@ -183,6 +187,30 @@ export function initialize() {
         // If user tabs slowly, tooltips are displayed otherwise they are
         // destroyed before they can be displayed.
         e.currentTarget._tippy.destroy();
+    });
+
+    delegate("body", {
+        target: ".slow-send-spinner",
+        appendTo: () => document.body,
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage:
+                        "Your message is taking longer than expected to be sent. Sending…",
+                }),
+            );
+            const $elem = $(instance.reference);
+
+            // We need to check for removal of local class from message_row since
+            // .slow-send-spinner is not removed (hidden) from DOM when message is sent.
+            const target = $elem.parents(".message_row").get(0);
+            const config = {attributes: true, childList: false, subtree: false};
+            const nodes_to_check_for_removal = [$elem.get(0)];
+            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     delegate("body", {

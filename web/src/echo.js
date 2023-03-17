@@ -453,6 +453,17 @@ function abort_message(message) {
     }
 }
 
+export function display_slow_send_loading_spinner(message) {
+    const $row = $(`div[zid="${message.id}"]`);
+    if (message.locally_echoed && !message.failed_request) {
+        $row.find(".slow-send-spinner").removeClass("hidden");
+        // We don't need to do anything special to ensure this gets
+        // cleaned up if the message is delivered, because the
+        // message's HTML gets replaced once the message is
+        // successfully sent.
+    }
+}
+
 export function initialize() {
     function on_failed_action(selector, callback) {
         $("#main_div").on("click", selector, function (e) {
