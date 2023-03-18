@@ -3,6 +3,7 @@
 const namespace = require("./namespace");
 const zblueslip = require("./zblueslip");
 const $ = require("./zjquery");
+const zpage_billing_params = require("./zpage_billing_params");
 const zpage_params = require("./zpage_params");
 
 let current_file_name;
@@ -29,6 +30,7 @@ async function execute_test(label, f, opts) {
     if (!sloppy_$ && $.clear_all_elements) {
         $.clear_all_elements();
     }
+    zpage_billing_params.reset();
     zpage_params.reset();
 
     try {

@@ -10,7 +10,7 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const jQueryFactory = require("./lib/real_jquery");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_billing_params");
 
 const template = fs.readFileSync(
     path.resolve(__dirname, "../../templates/corporate/upgrade.html"),
