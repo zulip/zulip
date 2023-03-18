@@ -592,10 +592,18 @@ li,
 }
 
 .copy_message {
+    float: right;
     position: relative;
-    top: 27px;
-    left: -10px;
-    margin-top: -24px;
+    cursor: pointer;
+    top: 30px;
+    /* To make sure the svg doesn't occupy any vertical space. */
+    margin-top: -30px;
+    right: 2px;
+    padding-top: 2px;
+
+    #clipboard_image {
+        margin: 0;
+    }
 }
 
 #copy_generated_invite_link {
