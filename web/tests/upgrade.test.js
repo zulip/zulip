@@ -9,7 +9,7 @@ const {JSDOM} = require("jsdom");
 const {set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_billing_params");
 
 const noop = () => {};
 const template = fs.readFileSync(

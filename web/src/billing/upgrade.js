@@ -1,8 +1,7 @@
 import $ from "jquery";
 
-import {page_params} from "../page_params";
-
 import * as helpers from "./helpers";
+import {page_params} from "./page_params";
 
 export const initialize = () => {
     helpers.set_tab("upgrade");
