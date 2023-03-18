@@ -244,7 +244,11 @@ python_rules = RuleList(
         },
         {
             "pattern": "msgid|MSGID",
-            "exclude": {"tools/check-capitalization"},
+            "exclude": {
+                "tools/check-capitalization",
+                "zerver/management/commands/compilemessages.py",
+                "scripts/setup/inline_email_css.py",
+            },
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {

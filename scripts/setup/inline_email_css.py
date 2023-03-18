@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import os
-from typing import Set
+import re
+from typing import List, Set
 
 import css_inline
+from polib import POEntry
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 EMAIL_TEMPLATES_PATH = os.path.join(ZULIP_PATH, "templates", "zerver", "emails")
@@ -16,6 +18,36 @@ def get_inliner_instance() -> css_inline.CSSInliner:
 
 
 inliner = get_inliner_instance()
+
+
+def remove_unnecessary_tags(str: str) -> str:
+    output = escape_jinja2_characters(str)
+    output = strip_unnecessary_tags(output)
+
+    return re.sub(r"{% extends|\</p>", "", output)
+
+
+def get_css_inlined_list(poentry_list: List[POEntry]) -> List[POEntry]:
+    css_inlined_poentry_list: List[POEntry] = []
+    start_block = "{% extends"
+
+    for entry in poentry_list:
+        css_inlined_msgid = remove_unnecessary_tags(inliner.inline(start_block + entry.msgid))
+        css_inlined_msgstr = remove_unnecessary_tags(inliner.inline(start_block + entry.msgstr))
+
+        if css_inlined_msgid.strip() == entry.msgid.strip():
+            # Some tags, like <b>, may not actually have any CSS, so
+            # some strings passed to this function may be unchanged.
+            continue
+
+        css_inlined_poentry_list.append(
+            POEntry(
+                msgid=css_inlined_msgid,
+                msgstr=css_inlined_msgstr,
+            )
+        )
+
+    return css_inlined_poentry_list
 
 
 def inline_template(template_source_name: str) -> None:
