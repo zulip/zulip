@@ -15,6 +15,8 @@ from django.utils.translation import override as override_language
 from django.utils.translation import to_language
 from pyuca import Collator
 
+from scripts.setup.inline_email_css import get_css_inlined_list
+
 
 class Command(compilemessages.Command):
     def add_arguments(self, parser: CommandParser) -> None:
@@ -24,11 +26,86 @@ class Command(compilemessages.Command):
             "--strict", "-s", action="store_true", help="Stop execution in case of errors."
         )
 
+        parser.add_argument(
+            "--log-inlined",
+            "-li",
+            action="store",
+            help="""
+            Use the --log-inlined flag to display POEntries that were inlined.
+            Usage: -li=[LOCALE]. For example, run './manage.py compilemessages -li=en_GB'
+            to view inlined entries for that specific locale.
+            If no argument is specified, output will be generated for all languages.
+            """,
+        )
+
     def handle(self, *args: Any, **options: Any) -> None:
         super().handle(*args, **options)
         self.strict = options["strict"]
+        self.log_inlined = options["log_inlined"]
         self.extract_language_options()
         self.create_language_name_map()
+
+    # This is a bit of a hack. Our email templates are preprocessed by
+    # the inline_email_css tool to put `style` attributes on most HTML
+    # elements before being passed to Django to send; this is
+    # necessary because of email's very limited CSS support.
+    #
+    # In particular, this process adds style attributes to `<a>` tags
+    # or other HTML elements that appear in translated blocks. This
+    # breaks translations; our `.mo` file will contain translations
+    # for the original source strings present in the `.source.html`
+    # file, but Django needs translations for the processed strings
+    # present in the compiled `.html` file.
+    #
+    # This function addresses this issue by processing the
+    # translations to replace the original source/translated strings
+    # in emails with the result of running the inline_email_css
+    # tooling on both strings, and then write the result to the MO
+    # file. (This is preferable to having translators work with
+    # strings containing a bunch of hardcoded `style` attributes,
+    # since we don't want to require translators to do extra work
+    # whenever we change the email CSS).
+    #
+    # This allows Django to correctly translate the styled English
+    # email into a styled translated email.
+    def inline_strings_for_language(self, lc_messages_path: str) -> None:
+        po_file = polib.pofile(f"{lc_messages_path}/django.po")
+        entries_to_inline: List[polib.POEntry] = []
+
+        # Identify strings that contain an HTML tag that are declared
+        # in a `.source.html` email template.
+        for entry in po_file:
+            entry_in_email = any(
+                "templates/zerver/emails/" in item[0] and item[0].endswith(".source.html")
+                for item in entry.occurrences
+            )
+            # We check for `<` as a proxy for whether an HTML tags are
+            # contained in the email.
+            if entry_in_email and "<" in entry.msgid:
+                entries_to_inline.append(polib.POEntry(msgid=entry.msgid, msgstr=entry.msgstr))
+
+        inlined_entries = get_css_inlined_list(entries_to_inline)
+
+        # The purpose of this code is to assist developers in testing the accuracy of string
+        # templating. The code creates a new file, compiled.django.po, where all logged inlined
+        # entries are stored.
+        if self.log_inlined and self.log_inlined in lc_messages_path or self.log_inlined == "all":
+            compiled_file_path = f"{lc_messages_path}/compiled.django.po"
+            po = polib.POFile()
+            po.extend(inlined_entries)
+            po.save(compiled_file_path)
+            print(f"Inlined strings are saved in {compiled_file_path}")
+
+        # Add the inlined entries to the set of translated strings. We
+        # could potentially save a bit of storage by dropping the
+        # existing (useless) pre-translation entries, but some care
+        # may be required to make sure they're only used in the email
+        # files.
+        po_file.extend(inlined_entries)
+
+        # TODO: Ideally, we'd avoid writing the MO file twice (Django
+        # will have already run it via the `super` hook).
+        po_file.save_as_mofile(f"{lc_messages_path}/django.mo")
 
     def create_language_name_map(self) -> None:
         join = os.path.join
@@ -116,6 +193,9 @@ class Command(compilemessages.Command):
             info: Dict[str, Any] = {}
             code = to_language(locale)
             percentage = self.get_translation_percentage(locale_path, locale)
+
+            # CSS inlining for specific strings that occur in templates/zerver/emails.
+            self.inline_strings_for_language(lc_messages_path)
             try:
                 name = LANG_INFO[code]["name"]
                 name_local = LANG_INFO[code]["name_local"]

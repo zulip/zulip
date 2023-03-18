@@ -205,6 +205,16 @@ class Realm(models.Model):
 To ensure we always internationalize our JSON error messages, the
 Zulip linter (`tools/lint`) attempts to verify correct usage.
 
+### Translations in emails
+
+Translations for strings containing links or other HTML elements in
+emails involve some extra technical complexity, because inlining CSS
+mutates those strings to insert `style=` attributes. See
+`inline_email_css.py` and the comment attached to
+`inline_strings_for_language` for details on this problem and how we
+solve it in a way that doesn't require manual effort either for
+developers or translators.
+
 ## Frontend translations
 
 We use the [FormatJS][] library for frontend translations when dealing
