@@ -14,7 +14,7 @@ from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
-from zerver.lib.send_email import FromAddress, send_email_to_admins
+from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
@@ -301,6 +301,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
     send_event(realm, event, active_user_ids(realm.id))
+    do_send_realm_deactivation_email(realm, acting_user)
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -485,4 +486,58 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         from_name=FromAddress.security_email_from_name(language=language),
         language=language,
         context=context,
+    )
+
+
+def do_send_realm_deactivation_email(realm: Realm, acting_user: Optional[UserProfile]) -> None:
+    # if realm is not deactivated, but changed the domain
+    if not acting_user:
+        return
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_DEACTIVATION_EMAIL_SENT,
+        event_time=event_time,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+            }
+        ).decode(),
+    )
+    context = {
+        "realm_uri": realm.uri,
+        "realm_name": realm.name,
+        "event_date": event_time.date(),
+        "acting_user_name": acting_user.full_name,
+        "send_to_deactivating_owner": True,
+    }
+    language = realm.default_language
+    owners = realm.get_human_owner_users()
+
+    deactivating_owner = acting_user
+    other_owners = owners.exclude(id=deactivating_owner.id)
+
+    # Send separate emails to the deactivating owner and the rest of the owners
+    send_email(
+        "zerver/emails/realm_deactivated",
+        to_emails=[deactivating_owner.delivery_email],
+        from_name=FromAddress.security_email_from_name(language=language),
+        from_address=FromAddress.tokenized_no_reply_address(),
+        language=language,
+        context=context,
+        realm=realm,
+    )
+
+    context["send_to_deactivating_owner"] = False
+
+    send_email(
+        "zerver/emails/realm_deactivated",
+        to_emails=[owner.delivery_email for owner in other_owners],
+        from_name=FromAddress.security_email_from_name(language=language),
+        from_address=FromAddress.tokenized_no_reply_address(),
+        language=language,
+        context=context,
+        realm=realm,
     )

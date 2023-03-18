@@ -1,0 +1,22 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/registration_confirmation.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+<p>
+    {% if send_to_deactivating_owner %}
+        {% trans %}You have deactivated your Zulip organization, {{ realm_name }} on {{ event_date }}.{% endtrans %}
+    {% else %}
+        {% trans %}Your Zulip organization, {{ realm_name }}, was deactivated by {{ acting_user_name }} on {{ event_date }}.{% endtrans %}
+    {% endif %}
+</p>
+<p>
+    {% if corporate_enabled %}
+        {% trans contact_support="https://zulip.com/help/contact-support" %}If you have any questions or concerns, please <a href="{{ contact_support }}">contact Zulip Support</a> as soon as possible.{% endtrans %}
+    {% else %}
+        {% trans support_email=macros.email_tag(support_email) %}If you have any questions or concerns, please contact your Zulip server administrator at {{ support_email }} as soon as possible.{% endtrans %}
+    {% endif %}
+</p>
+{% endblock %}
