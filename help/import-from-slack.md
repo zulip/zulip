@@ -100,7 +100,7 @@ in order to export direct message data.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
    commands, replacing `<token>` with your Slack **Bot User OAuth Token**.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current
