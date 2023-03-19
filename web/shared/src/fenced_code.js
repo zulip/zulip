@@ -137,7 +137,7 @@ export function process_fenced_code(content) {
 
                 done() {
                     const text = wrap_tex(lines.join("\n"));
-                    const placeholder = stash_func(text, true);
+                    const placeholder = stash_func(text);
                     output_lines.push("", placeholder, "");
                     handler_stack.pop();
                 },
@@ -174,7 +174,7 @@ export function process_fenced_code(content) {
             done() {
                 const text = wrap_code(lines.join("\n"), lang);
                 // insert safe HTML that is passed through the parsing
-                const placeholder = stash_func(text, true);
+                const placeholder = stash_func(text);
                 output_lines.push("", placeholder, "");
                 handler_stack.pop();
             },
