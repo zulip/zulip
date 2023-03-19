@@ -301,6 +301,7 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
     send_event(realm, event, active_user_ids(realm.id))
+    do_send_realm_deactivation_email(realm, acting_user)
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -480,6 +481,29 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     language = realm.default_language
     send_email_to_admins(
         "zerver/emails/realm_reactivation",
+        realm,
+        from_address=FromAddress.tokenized_no_reply_address(),
+        from_name=FromAddress.security_email_from_name(language=language),
+        language=language,
+        context=context,
+    )
+
+def do_send_realm_deactivation_email(realm: Realm, acting_user: Optional[UserProfile]) -> None:
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_DEACTIVATION_EMAIL_SENT,
+        event_time=timezone_now(),
+    )
+
+    context = {
+        "organization_name": realm.name,
+        "deactivator_name": acting_user.name,
+        "deactivation_date": timezone_now()
+        }
+    language = realm.default_language
+    send_email_to_admins(
+        "zerver/emails/realm_deactivation",
         realm,
         from_address=FromAddress.tokenized_no_reply_address(),
         from_name=FromAddress.security_email_from_name(language=language),
