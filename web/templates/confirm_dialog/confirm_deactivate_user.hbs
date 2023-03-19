@@ -22,17 +22,13 @@
     <label class="checkbox">
         <input type="checkbox" class="send_email" data-key="{{ key }}" />
         <span></span>
-        {{#tr}}
-        Notify this user by email?
-        {{/tr}}
+        {{t "Notify this user by email?" }}
     </label>
 </div>
 <div class="email_field">
     <p class="border-top">
         <strong>{{t "Subject" }}:</strong>
-        {{#tr}}
-        Notification of account deactivation on {realm_name}
-        {{/tr}}
+        {{t "Notification of account deactivation on {realm_name}" }}
     </p>
     <div class="email-body">
         <p>

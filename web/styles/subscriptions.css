@@ -982,8 +982,9 @@ div.settings-radio-input-parent {
     }
 
     .settings_select {
-        /* Match .setting_desktop_icon_count_display */
-        width: 325px;
+        /* Match with select elements in settings page */
+        min-width: 325px;
+        max-width: 100%;
         height: fit-content;
     }
 
@@ -994,16 +995,8 @@ div.settings-radio-input-parent {
     .dropdown-list-widget {
         .dropdown-toggle {
             margin-bottom: 10px;
-            width: 325px;
-        }
-
-        ul.dropdown-menu {
-            width: 325px;
-
-            input {
-                /* 325 - 2* (9px (margin) + 1px (border) + 6px (padding)) */
-                width: 293px;
-            }
+            min-width: 325px;
+            max-width: 100%;
         }
     }
 }
@@ -1124,7 +1117,6 @@ div.settings-radio-input-parent {
 
         .settings {
             overflow: auto;
-            height: calc(100% - 20px);
             -webkit-overflow-scrolling: touch;
         }
     }

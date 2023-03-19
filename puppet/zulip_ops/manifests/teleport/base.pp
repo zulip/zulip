@@ -6,7 +6,13 @@ class zulip_ops::teleport::base {
     command => "${setup_apt_repo_file} --list teleport",
     unless  => "${setup_apt_repo_file} --list teleport --verify",
   }
-  Package { 'teleport':
+  package { 'teleport':
+    ensure  => installed,
     require => Exec['setup-apt-repo-teleport'],
+  }
+  service { 'teleport':
+    ensure  => stopped,
+    enable  => mask,
+    require => Package['teleport'],
   }
 }

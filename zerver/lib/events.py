@@ -1372,7 +1372,7 @@ def apply_event(
 
         state["user_status"] = user_status
     elif event["type"] == "user_topic":
-        if event["visibility_policy"] == UserTopic.VISIBILITY_POLICY_INHERIT:
+        if event["visibility_policy"] == UserTopic.VisibilityPolicy.INHERIT:
             user_topics_state = state["user_topics"]
             for i in range(len(user_topics_state)):
                 if (

@@ -29,7 +29,7 @@ export type RealmDefaultSettings = {
     notification_sound: string;
     pm_content_in_desktop_notifications: boolean;
     presence_enabled: boolean;
-    realm_name_in_notifications: boolean;
+    realm_name_in_email_notifications_policy: number;
     starred_message_counts: boolean;
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;

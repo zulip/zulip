@@ -5,6 +5,6 @@ export function narrow_error(narrow_banner_data) {
     const html = narrow_banner_data.html;
     const search_data = narrow_banner_data.search_data;
 
-    const $empty_feed_notice = render_empty_feed_notice({title, html, search_data});
-    return $empty_feed_notice;
+    const empty_feed_notice = render_empty_feed_notice({title, html, search_data});
+    return empty_feed_notice;
 }

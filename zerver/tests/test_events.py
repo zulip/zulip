@@ -1429,7 +1429,10 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         events = self.verify_action(
             lambda: do_set_user_topic_visibility_policy(
-                self.user_profile, stream, "topic", visibility_policy=UserTopic.MUTED
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             ),
             num_events=2,
         )
@@ -1441,7 +1444,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 stream,
                 "topic",
-                visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
             ),
             num_events=2,
         )
@@ -1450,7 +1453,10 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: do_set_user_topic_visibility_policy(
-                self.user_profile, stream, "topic", visibility_policy=UserTopic.MUTED
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             ),
             event_types=["muted_topics", "user_topic"],
         )
@@ -1460,7 +1466,10 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         events = self.verify_action(
             lambda: do_set_user_topic_visibility_policy(
-                self.user_profile, stream, "topic", visibility_policy=UserTopic.UNMUTED
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
             ),
             num_events=2,
         )
@@ -1837,6 +1846,7 @@ class NormalActionsTest(BaseAction):
                 "notification_sound",
                 "desktop_icon_count_display",
                 "presence_enabled",
+                "realm_name_in_email_notifications_policy",
             ]:
                 # These settings are tested in their own tests.
                 continue
@@ -1925,6 +1935,27 @@ class NormalActionsTest(BaseAction):
         )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 1)
+
+    def test_change_realm_name_in_email_notifications_policy(self) -> None:
+        notification_setting = "realm_name_in_email_notifications_policy"
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                self.user_profile, notification_setting, 3, acting_user=self.user_profile
+            ),
+            num_events=2,
+        )
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], 3)
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                self.user_profile, notification_setting, 2, acting_user=self.user_profile
+            ),
+            num_events=2,
+        )
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], 2)
 
     def test_realm_update_org_type(self) -> None:
         realm = self.user_profile.realm
@@ -2690,6 +2721,7 @@ class RealmPropertyActionTest(BaseAction):
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
+            realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
         )
 
         vals = test_values.get(name)

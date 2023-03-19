@@ -367,7 +367,7 @@ export function stringify_time(time: number | Date): string {
     return get_localized_date_or_time_for_format(time, "time");
 }
 
-export function format_time_modern(time: number | Date, today = new Date()): String {
+export function format_time_modern(time: number | Date, today = new Date()): string {
     const hours = differenceInHours(today, time);
     const days_old = differenceInCalendarDays(today, time);
 

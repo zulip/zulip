@@ -234,7 +234,7 @@ function show_wildcard_warnings(stream_id) {
 
     const $compose_banner_area = $("#compose_banners");
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
-    const $wildcard_template = render_wildcard_warning({
+    const wildcard_template = render_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
         stream_name: compose_state.stream_name(),
@@ -246,7 +246,7 @@ function show_wildcard_warnings(stream_id) {
 
     // only show one error for any number of @all or @everyone mentions
     if ($(`#compose_banners .${classname}`).length === 0) {
-        $compose_banner_area.append($wildcard_template);
+        $compose_banner_area.append(wildcard_template);
     }
 
     user_acknowledged_wildcard = false;

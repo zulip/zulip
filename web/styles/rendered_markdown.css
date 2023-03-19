@@ -520,7 +520,41 @@
         border: none;
     }
 
+    a {
+        color: hsl(200, 100%, 40%);
+        text-decoration: none;
+
+        code {
+            color: hsl(200, 100%, 40%);
+        }
+
+        &:hover,
+        &:focus {
+            color: hsl(200, 100%, 25%);
+            text-decoration: underline;
+
+            code {
+                color: hsl(200, 100%, 25%);
+            }
+        }
+    }
+
     pre {
+        direction: ltr;
+        /* code block text is a bit smaller than normal text */
+        font-size: 0.825em;
+        line-height: 1.4;
+        white-space: pre;
+        overflow-x: auto;
+        word-break: break-all;
+        word-wrap: normal;
+        margin: 5px 0;
+        padding: 5px 7px 3px;
+        color: hsl(0, 0%, 20%);
+        display: block;
+        border: 1px solid hsla(0, 0%, 0%, 0.15);
+        border-radius: 4px;
+
         &:hover .copy_codeblock,
         &:hover .code_external_link {
             visibility: visible;
@@ -534,6 +568,21 @@
         overflow-x: scroll;
         color: inherit;
         border: 0;
+    }
+
+    code {
+        /* 11.55px when body is the default 14px; this is chosen to be
+        slightly above the 11.5px threshold where the height jumps by a
+        pixel on most platforms. */
+        font-size: 0.825em;
+        unicode-bidi: embed;
+        direction: ltr;
+        color: hsl(0, 0%, 0%);
+        white-space: pre-wrap;
+        padding: 0 4px;
+        background-color: hsl(0, 0%, 100%);
+        border: 1px solid hsl(240, 13%, 90%);
+        border-radius: 3px;
     }
 
     /* Style copy-to-clipboard button inside code blocks */
@@ -607,58 +656,16 @@
     }
 }
 
-/* Inline and block code.
-
-TODO: It is likely that this CSS can and should be moved into the
-rendered_markdown block; we just need to do further analysis to
-confirm doing so won't break anything. */
-
-code {
-    /* 11.55px when body is the default 14px; this is chosen to be
-       slightly above the 11.5px threshold where the height jumps by a
-       pixel on most platforms. */
-    font-size: 0.825em;
-    unicode-bidi: embed;
-    direction: ltr;
-    color: hsl(0, 0%, 0%);
-    white-space: pre;
-    padding: 2px 4px;
-    background-color: hsl(240, 14%, 97%);
-    border: 1px solid hsl(240, 13%, 90%);
-    border-radius: 3px;
-}
-
-.rendered_markdown code {
-    white-space: pre-wrap;
-    padding: 0 4px;
-    background-color: hsl(0, 0%, 100%);
-}
-
 .codehilite {
     display: block !important;
     border: none !important;
     background: none !important;
 }
 
-pre {
-    direction: ltr;
-    /* code block text is a bit smaller than normal text */
-    font-size: 0.825em;
-    line-height: 1.4;
-    white-space: pre;
-    overflow-x: auto;
-    word-wrap: normal;
-    /* Bootstrap's default here is top: 0px, bottom: 10px */
-    margin-top: 5px;
-    margin-bottom: 5px;
-    /* Bootstrap's default here is 9.5 on all sides */
-    padding: 5px 7px 3px;
-}
-
 /* Both the horizontal scrollbar in <pre/> as well as
    vertical scrollbar in the <textarea/> is styled similarly. */
 .message_edit_form textarea,
-pre {
+.rendered_markdown pre {
     /* Ensure the horizontal scrollbar is visible on Mac */
     &::-webkit-scrollbar {
         height: 8px;
@@ -675,16 +682,6 @@ pre {
     &::-webkit-scrollbar-thumb:hover {
         background-color: hsla(0, 0%, 0%, 0.6);
     }
-}
-
-/* Style inline code inside a link
-   to look more like a normal link */
-a code {
-    color: hsl(200, 100%, 40%);
-}
-
-a:hover code {
-    color: hsl(200, 100%, 25%);
 }
 
 /* Search highlight used in both topics and rendered_markdown */

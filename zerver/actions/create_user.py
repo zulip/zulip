@@ -23,7 +23,6 @@ from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
-from zerver.lib.streams import get_signups_stream
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -46,7 +45,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     bot_owner_user_ids,
-    get_realm,
     get_system_bot,
 )
 from zerver.tornado.django_api import send_event
@@ -114,26 +112,6 @@ def notify_new_user(user_profile: UserProfile) -> None:
                 message += licenses_low_warning_message
 
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
-
-    # We also send a notification to the Zulip administrative realm
-    admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    admin_realm_sender = get_system_bot(sender_email, admin_realm.id)
-    try:
-        # Check whether the stream exists
-        signups_stream = get_signups_stream(admin_realm)
-        # We intentionally use the same strings as above to avoid translation burden.
-        with override_language(admin_realm.default_language):
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-                user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
-            )
-        internal_send_stream_message(
-            admin_realm_sender, signups_stream, user_profile.realm.display_subdomain, message
-        )
-
-    except Stream.DoesNotExist:
-        # If the signups stream hasn't been created in the admin
-        # realm, don't auto-create it to send to it; just do nothing.
-        pass
 
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
