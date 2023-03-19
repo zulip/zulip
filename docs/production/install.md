@@ -23,6 +23,9 @@ Zulip's
 - If you're developing for Zulip, you should follow the instructions
   to install Zulip's [development environment](../development/overview.md).
 
+- If none of the previous bullets applied to you: "Yes."
+  (You should continue to read and follow this installation guide.)
+
 ## Step 1: Download the latest release
 
 Download and unpack [the latest server
