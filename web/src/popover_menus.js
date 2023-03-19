@@ -5,13 +5,13 @@
    import ClipboardJS from "clipboard";
    import $ from "jquery";
    import tippy, { delegate } from "tippy.js";
-   
+
    import render_actions_popover_content from "../templates/actions_popover_content.hbs";
    import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
    import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
    import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
    import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
-   
+
    import * as channel from "./channel";
    import * as common from "./common";
    import * as compose_actions from "./compose_actions";
@@ -32,7 +32,6 @@
    import { parse_html } from "./ui_util";
    import * as unread_ops from "./unread_ops";
    import { user_settings } from "./user_settings";
-   
 
 let left_sidebar_stream_setting_popover_displayed = false;
 let compose_mobile_button_popover_displayed = false;
