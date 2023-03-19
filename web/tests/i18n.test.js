@@ -26,7 +26,7 @@ require("../src/templates");
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
-// `i18n.js` initializes FormatJS and is imported by
+// `i18n.ts` initializes FormatJS and is imported by
 // `templates.js`.
 unmock_module("../src/i18n");
 const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");

@@ -358,6 +358,9 @@ run_test("misc", ({override}) => {
 
     assert_mapping("@", compose_actions, "reply_with_mention");
     assert_mapping("+", reactions, "toggle_emoji_reaction");
+    // Without an existing emoji reaction, this next one will only
+    // call get_message_reactions, so we verify just that.
+    assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
     assert_mapping("r", compose_actions, "respond_to_message");
     assert_mapping("R", compose_actions, "respond_to_message", true);

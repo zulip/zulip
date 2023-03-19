@@ -92,6 +92,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.11.3",
     "@formatjs/cli": "^6.0.0",
+    "@types/blueimp-md5": "^2.18.0",
     "@types/clean-css": "^4.2.2",
     "@types/jquery": "^3.3.31",
     "@types/lodash": "^4.14.172",

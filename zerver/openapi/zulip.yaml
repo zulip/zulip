@@ -8202,6 +8202,10 @@ paths:
         This endpoint mutes/unmutes a topic within a stream that the current
         user is subscribed to. Muted topics are displayed faded in the Zulip
         UI, and are not included in the user's unread count totals.
+
+        **Changes**: Before Zulip 7.0 (feature level 169), this endpoint
+        returned an error if asked to mute a topic that was already muted
+        or asked to unmute a topic that had not previously been muted.
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -8257,26 +8261,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {"msg": "Topic already muted", "result": "error"}
-                        description: |
-                          An example JSON response for when an `add` operation is requested for a topic
-                          that has already been muted:
-                  - allOf:
-                      - $ref: "#/components/schemas/JsonError"
-                      - example:
-                          {"msg": "Topic is not muted", "result": "error"}
-                        description: |
-                          An example JSON response for when a `remove` operation is requested for a
-                          topic that had not been previously muted:
   /users/me/muted_users/{muted_user_id}:
     post:
       operationId: mute-user
@@ -9126,13 +9110,25 @@ paths:
               - 2
               - 3
           example: 1
-        - name: realm_name_in_notifications
+        - name: realm_name_in_email_notifications_policy
           in: query
           description: |
-            Include organization name in subject of message notification emails.
+            Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+
+            - 1 - Automatic
+            - 2 - Always
+            - 3 - Never
+
+            **Changes**: New in Zulip 7.0 (feature level 168), replacing the
+            previous `realm_name_in_notifications` boolean;
+            `true` corresponded to `Always`, and `false` to `Never`.
           schema:
-            type: boolean
-          example: true
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: presence_enabled
           in: query
           description: |
@@ -11106,10 +11102,18 @@ paths:
                               - 1 - All unreads
                               - 2 - Private messages and mentions
                               - 3 - None
-                          realm_name_in_notifications:
-                            type: boolean
+                          realm_name_in_email_notifications_policy:
+                            type: integer
                             description: |
-                              Include organization name in subject of message notification emails.
+                              Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+
+                              - 1 - Automatic
+                              - 2 - Always
+                              - 3 - Never
+
+                              **Changes**: New in Zulip 7.0 (feature level 168), replacing the
+                              previous `realm_name_in_notifications` boolean;
+                              `true` corresponded to `Always`, and `false` to `Never`.
                           presence_enabled:
                             type: boolean
                             description: |
@@ -11501,9 +11505,9 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
-                      realm_name_in_notifications:
+                      realm_name_in_email_notifications_policy:
                         deprecated: true
-                        type: boolean
+                        type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
@@ -11513,8 +11517,12 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                          connecting to newer servers should declare the `user_settings_object`
+                          **Changes**: Deprecated `realm_name_in_notifications` in Zulip 5.0 (feature level 89).
+                          Replaced `realm_name_in_notifications` boolean with
+                          `realm_name_in_email_notifications_policy` in Zulip 7.0 (feature level 168);
+                          `true` corresponded to `Always`, and `false` to `Never`.
+
+                          Clients connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
                       presence_enabled:
                         deprecated: true
@@ -13024,10 +13032,18 @@ paths:
                               - 1 - All unreads
                               - 2 - Private messages and mentions
                               - 3 - None
-                          realm_name_in_notifications:
-                            type: boolean
+                          realm_name_in_email_notifications_policy:
+                            type: integer
                             description: |
-                              Include organization name in subject of message notification emails.
+                              Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+
+                              - 1 - Automatic
+                              - 2 - Always
+                              - 3 - Never
+
+                              **Changes**: New in Zulip 7.0 (feature level 168), replacing the
+                              previous `realm_name_in_notifications` boolean;
+                              `true` corresponded to `Always`, and `false` to `Never`.
                           presence_enabled:
                             type: boolean
                             description: |
@@ -14190,16 +14206,28 @@ paths:
               - 2
               - 3
           example: 1
-        - name: realm_name_in_notifications
+        - name: realm_name_in_email_notifications_policy
           in: query
           description: |
-            Include organization name in subject of message notification emails.
+            Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
 
-            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-            the `PATCH /settings/notifications` endpoint.
+            - 1 - Automatic
+            - 2 - Always
+            - 3 - Never
+
+            **Changes**: New in Zulip 7.0 (feature level 168), replacing the
+            previous `realm_name_in_notifications` boolean;
+            `true` corresponded to `Always`, and `false` to `Never`.
+
+            Before Zulip 5.0 (feature level 80), the previous `realm_name_in_notifications`
+            setting was managed by the `PATCH /settings/notifications` endpoint.
           schema:
-            type: boolean
-          example: true
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: presence_enabled
           in: query
           description: |

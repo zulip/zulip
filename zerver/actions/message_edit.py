@@ -786,7 +786,7 @@ def do_update_message(
                     muting_user,
                     stream_being_edited,
                     orig_topic_name,
-                    visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+                    visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
                 )
             else:
                 # Otherwise, we move the muted topic record for the
@@ -796,9 +796,9 @@ def do_update_message(
                     muting_user,
                     stream_being_edited,
                     orig_topic_name,
-                    visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+                    visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
                     # do_set_user_topic_visibility_policy with visibility_policy
-                    # set to UserTopic.MUTED will send an updated muted topic
+                    # set to UserTopic.VisibilityPolicy.MUTED will send an updated muted topic
                     # event, which contains the full set of muted
                     # topics, just after this.
                     skip_muted_topics_event=True,
@@ -808,8 +808,7 @@ def do_update_message(
                     muting_user,
                     new_stream if new_stream is not None else stream_being_edited,
                     topic_name if topic_name is not None else orig_topic_name,
-                    visibility_policy=UserTopic.MUTED,
-                    ignore_duplicate=True,
+                    visibility_policy=UserTopic.VisibilityPolicy.MUTED,
                 )
 
     send_event(user_profile.realm, event, users_to_be_notified)

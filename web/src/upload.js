@@ -122,11 +122,11 @@ function show_upload_banner(config, banner_type, banner_text) {
         get_item("upload_banner_message", config).text(banner_text);
         return;
     }
-    const $new_banner = render_upload_banner({
+    const new_banner = render_upload_banner({
         banner_type,
         banner_text,
     });
-    get_item("banner_container", config).append($new_banner);
+    get_item("banner_container", config).append(new_banner);
 }
 
 export function show_error_message(

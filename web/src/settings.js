@@ -95,6 +95,8 @@ export function build_page() {
         notification_settings: settings_config.all_notifications(user_settings).settings,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
+        realm_name_in_email_notifications_policy_values:
+            settings_config.realm_name_in_email_notifications_policy_values,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
             settings_config.all_notifications(user_settings).show_push_notifications_tooltip,

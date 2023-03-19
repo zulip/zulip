@@ -72,7 +72,7 @@ to export all public channel messages.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
    commands.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current

@@ -338,7 +338,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
             "mutingtest",
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
         msg_id = self.send_stream_message(
             self.iago, "Denmark", topic_name="mutingtest", content="@**all** what's up?"
@@ -539,7 +539,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
             "mutingtest",
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
         msg_id = self.send_stream_message(
             self.iago, "Denmark", topic_name="mutingtest", content="what's up everyone?"
@@ -597,7 +597,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
             "mutingtest",
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
         msg_id = self.send_stream_message(
             self.iago,
@@ -642,7 +642,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
             "unmutingtest",
-            visibility_policy=UserTopic.UNMUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
         msg_id = self.send_stream_message(
             self.iago,
@@ -677,7 +677,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
             "unmutingtest",
-            visibility_policy=UserTopic.UNMUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
         msg_id = self.send_stream_message(
             self.iago,
@@ -710,7 +710,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
             "unmutingtest",
-            visibility_policy=UserTopic.UNMUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
         msg_id = self.send_stream_message(
             self.iago,
@@ -740,7 +740,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
             "unmutingtest",
-            visibility_policy=UserTopic.UNMUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
         msg_id = self.send_stream_message(
             self.iago,

@@ -248,7 +248,7 @@ def get_recipient_info(
                 if user_allows_notifications_in_StreamTopic(
                     row["is_muted"],
                     user_id_to_visibility_policy.get(
-                        row["user_profile_id"], UserTopic.VISIBILITY_POLICY_INHERIT
+                        row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
                     ),
                     row[setting],
                     row["user_profile_" + setting],

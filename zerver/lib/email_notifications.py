@@ -385,6 +385,28 @@ def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -
     )
 
 
+def include_realm_name_in_missedmessage_emails_subject(user_profile: UserProfile) -> bool:
+    # Determines whether to include the realm name in the subject line
+    # of missedmessage email notifications, based on the user's
+    # realm_name_in_email_notifications_policy settings and whether the
+    # user's delivery_email is associated with other active realms.
+    if (
+        user_profile.realm_name_in_email_notifications_policy
+        == UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
+    ):
+        realms_count = UserProfile.objects.filter(
+            delivery_email=user_profile.delivery_email,
+            is_active=True,
+            is_bot=False,
+            realm__deactivated=False,
+        ).count()
+        return realms_count > 1
+    return (
+        user_profile.realm_name_in_email_notifications_policy
+        == UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS
+    )
+
+
 @statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: List[Dict[str, Any]], message_count: int
@@ -417,7 +439,9 @@ def do_send_missedmessage_events_reply_in_zulip(
         name=user_profile.full_name,
         message_count=message_count,
         unsubscribe_link=unsubscribe_link,
-        realm_name_in_notifications=user_profile.realm_name_in_notifications,
+        include_realm_name_in_missedmessage_emails_subject=include_realm_name_in_missedmessage_emails_subject(
+            user_profile
+        ),
     )
 
     mentioned_user_group_name = get_mentioned_user_group_name(missed_messages, user_profile)

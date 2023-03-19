@@ -1,0 +1,46 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Try Zulip now" %}
+
+{% set PAGE_DESCRIPTION = "Check out the Zulip app by viewing the Zulip
+  development community. No account required." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page try-zulip-now-page">
+    <div class="hero">
+        <div class="content">
+            <h1 class="center">Try Zulip now</h1>
+            <p>
+                Check out the Zulip app in the <a
+                href="https://chat.zulip.org">Zulip development
+                community</a>.<br /> No account required.
+            </p>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/try-zulip-part1.md') }}
+            </div>
+            <div class="bottom-register-buttons">
+                <a href="https://chat.zulip.org/" class="try-now-button">
+                    {{ _('Try Zulip now') }}
+                </a>
+            </div>
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/try-zulip-part2.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

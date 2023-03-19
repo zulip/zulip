@@ -211,7 +211,10 @@ def json_change_settings(
     desktop_icon_count_display: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
     ),
-    realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    realm_name_in_email_notifications_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
+        default=None,
+    ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
     send_private_typing_notifications: Optional[bool] = REQ(

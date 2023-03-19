@@ -1597,8 +1597,19 @@ class UserBaseSettings(models.Model):
     enable_digest_emails = models.BooleanField(default=True)
     enable_login_emails = models.BooleanField(default=True)
     enable_marketing_emails = models.BooleanField(default=True)
-    realm_name_in_notifications = models.BooleanField(default=False)
     presence_enabled = models.BooleanField(default=True)
+
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC = 1
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS = 2
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER = 3
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES = [
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER,
+    ]
+    realm_name_in_email_notifications_policy = models.PositiveSmallIntegerField(
+        default=REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
+    )
 
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
@@ -1671,7 +1682,7 @@ class UserBaseSettings(models.Model):
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
         presence_enabled=bool,
-        realm_name_in_notifications=bool,
+        realm_name_in_email_notifications_policy=int,
         wildcard_mentions_notify=bool,
     )
 
@@ -2640,32 +2651,28 @@ class UserTopic(models.Model):
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
 
-    # Implicitly, if a UserTopic does not exist, the (user, topic)
-    # pair should have normal behavior for that (user, stream) pair.
+    class VisibilityPolicy(models.IntegerChoices):
+        # A normal muted topic. No notifications and unreads hidden.
+        MUTED = 1, "Muted topic"
 
-    # We use this in our code to represent the condition in the comment above.
-    VISIBILITY_POLICY_INHERIT = 0
+        # This topic will behave like an unmuted topic in an unmuted stream even if it
+        # belongs to a muted stream.
+        UNMUTED = 2, "Unmuted topic in muted stream"
 
-    # A normal muted topic. No notifications and unreads hidden.
-    MUTED = 1
+        # This topic will behave like `UNMUTED`, plus some additional
+        # display and/or notifications priority that is TBD and likely to
+        # be configurable; see #6027. Not yet implemented.
+        FOLLOWED = 3, "Followed topic"
 
-    # This topic will behave like an unmuted topic in an unmuted stream even if it
-    # belongs to a muted stream.
-    UNMUTED = 2
+        # Implicitly, if a UserTopic does not exist, the (user, topic)
+        # pair should have normal behavior for that (user, stream) pair.
 
-    # This topic will behave like `UNMUTED`, plus some additional
-    # display and/or notifications priority that is TBD and likely to
-    # be configurable; see #6027. Not yet implemented.
-    FOLLOWED = 3
+        # We use this in our code to represent the condition in the comment above.
+        INHERIT = 0, "User's default policy for the stream."
 
-    visibility_policy_choices = (
-        (MUTED, "Muted topic"),
-        (UNMUTED, "Unmuted topic in muted stream"),
-        (FOLLOWED, "Followed topic"),
-        (VISIBILITY_POLICY_INHERIT, "User's default policy for the stream."),
+    visibility_policy = models.SmallIntegerField(
+        choices=VisibilityPolicy.choices, default=VisibilityPolicy.MUTED
     )
-
-    visibility_policy = models.SmallIntegerField(choices=visibility_policy_choices, default=MUTED)
 
     class Meta:
         constraints = [

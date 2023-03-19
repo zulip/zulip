@@ -11,19 +11,8 @@ class zulip_ops::teleport::db {
     group   => 'root',
     mode    => '0644',
     content => template('zulip_ops/teleport_db.yaml.template.erb'),
+    notify  => Service['teleport_db'],
   }
 
-  file { "${zulip::common::supervisor_conf_dir}/teleport_db.conf":
-    ensure  => file,
-    require => [
-      Package[supervisor],
-      Package[teleport],
-      File['/etc/teleport_db.yaml'],
-    ],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/teleport_db.conf',
-    notify  => Service[$zulip::common::supervisor_service],
-  }
+  zulip_ops::teleport::part { 'db': }
 }

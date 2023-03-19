@@ -541,7 +541,7 @@ export const notification_settings_labels = {
     message_content_in_email_notifications: $t({
         defaultMessage: "Include message content in message notification emails",
     }),
-    realm_name_in_notifications: $t({
+    realm_name_in_email_notifications_policy: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
     }),
 };
@@ -677,10 +677,7 @@ export const email_notifications_batching_period_values = [
     },
 ];
 
-const email_message_notification_settings = [
-    "message_content_in_email_notifications",
-    "realm_name_in_notifications",
-];
+const email_message_notification_settings = ["message_content_in_email_notifications"];
 
 const other_email_settings = [
     "enable_digest_emails",
@@ -699,6 +696,7 @@ const other_notification_settings = [
     ...mobile_notification_settings,
     ...email_notification_settings,
     "email_notifications_batching_period_seconds",
+    "realm_name_in_email_notifications_policy",
     "notification_sound",
 ];
 
@@ -789,6 +787,21 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
         enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
     },
 });
+
+export const realm_name_in_email_notifications_policy_values = {
+    automatic: {
+        code: 1,
+        description: $t({defaultMessage: "Automatic"}),
+    },
+    always: {
+        code: 2,
+        description: $t({defaultMessage: "Always"}),
+    },
+    never: {
+        code: 3,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
 
 export const desktop_icon_count_display_values = {
     messages: {

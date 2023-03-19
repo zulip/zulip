@@ -19,6 +19,10 @@
 
     a:hover {
         color: hsl(200, 79%, 66%);
+
+        code {
+            color: hsl(200, 79%, 66%);
+        }
     }
 
     ul.filters a:hover {
