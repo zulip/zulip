@@ -1,8 +1,7 @@
 import * as channel from "./channel";
 import * as narrow from "./narrow";
-import {page_params} from "./page_params";
 
-function set_tutorial_status(status, callback) {
+function set_tutorial_status(status: string, callback?: JQuery.jqXHR.DoneCallback | null): JQuery.jqXHR {
     return channel.post({
         url: "/json/users/me/tutorial_status",
         data: {status},
@@ -10,8 +9,8 @@ function set_tutorial_status(status, callback) {
     });
 }
 
-export function initialize() {
-    if (page_params.needs_tutorial) {
+export function initialize(needs_tutorial: boolean | null) : void {
+    if (needs_tutorial) {
         set_tutorial_status("started");
         narrow.by("is", "private", {trigger: "sidebar"});
     }

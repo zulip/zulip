@@ -562,6 +562,8 @@ export function initialize_everything() {
 
     const muted_users_params = pop_fields("muted_users");
 
+    const tutorial_params = pop_fields("needs_tutorial");
+
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
@@ -664,7 +666,7 @@ export function initialize_everything() {
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
-    tutorial.initialize();
+    tutorial.initialize(tutorial_params.needs_tutorial);
     notifications.initialize();
     gear_menu.initialize();
     giphy.initialize();
