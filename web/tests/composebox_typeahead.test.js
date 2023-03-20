@@ -790,11 +790,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         expected_value = ["e", "furniture", "ice"];
         assert.deepEqual(actual_value, expected_value);
 
-        // Don't make any suggestions if this query doesn't match any
-        // existing topic.
+        // Suggest the query if this query doesn't match any existing topic.
         options.query = "non-existing-topic";
         actual_value = options.sorter([]);
-        expected_value = [];
+        expected_value = ["non-existing-topic"];
         assert.deepEqual(actual_value, expected_value);
 
         topic_typeahead_called = true;
