@@ -9,12 +9,12 @@
         border-radius: 4px;
         overflow: hidden;
 
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
     }
 
     .overlay-tabs {
         padding: 10px 0;
-        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+        border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
 
         .tab-switcher {
             margin-left: 15px;
@@ -23,7 +23,7 @@
         .exit {
             float: right;
             font-size: 1.5rem;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
             font-weight: 600;
             margin: 0 15px;
             cursor: pointer;

@@ -47,7 +47,7 @@ $user_status_emoji_width: 24px;
             &:hover {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0, 0%, 0%) !important;
+                color: hsl(0deg 0% 0%) !important;
             }
 
             /*
@@ -66,13 +66,13 @@ $user_status_emoji_width: 24px;
             .user-list-sidebar-menu-icon {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0, 0%, 53%);
+                color: hsl(0deg 0% 53%);
             }
         }
 
         &:hover,
         &.highlighted_user {
-            background-color: hsla(120, 12.3%, 71.4%, 0.38);
+            background-color: hsl(120deg 12.3% 71.4% / 38%);
         }
     }
 
@@ -193,12 +193,12 @@ $user_status_emoji_width: 24px;
     right: 0;
     text-align: center;
     vertical-align: middle;
-    border-left: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid hsl(0deg 0% 88%);
 }
 
 #userlist-toggle-button {
     text-decoration: none;
-    color: hsl(0, 0%, 60%);
+    color: hsl(0deg 0% 60%);
     display: block;
     width: 45px;
     height: 19px;

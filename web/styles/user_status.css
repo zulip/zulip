@@ -5,7 +5,7 @@
     .user_status_content_wrapper {
         display: flex;
         border: 1px solid;
-        border-color: hsla(0, 0%, 0%, 0.6);
+        border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
 
         & input.user_status {
@@ -65,7 +65,7 @@
         & button.user-status-value:hover {
             /* Important is required for generic night them styling to not
                have precedence over this. */
-            color: hsl(200, 100%, 40%) !important;
+            color: hsl(200deg 100% 40%) !important;
         }
 
         .user-status-value {

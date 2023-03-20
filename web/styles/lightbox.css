@@ -1,5 +1,5 @@
 #lightbox_overlay {
-    background-color: hsl(227, 40%, 16%);
+    background-color: hsl(227deg 40% 16%);
 
     .image-preview {
         display: flex;
@@ -33,7 +33,7 @@
     .exit {
         flex-shrink: 0;
 
-        color: hsla(0, 0%, 100%, 0.8);
+        color: hsl(0deg 0% 100% / 80%);
         font-size: 2rem;
         margin: 6px 20px 0 0;
 
@@ -70,18 +70,18 @@
             font-size: 0.9rem;
             min-width: inherit;
             padding: 4px 10px;
-            border: 1px solid hsla(0, 0%, 100%, 0.6);
+            border: 1px solid hsl(0deg 0% 100% / 60%);
             background-color: transparent;
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
             border-radius: 4px;
             text-decoration: none;
             display: inline-block;
             margin: 0 5px;
 
             &:hover {
-                background-color: hsl(0, 0%, 100%);
-                border-color: hsl(0, 0%, 100%);
-                color: hsl(227, 40%, 16%);
+                background-color: hsl(0deg 0% 100%);
+                border-color: hsl(0deg 0% 100%);
+                color: hsl(227deg 40% 16%);
             }
         }
 
@@ -91,8 +91,8 @@
 
             &:hover {
                 background-color: transparent;
-                color: hsl(0, 0%, 100%);
-                border: 1px solid hsla(0, 0%, 100%, 0.6);
+                color: hsl(0deg 0% 100%);
+                border: 1px solid hsl(0deg 0% 100% / 60%);
             }
         }
     }
@@ -107,7 +107,7 @@
         margin-bottom: 15px;
 
         font-size: 1.1rem;
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
 
         .title {
             vertical-align: top;
@@ -156,7 +156,7 @@
             margin-top: 25px;
             padding: 5px 10px;
 
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
             font-size: 1.8em;
             font-weight: 100;
 
@@ -189,7 +189,7 @@
                 height: 50px;
                 margin: 0 2px;
 
-                background-color: hsla(0, 0%, 94%, 0.2);
+                background-color: hsl(0deg 0% 94% / 20%);
                 opacity: 0.5;
 
                 background-size: cover;

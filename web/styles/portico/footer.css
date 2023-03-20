@@ -1,9 +1,9 @@
 :root {
-    --color-footer-background: hsl(238, 28%, 27%);
-    --color-links: hsl(238, 100%, 82%);
+    --color-footer-background: hsl(238deg 28% 27%);
+    --color-links: hsl(238deg 100% 82%);
 
     @media (prefers-color-scheme: dark) {
-        --color-footer-background: hsl(238, 28%, 21%);
+        --color-footer-background: hsl(238deg 28% 21%);
     }
 }
 
@@ -38,7 +38,7 @@
         font-size: 18px;
         line-height: 133%;
         letter-spacing: 0.1em;
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
         opacity: 0.8;
         text-transform: uppercase;
         border-bottom: 0;
@@ -85,7 +85,7 @@
     .footer__legal {
         margin: 24px 0 5px;
         padding: 0 52px;
-        border-top: 1px solid hsl(0, 0%, 100%, 0.1);
+        border-top: 1px solid hsl(0deg 0% 100% / 10%);
 
         & a {
             margin-bottom: 10px;
@@ -121,7 +121,7 @@
     }
 
     .footer__legal-container .copyright {
-        color: hsl(0, 0%, 100%, 0.5);
+        color: hsl(0deg 0% 100% / 50%);
         margin-bottom: 8px;
     }
 

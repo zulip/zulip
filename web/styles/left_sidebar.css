@@ -124,7 +124,7 @@ li.show-more-topics {
                     position: sticky;
                     top: calc($sections_vertical_gutter + 43px);
                     z-index: 2;
-                    background-color: hsl(0, 0%, 100%);
+                    background-color: hsl(0deg 0% 100%);
                 }
             }
         }
@@ -180,7 +180,7 @@ li.show-more-topics {
 }
 
 .private_messages_container {
-    background: hsl(0, 0%, 100%);
+    background: hsl(0deg 0% 100%);
     margin-right: 16px;
     margin-left: 6px;
     z-index: 1;
@@ -271,7 +271,7 @@ li.show-more-topics {
     #private_messages_section,
     #private_messages_list,
     #hide_more_private_messages {
-        background-color: hsl(202, 56%, 91%);
+        background-color: hsl(202deg 56% 91%);
     }
 
     #private_messages_section {
@@ -291,7 +291,7 @@ li.show-more-topics {
     &.top_left_row:hover,
     &.bottom_left_row:hover,
     &#stream_filters li.highlighted_stream {
-        background-color: hsla(120, 12.3%, 71.4%, 0.38);
+        background-color: hsl(120deg 12.3% 71.4% / 38%);
         border-radius: 4px;
     }
 }
@@ -347,7 +347,7 @@ ul.filters {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background-color: hsl(202, 56%, 91%);
+    background-color: hsl(202deg 56% 91%);
     position: relative;
     border-radius: 4px;
 }
@@ -355,7 +355,7 @@ li.active-sub-filter {
 #stream_filters .narrow-filter.active-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
-        background-color: hsl(202, 56%, 91%);
+        background-color: hsl(202deg 56% 91%);
         border-radius: 4px;
     }
 }
@@ -379,7 +379,7 @@ li.active-sub-filter {
     .top_left_drafts .unread_count {
         background-color: inherit;
         color: inherit;
-        border: 0.5px solid hsl(105, 2%, 50%);
+        border: 0.5px solid hsl(105deg 2% 50%);
         /* The border takes up space, so we need to
            subtract 1px from the usual 2px margin-top */
         margin-top: 1px !important;
@@ -483,7 +483,7 @@ li.top_left_recent_topics {
     */
 
     &:hover {
-        color: hsl(0, 0%, 0%) !important;
+        color: hsl(0deg 0% 0%) !important;
     }
 
     /*
@@ -537,7 +537,7 @@ li.top_left_drafts:hover .drafts-sidebar-menu-icon,
 li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;
     cursor: pointer;
-    color: hsl(0, 0%, 53%);
+    color: hsl(0deg 0% 53%);
 }
 
 ul.topic-list {
@@ -591,11 +591,11 @@ li.topic-list-item {
 #topics_header {
     position: sticky;
     top: 0;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     z-index: 2;
     margin-right: 10px;
     padding-top: $sections_vertical_gutter;
-    color: hsl(0, 0%, 43%);
+    color: hsl(0deg 0% 43%);
 
     .show-all-streams {
         color: inherit;
@@ -619,7 +619,7 @@ li.topic-list-item {
     /* Ideally, 0px should work here, but maybe simplebar is doing something
        that is creating `0.5px` extra gap in zoomed-in windows. */
     top: -0.5px;
-    background: hsl(0, 0%, 100%);
+    background: hsl(0deg 0% 100%);
     z-index: 1;
 
     & input {
@@ -650,8 +650,8 @@ li.topic-list-item {
         flex: 1 1;
         vertical-align: middle;
         margin: auto;
-        border-top: 1px solid hsl(0, 0%, 88%);
-        border-bottom: 1px solid hsl(0, 0%, 100%);
+        border-top: 1px solid hsl(0deg 0% 88%);
+        border-bottom: 1px solid hsl(0deg 0% 100%);
     }
 
     & span::before {
@@ -693,7 +693,7 @@ li.topic-list-item {
         top: calc($sections_vertical_gutter + 20px);
         z-index: 2;
         padding-bottom: 1px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
     }
 
     #subscribe-to-more-streams,
@@ -722,7 +722,7 @@ li.topic-list-item {
 
         &:hover {
             & span {
-                background-color: hsla(120, 12.3%, 71.4%, 0.38);
+                background-color: hsl(120deg 12.3% 71.4% / 38%);
                 border-radius: 4px;
             }
         }

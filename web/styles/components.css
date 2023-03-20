@@ -28,7 +28,7 @@
                 line-height: 0.8;
                 font-size: 1.3rem;
                 text-align: center;
-                border: 1px solid hsla(0, 0%, 0%, 0.6);
+                border: 1px solid hsl(0deg 0% 0% / 60%);
 
                 border-radius: 4px;
                 filter: brightness(0.8);
@@ -70,8 +70,8 @@ a.no-underline:hover {
 
 .simplebar-track {
     .simplebar-scrollbar::before {
-        background-color: hsl(0, 0%, 0%);
-        box-shadow: 0 0 0 1px hsla(0, 0%, 100%, 0.33);
+        background-color: hsl(0deg 0% 0%);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 100% / 33%);
     }
 
     &.simplebar-vertical {
@@ -94,7 +94,7 @@ a.no-underline:hover {
 }
 
 i.zulip-icon.zulip-icon-bot {
-    color: hsl(180, 5%, 74%);
+    color: hsl(180deg 5% 74%);
     vertical-align: top;
     padding: 0 2px;
 }
@@ -129,7 +129,7 @@ input::-ms-reveal {
 
 select.bootstrap-focus-style {
     &:focus {
-        outline: 1px dotted hsl(0, 0%, 20%);
+        outline: 1px dotted hsl(0deg 0% 20%);
         outline: 5px auto -webkit-focus-ring-color;
         outline-offset: -2px;
     }

@@ -1,11 +1,11 @@
-$light-blue-border: hsl(208, 46%, 93%);
-$border-green: hsl(170, 47%, 53%);
-$hover-green: hsl(170, 65%, 85%);
-$text-green: hsl(170, 72%, 32%);
-$category-text: hsl(219, 23%, 33%);
+$light-blue-border: hsl(208deg 46% 93%);
+$border-green: hsl(170deg 47% 53%);
+$hover-green: hsl(170deg 65% 85%);
+$text-green: hsl(170deg 72% 32%);
+$category-text: hsl(219deg 23% 33%);
 
 .portico-landing.integrations {
-    color: hsl(0, 0%, 27%);
+    color: hsl(0deg 0% 27%);
     font-weight: normal;
 
     & h1,
@@ -25,7 +25,7 @@ $category-text: hsl(219, 23%, 33%);
         max-width: 1170px;
         margin: 0 auto;
         border-radius: 10px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
         visibility: hidden;
 
         & img {
@@ -91,7 +91,7 @@ $category-text: hsl(219, 23%, 33%);
     .portico-page-subheading {
         font-weight: 400;
         font-size: 1.1em;
-        color: hsl(0, 0%, 67%);
+        color: hsl(0deg 0% 67%);
         line-height: 1.2;
         text-align: center;
     }
@@ -109,7 +109,7 @@ $category-text: hsl(219, 23%, 33%);
                 position: relative;
 
                 & input {
-                    box-shadow: 0 0 7px 2px hsla(0, 0%, 0%, 0.03);
+                    box-shadow: 0 0 7px 2px hsl(0deg 0% 0% / 3%);
 
                     font-size: 1em;
                     font-family: inherit;
@@ -334,7 +334,7 @@ $category-text: hsl(219, 23%, 33%);
             font-size: 0.85em;
             margin-top: 5px;
             font-weight: 400;
-            color: hsla(216, 23%, 13%, 0.5);
+            color: hsl(216deg 23% 13% / 50%);
         }
 
         &.without-category {
@@ -591,20 +591,20 @@ $category-text: hsl(219, 23%, 33%);
     }
 
     .portico-page-heading {
-        color: hsl(0, 0%, 0%);
+        color: hsl(0deg 0% 0%);
         font-size: 44px;
     }
 
     .portico-page-subheading {
         font-weight: 300;
-        color: hsl(0, 0%, 20%);
+        color: hsl(0deg 0% 20%);
         max-width: 800px;
         line-height: 150%;
         margin: auto;
     }
 
     .integration-categories-sidebar h3 {
-        color: hsl(0, 0%, 0%);
+        color: hsl(0deg 0% 0%);
         font-size: 20px;
         font-weight: 600;
     }
@@ -626,7 +626,7 @@ $category-text: hsl(219, 23%, 33%);
             border-radius: 4px;
 
             &:hover {
-                border: 1px solid hsl(167, 34%, 56%);
+                border: 1px solid hsl(167deg 34% 56%);
             }
 
             .eligible_realm_logo {
@@ -644,7 +644,7 @@ $category-text: hsl(219, 23%, 33%);
                 .eligible_realm_name {
                     font-weight: 400;
                     font-size: 21px;
-                    color: hsl(220.6, 20%, 33.3%);
+                    color: hsl(220.6deg 20% 33.3%);
                     line-height: 23px;
                     margin: 0 0 2px;
                 }
@@ -652,7 +652,7 @@ $category-text: hsl(219, 23%, 33%);
                 .eligible_realm_description {
                     font-weight: 400;
                     font-size: 15px;
-                    color: hsl(220, 2.7%, 56.5%);
+                    color: hsl(220deg 2.7% 56.5%);
                     line-height: 19px;
                     margin: 0;
                     /* For restricting text to only two lines.

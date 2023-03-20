@@ -10,7 +10,7 @@
 
     /* Affects all tippy tooltips not using any theme. */
     .tippy-box:not([data-theme]) {
-        background: hsla(0, 0%, 20%, 1);
+        background: hsl(0deg 0% 20%);
         border-radius: 5px;
         min-height: 25px;
         box-sizing: border-box;
@@ -22,7 +22,7 @@
             padding: 5px 10px;
             font-size: 14px;
             line-height: 20px;
-            color: hsla(0, 0%, 100%, 1);
+            color: hsl(0deg 0% 100%);
         }
 
         .tippy-arrow::before {
@@ -38,19 +38,19 @@
         }
 
         &[data-placement^="top"] > .tippy-arrow::before {
-            border-top-color: hsla(0, 0%, 20%, 1);
+            border-top-color: hsl(0deg 0% 20%);
         }
 
         &[data-placement^="bottom"] > .tippy-arrow::before {
-            border-bottom-color: hsla(0, 0%, 20%, 1);
+            border-bottom-color: hsl(0deg 0% 20%);
         }
 
         &[data-placement^="left"] > .tippy-arrow::before {
-            border-left-color: hsla(0, 0%, 20%, 1);
+            border-left-color: hsl(0deg 0% 20%);
         }
 
         &[data-placement^="right"] > .tippy-arrow::before {
-            border-right-color: hsla(0, 0%, 20%, 1);
+            border-right-color: hsl(0deg 0% 20%);
         }
     }
 
@@ -79,9 +79,9 @@
 
     .tooltip-hotkey-hint {
         box-sizing: inherit;
-        border: 1px solid hsla(225, 100%, 84%, 1);
+        border: 1px solid hsl(225deg 100% 84%);
         border-radius: 3px;
-        color: hsla(225, 100%, 84%, 1);
+        color: hsl(225deg 100% 84%);
         padding: 2px 5px;
         min-width: 20px;
         text-align: center;

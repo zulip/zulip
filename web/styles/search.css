@@ -81,7 +81,7 @@
     }
 
     #search_arrows:focus {
-        box-shadow: inset 0 0 0 2px hsl(204, 20%, 74%);
+        box-shadow: inset 0 0 0 2px hsl(204deg 20% 74%);
     }
 
     .search_close_button,

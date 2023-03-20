@@ -3,14 +3,14 @@
 }
 
 .modal-bg {
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsl(0deg 0% 98%);
 }
 
 /* Styles for the Micromodal-based modals */
 .modal__overlay {
     position: fixed;
     inset: 0;
-    background: hsla(0, 0%, 0%, 0.6);
+    background: hsl(0deg 0% 0% / 60%);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,7 +20,7 @@
 .modal__container {
     display: flex;
     flex-direction: column;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     max-width: calc(100% - 32px);
     max-height: 96%;
     width: 32.5rem;
@@ -75,7 +75,7 @@
     border: 0;
 
     &:hover {
-        background: hsl(0, 0%, 90%);
+        background: hsl(0deg 0% 90%);
     }
 }
 
@@ -87,14 +87,14 @@
     line-height: 1.5;
 
     &.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0, 0%, 87%);
+        border-top: 1px solid hsl(0deg 0% 87%);
     }
 }
 
 .modal__btn {
     font-size: 0.875rem;
     padding: 0.5rem 1rem;
-    background-color: hsl(0, 0%, 90%);
+    background-color: hsl(0deg 0% 90%);
     border-radius: 0.25rem;
     border-width: 0;
     cursor: pointer;
@@ -122,21 +122,21 @@
 }
 
 .dialog_cancel_button {
-    background: hsl(0, 0%, 100%);
-    border: 1px solid hsla(300, 2%, 11%, 0.3);
+    background: hsl(0deg 0% 100%);
+    border: 1px solid hsl(300deg 2% 11% / 30%);
 
     &:hover {
-        background: hsl(0, 0%, 97%);
+        background: hsl(0deg 0% 97%);
     }
 }
 
 .dialog_submit_button {
     margin-left: 12px;
-    background-color: hsl(240, 96%, 68%);
-    color: hsl(0, 0%, 100%) !important;
+    background-color: hsl(240deg 96% 68%);
+    color: hsl(0deg 0% 100%) !important;
 
     &:disabled {
-        background-color: hsl(0, 0%, 65%);
+        background-color: hsl(0deg 0% 65%);
     }
 }
 
@@ -212,12 +212,12 @@
             line-height: 26px;
 
             &:hover {
-                background-color: hsla(0, 0%, 0%, 0.05);
+                background-color: hsl(0deg 0% 0% / 5%);
             }
 
             &:active,
             &:focus {
-                background-color: hsla(0, 0%, 0%, 0.1);
+                background-color: hsl(0deg 0% 0% / 10%);
                 outline: none;
             }
         }
@@ -234,7 +234,7 @@
     }
 
     .border-top {
-        border-top: 1px solid hsla(300, 2%, 11%, 0.3);
+        border-top: 1px solid hsl(300deg 2% 11% / 30%);
         padding-top: 10px;
     }
 
@@ -304,7 +304,7 @@
     height: 16px;
 
     & path {
-        fill: hsl(0, 0%, 100%);
+        fill: hsl(0deg 0% 100%);
     }
 }
 
@@ -333,17 +333,17 @@
     height: 30px;
     width: 220px;
     padding: 4px 6px;
-    color: hsl(0, 0%, 33%);
+    color: hsl(0deg 0% 33%);
     border-radius: 4px;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 
     &:disabled {
         cursor: not-allowed;
 
         /* The background-color of select elements inside modal is different than the others in
         settings pages, because the background of the modal is brighter than the setting page. */
-        background-color: hsla(0, 0%, 90%, 1);
+        background-color: hsl(0deg 0% 90%);
     }
 }

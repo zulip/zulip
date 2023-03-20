@@ -9,17 +9,17 @@
         margin: 0.15em;
         padding: 0 2px 0 0;
         cursor: pointer;
-        background-color: hsl(0, 0%, 100%);
-        border: 1px solid hsl(194, 37%, 84%);
+        background-color: hsl(0deg 0% 100%);
+        border: 1px solid hsl(194deg 37% 84%);
         border-radius: 4px;
         align-items: center;
 
         &.reacted {
-            background-color: hsl(195, 50%, 95%);
+            background-color: hsl(195deg 50% 95%);
         }
 
         &:hover {
-            border: 1px solid hsl(200, 100%, 40%);
+            border: 1px solid hsl(200deg 100% 40%);
         }
 
         + .reaction_button {
@@ -30,7 +30,7 @@
             height: 13px;
             border-radius: 4px;
             padding-left: 0.3em;
-            border: 1px solid hsl(0, 0%, 73%);
+            border: 1px solid hsl(0deg 0% 73%);
             padding-right: 0.3em;
             float: left;
         }
@@ -58,19 +58,19 @@
     }
 
     .message_reaction:hover .message_reaction_count {
-        color: hsl(200, 100%, 40%);
+        color: hsl(200deg 100% 40%);
     }
 
     & i {
         font-size: 1.3em;
         float: left;
-        color: hsl(0, 0%, 33%);
+        color: hsl(0deg 0% 33%);
     }
 
     &:hover .message_reaction + .reaction_button {
         visibility: visible;
         pointer-events: all;
-        background-color: hsl(0, 0%, 98%);
+        background-color: hsl(0deg 0% 98%);
     }
 
     .reaction_button {
@@ -82,7 +82,7 @@
         }
 
         &:hover i {
-            color: hsl(200, 100%, 40%);
+            color: hsl(200deg 100% 40%);
         }
 
         /* Configure the reaction button to appear if and only if there's an
@@ -95,31 +95,31 @@
         }
 
         &:hover {
-            border: 1px solid hsl(200, 100%, 40%);
-            background-color: hsl(195, 50%, 95%);
+            border: 1px solid hsl(200deg 100% 40%);
+            background-color: hsl(195deg 50% 95%);
             cursor: pointer;
             opacity: 1;
-            color: hsl(200, 100%, 40%);
+            color: hsl(200deg 100% 40%);
         }
 
         .message_reaction_count {
             font-size: 1.1em;
-            color: hsl(0, 0%, 33%);
+            color: hsl(0deg 0% 33%);
             margin-right: 0;
         }
 
         &:hover .message_reaction_count {
-            color: hsl(200, 100%, 40%);
+            color: hsl(200deg 100% 40%);
         }
     }
 }
 
 .private-message .message_reactions .message_reaction {
-    background-color: hsl(192, 20%, 95%);
+    background-color: hsl(192deg 20% 95%);
 
     &.reacted {
-        background-color: hsl(196, 51%, 93%);
-        border-color: hsl(193, 38%, 70%);
+        background-color: hsl(196deg 51% 93%);
+        border-color: hsl(193deg 38% 70%);
     }
 }
 
@@ -139,11 +139,11 @@
     }
 
     &.bottom .arrow {
-        border-bottom-color: hsl(0, 0%, 93%);
+        border-bottom-color: hsl(0deg 0% 93%);
     }
 
     &.top .arrow {
-        border-top-color: hsl(0, 0%, 93%);
+        border-top-color: hsl(0deg 0% 93%);
     }
 
     .emoji-popover {
@@ -151,8 +151,8 @@
         width: 250px;
 
         .reacted {
-            background-color: hsl(195, 50%, 95%);
-            border-color: hsl(195, 52%, 79%);
+            background-color: hsl(195deg 50% 95%);
+            border-color: hsl(195deg 52% 79%);
         }
 
         .emoji-popover-top {
@@ -161,13 +161,13 @@
             padding: 8px 10px;
             margin-bottom: 0;
 
-            background-color: hsl(0, 0%, 93%);
+            background-color: hsl(0deg 0% 93%);
 
             border-radius: 5px 5px 0 0;
 
             .fa-search {
                 position: absolute;
-                color: hsl(0, 0%, 73%);
+                color: hsl(0deg 0% 73%);
                 top: 15px;
                 left: 17px;
                 z-index: 3;
@@ -184,7 +184,7 @@
         .emoji-popover-category-tabs {
             /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
             display: flex;
-            background-color: hsl(0, 0%, 93%);
+            background-color: hsl(0deg 0% 93%);
             width: 100%;
             box-sizing: border-box;
             overflow: hidden;
@@ -201,7 +201,7 @@
                 flex-grow: 1;
 
                 &.active {
-                    background-color: hsla(0, 0%, 100%, 0.2);
+                    background-color: hsl(0deg 0% 100% / 20%);
                 }
             }
         }
@@ -246,12 +246,12 @@
             width: 25px;
 
             &.reacted.reaction:focus {
-                background-color: hsl(195, 55%, 88%);
+                background-color: hsl(195deg 55% 88%);
                 outline: none;
             }
 
             &:not(.reacted):focus {
-                background-color: hsl(0, 0%, 93%);
+                background-color: hsl(0deg 0% 93%);
                 outline: none;
             }
 
@@ -267,7 +267,7 @@
 
     .emoji-showcase-container {
         position: relative;
-        background-color: hsl(0, 0%, 93%);
+        background-color: hsl(0deg 0% 93%);
         min-height: 44px;
         width: 250px;
 

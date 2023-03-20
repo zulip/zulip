@@ -52,11 +52,11 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
-    border-top: 1px solid hsla(0, 0%, 0%, 0.07);
+    border-top: 1px solid hsl(0deg 0% 0% / 7%);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px;
-    border-left: 1px solid hsl(0, 0%, 93%);
-    border-right: 1px solid hsl(0, 0%, 93%);
+    border-left: 1px solid hsl(0deg 0% 93%);
+    border-right: 1px solid hsl(0deg 0% 93%);
     height: 100%;
     display: flex;
     flex-flow: column;
@@ -92,7 +92,7 @@
         &.message_header_private_message {
             border-radius: 3px 0 0 3px;
             border-bottom: 0;
-            background-color: hsl(0, 0%, 27%);
+            background-color: hsl(0deg 0% 27%);
         }
     }
 
@@ -157,7 +157,7 @@
 
     .message_header {
         background: none;
-        background-color: hsl(0, 0%, 92%);
+        background-color: hsl(0deg 0% 92%);
         border: none;
         border-radius: 0;
         box-shadow: none !important;
@@ -213,11 +213,11 @@
 #compose_limit_indicator {
     margin-right: 8px;
     font-size: 12px;
-    color: hsl(39, 100%, 50%);
+    color: hsl(39deg 100% 50%);
     align-self: center;
 
     &.over_limit {
-        color: hsl(0, 76%, 65%);
+        color: hsl(0deg 76% 65%);
         font-weight: bold;
     }
 }
@@ -229,7 +229,7 @@
     z-index: 4;
     width: 100%;
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 #compose-container {
@@ -321,100 +321,100 @@
     }
 
     &.success {
-        background-color: hsl(147, 43%, 92%);
-        border: 1px solid hsla(147, 57%, 25%, 0.4);
-        color: hsl(147, 57%, 25%);
+        background-color: hsl(147deg 43% 92%);
+        border: 1px solid hsl(147deg 57% 25% / 40%);
+        color: hsl(147deg 57% 25%);
 
         .compose_banner_close_button {
-            color: hsla(147, 57%, 25%, 0.5);
+            color: hsl(147deg 57% 25% / 50%);
 
             &:hover {
-                color: hsl(147, 57%, 25%);
+                color: hsl(147deg 57% 25%);
             }
 
             &:active {
-                color: hsla(147, 57%, 25%, 0.75);
+                color: hsl(147deg 57% 25% / 75%);
             }
         }
     }
 
     &.warning {
-        background-color: hsl(50, 75%, 92%);
-        border-color: hsla(38, 44%, 27%, 0.4);
-        color: hsl(38, 44%, 27%);
+        background-color: hsl(50deg 75% 92%);
+        border-color: hsl(38deg 44% 27% / 40%);
+        color: hsl(38deg 44% 27%);
 
         .compose_banner_close_button {
-            color: hsla(38, 44%, 27%, 0.5);
+            color: hsl(38deg 44% 27% / 50%);
 
             &:hover {
-                color: hsl(38, 44%, 27%);
+                color: hsl(38deg 44% 27%);
             }
 
             &:active {
-                color: hsla(38, 44%, 27%, 0.75);
+                color: hsl(38deg 44% 27% / 75%);
             }
         }
 
         .compose_banner_action_button {
-            background-color: hsla(38, 44%, 27%, 0.1);
+            background-color: hsl(38deg 44% 27% / 10%);
             color: inherit;
 
             &:hover {
-                background-color: hsla(38, 44%, 27%, 0.12);
+                background-color: hsl(38deg 44% 27% / 12%);
             }
 
             &:active {
-                background-color: hsla(38, 44%, 27%, 0.15);
+                background-color: hsl(38deg 44% 27% / 15%);
             }
         }
     }
 
     &.error {
-        background-color: hsl(4, 35%, 90%);
-        border-color: hsla(3, 57%, 33%, 0.4);
-        color: hsl(4, 58%, 33%);
+        background-color: hsl(4deg 35% 90%);
+        border-color: hsl(3deg 57% 33% / 40%);
+        color: hsl(4deg 58% 33%);
 
         .compose_banner_close_button {
-            color: hsla(4, 58%, 33%, 0.5);
+            color: hsl(4deg 58% 33% / 50%);
 
             &:hover {
-                color: hsl(4, 58%, 33%);
+                color: hsl(4deg 58% 33%);
             }
 
             &:active {
-                color: hsla(4, 58%, 33%, 0.75);
+                color: hsl(4deg 58% 33% / 75%);
             }
         }
 
         .compose_banner_action_button {
-            background-color: hsla(3, 57%, 33%, 0.1);
+            background-color: hsl(3deg 57% 33% / 10%);
             color: inherit;
 
             &:hover {
-                background-color: hsla(3, 57%, 33%, 0.12);
+                background-color: hsl(3deg 57% 33% / 12%);
             }
 
             &:active {
-                background-color: hsla(3, 57%, 33%, 0.15);
+                background-color: hsl(3deg 57% 33% / 15%);
             }
         }
     }
 
     &.info {
-        background-color: hsl(204, 58%, 92%);
-        border-color: hsla(204, 49%, 29%, 0.4);
+        background-color: hsl(204deg 58% 92%);
+        border-color: hsl(204deg 49% 29% / 40%);
         position: relative;
-        color: hsl(204, 49%, 29%);
+        color: hsl(204deg 49% 29%);
 
         .compose_banner_close_button {
-            color: hsla(204, 49%, 29%, 0.5);
+            color: hsl(204deg 49% 29% / 50%);
 
             &:hover {
-                color: hsl(204, 49%, 29%);
+                color: hsl(204deg 49% 29%);
             }
 
             &:active {
-                color: hsla(204, 49%, 29%, 0.75);
+                color: hsl(204deg 49% 29% / 75%);
             }
         }
     }
@@ -433,7 +433,7 @@
         /* The progress updates seem to come every second or so,
         so this is the smoothest it can probably get. */
         transition: width 1s ease-in-out;
-        background: hsl(204, 63%, 85%);
+        background: hsl(204deg 63% 85%);
         top: 0;
         bottom: 0;
     }
@@ -456,7 +456,7 @@
     }
 
     100% {
-        box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
+        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
     }
 }
 
@@ -470,12 +470,12 @@ textarea.new_message_textarea {
     resize: vertical !important;
     margin-top: 5px;
     border-radius: 4px;
-    color: hsl(0, 0%, 33%);
-    background-color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
 
     &.over_limit,
     &.over_limit:focus {
-        box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
+        box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
 
         &.flash {
             animation: message-limit-flash 0.5s ease-in-out infinite;
@@ -485,25 +485,25 @@ textarea.new_message_textarea {
     &:read-only,
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0, 0%, 93%);
+        background-color: hsl(0deg 0% 93%);
     }
 
     &.invalid,
     &.invalid:focus {
-        border: 1px solid hsl(3, 57%, 33%);
-        box-shadow: 0 0 2px hsl(3, 57%, 33%);
+        border: 1px solid hsl(3deg 57% 33%);
+        box-shadow: 0 0 2px hsl(3deg 57% 33%);
     }
 }
 
 textarea.new_message_textarea,
 .compose_table .recipient_box {
-    border: 1px solid hsla(0, 0%, 0%, 0.2);
+    border: 1px solid hsl(0deg 0% 0% / 20%);
     box-shadow: none;
     transition: border 0.2s ease;
 
     &:focus {
         outline: 0;
-        border: 1px solid hsl(0, 0%, 67%);
+        border: 1px solid hsl(0deg 0% 67%);
         box-shadow: none;
     }
 }
@@ -572,7 +572,7 @@ input.recipient_box {
             margin: 4px 0 0;
 
             &:focus {
-                outline: 1px dotted hsl(0, 0%, 20%);
+                outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
@@ -580,7 +580,7 @@ input.recipient_box {
 
         &:first-child {
             padding: 0 0 4px;
-            border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+            border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
         }
     }
 
@@ -593,7 +593,7 @@ input.recipient_box {
     .enter_sends_minor kbd {
         opacity: 0.9;
         font-size: 11px;
-        color: hsl(0, 0%, 50%);
+        color: hsl(0deg 0% 50%);
     }
 }
 
@@ -694,7 +694,7 @@ input.recipient_box {
     }
 
     .divider {
-        color: hsl(0, 0%, 88%);
+        color: hsl(0deg 0% 88%);
         font-size: 20px;
         margin: 0 3px;
     }
@@ -764,9 +764,9 @@ a.compose_control_button.hide {
     min-height: 42px;
     overflow: auto;
 
-    border: 1px solid hsl(0, 0%, 67%);
+    border: 1px solid hsl(0deg 0% 67%);
     border-radius: 4px;
-    background-color: hsla(0, 0%, 0%, 0.02);
+    background-color: hsl(0deg 0% 0% / 2%);
     cursor: not-allowed;
 }
 
@@ -778,7 +778,7 @@ a.compose_control_button.hide {
     & ul {
         list-style: none;
         margin: 0;
-        background: hsl(0, 0%, 100%);
+        background: hsl(0deg 0% 100%);
     }
 
     .typeahead-header {
@@ -786,7 +786,7 @@ a.compose_control_button.hide {
         padding-left: 20px;
         padding-right: 20px;
         padding-top: 4px;
-        border-top: 1px solid hsla(0, 0%, 0%, 0.2);
+        border-top: 1px solid hsl(0deg 0% 0% / 20%);
         display: flex;
         align-items: center;
     }
@@ -796,7 +796,7 @@ a.compose_control_button.hide {
     }
 
     &.typeahead {
-        background: hsl(0, 0%, 100%);
+        background: hsl(0deg 0% 100%);
     }
 }
 

@@ -29,7 +29,7 @@
             line-height: normal;
 
             &:focus {
-                outline: 1px dotted hsl(0, 0%, 20%);
+                outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
@@ -41,7 +41,7 @@
         cursor: pointer;
 
         &:focus {
-            outline: 1px dotted hsl(0, 0%, 20%);
+            outline: 1px dotted hsl(0deg 0% 20%);
             outline: 5px auto -webkit-focus-ring-color;
             outline-offset: -2px;
         }

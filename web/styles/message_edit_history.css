@@ -36,13 +36,13 @@
 
     .message_edit_history_content {
         .highlight_text_inserted {
-            color: hsl(122, 72%, 30%);
-            background-color: hsl(120, 64%, 95%);
+            color: hsl(122deg 72% 30%);
+            background-color: hsl(120deg 64% 95%);
         }
 
         .highlight_text_deleted {
-            color: hsl(0, 100%, 50%);
-            background-color: hsl(7, 90%, 92%);
+            color: hsl(0deg 100% 50%);
+            background-color: hsl(7deg 90% 92%);
             text-decoration: line-through;
             word-break: break-all;
         }

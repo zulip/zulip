@@ -1,5 +1,5 @@
 body {
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsl(0deg 0% 98%);
     font-family: "Source Sans 3", sans-serif;
     line-height: 150%;
     height: 100%;
@@ -18,7 +18,7 @@ html {
 
 .digest-address-link {
     margin-top: 10px;
-    color: hsl(0, 0%, 60%);
+    color: hsl(0deg 0% 60%);
     font-size: 12px;
     text-align: center;
 }
@@ -37,8 +37,8 @@ html {
     padding: 15px 0;
     height: 29px;
 
-    background-color: hsl(0, 0%, 100%);
-    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+    background-color: hsl(0deg 0% 100%);
+    box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
 
     z-index: 100;
 }
@@ -62,13 +62,13 @@ html {
    which look nicer against a different background */
 .api-center .code-section {
     .blocks {
-        background-color: hsl(0, 0%, 98%);
+        background-color: hsl(0deg 0% 98%);
     }
 
     & ul.nav {
         & li.active {
-            background-color: hsl(0, 0%, 98%);
-            border-bottom: 1px solid hsl(0, 0%, 98%);
+            background-color: hsl(0deg 0% 98%);
+            border-bottom: 1px solid hsl(0deg 0% 98%);
         }
     }
 }
@@ -86,17 +86,17 @@ html {
 
 .digest-email-html {
     padding: 20px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     border-radius: 5px;
 }
 
 .app.help {
     display: inline-flex;
 
-    box-shadow: 0 -20px 50px hsla(0, 0%, 0%, 0.04);
+    box-shadow: 0 -20px 50px hsl(0deg 0% 0% / 4%);
     overflow: auto;
 
-    color: hsl(0, 0%, 27%);
+    color: hsl(0deg 0% 27%);
 
     .hamburger {
         display: none;
@@ -120,11 +120,11 @@ html {
         /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
         height: calc(100vh - 59px);
 
-        border-right: 1px solid hsl(219, 10%, 97%);
+        border-right: 1px solid hsl(219deg 10% 97%);
         overflow: auto;
 
-        background-color: hsl(153, 32%, 55%);
-        color: hsl(0, 0%, 100%);
+        background-color: hsl(153deg 32% 55%);
+        color: hsl(0deg 0% 100%);
 
         -webkit-overflow-scrolling: touch;
 
@@ -235,7 +235,7 @@ html {
 
         & a {
             &.highlighted {
-                background-color: hsl(152, 40%, 42%);
+                background-color: hsl(152deg 40% 42%);
 
                 /* Don't show the focus outline for the highlighted page. */
                 outline: 0;
@@ -245,7 +245,7 @@ html {
 }
 
 .help .markdown {
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
 }
@@ -286,15 +286,15 @@ html {
     font-size: 0.9rem;
 
     &.text-error {
-        color: hsl(1.1, 44.7%, 50.4%);
+        color: hsl(1.1deg 44.7% 50.4%);
     }
 }
 
 a.title {
-    color: hsl(0, 0%, 0%);
+    color: hsl(0deg 0% 0%);
 
     &:hover {
-        color: hsl(0, 0%, 50%);
+        color: hsl(0deg 0% 50%);
         text-decoration: none;
     }
 }
@@ -353,8 +353,8 @@ label.text-error {
 }
 
 input.text-error {
-    border-color: hsl(0, 100%, 50%);
-    outline-color: hsl(0, 100%, 50%);
+    border-color: hsl(0deg 100% 50%);
+    outline-color: hsl(0deg 100% 50%);
 }
 
 .portico-container {
@@ -395,13 +395,13 @@ input.text-error {
         a:focus,
         a:hover {
             text-decoration: none;
-            color: hsl(0, 0%, 20%);
+            color: hsl(0deg 0% 20%);
         }
 
         .light {
             font-size: 1.2rem;
             font-weight: 400;
-            color: hsl(0, 0%, 20%);
+            color: hsl(0deg 0% 20%);
             opacity: 0.7;
         }
     }
@@ -425,11 +425,11 @@ input.text-error {
             margin: 10px 0 0;
             list-style-type: none;
             width: fit-content;
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             padding: 5px 0;
             border-radius: 4px;
-            border: 1px solid hsl(0, 0%, 87%);
-            box-shadow: 0 2px 5px hsla(0, 0%, 0%, 0.1);
+            border: 1px solid hsl(0deg 0% 87%);
+            box-shadow: 0 2px 5px hsl(0deg 0% 0% / 10%);
 
             &::before {
                 content: "\25B2";
@@ -437,7 +437,7 @@ input.text-error {
                 top: -4px;
                 right: 9px;
                 font-size: 0.5em;
-                color: hsl(0, 0%, 87%);
+                color: hsl(0deg 0% 87%);
                 line-height: 0;
                 transform: scale(1.8, 1);
             }
@@ -451,7 +451,7 @@ input.text-error {
                 cursor: pointer;
 
                 &:hover {
-                    background-color: hsl(190, 10%, 90%);
+                    background-color: hsl(190deg 10% 90%);
                     transition: none;
                 }
 
@@ -462,7 +462,7 @@ input.text-error {
                     transition: none;
                     font-size: 0.9em;
                     font-weight: 400;
-                    color: hsl(0, 0%, 27%);
+                    color: hsl(0deg 0% 27%);
                 }
 
                 &:hover a {
@@ -492,7 +492,7 @@ input.text-error {
     }
 
     .dropdown-pill {
-        border: 1px solid hsla(0, 0%, 0%, 0.2);
+        border: 1px solid hsl(0deg 0% 0% / 20%);
         border-radius: 4px;
         margin-left: 10px;
         font-weight: 400;
@@ -548,8 +548,8 @@ input.text-error {
 }
 
 .table.table-striped {
-    background-color: hsl(0, 0%, 100%);
-    box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+    background-color: hsl(0deg 0% 100%);
+    box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
 }
 
 .team-profiles {
@@ -613,9 +613,9 @@ input.text-error {
         display: none;
 
         &:checked + label {
-            border: 1px solid hsl(0, 0%, 93%);
-            border-top: 2px solid hsl(80, 61%, 50%);
-            border-bottom-color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(0deg 0% 93%);
+            border-top: 2px solid hsl(80deg 61% 50%);
+            border-bottom-color: hsl(0deg 0% 100%);
         }
     }
 
@@ -643,7 +643,7 @@ input.text-error {
     .person {
         box-sizing: border-box;
         padding: 10px;
-        border: 1px solid hsl(0, 0%, 93%);
+        border: 1px solid hsl(0deg 0% 93%);
         border-radius: 4px;
         transition: all 0.3s ease;
 
@@ -652,7 +652,7 @@ input.text-error {
         }
 
         &:hover {
-            border: 1px solid hsl(0, 0%, 73%);
+            border: 1px solid hsl(0deg 0% 73%);
         }
 
         .avatar {
@@ -701,7 +701,7 @@ input#terminal:checked ~ #tab-terminal {
 
 .tab-loading,
 .last-updated {
-    color: hsl(0, 0%, 67%);
+    color: hsl(0deg 0% 67%);
     font-size: 0.9em !important;
     padding-top: 30px;
     text-align: center;
@@ -795,7 +795,7 @@ input.new-organization-button {
 
     & a {
         display: inline-block;
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
         padding: 2px 7px 1px 8px;
         font-weight: 600;
         font-size: 16px;
@@ -804,8 +804,8 @@ input.new-organization-button {
 
         &:hover {
             text-decoration: none;
-            background-color: hsla(0, 0%, 100%, 1);
-            color: hsl(170, 50%, 40%);
+            background-color: hsl(0deg 0% 100%);
+            color: hsl(170deg 50% 40%);
         }
     }
 }
@@ -902,7 +902,7 @@ input.new-organization-button {
 
     &.grid {
         padding: 10px 0;
-        border-bottom: 1px solid hsl(0, 0%, 87%);
+        border-bottom: 1px solid hsl(0deg 0% 87%);
 
         & label.inline-block {
             width: 200px;
@@ -960,7 +960,7 @@ input.new-organization-button {
 .error_page {
     min-height: calc(100vh - 290px);
     height: 100%;
-    background-color: hsl(163, 42%, 85%);
+    background-color: hsl(163deg 42% 85%);
     font-family: "Source Sans 3", sans-serif;
 }
 
@@ -982,10 +982,10 @@ input.new-organization-button {
 
 .error_page .errorbox {
     margin: auto;
-    border: 2px solid hsl(163, 43%, 46%);
+    border: 2px solid hsl(163deg 43% 46%);
     max-width: 500px;
-    background-color: hsl(0, 0%, 100%);
-    box-shadow: 0 0 4px hsl(163, 43%, 46%);
+    background-color: hsl(0deg 0% 100%);
+    box-shadow: 0 0 4px hsl(163deg 43% 46%);
     font-size: 18px;
 
     &.config-error {
@@ -994,7 +994,7 @@ input.new-organization-button {
 }
 
 .error_page p {
-    color: hsl(0, 0%, 20%);
+    color: hsl(0deg 0% 20%);
 }
 
 .error_page .errorcontent {
@@ -1003,7 +1003,7 @@ input.new-organization-button {
 }
 
 .error_page .lead {
-    color: hsl(163, 49%, 44%);
+    color: hsl(163deg 49% 44%);
     font-size: 35px;
     margin-bottom: 20px;
     line-height: normal;
@@ -1030,7 +1030,7 @@ input.new-organization-button {
             position: fixed;
             top: 70px;
             left: 9px;
-            fill: hsl(0, 0%, 100%);
+            fill: hsl(0deg 0% 100%);
             z-index: 2;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -1244,7 +1244,7 @@ label.label-title {
 
         &:hover .api-argument-hover-link i.fa {
             opacity: 1;
-            color: hsl(0, 0%, 0%);
+            color: hsl(0deg 0% 0%);
             cursor: pointer;
         }
     }
@@ -1263,26 +1263,26 @@ label.label-title {
         text-transform: uppercase;
         font-weight: 600;
         font-size: 12px;
-        color: hsl(14, 75%, 60%);
+        color: hsl(14deg 75% 60%);
     }
 
     .api-argument-optional {
         text-transform: uppercase;
         font-weight: 400;
         font-size: 12px;
-        color: hsl(0, 0%, 47%);
+        color: hsl(0deg 0% 47%);
     }
 
     .api-argument-deprecated {
         text-transform: uppercase;
         font-weight: 600;
         font-size: 12px;
-        color: hsl(0, 50%, 60%);
+        color: hsl(0deg 50% 60%);
     }
 }
 
 .api-field-type {
-    color: hsl(176, 46.4%, 41%);
+    color: hsl(176deg 46.4% 41%);
 }
 
 .desktop-redirect-box {
@@ -1308,18 +1308,22 @@ label.label-title {
 
 #navbar-custom-message {
     font-size: 1rem;
-    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
-    color: hsl(0, 0%, 100%);
+    background: linear-gradient(
+        145deg,
+        hsl(191deg 56% 55%),
+        hsl(169deg 65% 42%)
+    );
+    color: hsl(0deg 0% 100%);
     font-weight: 600;
     text-align: center;
     position: relative;
     top: 0;
     padding: 10px;
-    border-bottom: 1px solid hsl(177, 52%, 55%);
+    border-bottom: 1px solid hsl(177deg 52% 55%);
     z-index: 5;
 
     & a {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
         text-decoration: underline;
     }
 }

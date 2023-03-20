@@ -10,7 +10,7 @@
 
     & button {
         font-weight: 700;
-        color: hsl(240, 100%, 50%);
+        color: hsl(240deg 100% 50%);
     }
 
     .widget-choices-heading {
@@ -36,7 +36,7 @@
             ~ span {
                 height: 12px;
                 width: 12px;
-                border: 2px solid hsl(156, 28%, 70%);
+                border: 2px solid hsl(156deg 28% 70%);
 
                 border-radius: 4px;
                 filter: brightness(1);
@@ -49,8 +49,8 @@
                 background-size: 75%;
                 background-position: 50% 50%;
                 background-repeat: no-repeat;
-                background-color: hsl(156, 41%, 40%);
-                border: 2px solid hsl(156, 41%, 40%);
+                background-color: hsl(156deg 41% 40%);
+                border: 2px solid hsl(156deg 41% 40%);
             }
 
             &:disabled ~ span {
@@ -59,11 +59,11 @@
             }
 
             &:hover ~ span {
-                border-color: hsl(156, 30%, 50%);
+                border-color: hsl(156deg 30% 50%);
             }
 
             &:focus ~ span {
-                outline-color: hsla(0, 0%, 100%, 0);
+                outline-color: hsl(0deg 0% 100% / 0%);
             }
         }
     }
@@ -114,8 +114,8 @@
         position: relative;
         z-index: 1;
 
-        color: hsl(156, 41%, 40%);
-        border-color: hsl(156, 28%, 70%);
+        color: hsl(156deg 41% 40%);
+        border-color: hsl(156deg 28% 70%);
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
@@ -125,20 +125,20 @@
         min-width: 25px;
         height: 25px;
         font-size: 13px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
 
         &:hover {
-            border-color: hsl(156, 30%, 50%);
+            border-color: hsl(156deg 30% 50%);
         }
 
         &:focus {
             outline: 0;
-            background-color: hsl(156, 41%, 90%);
+            background-color: hsl(156deg 41% 90%);
         }
     }
 
     .poll-names {
-        color: hsl(0, 0%, 45%);
+        color: hsl(0deg 0% 45%);
         padding-left: 4px;
         padding-top: 28px;
         font-size: 14px;
@@ -150,22 +150,22 @@ button {
         height: 20px;
         width: 20px;
         background-color: transparent;
-        border-color: hsl(156, 28%, 70%);
+        border-color: hsl(156deg 28% 70%);
         margin-right: 4px;
         border-radius: 3px;
 
         &:hover {
-            border: 1px solid hsl(194, 60%, 40%);
+            border: 1px solid hsl(194deg 60% 40%);
         }
     }
 
     &.add-task,
     &.poll-option {
-        color: hsl(156, 41%, 40%);
-        border: 1px solid hsl(156, 28%, 70%);
+        color: hsl(156deg 41% 40%);
+        border: 1px solid hsl(156deg 28% 70%);
         width: 100px;
         border-radius: 3px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
         padding: 4px;
         padding-left: 14px;
         padding-right: 14px;
@@ -174,13 +174,13 @@ button {
         &:hover,
         &:focus {
             outline: 0;
-            border-color: hsl(156, 30%, 50%);
+            border-color: hsl(156deg 30% 50%);
         }
 
         &:active {
-            border-color: hsl(156, 30%, 40%);
-            color: hsl(156, 44%, 43%);
-            background-color: hsl(154, 33%, 96%);
+            border-color: hsl(156deg 30% 40%);
+            color: hsl(156deg 44% 43%);
+            background-color: hsl(154deg 33% 96%);
         }
     }
 }
@@ -197,7 +197,7 @@ button {
 }
 
 .widget-error {
-    color: hsl(1, 45%, 50%);
+    color: hsl(1deg 45% 50%);
     font-size: 12px;
 }
 
@@ -206,11 +206,11 @@ button {
     width: 28px !important;
     height: 28px;
     border-radius: 3px;
-    border: 1px solid hsl(0, 0%, 80%);
-    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0deg 0% 80%);
+    background-color: hsl(0deg 0% 100%);
 
     &:hover {
-        border-color: hsl(0, 0%, 60%);
+        border-color: hsl(0deg 0% 60%);
     }
 }
 
@@ -229,5 +229,5 @@ button {
 }
 
 .current-user-vote {
-    background-color: hsla(156, 10%, 90%, 0.9);
+    background-color: hsl(156deg 10% 90% / 90%);
 }

@@ -147,7 +147,7 @@
         margin-right: 10px;
 
         .sp-container {
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             cursor: pointer;
             border: none;
 
@@ -163,11 +163,11 @@
             }
 
             & button {
-                background-color: hsl(0, 0%, 100%);
+                background-color: hsl(0deg 0% 100%);
                 background-image: none;
-                border: 1px solid hsl(0, 0%, 80%);
+                border: 1px solid hsl(0deg 0% 80%);
                 border-radius: 4px;
-                color: hsl(0, 0%, 25%);
+                color: hsl(0deg 0% 25%);
                 font-size: 12px;
                 padding: 6px;
                 text-transform: capitalize;
@@ -176,7 +176,7 @@
             }
 
             .sp-picker-container {
-                border-left: solid 1px hsl(0, 0%, 88%);
+                border-left: solid 1px hsl(0deg 0% 88%);
             }
         }
     }
@@ -244,7 +244,7 @@ ul {
             font-size: 11px;
             font-weight: 550;
             margin-right: 2px;
-            background-color: hsl(200, 100%, 40%);
+            background-color: hsl(200deg 100% 40%);
             /* Override random undesired bootstrap style */
             text-shadow: none;
             /* Not center aligned but looks better. */
@@ -266,7 +266,7 @@ ul {
 
     .popover-title {
         padding: 0;
-        border-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsl(0deg 0% 0% / 20%);
     }
 
     .popover_info li {
@@ -281,7 +281,7 @@ ul {
 
     .popover-title {
         padding: 0;
-        border-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsl(0deg 0% 0% / 20%);
     }
 }
 
@@ -306,7 +306,7 @@ ul {
         margin-left: 0;
 
         .bot {
-            color: hsl(180, 5%, 74%);
+            color: hsl(180deg 5% 74%);
             vertical-align: top;
             width: 20px;
             padding-top: 3.5px;
@@ -332,7 +332,7 @@ ul {
 
     &:hover {
         cursor: pointer;
-        color: hsl(200, 100%, 40%);
+        color: hsl(200deg 100% 40%);
     }
 }
 
@@ -344,7 +344,7 @@ ul {
     position: relative;
 
     &.guest-avatar::after {
-        outline: 10px solid hsl(0, 0%, 100%);
+        outline: 10px solid hsl(0deg 0% 100%);
     }
 
     .popover-inner {
@@ -380,7 +380,7 @@ ul {
     }
 
     .name {
-        color: hsl(0, 0%, 20%);
+        color: hsl(0deg 0% 20%);
         width: 120px;
         font-weight: 600;
         margin-right: 10px;
@@ -421,10 +421,10 @@ ul {
         background-size: cover;
         background-position: center;
         border-radius: 5px;
-        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
 
         &.guest-avatar::after {
-            outline: 9px solid hsl(0, 0%, 100%);
+            outline: 9px solid hsl(0deg 0% 100%);
         }
     }
 
@@ -447,7 +447,7 @@ ul {
     }
 
     & hr {
-        border: 1px solid hsl(0, 0%, 93%);
+        border: 1px solid hsl(0deg 0% 93%);
         margin: 5px 0;
     }
 
@@ -456,7 +456,7 @@ ul {
             margin-bottom: 10px;
 
             .name {
-                color: hsl(0, 0%, 20%);
+                color: hsl(0deg 0% 20%);
                 font-weight: 600;
             }
 
@@ -530,7 +530,7 @@ ul {
     .subscription-group-list,
     .subscription-stream-list {
         position: relative;
-        border: 1px solid hsl(0, 0%, 83%);
+        border: 1px solid hsl(0deg 0% 83%);
         border-radius: 4px;
         overflow: auto;
         text-align: left;
@@ -549,7 +549,7 @@ ul {
             border-radius: 6px;
 
             & tr {
-                border-bottom: 1px solid hsl(0, 0%, 87%);
+                border-bottom: 1px solid hsl(0deg 0% 87%);
                 /* Ensure equal height for rows with a remove-subscription-button and
                    those without one. */
                 height: 34px;
@@ -581,7 +581,7 @@ ul {
                 display: block;
 
                 text-align: center;
-                color: hsl(0, 0%, 67%);
+                color: hsl(0deg 0% 67%);
             }
 
             &:empty {
@@ -606,14 +606,14 @@ ul {
         width: 100%;
         height: 100%;
 
-        background-color: hsla(0, 0%, 0%, 0.7);
+        background-color: hsl(0deg 0% 0% / 70%);
         border-radius: 0;
         border: none;
 
         pointer-events: none;
 
         .popover-inner {
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             pointer-events: all;
         }
     }
@@ -630,14 +630,14 @@ ul {
         width: 100%;
         height: 100%;
 
-        background-color: hsla(0, 0%, 0%, 0.7);
+        background-color: hsl(0deg 0% 0% / 70%);
         border-radius: 0;
         border: none;
 
         pointer-events: none;
 
         .popover-inner {
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             pointer-events: all;
         }
 
@@ -664,7 +664,7 @@ ul {
         justify-content: center;
         align-items: center;
 
-        background-color: hsla(0, 0%, 0%, 0.7);
+        background-color: hsl(0deg 0% 0% / 70%);
 
         /* Needs to be higher than the 105 for div.overlay so that the
            emoji picker can render on top of the user status picker. */
@@ -728,7 +728,7 @@ ul {
         /* Red outline for clear visibility
          * of which image is in focus.
          */
-        outline-color: hsl(0, 100%, 50%);
+        outline-color: hsl(0deg 100% 50%);
     }
 
     .search-box {
@@ -750,7 +750,7 @@ ul {
 
             &:focus {
                 .fa-remove {
-                    outline: 2px solid hsl(215, 47%, 50%);
+                    outline: 2px solid hsl(215deg 47% 50%);
                 }
             }
         }
@@ -764,7 +764,7 @@ ul {
 
     .popover-footer {
         text-align: center;
-        background-color: hsl(0, 0%, 0%);
+        background-color: hsl(0deg 0% 0%);
         border-radius: 0 0 6px 6px;
 
         & img {
