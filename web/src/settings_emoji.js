@@ -49,9 +49,15 @@ export function update_custom_emoji_ui() {
     if (!settings_data.user_can_add_custom_emoji()) {
         $(".add-emoji-text").hide();
         $("#add-custom-emoji-button").hide();
+        $("#emoji-settings .emoji-settings-tip-container").show();
     } else {
         $(".add-emoji-text").show();
         $("#add-custom-emoji-button").show();
+        if (page_params.is_admin) {
+            $("#emoji-settings .emoji-settings-tip-container").show();
+        } else {
+            $("#emoji-settings .emoji-settings-tip-container").hide();
+        }
     }
 
     populate_emoji();
