@@ -1,11 +1,6 @@
 {
-  "name": "zulip",
-  "version": "0.0.0",
-  "license": "Apache-2.0",
-  "description": "",
   "private": true,
-  "main": "",
-  "packageManager": "yarn@1.22.19+sha256.732620bac8b1690d507274f025f3c6cfdc3627a84d9642e38a07452cc00e0f2e",
+  "packageManager": "pnpm@7.30.0+sha256.f5e9a8789a6d41925dc4fcacae2e18537c7bf297306ce506d7730e15082626f9",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
@@ -123,7 +118,7 @@
     "openapi-types": "^12.0.0",
     "prettier": "^2.8.4",
     "puppeteer": "19.7.2",
-    "source-map": "https://codeload.github.com/benthemonkey/source-map/tar.gz/d95423f77edef6cbb9e21d2d6014c7de85ae220a",
+    "source-map": "npm:source-map-js@1.0.1",
     "stylelint": "^15.2.0",
     "stylelint-config-standard": "^31.0.0",
     "svgo": "^3.0.0",
@@ -135,15 +130,12 @@
     "xvfb": "^0.4.0",
     "yaml": "^2.0.0-8",
     "yargs": "^17.1.1",
-    "yarn-deduplicate": "^6.0.0",
     "zulip-js": "^2.0.8"
   },
-  "resolutions": {
-    "/source-map": "https://codeload.github.com/benthemonkey/source-map/tar.gz/d95423f77edef6cbb9e21d2d6014c7de85ae220a"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/zulip/zulip.git"
+  "pnpm": {
+    "overrides": {
+      "source-map@^0.6": "npm:source-map-js@1.0.1"
+    }
   },
   "nyc": {
     "exclude": [

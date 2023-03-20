@@ -1,3 +1,4 @@
+pnpm-lock.yaml
 /api_docs/**/*.md
 /corporate/tests/stripe_fixtures
 /help/**/*.md

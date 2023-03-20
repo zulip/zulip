@@ -869,23 +869,6 @@ Likely causes are:
    not, go to your VM settings and increase the RAM, then restart
    the VM.
 
-##### yarn install warnings
-
-```console
-$ yarn install
-yarn install v0.24.5
-[1/4] Resolving packages...
-[2/4] Fetching packages...
-warning fsevents@1.1.1: The platform "linux" is incompatible with this module.
-info "fsevents@1.1.1" is an optional dependency and failed compatibility check. Excluding it from installation.
-[3/4] Linking dependencies...
-[4/4] Building fresh packages...
-Done in 23.50s.
-```
-
-These are warnings produced by spammy third party JavaScript packages.
-It is okay to proceed and start the Zulip server.
-
 #### VBoxManage errors related to VT-x or WHvSetupPartition
 
 ```console
