@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = {
-    extends: ["stylelint-config-standard", "stylelint-config-prettier"],
+    extends: ["stylelint-config-standard"],
     rules: {
         // Add some exceptions for recommended rules
         "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],

@@ -1,5 +1,5 @@
 import $ from "jquery";
-import Cookies from "js-cookie"; // eslint-disable-line import/no-unresolved
+import Cookies from "js-cookie";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 
