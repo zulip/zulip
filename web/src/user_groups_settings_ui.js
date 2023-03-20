@@ -19,6 +19,15 @@ import * as user_groups from "./user_groups";
 
 let group_list_widget;
 let group_list_toggler;
+let active_group_id;
+
+export function set_active_group_id(group_id) {
+    active_group_id = group_id;
+}
+
+export function reset_active_group_id() {
+    active_group_id = undefined;
+}
 
 // Ideally this should be included in page params.
 // Like we have page_params.max_stream_name_length` and
@@ -42,6 +51,7 @@ export function set_up_click_handlers() {
 export const show_user_group_settings_pane = {
     nothing_selected() {
         $(".settings, #user-group-creation").hide();
+        reset_active_group_id();
         $(".nothing-selected").show();
         $("#groups_overlay .user-group-info-title").text(
             $t({defaultMessage: "User group settings"}),
@@ -50,10 +60,12 @@ export const show_user_group_settings_pane = {
     settings(group) {
         $(".settings, #user-group-creation").hide();
         $("#groups_overlay .settings").show();
+        set_active_group_id(group.id);
         $("#groups_overlay .user-group-info-title").text(group.name);
     },
     create_user_group() {
         $(".nothing-selected, .settings, #user-group-creation").hide();
+        reset_active_group_id();
         $("#user-group-creation").show();
         $("#groups_overlay .user-group-info-title").text($t({defaultMessage: "Create user group"}));
     },
@@ -77,12 +89,10 @@ export function is_group_already_present(group) {
 }
 
 export function get_active_data() {
-    const $active_row = $("div.group-row.active");
-    const valid_active_id = Number.parseInt($active_row.attr("data-group-id"), 10);
     const $active_tabs = $(".user-groups-container").find("div.ind-tab.selected");
     return {
-        $row: $active_row,
-        id: valid_active_id,
+        $row: row_for_group_id(active_group_id),
+        id: active_group_id,
         $tabs: $active_tabs,
     };
 }
@@ -96,12 +106,7 @@ export function switch_to_group_row(group_id) {
 
     scroll_util.scroll_element_into_container($group_row, $container);
 
-    // It's dubious that this timeout is needed.
-    setTimeout(() => {
-        if (group_id === get_active_data().id) {
-            $group_row.trigger("click");
-        }
-    }, 100);
+    $group_row.trigger("click");
 }
 
 function show_right_section() {
@@ -266,6 +271,14 @@ export function setup_page(callback) {
                         (item.name.toLocaleLowerCase().includes(value) ||
                             item.description.toLocaleLowerCase().includes(value))
                     );
+                },
+                onupdate() {
+                    if (active_group_id !== undefined) {
+                        const active_group = user_groups.get_user_group_from_id(active_group_id);
+                        if (is_group_already_present(active_group)) {
+                            row_for_group_id(active_group_id).addClass("active");
+                        }
+                    }
                 },
             },
             init_sort: ["alphabetic", "name"],
