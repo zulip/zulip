@@ -25,6 +25,7 @@ from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import (
+    Message,
     MultiuseInvite,
     PreregistrationUser,
     Realm,
@@ -123,7 +124,12 @@ def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
     estimated_sent = RealmCount.objects.filter(
         realm=realm, property="messages_sent:message_type:day"
     ).aggregate(messages=Sum("value"))
-    if not estimated_sent["messages"]:
+    if (
+        not estimated_sent["messages"]
+        # Only after we've done the rough-estimate check, take the
+        # time to do the exact check:
+        and Message.objects.filter(realm=realm, sender__is_bot=False).count() == 0
+    ):
         warning_flags.append("no-messages-sent")
 
     if len(warning_flags) == 6:
