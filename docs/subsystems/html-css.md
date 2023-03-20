@@ -177,8 +177,8 @@ To add a static file to the app (JavaScript, TypeScript, CSS, images, etc),
 first add it to the appropriate place under `static/`.
 
 - Third-party packages from the NPM repository should be added to
-  `package.json` for management by yarn, this allows them to be upgraded easily
-  and not bloat our codebase. Run `./tools/provision` for yarn to install the
+  `package.json` for management by pnpm, this allows them to be upgraded easily
+  and not bloat our codebase. Run `./tools/provision` for pnpm to install the
   new packages and update its lock file. You should also update
   `PROVISION_VERSION` in `version.py` in the same commit.
 - Third-party files that we have patched should all go in

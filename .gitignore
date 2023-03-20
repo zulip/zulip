@@ -44,11 +44,11 @@ package-lock.json
 # Static build
 *.mo
 npm-debug.log
+/.pnpm-store
 /node_modules
 /prod-static
 /staticfiles.json
 /webpack-stats-production.json
-/yarn-error.log
 zulip-git-version
 
 # Test / analysis tools

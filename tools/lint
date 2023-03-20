@@ -72,14 +72,14 @@ def run() -> None:
 
     linter_config.external_linter(
         "css",
-        ["node", "node_modules/.bin/stylelint"],
+        ["node_modules/.bin/stylelint"],
         ["css"],
         fix_arg="--fix",
         description="Standard CSS style and formatting linter (config: stylelint.config.js)",
     )
     linter_config.external_linter(
         "eslint",
-        ["node", "node_modules/.bin/eslint", "--max-warnings=0", "--cache", "--ext", ".js,.ts"],
+        ["node_modules/.bin/eslint", "--max-warnings=0", "--cache", "--ext", ".js,.ts"],
         ["js", "ts"],
         fix_arg="--fix",
         description="Standard JavaScript style and formatting linter (config: .eslintrc).",
@@ -156,13 +156,6 @@ def run() -> None:
         ["ts"],
         pass_targets=False,
         description="TypeScript compiler (config: tsconfig.json)",
-    )
-    linter_config.external_linter(
-        "yarn-deduplicate",
-        ["tools/run-yarn-deduplicate"],
-        ["lock"],
-        pass_targets=False,
-        description="Shares duplicate packages in yarn.lock",
     )
     linter_config.external_linter(
         "gitlint",
