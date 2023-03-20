@@ -64,7 +64,6 @@
     "postcss-import": "^15.0.0",
     "postcss-loader": "^7.0.0",
     "postcss-media-minmax": "https://codeload.github.com/andersk/postcss-media-minmax/tar.gz/92c4dd33b9add115ec436ef25243484cca0f7355",
-    "postcss-mixins": "^9.0.1",
     "postcss-prefixwrap": "^1.24.0",
     "postcss-preset-env": "^8.0.1",
     "postcss-simple-vars": "^7.0.0",
