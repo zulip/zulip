@@ -3383,3 +3383,12 @@ select.invite-as {
         top: 2px;
     }
 }
+
+.typeahead-option-label {
+    display: flex !important;
+    justify-content: space-between;
+
+    > strong {
+        margin-right: 14px;
+    }
+}
