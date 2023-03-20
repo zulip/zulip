@@ -308,14 +308,7 @@ function toggle_categories_dropdown() {
 function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
         if (e.key === "Enter" && e.target.value !== "") {
-            for (const integration_element of $(".integration-lozenges").children()) {
-                const $integration = $(integration_element).find(".integration-lozenge");
-
-                if ($integration.css("display") !== "none") {
-                    $integration.closest("a")[0].click();
-                    break;
-                }
-            }
+            $(".integration-lozenges .integration-lozenge:visible")[0]?.closest("a").click();
         }
     });
 
