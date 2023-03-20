@@ -1357,9 +1357,9 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
         change_all_topic_name = "Topic 1 edited"
 
-        # This code path adds 21 (10 + 5/user with muted topics + 1) to
+        # This code path adds 17 (10 + 4/visibility_policy + 1/user + 1) to
         # the number of database queries for moving a topic.
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(17):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1453,7 +1453,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(32):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1517,7 +1517,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(32):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1567,6 +1567,7 @@ class EditMessageTest(EditMessageTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         aaron = self.example_user("aaron")
+        othello = self.example_user("othello")
 
         def assert_has_visibility_policy(
             user_profile: UserProfile,
@@ -1598,24 +1599,32 @@ class EditMessageTest(EditMessageTestCase):
         self.login_user(cordelia)
         self.subscribe(aaron, stream_name)
         self.login_user(aaron)
+        self.subscribe(othello, stream_name)
+        self.login_user(othello)
 
-        # Initially, hamlet sets visibility_policy as UNMUTED for 'Topic1' and 'Topic2',
+        # Initially, hamlet and othello set visibility_policy as UNMUTED for 'Topic1' and 'Topic2',
         # cordelia sets visibility_policy as MUTED for 'Topic1' and 'Topic2', while
         # aaron doesn't have a visibility_policy set for 'Topic1' or 'Topic2'.
         #
         # After moving messages from 'Topic1' to 'Topic 1 edited', the expected behaviour is:
-        # hamlet has UNMUTED 'Topic 1 edited' and no visibility_policy set for 'Topic1'
+        # hamlet and othello have UNMUTED 'Topic 1 edited' and no visibility_policy set for 'Topic1'
         # cordelia has MUTED 'Topic 1 edited' and no visibility_policy set for 'Topic1'
         #
         # There is no change in visibility_policy configurations for 'Topic2', i.e.
-        # hamlet has UNMUTED 'Topic2' + cordelia has MUTED 'Topic2'
+        # hamlet and othello have UNMUTED 'Topic2' + cordelia has MUTED 'Topic2'
         # aaron still doesn't have visibility_policy set for any topic.
+        #
+        # Note: We have used two users with UNMUTED 'Topic1' to verify that the query count
+        # doesn't increase (in order to update UserTopic records) with an increase in users.
+        # (We are using bulk database operations.)
+        # 1 query/user is added in order to send muted_topics event.(which will be deprecated)
         topics = [
             [stream_name, "Topic1"],
             [stream_name, "Topic2"],
         ]
         set_topic_visibility_policy(hamlet, topics, UserTopic.VisibilityPolicy.UNMUTED)
         set_topic_visibility_policy(cordelia, topics, UserTopic.VisibilityPolicy.MUTED)
+        set_topic_visibility_policy(othello, topics, UserTopic.VisibilityPolicy.UNMUTED)
 
         # users that need to be notified by send_event in the case of change-topic-name operation.
         users_to_be_notified_via_muted_topics_event: List[int] = []
@@ -1630,7 +1639,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(22):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1661,6 +1670,7 @@ class EditMessageTest(EditMessageTestCase):
             sorted(users_to_be_notified_via_user_topic_event),
         )
 
+        # No visibility_policy set for 'Topic1'
         assert_has_visibility_policy(
             hamlet, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
@@ -1668,8 +1678,12 @@ class EditMessageTest(EditMessageTestCase):
             cordelia, "Topic1", UserTopic.VisibilityPolicy.MUTED, expected=False
         )
         assert_has_visibility_policy(
+            othello, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        )
+        assert_has_visibility_policy(
             aaron, "Topic1", UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
+        # No change in visibility_policy configurations for 'Topic2'
         assert_has_visibility_policy(
             hamlet, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=True
         )
@@ -1677,13 +1691,20 @@ class EditMessageTest(EditMessageTestCase):
             cordelia, "Topic2", UserTopic.VisibilityPolicy.MUTED, expected=True
         )
         assert_has_visibility_policy(
+            othello, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        assert_has_visibility_policy(
             aaron, "Topic2", UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
+        # UserTopic records moved to 'Topic 1 edited' after move-topic operation.
         assert_has_visibility_policy(
             hamlet, change_all_topic_name, UserTopic.VisibilityPolicy.UNMUTED, expected=True
         )
         assert_has_visibility_policy(
             cordelia, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED, expected=True
+        )
+        assert_has_visibility_policy(
+            othello, change_all_topic_name, UserTopic.VisibilityPolicy.UNMUTED, expected=True
         )
         assert_has_visibility_policy(
             aaron, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED, expected=False
