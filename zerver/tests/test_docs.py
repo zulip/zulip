@@ -212,6 +212,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/recurse-center/", "Recurse Center")
         self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/idrift/", "Case study: iDrift AS")
+        self._test("/case-studies/end-point/", "Case study: End Point")
         self._test("/case-studies/asciidoctor/", "Case study: Asciidoctor")
         # <meta name="robots" content="noindex,nofollow" /> always true on these pages
         self._test("/attribution/", "Website attributions", search_disabled=True)
