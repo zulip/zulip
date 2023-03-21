@@ -9,6 +9,7 @@ import tippy, {delegate} from "tippy.js";
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
+import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
@@ -18,6 +19,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_actions from "./compose_actions";
 import * as condense from "./condense";
+import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import {$t} from "./i18n";
@@ -48,6 +50,7 @@ let compose_control_buttons_popover_instance;
 const popover_instances = {
     compose_control_buttons: null,
     starred_messages: null,
+    drafts: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -95,6 +98,8 @@ const default_popover_props = {
        is a popover styling similar to Bootstrap.  We've also customized
        its CSS to support Zulip's dark theme. */
     theme: "light-border",
+    // The maxWidth has been set to "none" to avoid the default value of 300px.
+    maxWidth: "none",
     touch: true,
     /* Don't use allow-HTML here since it is unsafe. Instead, use `parse_html`
        to generate the required html */
@@ -533,6 +538,30 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.starred_messages = undefined;
+        },
+    });
+
+    // Drafts popover
+    tippy_no_propagation(".drafts-sidebar-menu-icon", {
+        ...left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("drafts-popover");
+            popover_instances.drafts = instance;
+
+            $popper.one("click", "#delete_all_drafts_sidebar", () => {
+                drafts.confirm_delete_all_drafts();
+                instance.hide();
+            });
+        },
+        onShow(instance) {
+            popovers.hide_all_except_sidebars();
+
+            instance.setContent(parse_html(render_drafts_sidebar_actions({})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.drafts = undefined;
         },
     });
 }

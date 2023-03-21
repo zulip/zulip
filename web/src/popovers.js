@@ -1142,7 +1142,6 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
-    stream_popover.hide_drafts_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
 
