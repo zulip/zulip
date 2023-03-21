@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as keydown_util from "./keydown_util";
 
 // Add functions to this that have no non-trivial
@@ -74,4 +75,22 @@ export function parse_html(html: string): DocumentFragment {
     const template = document.createElement("template");
     template.innerHTML = html;
     return template.content;
+}
+
+/*
+ * Handle permission denied to play audio by the browser.
+ * This can happen due to two reasons: user denied permission to play audio
+ * unconditionally and browser denying permission to play audio without
+ * any interactive trigger like a button. See
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play for more details.
+ */
+export async function play_audio(elem: HTMLVideoElement): Promise<void> {
+    try {
+        await elem.play();
+    } catch (error) {
+        if (!(error instanceof DOMException)) {
+            throw error;
+        }
+        blueslip.debug(`Unable to play audio. ${error.name}: ${error.message}`);
+    }
 }
