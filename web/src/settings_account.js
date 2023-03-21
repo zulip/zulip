@@ -588,7 +588,10 @@ export function set_up() {
 
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change password"}),
-            html_body: render_dialog_change_password(),
+            html_body: render_dialog_change_password({
+                password_min_length: page_params.password_min_length,
+                password_min_guesses: page_params.password_min_guesses,
+            }),
             html_submit_button: $t_html({defaultMessage: "Change"}),
             loading_spinner: true,
             id: "change_password_modal",
