@@ -103,6 +103,9 @@
                     <li tabindex="0" data-section="user-groups-admin">
                         <i class="icon fa fa-group" aria-hidden="true"></i>
                         <div class="text">{{t "User groups" }}</div>
+                        {{#unless show_user_group_settings_lock}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
@@ -127,7 +130,7 @@
                     <li tabindex="0" data-section="bot-list-admin">
                         <i class="icon fa fa-github" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
-                        {{#unless is_admin}}
+                        {{#unless show_bot_settings_lock}}
                         <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
                         {{/unless}}
                     </li>
