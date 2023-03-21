@@ -115,7 +115,7 @@ export default function render_tabs() {
                             name: get_display_name(c),
                             github_username: c.github_username,
                             avatar: c.avatar,
-                            profile_url: get_profile_url(c),
+                            profile_url: get_profile_url(c, tab_name),
                             commits: c[repo_name],
                         }),
                     )
