@@ -54,8 +54,13 @@ mentions](/help/restrict-wildcard-mentions) in large streams.
 
 ## Alert words
 
-Zulip lets you to specify **alert words or phrases** that notify you whenever
-the alert word is included in a message. Alert words are case-insensitive.
+Zulip lets you to specify **alert words or phrases** that send you a desktop
+notification whenever the alert word is included in a message. Alert words are
+case-insensitive.
+
+!!! tip ""
+
+    Alert words in messages you receive while the alert is enabled will be highlighted.
 
 ### Add an alert word or phrase
 
