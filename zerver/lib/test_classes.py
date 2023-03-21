@@ -802,6 +802,28 @@ Output:
             **extra,
         )
 
+    def submit_realm_creation_form(
+        self,
+        email: str,
+        *,
+        realm_subdomain: str,
+        realm_name: str,
+        realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_in_root_domain: Optional[str] = None,
+    ) -> "TestHttpResponse":
+        payload = {
+            "email": email,
+            "realm_name": realm_name,
+            "realm_type": realm_type,
+            "realm_subdomain": realm_subdomain,
+        }
+        if realm_in_root_domain is not None:
+            payload["realm_in_root_domain"] = realm_in_root_domain
+        return self.client_post(
+            "/new/",
+            payload,
+        )
+
     def get_confirmation_url_from_outbox(
         self,
         email_address: str,
