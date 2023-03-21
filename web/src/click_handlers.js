@@ -472,6 +472,9 @@ export function initialize() {
     function do_render_buddy_list_tooltip(
         $elem,
         title_data,
+        get_target_node,
+        check_reference_removed,
+        subtree = false,
         parent_element_to_append = null,
         is_custom_observer_needed = true,
     ) {
@@ -501,23 +504,15 @@ export function initialize() {
                 if (!is_custom_observer_needed) {
                     return;
                 }
-                // For both buddy list and top left corner pm list, `target_node`
-                // is their parent `ul` element. We cannot use MutationObserver
-                // directly on the reference element because it will be removed
-                // and we need to attach it on an element which will remain in the
-                // DOM which is their parent `ul`.
-                const target_node = $(instance.reference).parents("ul").get(0);
+                // We cannot use MutationObserver directly on the reference element because
+                // it will be removed and we need to attach it on an element which will remain in the DOM.
+                const target_node = get_target_node(instance);
                 // We only need to know if any of the `li` elements were removed.
-                const config = {attributes: false, childList: true, subtree: false};
+                const config = {attributes: false, childList: true, subtree};
                 const callback = function (mutationsList) {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
-                        if (
-                            Array.prototype.includes.call(
-                                mutation.removedNodes,
-                                instance.reference.parentElement,
-                            )
-                        ) {
+                        if (check_reference_removed(mutation, instance)) {
                             instance.hide();
                         }
                     }
@@ -535,7 +530,25 @@ export function initialize() {
         const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
         const user_id_string = $elem.attr("data-user-id");
         const title_data = buddy_data.get_title_data(user_id_string, false);
-        do_render_buddy_list_tooltip($elem.parent(), title_data);
+
+        // `target_node` is the `ul` element since it stays in DOM even after updates.
+        function get_target_node(tippy_instance) {
+            return $(tippy_instance.reference).parents("ul").get(0);
+        }
+
+        function check_reference_removed(mutation, instance) {
+            return Array.prototype.includes.call(
+                mutation.removedNodes,
+                instance.reference.parentElement,
+            );
+        }
+
+        do_render_buddy_list_tooltip(
+            $elem.parent(),
+            title_data,
+            get_target_node,
+            check_reference_removed,
+        );
     });
 
     // PM LIST TOOLTIPS
@@ -547,7 +560,28 @@ export function initialize() {
         const is_group = JSON.parse($elem.attr("data-is-group"));
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
-        do_render_buddy_list_tooltip($elem, title_data);
+
+        // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
+        function get_target_node() {
+            return document.querySelector("#left_sidebar_scroll_container");
+        }
+
+        // Whole list is just replaced, so we need to check for that.
+        function check_reference_removed(mutation, instance) {
+            return Array.prototype.includes.call(
+                mutation.removedNodes,
+                $(instance.reference).parents(".pm-list")[0],
+            );
+        }
+
+        const check_subtree = true;
+        do_render_buddy_list_tooltip(
+            $elem,
+            title_data,
+            get_target_node,
+            check_reference_removed,
+            check_subtree,
+        );
     });
 
     // Recent conversations PMs
@@ -560,7 +594,8 @@ export function initialize() {
             return;
         }
         const title_data = recent_topics_ui.get_pm_tooltip_data(user_ids_string);
-        do_render_buddy_list_tooltip($elem, title_data, undefined, false);
+        const noop = () => {};
+        do_render_buddy_list_tooltip($elem, title_data, noop, noop, false, undefined, false);
     });
 
     // MISC
