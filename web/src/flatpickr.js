@@ -31,15 +31,21 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
         onKeyDown(selectedDates, dateStr, instance, event) {
-            if (is_numeric_key(event.key)) {
-                // Don't attempt to get_keydown_hotkey for numeric inputs
-                // as it would return undefined.
-                return;
-            }
-
+            // See also the keydown handler below.
+            //
+            // TODO: Add a clear explanation of exactly how key
+            // interactions are dispatched; it seems that keyboard
+            // logic from this function, the built-in flatpickr
+            // onKeyDown function, and the below keydown handler are
+            // used, but it's not at all clear in what order they are
+            // called, or what the overall control flow is.
             const hotkey = get_keydown_hotkey(event);
 
-            if (["tab", "shift_tab"].includes(hotkey.name)) {
+            if (hotkey && ["tab", "shift_tab"].includes(hotkey.name)) {
+                // Ensure that tab/shift_tab navigation work to
+                // navigate between the elements in flatpickr itself
+                // and the confirmation button at the bottom of the
+                // popover.
                 const elems = [
                     instance.selectedDateElem,
                     instance.hourElement,
@@ -54,9 +60,13 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
                 event.preventDefault();
                 event.stopPropagation();
                 target.focus();
+            } else {
+                // Prevent keypresses from propagating to our general hotkey.js
+                // logic. Without this, `Up` will navigate both in the
+                // flatpickr instance and in the message feed behind
+                // it.
+                event.stopPropagation();
             }
-
-            event.stopPropagation();
         },
         ...options,
     });
@@ -64,6 +74,8 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
     const $container = $(instance.innerContainer).parent();
 
     $container.on("keydown", (e) => {
+        // Main keyboard UI implementation.
+
         if (is_numeric_key(e.key)) {
             // Let users type numeric values
             return true;
@@ -82,7 +94,8 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
 
         if (hotkey.name === "enter") {
             if (e.target.classList[0] === "flatpickr-day") {
-                return true; // use flatpickr default implementation
+                // use flatpickr's built-in behavior to choose the selected day.
+                return true;
             }
             $(element).toggleClass("has_popover");
             $container.find(".flatpickr-confirm").trigger("click");
@@ -95,11 +108,13 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         }
 
         if (["tab", "shift_tab"].includes(hotkey.name)) {
-            return true; // use flatpickr default implementation
+            // Use flatpickr's built-in navigation between elements.
+            return true;
         }
 
         if (["right_arrow", "up_arrow", "left_arrow", "down_arrow"].includes(hotkey.name)) {
-            return true; // use flatpickr default implementation
+            // use flatpickr's built-in navigation of the date grid.
+            return true;
         }
 
         e.stopPropagation();
