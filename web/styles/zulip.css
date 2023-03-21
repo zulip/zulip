@@ -2742,7 +2742,8 @@ select.invite-as {
 
     .column-left.expanded {
         .left-sidebar {
-            padding: 0;
+            /* For very small sizes, skip the relatively large top padding. */
+            padding-top: 0;
 
             #streams_header {
                 padding-right: 10px;
