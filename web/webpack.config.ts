@@ -216,6 +216,11 @@ export default (
             }),
         ],
         devServer: {
+            client: {
+                overlay: {
+                    runtimeErrors: false,
+                },
+            },
             devMiddleware: {
                 publicPath: "/webpack/",
                 stats: {
