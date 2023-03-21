@@ -14,6 +14,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import * as ui_util from "./ui_util";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
 
@@ -123,7 +124,7 @@ export function set_up(settings_panel) {
 
     $container.find(".play_notification_sound").on("click", () => {
         if (settings_object.notification_sound !== "none") {
-            $notification_sound_elem[0].play();
+            ui_util.play_audio($notification_sound_elem[0]);
         }
     });
 

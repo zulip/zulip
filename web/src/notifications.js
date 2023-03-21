@@ -22,6 +22,7 @@ import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui from "./ui";
+import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
@@ -508,7 +509,7 @@ export function received_messages(messages) {
             });
         }
         if (should_send_audible_notification(message)) {
-            $("#user-notification-sound-audio")[0].play();
+            ui_util.play_audio($("#user-notification-sound-audio")[0]);
         }
     }
 }
