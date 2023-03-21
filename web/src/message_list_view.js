@@ -116,12 +116,12 @@ function update_group_date(group, message_container, prev) {
     const today = new Date();
 
     // Show the date in the recipient bar if the previous message was from a different day.
-    group.show_recipient_bar_date = !same_day(message_container, prev);
+    group.date_unchanged = same_day(message_container, prev);
     group.group_date_html = timerender.render_date(time, today)[0].outerHTML;
 }
 
 function clear_group_date(group) {
-    group.show_recipient_bar_date = true;
+    group.date_unchanged = false;
     group.group_date_html = undefined;
 }
 
@@ -1542,12 +1542,9 @@ export class MessageListView {
         // hiding the date display on the non-sticky previous
         // recipient row.
         $(".hide-date-separator-header").removeClass("hide-date-separator-header");
-        // The hide-date CSS class is set on recipient_row_date
-        // elements where the previous row had the same date; these
-        // will only display the date when sticky. Since this corner
-        // case only is relevant with an identical date, we start by
-        // checking whether the hide-date class is present.
-        if ($sticky_header.find(".recipient_row_date.hide-date").length) {
+        // This corner case only occurs when the date is unchanged
+        // from the previous recipient row.
+        if ($sticky_header.find(".recipient_row_date.recipient_row_date_unchanged").length) {
             const $prev_recipient_row = $sticky_header
                 .closest(".recipient_row")
                 .prev(".recipient_row");
@@ -1556,7 +1553,7 @@ export class MessageListView {
             }
             const $prev_header_date_row = $prev_recipient_row.find(".recipient_row_date");
             // Check if the recipient row before sticky header is a date separator.
-            if (!$prev_header_date_row.hasClass("hide-date")) {
+            if (!$prev_header_date_row.hasClass("recipient_row_date_unchanged")) {
                 $prev_header_date_row.addClass("hide-date-separator-header");
             }
         }

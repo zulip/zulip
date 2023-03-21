@@ -1100,12 +1100,6 @@ td.pointer {
         top: var(--sidebar-top);
         z-index: 3;
         box-shadow: 0 -1px 0 0 hsl(0, 0%, 100%);
-
-        &.sticky_header {
-            .recipient_row_date {
-                display: block;
-            }
-        }
     }
 }
 
@@ -1181,7 +1175,15 @@ td.pointer {
     letter-spacing: 0.04em;
     text-transform: uppercase;
 
-    &.hide-date,
+    /* Display the date when unchanged only for sticky headers. */
+    &.recipient_row_date_unchanged {
+        display: none;
+
+        .sticky_header & {
+            display: block;
+        }
+    }
+
     &.hide-date-separator-header {
         display: none;
     }
