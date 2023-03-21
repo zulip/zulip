@@ -539,7 +539,7 @@ export function initialize() {
     });
 
     // PM LIST TOOLTIPS
-    $("body").on("mouseenter", "#pm_user_status", (e) => {
+    $("body").on("mouseenter", ".pm_user_status", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
         const user_ids_string = $elem.attr("data-user-ids-string");
