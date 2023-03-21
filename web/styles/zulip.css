@@ -1361,10 +1361,6 @@ td.pointer {
 }
 
 .selected_message {
-    .messagebox {
-        z-index: 1;
-    }
-
     .messagebox-content {
         box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
             0 0 0 1px hsl(215, 47%, 50%);
@@ -1478,10 +1474,6 @@ div.message_table {
     position: relative;
     border-left: 1px solid hsla(0, 0%, 0%, 0.1);
     border-right: 1px solid hsla(0, 0%, 0%, 0.1);
-
-    &.selected_message {
-        z-index: 2;
-    }
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
