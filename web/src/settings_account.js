@@ -718,25 +718,18 @@ export function set_up() {
         );
     }
 
-    function change_email_post_render() {
-        const $input_elem = $("#change_email_form").find("input[name='email']");
-        const email = $("#change_email_button").text().trim();
-        $input_elem.val(email);
-    }
-
     $("#change_email_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (settings_data.user_can_change_email()) {
             dialog_widget.launch({
                 html_heading: $t_html({defaultMessage: "Change email"}),
-                html_body: render_change_email_modal(),
+                html_body: render_change_email_modal({delivery_email: page_params.delivery_email}),
                 html_submit_button: $t_html({defaultMessage: "Change"}),
                 loading_spinner: true,
                 id: "change_email_modal",
                 form_id: "change_email_form",
                 on_click: do_change_email,
-                post_render: change_email_post_render,
                 on_shown() {
                     $("#change_email_form input").trigger("focus");
                 },
