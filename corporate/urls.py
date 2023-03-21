@@ -90,6 +90,11 @@ landing_page_urls = [
         {"template_name": "corporate/case-studies/idrift-case-study.html"},
     ),
     path(
+        "case-studies/end-point/",
+        landing_view,
+        {"template_name": "corporate/case-studies/end-point-case-study.html"},
+    ),
+    path(
         "case-studies/tum/",
         landing_view,
         {"template_name": "corporate/case-studies/tum-case-study.html"},
