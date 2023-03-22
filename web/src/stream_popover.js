@@ -2,7 +2,6 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
-import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
@@ -39,7 +38,6 @@ import * as user_topics from "./user_topics";
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;
 let current_topic_sidebar_elem;
-let all_messages_sidebar_elem;
 let stream_widget;
 let $stream_header_colorblock;
 
@@ -77,11 +75,6 @@ export function topic_sidebar_menu_handle_keyboard(key) {
     popovers.popover_items_handle_keyboard(key, items);
 }
 
-export function all_messages_sidebar_menu_handle_keyboard(key) {
-    const items = get_popover_menu_items(all_messages_sidebar_elem);
-    popovers.popover_items_handle_keyboard(key, items);
-}
-
 function elem_to_stream_id($elem) {
     const stream_id = Number.parseInt($elem.attr("data-stream-id"), 10);
 
@@ -104,10 +97,6 @@ export function topic_popped() {
     return current_topic_sidebar_elem !== undefined;
 }
 
-export function all_messages_popped() {
-    return all_messages_sidebar_elem !== undefined;
-}
-
 export function hide_stream_popover() {
     if (stream_popped()) {
         $(current_stream_sidebar_elem).popover("destroy");
@@ -121,14 +110,6 @@ export function hide_topic_popover() {
         $(current_topic_sidebar_elem).popover("destroy");
         hide_left_sidebar_menu_icon();
         current_topic_sidebar_elem = undefined;
-    }
-}
-
-export function hide_all_messages_popover() {
-    if (all_messages_popped()) {
-        $(all_messages_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
-        all_messages_sidebar_elem = undefined;
     }
 }
 
@@ -284,32 +265,6 @@ function build_topic_popover(opts) {
 
     current_topic_sidebar_elem = elt;
     show_left_sidebar_menu_icon(elt);
-}
-
-function build_all_messages_popover(e) {
-    const elt = e.target;
-
-    if (all_messages_popped() && all_messages_sidebar_elem === elt) {
-        hide_all_messages_popover();
-        e.stopPropagation();
-        return;
-    }
-
-    popovers.hide_all_except_sidebars();
-
-    const content = render_all_messages_sidebar_actions();
-
-    $(elt).popover({
-        content,
-        html: true,
-        trigger: "manual",
-        fixed: true,
-    });
-
-    $(elt).popover("show");
-    all_messages_sidebar_elem = elt;
-    show_left_sidebar_menu_icon(elt);
-    e.stopPropagation();
 }
 
 export function build_move_topic_to_stream_popover(current_stream_id, topic_name, message) {
@@ -532,8 +487,6 @@ export function register_click_handlers() {
         build_topic_link_clipboard(url);
     });
 
-    $("#global_filters").on("click", ".all-messages-sidebar-menu-icon", build_all_messages_popover);
-
     $("body").on("click keypress", ".move-topic-dropdown .list_item", (e) => {
         // We want the dropdown to collapse once any of the list item is pressed
         // and thus don't want to kill the natural bubbling of event.
@@ -577,13 +530,6 @@ export function register_stream_handlers() {
         hide_stream_popover();
         unread_ops.mark_stream_as_read(sub.stream_id);
         e.stopPropagation();
-    });
-
-    // Mark all messages as read
-    $("body").on("click", "#mark_all_messages_as_read", (e) => {
-        hide_all_messages_popover();
-        e.stopPropagation();
-        unread_ops.confirm_mark_all_as_read();
     });
 
     // Unstar all messages in topic

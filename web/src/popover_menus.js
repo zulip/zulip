@@ -7,6 +7,7 @@ import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
@@ -51,6 +52,7 @@ const popover_instances = {
     compose_control_buttons: null,
     starred_messages: null,
     drafts: null,
+    all_messages: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -562,6 +564,29 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.drafts = undefined;
+        },
+    });
+
+    // All messages popover
+    tippy_no_propagation(".all-messages-sidebar-menu-icon", {
+        ...left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("all-messages-popover");
+            popover_instances.all_messages = instance;
+
+            $popper.one("click", "#mark_all_messages_as_read", () => {
+                unread_ops.confirm_mark_all_as_read();
+                instance.hide();
+            });
+        },
+        onShow(instance) {
+            popovers.hide_all_except_sidebars();
+            instance.setContent(parse_html(render_all_messages_sidebar_actions()));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.all_messages = undefined;
         },
     });
 }

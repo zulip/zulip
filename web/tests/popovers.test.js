@@ -32,7 +32,6 @@ const message_lists = mock_esm("../src/message_lists", {
 mock_esm("../src/stream_popover", {
     hide_stream_popover: noop,
     hide_topic_popover: noop,
-    hide_all_messages_popover: noop,
     hide_drafts_popover: noop,
     hide_streamlist_sidebar: noop,
 });
