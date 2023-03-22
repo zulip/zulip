@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
@@ -153,6 +154,24 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
     stream_settings_ui.update_web_public_stream_privacy_option_state(
         $("#stream_permission_settings"),
     );
+}
+
+export function update_announce_stream_option() {
+    if (!hash_util.is_create_new_stream_narrow()) {
+        return;
+    }
+    if (stream_data.get_notifications_stream() === "") {
+        $("#announce-new-stream").hide();
+        return;
+    }
+    $("#announce-new-stream").show();
+
+    const notifications_stream = stream_data.get_notifications_stream();
+    const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+    const rendered_announce_stream = render_announce_stream_checkbox({
+        notifications_stream_sub,
+    });
+    $("#announce-new-stream").expectOne().html(rendered_announce_stream);
 }
 
 export function update_stream_privacy_icon_in_settings(sub) {

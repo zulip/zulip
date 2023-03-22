@@ -63,6 +63,7 @@ import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
@@ -217,7 +218,7 @@ export function dispatch_normal_event(event) {
                 move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
-                notifications_stream_id: noop,
+                notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: noop,
                 send_welcome_emails: noop,

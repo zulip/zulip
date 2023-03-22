@@ -123,7 +123,7 @@ let stream_announce_previous_value =
 // Within the new stream modal...
 function update_announce_stream_state() {
     // If there is no notifications_stream, we simply hide the widget.
-    if (!stream_data.realm_has_notifications_stream()) {
+    if (stream_data.get_notifications_stream() === "") {
         $("#announce-new-stream").hide();
         return;
     }
@@ -235,9 +235,18 @@ function create_stream() {
 
     data.message_retention_days = JSON.stringify(message_retention_selection);
 
-    const announce =
-        stream_data.realm_has_notifications_stream() &&
+    let announce =
+        stream_data.get_notifications_stream() !== "" &&
         $("#announce-new-stream input").prop("checked");
+
+    if (
+        stream_data.get_notifications_stream() === "" &&
+        stream_data.realm_has_notifications_stream() &&
+        !invite_only
+    ) {
+        announce = true;
+    }
+
     data.announce = JSON.stringify(announce);
 
     // TODO: We can eliminate the user_ids -> principals conversion
