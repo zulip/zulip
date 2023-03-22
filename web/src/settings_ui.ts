@@ -6,7 +6,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 
-export function display_checkmark($elem) {
+export function display_checkmark($elem: JQuery): void {
     const check_mark = document.createElement("img");
     check_mark.src = checkbox_image;
     $elem.prepend(check_mark);
@@ -23,29 +23,40 @@ export const strings = {
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
 export function do_settings_change(
-    request_method,
-    url,
-    data,
-    status_element,
+    request_method: (
+        options: Pick<JQuery.AjaxSettings, "error" | "success" | "url"> & {data: unknown},
+    ) => JQuery.jqXHR | undefined,
+    url: string,
+    data: unknown,
+    status_element: JQuery,
     {
-        success_msg_html = strings.success_html,
-        failure_msg_html = strings.failure_html,
-        success_continuation,
         error_continuation,
+        failure_msg_html = strings.failure_html,
         sticky = false,
+        success_continuation,
+        success_msg_html = strings.success_html,
         $error_msg_element,
+    }: {
+        error_continuation?(xhr: JQuery.jqXHR): void;
+        failure_msg_html?: string;
+        sticky?: boolean;
+        success_continuation?(response_data: unknown): void;
+        success_msg_html?: string;
+        $error_msg_element?: JQuery;
+        error_continuation?(xhr: JQuery.jqXHR): void;
+        success_continuation?(response_data: unknown): void;
     } = {},
-) {
+): void {
     const $spinner = $(status_element).expectOne();
     $spinner.fadeTo(0, 1);
     loading.make_indicator($spinner, {text: strings.saving});
     const remove_after = sticky ? undefined : 1000;
     const appear_after = 500;
 
-    request_method({
+    void request_method({
         url,
         data,
-        success(response_data) {
+        success(response_data: unknown) {
             setTimeout(() => {
                 ui_report.success(success_msg_html, $spinner, remove_after);
                 display_checkmark($spinner);
@@ -76,11 +87,11 @@ export function do_settings_change(
 // * disable_on_uncheck is boolean, true if sub setting should be disabled
 //   when main setting unchecked.
 export function disable_sub_setting_onchange(
-    is_checked,
-    sub_setting_id,
-    disable_on_uncheck,
-    include_label,
-) {
+    is_checked: boolean,
+    sub_setting_id: string,
+    disable_on_uncheck: boolean,
+    include_label: boolean = false,
+): void {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
         if (include_label) {
