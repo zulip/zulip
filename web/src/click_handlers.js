@@ -28,6 +28,7 @@ import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
+import * as pm_popover from "./pm_popover";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -612,6 +613,7 @@ export function initialize() {
     user_profile.register_click_handlers();
     emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();
+    pm_popover.register_click_handlers();
     notifications.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {

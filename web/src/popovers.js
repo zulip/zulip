@@ -30,6 +30,7 @@ import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_popover from "./pm_popover";
 import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
@@ -1139,6 +1140,7 @@ export function hide_all_except_sidebars(opts) {
     }
     emoji_picker.hide_emoji_popover();
     giphy.hide_giphy_popover();
+    pm_popover.hide_pm_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();

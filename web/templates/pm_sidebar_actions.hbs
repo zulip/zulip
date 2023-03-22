@@ -1,0 +1,27 @@
+{{! Contents of the "pm actions" popup }}
+<ul class="nav nav-list pm_popover" data-pm-id="{{ pm_id }}" data-name="{{ pm.recipients }}">
+    <li>
+        <p class="topic-name">
+            <span id="pm_sidebar_privacy_swatch_{{ pm_id }}" class="stream-privacy filter-icon">
+                {{> stream_privacy
+                  invite_only=stream.invite_only
+                  is_web_public=stream.is_web_public }}
+            </span>
+            <b>{{ pm.recipients }}</b>
+        </p>
+    </li>
+
+    <hr />
+
+    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
+    <li class="hidden-for-spectators">
+        <a tabindex="0" class="pin_pm_to_top">
+            <i class="fa fa-thumb-tack stream-pin-icon" aria-hidden="true"></i>
+            {{#if stream.pin_to_top}}
+            {{t "Unpin conversation from top"}}
+            {{else}}
+            {{t "Pin conversation to top"}}
+            {{/if}}
+        </a>
+    </li>
+</ul>

@@ -16,5 +16,8 @@
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
             {{unread}}
         </span>
+        {{#unless is_group}}
+        <span class="pm-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
+        {{/unless}}
     </span>
 </li>
