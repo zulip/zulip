@@ -120,6 +120,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
     if (!field_value.value) {
         return profile_field;
     }
+    profile_field.id = field.id;
     profile_field.name = field.name;
     profile_field.is_user_field = false;
     profile_field.is_link = field_type === field_types.URL.id;
@@ -135,7 +136,6 @@ export function get_custom_profile_field_data(user, field, field_types) {
             );
             break;
         case field_types.USER.id:
-            profile_field.id = field.id;
             profile_field.is_user_field = true;
             profile_field.value = field_value.value;
             break;

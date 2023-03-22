@@ -284,7 +284,9 @@ export function add_sub_to_table(sub) {
         ui.get_content_element($(".streams-list")).append($new_row);
     }
 
-    const settings_html = render_stream_settings(sub);
+    const settings_html = render_stream_settings({
+        sub: stream_settings_data.get_sub_for_settings(sub),
+    });
     ui.get_content_element($("#manage_streams_container .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
