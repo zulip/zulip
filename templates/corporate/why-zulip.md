@@ -1,156 +1,175 @@
-There are a lot of team chat apps. So why did we build Zulip?
+## Choosing the right tools for efficient communication can provide a massive productivity boost.
 
-We talk about Slack in the discussion below, but the problems apply equally
-to other apps with Slack’s conversation model, including IRC,
-Mattermost, Discord, Spark, and others.
+Communication consumes a [huge fraction of
+time](https://blog.rescuetime.com/slack-and-email-cost/) in an organization. [A
+recent
+survey](https://www.grammarly.com/business/Grammarly_The_State_Of_Business_Communication.pdf)
+found that knowledge workers spend half of their work day on communication, yet
+72% of business leaders observe that their team struggles to communicate
+effectively. [The
+report](https://www.grammarly.com/business/Grammarly_The_State_Of_Business_Communication.pdf)
+estimates that businesses lose an average of over $1,000/month *for each
+employee* due to ineffective communication.
 
-## Reading busy Slack channels is extremely inefficient.
+One of the most impactful ways to improve communication in your organization is
+choosing tools that enable efficient communication.
 
-Anyone who wakes up to this frequently can tell you it is not fun.
+**We created Zulip to empower teams to collaborate effectively**, so that they
+can accomplish amazing things together. As you’ll learn below, Zulip’s organized
+team chat app makes communication dramatically more efficient than other popular
+apps like Slack and Microsoft Teams, which push teams towards chaotic and
+disruptive communication patterns.
 
-<img src="/static/images/landing-page/why-zulip/slack-unreads.png" class="slack-image" alt="Slack unreads" />
+Switching to Zulip is thus one of the best ways to **increase the overall
+productivity of your team**.
 
-The lack of organization and context in Slack channels means that anyone
-using Slack heavily has to manually scan through hundreds of messages a day
-to find the content that is relevant to them.
-
-## Senior people rarely use large Slack channels.
-
-Slack channels are even worse for managers and other people involved in
-multiple projects. Even modest usage of Slack leads to more channel messages
-a day than most managers have time to handle.
-
-In practice, in organizations that use Slack, many senior personnel
-(sensibly) don’t read their channel messages at all, or only read a handful
-of smaller channels. This means you now have a company communication
-platform…with everyone but the decision makers.
-
-## Channels rapidly devolve into GIF posts.
-
-Once a channel reaches dozens of messages a day, substantive conversations
-become increasingly difficult or even impossible. If you send a thoughtful
-question at 10am, anyone who checks in after lunch is too late to reply,
-since someone else will have already started another conversation in that
-channel. This means that even moderately busy channels can’t be used for
-serious discussion, and they devolve into a mix of quick questions and
-random spam.
-
-## Remote workers can’t participate.
-
-This means that workers in different time zones can only effectively
-collaborate during the narrow windows when everyone is at their
-keyboards.  As a result, Slack isn’t an effective communication
-platform for remote work.
-
-As a pointed illustration: The company that makes Slack has over 1000
-employees and yet advertises no remote job positions (positions where
-you could work from anywhere).
-
-In contrast, the Zulip team has over 30 core team members distributed
-across a dozen time zones, and uses only Zulip and GitHub issues for
-communication (no email lists, video meetings, etc).
-
-## Teams that love Slack are often mostly using DMs and small channels.
-
-Slack is great for private messages (&ldquo;DMs&rdquo;), integrations, and quick
-questions when everyone’s online. Most glowing reviews of Slack are
-actually of these aspects of Slack.  We find that even people that
-love Slack typically send the vast majority of their messages in DMs,
-and avoid using public Slack channels.
-
-## So where is the communication happening?
-
-In organizations that have adopted Slack, mostly the same place it happened
-before they adopted Slack: email, meetings, and small group chat.
-
-Email is great for asynchronous work; that’s a big part of why
-everyone uses it. Email’s simple subject line model, used properly,
-can solve all of the issues above.  However, it is too clunky for
-conversations; even a 10-message thread is unwieldy. And it lacks many
-of the conversational features of modern chat apps, like instant
-delivery of messages, typing notifications, emoji reactions,
-at-mentions, and more.
-
-Meetings are the current state-of-the-art for conversations where busy
-people like managers, PMs, or other senior people
-participate. However, meetings are often extremely
-inefficient. Participants may need to be present for an hour-long
-meeting when their input is only needed for five minutes portion of
-the discussion. If someone is unable to attend the meeting, their
-input is lost. Someone has to take notes for there to be any record of
-what happened or any follow-ups. And meetings add delay and scheduling
-overhead to decisions.
-
-Finally, small group chat works for the short term, but it doesn’t build
-knowledge within the team, and leads to only managers having the full
-picture on projects. Having discussions accessible to larger lists allows
-more stakeholders to stay in the loop.
-
-## Asynchronous communication is fundamental to productive work.
-
-These problems are all symptoms of the underlying fact that the channel
-model used by Slack and similar tools is a really bad way to structure
-asynchronous communication.
-
-However, asynchronous communication is fundamental to how work happens today:
-
-* Managers, PMs, and others in meetings all day need to reply to things in
-  batch, either in the few minutes they have between meetings, or at the end
-  of the day.
-* Anyone in a different time zone or on a different work schedule than the
-  rest of the team has parts of their day where they are working
-  asynchronously.
-* Individual contributors cannot do focused work if they need to check their
-  communication tool every 5 minutes to use it.  Asynchronous communication
-  is essential to being able to focus for an hour or more, which has been
-  shown to have a huge impact on developer productivity and happiness.
-
-The fact that you can’t do asynchronous work in Slack channels puts a
-ceiling on how useful Slack can be to an organization.
-
-## Ok. What does Zulip do differently?
-
-> Zulip’s unique threading saves me well over an hour a day in working with
-> our distributed team of engineers and PMs across 7+ time zones. We tried
-> Slack, Mattermost, and other team chat products that claim to support
-> threading, and nothing handles synchronous and asynchronous communication
-> so intuitively.
+> Zulip is everything Slack is, but it's smarter and more powerful.
 >
-> &mdash;Jacinda Shelly, CTO, Doctor On Demand
+> — [Zulip review in The Register](https://www.theregister.com/2021/07/28/zulip_open_source_chat_collaboration_software/)
 
-Zulip provides the benefits of real-time chat, while also being great
-at asynchronous communication.  Zulip is inspired by email’s highly
-effective threading model: Every channel message has a topic, just
-like every message in email has a subject line. (Channels are called
-streams in Zulip.)
+<br />
 
-<img src="/static/images/landing-page/why-zulip/zulip-topics.png" class="zulip-topics-image" alt="Zulip topics" />
+## Zulip’s unique topic-based threading model makes efficient communication possible. Here’s how.
 
-Topics hold Zulip conversations together, just like subject lines hold email
-conversations together. They allow you to efficiently catch up on messages
-and reply in context, even to conversations that started hours or days ago.
+In Zulip, **streams** determine who gets a message. Each conversation within a
+stream is labeled with a **topic**, which keeps everything organized.
 
-<img src="/static/images/landing-page/why-zulip/zulip-reply-later.png" class="zulip-reply-later-image" alt="Zulip reply later" />
+You can read Zulip one conversation at a time, seeing each message in context,
+no matter how many other conversations are going on.
 
-## Zulip changes how you can operate.
+If anything is out of place, it’s easy to move messages, rename and split
+topics, or even move a topic to a different stream.
 
-It’s simple in concept, but switching from Slack to Zulip can
-transform how your organization communicates:
+![Streams and topics](/static/images/help/streams-and-topics.png)
 
-* Leaders can prioritize their time and batch-reply to messages, and
-  thus effectively participate in the chat community.
-* More discussions can be moved from meetings and email to chat.
-* Individual contributors can do focused work instead of paging
-  through GIFs making sure they don’t miss anything important.
-* Remote workers can participate in an equal way to people present in
-  person.
-* Employees don’t need to be glued to their keyboard or phone in order
-  to avoid missing out on important conversations.
-* Everyone saves a huge amount of wasted time and attention.
+<br />
+
+## Zulip makes it easy to follow relevant conversations.
+
+With well-organized chat that shows each message in context, it’s easy to stay
+informed and connected. Everyone can follow and contribute to discussions that
+matter to them, without wasting time reading every message, or stressing about
+missing something important.
+
+> “Slack’s interface was too slow and clunky, and the more channels you’re in,
+> the harder it is to use. Zulip’s UI makes it easy to access all the information you
+> need.”
+>
+> — Jon Jensen, CTO of [End Point Dev](https://www.endpointdev.com/about/) software
+> consultancy ([case study](/case-studies/end-point/))
+
+- **Read each message in context.**
+With each conversation in its own space, you can coordinate multiple projects,
+hold a virtual standup, and plan the next team social — all in one place. No
+more scrolling up and down through dozens of messages to track down all parts of
+a conversation. No more context-switching again and again as you catch up on
+your chat messages.
+
+- **Find the conversations that matter to you.**
+Conversations are well-organized and labeled, so you will never again wade
+through hundreds of messages to avoid missing the few that are important.
+Leaders and cross-functional collaborators can quickly review busy communication
+channels for places where their input is needed.
+
+- **Never miss an important message.**
+New messages will pop a long-running thread to the top, rather than languishing
+in a forgotten sidebar. You’ll never create a new channel (and later forget to
+check it) because your team’s main channel is busy — a busy stream
+works just fine in Zulip! For timely messages, Zulip alerts you with [fully
+customizable](/help/stream-notifications) mobile, email and desktop
+notifications.
+
+>  “With Zulip, I can manage hundreds of participants across two communities
+>  extremely efficiently, and I don’t feel stressed.”
+>
+> — Dan Allen, [Asciidoctor](https://asciidoctor.org/) open-source project lead ([case
+> study](/case-studies/asciidoctor))
+
+<br />
+
+## Zulip empowers teams to work flexibly anytime, from anywhere, without interruptions.
+
+With team chat that is designed for both synchronous and asynchronous
+communication, everyone can be included in decision-making without being online
+at the same time. Team members can focus when they need to, and contribute to
+discussions asynchronously without interrupting their flow.
+
+> “Zulip lets us move faster, connect with each other better, and have
+> interactive technical discussions that are organized, recorded, and welcoming
+> to other people.”
+>
+>  — Josh Triplett, [Rust Language
+>  team](https://www.rust-lang.org/governance/teams/lang) co-lead ([case
+>  study](/case-studies/rust))
+
+- **Take advantage of everyone’s expertise.**
+Zulip’s topics make it easy to pick up a conversation thread hours (or days!)
+later. With other chat tools, being unavailable when a discussion is happening
+often means your perspective will never be heard. Zulip enables asynchronous
+participation — feedback from team members who were in a meeting or work
+from another time zone is seamlessly incorporated into the discussion.
+
+- **Create focus time.**
+Zulip removes the stress of needing to respond to chat messages right away.
+Rather than task-switching each time a new message comes in, you can focus on
+your work for a few hours, and then follow up asynchronously on conversations
+you’d like to participate in. Knowledge workers will be happier and more
+productive when only truly urgent messages interrupt their flow.
+
+- **Integrate feedback from leaders.**
+Since Zulip works great for asynchronous follow-ups, leaders with busy schedules
+can weigh in easily and effectively when they are available. There is no need
+for a barrage of @-mentions to get leaders’ attention, and the full context for
+the decision is right there in the conversation thread for everyone's quick
+reference.
+
+> “Using Zulip significantly increases the size of the team for which a manager
+> can meaningfully know what’s going on.”
+>
+> — Gaute Lund, co-founder of iDrift AS company ([case
+> study](/case-studies/idrift))
+
+<br />
+
+## Zulip helps you make better decisions, faster.
+
+With an integrated communication hub that works great for everything from quick
+check-ins to collaborating on the most challenging problems, you can make
+decisions without the inefficiency of time-consuming group meetings, chaotic
+chat channels, or clunky back-and-forth over email.
 
 > Zulip’s topic-based threading helps us manage discussions with clarity,
 > ensuring the right people can pay attention to the right messages. This
 > makes our large-group discussion far more manageable than what we’ve
 > experienced with Skype and Slack.
 >
-> &mdash;Grahame Grieve, founder, FHIR health care standards body
+> — Grahame Grieve, founder of [FHIR](https://www.hl7.org/fhir/overview.html)
+> health care standards body
+
+- **Have substantive conversations over chat.**
+With Zulip, there’s no longer a reason to email your teammates — you get the
+organization of an email inbox together with all the features of a modern chat
+app, like instant delivery of messages, emoji reactions, typing notifications,
+@-mentions, and more.
+
+- **Reduce reliance on meetings.**
+Using Zulip, you can discuss complex topics and make decisions with input from
+all stakeholders, without the overhead of scheduling meeting. Your team's
+time and energy will be spent focusing on their work, not dialing into calls.
+
+- **Understand past decisions.**
+With conversations organized by topic, you can review prior discussions to
+understand past work, explanations, and decisions — your chat history becomes a
+knowledge base. If a conversation shifts to a new topic, it’s easy to reorganize
+by moving messages to a different [topic](/help/move-content-to-another-topic)
+or [stream](/help/move-content-to-another-stream). There is no more rifling
+through unrelated chatter to find the context you need.  You can even [link to a
+Zulip
+conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)
+from emails, docs, issue trackers, code comments, or anywhere else.
+
+> “Switching to Zulip has turned out to be one of the best
+> decisions we’ve made.”
+>
+> — Nick Bergson-Shilcock, [Recurse Center](https://www.recurse.com/) co-founder
+> and CEO ([case study](/case-studies/recurse-center))
