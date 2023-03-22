@@ -1,3 +1,4 @@
+{{#if .}}
 {{#if emoji_alt_code}}
 <span class="emoji_alt_code">&nbsp;:{{emoji_name}}:</span>
 {{else if still_url}}
@@ -7,4 +8,5 @@
 <img src="{{url}}" class="emoji status_emoji" data-animated-url="{{url}}" />
 {{else if emoji_code}}
 <span class="emoji status_emoji emoji-{{emoji_code}}"></span>
+{{/if}}
 {{/if}}
