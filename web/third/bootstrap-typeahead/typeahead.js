@@ -372,6 +372,9 @@ import {get_string_diff} from "../../src/util";
         .on('mouseenter', 'li', this.mouseenter.bind(this))
         .on('mousemove', 'li', this.mousemove.bind(this))
 
+      this.$container
+        .on('click', this.prevent_propagation.bind(this))
+
       $(window).on('resize', this.resizeHandler.bind(this));
     }
 
@@ -535,7 +538,9 @@ import {get_string_diff} from "../../src/util";
       this.$menu.find('.active').removeClass('active')
       $(e.currentTarget).addClass('active')
     }
-
+  , prevent_propagation: function(e) {
+      e.stopPropagation()
+    }
   }
 
 
