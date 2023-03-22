@@ -27,11 +27,11 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-language="{data_language}" tabindex="0">{label}</li>
+<li data-language="{data_tab_key}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div data-language="{data_language}" markdown="1">
+<div data-language="{data_tab_key}" markdown="1">
 {content}
 </div>
 """.strip()
@@ -150,7 +150,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
             content = "\n".join(lines[start_index:end_index]).strip()
             tab_content_block = DIV_TAB_CONTENT_TEMPLATE.format(
-                data_language=tab["tab_key"],
+                data_tab_key=tab["tab_key"],
                 # Wrapping the content in two newlines is necessary here.
                 # If we don't do this, the inner Markdown does not get
                 # rendered properly.
@@ -169,7 +169,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
                     f"Tab '{tab_key}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
                 )
 
-            li = NAV_LIST_ITEM_TEMPLATE.format(data_language=tab_key, label=tab_label)
+            li = NAV_LIST_ITEM_TEMPLATE.format(data_tab_key=tab_key, label=tab_label)
             li_elements.append(li)
 
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
