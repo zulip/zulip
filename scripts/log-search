@@ -167,6 +167,7 @@ class FilterType(Enum):
     HOSTNAME = auto()
     CLIENT_IP = auto()
     USER_ID = auto()
+    METHOD = auto()
     PATH = auto()
     STATUS = auto()
 
@@ -281,6 +282,9 @@ def parse_filters(
         elif re.match(r"([a-f0-9:]+:+){1,7}[a-f0-9]+$", filter_term):
             filter_func = lambda m, t=filter_term: m["ip"] == t
             filter_type = FilterType.CLIENT_IP
+        elif re.match(r"DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT", filter_term):
+            filter_func = lambda m, t=filter_term: m["method"].upper() == t
+            filter_type = FilterType.METHOD
         elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter_term.lower()):
             filter_term = filter_term.lower()
             if args.nginx:
