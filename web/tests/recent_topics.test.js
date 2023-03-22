@@ -161,8 +161,17 @@ const rt = zrequire("recent_topics_ui");
 const recent_topics_util = zrequire("recent_topics_util");
 const rt_data = zrequire("recent_topics_data");
 
-people.is_my_user_id = (id) => id === 1;
-people.sender_info_for_recent_topics_row = (ids) => ids;
+people.add_active_user({
+    email: "alice@zulip.com",
+    user_id: 1,
+    full_name: "Alice Smith",
+});
+people.add_active_user({
+    email: "fred@zulip.com",
+    user_id: 2,
+    full_name: "Fred Flintstone",
+});
+people.initialize_current_user(1);
 
 let id = 0;
 
@@ -287,7 +296,7 @@ function generate_topic_data(topic_info_array) {
             last_msg_time: "Just now",
             last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",
-            senders: [1, 2],
+            senders: people.sender_info_for_recent_topics_row([1, 2]),
             stream: "stream" + stream_id,
             stream_color: "",
             stream_id,

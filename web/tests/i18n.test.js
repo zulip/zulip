@@ -69,19 +69,12 @@ run_test("$tr", () => {
 
 run_test("t_tag", ({mock_template}) => {
     const args = {
-        message: {
-            is_stream: true,
-            id: "99",
-            stream: "devel",
-            subject: "testing",
-            sender_full_name: "King Lear",
-        },
+        message_id: "99",
         should_display_quote_and_reply: true,
-        can_edit_message: true,
-        can_mute_topic: true,
-        narrowed: true,
-        topic: "testing",
-        not_spectator: true,
+        editability_menu_item: true,
+        should_display_hide_option: true,
+        conversation_time_uri:
+            "http://zulip.zulipdev.com/#narrow/stream/101-devel/topic/testing/near/99",
     };
 
     mock_template("actions_popover_content.hbs", true, (data, html) => {
@@ -94,23 +87,26 @@ run_test("t_tag", ({mock_template}) => {
 
 run_test("tr_tag", ({mock_template}) => {
     const args = {
+        botserverrc: "botserverrc",
+        date_joined_text: "Mar 21, 2022",
+        display_settings: {
+            settings: {},
+        },
+        notification_settings: {},
         page_params: {
             full_name: "John Doe",
-            password_auth_enabled: false,
-            avatar_url: "http://example.com",
+            delivery_email: "john@zulip.com",
         },
-        user_settings: {
-            twenty_four_hour_time: false,
-            enable_stream_desktop_notifications: false,
-            enable_stream_push_notifications: false,
-            enable_stream_audible_notifications: false,
-            enable_desktop_notifications: false,
-            enable_sounds: false,
-            enable_offline_email_notifications: false,
-            enable_offline_push_notifications: false,
-            enable_online_push_notifications: false,
-            enable_digest_emails: false,
+        settings_object: {},
+        settings_label: {
+            desktop_icon_count_display:
+                "Unread count badge (appears in desktop sidebar and browser tab)",
+            realm_name_in_email_notifications_policy:
+                "Include organization name in subject of message notification emails",
+            twenty_four_hour_time: "Time format",
         },
+        show_push_notifications_tooltip: false,
+        user_role_text: "Member",
     };
 
     mock_template("settings_tab.hbs", true, (data, html) => {
