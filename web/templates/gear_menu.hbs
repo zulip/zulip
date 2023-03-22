@@ -28,17 +28,17 @@
             {{/if}}
             {{#if (and is_plan_limited is_owner) }}
             <li class="org-info org-upgrade small-font-size">
-                <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t "Upgrade to {standard_plan_name}" }}</a>
+                <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t "Upgrade to {standard_plan_name}" }}</a>
             </li>
             {{/if}}
             {{#if is_plan_limited }}
                 {{#if is_education_org }}
                 <li class="org-info org-upgrade small-font-size">
-                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
+                    <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
                 </li>
                 {{else if (not is_business_org) }}
                 <li class="org-info org-upgrade small-font-size">
-                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
+                    <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
                 </li>
                 {{/if}}
             {{/if}}

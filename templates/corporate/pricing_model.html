@@ -35,7 +35,7 @@
                             </a>
                             {% elif realm.plan_type == realm.PLAN_TYPE_LIMITED or sponsorship_pending %}
                             <div class="pricing-details"></div>
-                            <a href='/upgrade' class="button black-current-value" type="button">
+                            <a href='/upgrade/' class="button black-current-value" type="button">
                                 Current plan
                             </a>
                             {% endif %}
@@ -72,7 +72,7 @@
                                 </div>
                             </div>
                             {% if not realm %}
-                            <a href="/upgrade" class="button green">
+                            <a href="/upgrade/" class="button green">
                                 {% if free_trial_days %}
                                 Start {{ free_trial_days }} day free trial
                                 {% else %}
@@ -92,7 +92,7 @@
                                 Sponsorship pending
                             </a>
                             {% else %}
-                            <a href="/upgrade" class="button green">
+                            <a href="/upgrade/" class="button green">
                                 {% if free_trial_days %}
                                 Start {{ free_trial_days }} day free trial
                                 {% else %}
