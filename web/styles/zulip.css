@@ -2472,6 +2472,7 @@ select.invite-as {
     display: inline-block;
     margin: 0;
     height: 22px;
+    width: 100%;
     padding-left: 20px;
     padding-right: 3px;
     line-height: 22px;
@@ -2926,4 +2927,11 @@ select.invite-as {
     /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
         but we don't want it to have an outline when focused anywhere in the app. */
     outline: none;
+}
+input#inline_topic_edit {
+  width: 70%;
+  height: 100%;
+}
+#stream_message_recipient_topic.recipient_box {
+  width: 100%;
 }

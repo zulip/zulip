@@ -515,7 +515,7 @@ input.recipient_box {
 }
 
 #stream_message_recipient_stream.recipient_box {
-    width: 20%;
+    width: 100%;
     border-radius: 0 3px 3px 0;
     border-left: 0;
 
@@ -854,4 +854,14 @@ a.compose_control_button.hide {
         height: 0;
         flex: 1;
     }
+}
+#stream-message,
+#private-message {
+  display: flex;
+  width: 100%;
+}
+
+input#inline_topic_edit {
+  width: 70%;
+  height: 100%;
 }
