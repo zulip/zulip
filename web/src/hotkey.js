@@ -121,50 +121,143 @@ const keydown_either_mappings = {
 };
 
 const keypress_mappings = {
-    42: {name: "star_deprecated", message_view_only: true}, // '*'
-    43: {name: "thumbs_up_emoji", message_view_only: true}, // '+'
-    61: {name: "upvote_first_emoji", message_view_only: true}, // '='
-    45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
-    47: {name: "search", message_view_only: false}, // '/'
-    58: {name: "toggle_reactions_popover", message_view_only: true}, // ':'
-    62: {name: "compose_quote_reply", message_view_only: true}, // '>'
-    63: {name: "show_shortcuts", message_view_only: false}, // '?'
-    64: {name: "compose_reply_with_mention", message_view_only: true}, // '@'
-    65: {name: "stream_cycle_backward", message_view_only: true}, // 'A'
-    67: {name: "C_deprecated", message_view_only: true}, // 'C'
-    68: {name: "stream_cycle_forward", message_view_only: true}, // 'D'
-    71: {name: "G_end", message_view_only: true}, // 'G'
-    74: {name: "vim_page_down", message_view_only: true}, // 'J'
-    75: {name: "vim_page_up", message_view_only: true}, // 'K'
-    77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
-    80: {name: "narrow_private", message_view_only: true}, // 'P'
-    82: {name: "respond_to_author", message_view_only: true}, // 'R'
-    83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
-    85: {name: "mark_unread", message_view_only: true}, // 'U'
-    86: {name: "view_selected_stream", message_view_only: false}, // 'V'
-    97: {name: "all_messages", message_view_only: true}, // 'a'
-    99: {name: "compose", message_view_only: true}, // 'c'
-    100: {name: "open_drafts", message_view_only: true}, // 'd'
-    101: {name: "edit_message", message_view_only: true}, // 'e'
-    103: {name: "gear_menu", message_view_only: true}, // 'g'
-    104: {name: "vim_left", message_view_only: true}, // 'h'
-    105: {name: "message_actions", message_view_only: true}, // 'i'
-    106: {name: "vim_down", message_view_only: true}, // 'j'
-    107: {name: "vim_up", message_view_only: true}, // 'k'
-    108: {name: "vim_right", message_view_only: true}, // 'l'
-    109: {name: "move_message", message_view_only: true}, // 'm'
-    110: {name: "n_key", message_view_only: false}, // 'n'
-    112: {name: "p_key", message_view_only: false}, // 'p'
-    113: {name: "query_streams", message_view_only: true}, // 'q'
-    114: {name: "reply_message", message_view_only: true}, // 'r'
-    115: {name: "narrow_by_recipient", message_view_only: true}, // 's'
-    116: {name: "open_recent_topics", message_view_only: true}, // 't'
-    117: {name: "show_sender_info", message_view_only: true}, // 'u'
-    118: {name: "show_lightbox", message_view_only: true}, // 'v'
-    119: {name: "query_users", message_view_only: true}, // 'w'
-    120: {name: "compose_private_message", message_view_only: true}, // 'x'
-    122: {name: "zoom_to_message_near", message_view_only: true}, // 'z'
+    "*": {name: "star_deprecated", message_view_only: true}, // '*'
+    "+": {name: "thumbs_up_emoji", message_view_only: true}, // '+'
+    "=": {name: "upvote_first_emoji", message_view_only: true}, // '='
+    "-": {name: "toggle_message_collapse", message_view_only: true}, // '-'
+    "/": {name: "search", message_view_only: false}, // '/'
+    ":": {name: "toggle_reactions_popover", message_view_only: true}, // ':'
+    ">": {name: "compose_quote_reply", message_view_only: true}, // '>'
+    "?": {name: "show_shortcuts", message_view_only: false}, // '?'
+    "@": {name: "compose_reply_with_mention", message_view_only: true}, // '@'
+    A: {name: "stream_cycle_backward", message_view_only: true}, // 'A'
+    C: {name: "C_deprecated", message_view_only: true}, // 'C'
+    D: {name: "stream_cycle_forward", message_view_only: true}, // 'D'
+    G: {name: "G_end", message_view_only: true}, // 'G'
+    J: {name: "vim_page_down", message_view_only: true}, // 'J'
+    K: {name: "vim_page_up", message_view_only: true}, // 'K'
+    M: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
+    P: {name: "narrow_private", message_view_only: true}, // 'P'
+    R: {name: "respond_to_author", message_view_only: true}, // 'R'
+    S: {name: "narrow_by_topic", message_view_only: true}, // 'S'
+    U: {name: "mark_unread", message_view_only: true}, // 'U'
+    V: {name: "view_selected_stream", message_view_only: false}, // 'V'
+    a: {name: "all_messages", message_view_only: true}, // 'a'
+    c: {name: "compose", message_view_only: true}, // 'c'
+    d: {name: "open_drafts", message_view_only: true}, // 'd'
+    e: {name: "edit_message", message_view_only: true}, // 'e'
+    g: {name: "gear_menu", message_view_only: true}, // 'g'
+    h: {name: "vim_left", message_view_only: true}, // 'h'
+    i: {name: "message_actions", message_view_only: true}, // 'i'
+    j: {name: "vim_down", message_view_only: true}, // 'j'
+    k: {name: "vim_up", message_view_only: true}, // 'k'
+    l: {name: "vim_right", message_view_only: true}, // 'l'
+    m: {name: "move_message", message_view_only: true}, // 'm'
+    n: {name: "n_key", message_view_only: false}, // 'n'
+    p: {name: "p_key", message_view_only: false}, // 'p'
+    q: {name: "query_streams", message_view_only: true}, // 'q'
+    r: {name: "reply_message", message_view_only: true}, // 'r'
+    s: {name: "narrow_by_recipient", message_view_only: true}, // 's'
+    t: {name: "open_recent_topics", message_view_only: true}, // 't'
+    u: {name: "show_sender_info", message_view_only: true}, // 'u'
+    v: {name: "show_lightbox", message_view_only: true}, // 'v'
+    w: {name: "query_users", message_view_only: true}, // 'w'
+    x: {name: "compose_private_message", message_view_only: true}, // 'x'
+    z: {name: "zoom_to_message_near", message_view_only: true}, // 'z'
 };
+
+const shifted_codes_to_keys = {
+    Backquote: "~",
+    Backslash: "|",
+    BracketLeft: "{",
+    BracketRight: "}",
+    Comma: "<",
+    Digit0: ")",
+    Digit1: "!",
+    Digit2: "@",
+    Digit3: "#",
+    Digit4: "$",
+    Digit5: "%",
+    Digit6: "^",
+    Digit7: "&",
+    Digit8: "*",
+    Digit9: "(",
+    Equal: "+",
+    Minus: "_",
+    Period: ">",
+    Quote: '"',
+    Semicolon: ":",
+    Slash: "?",
+};
+
+const unshifted_codes_to_keys = {
+    Backquote: "`",
+    Backslash: "\\",
+    BracketLeft: "[",
+    BracketRight: "]",
+    Comma: ",",
+    Digit0: "0",
+    Digit1: "1",
+    Digit2: "2",
+    Digit3: "3",
+    Digit4: "4",
+    Digit5: "5",
+    Digit6: "6",
+    Digit7: "7",
+    Digit8: "8",
+    Digit9: "9",
+    Equal: "=",
+    Minus: "-",
+    Period: ".",
+    Quote: "'",
+    Semicolon: ";",
+    Slash: "/",
+};
+
+function get_key_from_event(e) {
+    const {key, code, shiftKey} = e;
+
+    // If the layout is QWERTY, DVORAK, AZERTY etc (any latin layout),
+    // use e.which, since the inputted character likely has a valid ASCII,
+    // which is what we use to match our shortcuts.
+    if (key.codePointAt(0) < 256) {
+        return key;
+    }
+
+    // Our layout is not latin. Example: Cyrillic is in the early 1000s range.
+
+    // There is no easy way to figure out when capslock is on, so we'll pretend
+    // it is always off.
+
+    // If it is an alphabet key, it'll be of the format: "KeyA" for both A and a.
+    // Thus, we assume capslock is off for our uppercase/lowercase behavior.
+    if (code.startsWith("Key") && code.length === 4) {
+        let inferred_key = code.charAt(3);
+        if (!shiftKey) {
+            inferred_key = inferred_key.toLowerCase();
+        }
+        return inferred_key;
+    }
+
+    // We have a map of code to key pairs, which we'll use here.
+
+    // NOTE: Since this code is checked at last, for Cyrillic keyboards and the like
+    // we will interpret the keys as they are in that layout.
+
+    // For example, pressing shift+/ on a Cyrillic layout would input , instead of ?.
+    if (shiftKey) {
+        if (shifted_codes_to_keys[code]) {
+            return shifted_codes_to_keys[code];
+        }
+    } else {
+        if (unshifted_codes_to_keys[code]) {
+            return unshifted_codes_to_keys[code];
+        }
+    }
+
+    // If our logic above didn't capture it, let's just bail and return the original.
+    return key;
+}
 
 export function get_keydown_hotkey(e) {
     if (e.altKey) {
@@ -212,8 +305,8 @@ export function get_keypress_hotkey(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
         return undefined;
     }
-
-    return keypress_mappings[e.which];
+    const key = get_key_from_event(e);
+    return keypress_mappings[key];
 }
 
 export function processing_text() {
