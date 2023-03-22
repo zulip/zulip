@@ -146,6 +146,7 @@ export default (
                             "rendered_markdown",
                             "tooltip_hotkey_hints",
                         ],
+                        precompileOptions: {strict: true},
                         preventIndent: true,
                         // This replaces relative image resources with
                         // a computed require() path to them, so their
