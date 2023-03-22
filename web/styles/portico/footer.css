@@ -11,7 +11,7 @@
     background: var(--color-footer-background);
     box-sizing: border-box;
 
-    ul {
+    & ul {
         /* Override bootstrap defaults */
         list-style: none;
         margin: 0;
@@ -51,12 +51,12 @@
         flex-direction: column;
         align-items: flex-start;
 
-        li {
+        & li {
             margin-bottom: 10px;
         }
     }
 
-    li {
+    & li {
         font-style: normal;
         font-weight: 400;
         font-size: 16px;
@@ -66,14 +66,14 @@
         transition: border 0.4s ease-out;
     }
 
-    a,
+    & a,
     a:visited {
         font-weight: 400;
         font-size: 16px;
         color: var(--color-links);
     }
 
-    a:hover,
+    & a:hover,
     a:focus {
         color: var(--color-links);
         border-bottom: 1px solid var(--color-links);
@@ -87,7 +87,7 @@
         padding: 0 52px;
         border-top: 1px solid hsl(0, 0%, 100%, 0.1);
 
-        a {
+        & a {
             margin-bottom: 10px;
             border-bottom: 1px solid var(--color-footer-background);
 
@@ -163,7 +163,7 @@
             column-gap: 20px;
             justify-content: center;
 
-            a:not(:last-child) {
+            & a:not(:last-child) {
                 margin-right: 0;
             }
         }

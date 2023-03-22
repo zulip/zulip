@@ -36,7 +36,7 @@ html {
     font-weight: 500;
     font-size: 0.9em;
 
-    a {
+    & a {
         color: hsl(164, 100%, 23%);
 
         &:hover {
@@ -52,7 +52,7 @@ html {
     font-weight: 500;
     font-size: 1.2em;
 
-    a {
+    & a {
         color: hsl(164, 100%, 23%);
 
         &:hover {
@@ -88,7 +88,7 @@ html {
             text-align: center;
         }
 
-        h2 {
+        & h2 {
             font-size: 1em;
             font-weight: 400;
         }
@@ -100,7 +100,7 @@ html {
             margin: 0 20px;
         }
 
-        select {
+        & select {
             height: 30px;
             padding: 4px 6px;
             width: 220px;
@@ -160,7 +160,7 @@ html {
             }
         }
 
-        p {
+        & p {
             font-size: 19px;
         }
     }
@@ -244,7 +244,7 @@ html {
         display: none;
         line-height: 1;
 
-        i {
+        & i {
             margin-right: 5px;
         }
     }
@@ -261,7 +261,7 @@ html {
 .forgot-password-container {
     width: 503px;
 
-    h3,
+    & h3,
     form {
         margin-bottom: 0;
     }
@@ -301,7 +301,7 @@ html {
         }
     }
 
-    button {
+    & button {
         margin-top: 22px;
     }
 
@@ -384,7 +384,7 @@ html {
 }
 
 .new-style {
-    button {
+    & button {
         display: inline-block;
         vertical-align: top;
         padding: 13px 22px;
@@ -440,7 +440,7 @@ html {
         line-height: 1.5;
         color: hsl(0, 0%, 27%);
 
-        a {
+        & a {
             text-decoration: none;
         }
 
@@ -492,7 +492,7 @@ html {
         display: inline-block;
         vertical-align: top;
 
-        input[type="text"],
+        & input[type="text"],
         input[type="email"],
         input[type="password"],
         textarea,
@@ -525,11 +525,11 @@ html {
             }
         }
 
-        input[type="email"] {
+        & input[type="email"] {
             margin-bottom: 10px;
         }
 
-        label {
+        & label {
             position: absolute;
             top: 0;
             left: 0;
@@ -540,7 +540,7 @@ html {
         }
 
         &.moving-label {
-            input[type="text"]:invalid + label,
+            & input[type="text"]:invalid + label,
             input[type="email"]:invalid + label,
             input[type="password"]:invalid + label {
                 transform: translateY(39px) translateX(14px);
@@ -552,7 +552,7 @@ html {
             }
         }
 
-        label,
+        & label,
         input[type="text"]:focus + label,
         input[type="email"]:focus + label,
         input[type="password"]:focus + label,
@@ -572,12 +572,12 @@ html {
 
         /* The width of the "Organization name" text box
            right above this one is also 326px. */
-        select {
+        & select {
             width: 326px;
             cursor: pointer;
         }
 
-        p.text-error {
+        & p.text-error {
             display: block;
             padding: 0;
 
@@ -591,7 +591,7 @@ html {
             left: 1px;
         }
 
-        label.text-error {
+        & label.text-error {
             display: block;
 
             top: 0;
@@ -649,16 +649,16 @@ html {
 #change-email-address-visibility-modal {
     font-weight: 400;
 
-    label {
+    & label {
         font-size: inherit;
     }
 
-    h1 {
+    & h1 {
         font-weight: 600;
         font-family: inherit;
     }
 
-    select {
+    & select {
         margin-bottom: 10px;
         width: auto;
         font-size: 16px;
@@ -669,11 +669,11 @@ html {
 /* -- /accounts/register/ page -- */
 .portico-page {
     .pitch {
-        h1 {
+        & h1 {
             margin-bottom: 5px;
         }
 
-        p {
+        & p {
             font-weight: 400;
             color: hsl(0, 0%, 67%);
         }
@@ -702,7 +702,7 @@ html {
             border-bottom: 2px solid hsl(0, 0%, 87%);
         }
 
-        span {
+        & span {
             background-color: hsl(0, 0%, 100%);
             padding: 0 5px;
         }
@@ -801,7 +801,7 @@ html {
 }
 
 .anonymous_access_form {
-    button {
+    & button {
         /* Avoid excessive space at top of login form */
         margin-top: 0;
     }
@@ -882,7 +882,7 @@ button#register_auth_button_gitlab {
     padding: 0;
     margin: 30px;
 
-    fieldset {
+    & fieldset {
         margin: 30px;
 
         .input-box:last-child {
@@ -909,7 +909,7 @@ button#register_auth_button_gitlab {
             width: calc(100% - 20px);
         }
 
-        label {
+        & label {
             position: absolute;
             margin: 0;
             top: 0;
@@ -926,13 +926,13 @@ button#register_auth_button_gitlab {
         &.support-form-field {
             width: 450px;
 
-            input,
+            & input,
             textarea {
                 width: 400px;
                 font-size: 1rem;
             }
 
-            textarea {
+            & textarea {
                 color: hsl(0, 0%, 33%);
                 vertical-align: middle;
                 background-color: hsl(0, 0%, 100%);
@@ -1026,7 +1026,7 @@ button#register_auth_button_gitlab {
         display: block;
     }
 
-    legend {
+    & legend {
         display: block;
         width: 100%;
         padding: 0;
@@ -1047,7 +1047,7 @@ button#register_auth_button_gitlab {
     }
 
     .input-group {
-        label {
+        & label {
             font-size: 1rem;
 
             &.inline-block {
@@ -1133,7 +1133,7 @@ button#register_auth_button_gitlab {
         padding: 30px 0 50px;
     }
 
-    form {
+    & form {
         padding: 0;
         margin: 0;
 
@@ -1141,7 +1141,7 @@ button#register_auth_button_gitlab {
             background-color: hsl(202, 56%, 91%);
             cursor: pointer;
 
-            i.fa {
+            & i.fa {
                 color: hsl(203, 63%, 76%);
             }
         }
@@ -1154,7 +1154,7 @@ button#register_auth_button_gitlab {
         display: flex;
         align-items: center;
 
-        p {
+        & p {
             margin: 0;
             font-size: 0.8em;
 
@@ -1168,7 +1168,7 @@ button#register_auth_button_gitlab {
             font-weight: 500;
         }
 
-        img,
+        & img,
         i {
             width: 35px;
             height: 35px;
@@ -1176,7 +1176,7 @@ button#register_auth_button_gitlab {
             border-radius: 3px;
         }
 
-        i.fa {
+        & i.fa {
             color: hsl(0, 0%, 67%);
             text-align: center;
             line-height: 38px;
@@ -1258,7 +1258,7 @@ button#register_auth_button_gitlab {
             .description {
                 margin: 20px 0;
 
-                a {
+                & a {
                     color: hsl(200, 100%, 36%);
                 }
             }
@@ -1290,7 +1290,7 @@ button#register_auth_button_gitlab {
             text-align: center;
         }
 
-        button {
+        & button {
             width: 328px;
         }
     }

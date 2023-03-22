@@ -185,7 +185,7 @@ to a URL. This is done in `zerver/lib/integrations.py`.
 Look for the lines beginning with:
 
 ```python
-WEBHOOK_INTEGRATIONS = [
+WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
 ```
 
 And you'll find the entry for Hello World:

@@ -74,7 +74,6 @@ THE SOFTWARE.
 fieldset[disabled] .btn {
   pointer-events: none;
   cursor: not-allowed;
-  filter: alpha(opacity=65);
   -webkit-box-shadow: none;
           box-shadow: none;
   opacity: .65;

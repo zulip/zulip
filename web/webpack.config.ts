@@ -28,9 +28,6 @@ export default (
                 config: [__filename],
             },
         },
-        snapshot: {
-            immutablePaths: ["/srv/zulip-npm-cache"],
-        },
     };
 
     const frontendConfig: webpack.Configuration = {
@@ -219,6 +216,11 @@ export default (
             }),
         ],
         devServer: {
+            client: {
+                overlay: {
+                    runtimeErrors: false,
+                },
+            },
             devMiddleware: {
                 publicPath: "/webpack/",
                 stats: {

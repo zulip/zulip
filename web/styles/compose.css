@@ -14,7 +14,7 @@
         }
 
         .compose_mobile_button {
-            span {
+            & span {
                 font-size: 1.2em !important;
                 font-weight: 400;
                 line-height: 1em;
@@ -109,7 +109,7 @@
             margin: 0 5px;
         }
 
-        a.narrow_to_compose_recipients {
+        & a.narrow_to_compose_recipients {
             background: transparent;
             font-size: 18px;
             padding: 1px;
@@ -252,7 +252,7 @@
     align-items: center;
     margin-bottom: auto;
 
-    button {
+    & button {
         background: transparent;
         color: inherit;
         font-size: 15px;
@@ -286,7 +286,7 @@
     font-size: 15px;
     line-height: 18px;
 
-    p {
+    & p {
         margin: 0; /* override bootstrap */
         /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
         padding: 12px 5px 12px 15px;
@@ -564,7 +564,7 @@ input.recipient_box {
         gap: 8px;
         padding-top: 4px;
 
-        input[type="radio"] {
+        & input[type="radio"] {
             position: relative;
             top: 5px;
             width: auto;
@@ -611,7 +611,7 @@ input.recipient_box {
         font-size: 11px;
     }
 
-    kbd {
+    & kbd {
         height: 16px;
         padding: 0 4px;
     }
@@ -625,7 +625,7 @@ input.recipient_box {
         display: none;
     }
 
-    i {
+    & i {
         padding-left: 3px;
         font-size: 12px;
         font-weight: 600;
@@ -775,7 +775,7 @@ a.compose_control_button.hide {
 }
 
 .dropdown-menu {
-    ul {
+    & ul {
         list-style: none;
         margin: 0;
         background: hsl(0, 0%, 100%);

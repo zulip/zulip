@@ -79,6 +79,18 @@ When writing comments for pull requests, it's good to be familiar with
 tips and best practices that Zulip contributors and maintainers have found
 helpful for writing clear and thorough pull request comments:
 
+- If there has been a conversation in the [Zulip development
+  community][zulip-dev-community] about the changes you've made or the issue
+  your pull request addresses, please cross-link between your pull request and
+  those conversations. This provides helpful context for maintainers and
+  reviewers. Specifically, it's best to link from your pull request [to a
+  specific message][link-to-message], as these links will still work even if the
+  topic of the conversation is renamed, moved or resolved.
+
+  Once you've created a pull request on GitHub, you can use one of the [custom
+  linkifiers][dev-community-linkifiers] in the development community to easily
+  link to your pull request from the relevant conversation.
+
 - For [screenshots or screencasts][screenshots-gifs] of changes,
   putting them in details/summary tags reduces visual clutter
   and scroll length of pull request comments. This is especially
@@ -134,3 +146,6 @@ helpful for writing clear and thorough pull request comments:
 [github-syntax]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 [git-grep]: https://git-scm.com/docs/git-grep
 [screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
+[zulip-dev-community]: https://chat.zulip.org
+[link-to-message]: https://zulip.com/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
+[dev-community-linkifiers]: https://zulip.com/development-community/#linking-to-github-issues-and-pull-requests

@@ -35,6 +35,7 @@ body,
     This is the header, aka the navbar.
     */
     --header-height: 40px;
+
     @media (width < $sm_min) {
         --header-height: 30px;
     }
@@ -57,14 +58,18 @@ body,
     --right-sidebar-width: 250px;
 }
 
-:root.dark-theme {
+%dark-theme {
     --color-default-text: hsl(0, 0%, 100%);
     --color-date: hsl(0, 0%, 100%, 0.75);
 }
 
+:root.dark-theme {
+    @extend %dark-theme;
+}
+
 @media (prefers-color-scheme: dark) {
     :root.color-scheme-automatic {
-        @extend :root.dark-theme;
+        @extend %dark-theme;
     }
 }
 
@@ -156,11 +161,11 @@ p.n-margin {
     padding-left: 26px;
     text-indent: -10px;
 
-    i {
+    & i {
         margin: 0 3px 0 1px;
     }
 
-    p {
+    & p {
         margin: 0;
         padding: 4px;
     }
@@ -183,13 +188,13 @@ p.n-margin {
     height: 24px;
     margin: 0 auto 12px;
 
-    svg {
-        circle {
+    & svg {
+        & circle {
             fill: hsl(0, 0%, 27%);
             stroke: hsl(0, 0%, 27%);
         }
 
-        path {
+        & path {
             fill: hsl(0, 0%, 100%);
             stroke: hsl(0, 0%, 100%);
         }
@@ -220,7 +225,7 @@ p.n-margin {
         top: 50px;
     }
 
-    h3 {
+    & h3 {
         font-size: 16pt;
         margin-top: 2px;
     }
@@ -336,7 +341,7 @@ p.n-margin {
     .org-info {
         text-align: center;
 
-        a {
+        & a {
             white-space: normal;
         }
     }
@@ -359,14 +364,14 @@ p.n-margin {
     .org-upgrade {
         color: hsl(226, 82%, 60%);
 
-        a {
+        & a {
             padding: 0;
         }
     }
 
     .org-plan,
     .org-upgrade {
-        a {
+        & a {
             line-height: 16px;
         }
     }
@@ -417,7 +422,7 @@ p.n-margin {
         /* width of right column - width of gear icon(250px - 45px) */
         width: 205px;
 
-        a {
+        & a {
             font-size: calc(16em / 14);
             font-weight: 600;
             color: hsl(0, 0%, 20%);
@@ -427,7 +432,7 @@ p.n-margin {
                 color: hsl(0, 0%, 0%);
             }
 
-            i {
+            & i {
                 margin-right: 3px;
             }
         }
@@ -461,7 +466,7 @@ p.n-margin {
                 text-decoration: none;
             }
 
-            i {
+            & i {
                 color: hsl(0, 0%, 20%);
                 font-size: 1.6em;
             }
@@ -729,8 +734,8 @@ strong {
    basic idea of this fix is to remove decorations from :hover and apply them only
    on :focus. */
 .typeahead-menu {
-    li {
-        a {
+    & li {
+        & a {
             display: block;
             padding: 3px 20px;
             clear: both;
@@ -914,10 +919,6 @@ td.pointer {
         text-decoration: none;
         color: var(--color-default-text);
     }
-
-    a& {
-        z-index: 1;
-    }
 }
 
 /* The way this overrides the menus with a background-color and a high
@@ -1099,12 +1100,6 @@ td.pointer {
         top: var(--sidebar-top);
         z-index: 3;
         box-shadow: 0 -1px 0 0 hsl(0, 0%, 100%);
-
-        &.sticky_header {
-            .recipient_row_date {
-                display: block;
-            }
-        }
     }
 }
 
@@ -1180,7 +1175,16 @@ td.pointer {
     letter-spacing: 0.04em;
     text-transform: uppercase;
 
-    &.hide-date {
+    /* Display the date when unchanged only for sticky headers. */
+    &.recipient_row_date_unchanged {
+        display: none;
+
+        .sticky_header & {
+            display: block;
+        }
+    }
+
+    &.hide-date-separator-header {
         display: none;
     }
 }
@@ -1360,10 +1364,6 @@ td.pointer {
 }
 
 .selected_message {
-    .messagebox {
-        z-index: 1;
-    }
-
     .messagebox-content {
         box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
             0 0 0 1px hsl(215, 47%, 50%);
@@ -1371,7 +1371,7 @@ td.pointer {
 }
 
 .message_sender {
-    i.zulip-icon.zulip-icon-bot {
+    & i.zulip-icon.zulip-icon-bot {
         font-size: 12px;
     }
 }
@@ -1427,7 +1427,7 @@ td.pointer {
     pointer-events: all !important;
     opacity: 1 !important;
 
-    i:focus {
+    & i:focus {
         /* Avoid displaying a focus outline outside the popover on the \vdots
            icon when opened via the mouse. */
         outline: 0 !important;
@@ -1478,15 +1478,11 @@ div.message_table {
     border-left: 1px solid hsla(0, 0%, 0%, 0.1);
     border-right: 1px solid hsla(0, 0%, 0%, 0.1);
 
-    &.selected_message {
-        z-index: 2;
-    }
-
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0;
 
-        span {
+        & span {
             font-size: calc(12em / 14);
             font-style: normal;
             font-weight: 600;
@@ -1632,11 +1628,11 @@ div.focused_table {
     width: 100%;
     white-space: nowrap;
 
-    label.checkbox {
+    & label.checkbox {
         /* Place the checkboxes on their own lines. */
         display: block;
 
-        input {
+        & input {
             margin: 0;
             vertical-align: baseline;
         }
@@ -1646,7 +1642,7 @@ div.focused_table {
         }
     }
 
-    label {
+    & label {
         display: inline-block;
         margin-right: 10px;
     }
@@ -1757,11 +1753,12 @@ div.focused_table {
         padding: 12px 6px;
         overflow: hidden;
         text-overflow: ellipsis;
+
         @media (width < $sm_min) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
 
-        i {
+        & i {
             margin: 0 3px 0 5px;
         }
 
@@ -1826,6 +1823,7 @@ div.focused_table {
             height: 50%;
             color: hsl(0, 0%, 88%);
             font-size: 20px;
+
             @media (width < $sm_min) {
                 top: 10%;
             }
@@ -1833,6 +1831,7 @@ div.focused_table {
 
         &::before {
             left: -3px;
+
             @media (width < $sm_min) {
                 /* this ensures the before "|" doesn't overlap
                    with the stream name text on small narrows */
@@ -1876,6 +1875,7 @@ div.focused_table {
         font-size: 20px;
 
         padding: 10px 15px 0 0;
+
         @media (width < $sm_min) {
             padding: 5px 15px 0 0;
         }
@@ -1904,7 +1904,7 @@ div.focused_table {
     display: inline-block;
     float: right;
 
-    ul.nav {
+    & ul.nav {
         margin: 0;
 
         .dropdown-toggle,
@@ -1927,13 +1927,13 @@ div.focused_table {
             opacity: 1;
         }
 
-        li.dropdown.open .dropdown-toggle {
+        & li.dropdown.open .dropdown-toggle {
             background: none;
             opacity: 1;
             text-shadow: none;
         }
 
-        li.dropdown li.divider {
+        & li.dropdown li.divider {
             margin-left: 15px;
             margin-right: 15px;
         }
@@ -2075,7 +2075,7 @@ nav {
         }
     }
 
-    a {
+    & a {
         &.no-style:hover {
             text-decoration: none;
             cursor: pointer;
@@ -2144,7 +2144,7 @@ nav {
     .checkbox {
         display: block;
 
-        input[type="checkbox"] {
+        & input[type="checkbox"] {
             margin: 5px 0;
             float: none;
         }
@@ -2264,7 +2264,7 @@ select.invite-as {
 }
 
 #invite-stream-checkboxes {
-    i.zulip-icon-globe {
+    & i.zulip-icon-globe {
         font-size: 80%;
     }
 }
@@ -2434,7 +2434,7 @@ select.invite-as {
         margin-bottom: 10px;
     }
 
-    textarea {
+    & textarea {
         width: 100%;
         min-width: 206px;
         box-sizing: border-box;
@@ -2507,7 +2507,7 @@ select.invite-as {
     overflow: hidden;
     transition: all 0.4s ease;
 
-    i {
+    & i {
         cursor: pointer;
 
         &.hide_copy_icon {
@@ -2589,7 +2589,7 @@ select.invite-as {
         height: 40px;
     }
 
-    i.fa-copy {
+    & i.fa-copy {
         cursor: pointer;
     }
 }
@@ -2853,7 +2853,7 @@ select.invite-as {
             background: hsl(240, 96%, 68%, 0.5);
             border-radius: 50%;
 
-            i {
+            & i {
                 color: hsl(0, 0%, 100%);
                 margin: 0 auto;
                 font-size: 21px;

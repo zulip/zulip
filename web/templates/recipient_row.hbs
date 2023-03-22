@@ -77,7 +77,7 @@
                     </template>
                 {{/if}}
             </span>
-            <span class="recipient_row_date {{#if show_recipient_bar_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
+            <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
         </div>
     </div>
 </div>
@@ -91,7 +91,7 @@
                 {{t "You and {display_reply_to}" }}
             </a>
 
-            <span class="recipient_row_date {{#if show_recipient_bar_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
+            <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
         </div>
     </div>
 </div>

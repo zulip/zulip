@@ -1,14 +1,14 @@
 .widget-choices {
-    ul {
+    & ul {
         padding: 3px;
     }
 
-    li {
+    & li {
         padding: 2px;
         list-style: none;
     }
 
-    button {
+    & button {
         font-weight: 700;
         color: hsl(240, 100%, 50%);
     }
@@ -27,12 +27,12 @@
         margin-right: 4px;
     }
 
-    label.checkbox {
+    & label.checkbox {
         display: flex; /* Arrange that a multi-line description line wraps properly. */
         position: relative;
         vertical-align: top;
 
-        input[type="checkbox"] {
+        & input[type="checkbox"] {
             ~ span {
                 height: 12px;
                 width: 12px;
@@ -71,7 +71,7 @@
 
 .todo-widget,
 .poll-widget {
-    h4 {
+    & h4 {
         font-size: 18px;
         font-weight: 600;
 
@@ -81,12 +81,12 @@
         }
     }
 
-    li {
+    & li {
         list-style: none;
         margin: 2px 2px 6px 0;
     }
 
-    ul {
+    & ul {
         margin: 0 0 5px;
         padding: 0;
     }
@@ -99,11 +99,11 @@
     }
 
     /* For the box-shadow to be visible on the left */
-    input.poll-option {
+    & input.poll-option {
         margin-right: 4px;
     }
 
-    span.poll-option {
+    & span.poll-option {
         font-weight: 600;
         padding-top: 28px;
     }

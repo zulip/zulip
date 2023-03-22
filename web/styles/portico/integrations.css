@@ -8,7 +8,7 @@ $category-text: hsl(219, 23%, 33%);
     color: hsl(0, 0%, 27%);
     font-weight: normal;
 
-    h1,
+    & h1,
     h2,
     h3 {
         &:hover::after {
@@ -28,7 +28,7 @@ $category-text: hsl(219, 23%, 33%);
         background-color: hsl(0, 0%, 100%);
         visibility: hidden;
 
-        img {
+        & img {
             box-shadow: none;
             border: none;
         }
@@ -64,11 +64,11 @@ $category-text: hsl(219, 23%, 33%);
         }
     }
 
-    ol li {
+    & ol li {
         list-style: none;
     }
 
-    ul li {
+    & ul li {
         list-style: circle;
     }
 
@@ -83,7 +83,7 @@ $category-text: hsl(219, 23%, 33%);
         text-align: center;
         border-bottom: none;
 
-        a {
+        & a {
             color: inherit;
         }
     }
@@ -108,7 +108,7 @@ $category-text: hsl(219, 23%, 33%);
             .searchbar-reset {
                 position: relative;
 
-                input {
+                & input {
                     box-shadow: 0 0 7px 2px hsla(0, 0%, 0%, 0.03);
 
                     font-size: 1em;
@@ -135,7 +135,7 @@ $category-text: hsl(219, 23%, 33%);
                     }
                 }
 
-                i.fa-search {
+                & i.fa-search {
                     position: absolute;
                     left: 20px;
                     top: 13px;
@@ -173,13 +173,13 @@ $category-text: hsl(219, 23%, 33%);
                 z-index: 10;
             }
 
-            h3 {
+            & h3 {
                 font-weight: 400;
                 font-size: 1.1em;
                 margin: 0;
             }
 
-            h4 {
+            & h4 {
                 font-weight: 400;
                 font-size: 0.95em;
                 padding: 6px 10px 3px;
@@ -215,7 +215,7 @@ $category-text: hsl(219, 23%, 33%);
             display: none;
             width: 670px;
 
-            h3,
+            & h3,
             h4 {
                 font-weight: 400;
                 margin: 0;
@@ -234,7 +234,7 @@ $category-text: hsl(219, 23%, 33%);
                 border: 1px solid $light-blue-border;
             }
 
-            i {
+            & i {
                 margin-right: 10px;
                 font-size: 24px;
             }
@@ -247,12 +247,12 @@ $category-text: hsl(219, 23%, 33%);
                 margin-right: 25px;
             }
 
-            h3 {
+            & h3 {
                 font-size: 1em;
                 text-align: left;
             }
 
-            h4 {
+            & h4 {
                 border-left: 1px solid $light-blue-border;
                 border-right: 1px solid $light-blue-border;
                 border-bottom: 1px solid $light-blue-border;
@@ -416,7 +416,7 @@ $category-text: hsl(219, 23%, 33%);
         font-size: 1em;
         padding: 10px 0;
 
-        p {
+        & p {
             padding-bottom: 10px;
         }
 
@@ -426,6 +426,7 @@ $category-text: hsl(219, 23%, 33%);
             font-size: 0.9em;
         }
     }
+
     @media (max-width: 550px) {
         .button {
             display: flex;
@@ -516,7 +517,7 @@ $category-text: hsl(219, 23%, 33%);
                 margin-left: 30px;
                 order: 3;
 
-                span {
+                & span {
                     display: inline-block;
                     margin-left: 5px;
 
@@ -664,7 +665,7 @@ $category-text: hsl(219, 23%, 33%);
             }
         }
 
-        hr {
+        & hr {
             margin: 10px 0;
         }
 

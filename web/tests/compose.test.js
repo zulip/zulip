@@ -27,6 +27,10 @@ set_global(
 
 const fake_now = 555;
 
+const autosize = () => {};
+autosize.update = () => {};
+mock_esm("autosize", {default: autosize});
+
 const channel = mock_esm("../src/channel");
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_fade = mock_esm("../src/compose_fade");

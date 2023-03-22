@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 
-from scripts.lib.node_cache import NODE_MODULES_CACHE_PATH, setup_node_modules
+from scripts.lib.node_cache import setup_node_modules
 from scripts.lib.setup_venv import get_venv_dependencies
 from scripts.lib.zulip_tools import (
     ENDC,
@@ -346,7 +346,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
 
 
 def main(options: argparse.Namespace) -> NoReturn:
-    # yarn and management commands expect to be run from the root of the
+    # pnpm and management commands expect to be run from the root of the
     # project.
     os.chdir(ZULIP_PATH)
 
@@ -400,22 +400,16 @@ def main(options: argparse.Namespace) -> NoReturn:
     ]
     run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
 
-    if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
-        run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
-        run_as_root(["chown", f"{os.getuid()}:{os.getgid()}", NODE_MODULES_CACHE_PATH])
-
-    # This is a wrapper around `yarn`, which we run last since
-    # it can often fail due to network issues beyond our control.
     try:
-        setup_node_modules(prefer_offline=True)
+        setup_node_modules()
     except subprocess.CalledProcessError:
-        print(WARNING + "`yarn install` failed; retrying..." + ENDC)
+        print(WARNING + "`pnpm install` failed; retrying..." + ENDC)
         try:
             setup_node_modules()
         except subprocess.CalledProcessError:
             print(
                 FAIL
-                + "`yarn install` is failing; check your network connection (and proxy settings)."
+                + "`pnpm install` is failing; check your network connection (and proxy settings)."
                 + ENDC
             )
             sys.exit(1)

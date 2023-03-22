@@ -42,7 +42,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
-YARN="/usr/local/bin/yarn"
+PNPM="/usr/local/bin/pnpm"
 
 if [ -n "$CHECK_UNOPTIMIZED" ]; then
     if [ "$(node_modules/.bin/svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)" -ge 1 ]; then
@@ -53,6 +53,6 @@ if [ -n "$CHECK_UNOPTIMIZED" ]; then
         echo "SUCCESS: SVG files in static/images/integrations/logos are all optimized!"
     fi
 else
-    $YARN run svgo -q -f static/images/integrations/logos
+    "$PNPM" exec svgo -q -f static/images/integrations/logos
     "$ZULIP_PATH"/tools/setup/generate_integration_bots_avatars.py
 fi

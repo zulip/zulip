@@ -90,7 +90,7 @@
         border: 1px solid hsl(0, 0%, 47%);
     }
 
-    span {
+    & span {
         position: relative;
         top: -5px;
     }
@@ -153,18 +153,18 @@ h4.user_group_setting_subsection_title {
             margin: auto;
             border-radius: 6px;
 
-            tbody {
+            & tbody {
                 border-bottom: none;
 
-                tr:last-of-type {
+                & tr:last-of-type {
                     border-bottom: none;
                 }
             }
 
-            tr {
+            & tr {
                 border-bottom: 1px solid hsl(0, 0%, 93%);
 
-                td,
+                & td,
                 th {
                     padding: 4px 0 4px 5px;
                     vertical-align: middle;
@@ -179,7 +179,7 @@ h4.user_group_setting_subsection_title {
                 display: inline-block;
             }
 
-            tbody:empty::after,
+            & tbody:empty::after,
             &:empty::after {
                 content: "No subscribers to this stream.";
                 display: block;
@@ -188,7 +188,7 @@ h4.user_group_setting_subsection_title {
                 padding: 5px 5px 5px 10px;
             }
 
-            thead th {
+            & thead th {
                 &:first-of-type {
                     border-top-left-radius: 4px;
                 }
@@ -226,7 +226,7 @@ h4.user_group_setting_subsection_title {
 
     .user_group_subscription_request_result,
     .stream_subscription_request_result {
-        a {
+        & a {
             color: inherit;
         }
     }
@@ -377,11 +377,11 @@ h4.user_group_setting_subsection_title {
             margin-left: 2em;
             margin-right: 2em;
 
-            span {
+            & span {
                 color: hsl(0, 0%, 67%);
             }
 
-            button {
+            & button {
                 padding: 6px 10px 8px;
                 display: block;
                 margin: 0 auto 10px;
@@ -425,7 +425,7 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    input[type="text"].small {
+    & input[type="text"].small {
         border: 1px solid hsl(0, 0%, 80%);
         border-radius: 4px;
         padding: 3px;
@@ -500,14 +500,14 @@ h4.user_group_setting_subsection_title {
 
 .user-group-creation-body,
 .stream-creation-body {
-    section.block {
+    & section.block {
         margin-bottom: 20px;
     }
 
     #announce-new-stream {
         margin: 25px auto;
 
-        div[class^="fa"] {
+        & div[class^="fa"] {
             margin-left: 3px;
             margin-right: 8px;
         }
@@ -530,7 +530,7 @@ h4.user_group_setting_subsection_title {
         background-repeat: no-repeat;
         background-position: center center;
 
-        svg {
+        & svg {
             fill: transparent;
             width: 70%;
             margin: 0% 15%;
@@ -709,7 +709,7 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
             margin-bottom: 3px;
 
-            h5 {
+            & h5 {
                 display: inline-block;
             }
         }
@@ -914,7 +914,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .subsection-parent .input-group {
-        input[type="checkbox"] {
+        & input[type="checkbox"] {
             margin-top: 0;
         }
 
@@ -926,7 +926,7 @@ h4.user_group_setting_subsection_title {
             box-shadow: none;
         }
 
-        input[type="radio"] {
+        & input[type="radio"] {
             margin-right: 5px;
         }
 
@@ -945,12 +945,12 @@ div.settings-radio-input-parent {
         border-bottom: none;
     }
 
-    label.radio {
+    & label.radio {
         display: inline;
         margin: 5px;
     }
 
-    input {
+    & input {
         float: left;
         width: auto;
         cursor: pointer;
@@ -974,7 +974,7 @@ div.settings-radio-input-parent {
         margin-bottom: 10px;
 
         &.message-retention-setting-group {
-            input {
+            & input {
                 width: 5ch;
                 text-align: right;
             }
@@ -988,7 +988,7 @@ div.settings-radio-input-parent {
         height: fit-content;
     }
 
-    select.stream_post_policy_setting {
+    & select.stream_post_policy_setting {
         margin-bottom: 10px;
     }
 

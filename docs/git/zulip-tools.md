@@ -160,18 +160,18 @@ $ tools/clean-branches --reviews
 Deleting local branch review-original-5156 (was 5a1e982)
 ```
 
-## Merge conflict on yarn.lock file
+## Merge conflict on `pnpm-lock.yaml` file
 
-If there is a merge conflict on yarn.lock, yarn should be run to
-regenerate the file. _Important_ don't delete the yarn.lock file. Check out the
-latest one from `origin/main` so that yarn knows the previous asset versions.
+If there is a merge conflict on `pnpm-lock.yaml`, pnpm should be run to
+regenerate the file. _Important:_ don't delete the `pnpm-lock.yaml` file. Check out the
+latest one from `origin/main` so that pnpm knows the previous asset versions.
 
 Run the following commands
 
 ```bash
-git checkout origin/main -- yarn.lock
-yarn install
-git add yarn.lock
+git checkout origin/main -- pnpm-lock.yaml
+pnpm install
+git add pnpm-lock.yaml
 git rebase --continue
 ```
 

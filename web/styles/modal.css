@@ -9,10 +9,7 @@
 /* Styles for the Micromodal-based modals */
 .modal__overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: hsla(0, 0%, 0%, 0.6);
     display: flex;
     justify-content: center;
@@ -180,7 +177,7 @@
         padding-bottom: 0;
     }
 
-    hr {
+    & hr {
         margin: 10px 0;
     }
 
@@ -195,7 +192,7 @@
     #read_receipts_list {
         margin-left: 0;
 
-        li {
+        & li {
             .read_receipts_user_avatar {
                 display: inline-block;
                 height: 20px;
@@ -306,7 +303,7 @@
 .modal__spinner .loading_indicator_spinner {
     height: 16px;
 
-    path {
+    & path {
         fill: hsl(0, 0%, 100%);
     }
 }

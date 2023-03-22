@@ -2,7 +2,7 @@
     width: auto;
     max-width: 100%;
 
-    hr {
+    & hr {
         margin-top: 5px;
         margin-bottom: 5px;
     }
@@ -128,14 +128,14 @@
                 border-right: none;
             }
 
-            input {
+            & input {
                 box-sizing: inherit; /* IE */
                 box-sizing: initial;
 
                 width: calc(100% - 13px);
             }
 
-            button {
+            & button {
                 background-color: hsl(0, 0%, 100%);
                 background-image: none;
                 border: 1px solid hsl(0, 0%, 80%);
@@ -215,7 +215,7 @@ ul {
     }
 
     /* Override bootstrap defaults */
-    hr {
+    & hr {
         margin: 5px 0;
     }
 
@@ -384,7 +384,7 @@ ul {
     #profile-tab {
         margin: 1px 5px 0;
 
-        li.custom_user_field {
+        & li.custom_user_field {
             display: block;
         }
     }
@@ -427,7 +427,7 @@ ul {
         }
     }
 
-    hr {
+    & hr {
         border: 1px solid hsl(0, 0%, 93%);
         margin: 5px 0;
     }
@@ -529,7 +529,7 @@ ul {
             margin: auto;
             border-radius: 6px;
 
-            tr {
+            & tr {
                 border-bottom: 1px solid hsl(0, 0%, 87%);
                 /* Ensure equal height for rows with a remove-subscription-button and
                    those without one. */
@@ -539,7 +539,7 @@ ul {
                     border-bottom: none;
                 }
 
-                td {
+                & td {
                     padding: 4px 0;
 
                     &:first-of-type {
@@ -556,7 +556,7 @@ ul {
                 }
             }
 
-            tbody:empty::after,
+            & tbody:empty::after,
             &:empty::after {
                 content: attr(data-empty);
                 display: block;
@@ -717,7 +717,7 @@ ul {
         position: sticky;
         padding: 2px;
 
-        input {
+        & input {
             flex-grow: 1;
             margin: 5px;
             border-radius: 3px;
@@ -748,7 +748,7 @@ ul {
         background-color: hsl(0, 0%, 0%);
         border-radius: 0 0 6px 6px;
 
-        img {
+        & img {
             width: 120px;
         }
     }
@@ -788,7 +788,7 @@ ul {
 }
 
 #move_topic_modal {
-    form {
+    & form {
         margin: 0;
     }
 

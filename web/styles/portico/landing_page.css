@@ -212,16 +212,16 @@ nav {
     &.white {
         background-color: hsl(0, 0%, 100%);
 
-        li {
-            a,
+        & li {
+            & a,
             a:hover,
             a:visited {
                 color: hsl(0, 0%, 27%);
             }
         }
 
-        ul {
-            li {
+        & ul {
+            & li {
                 &.active {
                     &::after {
                         color: hsl(0, 0%, 27%);
@@ -231,7 +231,7 @@ nav {
         }
 
         .brand.logo {
-            span {
+            & span {
                 color: hsl(0, 0%, 27%);
             }
         }
@@ -257,7 +257,7 @@ nav {
     .logo {
         top: 7px;
 
-        span {
+        & span {
             position: relative;
             left: 5px;
             top: 1px;
@@ -270,7 +270,7 @@ nav {
         }
     }
 
-    ul {
+    & ul {
         float: right;
         list-style-type: none;
         font-weight: 400;
@@ -288,7 +288,7 @@ nav {
             user-select: none;
         }
 
-        li,
+        & li,
         div.dropdown-label {
             position: relative;
             display: inline-block;
@@ -314,7 +314,7 @@ nav {
                 }
             }
 
-            i.fa-chevron-down {
+            & i.fa-chevron-down {
                 position: relative;
                 top: -2px;
                 font-size: 0.6em;
@@ -327,19 +327,19 @@ nav {
     .nav-dropdown {
         padding-bottom: 3px;
 
-        ul {
+        & ul {
             width: 300px;
         }
 
         @media (width > 1024px) {
-            ul.product-options {
+            & ul.product-options {
                 width: 125px;
             }
 
-            ul.solutions-options {
+            & ul.solutions-options {
                 width: 450px;
 
-                div.dropdown-column {
+                & div.dropdown-column {
                     float: left;
 
                     &:first-of-type {
@@ -348,10 +348,10 @@ nav {
                 }
             }
 
-            ul.resources-options {
+            & ul.resources-options {
                 width: 350px;
 
-                div.dropdown-column {
+                & div.dropdown-column {
                     float: left;
 
                     &:first-of-type {
@@ -362,8 +362,8 @@ nav {
         }
     }
 
-    li {
-        a,
+    & li {
+        & a,
         a:hover,
         a:visited {
             text-decoration: none;
@@ -414,7 +414,7 @@ nav {
         z-index: -1;
     }
 
-    section {
+    & section {
         max-width: 1440px;
         display: flex;
         flex: 1 1 auto;
@@ -447,12 +447,12 @@ nav {
                 text-align: center;
             }
 
-            h1 {
+            & h1 {
                 margin: 0;
                 font-size: 3.7em;
             }
 
-            h2 {
+            & h2 {
                 font-size: 1.8em;
                 margin: 30px auto 0;
 
@@ -479,7 +479,7 @@ nav {
             background-color: hsl(219, 21%, 21%);
             color: hsl(219, 76%, 93%);
 
-            img {
+            & img {
                 &.overflow-wave {
                     width: 685px;
                     right: 0;
@@ -493,7 +493,7 @@ nav {
                 }
             }
 
-            h3 {
+            & h3 {
                 font-size: 3em;
             }
 
@@ -501,11 +501,11 @@ nav {
                 width: 50%;
             }
 
-            p {
+            & p {
                 font-size: 1.2em;
             }
 
-            a.cta {
+            & a.cta {
                 font-size: 1em;
                 color: hsl(170, 52%, 70%);
             }
@@ -528,7 +528,7 @@ nav {
             .features {
                 max-width: 500px;
 
-                h2 {
+                & h2 {
                     margin: 0;
                 }
 
@@ -560,7 +560,7 @@ nav {
                 max-height: 40vw;
             }
 
-            h2 {
+            & h2 {
                 position: relative;
 
                 margin-bottom: 120px;
@@ -578,7 +578,7 @@ nav {
 
                 z-index: 1;
 
-                h3 {
+                & h3 {
                     position: relative;
 
                     margin: 15px 0 15px 50px;
@@ -633,7 +633,7 @@ nav {
             vertical-align: top;
         }
 
-        h2 {
+        & h2 {
             font-size: 2.5em;
             text-align: center;
             margin: 0 10px;
@@ -647,7 +647,7 @@ nav {
             color: inherit;
         }
 
-        a {
+        & a {
             &.feature-block {
                 &:hover {
                     box-shadow: 0 3px 10px hsl(0, 0%, 75%);
@@ -678,12 +678,12 @@ nav {
     }
 
     .feature-block {
-        h3 {
+        & h3 {
             font-size: 1.2em;
             font-weight: 600;
         }
 
-        p {
+        & p {
             margin: 0;
 
             opacity: 0.8;
@@ -715,25 +715,25 @@ nav {
 
         text-align: center;
 
-        p {
+        & p {
             font-weight: 400;
             opacity: 0.85;
         }
     }
 
-    header {
+    & header {
         width: 850px;
         display: inline-block;
         text-align: left;
 
-        h1 {
+        & h1 {
             font-size: 3em;
             font-weight: 400;
 
             text-shadow: 0 0 20px hsla(0, 0%, 100%, 0.2);
         }
 
-        p {
+        & p {
             margin: 30px 0;
 
             font-size: 1.5em;
@@ -743,13 +743,13 @@ nav {
                 0 0 20px hsla(0, 0%, 100%, 0.2);
         }
 
-        a {
+        & a {
             display: block;
             margin: 20px auto 0;
             text-align: center;
         }
 
-        button {
+        & button {
             margin-top: 0;
             padding: 12px 20px;
 
@@ -875,7 +875,7 @@ nav {
         z-index: 2;
     }
 
-    table {
+    & table {
         min-width: 550px;
         padding: 33px;
         border: 20px solid transparent;
@@ -885,7 +885,7 @@ nav {
         font-weight: 400;
         color: hsla(0, 0%, 100%, 0.8);
 
-        thead th {
+        & thead th {
             &:last-of-type {
                 width: 120px;
             }
@@ -895,16 +895,16 @@ nav {
             }
         }
 
-        td:not(:first-of-type),
+        & td:not(:first-of-type),
         th:not(:first-of-type) {
             text-align: center;
         }
     }
 
-    thead {
+    & thead {
         border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
 
-        th {
+        & th {
             font-weight: 600;
             padding: 15px 0;
             font-size: 18px;
@@ -940,10 +940,10 @@ nav {
         position: static;
     }
 
-    tbody tr {
+    & tbody tr {
         border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
 
-        td {
+        & td {
             padding: 10px 0;
 
             &:nth-of-type(1) {
@@ -990,7 +990,7 @@ nav {
                 opacity: 0.4;
             }
 
-            a {
+            & a {
                 font-size: 0.9rem;
                 font-weight: 400;
                 text-transform: uppercase;
@@ -998,7 +998,7 @@ nav {
         }
     }
 
-    p {
+    & p {
         font-weight: 300;
     }
 
@@ -1011,7 +1011,7 @@ nav {
 
         color: hsl(0, 24%, 23%);
 
-        a {
+        & a {
             color: hsl(170, 47%, 73%);
         }
     }
@@ -1021,7 +1021,7 @@ nav {
     color: hsl(0, 0%, 0%);
     background: none;
 
-    table {
+    & table {
         min-width: 650px;
 
         .number {
@@ -1032,7 +1032,7 @@ nav {
             }
         }
 
-        td:first-of-type {
+        & td:first-of-type {
             padding: 10px 10px 10px 0;
         }
     }
@@ -1048,11 +1048,11 @@ nav {
         z-index: 1;
     }
 
-    header {
+    & header {
         max-width: 700px;
         margin: 0 auto;
 
-        h1 span {
+        & h1 span {
             vertical-align: top;
         }
     }
@@ -1272,7 +1272,7 @@ nav {
         padding: 50px 0;
     }
 
-    img {
+    & img {
         margin: 0 2%;
         width: 28%;
         max-width: 500px;
@@ -1287,7 +1287,7 @@ nav {
         text-align: left;
     }
 
-    h2 {
+    & h2 {
         font-weight: normal;
     }
 }
@@ -1417,7 +1417,7 @@ nav {
         width: 300px;
     }
 
-    img {
+    & img {
         max-width: 100%;
 
         &.zulip-streams-selected {
@@ -1507,7 +1507,7 @@ nav {
         text-align: center;
         vertical-align: top;
 
-        img {
+        & img {
             border: 0;
             display: block;
             margin: 0 auto;
@@ -1568,7 +1568,7 @@ nav {
     top: auto;
     right: auto;
 
-    li {
+    & li {
         position: relative;
         flex: 0 1 auto;
         width: 10px;
@@ -2169,14 +2169,14 @@ nav {
     margin-top: 20px;
     font-size: 1.05em;
 
-    p {
+    & p {
         line-height: 1.5;
         margin: 0;
         font-weight: 400;
         color: hsl(220, 23%, 33%);
     }
 
-    p:last-child {
+    & p:last-child {
         margin-top: 10px;
     }
 }
@@ -2687,20 +2687,20 @@ nav {
         color: hsl(0, 0%, 53%);
         padding-top: 0;
 
-        p {
+        & p {
             padding: 10px;
         }
 
-        p:first-child {
+        & p:first-child {
             margin-top: -20px;
         }
 
-        p:last-child {
+        & p:last-child {
             margin-bottom: 30px;
         }
     }
 
-    p {
+    & p {
         width: 80%;
         margin: auto;
         text-align: center;
@@ -2886,12 +2886,12 @@ nav {
             margin: 0 auto;
             text-align: center;
 
-            span {
+            & span {
                 color: hsl(0, 0%, 100%);
             }
         }
 
-        ul {
+        & ul {
             display: block;
             margin: 20px auto 0;
             float: none;
@@ -2900,7 +2900,7 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             &.messages {
                 display: block;
                 text-align: center;
@@ -2998,7 +2998,7 @@ nav {
     }
 
     .portico-landing.hello .hero {
-        header {
+        & header {
             width: calc(100% - 50px);
         }
     }
@@ -3006,7 +3006,7 @@ nav {
 
 @media (width <= 906px) {
     .portico-landing.features-app {
-        section {
+        & section {
             &.notifications {
                 padding: 50px 10px;
 
@@ -3083,7 +3083,7 @@ nav {
             display: block;
         }
 
-        img {
+        & img {
             display: block;
             width: 300px;
             margin: 0 auto;
@@ -3140,7 +3140,7 @@ nav {
     }
 
     .portico-landing.hello .hero {
-        header {
+        & header {
             width: 600px;
         }
     }
@@ -3150,13 +3150,13 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             padding: 0 20px;
 
             &.hero {
                 padding: 50px;
 
-                h1 {
+                & h1 {
                     font-size: 3em;
                 }
             }
@@ -3244,7 +3244,7 @@ nav {
             height: 450px;
         }
 
-        header {
+        & header {
             width: auto;
         }
     }
@@ -3264,7 +3264,7 @@ nav {
             }
         }
 
-        ul {
+        & ul {
             margin-top: 0;
             text-align: left;
 
@@ -3299,7 +3299,7 @@ nav {
                 color: initial;
             }
 
-            li,
+            & li,
             div.dropdown div.dropdown-label {
                 display: block;
                 font-size: 1.5em;
@@ -3319,17 +3319,17 @@ nav {
                 }
             }
 
-            div.dropdown div.dropdown-label.first {
+            & div.dropdown div.dropdown-label.first {
                 margin-top: 30px;
             }
 
-            div.dropdown ul.dropdown-list {
+            & div.dropdown ul.dropdown-list {
                 position: relative;
                 box-shadow: none;
                 padding-left: 10px;
                 border: none;
 
-                li {
+                & li {
                     &:hover {
                         background-color: unset;
                     }
@@ -3337,16 +3337,16 @@ nav {
             }
 
             .nav-dropdown {
-                ul.resources-options,
+                & ul.resources-options,
                 ul.solutions-options {
-                    div.dropdown-column {
+                    & div.dropdown-column {
                         float: none;
 
                         &:first-child {
                             padding-bottom: 20px;
                         }
 
-                        li.nav-header {
+                        & li.nav-header {
                             font-size: 1em;
                         }
                     }
@@ -3355,7 +3355,7 @@ nav {
         }
 
         &.portico-header {
-            div.content ul div.nav-dropdown {
+            & div.content ul div.nav-dropdown {
                 display: block;
                 padding-bottom: 0;
             }
@@ -3446,9 +3446,9 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             &.keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -100px;
                     }
@@ -3460,7 +3460,7 @@ nav {
 
 @media (width <= 550px) {
     .portico-landing.features-app {
-        section {
+        & section {
             &.hero {
                 padding: 50px 20px 20px;
             }
@@ -3468,7 +3468,7 @@ nav {
             &.messages {
                 padding: 0 20px;
 
-                h2 {
+                & h2 {
                     font-size: 2em;
                 }
 
@@ -3506,7 +3506,7 @@ nav {
             font-size: 90%;
         }
 
-        img {
+        & img {
             max-width: 100%;
 
             &.zulip-streams {
@@ -3646,9 +3646,9 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             &.keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -92px;
                     }
@@ -3660,9 +3660,9 @@ nav {
 
 @media (width <= 360px) {
     .portico-landing.features-app {
-        section {
+        & section {
             .keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -88px;
                     }
@@ -3675,9 +3675,9 @@ nav {
 /* For iPhone 5/SE device */
 @media (width <= 320px) {
     .portico-landing.features-app {
-        section {
+        & section {
             .keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -78px;
                     }
@@ -3759,17 +3759,17 @@ nav {
     }
 
     .feature-text {
-        h1 {
+        & h1 {
             font-size: 30px;
             font-weight: 600;
         }
 
-        ul {
+        & ul {
             list-style: none;
             margin-left: 0;
         }
 
-        ul li {
+        & ul li {
             margin-bottom: 15px;
 
             &::before {
@@ -3792,26 +3792,26 @@ nav {
     }
 
     .feature-image {
-        img,
+        & img,
         div.quote {
             width: 400px;
         }
 
         @media (width < 1024px) {
-            div.quote {
+            & div.quote {
                 width: 300px;
             }
         }
 
         @media (width < 768px) {
-            div.quote {
+            & div.quote {
                 width: auto;
             }
         }
     }
 
     .feature-icon {
-        img,
+        & img,
         div.quote {
             width: 100px;
         }
@@ -3829,8 +3829,8 @@ nav {
 .discounts-section {
     text-align: center;
 
-    header {
-        b {
+    & header {
+        & b {
             font-weight: 600;
             color: hsl(169, 45%, 43%);
         }
@@ -3876,7 +3876,7 @@ nav {
         outline: none;
     }
 
-    p {
+    & p {
         font-weight: 600;
         margin-bottom: 0;
     }
@@ -3897,7 +3897,7 @@ nav {
     display: flex;
     flex-direction: column;
 
-    a {
+    & a {
         color: hsl(0, 0%, 100%);
 
         &.case-study-link {
@@ -3916,22 +3916,22 @@ nav {
         margin: 5px 20px 20px;
     }
 
-    blockquote {
+    & blockquote {
         font-size: 18px;
     }
 
-    blockquote::before {
+    & blockquote::before {
         font-size: 20px;
         font-weight: 800;
     }
 
-    cite {
+    & cite {
         font-style: normal;
     }
 }
 
 .intro_quote {
-    blockquote {
+    & blockquote {
         font-size: 17px;
         font-weight: 400;
         color: hsl(223, 6%, 25%);
@@ -3941,7 +3941,7 @@ nav {
         padding: 20px;
     }
 
-    blockquote::after {
+    & blockquote::after {
         content: "";
     }
 
@@ -3968,7 +3968,7 @@ nav {
     }
 
     .hero {
-        a {
+        & a {
             color: hsl(170, 76%, 64%);
         }
     }
@@ -3978,7 +3978,7 @@ nav {
         flex-flow: row wrap;
         justify-content: center;
 
-        a {
+        & a {
             color: hsl(170, 47%, 33%);
             font-weight: 600;
             font-size: 15px;
@@ -3997,7 +3997,7 @@ nav {
             margin: 10px;
         }
 
-        h1 {
+        & h1 {
             margin-top: 20px;
             text-align: center;
             font-weight: 600;
@@ -4005,13 +4005,13 @@ nav {
             padding-bottom: 0;
         }
 
-        ul {
+        & ul {
             margin: auto;
             max-width: 800px;
             padding: 30px;
         }
 
-        p {
+        & p {
             margin: auto;
             max-width: 800px;
             padding: 30px;
@@ -4032,7 +4032,7 @@ nav {
     max-width: 800px;
     margin: auto;
 
-    h1 {
+    & h1 {
         text-align: center;
         font-weight: 600;
         margin-bottom: 0;
@@ -4083,7 +4083,7 @@ nav {
                     font-size: 34px;
                 }
 
-                a {
+                & a {
                     margin-top: 76px;
                 }
             }
@@ -4097,7 +4097,7 @@ nav {
                     padding-bottom: 10px;
                 }
 
-                p {
+                & p {
                     padding: 0;
                     margin: 0 0 -10px;
                     width: 100%;
@@ -4121,7 +4121,7 @@ nav {
     margin: 50px auto 0;
     padding: 0 4vw;
 
-    h1 {
+    & h1 {
         font-size: 36px;
         font-weight: 600;
     }
@@ -4135,7 +4135,7 @@ nav {
             margin: 0 10px;
         }
 
-        p {
+        & p {
             padding: 10px;
         }
 
@@ -4170,7 +4170,7 @@ nav {
     .discounts-section {
         margin: 30px;
 
-        h1 {
+        & h1 {
             font-weight: 700 !important;
             font-size: 26px !important;
         }
@@ -4211,7 +4211,7 @@ nav {
         margin: auto;
         margin-top: 30px;
 
-        a {
+        & a {
             min-height: 40px;
             padding: 7px 0;
         }
@@ -4219,7 +4219,7 @@ nav {
 
     @media (width <= 768px) {
         .register-buttons {
-            a {
+            & a {
                 margin: 10px calc(5vw - 10px);
                 width: clamp(130px, 40vw, 200px);
                 font-size: 13px;
@@ -4229,7 +4229,7 @@ nav {
 }
 
 .self-hosting-page {
-    p {
+    & p {
         font-size: 18px !important;
     }
 
@@ -4276,7 +4276,7 @@ nav {
             hsl(169, 65%, 42%)
         );
 
-        blockquote {
+        & blockquote {
             max-width: 700px;
             margin: auto;
             font-size: 24px;
@@ -4325,7 +4325,7 @@ nav {
                     height: 400px;
                 }
 
-                h1 {
+                & h1 {
                     font-weight: 550;
                     font-size: clamp(24px, 2.5vw, 32px);
                 }
@@ -4333,7 +4333,7 @@ nav {
                 .feature-icon {
                     align-self: center;
 
-                    img {
+                    & img {
                         max-width: 100px;
                     }
                 }
@@ -4377,7 +4377,7 @@ nav {
                 }
             }
 
-            h1 {
+            & h1 {
                 color: hsl(0, 0%, 100%);
             }
         }

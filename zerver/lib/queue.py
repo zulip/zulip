@@ -143,6 +143,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel = self.connection.channel()
+        self.channel.basic_qos(prefetch_count=self.prefetch)
         self.log.info("SimpleQueueClient connected (connecting took %.3fs)", time.time() - start)
 
     def _reconnect(self) -> None:
@@ -161,7 +162,6 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         if self.connection is None or not self.connection.is_open:
             self._connect()
             assert self.channel is not None
-            self.channel.basic_qos(prefetch_count=self.prefetch)
         else:
             assert self.channel is not None
 
