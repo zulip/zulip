@@ -437,7 +437,7 @@ Create new public stream "public1" and add Hamlet:
 
 - Type "public1" in the text box and then click "Create new stream."
 - Select "People must be invited" and then verify you can't
-  select "Announce stream".
+  select "Announce new stream in #[announcement stream]".
 - Select "Anyone can join" again to make it be public.
 - Check the checkbox for Hamlet.
 - Hit the "Create" button.

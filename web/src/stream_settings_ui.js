@@ -677,7 +677,11 @@ export function setup_page(callback) {
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
+        const notifications_stream = stream_data.get_notifications_stream();
+        const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+
         const template_data = {
+            notifications_stream_sub,
             ask_to_announce_stream: true,
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||
