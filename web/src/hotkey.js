@@ -402,11 +402,6 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (stream_popover.all_messages_popped()) {
-        stream_popover.all_messages_sidebar_menu_handle_keyboard(event_name);
-        return true;
-    }
-
     return false;
 }
 
