@@ -4162,12 +4162,12 @@ class RequiresBillingAccessTest(StripeTestCase):
 
     @mock_stripe()
     def test_billing_page_permissions(self, *mocks: Mock) -> None:
-        # Guest users can't access /upgrade page
+        # Guest users can't access /upgrade/ page
         self.login_user(self.example_user("polonius"))
         response = self.client_get("/upgrade/", follow=True)
         self.assertEqual(response.status_code, 404)
 
-        # Check that non-admins can access /upgrade via /billing, when there is no Customer object
+        # Check that non-admins can access /upgrade/ via /billing, when there is no Customer object
         self.login_user(self.example_user("hamlet"))
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
