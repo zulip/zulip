@@ -532,12 +532,6 @@ input.recipient_box {
     }
 }
 
-#stream_message_recipient_topic.recipient_box {
-    /* This width roughly corresponds to how long of a topic can appear in
-       the left sidebar with a single digit unread count without being
-       cut off. */
-    width: 175px;
-}
 
 #private_message_recipient.recipient_box {
     width: 100%;
@@ -859,9 +853,4 @@ a.compose_control_button.hide {
 #private-message {
   display: flex;
   width: 100%;
-}
-
-input#inline_topic_edit {
-  width: 70%;
-  height: 100%;
 }
