@@ -281,7 +281,6 @@ import {get_string_diff} from "../../src/util";
       }
       if (this.automated()) {
         this.select();
-        this.lookup();
         return this;
       }
       return this.render(items.slice(0, this.options.items)).show()
