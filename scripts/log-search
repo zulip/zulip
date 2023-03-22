@@ -185,6 +185,7 @@ def main() -> None:
         print("! nginx logs not suggested for timeline, due to imprecision", file=sys.stderr)
 
     use_color = sys.stdout.isatty()
+    lowered_terms = [term.lower() for term in args.filter_terms]
     try:
         for logfile_name in reversed(logfile_names):
             with maybe_gzip(logfile_name) as logfile:
@@ -192,7 +193,7 @@ def main() -> None:
                     # As a performance optimization, just do a substring
                     # check before we parse the line fully
                     lowered = logline.lower()
-                    if not all(f in lowered for f in args.filter_terms):
+                    if not all(f in lowered for f in lowered_terms):
                         continue
 
                     if args.nginx:
