@@ -1,3 +1,26 @@
+/*
+  Our Tippy popovers use the strangely named "light-border" Tippy
+  theme, so this block defines the common styling for all of our Tippy
+  popovers. (Tippy tooltips are defined in tooltips.css).
+*/
+.tippy-box[data-theme="light-border"] {
+    /* TODO: Clean this logic up after drop Bootstrap styling */
+    & ul.nav {
+        /* Override default padding of tippyjs */
+        margin: 0 -9px;
+
+        /* Override bootstrap defaults */
+        .nav-list > li > a {
+            padding: 3px 15px;
+        }
+
+        /* Override bootstrap defaults */
+        & hr {
+            margin: 5px 0;
+        }
+    }
+}
+
 .popover {
     width: auto;
     max-width: 100%;
@@ -206,19 +229,6 @@ ul {
 }
 
 .actions_popover {
-    /* Override default padding of tippyjs */
-    margin: 0 -9px;
-
-    /* Override bootstrap defaults */
-    .nav-list > li > a {
-        padding: 3px 15px;
-    }
-
-    /* Override bootstrap defaults */
-    & hr {
-        margin: 5px 0;
-    }
-
     .mark_as_unread {
         .unread_count {
             /* The icon for this menu item is in the form of an unread count from

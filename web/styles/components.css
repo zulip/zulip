@@ -100,10 +100,8 @@ i.zulip-icon.zulip-icon-bot {
 }
 
 .tippy-content {
-    /* This actually sets the
-     * default font size of only
-     * tooltips; popovers should define
-     * font-size of their own.
+    /* Set the default font size for tooltips. Popovers override this with
+       a rule looking at the data-theme.
      */
     font-size: 12px;
 }
