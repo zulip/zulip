@@ -24,7 +24,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--agree_to_terms_of_service",
             action="store_true",
-            help="Agree to the Zulipchat Terms of Service: https://zulip.com/terms/.",
+            help="Agree to the Zulipchat Terms of Service: https://zulip.com/policies/terms.",
         )
         parser.add_argument(
             "--rotate-key",
@@ -69,7 +69,7 @@ class Command(ZulipBaseCommand):
         if not options["agree_to_terms_of_service"] and not options["rotate_key"]:
             print(
                 "To register, you must agree to the Zulipchat Terms of Service: "
-                "https://zulip.com/terms/"
+                "https://zulip.com/policies/terms"
             )
             tos_prompt = input("Do you agree to the Terms of Service? [Y/n] ")
             print("")
