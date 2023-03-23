@@ -2,8 +2,7 @@
 
 {tab|via-recent-conversations}
 
-1. Open **Recent conversations** from the left sidebar or by pressing the
-   <kbd>Esc</kbd> key.
+{!open-recent-conversations.md!}
 
 1. Click on the name of a topic in the **Topic** column.
 
