@@ -20,7 +20,7 @@ Zulip's system supports:
   period.
 
 In Zulip Cloud, message retention policies are available on the Zulip
-Cloud Standard and Zulip Cloud Plus [plans](https://zulip.com/plans),
+Cloud Standard and Zulip Cloud Plus [plans](https://zulip.com/plans/),
 as well as for the hundreds of communities with sponsored Cloud
 Standard hosting.
 

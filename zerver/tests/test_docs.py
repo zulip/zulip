@@ -423,7 +423,7 @@ class PlansPageTest(ZulipTestCase):
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/login/?next=/plans")
+        self.assertEqual(result["Location"], "/accounts/login/?next=/plans/")
 
         guest_user = "polonius"
         self.login(guest_user)
@@ -463,14 +463,14 @@ class PlansPageTest(ZulipTestCase):
         with self.settings(PRODUCTION=True):
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulip.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans/")
 
             self.login("iago")
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulip.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans/")
 
         # But in the development environment, it renders a page
         result = self.client_get("/plans/", subdomain="zulip")

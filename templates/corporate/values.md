@@ -82,7 +82,7 @@ An important part of Zulip’s mission is ensuring that worthy organizations, fr
 communities](/case-studies/lean/), are able to use Zulip whether or not they
 have funding.
 
-We sponsor [Zulip Cloud Standard](/plans) hosting for [open-source
+We sponsor [Zulip Cloud Standard](/plans/) hosting for [open-source
 projects](/for/open-source/), [research groups](/for/research/),
 [education](/for/education/), [non-profits](/for/communities/) and other
 [communities](/for/communities/). This program has grown exponentially since its

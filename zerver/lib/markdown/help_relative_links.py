@@ -23,7 +23,7 @@ gear_info = {
     "organization-settings": ["Organization settings", "/#organization/organization-profile"],
     "integrations": ["Integrations", "/integrations/"],
     "stats": ["Usage statistics", "/stats"],
-    "plans": ["Plans and pricing", "/plans"],
+    "plans": ["Plans and pricing", "/plans/"],
     "billing": ["Billing", "/billing"],
     "invite": ["Invite users", "/#invite"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
