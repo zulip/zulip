@@ -32,7 +32,7 @@ export function set_up($input, pills, opts) {
     const exclude_bots = opts.exclude_bots;
 
     $input.typeahead({
-        items: 5,
+        items: composebox_typeahead.max_num_items,
         fixed: true,
         dropup: true,
         source() {

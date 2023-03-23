@@ -30,6 +30,7 @@ const user_groups = mock_esm("../src/user_groups", {
 });
 const ui_report = mock_esm("../src/ui_report");
 
+const composebox_typeahead = zrequire("composebox_typeahead");
 const people = zrequire("people");
 const settings_user_groups_legacy = zrequire("settings_user_groups_legacy");
 const user_pill = zrequire("user_pill");
@@ -172,7 +173,7 @@ test_ui("populate_user_groups", ({mock_template, override, override_rewire}) => 
 
     let input_typeahead_called = false;
     $input_field_stub.typeahead = (config) => {
-        assert.equal(config.items, 5);
+        assert.equal(config.items, composebox_typeahead.max_num_items);
         assert.ok(config.fixed);
         assert.ok(config.dropup);
         assert.ok(config.stopAdvance);

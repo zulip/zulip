@@ -118,7 +118,7 @@
  *   when the typeahead hides. This callback function is called in `hide()`
  *   and allows those extra UI changes to happen.
  *
- *  13. Allow option to remove custom logic for tab keypresses:
+ * 13. Allow option to remove custom logic for tab keypresses:
  *
  *   Sometimes tab is treated similarly to the escape or enter key, with
  *   custom functionality, which also prevents propagation to default tab
@@ -130,6 +130,12 @@
  *  
  *   This allows us to have things like a close button, and be able
  *   to move focus there without the typeahead closing.
+ * 
+ * 15. Make menu scrollable with simplebar:
+ *
+ *   We now show up to 50 options in the typeahead menu, but have it's height
+ *   capped at a size that roughly fits 8 options (the older option count limit).
+ *
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -265,19 +271,29 @@ import {get_string_diff} from "../../src/util";
         pos.top = this.$element.get_offset_to_window().top;
 
         var top_pos = pos.top + pos.height
-        if (this.dropup) {
-          top_pos = pos.top - this.$container.outerHeight()
-        }
 
-        // Zulip patch: Avoid typeahead going off top of screen.
-        if (top_pos < 0) {
-            top_pos = 0;
-        }
-
-        this.$container.css({
-          top: top_pos
-         , left: pos.left
-        })
+        // We use setInterval here to let simplebar initialise before
+        // accessing and using `this.$container.outerHeight()`
+        const position_when_ready = setInterval(() => {
+          if (this.$menu.outerHeight() !== 0) {
+            clearInterval(position_when_ready);
+          } else {
+            return;
+          }
+          if (this.dropup) {
+            top_pos = pos.top - this.$container.outerHeight()
+          }
+    
+          // Zulip patch: Avoid typeahead going off top of screen.
+          if (top_pos < 0) {
+              top_pos = 0;
+          }
+    
+          this.$container.css({
+            top: top_pos
+           , left: pos.left
+          })
+        }, 0);
       }
 
       this.$container.show()
@@ -371,7 +387,7 @@ import {get_string_diff} from "../../src/util";
       })
 
       items.first().addClass('active')
-      this.$menu.html(items)
+      this.$menu.find(".simplebar-content").html(items)
       return this
     }
 
@@ -630,7 +646,7 @@ import {get_string_diff} from "../../src/util";
   , items: 8
   , container: '<div class="typeahead dropdown-menu"></div>'
   , header_html: '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>'
-  , menu: '<ul class="typeahead-menu"></ul>'
+  , menu: '<ul class="typeahead-menu" data-simplebar></ul>'
   , item: '<li><a></a></li>'
   , minLength: 1
   , stopAdvance: false

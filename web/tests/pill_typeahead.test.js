@@ -8,6 +8,7 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 const input_pill = zrequire("input_pill");
+const composebox_typeahead = zrequire("composebox_typeahead");
 const pill_typeahead = zrequire("pill_typeahead");
 const noop = function () {};
 
@@ -126,7 +127,7 @@ run_test("set_up", ({mock_template}) => {
 
     let opts = {};
     $fake_input.typeahead = (config) => {
-        assert.equal(config.items, 5);
+        assert.equal(config.items, composebox_typeahead.max_num_items);
         assert.ok(config.fixed);
         assert.ok(config.dropup);
         assert.ok(config.stopAdvance);
