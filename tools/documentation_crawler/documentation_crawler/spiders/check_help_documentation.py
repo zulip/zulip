@@ -64,7 +64,7 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
 
     name = "portico_documentation_crawler"
     start_urls = [
-        "http://localhost:9981/hello",
+        "http://localhost:9981/hello/",
         "http://localhost:9981/history",
         "http://localhost:9981/plans",
         "http://localhost:9981/team",
