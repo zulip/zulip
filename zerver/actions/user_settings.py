@@ -415,26 +415,21 @@ def do_change_user_setting(
     # TODO: Move these database actions into a transaction.atomic block.
     user_profile.save(update_fields=[setting_name])
 
-    if setting_name in UserProfile.notification_setting_types:
-        # Prior to all personal settings being managed by property_types,
-        # these were only created for notification settings.
-        #
-        # TODO: Start creating these for all settings, and do a
-        # backfilled=True migration.
-        RealmAuditLog.objects.create(
-            realm=user_profile.realm,
-            event_type=RealmAuditLog.USER_SETTING_CHANGED,
-            event_time=event_time,
-            acting_user=acting_user,
-            modified_user=user_profile,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: setting_value,
-                    "property": setting_name,
-                }
-            ).decode(),
-        )
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        event_type=RealmAuditLog.USER_SETTING_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: setting_value,
+                "property": setting_name,
+            }
+        ).decode(),
+    )
+
     # Disabling digest emails should clear a user's email queue
     if setting_name == "enable_digest_emails" and not setting_value:
         clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
