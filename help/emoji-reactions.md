@@ -51,6 +51,11 @@ message.
     To make it easy to see which reactions you have added, they are
     highlighted in a different color.
 
+!!! keyboard_tip ""
+
+    You can also toggle the first emoji reaction on the selected message by
+    using the <kbd>=</kbd> shortcut.
+
 {tab|mobile}
 
 1. Click on an existing emoji reaction to add or remove your reaction.
