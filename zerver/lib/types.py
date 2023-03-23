@@ -1,5 +1,5 @@
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 from django_stubs_ext import StrPromise
@@ -291,6 +291,7 @@ class GroupPermissionSetting:
     default_group_name: str
     id_field_name: str
     default_for_system_groups: Optional[str] = None
+    allowed_system_groups: List[str] = field(default_factory=list)
 
 
 @dataclass

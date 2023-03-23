@@ -115,6 +115,7 @@ class HomeTest(ZulipTestCase):
         "realm_bot_creation_policy",
         "realm_bot_domain",
         "realm_bots",
+        "realm_can_access_all_users_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",

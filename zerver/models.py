@@ -445,6 +445,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # on_delete field here is set to RESTRICT because we don't want to allow
+    # deleting a user group in case it is referenced by this setting.
+    # We are not using PROTECT since we want to allow deletion of user groups
+    # when realm itself is deleted.
+    can_access_all_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
@@ -813,6 +821,16 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
             id_field_name="create_multiuse_invite_group_id",
+        ),
+        can_access_all_users_group=GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            id_field_name="can_access_all_users_group_id",
+            allowed_system_groups=[SystemGroups.EVERYONE],
         ),
     )
 
