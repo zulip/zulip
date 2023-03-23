@@ -43,7 +43,7 @@ class HelpDocumentationSpider(UnusedImagesLinterSpider):
     name = "help_documentation_crawler"
     start_urls = ["http://localhost:9981/help"]
     deny_domains: List[str] = []
-    deny = ["/privacy"]
+    deny = ["/policies/privacy"]
     images_path = "static/images/help"
 
 
@@ -71,7 +71,7 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
         "http://localhost:9981/apps/",
         "http://localhost:9981/integrations/",
         "http://localhost:9981/policies/terms",
-        "http://localhost:9981/privacy",
+        "http://localhost:9981/policies/privacy",
         "http://localhost:9981/features",
         "http://localhost:9981/why-zulip",
         "http://localhost:9981/for/open-source",
