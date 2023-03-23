@@ -140,5 +140,5 @@ chat apps. We love it."
 
 ---
 
-Check out our guide on [using Zulip for business](/for/business), and learn how
+Check out our guide on [using Zulip for business](/for/business/), and learn how
 Zulip is being used at the [iDrift AS](/case-studies/idrift/) company.

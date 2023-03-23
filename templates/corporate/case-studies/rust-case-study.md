@@ -163,5 +163,5 @@ be more stuck, more slow-moving, less agile, and a little less human.”
 
 ---
 
-Check out our guide on using Zulip for [open source](/for/open-source), and
-learn how Zulip [helps communities scale](/for/communities)!
+Check out our guide on using Zulip for [open source](/for/open-source/), and
+learn how Zulip [helps communities scale](/for/communities/)!

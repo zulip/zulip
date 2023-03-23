@@ -238,6 +238,6 @@ path 6 years ago!”
 
 ---
 
-Check out our guides on using Zulip for [education](/for/education) and
-[events](/for/events), and learn how Zulip [helps communities
-grow](/for/communities)!
+Check out our guides on using Zulip for [education](/for/education/) and
+[events](/for/events/), and learn how Zulip [helps communities
+grow](/for/communities/)!

@@ -195,5 +195,5 @@ communities.”
 
 ---
 
-Check out our guide on using Zulip for [open source](/for/open-source), and
-learn how Zulip [helps communities scale](/for/communities)!
+Check out our guide on using Zulip for [open source](/for/open-source/), and
+learn how Zulip [helps communities scale](/for/communities/)!

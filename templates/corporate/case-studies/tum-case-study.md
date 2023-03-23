@@ -77,10 +77,10 @@ contribute a few patches of my own,” Robert says.
 
 ---
 
-Learn more about [Zulip for Education](/for/education), and how
+Learn more about [Zulip for Education](/for/education/), and how
 Zulip is being used at the [University of California San Diego](/case-studies/ucsd).
-You can also check out our guides on using Zulip for [conferences](/for/events)
-and [research](/for/research)!
+You can also check out our guides on using Zulip for [conferences](/for/events/)
+and [research](/for/research/)!
 
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
