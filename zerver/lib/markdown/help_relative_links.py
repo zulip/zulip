@@ -24,7 +24,7 @@ gear_info = {
     "integrations": ["Integrations", "/integrations/"],
     "stats": ["Usage statistics", "/stats"],
     "plans": ["Plans and pricing", "/plans/"],
-    "billing": ["Billing", "/billing"],
+    "billing": ["Billing", "/billing/"],
     "invite": ["Invite users", "/#invite"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }

@@ -8,7 +8,7 @@ export function create_update_license_request() {
         "licensechange",
         ["licenses_at_next_renewal"],
         "PATCH",
-        () => window.location.replace("/billing"),
+        () => window.location.replace("/billing/"),
     );
 }
 
@@ -56,13 +56,13 @@ export function initialize() {
             "licensechange",
             ["licenses"],
             "PATCH",
-            () => window.location.replace("/billing"),
+            () => window.location.replace("/billing/"),
         );
     });
 
     $("#change-plan-status").on("click", (e) => {
         helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-            window.location.replace("/billing"),
+            window.location.replace("/billing/"),
         );
         e.preventDefault();
     });

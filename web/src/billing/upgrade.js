@@ -32,7 +32,7 @@ export const initialize = () => {
         }
         e.preventDefault();
         helpers.create_ajax_request("/json/billing/upgrade", "invoice", [], "POST", () =>
-            window.location.replace("/billing"),
+            window.location.replace("/billing/"),
         );
     });
 

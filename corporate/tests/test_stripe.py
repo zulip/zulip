@@ -848,7 +848,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual("/billing/", response["Location"])
 
-        # Check /billing has the correct information
+        # Check /billing/ has the correct information
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(["Pay annually"], response)
@@ -989,7 +989,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual("/billing/", response["Location"])
 
-        # Check /billing has the correct information
+        # Check /billing/ has the correct information
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(["Pay annually", "Update card"], response)
