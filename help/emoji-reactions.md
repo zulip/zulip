@@ -26,8 +26,15 @@ message.
    with your mouse.
 
 !!! tip ""
+
     To add multiple reactions without closing the emoji picker, hold the
     <kbd>Shift</kbd> key while selecting emoji.
+
+!!! keyboard_tip ""
+
+    You can react to the selected message with <img alt=":thumbs_up:"
+    class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
+    title="thumbs up"/> by using the <kbd>+</kbd> shortcut.
 
 {tab|mobile}
 
