@@ -9,7 +9,7 @@ custom set of English stop words to improve the quality of the search results.
 Self-hosted Zulip organizations can instead set up an experimental
 [PGroonga](https://pgroonga.github.io/) integration that provides full-text
 search for all languages simultaneously, including Japanese and Chinese. See
-[here](https://zulip.readthedocs.io/en/latest/subsystems/full-text-search.html#multi-language-full-text-search)
+[here](https://zulip.readthedocs.io/en/stable/subsystems/full-text-search.html#multi-language-full-text-search)
 for setup instructions.
 
 ## Related articles

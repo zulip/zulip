@@ -20,7 +20,7 @@ replying to message notification emails, unless you are connecting to
 a self-hosted Zulip server whose system administrator has not
 configured the [incoming email gateway][incoming-email-gateway].
 
-[incoming-email-gateway]: https://zulip.readthedocs.io/en/latest/production/email-gateway.html
+[incoming-email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
 
 ### Delay before sending emails
 
