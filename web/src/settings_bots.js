@@ -353,7 +353,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
-        bot_avatar_url: bot.avatar_url,
+        bot_avatar_url: bot.avatar_url || people.medium_avatar_url_for_person(bot),
     });
 
     let owner_widget;
