@@ -146,7 +146,7 @@ browsers will experience weird/confusing redirects.
 
 ## Open realm creation
 
-Installations like [Zulip Cloud](https://zulip.com/plans) that wish to
+Installations like [Zulip Cloud](https://zulip.com/plans/) that wish to
 allow anyone on the Internet to create new Zulip organizations can do
 so by setting `OPEN_REALM_CREATION = True` in
 `/etc/zulip/settings.py`. Note that offering Zulip hosting to anyone

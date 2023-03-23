@@ -60,9 +60,9 @@ def plans_view(request: HttpRequest) -> HttpResponse:
 
     if realm is not None:
         if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED and settings.PRODUCTION:
-            return HttpResponseRedirect("https://zulip.com/plans")
+            return HttpResponseRedirect("https://zulip.com/plans/")
         if not request.user.is_authenticated:
-            return redirect_to_login(next="/plans")
+            return redirect_to_login(next="/plans/")
         if request.user.is_guest:
             return TemplateResponse(request, "404.html", status=404)
         customer = get_customer_by_realm(realm)

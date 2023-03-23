@@ -18,11 +18,11 @@
             {{else}}
                 <li class="org-info org-plan hidden-for-spectators small-font-size">
                     {{#if is_plan_limited }}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
+                        <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
                     {{else if is_plan_standard}}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
+                        <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
                     {{else if is_plan_standard_sponsored_for_free}}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
+                        <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
                     {{/if}}
                 </li>
             {{/if}}
@@ -149,7 +149,7 @@
             {{/if}}
             {{#if show_plans}}
             <li role="presentation" class="hidden-for-spectators">
-                <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
                 </a>
             </li>
