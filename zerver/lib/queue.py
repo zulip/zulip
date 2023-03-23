@@ -1,10 +1,11 @@
 import logging
 import random
+import ssl
 import threading
 import time
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from typing import Any, Callable, Dict, Generic, List, Mapping, Optional, Set, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, List, Mapping, Optional, Set, Type, TypeVar, Union
 
 import orjson
 import pika
@@ -77,11 +78,18 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         if self.rabbitmq_heartbeat == 0:
             tcp_options = dict(TCP_KEEPIDLE=60 * 5)
 
+        ssl_options: Union[
+            Type[pika.ConnectionParameters._DEFAULT], pika.SSLOptions
+        ] = pika.ConnectionParameters._DEFAULT
+        if settings.RABBITMQ_USE_TLS:
+            ssl_options = pika.SSLOptions(context=ssl.create_default_context())
+
         return pika.ConnectionParameters(
             settings.RABBITMQ_HOST,
             port=settings.RABBITMQ_PORT,
             heartbeat=self.rabbitmq_heartbeat,
             tcp_options=tcp_options,
+            ssl_options=ssl_options,
             credentials=credentials,
         )
 
