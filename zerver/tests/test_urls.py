@@ -74,7 +74,7 @@ class PublicURLTest(ZulipTestCase):
 
         # Add all files in help documentation directory (except for 'index.md',
         # 'missing.md' and `help/include/` files) to `get_urls['200']` list.
-        for doc in os.listdir("./help"):
+        for doc in os.listdir("./help/"):
             if doc.startswith(".") or "~" in doc or "#" in doc:
                 continue  # nocoverage -- just here for convenience
             if doc not in {"index.md", "include", "missing.md"}:
