@@ -25,6 +25,14 @@
             color: hsla(0, 0%, 100%, 1);
         }
 
+        .tippy-arrow::before {
+            /* This affects the arrow for tooltips and doesn't have any impact on arrows for popovers.
+             * The transform property scales down the size of the arrow, giving it a thinner appearance.
+             * https://atomiks.github.io/tippyjs/v6/themes/#changing-the-arrow-size
+             */
+            transform: scale(0.75);
+        }
+
         .tooltip-inner-content {
             line-height: 17px;
         }
@@ -54,11 +62,6 @@
          * The bug was only found in Firefox.
          */
         height: 0 !important;
-        /* We use the same transform value used
-         * by tippyjs documentation for the small
-         * arrow size.
-         */
-        transform: scale(0.75);
     }
     /* If the text in the tooltips stretches to multiple lines,
      * we want the lines to be left-indented and not right-indented
