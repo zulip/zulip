@@ -277,9 +277,6 @@ class Command(makemessages.Command):
             except (OSError, ValueError):
                 old_strings = {}
 
-            new_strings = {
-                k: v
-                for k, v in self.get_new_strings(old_strings, translation_strings, locale).items()
-            }
+            new_strings = self.get_new_strings(old_strings, translation_strings, locale)
             with open(output_path, "w") as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)
