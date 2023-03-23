@@ -826,6 +826,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
             label: "translated: You (click to remove) reacted with :8ball:",
             reaction_type: clean_reaction_object.reaction_type,
             is_realm_emoji: false,
+            vote_text: "",
         });
         return "<new-reaction-stub>";
     });
@@ -891,6 +892,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             label: "translated: Bob van Roberts reacted with :zulip:",
             still_url: undefined,
             reaction_type: clean_reaction_object.reaction_type,
+            vote_text: "",
         });
         return "<new-reaction-stub>";
     });

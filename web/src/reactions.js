@@ -316,6 +316,7 @@ view.insert_new_reaction = function (clean_reaction_object, message, user_id) {
     context.emoji_alt_code = user_settings.emojiset === "text";
     context.is_realm_emoji =
         context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
+    context.vote_text = ""; // Updated below
 
     if (user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
