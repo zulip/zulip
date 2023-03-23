@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/browser";
-import {HttpClient as HttpClientIntegration} from "@sentry/integrations";
 import {BrowserTracing} from "@sentry/tracing";
 import _ from "lodash";
 
@@ -53,10 +52,6 @@ if (page_params.server_sentry_dsn) {
         integrations: [
             new BrowserTracing({
                 tracePropagationTargets: url_matches,
-            }),
-            new HttpClientIntegration({
-                failedRequestStatusCodes: [500, 502, 503, 504],
-                failedRequestTargets: url_matches,
             }),
         ],
         allowUrls: url_matches,
