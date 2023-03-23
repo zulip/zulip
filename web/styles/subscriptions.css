@@ -789,7 +789,6 @@ h4.user_group_setting_subsection_title {
 
         .group-name-wrapper,
         .stream-name {
-            display: inline-block;
             position: relative;
             font-size: 1.5em;
             font-weight: 600;
