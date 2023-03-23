@@ -636,7 +636,7 @@ class PrivacyTermsTest(ZulipTestCase):
         self.assert_in_success_response(["Kandra Labs"], result)
 
     def test_no_nav(self) -> None:
-        # Test that our ?nav=0 feature of /privacy and /policies/terms,
+        # Test that our ?nav=0 feature of /policies/privacy and /policies/terms,
         # designed to comply with the Apple App Store draconian
         # policies that ToS/Privacy pages linked from an iOS app have
         # no links to the rest of the site if there's pricing
