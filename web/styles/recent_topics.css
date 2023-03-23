@@ -1,7 +1,6 @@
 .recent_topics_container {
     padding: 0;
     border-radius: 4px;
-    background-color: hsl(0deg 0% 100%);
     overflow: hidden;
     display: flex;
     flex-direction: column;
