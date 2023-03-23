@@ -66,7 +66,7 @@ run_test("planchange", ({override}) => {
         assert.deepEqual(ignored_inputs, []);
         assert.equal(method, "PATCH");
         location.replace = (new_location) => {
-            assert.equal(new_location, "/billing");
+            assert.equal(new_location, "/billing/");
         };
         success_callback();
         create_ajax_request_called = true;
@@ -89,7 +89,7 @@ run_test("licensechange", ({override}) => {
         assert.deepEqual(ignored_inputs, ["licenses_at_next_renewal"]);
         assert.equal(method, "PATCH");
         location.replace = (new_location) => {
-            assert.equal(new_location, "/billing");
+            assert.equal(new_location, "/billing/");
         };
         success_callback();
         create_ajax_request_called = true;
@@ -153,7 +153,7 @@ run_test("licensechange", ({override}) => {
         assert.deepEqual(ignored_inputs, ["licenses"]);
         assert.equal(method, "PATCH");
         location.replace = (new_location) => {
-            assert.equal(new_location, "/billing");
+            assert.equal(new_location, "/billing/");
         };
         success_callback();
         create_ajax_request_called = true;

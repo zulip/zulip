@@ -37,7 +37,7 @@ function handle_session_complete_event(session) {
         case "free_trial_upgrade_from_billing_page":
             message =
                 "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.";
-            redirect_to = "/billing";
+            redirect_to = "/billing/";
             break;
         case "free_trial_upgrade_from_onboarding_page":
             message =
