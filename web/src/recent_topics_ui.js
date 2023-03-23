@@ -387,8 +387,6 @@ function format_conversation(conversation_data) {
         // display / hide them according to filters instead of
         // doing complete re-render.
         context.topic_muted = Boolean(user_topics.is_topic_muted(context.stream_id, context.topic));
-        const stream_muted = stream_data.is_muted(context.stream_id);
-        context.muted = context.topic_muted || stream_muted;
         context.mention_in_unread = unread.topic_has_any_unread_mentions(
             context.stream_id,
             context.topic,
@@ -476,7 +474,6 @@ function format_conversation(conversation_data) {
     context.other_sender_names_html = displayed_other_names
         .map((name) => _.escape(name))
         .join("<br />");
-    context.participated = conversation_data.participated;
     context.last_msg_url = hash_util.by_conversation_and_time_url(last_msg);
 
     return context;
