@@ -56,7 +56,7 @@ administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
 more on security considerations and options, see [the security model
 section](../production/security-model.md) and the [Zulip Help
-Center](https://zulip.com/help).
+Center](https://zulip.com/help/).
 
 ## Components
 
