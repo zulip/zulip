@@ -132,6 +132,6 @@ jump in to help newer community members as time allows.
 
 ---
 
-Check out our guides on using Zulip for [research](/for/research)
-and [open source](/for/open-source), and learn how Zulip
-[helps communities grow](/for/communities)!
+Check out our guides on using Zulip for [research](/for/research/)
+and [open source](/for/open-source/), and learn how Zulip
+[helps communities grow](/for/communities/)!

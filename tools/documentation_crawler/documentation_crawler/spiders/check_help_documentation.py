@@ -74,10 +74,10 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
         "http://localhost:9981/policies/privacy",
         "http://localhost:9981/features/",
         "http://localhost:9981/why-zulip/",
-        "http://localhost:9981/for/open-source",
-        "http://localhost:9981/for/business",
-        "http://localhost:9981/for/communities",
-        "http://localhost:9981/for/research",
+        "http://localhost:9981/for/open-source/",
+        "http://localhost:9981/for/business/",
+        "http://localhost:9981/for/communities/",
+        "http://localhost:9981/for/research/",
         "http://localhost:9981/security",
     ]
     deny_domains: List[str] = []
