@@ -726,6 +726,16 @@ SSL/TLS termination.
 Set to the port number if you [prefer to listen on a port other than
 443](#using-an-alternate-port).
 
+#### `nginx_worker_connections`
+
+Adjust the [`worker_connections`][nginx_worker_connections] setting in
+the nginx server. This defaults to 10000; increasing it allows more
+concurrent connections per CPU core, at the cost of more memory
+consumed by NGINX. This number, times the number of CPU cores, should
+be more than twice the concurrent number of users.
+
+[nginx_worker_connections]: http://nginx.org/en/docs/ngx_core_module.html#worker_connections
+
 #### `queue_workers_multiprocess`
 
 By default, Zulip automatically detects whether the system has enough
