@@ -16,7 +16,7 @@ Zulip:
 * Adding an incoming webhook integration (detailed on this page),
   where all the logic for formatting the Zulip messages lives in the
   Zulip server.  This is how most of [Zulip's official
-  integrations](/integrations) work, because they enable Zulip to
+  integrations](/integrations/) work, because they enable Zulip to
   support third-party services that just have an "outgoing webhook"
   feature (without the third party needing to do any work specific to
   Zulip).

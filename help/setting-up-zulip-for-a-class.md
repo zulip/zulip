@@ -321,7 +321,7 @@ more through [Zapier](/integrations/doc/zapier) and
 [IFTTT](/integrations/doc/ifttt).  Popular Zulip integrations include
 [GitHub](/integrations/doc/github) and
 [Twitter](/integrations/doc/twitter). The [integrations
-page](/integrations) has instructions for integrating with each
+page](/integrations/) has instructions for integrating with each
 product.
 
 ## Cleaning up at the end of a class

@@ -12,7 +12,7 @@ from zerver.lib.storage import static_path
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
-generating the documentation on the /integrations page, while the
+generating the documentation on the /integrations/ page, while the
 WebhookIntegration class is also used to generate the URLs in
 `zproject/urls.py` for webhook integrations.
 

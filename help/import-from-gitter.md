@@ -163,7 +163,7 @@ Once the import process is completed, you will need to:
 4. Share the URL for your new Zulip organization, and (recommended) the [Getting
    started with Zulip guide](/help/getting-started-with-zulip).
 
-5. Migrate any [integrations](/integrations).
+5. Migrate any [integrations](/integrations/).
 
 {end_tabs}
 

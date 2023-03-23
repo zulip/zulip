@@ -14,7 +14,7 @@ A bot that sends content to or from another product is often called an
 Zulip natively supports integrations with over one hundred products, and with
 almost a thousand more through Zapier and IFTTT. If you're looking to add an
 integration with an existing product, see our
-[list of integrations](/integrations), along with those of
+[list of integrations](/integrations/), along with those of
 [Zapier](https://zapier.com/apps) and [IFTTT](https://ifttt.com/search).
 
 ## Anatomy of a bot

@@ -4,7 +4,7 @@ Zulip's APIs allow you to integrate other services with Zulip.  This
 guide should help you find the API you need:
 
 * First, check if the tool you'd like to integrate with Zulip
-  [already has a native integration](/integrations).
+  [already has a native integration](/integrations/).
 * Next, check if [Zapier](https://zapier.com/apps) or
   [IFTTT](https://ifttt.com/search) has an integration.
   [Zulip's Zapier integration](/integrations/doc/zapier) and

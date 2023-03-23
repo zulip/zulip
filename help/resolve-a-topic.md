@@ -94,7 +94,7 @@ topics](/help/restrict-moving-messages).
 * Resolving a topic works by moving the messages to a new topic.
 * Like with all topic editing, Zulip clients update instantly, so
   human users will likely only send messages to the resolved topic.
-* [Integrations](/integrations) will usually send new messages to the
+* [Integrations](/integrations/) will usually send new messages to the
   original topic (`example topic`) after a topic is resolved. This is
   useful for alerting integrations, where a repeating alert might have a
   different cause. You can mark the topic resolved (as normal) once
