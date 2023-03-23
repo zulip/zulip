@@ -78,7 +78,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
 
 LANDING_PAGE_REDIRECTS = [
     # Add URL redirects for corporate landing pages here.
-    URLRedirect("/new-user/", "/hello"),
+    URLRedirect("/new-user/", "/hello/"),
     URLRedirect("/developer-community/", "/development-community"),
     URLRedirect("/for/companies/", "/for/business"),
     URLRedirect("/for/working-groups-and-communities/", "/for/communities"),
