@@ -1,0 +1,12 @@
+{
+    "action": "created",
+    "sponsorship": {
+        "sponsor": {
+            "name": "zulip"
+        },
+        "tier": {
+            "monthly_price_in_dollars": "$5"
+        },
+         "created_at": "2020-04-25 20:42:10"
+    }
+}
