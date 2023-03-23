@@ -28,6 +28,76 @@ the additional complexity involved in sending messages.
 
 ## General process
 
+### The magic of `git grep`
+
+Imagine a situation where you are browsing thousands of lines of code just to find
+that one exact line of code you were looking for. Maybe to understand or to amend.
+Whatever be the case, `git grep` is here to help.
+
+`git grep` is a powerful tool that allows you to search through the entire history of a git repository for a specific string or a pattern.
+
+Here's a step-by-step guide for using `git grep`:
+
+1. Open up your terminal and navigate to the directory where you have cloned the Zulip
+   project.
+
+2. Type the following command to perform a basic search through the current branch:
+
+```console
+git grep <search_term>
+```
+
+Replace `<search_term>` with the string or a pattern you're looking for.
+
+For example, if you wanted to search for all instances of the word `hello` in the Zulip project, you would run:
+
+```console
+git grep hello
+```
+
+3. By default, git grep will search through the current branch only. If you want to
+   search through all branches, use the `--all` flag:
+
+```console
+git grep --all <search_term>
+```
+
+4. If you want to limit your search to specific file types, use the `-- '*.filetype'`
+   flag. For example, to search only through `python` files, you would run:
+
+```console
+git grep <search_term> -- '*.py'
+```
+
+5. To search through the entire history of the repository, including all branches and
+   untracked changes, use the `--all` and `--untracked` flags:
+
+```console
+git grep --all --untracked <search_term>
+```
+
+6. If you want to search through a specific commit or range of commits, use the
+   `git grep <search_term> <commit>` command. For example, to search for all instances
+   of the word `hello` in a specific commit, run:
+
+```console
+git grep hello abc123
+```
+
+Replace `abc123` with the `commit hash` you want to search.
+
+7. Finally, if you want to search through the entire history of the repository, but
+   only show the matching parts (not the entire line), use the `--only-matching` flag:
+
+```console
+git grep --all --untracked --only-matching <search_term>
+```
+
+**Note:** This was a quick demonstration, if you want to find what `git grep` is
+capable to do in depth. Try checking out [git grep documentation](https://git-scm.com/docs/git-grep).
+
+That's it! With these commands, you should be able to use git grep to search through the Zulip project and find the specific code you're looking for.
+
 ### Files impacted
 
 This tutorial will walk through adding a new feature to a Realm (an
