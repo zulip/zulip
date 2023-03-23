@@ -4,6 +4,10 @@
   popovers. (Tippy tooltips are defined in tooltips.css).
 */
 .tippy-box[data-theme="light-border"] {
+    .tippy-content {
+        font-size: 14px;
+    }
+
     /* TODO: Clean this logic up after drop Bootstrap styling */
     & ul.nav {
         /* Override default padding of tippyjs */
