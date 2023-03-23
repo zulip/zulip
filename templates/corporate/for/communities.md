@@ -29,7 +29,7 @@ inclusion, and making efficient use of everyone’s time.
 ## Challenges with other communication tools
 
 Problems with the Slack/Discord/IRC model, discussed
-in detail [here](/why-zulip), are even more important for open communities:
+in detail [here](/why-zulip/), are even more important for open communities:
 
 
 - Members of open communities may be scattered all over the world and
