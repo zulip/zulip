@@ -156,6 +156,8 @@ in the Zulip app to add more to your repertoire as needed.
   src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
   title="thumbs up"/>**: <kbd>+</kbd>
 
+* **Toggle first emoji reaction**: <kbd>=</kbd>
+
 * **Mark as unread from selected message**: <kbd>Shift</kbd> + <kbd>U</kbd>
 
 * **Collapse/show message**: <kbd>-</kbd>
