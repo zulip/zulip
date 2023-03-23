@@ -1080,7 +1080,7 @@ td.pointer {
     cursor: pointer;
     vertical-align: top;
     border: none;
-    padding: 3px 5px 1px;
+    padding: 3px 5px;
 
     &:hover .message_controls,
     &:focus-within .message_controls,

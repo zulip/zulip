@@ -9,7 +9,7 @@
        arrange things so that this spacing matches the spacing between
        paragraphs in two consecutive 1-line messages. */
     & p + p {
-        margin-top: 11px;
+        margin-top: 13px;
     }
 
     /* Ensure bulleted lists are nicely centered in 1-line messages */
