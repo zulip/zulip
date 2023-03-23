@@ -48,7 +48,7 @@ stream or topic as read**.
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-left-sidebar}
 
 1. Hover over a stream, topic, or **All messages** in the left sidebar.
 
@@ -61,6 +61,13 @@ stream or topic as read**.
     You can also mark all messages in your current view as read by
     jumping to the bottom with the **Scroll to bottom**
     (<i class="fa fa-chevron-down"></i>) button or the <kbd>End</kbd> shortcut.
+
+{tab|via-recent-conversations}
+
+{!open-recent-conversations.md!}
+
+1. Click on an unread messages counter in the **Topic** column to mark all
+   messages in that topic as read.
 
 {tab|mobile}
 
