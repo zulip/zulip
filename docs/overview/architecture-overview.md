@@ -5,7 +5,7 @@
 The main Zulip codebase is at <https://github.com/zulip/zulip>. It
 contains the Zulip backend (written in Python 3.x and Django), the
 web app (written in JavaScript and TypeScript) and our library of
-incoming webhook [integrations](https://zulip.com/integrations)
+incoming webhook [integrations](https://zulip.com/integrations/)
 with other services and applications (see [the directory structure
 guide](directory-structure.md)).
 

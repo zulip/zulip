@@ -361,7 +361,7 @@ function integration_events() {
     });
 
     $(window).on("popstate", () => {
-        if (window.location.pathname.startsWith("/integrations")) {
+        if (window.location.pathname.startsWith("/integrations/")) {
             dispatch("LOAD_PATH");
         } else {
             window.location = window.location.href;
