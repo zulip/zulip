@@ -1729,13 +1729,13 @@ class StreamAdminTest(ZulipTestCase):
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"description": "See https://zulip.com/team"},
+                {"description": "See https://zulip.com/team/"},
             )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
         self.assertEqual(
             stream.rendered_description,
-            '<p>See <a href="https://zulip.com/team">https://zulip.com/team</a></p>',
+            '<p>See <a href="https://zulip.com/team/">https://zulip.com/team/</a></p>',
         )
 
     def test_change_stream_description_requires_admin(self) -> None:
