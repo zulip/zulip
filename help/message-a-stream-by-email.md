@@ -5,7 +5,7 @@
     This feature is not available on self-hosted Zulip servers where
     the [incoming email gateway][email-gateway] has not been
     configured by a system administrator.
-    [email-gateway]: https://zulip.readthedocs.io/en/latest/production/email-gateway.html
+    [email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
 
 You can send emails to Zulip streams. This can be useful:
 

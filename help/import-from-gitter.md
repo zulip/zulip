@@ -131,7 +131,7 @@ keep in mind about the import process:
 
 - Message edit history is not imported.
 
-[grant-admin-access]: https://zulip.readthedocs.io/en/latest/production/management-commands.html#grant-administrator-access)
+[grant-admin-access]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#grant-administrator-access)
 [gitter-api-user-data]: https://developer.gitter.im/docs/user-resource
 
 ## Get your organization started with Zulip

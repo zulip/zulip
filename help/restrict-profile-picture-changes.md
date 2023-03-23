@@ -24,4 +24,4 @@ profile pictures from LDAP][ldap-sync-avatars] or a similar directory.
 {end_tabs}
 
 [change-avatar]: /help/change-your-profile-picture
-[ldap-sync-avatars]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#synchronizing-avatars
+[ldap-sync-avatars]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-avatars

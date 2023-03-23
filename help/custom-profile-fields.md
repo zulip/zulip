@@ -90,4 +90,4 @@ checkboxes will be disabled.
 * [Edit your profile](/help/edit-your-profile)
 * [View someone's profile](/help/view-someones-profile)
 
-[authentication-production]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
+[authentication-production]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html
