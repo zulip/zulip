@@ -20,7 +20,9 @@ export function update_stream_recipient_color($stream_header) {
         }
         const stream_color = stream_data.get_color(stream_name);
         const recipient_bar_color = get_recipient_bar_color(stream_color);
-        $stream_header.css("background-color", recipient_bar_color);
+        $stream_header
+            .find(".message-header-contents")
+            .css("background-color", recipient_bar_color);
     }
 }
 
