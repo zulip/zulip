@@ -1,7 +1,7 @@
 # Choosing between Zulip Cloud and self-hosting
 
 Whether [signing up for Zulip Cloud](https://zulip.com/new/) or [self-hosting
-Zulip](https://zulip.com/self-hosting) is the right choice for you depends on
+Zulip](https://zulip.com/self-hosting/) is the right choice for you depends on
 the needs of your organization.
 
 If you aren’t sure what you need, our high quality export and import
