@@ -13,7 +13,7 @@ principles are important in how we think about internationalization:
   tagged for translation in both [HTML templates](#html-templates) and
   code, and our linters attempt to enforce this. There are some
   exceptions: we don't tag strings in Zulip's landing pages
-  (e.g. /features) and other documentation (e.g. /help) for
+  (e.g. /features/) and other documentation (e.g. /help) for
   translation at this time (though we do aim for those pages to be
   usable with tools like Google Translate).
 - Translating all the strings in Zulip for a language and maintaining
