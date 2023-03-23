@@ -118,7 +118,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
     # message from the user to Welcome Bot, select the appropriate reply.
     if human_response_lower in ["app", "apps"]:
         return _(
-            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
             "Zulip also works great in a browser."
         )
     elif human_response_lower == "profile":

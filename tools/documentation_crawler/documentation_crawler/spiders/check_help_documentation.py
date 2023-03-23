@@ -68,7 +68,7 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
         "http://localhost:9981/history/",
         "http://localhost:9981/plans/",
         "http://localhost:9981/team/",
-        "http://localhost:9981/apps",
+        "http://localhost:9981/apps/",
         "http://localhost:9981/integrations/",
         "http://localhost:9981/terms",
         "http://localhost:9981/privacy",
