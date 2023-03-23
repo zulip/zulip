@@ -30,7 +30,12 @@ export async function select(name) {
     await new Promise((resolve, reject) => {
         const sheet = new Image();
         sheet.addEventListener("load", resolve);
-        sheet.addEventListener("error", reject);
+        sheet.addEventListener("error", () => {
+            // Unfortunately, the "event" we get doesn't have any
+            // useful information on it, as it's not the window-level
+            // error handler.
+            reject(new Error("Failed to load emojiset " + name + " from " + sheet.src));
+        });
         sheet.src = new_emojiset.sheet;
     });
     if (current_emojiset) {
