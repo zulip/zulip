@@ -1286,6 +1286,11 @@ class RealmAPITest(ZulipTestCase):
                     user_group.name == SystemGroups.OWNERS
                     and not setting_permission_configuration.allow_owners_group
                 )
+                or (
+                    setting_permission_configuration.allowed_system_groups
+                    and user_group.name
+                    not in setting_permission_configuration.allowed_system_groups
+                )
             ):
                 value = orjson.dumps(user_group.id).decode()
 

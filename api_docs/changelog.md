@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 225**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_access_all_users_group_id`
+  realm setting, which is the ID of the user group whose members can
+  access all the users in the oragnization.
+
+* [`POST /register`](/api/register-queue): Added `allowed_system_groups`
+  field to configuration data object of permission settings passed in
+  `server_supported_permission_settings`.
+
 **Feature level 224**
 
 * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),

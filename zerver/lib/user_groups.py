@@ -215,6 +215,16 @@ def access_user_group_for_setting(
             )
         )
 
+    if (
+        permission_configuration.allowed_system_groups
+        and user_group.name not in permission_configuration.allowed_system_groups
+    ):
+        raise JsonableError(
+            _("'{setting_name}' setting cannot be set to '{group_name}' group.").format(
+                setting_name=setting_name, group_name=user_group.name
+            )
+        )
+
     return user_group
 
 

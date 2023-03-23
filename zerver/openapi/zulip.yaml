@@ -4543,6 +4543,16 @@ paths:
                                         guest users to prominently highlight their status.
 
                                         **Changes**: New in Zulip 8.0 (feature level 216).
+                                    can_access_all_users_group:
+                                      type: integer
+                                      description: |
+                                        The ID of the [user group](/api/get-user-groups) whose members
+                                        are allowed to access all users in the organization.
+
+                                        This setting can currently only be set to `"role:everyone"`
+                                        system group.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 225).
                                   additionalProperties: false
                               example:
                                 {
@@ -14356,6 +14366,16 @@ paths:
                           guest users to prominently highlight their status.
 
                           **Changes**: New in Zulip 8.0 (feature level 216).
+                      realm_can_access_all_users_group:
+                        type: integer
+                        description: |
+                          The ID of the [user group](/api/get-user-groups) whose members
+                          are allowed to access all users in the organization.
+
+                          This setting can currently only be set to `"role:members"`
+                          and `"role:everyone"` system groups.
+
+                          **Changes**: New in Zulip 8.0 (feature level 225).
                       zulip_plan_is_not_limited:
                         type: boolean
                         description: |
@@ -19422,6 +19442,18 @@ components:
             Name of the default group for the setting for system groups.
 
             This is non-null only for group-level settings.
+        allowed_system_groups:
+          type: array
+          description: |
+            An array of names of system groups to which the setting can
+            be set to.
+
+            If the list is empty, the setting can be set to system groups
+            based on the other boolean fields.
+
+            **Changes**: New in Zulip 8.0 (feature level 225).
+          items:
+            type: string
     User:
       allOf:
         - $ref: "#/components/schemas/UserBase"

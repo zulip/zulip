@@ -175,6 +175,9 @@ def update_realm(
         default=None,
     ),
     enable_guest_user_indicator: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    can_access_all_users_group_id: Optional[int] = REQ(
+        "can_access_all_users_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     realm = user_profile.realm
 
