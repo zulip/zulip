@@ -8,6 +8,11 @@ html {
     touch-action: manipulation;
 }
 
+.column-middle,
+#main_div {
+    background-color: var(--color-background);
+}
+
 #app-loading.loaded {
     display: none !important; /* We are now loaded, by definition. */
 }
@@ -18,10 +23,9 @@ body {
     font-family: "Source Sans 3", sans-serif;
 }
 
-/* Common background color */
 body,
 #message_view_header_underpadding {
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background);
     transition: background-color 200ms linear;
 }
 
@@ -61,12 +65,16 @@ body,
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
+    --color-background-stream-message-content: hsl(0deg 0% 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
     --color-message-list-border: hsl(0deg 0% 80%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
-    --color-background: hsl(0deg 0% 100%);
+    --color-background: hsl(0deg 0% 94%);
     --color-background-mention: hsl(8deg 94% 94%);
+    --color-background-navbar: hsl(0deg 0% 96%);
+    --color-background-active-narrow-filter: hsl(202deg 56% 91%);
+    --color-navbar-bottom-border: hsl(0deg 0% 80%);
 }
 
 %dark-theme {
@@ -75,12 +83,16 @@ body,
     --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-background-private-message-content: hsl(46deg 10% 15%);
+    --color-background-stream-message-content: hsl(0deg 0% 14%);
     --color-text-message-header: hsl(0deg 0% 100%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
     --color-message-list-border: hsl(0deg 0% 7%);
-    --color-background: hsl(212deg 28% 18%);
+    --color-background: hsl(0deg 0% 11%);
     --color-background-mention: hsl(8deg 78% 43% / 15%);
+    --color-background-navbar: hsl(0deg 0% 13%);
+    --color-background-active-narrow-filter: hsl(200deg 17% 18%);
+    --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
 }
 
 :root.dark-theme {
@@ -296,11 +308,15 @@ p.n-margin {
     height: var(--header-height);
     padding-bottom: var(--header-padding-bottom);
     /* Since the headers are sticky, we need non-transparent background. */
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background);
 }
 
-#top_navbar {
-    border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+#navbar-middle .column-middle-inner,
+#userlist-toggle-button,
+.header-main,
+#message_view_header {
+    background-color: var(--color-background-navbar);
+    box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
 }
 
 #navbar_alerts_wrapper {
@@ -425,7 +441,6 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
-    background-color: hsl(0deg 0% 100%);
 }
 
 .column-right {
@@ -509,6 +524,7 @@ p.n-margin {
 
     .column-left .left-sidebar,
     .column-right .right-sidebar {
+        background-color: var(--color-background);
         position: fixed;
         margin-top: var(--sidebar-top);
         z-index: 100;
@@ -960,7 +976,7 @@ td.pointer {
    but it works. */
 .alert-msg {
     color: hsl(170deg 48% 54%);
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background);
     z-index: 999;
     font-weight: 400;
     display: none;
@@ -1560,6 +1576,7 @@ div.message_table {
     position: relative;
     border-left: 1px solid var(--color-message-list-border);
     border-right: 1px solid var(--color-message-list-border);
+    background-color: var(--color-background-stream-message-content);
 
     &.group_mention,
     &.direct_mention {
@@ -1567,9 +1584,9 @@ div.message_table {
     }
 
     .date_row {
+        background-color: var(--color-background-stream-message-content);
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0;
-        background-color: var(--color-background);
 
         & span {
             font-size: calc(12em / 14);
@@ -1787,11 +1804,6 @@ div.focused_table {
 
 .streamname {
     font-weight: bold;
-}
-
-.top-navbar-border {
-    border-right: 1px solid hsl(0deg 0% 88%);
-    border-left: 1px solid hsl(0deg 0% 88%);
 }
 
 .search_icon {
@@ -2047,7 +2059,6 @@ div.focused_table {
     color: hsl(0deg 0% 52%);
     display: block;
     position: relative;
-    background-color: hsl(0deg 0% 89%);
     width: 40px;
     height: 19px;
     padding-top: 12px;
@@ -2705,7 +2716,6 @@ select.invite-as {
             top: 0;
 
             .right-sidebar {
-                background-color: hsl(0deg 0% 100%);
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-left: 1px solid hsl(0deg 0% 87%);
 
@@ -2727,6 +2737,10 @@ select.invite-as {
 
     #top_navbar #navbar-buttons {
         margin-right: 41px;
+    }
+
+    #top_navbar {
+        border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
     }
 
     .nav .dropdown-menu {
@@ -2767,7 +2781,7 @@ select.invite-as {
             top: 0;
 
             .left-sidebar {
-                background-color: hsl(0deg 0% 100%);
+                background-color: var(--color-background);
                 box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-right: 1px solid hsl(0deg 0% 87%);
 

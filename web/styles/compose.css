@@ -52,11 +52,12 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
-    border-top: 1px solid hsl(0deg 0% 0% / 7%);
+    background-color: hsl(232deg 30% 92%);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px;
-    border-left: 1px solid hsl(0deg 0% 93%);
-    border-right: 1px solid hsl(0deg 0% 93%);
+    border: 1px solid hsl(0deg 0% 0% / 10%);
+    border-radius: 9px 9px 0 0;
+    box-shadow: 0 0 0 hsl(236deg 11% 28%);
     height: 100%;
     display: flex;
     flex-flow: column;
@@ -89,6 +90,10 @@
     flex-flow: column;
 
     .stream-selection-header-colorblock {
+        box-shadow: none;
+        border: 1px solid hsl(0deg 0% 80%);
+        border-right: none;
+
         &.message_header_private_message {
             border-radius: 3px 0 0 3px;
             border-bottom: 0;
@@ -213,8 +218,6 @@
     left: 0;
     z-index: 4;
     width: 100%;
-
-    background-color: hsl(0deg 0% 100%);
 }
 
 #compose-container {
@@ -673,7 +676,7 @@ input.recipient_box {
     }
 
     .divider {
-        color: hsl(0deg 0% 88%);
+        color: hsl(0deg 0% 75%);
         font-size: 20px;
         margin: 0 3px;
     }
@@ -744,7 +747,7 @@ a.compose_control_button.hide {
 
     border: 1px solid hsl(0deg 0% 67%);
     border-radius: 4px;
-    background-color: hsl(0deg 0% 0% / 2%);
+    background-color: hsl(0deg 0% 98%);
     cursor: not-allowed;
 }
 
