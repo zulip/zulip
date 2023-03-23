@@ -48,7 +48,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "You can [download](/apps) the [mobile and desktop apps](/apps). "
+                "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
                 "Zulip also works great in a browser."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)

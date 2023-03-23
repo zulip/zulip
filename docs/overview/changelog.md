@@ -1626,7 +1626,7 @@ details.
 - Added 'e' keyboard shortcut for editing currently selected message.
 - Added support for unstarring all starred messages.
 - Added support for using `|` as an OR operator in sidebar search features.
-- Added direct download links for Android APKs to our /apps page.
+- Added direct download links for Android APKs to our /apps/ page.
 - Added a responsive design for our /integrations/ pages.
 - Added typeahead for slash commands.
 - Added more expansive moderation settings for who can create streams,
