@@ -308,7 +308,6 @@ export function process_messages(messages) {
         complete_rerender();
     }
 }
-
 function message_to_conversation_unread_count(msg) {
     if (msg.type === "private") {
         return unread.num_unread_for_user_ids_string(msg.to_user_ids);
@@ -514,8 +513,22 @@ export function update_topics_of_deleted_message_ids(message_ids) {
     const topics_to_rerender = message_util.get_topics_for_message_ids(message_ids);
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
-        topics.delete(get_topic_key(stream_id, topic));
+        const topic_key = get_topic_key(stream_id, topic);
+        const topic_data = topics.get(topic_key);
+        const topic_row = get_topic_row(topic_data);
         const msgs = message_util.get_messages_in_topic(stream_id, topic);
+        if (is_visible() && msgs.length === 0) {
+            const is_topic_rendered = topic_row.length;
+            const current_topics_list = topics_widget.get_current_list();
+            if (is_topic_rendered) {
+                const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
+                if (row_is_focused && row_focus >= current_topics_list.length) {
+                    row_focus = current_topics_list.length - 1;
+                }
+                topics_widget.remove_rendered_row(topic_row);
+            }
+        }
+        topics.delete(topic_key);
         process_messages(msgs);
     }
 }
