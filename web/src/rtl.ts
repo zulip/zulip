@@ -21,8 +21,8 @@ import _ from "lodash";
  * @param {string} raw
  * @returns {number[]}
  */
-function convert_from_raw(digits, part_length, raw) {
-    const result = [];
+function convert_from_raw(digits: string, part_length: number, raw: string): number[] {
+    const result: number[] = [];
     for (let i = 0; i < raw.length; ) {
         let t = 0;
         for (let j = 0; j < part_length; j += 1) {
@@ -86,7 +86,7 @@ const lr_ranges = [
  * @param {number} ch A character to get its bidirectional class.
  * @returns {'I' | 'PDI' | 'R' | 'L' | 'Other'}
  */
-function get_bidi_class(ch) {
+function get_bidi_class(ch: number): "I" | "PDI" | "R" | "L" | "Other" {
     if (i_chars.has(ch)) {
         return "I"; // LRI, RLI, FSI
     }
@@ -109,10 +109,15 @@ function get_bidi_class(ch) {
  * @param {string} str The string to get its direction.
  * @returns {'ltr' | 'rtl'}
  */
-export function get_direction(str) {
+export function get_direction(str: string): "ltr" | "rtl" {
     let isolations = 0;
     for (const ch of str) {
-        const bidi_class = get_bidi_class(ch.codePointAt(0));
+        /**
+         * ch.codePointAt(0) here can never return undefined because the only
+         * possible situation for it to return undefined is when str.length === 0
+         * and if that's the case this for loop will never be triggered.
+         */
+        const bidi_class = get_bidi_class(ch.codePointAt(0)!);
         switch (bidi_class) {
             case "I":
                 // LRI, RLI, FSI
@@ -139,9 +144,13 @@ export function get_direction(str) {
     return "ltr";
 }
 
-export function set_rtl_class_for_textarea($textarea) {
+export function set_rtl_class_for_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     let text = $textarea.val();
+    if (typeof text !== "string") {
+        /* istanbul ignore throw */
+        throw new TypeError("Expected $textarea to be a textarea.");
+    }
     if (text.startsWith("```quote")) {
         text = text.slice(8);
     }
