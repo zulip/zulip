@@ -137,6 +137,8 @@ not_yet_fully_covered = [
     "zerver/webhooks/teamcity/view.py",
     "zerver/webhooks/travis/view.py",
     "zerver/webhooks/zapier/view.py",
+    # This is hard to get test coverage for, and low value to do so
+    "zerver/views/sentry.py",
     # Cannot have coverage, as tests run in a transaction
     "zerver/lib/safe_session_cached_db.py",
     "zerver/lib/singleton_bmemcached.py",
