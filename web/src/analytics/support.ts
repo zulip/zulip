@@ -7,7 +7,7 @@ $(() => {
         e.preventDefault();
         const message =
             "Confirm the string_id of the realm you want to scrub.\n\n WARNING! This action is irreversible!";
-        const actual_string_id = $(this).data("string-id");
+        const actual_string_id = $(this).attr("data-string-id");
         // eslint-disable-next-line no-alert
         const confirmed_string_id = window.prompt(message);
         if (confirmed_string_id === actual_string_id) {
