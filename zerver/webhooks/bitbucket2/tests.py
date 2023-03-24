@@ -145,7 +145,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
     def test_bitbucket2_on_pull_request_updated_event(self) -> None:
-        expected_message = "Tomasz updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
         self.check_webhook(
             "pull_request_created_or_updated",
             TOPIC_PR_EVENTS,
@@ -192,9 +192,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
     def test_bitbucket2_on_pull_request_fulfilled_event(self) -> None:
-        expected_message = (
-            "Tomasz merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
-        )
+        expected_message = "Tomasz merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master`."
         self.check_webhook(
             "pull_request_fulfilled_or_rejected",
             TOPIC_PR_EVENTS,
