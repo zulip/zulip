@@ -540,7 +540,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
         if full_suite:
             print(f"INFO: URL coverage report is in {fn}")
-            print("INFO: Try running: ./tools/create-test-api-docs")
 
         if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")

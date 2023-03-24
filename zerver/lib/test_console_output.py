@@ -16,13 +16,9 @@ class ExtraConsoleOutputFinder:
         valid_line_patterns = [
             # Example: Running zerver.tests.test_attachments.AttachmentsTests.test_delete_unauthenticated
             b"^Running ",
-            # Example: ** Test is TOO slow: analytics.tests.test_counts.TestRealmActiveHumans.test_end_to_end (0.581 s)
-            b"^\\*\\* Test is TOO slow: ",
             b"^----------------------------------------------------------------------",
             # Example: INFO: URL coverage report is in var/url_coverage.txt
             b"^INFO: URL coverage report is in",
-            # Example: INFO: Try running: ./tools/create-test-api-docs
-            b"^INFO: Try running:",
             # Example: -- Running tests in parallel mode with 4 processes
             b"^-- Running tests in",
             b"^OK",
