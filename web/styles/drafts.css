@@ -88,18 +88,17 @@
 
     .draft-info-box {
         width: 100%;
-        border-radius: 5px;
-        border: 1px solid var(--color-message-list-border);
         margin-bottom: 10px;
 
         &.active {
             outline: 2px solid hsl(215deg 47% 50%);
-            /* this offset ensures no gap between the blue box and the draft in active state */
-            outline-offset: -1px;
+            border-radius: 7px;
         }
 
         .message_row {
-            border: 0;
+            border-radius: 0 0 7px 7px;
+            border: 1px solid var(--color-message-list-border);
+            border-top: 0;
         }
 
         .messagebox-content {
@@ -121,6 +120,7 @@
         .messagebox {
             cursor: auto;
             box-shadow: none;
+            border-radius: 0 0 7px 7px;
         }
 
         .draft_controls {
@@ -159,6 +159,7 @@
             /* We don't need these effects applied for message list in the drafts overlay. */
             box-shadow: none !important;
             border: 0 !important;
+            background: transparent;
         }
     }
 }

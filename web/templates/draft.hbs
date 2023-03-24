@@ -1,10 +1,10 @@
 <div class="draft-row" data-draft-id="{{draft_id}}">
     <div class="draft-info-box" tabindex="0">
         {{#if is_stream}}
-        <div class="message_header message_header_stream" style="background: {{recipient_bar_color}}; border-left-color: {{recipient_bar_color}};">
-            <div class="message-header-contents">
+        <div class="message_header message_header_stream">
+            <div class="message-header-contents" style="background: {{recipient_bar_color}};">
                 <div class="message_label_clickable stream_label">
-                    <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
+                    <span class="stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
                         {{> stream_privacy}}
                     </span>
                     {{stream_name}}
