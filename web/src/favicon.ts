@@ -6,9 +6,9 @@ import render_favicon_svg from "../templates/favicon.svg.hbs";
 import * as blueslip from "./blueslip";
 import favicon_font_url from "./favicon_font_url!=!url-loader!font-subset-loader2?glyphs=0123456789KMGT∞!source-sans/TTF/SourceSans3-Bold.ttf";
 
-let favicon_state;
+let favicon_state: {image: HTMLImageElement; url: string} | undefined;
 
-function load_and_set_favicon(rendered_favicon) {
+function load_and_set_favicon(rendered_favicon: string): void {
     favicon_state = {
         url: URL.createObjectURL(new Blob([rendered_favicon], {type: "image/svg+xml"})),
         image: new Image(),
@@ -19,12 +19,13 @@ function load_and_set_favicon(rendered_favicon) {
     favicon_state.image.src = favicon_state.url;
     favicon_state.image.addEventListener("load", set_favicon);
 }
-
-function set_favicon() {
+function set_favicon(): void {
+    if (favicon_state === undefined) {
+        throw new Error("Programming error: favicon_state must be set.");
+    }
     $("#favicon").attr("href", favicon_state.url);
 }
-
-export function update_favicon(new_message_count, pm_count) {
+export function update_favicon(new_message_count: number, pm_count: number): void {
     try {
         if (favicon_state !== undefined) {
             favicon_state.image.removeEventListener("load", set_favicon);
@@ -62,6 +63,12 @@ export function update_favicon(new_message_count, pm_count) {
 
         load_and_set_favicon(rendered_favicon);
     } catch (error) {
+        // Error must be a type of Error in order to access error.stack
+        // The undetermined error was mentioned in this issue:
+        // https://github.com/zulip/zulip/issues/18374
+        if (!(error instanceof Error)) {
+            throw error;
+        }
         blueslip.error("Failed to update favicon", undefined, error.stack);
     }
 }
