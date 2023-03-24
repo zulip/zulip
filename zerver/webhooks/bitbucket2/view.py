@@ -334,11 +334,19 @@ def get_issue_action_body(payload: WildValue, action: str, include_title: bool) 
 
 def get_pull_request_action_body(payload: WildValue, action: str, include_title: bool) -> str:
     pull_request = payload["pullrequest"]
+    target_branch = None
+    base_branch = None
+    if action == "merged":
+        target_branch = pull_request["source"]["branch"]["name"].tame(check_string)
+        base_branch = pull_request["destination"]["branch"]["name"].tame(check_string)
+
     return get_pull_request_event_message(
         get_actor_info(payload),
         action,
         get_pull_request_url(pull_request),
         pull_request["id"].tame(check_int),
+        target_branch=target_branch,
+        base_branch=base_branch,
         title=pull_request["title"].tame(check_string) if include_title else None,
     )
 
@@ -356,8 +364,12 @@ def get_pull_request_created_or_updated_body(
         action,
         get_pull_request_url(pull_request),
         pull_request["id"].tame(check_int),
-        target_branch=pull_request["source"]["branch"]["name"].tame(check_string),
-        base_branch=pull_request["destination"]["branch"]["name"].tame(check_string),
+        target_branch=pull_request["source"]["branch"]["name"].tame(check_string)
+        if action == "created"
+        else None,
+        base_branch=pull_request["destination"]["branch"]["name"].tame(check_string)
+        if action == "created"
+        else None,
         message=pull_request["description"].tame(check_string),
         assignee=assignee,
         title=pull_request["title"].tame(check_string) if include_title else None,
