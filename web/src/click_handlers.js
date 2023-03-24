@@ -872,6 +872,7 @@ export function initialize() {
                 !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
+                !$(e.target).closest(".typeahead").length &&
                 !$(e.target).closest(".enter_sends").length &&
                 $(e.target).closest("body").length
             ) {
