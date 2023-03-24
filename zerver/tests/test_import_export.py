@@ -1765,7 +1765,10 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(rec["status_text"], "on vacation")
 
         do_set_user_topic_visibility_policy(
-            cordelia, scotland, "bagpipe music", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+            cordelia,
+            scotland,
+            "bagpipe music",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
         do_set_user_topic_visibility_policy(
             othello, scotland, "nessie", visibility_policy=UserTopic.VisibilityPolicy.MUTED
