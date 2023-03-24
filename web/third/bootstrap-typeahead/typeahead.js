@@ -199,6 +199,14 @@ import {get_string_diff} from "../../src/util";
   }
 
   , show: function () {
+      var header_text = this.header();
+      if (header_text) {
+        this.$header.find('span#typeahead-header-text').html(header_text);
+        this.$header.show();
+      } else {
+        this.$header.hide();
+      }
+
       var pos;
 
       if (this.fixed) {
@@ -229,14 +237,6 @@ import {get_string_diff} from "../../src/util";
         top: top_pos
        , left: pos.left
       })
-
-      var header_text = this.header();
-      if (header_text) {
-        this.$header.find('span#typeahead-header-text').html(header_text);
-        this.$header.show();
-      } else {
-        this.$header.hide();
-      }
 
       this.$container.show()
       this.shown = true
