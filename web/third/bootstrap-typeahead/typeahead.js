@@ -439,7 +439,6 @@ import {get_string_diff} from "../../src/util";
   , keydown: function (e) {
     const pseudo_keycode = get_pseudo_keycode(e);
     if (this.trigger_selection(e)) {
-      if (!this.shown) return;
       e.preventDefault();
       this.select(e);
     }
@@ -473,6 +472,11 @@ import {get_string_diff} from "../../src/util";
             this.on_escape();
           }
           break
+
+        // to stop typeahead from showing up momentarily
+        // when shift + tabbing to a field with typeahead
+        case 16: // shift
+          return
 
         default:
           var hideOnEmpty = false
