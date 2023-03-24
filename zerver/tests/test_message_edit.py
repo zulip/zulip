@@ -1357,9 +1357,9 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
         change_all_topic_name = "Topic 1 edited"
 
-        # This code path adds 19 (10 + 4/user with muted topics + 1) to
+        # This code path adds 21 (10 + 5/user with muted topics + 1) to
         # the number of database queries for moving a topic.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(21):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1453,7 +1453,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(32):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1484,7 +1484,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(33):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1517,7 +1517,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(32):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1630,7 +1630,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(21):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
