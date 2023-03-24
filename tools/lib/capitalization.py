@@ -15,6 +15,7 @@ IGNORED_PHRASES = [
     r"Botserver",
     r"Cookie Bot",
     r"DevAuthBackend",
+    r"DSN",
     r"GCM",
     r"GitHub",
     r"Gravatar",

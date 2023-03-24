@@ -47,6 +47,7 @@ if (page_params.server_sentry_dsn) {
     Sentry.init({
         dsn: page_params.server_sentry_dsn,
         environment: page_params.server_sentry_environment || "development",
+        tunnel: "/error_tracing",
 
         release: "zulip-server@" + ZULIP_VERSION,
         integrations: [
