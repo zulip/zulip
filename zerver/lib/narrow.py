@@ -269,6 +269,13 @@ class NarrowBuilder:
             "search": self.by_search,
             "pm-with": self.by_pm_with,
             "group-pm-with": self.by_group_pm_with,
+            # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
+            # for documented search operators with dashes, also implicitly supported
+            # clients sending those same operators with underscores. We can remove
+            # support for the below operators when support for the associated dashed
+            # operator is removed.
+            "pm_with": self.by_pm_with,
+            "group_pm_with": self.by_group_pm_with,
         }
 
     def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
