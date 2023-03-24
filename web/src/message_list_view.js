@@ -1414,12 +1414,9 @@ export class MessageListView {
     }
 
     _maybe_format_me_message(message_container) {
-        if (message_container.is_hidden) {
-            // If the message is to be hidden anyway, no need to render
-            // it differently.
-            return;
-        }
-        if (message_container.msg.is_me_message) {
+        // If the message is to be hidden anyway, no need to render
+        // it differently.
+        if (!message_container.is_hidden && message_container.msg.is_me_message) {
             // Slice the '<p>/me ' off the front, and '</p>' off the first line
             // 'p' tag is sliced off to get sender in the same line as the
             // first line of the message
